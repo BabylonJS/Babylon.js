@@ -113,13 +113,42 @@ specularPower(64),
 alpha(1){
 	std::string ansiName = mat->GetName();
 	name = std::wstring(ansiName.begin(), ansiName.end());
+	auto rawId = mat->GetUniqueID();
 	id = getMaterialId(mat);
 	FbxFileTexture* ambientTex = nullptr;
 	FbxFileTexture* diffuseTex = nullptr;
 	FbxFileTexture* specularTex = nullptr;
 	FbxFileTexture* emissiveTex = nullptr;
 	FbxFileTexture* reflectionTex = nullptr;
+	FbxFileTexture* opacityTex = nullptr;
 	FbxFileTexture* bumpTex = nullptr;
+	GetMaterialProperty(mat, FbxSurfaceMaterial::sTransparentColor, FbxSurfaceMaterial::sTransparencyFactor, opacityTex)[0];
+
+	FbxDouble3 transcolor;
+	FbxDouble transfactor;
+	auto transFactorProp = mat->FindProperty(FbxSurfaceMaterial::sTransparencyFactor);
+	auto transColorProp = mat->FindProperty(FbxSurfaceMaterial::sTransparentColor);
+	if (transFactorProp.IsValid() && transColorProp.IsValid()){
+		transfactor = transFactorProp.Get<FbxDouble>();
+		transcolor = transColorProp.Get<FbxDouble3>();
+		if (transfactor== 1.0){ // from Maya .fbx
+			if (transcolor[0] >= DBL_MIN) {
+				alpha = 1 - transcolor[0];
+			}
+			else {
+				alpha = 1;
+			}
+		}
+		else { // from 3dsmax .fbx
+			if (transfactor>=DBL_MIN){
+				alpha = 1 - transfactor;
+			}
+			else {
+				alpha = 1;
+			}
+		}
+	}
+
 	ambient = GetMaterialProperty(mat, FbxSurfaceMaterial::sAmbient, FbxSurfaceMaterial::sAmbientFactor, ambientTex);
 	diffuse = GetMaterialProperty(mat, FbxSurfaceMaterial::sDiffuse, FbxSurfaceMaterial::sDiffuseFactor, diffuseTex);
 	specular = GetMaterialProperty(mat, FbxSurfaceMaterial::sSpecular, FbxSurfaceMaterial::sSpecularFactor, specularTex);
@@ -174,6 +203,10 @@ alpha(1){
 	}
 	if (bumpTex){
 		bumpTexture = std::make_shared<BabylonTexture>(bumpTex);
+	}
+
+	if (opacityTex){
+		opacityTexture = std::make_shared<BabylonTexture>(opacityTex);
 	}
 
 }

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "BabylonLight.h"
 #include "NodeHelpers.h"
+#include "GlobalSettings.h"
 
 web::json::value BabylonLight::toJson() const
 {
@@ -111,20 +112,22 @@ specular(1, 1, 1)
 	auto animStack = node->GetScene()->GetSrcObject<FbxAnimStack>(0);
 	FbxString animStackName = animStack->GetName();
 	FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(FbxTime::eFrames24);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(FbxTime::eFrames24);
+	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
+	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
+	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 	auto posAnimName = getNodeId(node);
 	auto dirAnimName = getNodeId(node);
 	posAnimName.append(L"_position");
 	dirAnimName.append(L"_direction");
-	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, 24, posAnimName, L"position", true, 0, animLengthInFrame, true);
-	auto dirAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, 24, dirAnimName, L"direction", true, 0, animLengthInFrame, true);
+	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, posAnimName, L"position", true, 0, animLengthInFrame, true);
+	auto dirAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, dirAnimName, L"direction", true, 0, animLengthInFrame, true);
 	for (auto ix = 0ll; ix < animLengthInFrame; ix++){
 		babylon_animation_key<babylon_vector3> key;
 		key.frame = ix;
 		FbxTime currTime;
-		currTime.SetFrame(startFrame + ix, FbxTime::eFrames24);
+		currTime.SetFrame(startFrame + ix, animTimeMode);
 		key.values = babnode.localTranslate(currTime);
 		posAnim->appendKey(key);
 

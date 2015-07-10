@@ -188,6 +188,7 @@
     <ClInclude Include="FbxMeshLoader.h" />
     <ClInclude Include="FbxSceneLoader.h" />
     <ClInclude Include="FbxVertexKey.h" />
+    <ClInclude Include="GlobalSettings.h" />
     <ClInclude Include="NodeHelpers.h" />
     <ClInclude Include="SkinInfo.h" />
     <ClInclude Include="stdafx.h" />
@@ -208,6 +209,7 @@
     <ClCompile Include="FbxMaterialHandler.cpp" />
     <ClCompile Include="FbxSceneLoader.cpp" />
     <ClCompile Include="FbxVertexKey.cpp" />
+    <ClCompile Include="GlobalSettings.cpp" />
     <ClCompile Include="SkinInfo.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

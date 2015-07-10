@@ -2,6 +2,7 @@
 #include <iostream>
 #include "SkinInfo.h"
 #include "NodeHelpers.h"
+#include "GlobalSettings.h"
 
 void ComputeBoneHierarchy(const std::vector<FbxNode*>& unsortedFlatListOfNodes,
 	const std::vector<FbxCluster*>& unsortedFlatListOfClusters,
@@ -142,14 +143,17 @@ _node(meshNode), _mesh(meshNode->GetMesh()), _skin(nullptr)
 	auto animStack = _node->GetScene()->GetSrcObject<FbxAnimStack>(0);
 	FbxString animStackName = animStack->GetName();
 	FbxTakeInfo* takeInfo = _node->GetScene()->GetTakeInfo(animStackName);
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(FbxTime::eFrames24);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(FbxTime::eFrames24);
+
+	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
+	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
+	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 
 
 	for (auto ix = 0ll; ix < animLengthInFrame; ix++){
 		FbxTime currTime;
-		currTime.SetFrame(startFrame + ix, FbxTime::eFrames24);
+		currTime.SetFrame(startFrame + ix, animTimeMode);
 
 
 		auto currTransformOffset = meshNode->EvaluateGlobalTransform(currTime) * geometryTransform;
@@ -198,11 +202,13 @@ void SkinInfo::buildBabylonSkeleton(BabylonSkeleton& skel){
 		auto animStack = _node->GetScene()->GetSrcObject<FbxAnimStack>(0);
 		FbxString animStackName = animStack->GetName();
 		FbxTakeInfo* takeInfo = _node->GetScene()->GetTakeInfo(animStackName);
-		auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(FbxTime::eFrames24);
-		auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(FbxTime::eFrames24);
+		auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
+		auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
+		auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
+		auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 		auto animLengthInFrame = endFrame - startFrame + 1;
 
-		auto matrixAnim = std::make_shared<BabylonAnimation<FbxAMatrix>>(BabylonAnimationBase::loopBehavior_Cycle, 24, L"_matrix", L"_matrix", true, 0, animLengthInFrame, true);
+		auto matrixAnim = std::make_shared<BabylonAnimation<FbxAMatrix>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"_matrix", L"_matrix", true, 0, animLengthInFrame, true);
 		for (auto& kf : b.keyFrames){
 
 			babylon_animation_key<FbxAMatrix> key;

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "BabylonCamera.h"
 #include "NodeHelpers.h"
+#include "GlobalSettings.h"
 
 web::json::value BabylonCamera::toJson() const
 {
@@ -25,7 +26,7 @@ web::json::value BabylonCamera::toJson() const
 	jobj[L"inertia"] = web::json::value::number(inertia);
 	jobj[L"checkCollisions"] = web::json::value::boolean(checkCollisions);
 	jobj[L"applyGravity"] = web::json::value::boolean(applyGravity);
-	writeVector2(jobj, L"ellipsoid", ellipsoid);
+	writeVector3(jobj, L"ellipsoid", ellipsoid);
 	if (animations.size() == 0 && quatAnimations.size() == 0){
 
 		jobj[L"autoAnimate"] = web::json::value::boolean(false);
@@ -63,6 +64,23 @@ BabylonCamera::BabylonCamera()
 }
 
 
+BabylonCamera buildCameraFromBoundingBox(const babylon_boundingbox& box){
+	BabylonCamera result;
+	result.name = L"defaultcamera";
+	result.id = L"defaultcamera";
+
+	result.target = box.getCenter();
+	result.position = babylon_vector3(result.target.x, result.target.y, result.target.z - 2 * std::max(box.getWidth(), std::max(box.getHeight(), box.getDepth())));
+	result.fov = 0.8576f;
+	result.minZ = -0.01*result.position.z;
+	result.maxZ = -5 * result.position.z;
+	result.speed = (-result.position.z - result.target.z) / 10;
+	result.inertia = 0.9f;
+	result.checkCollisions = false;
+	result.applyGravity = false;
+	result.ellipsoid = babylon_vector3(.2f, .9f, .2f);
+	return result;
+}
 
 BabylonCamera::BabylonCamera(BabylonNode& babnode)
 {
@@ -100,17 +118,19 @@ BabylonCamera::BabylonCamera(BabylonNode& babnode)
 	auto animStack = node->GetScene()->GetSrcObject<FbxAnimStack>(0);
 	FbxString animStackName = animStack->GetName();
 	FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(FbxTime::eFrames24);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(FbxTime::eFrames24);
+	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
+	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
+	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 
-	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, 24, L"position", L"position", true, 0, animLengthInFrame, true);
-	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, 24, L"rotation", L"rotation", true, 0, animLengthInFrame, true);
-	auto targetAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, 24, L"target", L"target", true, 0, animLengthInFrame, true);
+	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"position", L"position", true, 0, animLengthInFrame, true);
+	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"rotation", L"rotation", true, 0, animLengthInFrame, true);
+	auto targetAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"target", L"target", true, 0, animLengthInFrame, true);
 	
 	for (auto ix = 0ll; ix < animLengthInFrame; ix++){
 		FbxTime currTime;
-		currTime.SetFrame(startFrame + ix, FbxTime::eFrames24);
+		currTime.SetFrame(startFrame + ix, animTimeMode);
 
 		babylon_animation_key<babylon_vector3> poskey;
 		babylon_animation_key<babylon_vector4> rotkey;
