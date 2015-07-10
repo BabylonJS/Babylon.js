@@ -251,6 +251,7 @@ var BABYLON;
         if (texture instanceof BABYLON.CubeTexture) {
             serializationObject.name = texture.name;
             serializationObject.hasAlpha = texture.hasAlpha;
+            serializationObject.isCube = true;
             serializationObject.level = texture.level;
             serializationObject.coordinatesMode = texture.coordinatesMode;
             return serializationObject;

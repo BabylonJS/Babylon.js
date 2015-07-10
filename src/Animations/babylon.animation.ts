@@ -52,6 +52,12 @@
         }
 
         // Methods   
+        public reset(): void {
+            this._offsetsCache = {};
+            this._highLimitsCache = {};
+            this.currentFrame = 0;
+        }
+
         public isStopped(): boolean {
             return this._stopped;
         }
