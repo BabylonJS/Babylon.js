@@ -296,7 +296,7 @@
         public movePOV(amountRight: number, amountUp: number, amountForward: number): void {
             this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
         }
-        
+
         /**
          * Calculate relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
@@ -326,7 +326,7 @@
         public rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): void {
             this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
         }
-        
+
         /**
          * Calculate relative rotation change from the point of view of behind the front of the mesh.
          * Supports definition of mesh facing forward or backward.
@@ -449,12 +449,14 @@
             // Translation
             if (this.infiniteDistance && !this.parent) {
                 var camera = this.getScene().activeCamera;
-                var cameraWorldMatrix = camera.getWorldMatrix();
+                if (camera) {
+                    var cameraWorldMatrix = camera.getWorldMatrix();
 
-                var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+                    var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
-                Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
-                    this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                    Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
+                        this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                }
             } else {
                 Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
             }
@@ -570,7 +572,7 @@
             /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
             /// <returns>Mesh oriented towards targetMesh</returns>
 
-            yawCor = yawCor || 0; // default to zero if undefined 
+            yawCor = yawCor || 0; // default to zero if undefined
             pitchCor = pitchCor || 0;
             rollCor = rollCor || 0;
 
