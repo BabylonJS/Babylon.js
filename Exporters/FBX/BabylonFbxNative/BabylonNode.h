@@ -33,7 +33,8 @@ public:
 
 	FbxNode* fbxNode(){ return _node; }
 	
-
+	bool isEmptySkeletonOrEmptyMesh();
+	bool isEmptySkeletonOrEmptyMeshRecursive();
 	void appendChild(FbxNode* fbxNode){
 		_children.emplace_back(fbxNode);
 	}

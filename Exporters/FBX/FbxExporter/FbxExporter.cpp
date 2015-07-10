@@ -78,11 +78,11 @@ bool isNodeOrDescendantVisible(FbxNode* node){
 	return false;
 }
 
-void exploreMeshes(BabylonScene& scene, BabylonNode& node) {
+void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) {
 	if (node.nodeType() == BabylonNodeType::Skeleton && node.hasOnlySkeletonDescendants()) {
 		return;
 	}
-	if (!node.fbxNode()->GetVisibility()){
+	if (skipEmptyNodes && node.isEmptySkeletonOrEmptyMeshRecursive()) {
 		return;
 	}
 	// append mesh
@@ -141,7 +141,7 @@ void exploreMeshes(BabylonScene& scene, BabylonNode& node) {
 
 
 	for (auto& child : node.children()) {
-		exploreMeshes(scene, child);
+		exploreMeshes(scene, child, skipEmptyNodes);
 	}
 
 
@@ -213,7 +213,7 @@ void exportTexture(const std::shared_ptr<BabylonTexture>& tex, const std::wstrin
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::wcout << L"Usage : FbxExporter <path to fbx file> <outdir> [/fps:60|30|24]" << std::endl;
+	std::wcout << L"Usage : FbxExporter <path to fbx file> <outdir> [/fps:60|30|24] [/skipemptynodes]" << std::endl;
 	if (argc < 3) {
 		std::wcerr << L"Invalid argument count" << std::endl;
 		return -1;
@@ -231,10 +231,13 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	std::wstring wOutputPath(argv[2]);
 	CreateDirectory(wOutputPath.c_str(), nullptr);
-	
+	bool skipEmptyNodes = false;
 	for (int i = 3; i < argc; ++i){
 		std::wstring warg = argv[i];
-		if (warg.find(L"/fps:") == 0){
+		if (warg == L"/skipemptynodes") {
+			skipEmptyNodes = true;
+		}
+		else if (warg.find(L"/fps:") == 0){
 			if (warg == L"/fps:60"){
 				GlobalSettings::Current().AnimationsTimeMode = FbxTime::EMode::eFrames60;
 			}
@@ -259,7 +262,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	BabylonScene babScene;
 	std::cout << "exporting empty nodes as empty meshes" << std::endl;
-	exploreMeshes(babScene, *root);
+	exploreMeshes(babScene, *root, skipEmptyNodes);
 
 	for (auto& mat : babScene.materials()){
 		exportTexture(mat.ambientTexture, wOutputPath);

@@ -1,3 +1,5 @@
+#include "BabylonNode.h"
+#include "BabylonNode.h"
 #include "stdafx.h"
 #include "BabylonNode.h"
 #include "NodeHelpers.h"
@@ -25,6 +27,43 @@ BabylonNodeType BabylonNode::nodeType(){
 		return BabylonNodeType::Light;
 	}
 	return BabylonNodeType::Empty;
+}
+
+bool BabylonNode::isEmptySkeletonOrEmptyMesh()
+{
+	auto type = nodeType();
+	switch (type)
+	{
+	case BabylonNodeType::Mesh:
+	{
+		auto mesh = _node->GetMesh();
+		if (mesh->GetPolygonCount() == 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	case BabylonNodeType::Skeleton:
+	case BabylonNodeType::Empty:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool BabylonNode::isEmptySkeletonOrEmptyMeshRecursive()
+{
+	if (!isEmptySkeletonOrEmptyMesh()) {
+		return false;
+	}
+
+	for (auto& c : children()) {
+		if (!c.isEmptySkeletonOrEmptyMeshRecursive()) {
+			return false;
+		}
+	}
+	return true;
 }
 
 babylon_vector3 BabylonNode::localScale(FbxTime time){
