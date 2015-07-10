@@ -4,6 +4,7 @@
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
     - New rewored StandardMaterial.isReady for better memory usage and performance [deltakosh](https://github.com/deltakosh)
   - **Updates**
+    - Added Animatable.reset() function [deltakosh](https://github.com/deltakosh)
     - New parameter for ArcRotateCamera.zoomOn to preserve maxZ [deltakosh](https://github.com/deltakosh)
     - PickingInfo.getNormal can now use either vertices normals or vertices positions [deltakosh](https://github.com/deltakosh)
     - Meshes can now support uv2, uv4, uv5 and uv6 for ShaderMaterials [deltakosh](https://github.com/deltakosh)
