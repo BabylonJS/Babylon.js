@@ -104,7 +104,7 @@
             serializationObject.type = "WebVRFreeCamera";
         } else if (camera instanceof VRDeviceOrientationFreeCamera) {
             serializationObject.type = "VRDeviceOrientationFreeCamera";
-        } 
+        }
 
         //special properties of specific cameras
         if (camera instanceof ArcRotateCamera || camera instanceof AnaglyphArcRotateCamera) {
@@ -293,6 +293,7 @@
         if (texture instanceof CubeTexture) {
             serializationObject.name = texture.name;
             serializationObject.hasAlpha = texture.hasAlpha;
+            serializationObject.isCube = true;
             serializationObject.level = texture.level;
             serializationObject.coordinatesMode = texture.coordinatesMode;
 
@@ -861,7 +862,7 @@
 
         public static SerializeMesh(mesh: Mesh): any {
             var serializationObject: any = {};
-			
+
             //only works if the mesh is already loaded
             if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
                 //serialize material
@@ -895,7 +896,7 @@
                     serializationObject.skeletons = [];
                     serializationObject.skeletons.push(serializeSkeleton(mesh.skeleton));
                 }
-				
+
                 //serialize the actual mesh
                 serializationObject.meshes = [];
                 serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
