@@ -178,6 +178,8 @@ public:
 			0.5f*(_maxZ + _minZ));
 	}
 	babylon_boundingbox();
+
+	babylon_boundingbox(FbxScene* scene);
 	~babylon_boundingbox();
 };
 
@@ -346,7 +348,6 @@ struct babylon_camera{
 
 };
 
-babylon_camera buildCameraFromBoundingBox(const babylon_boundingbox& box);
 
 
 

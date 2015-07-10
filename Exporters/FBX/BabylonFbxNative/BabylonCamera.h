@@ -28,7 +28,7 @@ public:
 	babylon_vector3 position;
 
 		
-	babylon_vector4 rotationQuaternion;
+	babylon_vector4 rotationQuaternion = babylon_vector4(0,0,0,1);
 
 		
 	babylon_vector3 target;
@@ -55,7 +55,7 @@ public:
 	bool applyGravity = false;
 
 		
-	babylon_vector2 ellipsoid;
+	babylon_vector3 ellipsoid;
 
 		
 	bool autoAnimate = false;
@@ -80,3 +80,5 @@ public:
 	~BabylonCamera();
 };
 
+
+BabylonCamera buildCameraFromBoundingBox(const babylon_boundingbox& box);

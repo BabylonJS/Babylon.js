@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include "..\BabylonFbxNative\BabylonScene.h"
+#include "..\BabylonFbxNative\GlobalSettings.h"
 
 std::string toString(BabylonNodeType type) {
 	switch (type)
@@ -52,8 +53,36 @@ void printNode(BabylonNode& node, int indent = 0) {
 }
 
 
+std::string wstringToUtf8(const std::wstring& src){
+	auto size = WideCharToMultiByte(CP_UTF8, 0, src.c_str(), src.size(), nullptr, 0, nullptr, nullptr);
+	std::string result;
+	result.resize(size, ' ');
+	WideCharToMultiByte(CP_UTF8, 0, src.c_str(), src.size(), &result[0], result.size(),nullptr, nullptr);
+	return result;
+}
+
+bool isNodeOrDescendantVisible(FbxNode* node){
+	if (node == nullptr){
+		return false;
+	}
+	if (node->GetVisibility()){
+		return true;
+	}
+
+	auto childCount = node->GetChildCount();
+	for (auto ix = 0; ix < childCount; ++ix){
+		if (isNodeOrDescendantVisible(node->GetChild(ix))){
+			return true;
+		}
+	}
+	return false;
+}
+
 void exploreMeshes(BabylonScene& scene, BabylonNode& node) {
 	if (node.nodeType() == BabylonNodeType::Skeleton && node.hasOnlySkeletonDescendants()) {
+		return;
+	}
+	if (!node.fbxNode()->GetVisibility()){
 		return;
 	}
 	// append mesh
@@ -139,7 +168,7 @@ TextureFormat getInputFormat(const std::wstring& fileName){
 	return TextureFormat::Unkwown;
 }
 
-void exportTexture(TextureFormat outputFormat, const std::shared_ptr<BabylonTexture>& tex, const std::wstring& wOutputPath){
+void exportTexture(const std::shared_ptr<BabylonTexture>& tex, const std::wstring& wOutputPath){
 	if (!tex){
 		return;
 	}
@@ -184,8 +213,8 @@ void exportTexture(TextureFormat outputFormat, const std::shared_ptr<BabylonText
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::wcout << L"Usage : FbxExporter <path to fbx file> <outdir> [jpg|png|dds]" << std::endl;
-	if (argc < 3 || argc >4) {
+	std::wcout << L"Usage : FbxExporter <path to fbx file> <outdir> [/fps:60|30|24]" << std::endl;
+	if (argc < 3) {
 		std::wcerr << L"Invalid argument count" << std::endl;
 		return -1;
 	}
@@ -202,30 +231,29 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	std::wstring wOutputPath(argv[2]);
 	CreateDirectory(wOutputPath.c_str(), nullptr);
-	TextureFormat texFormat = TextureFormat::Png;
-	if (argc == 4) {
-		std::wstring wFormat(argv[3]);
-		std::wstring wFormatLower;
-		wFormatLower.reserve(wFormat.size());
-		std::transform(wFormat.begin(), wFormat.end(), std::back_inserter(wFormatLower), towlower);
-		if (wFormatLower == L"jpg") {
-			texFormat = TextureFormat::Jpg;
+	
+	for (int i = 3; i < argc; ++i){
+		std::wstring warg = argv[i];
+		if (warg.find(L"/fps:") == 0){
+			if (warg == L"/fps:60"){
+				GlobalSettings::Current().AnimationsTimeMode = FbxTime::EMode::eFrames60;
+			}
+			else if (warg == L"/fps:30"){
+				GlobalSettings::Current().AnimationsTimeMode = FbxTime::EMode::eFrames30;
+			}
+			else if (warg == L"/fps:24"){
+				GlobalSettings::Current().AnimationsTimeMode = FbxTime::EMode::eFrames24;
+			}
+			else{
+				std::wcerr << L"Unrecognized fps parameter" << std::endl;
+				return -2;
+			}
 		}
-		else if (wFormatLower == L"png") {
-			texFormat = TextureFormat::Png;
-		}
-		else if (wFormatLower == L"dds") {
-			texFormat = TextureFormat::Dds;
-		}
-		else {
-
-			std::wcerr << L"Invalid texture format : " << wFormat << std::endl;
-			return -1;
-		}
+		
 	}
+	
 
-
-	FbxSceneLoader sceneLoader(std::string(wInputPath.begin(), wInputPath.end()));
+	FbxSceneLoader sceneLoader(wstringToUtf8(wInputPath));
 	auto root = sceneLoader.rootNode();
 	printNode(*root);
 
@@ -234,13 +262,41 @@ int _tmain(int argc, _TCHAR* argv[])
 	exploreMeshes(babScene, *root);
 
 	for (auto& mat : babScene.materials()){
-		exportTexture(texFormat, mat.ambientTexture, wOutputPath);
-		exportTexture(texFormat, mat.diffuseTexture, wOutputPath);
-		exportTexture(texFormat, mat.specularTexture, wOutputPath);
-		exportTexture(texFormat, mat.emissiveTexture, wOutputPath);
-		exportTexture(texFormat, mat.reflectionTexture, wOutputPath);
-		exportTexture(texFormat, mat.bumpTexture, wOutputPath);
+		exportTexture(mat.ambientTexture, wOutputPath);
+		exportTexture(mat.diffuseTexture, wOutputPath);
+		exportTexture(mat.specularTexture, wOutputPath);
+		exportTexture(mat.emissiveTexture, wOutputPath);
+		exportTexture(mat.reflectionTexture, wOutputPath);
+		exportTexture(mat.bumpTexture, wOutputPath);
 		
+	}
+	if (babScene.cameras().size() == 0){
+		babylon_boundingbox bbox(sceneLoader.getScene());
+		auto cam = buildCameraFromBoundingBox(bbox);
+		babScene.cameras().push_back(cam);
+		babScene.activeCameraID(cam.id);
+	}
+	if (babScene.lights().size() == 0){
+		babylon_boundingbox bbox(sceneLoader.getScene());
+		BabylonLight light;
+		light.diffuse = babylon_vector3(1, 1, 1);
+		light.specular = babylon_vector3(1, 1, 1);
+		light.position = babylon_vector3(0,0,0);
+		light.parentId = babScene.activeCameraID();
+		light.type = 0;
+		light.id = L"default_light";
+		light.name = L"default_light";
+		light.intensity = 1;
+		babScene.lights().push_back(light);
+		//	web::json::value defaultLight = web::json::value::object();
+		//	writeVector3(defaultLight, L"diffuse", babylon_vector3(1, 1, 1));
+		//	writeVector3(defaultLight, L"specular", babylon_vector3(1, 1, 1));
+		//	writeVector3(defaultLight, L"position", babylon_vector3(bbox.getMinX()*2, bbox.getMaxY()*2, bbox.getMinZ()*2));
+		//	defaultLight[L"type"] = web::json::value(0);
+		//	defaultLight[L"direction"] = web::json::value::null();
+		//	defaultLight[L"id"] = web::json::value(L"default light");
+		//	defaultLight[L"name"] = web::json::value(L"default light");
+		//	defaultLight[L"intensity"] = web::json::value(1);
 	}
 	/*auto camera = sceneLoader.GetDefaultCamera();
 	auto spaceshipSettings = sceneLoader.getGlobalSettings();

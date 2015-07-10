@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include "NodeHelpers.h"
+#include "GlobalSettings.h"
 
 struct BabylonVertex {
 	babylon_vector3 position;
@@ -396,17 +397,20 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	auto animStack = fbxNode->GetScene()->GetSrcObject<FbxAnimStack>(0);
 	FbxString animStackName = animStack->GetName();
 	FbxTakeInfo* takeInfo = fbxNode->GetScene()->GetTakeInfo(animStackName);
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(FbxTime::eFrames24);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(FbxTime::eFrames24);
+
+	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
+	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
+	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 
-	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, 24, L"position", L"position", true, 0, animLengthInFrame, true);
-	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, 24, L"rotationQuaternion", L"rotationQuaternion", true, 0, animLengthInFrame, true);
-	auto scaleAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, 24, L"scale", L"scale", true, 0, animLengthInFrame, true);
+	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"position", L"position", true, 0, animLengthInFrame, true);
+	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"rotationQuaternion", L"rotationQuaternion", true, 0, animLengthInFrame, true);
+	auto scaleAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"scale", L"scale", true, 0, animLengthInFrame, true);
 
 	for (auto ix = 0ll; ix < animLengthInFrame; ix++){
 		FbxTime currTime;
-		currTime.SetFrame(startFrame + ix, FbxTime::eFrames24);
+		currTime.SetFrame(startFrame + ix, animTimeMode);
 
 		babylon_animation_key<babylon_vector3> poskey;
 		babylon_animation_key<babylon_vector4> rotkey;
@@ -434,6 +438,9 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	}
 	auto mesh = fbxNode->GetMesh();
 	if (!mesh) {
+		return;
+	}
+	if (mesh->GetPolygonCount() == 0){
 		return;
 	}
 	FbxGeometryConverter conv(mesh->GetFbxManager());

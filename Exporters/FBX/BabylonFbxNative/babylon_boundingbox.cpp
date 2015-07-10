@@ -2,6 +2,7 @@
 #include "BabylonVertex.h"
 #include <numeric>
 #include <algorithm>
+#include "BabylonCamera.h"
 
 
 babylon_boundingbox::babylon_boundingbox()
@@ -12,6 +13,19 @@ babylon_boundingbox::babylon_boundingbox()
 	  _maxY(std::numeric_limits<float>::min()),
 	  _maxZ(std::numeric_limits<float>::min())
 {
+}
+
+
+babylon_boundingbox::babylon_boundingbox(FbxScene* scene){
+	FbxVector4 vmin, vmax, vcenter;
+	scene->ComputeBoundingBoxMinMaxCenter(vmin, vmax, vcenter);
+	_minX = vmin[0];
+	_minY = vmin[1];
+	_minZ = vmin[2];
+	_maxX = vmax[0];
+	_maxY = vmax[1];
+	_maxZ = vmax[2];
+
 }
 void babylon_boundingbox::addPosition(float x, float y, float z){
 	_minX = std::min(x, _minX);
@@ -32,24 +46,5 @@ babylon_boundingbox mergeBoundingBoxes(const std::vector<babylon_boundingbox>& b
 		result.addPosition(b.getMin());
 		result.addPosition(b.getMax());
 	}
-	return result;
-}
-
-babylon_camera buildCameraFromBoundingBox(const babylon_boundingbox& box){
-	babylon_camera result;
-	result.name = "defaultcamera";
-	result.id = "defaultcamera";
-
-	result.target = box.getCenter();
-	result.position = babylon_vector3(result.target.x, result.target.y, result.target.z - 2 * std::max(box.getWidth(), std::max(box.getHeight(), box.getDepth())));
-	result.fov = 0.8576f;
-	result.minZ = -0.01*result.position.z;
-	result.maxZ = -5 * result.position.z;
-	result.speed = (-result.position.z - result.target.z) / 10;
-	result.inertia = 0.9f;
-	result.checkCollisions = false;
-	result.applyGravity = false;
-	result.ellipsoid = babylon_vector3(.2f, .9f, .2f);
-	result.rotation = babylon_vector3(0, 0, 0);
 	return result;
 }
