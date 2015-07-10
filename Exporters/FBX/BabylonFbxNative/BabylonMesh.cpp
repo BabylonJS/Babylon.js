@@ -12,6 +12,10 @@ struct BabylonVertex {
 	babylon_vector3 normal;
 	babylon_vector2 uv;
 	babylon_vector2 uv2;
+	babylon_vector2 uv3;
+	babylon_vector2 uv4;
+	babylon_vector2 uv5;
+	babylon_vector2 uv6;
 	babylon_color color;
 	std::uint32_t boneIndices[4];
 	float boneWeights[4];
@@ -75,6 +79,38 @@ inline bool operator <(const BabylonVertex& lhs, const BabylonVertex& rhs) {
 		return true;
 	}
 	else if (rhs.uv2 < lhs.uv2) {
+		return false;
+	}
+
+
+	if (lhs.uv3 < rhs.uv3) {
+		return true;
+	}
+	else if (rhs.uv3 < lhs.uv3) {
+		return false;
+	}
+
+
+	if (lhs.uv4 < rhs.uv4) {
+		return true;
+	}
+	else if (rhs.uv4 < lhs.uv4) {
+		return false;
+	}
+
+
+	if (lhs.uv5 < rhs.uv5) {
+		return true;
+	}
+	else if (rhs.uv5 < lhs.uv5) {
+		return false;
+	}
+
+
+	if (lhs.uv6 < rhs.uv6) {
+		return true;
+	}
+	else if (rhs.uv6 < lhs.uv6) {
 		return false;
 	}
 
@@ -289,6 +325,14 @@ web::json::value BabylonMesh::toJson()
 		jobj[L"uvs"] = convertToJson(_uvs);
 	if (_uvs2.size() > 0)
 		jobj[L"uvs2"] = convertToJson(_uvs2);
+	if (_uvs3.size() > 0)
+		jobj[L"uvs3"] = convertToJson(_uvs3);
+	if (_uvs4.size() > 0)
+		jobj[L"uvs4"] = convertToJson(_uvs4);
+	if (_uvs5.size() > 0)
+		jobj[L"uvs5"] = convertToJson(_uvs5);
+	if (_uvs6.size() > 0)
+		jobj[L"uvs6"] = convertToJson(_uvs6);
 	if (_colors.size() > 0)
 		jobj[L"colors"] = convertToJson(_colors);
 	if (_indices.size() > 0)
@@ -466,13 +510,33 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	}
 	bool hasUv = uniqueUVSets.size() > 0;
 	bool hasUv2 = uniqueUVSets.size() > 1;
+	bool hasUv3 = uniqueUVSets.size() > 2;
+	bool hasUv4 = uniqueUVSets.size() > 3;
+	bool hasUv5 = uniqueUVSets.size() > 4;
+	bool hasUv6 = uniqueUVSets.size() > 5;
 	std::string uvSetName;
 	std::string uv2SetName;
+	std::string uv3SetName;
+	std::string uv4SetName;
+	std::string uv5SetName;
+	std::string uv6SetName;
 	if (hasUv) {
 		uvSetName = uniqueUVSets[0];
 	}
 	if (hasUv2) {
 		uv2SetName = uniqueUVSets[1];
+	}
+	if (hasUv3) {
+		uv3SetName = uniqueUVSets[2];
+	}
+	if (hasUv4) {
+		uv4SetName = uniqueUVSets[3];
+	}
+	if (hasUv5) {
+		uv5SetName = uniqueUVSets[4];
+	}
+	if (hasUv6) {
+		uv6SetName = uniqueUVSets[5];
 	}
 	auto colors = mesh->GetElementVertexColor();
 	FbxLayerElement::EMappingMode colorMappingMode;
@@ -484,10 +548,22 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	auto normals = mesh->GetElementNormal();
 	FbxGeometryElementUV* uvs = nullptr;
 	FbxGeometryElementUV* uvs2 = nullptr;
+	FbxGeometryElementUV* uvs3 = nullptr;
+	FbxGeometryElementUV* uvs4 = nullptr;
+	FbxGeometryElementUV* uvs5 = nullptr;
+	FbxGeometryElementUV* uvs6 = nullptr;
 	FbxLayerElement::EMappingMode uvsMappingMode;
 	FbxLayerElement::EReferenceMode uvsReferenceMode;
 	FbxLayerElement::EMappingMode uvs2MappingMode;
 	FbxLayerElement::EReferenceMode uvs2ReferenceMode;
+	FbxLayerElement::EMappingMode uvs3MappingMode;
+	FbxLayerElement::EReferenceMode uvs3ReferenceMode;
+	FbxLayerElement::EMappingMode uvs4MappingMode;
+	FbxLayerElement::EReferenceMode uvs4ReferenceMode;
+	FbxLayerElement::EMappingMode uvs5MappingMode;
+	FbxLayerElement::EReferenceMode uvs5ReferenceMode;
+	FbxLayerElement::EMappingMode uvs6MappingMode;
+	FbxLayerElement::EReferenceMode uvs6ReferenceMode;
 	if (hasUv) {
 		uvs = mesh->GetElementUV(uvSetName.c_str());
 		uvsMappingMode = uvs->GetMappingMode();
@@ -497,6 +573,26 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 		uvs2 = mesh->GetElementUV(uv2SetName.c_str());
 		uvs2MappingMode = uvs2->GetMappingMode();
 		uvs2ReferenceMode = uvs2->GetReferenceMode();
+	}
+	if (hasUv3) {
+		uvs3 = mesh->GetElementUV(uv3SetName.c_str());
+		uvs3MappingMode = uvs3->GetMappingMode();
+		uvs3ReferenceMode = uvs3->GetReferenceMode();
+	}
+	if (hasUv4) {
+		uvs4 = mesh->GetElementUV(uv4SetName.c_str());
+		uvs4MappingMode = uvs4->GetMappingMode();
+		uvs4ReferenceMode = uvs4->GetReferenceMode();
+	}
+	if (hasUv5) {
+		uvs5 = mesh->GetElementUV(uv5SetName.c_str());
+		uvs5MappingMode = uvs5->GetMappingMode();
+		uvs5ReferenceMode = uvs5->GetReferenceMode();
+	}
+	if (hasUv6) {
+		uvs6 = mesh->GetElementUV(uv6SetName.c_str());
+		uvs6MappingMode = uvs6->GetMappingMode();
+		uvs6ReferenceMode = uvs6->GetReferenceMode();
 	}
 
 	auto normalMappingMode = normals->GetMappingMode();
@@ -570,11 +666,38 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 
 			if (uvs2) {
 				int mappingIndex = (uvs2MappingMode == FbxLayerElement::eByControlPoint) ?
-				controlPointIndex : vertexIndex;
+					controlPointIndex : vertexIndex;
 				int valueIndex = (uvs2ReferenceMode == FbxLayerElement::eDirect) ?
-				mappingIndex : uvs2->GetIndexArray().GetAt(mappingIndex);
+					mappingIndex : uvs2->GetIndexArray().GetAt(mappingIndex);
 				v.uv2 = uvs2->GetDirectArray().GetAt(valueIndex);
-				//v.uv2.y = 1 - v.uv2.y;
+			}
+			if (uvs3) {
+				int mappingIndex = (uvs3MappingMode == FbxLayerElement::eByControlPoint) ?
+					controlPointIndex : vertexIndex;
+				int valueIndex = (uvs3ReferenceMode == FbxLayerElement::eDirect) ?
+					mappingIndex : uvs3->GetIndexArray().GetAt(mappingIndex);
+				v.uv3 = uvs3->GetDirectArray().GetAt(valueIndex);
+			}
+			if (uvs4) {
+				int mappingIndex = (uvs4MappingMode == FbxLayerElement::eByControlPoint) ?
+					controlPointIndex : vertexIndex;
+				int valueIndex = (uvs4ReferenceMode == FbxLayerElement::eDirect) ?
+					mappingIndex : uvs4->GetIndexArray().GetAt(mappingIndex);
+				v.uv4 = uvs4->GetDirectArray().GetAt(valueIndex);
+			}
+			if (uvs5) {
+				int mappingIndex = (uvs5MappingMode == FbxLayerElement::eByControlPoint) ?
+					controlPointIndex : vertexIndex;
+				int valueIndex = (uvs5ReferenceMode == FbxLayerElement::eDirect) ?
+					mappingIndex : uvs5->GetIndexArray().GetAt(mappingIndex);
+				v.uv5 = uvs5->GetDirectArray().GetAt(valueIndex);
+			}
+			if (uvs6) {
+				int mappingIndex = (uvs6MappingMode == FbxLayerElement::eByControlPoint) ?
+					controlPointIndex : vertexIndex;
+				int valueIndex = (uvs6ReferenceMode == FbxLayerElement::eDirect) ?
+					mappingIndex : uvs6->GetIndexArray().GetAt(mappingIndex);
+				v.uv6 = uvs6->GetDirectArray().GetAt(valueIndex);
 			}
 			if (skinInfo.hasSkin()){
 				auto& skinData = skinInfo.controlPointBoneIndicesAndWeights(controlPointIndex);
@@ -634,6 +757,18 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 			}
 			if (uvs2) {
 				_uvs2.push_back(v.uv2);
+			}
+			if (uvs3) {
+				_uvs3.push_back(v.uv3);
+			}
+			if (uvs4) {
+				_uvs4.push_back(v.uv4);
+			}
+			if (uvs5) {
+				_uvs5.push_back(v.uv5);
+			}
+			if (uvs6) {
+				_uvs6.push_back(v.uv6);
 			}
 			if (skinInfo.hasSkin()){
 				 float weight0 = v.boneWeights[0];
