@@ -30,6 +30,10 @@ private:
 	std::vector<babylon_vector3> _normals;
 	std::vector<babylon_vector2> _uvs;
 	std::vector<babylon_vector2> _uvs2;
+	std::vector<babylon_vector2> _uvs3;
+	std::vector<babylon_vector2> _uvs4;
+	std::vector<babylon_vector2> _uvs5;
+	std::vector<babylon_vector2> _uvs6;
 	std::vector<babylon_color> _colors;
 	bool _hasVertexAlpha;
 	std::vector<std::uint32_t> _boneIndices;
