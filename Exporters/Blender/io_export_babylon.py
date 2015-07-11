@@ -597,14 +597,14 @@ class Mesh(FCurveAnimatable):
             objArmature = object.find_armature()
             if objArmature != None:
                 hasSkeleton = True
-            i = 0
+                i = 0
                 for obj in scene.objects:
                     if obj.type == "ARMATURE":
                         if obj == objArmature:
-                        self.skeletonId = i
+                            self.skeletonId = i
                             break
-                    else:
-                        i += 1
+                        else:
+                            i += 1
          
         # detect if any textures in the material slots, which would mean UV mapping is required                         
         uvRequired = False
