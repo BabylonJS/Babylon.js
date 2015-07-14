@@ -59,5 +59,29 @@ var BABYLON;
         return FollowCamera;
     })(BABYLON.TargetCamera);
     BABYLON.FollowCamera = FollowCamera;
+    var ArcFollowCamera = (function (_super) {
+        __extends(ArcFollowCamera, _super);
+        function ArcFollowCamera(name, alpha, beta, radius, target, scene) {
+            _super.call(this, name, BABYLON.Vector3.Zero(), scene);
+            this.alpha = alpha;
+            this.beta = beta;
+            this.radius = radius;
+            this.target = target;
+            this._cartesianCoordinates = BABYLON.Vector3.Zero();
+            this.follow();
+        }
+        ArcFollowCamera.prototype.follow = function () {
+            this._cartesianCoordinates.x = this.radius * Math.cos(this.alpha) * Math.cos(this.beta);
+            this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
+            this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);
+            this.position = this.target.position.add(this._cartesianCoordinates);
+            this.setTarget(this.target.position);
+        };
+        ArcFollowCamera.prototype._checkInputs = function () {
+            _super.prototype._checkInputs.call(this);
+            this.follow();
+        };
+        return ArcFollowCamera;
+    })(BABYLON.TargetCamera);
+    BABYLON.ArcFollowCamera = ArcFollowCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.followCamera.js.map
