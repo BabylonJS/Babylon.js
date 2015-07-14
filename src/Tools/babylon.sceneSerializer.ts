@@ -903,10 +903,20 @@
             return serializationObject;
         }
 
-        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */): any {
+        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents : boolean = false): any {
             var serializationObject: any = {};
 
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
+
+            if (withParents) {
+                //deliberate for loop! not for each, appended should be processed as well.
+                for (var i = 0; i < toSerialize.length; ++i) {
+                    if (toSerialize[i].parent) {
+                        toSerialize.push(toSerialize[i].parent);
+                    }
+                }
+            }
+
             toSerialize.forEach(function (mesh: Mesh) {
                 finalizeSingleMesh(mesh, serializationObject);
             });
