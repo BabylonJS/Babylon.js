@@ -688,7 +688,7 @@
             }
         }
 
-        public render(subMesh: SubMesh): void {
+        public render(subMesh: SubMesh, enableAlphaMode: boolean): void {
             var scene = this.getScene();
 
             // Managing instances
@@ -735,6 +735,11 @@
             var world = this.getWorldMatrix();
 
             effectiveMaterial.bind(world, this);
+
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(effectiveMaterial.alphaMode);
+            }
 
             // Draw
             this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering,

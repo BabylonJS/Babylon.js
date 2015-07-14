@@ -22,13 +22,13 @@ var BABYLON;
             var submesh;
             for (subIndex = 0; subIndex < this._opaqueSubMeshes.length; subIndex++) {
                 submesh = this._opaqueSubMeshes.data[subIndex];
-                submesh.render();
+                submesh.render(false);
             }
             // Alpha test
             engine.setAlphaTesting(true);
             for (subIndex = 0; subIndex < this._alphaTestSubMeshes.length; subIndex++) {
                 submesh = this._alphaTestSubMeshes.data[subIndex];
-                submesh.render();
+                submesh.render(false);
             }
             engine.setAlphaTesting(false);
             // Transparent
@@ -57,11 +57,10 @@ var BABYLON;
                     }
                     return 0;
                 });
-                // Rendering
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                // Rendering                
                 for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                     submesh = sortedArray[subIndex];
-                    submesh.render();
+                    submesh.render(true);
                 }
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             }

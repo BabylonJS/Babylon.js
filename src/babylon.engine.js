@@ -1190,6 +1190,9 @@ var BABYLON;
             this._gl.colorMask(enable, enable, enable, enable);
         };
         Engine.prototype.setAlphaMode = function (mode) {
+            if (this._alphaMode == mode) {
+                return;
+            }
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
                     this.setDepthWrite(true);

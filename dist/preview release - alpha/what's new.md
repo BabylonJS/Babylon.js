@@ -4,6 +4,7 @@
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
     - New rewored StandardMaterial.isReady for better memory usage and performance [deltakosh](https://github.com/deltakosh)
   - **Updates**
+    - Added material.alphaMode (can be set to BABYLON.Engine.ALPHA_ADD or  BABYLON.Engine.ALPHA_COMBINE) [deltakosh](https://github.com/deltakosh)
     - Added Animatable.reset() function [deltakosh](https://github.com/deltakosh)
     - New parameter for ArcRotateCamera.zoomOn to preserve maxZ [deltakosh](https://github.com/deltakosh)
     - PickingInfo.getNormal can now use either vertices normals or vertices positions [deltakosh](https://github.com/deltakosh)

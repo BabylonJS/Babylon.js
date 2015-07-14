@@ -6151,6 +6151,9 @@ var BABYLON;
             this._gl.colorMask(enable, enable, enable, enable);
         };
         Engine.prototype.setAlphaMode = function (mode) {
+            if (this._alphaMode == mode) {
+                return;
+            }
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
                     this.setDepthWrite(true);
@@ -12066,13 +12069,13 @@ var BABYLON;
             var submesh;
             for (subIndex = 0; subIndex < this._opaqueSubMeshes.length; subIndex++) {
                 submesh = this._opaqueSubMeshes.data[subIndex];
-                submesh.render();
+                submesh.render(false);
             }
             // Alpha test
             engine.setAlphaTesting(true);
             for (subIndex = 0; subIndex < this._alphaTestSubMeshes.length; subIndex++) {
                 submesh = this._alphaTestSubMeshes.data[subIndex];
-                submesh.render();
+                submesh.render(false);
             }
             engine.setAlphaTesting(false);
             // Transparent
@@ -12101,11 +12104,10 @@ var BABYLON;
                     }
                     return 0;
                 });
-                // Rendering
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                // Rendering                
                 for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                     submesh = sortedArray[subIndex];
-                    submesh.render();
+                    submesh.render(true);
                 }
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
             }
@@ -14830,7 +14832,7 @@ var BABYLON;
                 }
             }
         };
-        Mesh.prototype.render = function (subMesh) {
+        Mesh.prototype.render = function (subMesh, enableAlphaMode) {
             var scene = this.getScene();
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
@@ -14865,6 +14867,10 @@ var BABYLON;
             this._bind(subMesh, effect, fillMode);
             var world = this.getWorldMatrix();
             effectiveMaterial.bind(world, this);
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(effectiveMaterial.alphaMode);
+            }
             // Draw
             this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, function (isInstance, world) {
                 if (isInstance) {
@@ -16022,8 +16028,8 @@ var BABYLON;
         SubMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isInFrustum(frustumPlanes);
         };
-        SubMesh.prototype.render = function () {
-            this._renderingMesh.render(this);
+        SubMesh.prototype.render = function (enableAlphaMode) {
+            this._renderingMesh.render(this, enableAlphaMode);
         };
         SubMesh.prototype.getLinesIndexBuffer = function (indices, engine) {
             if (!this._linesIndexBuffer) {
@@ -17993,6 +17999,7 @@ var BABYLON;
             this.state = "";
             this.alpha = 1.0;
             this.backFaceCulling = true;
+            this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this._wasPreviouslyReady = false;
             this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;
@@ -29553,7 +29560,7 @@ var BABYLON;
                 if (_this._readyToPlayCallback) {
                     _this._readyToPlayCallback();
                 }
-            }, function (error) { BABYLON.Tools.Error("Error while decoding audio data: " + error.err); });
+            }, function () { BABYLON.Tools.Error("Error while decoding audio data for: " + _this.name); });
         };
         Sound.prototype.setAudioBuffer = function (audioBuffer) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
