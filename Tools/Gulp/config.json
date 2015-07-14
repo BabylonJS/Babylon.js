@@ -142,8 +142,7 @@
       "../../src/PostProcess/babylon.lensRenderingPipeline.js",
       "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
       "../../src/Cameras/babylon.stereoscopicCameras.js",
-      "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
-      "../../src/Cameras/babylon.arcFollowCamera.js"
+      "../../src/PostProcess/babylon.hdrRenderingPipeline.js"
     ]
   },
   "shadersDirectories": [
