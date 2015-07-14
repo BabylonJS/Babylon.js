@@ -23,4 +23,5 @@
 	- onCollide callback for meshes calling moveWithCollisions. [PR](https://github.com/BabylonJS/Babylon.js/pull/585) [RaananW](https://github.com/RaananW)
   - **Bug fixes**
     - Fixing bug with rig cameras positioning [deltakosh](https://github.com/deltakosh)
+    - Instance meshes' geometry ID is now serialized correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/607) [RaananW](https://github.com/RaananW)
   - **Breaking changes**
