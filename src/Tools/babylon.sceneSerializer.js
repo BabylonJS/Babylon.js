@@ -739,9 +739,17 @@ var BABYLON;
             }
             return serializationObject;
         };
-        SceneSerializer.SerializeMesh = function (toSerialize /* Mesh || Mesh[] */) {
+        SceneSerializer.SerializeMesh = function (toSerialize /* Mesh || Mesh[] */, withParents) {
+            if (withParents === void 0) { withParents = false; }
             var serializationObject = {};
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
+            if (withParents) {
+                for (var i = 0; i < toSerialize.length; ++i) {
+                    if (toSerialize[i].parent) {
+                        toSerialize.push(toSerialize[i].parent);
+                    }
+                }
+            }
             toSerialize.forEach(function (mesh) {
                 finalizeSingleMesh(mesh, serializationObject);
             });
