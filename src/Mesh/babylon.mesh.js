@@ -1425,7 +1425,6 @@ var BABYLON;
                         rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                         circlePath.push(rotated);
                     }
-                    circlePath.push(circlePath[0]);
                     circlePaths[index] = circlePath;
                     index++;
                 }

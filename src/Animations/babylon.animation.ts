@@ -42,10 +42,10 @@
             if (easingFunction !== undefined) {
                 animation.setEasingFunction(easingFunction);
             }
-            
+
             mesh.animations.push(animation);
 
-            return mesh.getScene().beginAnimation(mesh, 0, totalFrame,(animation.loopMode === 1));
+            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
 
         }
 
@@ -156,7 +156,7 @@
                 }
             }
 
-            for (var key = startKey; key < this._keys.length ; key++) {
+            for (var key = startKey; key < this._keys.length; key++) {
                 if (this._keys[key + 1].frame >= currentFrame) {
 
                     var startValue = this._getKeyValue(this._keys[key].value);
@@ -227,7 +227,7 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                   // return this.matrixInterpolateFunction(startValue, endValue, gradient);
+                                // return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }
@@ -414,3 +414,4 @@
         }
     }
 } 
+

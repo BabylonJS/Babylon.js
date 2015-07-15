@@ -1654,7 +1654,7 @@
                         rotationMatrix = Matrix.RotationAxis(tangents[i], step * t);
                         rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                         circlePath.push(rotated);
-                    }
+                    }                    
                     circlePaths[index] = circlePath;
                     index++;
                 }
