@@ -438,7 +438,7 @@
                     }
                     j++;
                 }
-                 
+
                 lg[p] = l;
                 idx[p] = idc;
                 idc += l;
@@ -514,10 +514,10 @@
 
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
-            
+
             if (closePath) {
                 var indexFirst: number = 0;
-                var indexLast: number = 0; 
+                var indexLast: number = 0;
                 for (p = 0; p < pathArray.length; p++) {
                     indexFirst = idx[p] * 3;
                     if (p + 1 < pathArray.length) {

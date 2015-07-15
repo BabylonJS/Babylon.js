@@ -312,7 +312,7 @@ var BABYLON;
             var vTotalDistance = []; //  vTotalDistance[i] : total distance between points i of first and last path from pathArray
             var minlg; // minimal length among all paths from pathArray
             var lg = []; // array of path lengths : nb of vertex per path
-            var idx = []; // array of path indexes : index of each path (first vertex) in positions array
+            var idx = []; // array of positions path indexes : index of each path (first vertex) in positions array
             var p; // path iterator
             var i; // point iterator
             var j; // point iterator
@@ -328,15 +328,16 @@ var BABYLON;
             }
             // positions and horizontal distances (u)
             var idc = 0;
-            minlg = pathArray[0].length;
+            minlg = (closePath) ? pathArray[0].length + 1 : pathArray[0].length;
             for (p = 0; p < pathArray.length; p++) {
                 uTotalDistance[p] = 0;
                 us[p] = [0];
                 var path = pathArray[p];
+                if (closePath) {
+                    path.push(path[0]);
+                }
                 var l = path.length;
                 minlg = (minlg < l) ? minlg : l;
-                lg[p] = l;
-                idx[p] = idc;
                 j = 0;
                 while (j < l) {
                     positions.push(path[j].x, path[j].y, path[j].z);
@@ -348,11 +349,8 @@ var BABYLON;
                     }
                     j++;
                 }
-                if (closePath) {
-                    vectlg = path[0].subtract(path[j - 1]).length();
-                    dist = vectlg + uTotalDistance[p];
-                    uTotalDistance[p] = dist;
-                }
+                lg[p] = l;
+                idx[p] = idc;
                 idc += l;
             }
             // vertical distances (v)
@@ -377,7 +375,7 @@ var BABYLON;
                     vTotalDistance[i] = dist;
                 }
             }
-            // uvs
+            // uvs            
             var u;
             var v;
             for (p = 0; p < pathArray.length; p++) {
@@ -395,26 +393,12 @@ var BABYLON;
             var min = (l1 < l2) ? l1 : l2; // current path stop index
             var shft = idx[1] - idx[0]; // shift 
             var path1nb = closeArray ? lg.length : lg.length - 1; // number of path1 to iterate	
-            var t1; // two consecutive triangles, so 4 points : point1
-            var t2; // point2
-            var t3; // point3
-            var t4; // point4
             while (pi <= min && p < path1nb) {
                 // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
-                t1 = pi;
-                t2 = pi + shft;
-                t3 = pi + 1;
-                t4 = pi + shft + 1;
                 indices.push(pi, pi + shft, pi + 1);
                 indices.push(pi + shft + 1, pi + 1, pi + shft);
                 pi += 1;
                 if (pi === min) {
-                    if (closePath) {
-                        indices.push(pi, pi + shft, idx[p]);
-                        indices.push(idx[p] + shft, idx[p], pi + shft);
-                        t3 = idx[p];
-                        t4 = idx[p] + shft;
-                    }
                     p++;
                     if (p === lg.length - 1) {
                         shft = idx[0] - idx[p];
@@ -432,6 +416,25 @@ var BABYLON;
             }
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
+            if (closePath) {
+                var indexFirst = 0;
+                var indexLast = 0;
+                for (p = 0; p < pathArray.length; p++) {
+                    indexFirst = idx[p] * 3;
+                    if (p + 1 < pathArray.length) {
+                        indexLast = (idx[p + 1] - 1) * 3;
+                    }
+                    else {
+                        indexLast = normals.length - 3;
+                    }
+                    normals[indexFirst] = (normals[indexFirst] + normals[indexLast]) * 0.5;
+                    normals[indexFirst + 1] = (normals[indexFirst + 1] + normals[indexLast + 1]) * 0.5;
+                    normals[indexFirst + 2] = (normals[indexFirst + 2] + normals[indexLast + 2]) * 0.5;
+                    normals[indexLast] = normals[indexFirst];
+                    normals[indexLast + 1] = normals[indexFirst + 1];
+                    normals[indexLast + 2] = normals[indexFirst + 2];
+                }
+            }
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             // Result

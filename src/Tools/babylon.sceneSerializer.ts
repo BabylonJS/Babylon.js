@@ -741,7 +741,7 @@
         return serializationObject;
     };
 
-    var finalizeSingleMesh = function (mesh: Mesh, serializationObject : any) {
+    var finalizeSingleMesh = function (mesh: Mesh, serializationObject: any) {
         //only works if the mesh is already loaded
         if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
             //serialize material
@@ -903,7 +903,7 @@
             return serializationObject;
         }
 
-        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents : boolean = false): any {
+        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents: boolean = false): any {
             var serializationObject: any = {};
 
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
@@ -925,4 +925,5 @@
         }
     }
 }
+
 

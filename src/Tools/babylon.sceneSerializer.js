@@ -744,6 +744,7 @@ var BABYLON;
             var serializationObject = {};
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
             if (withParents) {
+                //deliberate for loop! not for each, appended should be processed as well.
                 for (var i = 0; i < toSerialize.length; ++i) {
                     if (toSerialize[i].parent) {
                         toSerialize.push(toSerialize[i].parent);
@@ -759,3 +760,4 @@ var BABYLON;
     })();
     BABYLON.SceneSerializer = SceneSerializer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.sceneSerializer.js.map

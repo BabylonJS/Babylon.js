@@ -429,7 +429,9 @@ void main(void) {
 	shadow = 1.;
 #endif
 	diffuseBase += info[0] * shadow;
+#ifdef SPECULARTERM
 	specularBase += info[1] * shadow;
+#endif
 #endif
 
 #ifdef LIGHT1
@@ -455,7 +457,9 @@ void main(void) {
 	shadow = 1.;
 #endif
 	diffuseBase += info[0] * shadow;
+#ifdef SPECULARTERM
 	specularBase += info[1] * shadow;
+#endif
 #endif
 
 #ifdef LIGHT2
@@ -481,7 +485,9 @@ void main(void) {
 	shadow = 1.;
 #endif
 	diffuseBase += info[0] * shadow;
+#ifdef SPECULARTERM
 	specularBase += info[1] * shadow;
+#endif
 #endif
 
 #ifdef LIGHT3

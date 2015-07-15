@@ -18,19 +18,22 @@ var BABYLON;
             return colors;
         };
         var loadCubeTexture = function (rootUrl, parsedTexture, scene) {
-            var texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene);
-            texture.name = parsedTexture.name;
-            texture.hasAlpha = parsedTexture.hasAlpha;
-            texture.level = parsedTexture.level;
-            texture.coordinatesMode = parsedTexture.coordinatesMode;
+            var texture = null;
+            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
+                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                texture.name = parsedTexture.name;
+                texture.hasAlpha = parsedTexture.hasAlpha;
+                texture.level = parsedTexture.level;
+                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            }
             return texture;
         };
         var loadTexture = function (rootUrl, parsedTexture, scene) {
-            if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
-                return null;
-            }
             if (parsedTexture.isCube) {
                 return loadCubeTexture(rootUrl, parsedTexture, scene);
+            }
+            if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+                return null;
             }
             var texture;
             if (parsedTexture.mirrorPlane) {
