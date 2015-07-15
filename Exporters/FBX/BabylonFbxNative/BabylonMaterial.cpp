@@ -2,6 +2,7 @@
 #include "BabylonMaterial.h"
 #include <Windows.h>
 #include "NodeHelpers.h"
+#include "GlobalSettings.h"
 
 web::json::value BabylonMaterial::toJson() const
 {
@@ -156,7 +157,7 @@ alpha(1){
 	GetMaterialProperty(mat, FbxSurfaceMaterial::sReflection, FbxSurfaceMaterial::sReflectionFactor, reflectionTex);
 	auto shininessProp = mat->FindProperty(FbxSurfaceMaterial::sShininess);
 	if (shininessProp.IsValid()){
-		specularPower = static_cast<float>(shininessProp.Get<FbxDouble>());
+		specularPower = static_cast<float>(shininessProp.Get<FbxDouble>())*12;
 	}
 
 	auto normalMapProp = mat->FindProperty(FbxSurfaceMaterial::sNormalMap);
@@ -250,6 +251,11 @@ web::json::value BabylonTexture::toJson(){
 	jobj[L"wrapV"] = web::json::value::boolean(wrapV);
 	jobj[L"coordinatesIndex"] = web::json::value::number(coordinatesIndex);
 	jobj[L"isRenderTarget"] = web::json::value::boolean(isRenderTarget);
+	auto janims = web::json::value::array();
+	for (auto& anim : animations) {
+		janims[janims.size()] = anim->toJson();
+	}
+	jobj[L"animations"] = janims;
 	return jobj;
 }
 BabylonTexture::BabylonTexture(FbxFileTexture* texture){
@@ -315,7 +321,39 @@ BabylonTexture::BabylonTexture(FbxFileTexture* texture){
 	auto vwrapMode = texture->GetWrapModeV();
 	wrapU = uwrapMode == FbxTexture::eRepeat;
 	wrapV = vwrapMode == FbxTexture::eRepeat;
+
+	auto animStack = texture->GetScene()->GetSrcObject<FbxAnimStack>(0);
+	FbxString animStackName = animStack->GetName();
+	FbxTakeInfo* takeInfo = texture->GetScene()->GetTakeInfo(animStackName);
+	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
+	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
+	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
+	auto animLengthInFrame = endFrame - startFrame + 1;
+	auto uOffsetAnim = std::make_shared<BabylonAnimation<float>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"uOffset", L"uOffset", true, 0, static_cast<int>(animLengthInFrame), true);
+	auto vOffsetAnim = std::make_shared<BabylonAnimation<float>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"vOffset", L"vOffset", true, 0, static_cast<int>(animLengthInFrame), true);
 	
+	for (auto ix = 0; ix < animLengthInFrame; ix++) {
+		FbxTime currTime;
+		currTime.SetFrame(startFrame + ix, animTimeMode);
+
+		babylon_animation_key<float> uKey;
+		babylon_animation_key<float> vKey;
+		uKey.frame = ix;
+		vKey.frame = ix;
+		auto currTrans = texture->Translation.EvaluateValue(currTime);
+		uKey.values = static_cast<float>(currTrans[0]);
+		vKey.values = static_cast<float>(currTrans[1]);
+		uOffsetAnim->appendKey(uKey);
+		vOffsetAnim->appendKey(vKey);
+
+	}
+	if (!uOffsetAnim->isConstant()) {
+		animations.push_back(uOffsetAnim);
+	}
+	if (!vOffsetAnim->isConstant()) {
+		animations.push_back(vOffsetAnim);
+	}
 	
 
 }

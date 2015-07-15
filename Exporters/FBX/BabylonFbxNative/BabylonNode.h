@@ -4,6 +4,7 @@
 #include <cstdint>
 #include "NodeHelpers.h"
 #include "BabylonVertex.h"
+#include "MatrixDecomposition.h"
 enum class BabylonNodeType{
 	Camera,
 	Mesh,
@@ -15,8 +16,6 @@ class BabylonNode;
 class BabylonNode
 {
 private:
-	FbxAMatrix _localTransform;
-	FbxAMatrix _globalTransform;
 	FbxNode* _node;
 	std::vector<BabylonNode> _children;
 public:
@@ -59,27 +58,11 @@ public:
 		return true;
 	}
 
-	babylon_vector3 localScale(){
-		auto ret = _localTransform.GetS();
-		return ret;
+	MatrixDecomposition GetLocal() {
+		return MatrixDecomposition(ConvertToBabylonCoordinateSystem(_node->EvaluateLocalTransform()));
 	}
-	babylon_vector4 localRotationQuat();
-	babylon_vector3 localTranslate(){
-
-		auto ret = _localTransform.GetT();
-		return ret;
+	MatrixDecomposition GetLocal(const FbxTime& time) {
+		return MatrixDecomposition(ConvertToBabylonCoordinateSystem(_node->EvaluateLocalTransform(time)));
 	}
 
-
-
-	babylon_vector3 localScale(FbxTime time);
-	babylon_vector4 localRotationQuat(FbxTime time);
-	babylon_vector3 localTranslate(FbxTime time);
-
-	FbxAMatrix localTransform(FbxTime time){
-		return ConvertToBabylonCoordinateSystem(CalculateLocalTransform(_node, time));
-	}
-
-	const FbxAMatrix& localTransform() { return _localTransform; }
-	const FbxAMatrix& globalTransform() { return _globalTransform; }
 };

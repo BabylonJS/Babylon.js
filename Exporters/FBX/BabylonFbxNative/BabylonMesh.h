@@ -113,9 +113,8 @@ public:
 
 	std::shared_ptr<BabylonSkeleton> associatedSkeleton;
 
-	std::vector<std::shared_ptr < BabylonAnimation<babylon_vector3>>> animations;
-	std::vector<std::shared_ptr < BabylonAnimation<babylon_vector4>>> quatAnimations;
-	FbxAMatrix pivotMatrix;
+	std::vector<std::shared_ptr < BabylonAnimationBase>> animations;
+	FbxMatrix pivotMatrix;
 
 	virtual web::json::value toJson() override;
 	BabylonMesh();

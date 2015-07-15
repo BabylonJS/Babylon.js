@@ -3,8 +3,6 @@
 #include "NodeHelpers.h"
 
 BabylonNode::BabylonNode(FbxNode* fbxNode) : _node(fbxNode){
-	_localTransform = ConvertToBabylonCoordinateSystem(CalculateLocalTransform( fbxNode));
-	_globalTransform = ConvertToBabylonCoordinateSystem(CalculateLocalTransform(fbxNode));
 	auto childCount = fbxNode->GetChildCount();
 	for (int i = 0; i < childCount; ++i){
 		_children.emplace_back(fbxNode->GetChild(i));
@@ -62,26 +60,4 @@ bool BabylonNode::isEmptySkeletonOrEmptyMeshRecursive()
 		}
 	}
 	return true;
-}
-
-babylon_vector3 BabylonNode::localScale(FbxTime time){
-	auto transform = ConvertToBabylonCoordinateSystem(CalculateLocalTransform(_node,time));
-	return transform.GetS();
-
-}
-
-babylon_vector4 BabylonNode::localRotationQuat(){
-	auto ret = _localTransform.GetQ();
-	return babylon_vector4(static_cast<float>(ret[0]), static_cast<float>(ret[1]), static_cast<float>(ret[2]), static_cast<float>(ret[3]));
-}
-babylon_vector4 BabylonNode::localRotationQuat(FbxTime time){
-
-	auto transform = ConvertToBabylonCoordinateSystem(CalculateLocalTransform(_node, time));
-	auto ret = transform.GetQ();
-	return babylon_vector4(static_cast<float>(ret[0]), static_cast<float>(ret[1]), static_cast<float>(ret[2]), static_cast<float>(ret[3]));
-}
-babylon_vector3 BabylonNode::localTranslate(FbxTime time){
-	auto transform = ConvertToBabylonCoordinateSystem(CalculateLocalTransform(_node, time));
-	return transform.GetT();
-
 }

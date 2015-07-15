@@ -4,7 +4,45 @@
 #include "BabylonNode.h"
 #include "BabylonAnimation.h"
 #include <memory>
+#include <string>
 #undef max
+
+class BabylonShadowGenerator
+{
+public:
+
+	int mapSize;
+
+		
+	float bias;
+
+		
+	std::wstring lightId;
+
+		
+	bool useVarianceShadowMap;
+
+		
+	bool usePoissonSampling;
+
+		
+	bool useBlurVarianceShadowMap;
+
+		
+	float blurScale;
+
+		
+	float blurBoxOffset;
+
+		
+	std::vector<std::wstring> renderList;
+
+	BabylonShadowGenerator(FbxNode* lightNode);
+	web::json::value toJson();
+
+};
+
+
 class BabylonLight
 {
 public:
@@ -53,10 +91,12 @@ public:
 		
 	babylon_vector3 groundColor;
 
-		
+	bool castShadows;
+	std::vector<std::wstring> includedOnlyMeshesIds;
+	std::vector<std::wstring> excludedMeshesIds;
 
 		
-	
+	std::shared_ptr<BabylonShadowGenerator> shadowGenerator;
 
 	web::json::value toJson() const;
 
