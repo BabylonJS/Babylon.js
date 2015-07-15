@@ -608,7 +608,7 @@ var BABYLON;
                 }
             }
         };
-        Mesh.prototype.render = function (subMesh) {
+        Mesh.prototype.render = function (subMesh, enableAlphaMode) {
             var scene = this.getScene();
             // Managing instances
             var batch = this._getInstancesRenderList(subMesh._id);
@@ -643,6 +643,10 @@ var BABYLON;
             this._bind(subMesh, effect, fillMode);
             var world = this.getWorldMatrix();
             effectiveMaterial.bind(world, this);
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(effectiveMaterial.alphaMode);
+            }
             // Draw
             this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, function (isInstance, world) {
                 if (isInstance) {

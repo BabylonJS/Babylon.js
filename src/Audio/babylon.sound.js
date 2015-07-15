@@ -145,7 +145,7 @@ var BABYLON;
                 if (_this._readyToPlayCallback) {
                     _this._readyToPlayCallback();
                 }
-            }, function (error) { BABYLON.Tools.Error("Error while decoding audio data: " + error.err); });
+            }, function () { BABYLON.Tools.Error("Error while decoding audio data for: " + _this.name); });
         };
         Sound.prototype.setAudioBuffer = function (audioBuffer) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {

@@ -39,6 +39,18 @@
             return null;
         }
 
+        public reset(): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].reset();
+            }
+
+            this._localDelayOffset = null;
+            this._pausedDelay = null;
+
+        }
+
         public pause(): void {
             if (this._paused) {
                 return;

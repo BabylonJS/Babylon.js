@@ -27,6 +27,7 @@
         public onDispose: () => void;
         public onBind: (material: Material, mesh: Mesh) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+        public alphaMode = Engine.ALPHA_COMBINE;
 
         public _effect: Effect;
         public _wasPreviouslyReady = false;

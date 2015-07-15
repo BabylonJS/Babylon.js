@@ -68,8 +68,8 @@ var BABYLON;
         SubMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this._boundingInfo.isInFrustum(frustumPlanes);
         };
-        SubMesh.prototype.render = function () {
-            this._renderingMesh.render(this);
+        SubMesh.prototype.render = function (enableAlphaMode) {
+            this._renderingMesh.render(this, enableAlphaMode);
         };
         SubMesh.prototype.getLinesIndexBuffer = function (indices, engine) {
             if (!this._linesIndexBuffer) {

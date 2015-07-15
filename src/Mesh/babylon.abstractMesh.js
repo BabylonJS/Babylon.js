@@ -410,9 +410,11 @@ var BABYLON;
             // Translation
             if (this.infiniteDistance && !this.parent) {
                 var camera = this.getScene().activeCamera;
-                var cameraWorldMatrix = camera.getWorldMatrix();
-                var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
-                BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                if (camera) {
+                    var cameraWorldMatrix = camera.getWorldMatrix();
+                    var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
+                    BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                }
             }
             else {
                 BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
@@ -505,7 +507,7 @@ var BABYLON;
             /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
             /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
             /// <returns>Mesh oriented towards targetMesh</returns>
-            yawCor = yawCor || 0; // default to zero if undefined 
+            yawCor = yawCor || 0; // default to zero if undefined
             pitchCor = pitchCor || 0;
             rollCor = rollCor || 0;
             var dv = targetPoint.subtract(this.position);

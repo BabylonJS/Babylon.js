@@ -49,7 +49,11 @@
             texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
             texture._waitingRenderList = parsedTexture.renderList;
         } else {
-            texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
+            if (parsedTexture.base64String) {
+                texture = BABYLON.Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+            } else {
+                texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
+            }
         }
 
         texture.name = parsedTexture.name;
@@ -175,6 +179,10 @@
 
         if (parsedMaterial.bumpTexture) {
             material.bumpTexture = loadTexture(rootUrl, parsedMaterial.bumpTexture, scene);
+        }
+
+        if (parsedMaterial.checkReadyOnlyOnce) {
+            material.checkReadyOnlyOnce = parsedMaterial.checkReadyOnlyOnce;
         }
 
         return material;
@@ -441,6 +449,12 @@
             camera = new FreeCamera(parsedCamera.name, position, scene);
         }
 
+        // apply 3d rig, when found
+        if (parsedCamera.cameraRigMode) {
+            var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+            camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
+        }
+
         // Test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
         if (lockedTargetMesh && camera instanceof FreeCamera) {
             (<FreeCamera>camera).lockedTarget = lockedTargetMesh;
@@ -497,7 +511,7 @@
         if (parsedCamera.layerMask && (!isNaN(parsedCamera.layerMask))) {
             camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
         } else {
-            camera.layerMask = 0xFFFFFFFF;
+            camera.layerMask = 0x0FFFFFFF;
         }
 
         return camera;
@@ -712,6 +726,11 @@
         mesh.checkCollisions = parsedMesh.checkCollisions;
         mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
 
+        // freezeWorldMatrix
+        if (parsedMesh.freezeWorldMatrix) {
+            mesh._waitingFreezeWorldMatrix = parsedMesh.freezeWorldMatrix;
+        }
+
         // Parent
         if (parsedMesh.parentId) {
             mesh._waitingParentId = parsedMesh.parentId;
@@ -741,6 +760,22 @@
 
             if (parsedMesh.hasUVs2) {
                 mesh._delayInfo.push(BABYLON.VertexBuffer.UV2Kind);
+            }
+
+            if (parsedMesh.hasUVs3) {
+                mesh._delayInfo.push(BABYLON.VertexBuffer.UV3Kind);
+            }
+
+            if (parsedMesh.hasUVs4) {
+                mesh._delayInfo.push(BABYLON.VertexBuffer.UV4Kind);
+            }
+
+            if (parsedMesh.hasUVs5) {
+                mesh._delayInfo.push(BABYLON.VertexBuffer.UV5Kind);
+            }
+
+            if (parsedMesh.hasUVs6) {
+                mesh._delayInfo.push(BABYLON.VertexBuffer.UV6Kind);
             }
 
             if (parsedMesh.hasColors) {
@@ -803,7 +838,7 @@
         if (parsedMesh.layerMask && (!isNaN(parsedMesh.layerMask))) {
             mesh.layerMask = Math.abs(parseInt(parsedMesh.layerMask));
         } else {
-            mesh.layerMask = 0xFFFFFFFF;
+            mesh.layerMask = 0x0FFFFFFF;
         }
 
         // Instances
@@ -1171,6 +1206,26 @@
                 mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, uvs2Data, false);
             }
 
+            if (binaryInfo.uvs3AttrDesc && binaryInfo.uvs3AttrDesc.count > 0) {
+                var uvs3Data = new Float32Array(parsedGeometry, binaryInfo.uvs3AttrDesc.offset, binaryInfo.uvs3AttrDesc.count);
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV3Kind, uvs3Data, false);
+            }
+
+            if (binaryInfo.uvs4AttrDesc && binaryInfo.uvs4AttrDesc.count > 0) {
+                var uvs4Data = new Float32Array(parsedGeometry, binaryInfo.uvs4AttrDesc.offset, binaryInfo.uvs4AttrDesc.count);
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV4Kind, uvs4Data, false);
+            }
+
+            if (binaryInfo.uvs5AttrDesc && binaryInfo.uvs5AttrDesc.count > 0) {
+                var uvs5Data = new Float32Array(parsedGeometry, binaryInfo.uvs5AttrDesc.offset, binaryInfo.uvs5AttrDesc.count);
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV5Kind, uvs5Data, false);
+            }
+
+            if (binaryInfo.uvs6AttrDesc && binaryInfo.uvs6AttrDesc.count > 0) {
+                var uvs6Data = new Float32Array(parsedGeometry, binaryInfo.uvs6AttrDesc.offset, binaryInfo.uvs6AttrDesc.count);
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV6Kind, uvs6Data, false);
+            }
+
             if (binaryInfo.colorsAttrDesc && binaryInfo.colorsAttrDesc.count > 0) {
                 var colorsData = new Float32Array(parsedGeometry, binaryInfo.colorsAttrDesc.offset, binaryInfo.colorsAttrDesc.count);
                 mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false, binaryInfo.colorsAttrDesc.stride);
@@ -1215,6 +1270,22 @@
 
             if (parsedGeometry.uvs2) {
                 mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, parsedGeometry.uvs2, false);
+            }
+
+            if (parsedGeometry.uvs3) {
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV3Kind, parsedGeometry.uvs3, false);
+            }
+
+            if (parsedGeometry.uvs4) {
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV4Kind, parsedGeometry.uvs4, false);
+            }
+
+            if (parsedGeometry.uvs5) {
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV5Kind, parsedGeometry.uvs5, false);
+            }
+
+            if (parsedGeometry.uvs6) {
+                mesh.setVerticesData(BABYLON.VertexBuffer.UV6Kind, parsedGeometry.uvs6, false);
             }
 
             if (parsedGeometry.colors) {
@@ -1397,6 +1468,15 @@
                 if (currentMesh._waitingParentId) {
                     currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                     currentMesh._waitingParentId = undefined;
+                }
+            }
+
+            // freeze world matrix application
+            for (index = 0; index < scene.meshes.length; index++) {
+                var currentMesh = scene.meshes[index];
+                if (currentMesh._waitingFreezeWorldMatrix) {
+                    currentMesh.freezeWorldMatrix();
+                    currentMesh._waitingFreezeWorldMatrix = undefined;
                 }
             }
 
@@ -1593,6 +1673,15 @@
                 if (mesh._waitingActions) {
                     parseActions(mesh._waitingActions, mesh, scene);
                     mesh._waitingActions = undefined;
+                }
+            }
+
+            // freeze world matrix application
+            for (index = 0; index < scene.meshes.length; index++) {
+                var currentMesh = scene.meshes[index];
+                if (currentMesh._waitingFreezeWorldMatrix) {
+                    currentMesh.freezeWorldMatrix();
+                    currentMesh._waitingFreezeWorldMatrix = undefined;
                 }
             }
 

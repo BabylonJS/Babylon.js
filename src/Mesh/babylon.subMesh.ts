@@ -92,8 +92,8 @@
             return this._boundingInfo.isInFrustum(frustumPlanes);
         }
 
-        public render(): void {
-            this._renderingMesh.render(this);
+        public render(enableAlphaMode: boolean): void {
+            this._renderingMesh.render(this, enableAlphaMode);
         }
 
         public getLinesIndexBuffer(indices: number[], engine): WebGLBuffer {
