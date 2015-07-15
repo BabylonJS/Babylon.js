@@ -1,5 +1,3 @@
-#include "BabylonNode.h"
-#include "BabylonNode.h"
 #include "stdafx.h"
 #include "BabylonNode.h"
 #include "NodeHelpers.h"
@@ -74,13 +72,13 @@ babylon_vector3 BabylonNode::localScale(FbxTime time){
 
 babylon_vector4 BabylonNode::localRotationQuat(){
 	auto ret = _localTransform.GetQ();
-	return babylon_vector4(ret[0], ret[1], ret[2], ret[3]);
+	return babylon_vector4(static_cast<float>(ret[0]), static_cast<float>(ret[1]), static_cast<float>(ret[2]), static_cast<float>(ret[3]));
 }
 babylon_vector4 BabylonNode::localRotationQuat(FbxTime time){
 
 	auto transform = ConvertToBabylonCoordinateSystem(CalculateLocalTransform(_node, time));
 	auto ret = transform.GetQ();
-	return babylon_vector4(ret[0], ret[1], ret[2], ret[3]);
+	return babylon_vector4(static_cast<float>(ret[0]), static_cast<float>(ret[1]), static_cast<float>(ret[2]), static_cast<float>(ret[3]));
 }
 babylon_vector3 BabylonNode::localTranslate(FbxTime time){
 	auto transform = ConvertToBabylonCoordinateSystem(CalculateLocalTransform(_node, time));

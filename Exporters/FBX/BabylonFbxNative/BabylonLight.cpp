@@ -93,7 +93,7 @@ specular(1, 1, 1)
 			auto transDir = rotM.MultT(vDir);
 			direction = transDir;
 			exponent = 1;
-			angle = light->OuterAngle*Euler2Rad;
+			angle = static_cast<float>(light->OuterAngle*Euler2Rad);
 
 		}
 		break;
@@ -101,9 +101,9 @@ specular(1, 1, 1)
 		break;
 	}
 	diffuse = light->Color.Get();
-	intensity = light->Intensity.Get() / 100.0;
+	intensity = static_cast<float>(light->Intensity.Get() / 100.0);
 	if (light->EnableFarAttenuation.Get()) {
-		range = light->FarAttenuationEnd.Get();
+		range = static_cast<float>(light->FarAttenuationEnd.Get());
 	}
 	auto hasAnimStack = node->GetScene()->GetSrcObjectCount<FbxAnimStack>() > 0;
 	if (!hasAnimStack){
@@ -121,9 +121,9 @@ specular(1, 1, 1)
 	auto dirAnimName = getNodeId(node);
 	posAnimName.append(L"_position");
 	dirAnimName.append(L"_direction");
-	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, posAnimName, L"position", true, 0, animLengthInFrame, true);
-	auto dirAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, dirAnimName, L"direction", true, 0, animLengthInFrame, true);
-	for (auto ix = 0ll; ix < animLengthInFrame; ix++){
+	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), posAnimName, L"position", true, 0, static_cast<int>(animLengthInFrame), true);
+	auto dirAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), dirAnimName, L"direction", true, 0, static_cast<int>(animLengthInFrame), true);
+	for (auto ix = 0; ix < animLengthInFrame; ix++){
 		babylon_animation_key<babylon_vector3> key;
 		key.frame = ix;
 		FbxTime currTime;

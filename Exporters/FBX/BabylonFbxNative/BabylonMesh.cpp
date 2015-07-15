@@ -448,11 +448,11 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 
-	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"position", L"position", true, 0, animLengthInFrame, true);
-	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"rotationQuaternion", L"rotationQuaternion", true, 0, animLengthInFrame, true);
-	auto scaleAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"scale", L"scale", true, 0, animLengthInFrame, true);
+	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"position", L"position", true, 0, static_cast<int>(animLengthInFrame), true);
+	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"rotationQuaternion", L"rotationQuaternion", true, 0, static_cast<int>(animLengthInFrame), true);
+	auto scaleAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"scale", L"scale", true, 0, static_cast<int>(animLengthInFrame), true);
 
-	for (auto ix = 0ll; ix < animLengthInFrame; ix++){
+	for (auto ix = 0; ix < animLengthInFrame; ix++){
 		FbxTime currTime;
 		currTime.SetFrame(startFrame + ix, animTimeMode);
 
@@ -703,7 +703,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 				auto& skinData = skinInfo.controlPointBoneIndicesAndWeights(controlPointIndex);
 				for (auto boneix = 0; boneix < skinData.size()&&boneix<4; ++boneix){
 					v.boneIndices[boneix] = skinData[boneix].index;
-					v.boneWeights[boneix] = skinData[boneix].weight;
+					v.boneWeights[boneix] = static_cast<float>(skinData[boneix].weight);
 				}
 				for (auto boneix = skinData.size(); boneix < 4; ++boneix){
 
@@ -717,7 +717,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 				t.indices[cornerIndex] = foundVertex->second;
 			}
 			else {
-				auto index = submesh.vertices.size();
+				auto index = static_cast<int>(submesh.vertices.size());
 				submesh.vertices.push_back(v);
 				//submesh.indices.push_back(index);
 				submesh.knownVertices[v] = index;
@@ -739,11 +739,11 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	for (auto matIndex = 0u; matIndex < submeshes.size(); ++matIndex) {
 		auto& submesh = submeshes[matIndex];
 		BabylonSubmesh babsubmesh;
-		babsubmesh.indexCount = submesh.indices.size();
-		babsubmesh.indexStart = _indices.size();
+		babsubmesh.indexCount = static_cast<int>(submesh.indices.size());
+		babsubmesh.indexStart = static_cast<int>(_indices.size());
 		babsubmesh.materialIndex = matIndex;
-		babsubmesh.verticesCount = submesh.vertices.size();
-		babsubmesh.verticesStart = _positions.size();
+		babsubmesh.verticesCount = static_cast<int>(submesh.vertices.size());
+		babsubmesh.verticesStart = static_cast<int>(_positions.size());
 		for (auto& v : submesh.vertices) {
 			_positions.push_back(v.position);
 			if (normals) {
@@ -779,7 +779,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 				 int bone2 = v.boneIndices[2];
 				 int bone3 = v.boneIndices[3];
                
-				_boneWeights.push_back(babylon_vector4( weight0, weight1, weight2, 1.0 - weight0 - weight1 - weight2));
+				_boneWeights.push_back(babylon_vector4( weight0, weight1, weight2, 1.0f - weight0 - weight1 - weight2));
                 _boneIndices.push_back((bone3 << 24) | (bone2 << 16) | (bone1 << 8) | bone0);
 			}
 		}
@@ -787,7 +787,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 			_indices.push_back(i + vertexOffset);
 		}
 
-		vertexOffset = _positions.size();
+		vertexOffset = static_cast<int>(_positions.size());
 		_submeshes.push_back(babsubmesh);
 	}
 

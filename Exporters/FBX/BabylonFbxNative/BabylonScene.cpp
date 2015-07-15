@@ -8,7 +8,7 @@ web::json::value BabylonScene::toJson()
 	jobj[L"autoClear"] = web::json::value::boolean(_autoClear);
 	writeVector3(jobj, L"clearColor", _clearColor);
 	writeVector3(jobj, L"ambientColor", _ambientColor);
-	jobj[L"fogMode"] = web::json::value::boolean(_fogMode);
+	jobj[L"fogMode"] = web::json::value::number(_fogMode);
 	writeVector3(jobj, L"fogColor", _fogColor);
 	jobj[L"fogStart"] = web::json::value::number(_fogStart);
 	jobj[L"fogEnd"] = web::json::value::number(_fogEnd);

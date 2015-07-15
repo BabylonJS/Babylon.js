@@ -32,6 +32,7 @@ std::string toString(BabylonNodeType type) {
 		return "<empty>";
 		break;
 	default:
+		return "unknown";
 		break;
 	}
 }
@@ -54,10 +55,10 @@ void printNode(BabylonNode& node, int indent = 0) {
 
 
 std::string wstringToUtf8(const std::wstring& src){
-	auto size = WideCharToMultiByte(CP_UTF8, 0, src.c_str(), src.size(), nullptr, 0, nullptr, nullptr);
+	auto size = WideCharToMultiByte(CP_UTF8, 0, src.c_str(), static_cast<int>( src.size()), nullptr, 0, nullptr, nullptr);
 	std::string result;
 	result.resize(size, ' ');
-	WideCharToMultiByte(CP_UTF8, 0, src.c_str(), src.size(), &result[0], result.size(),nullptr, nullptr);
+	WideCharToMultiByte(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), &result[0], size,nullptr, nullptr);
 	return result;
 }
 
@@ -112,8 +113,8 @@ void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) 
 		scene.meshes().emplace_back(&node);
 		auto& mesh = scene.meshes()[scene.meshes().size() - 1];
 		if (mesh.associatedSkeleton){
-			mesh.associatedSkeleton->id = scene.skeletons().size()+1;
-			mesh.skeletonId(scene.skeletons().size()+1);
+			mesh.associatedSkeleton->id = static_cast<int>(scene.skeletons().size()+1);
+			mesh.skeletonId(static_cast<int>(scene.skeletons().size()+1));
 			scene.skeletons().push_back(mesh.associatedSkeleton);
 		}
 		if (multiMat.materials.size() > 0) {
@@ -189,7 +190,7 @@ void exportTexture(const std::shared_ptr<BabylonTexture>& tex, const std::wstrin
 		}
 		outputPath[indexOfSlash] = L'\\';
 	}
-	auto start = 0;
+	size_t start = 0;
 	for (;;){
 		auto indexOfSlash = outputPath.find(L'\\', start);
 		if (indexOfSlash == outputPath.npos){

@@ -61,10 +61,10 @@ alpha(1)
 }
 
 std::wstring utf8ToWstring(const std::string& src){
-	auto size = MultiByteToWideChar(CP_UTF8, 0, src.c_str(), src.size(), nullptr, 0);
+	auto size = MultiByteToWideChar(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), nullptr, 0);
 	std::wstring result;
 	result.resize(size, ' ');
-	MultiByteToWideChar(CP_UTF8, 0, src.c_str(), src.size(), &result[0], result.size());
+	MultiByteToWideChar(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), &result[0], size);
 	return result;
 }
 
@@ -133,7 +133,7 @@ alpha(1){
 		transcolor = transColorProp.Get<FbxDouble3>();
 		if (transfactor== 1.0){ // from Maya .fbx
 			if (transcolor[0] >= DBL_MIN) {
-				alpha = 1 - transcolor[0];
+				alpha = static_cast<float>(1 - transcolor[0]);
 			}
 			else {
 				alpha = 1;
@@ -141,7 +141,7 @@ alpha(1){
 		}
 		else { // from 3dsmax .fbx
 			if (transfactor>=DBL_MIN){
-				alpha = 1 - transfactor;
+				alpha = static_cast<float>(1 - transfactor);
 			}
 			else {
 				alpha = 1;
@@ -156,7 +156,7 @@ alpha(1){
 	GetMaterialProperty(mat, FbxSurfaceMaterial::sReflection, FbxSurfaceMaterial::sReflectionFactor, reflectionTex);
 	auto shininessProp = mat->FindProperty(FbxSurfaceMaterial::sShininess);
 	if (shininessProp.IsValid()){
-		specularPower = shininessProp.Get<FbxDouble>();
+		specularPower = static_cast<float>(shininessProp.Get<FbxDouble>());
 	}
 
 	auto normalMapProp = mat->FindProperty(FbxSurfaceMaterial::sNormalMap);
@@ -304,13 +304,13 @@ BabylonTexture::BabylonTexture(FbxFileTexture* texture){
 	auto translation = texture->Translation.Get();
 	auto rot = texture->Rotation.Get();
 	auto scale  = texture->Scaling.Get();
-	uOffset = translation[0];
-	vOffset = translation[1];
-	uScale = scale[0];
-	vScale = scale[1];
-	uAng = rot[0] * Euler2Rad;
-	vAng = rot[1] * Euler2Rad;
-	wAng = rot[2] * Euler2Rad;
+	uOffset = static_cast<float>(translation[0]);
+	vOffset = static_cast<float>(translation[1]);
+	uScale = static_cast<float>(scale[0]);
+	vScale = static_cast<float>(scale[1]);
+	uAng = static_cast<float>(rot[0] * Euler2Rad);
+	vAng = static_cast<float>(rot[1] * Euler2Rad);
+	wAng = static_cast<float>(rot[2] * Euler2Rad);
 	auto uwrapMode = texture->GetWrapModeU();
 	auto vwrapMode = texture->GetWrapModeV();
 	wrapU = uwrapMode == FbxTexture::eRepeat;

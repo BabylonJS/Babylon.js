@@ -49,7 +49,7 @@ public:
 	}
 
 	int bonesCount() const{
-		return _bones.size();
+		return static_cast<int>( _bones.size());
 	}
 
 	void buildBabylonSkeleton(BabylonSkeleton& skel);
