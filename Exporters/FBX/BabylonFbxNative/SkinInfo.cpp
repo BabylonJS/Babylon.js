@@ -110,7 +110,7 @@ _node(meshNode), _mesh(meshNode->GetMesh()), _skin(nullptr)
 	for (auto& bone : _bones){
 		FbxAMatrix transformMatrix;
 		FbxAMatrix transformLinkMatrix;
-		FbxAMatrix globalBindposeInverseMatrix;
+		FbxMatrix globalBindposeInverseMatrix;
 
 		bone.cluster->GetTransformMatrix(transformMatrix);	// The transformation of the mesh at binding time
 		bone.cluster->GetTransformLinkMatrix(transformLinkMatrix);	// The transformation of the cluster(joint) at binding time from joint space to world space
@@ -122,7 +122,7 @@ _node(meshNode), _mesh(meshNode->GetMesh()), _skin(nullptr)
 				break;
 			}
 		}*/
-		globalBindposeInverseMatrix = transformLinkMatrix.Inverse() * transformMatrix * geometryTransform;
+		globalBindposeInverseMatrix = FbxMatrix(transformLinkMatrix.Inverse()) * FbxMatrix(transformMatrix) * geometryTransform;
 
 
 		bone.matrixGlobalBindPose = ConvertToBabylonCoordinateSystem(globalBindposeInverseMatrix.Inverse());
@@ -133,7 +133,7 @@ _node(meshNode), _mesh(meshNode->GetMesh()), _skin(nullptr)
 		}
 		else{
 			bone.matrixLocalBindPose =
-				NotDecomposedMultiply(_bones[bone.parentBoneIndex].matrixGlobalBindPose.Inverse(), bone.matrixGlobalBindPose);
+				_bones[bone.parentBoneIndex].matrixGlobalBindPose.Inverse()* bone.matrixGlobalBindPose;
 			
 		}
 	}
@@ -156,7 +156,7 @@ _node(meshNode), _mesh(meshNode->GetMesh()), _skin(nullptr)
 		currTime.SetFrame(startFrame + ix, animTimeMode);
 
 
-		auto currTransformOffset = meshNode->EvaluateGlobalTransform(currTime) * geometryTransform;
+		auto currTransformOffset = FbxMatrix(meshNode->EvaluateGlobalTransform(currTime)) * geometryTransform;
 		auto currTransformOffsetInverse = currTransformOffset.Inverse();
 
 		// compute global transform and local
@@ -174,7 +174,7 @@ _node(meshNode), _mesh(meshNode->GetMesh()), _skin(nullptr)
 				auto& parentBone = _bones[bone.parentBoneIndex];
 				
 				kf.matrixLocal = //bone.matrixLocalBindPose;
-					NotDecomposedMultiply(parentBone.keyFrames[parentBone.keyFrames.size() - 1].matrixGlobal.Inverse(), kf.matrixGlobal);
+					parentBone.keyFrames[parentBone.keyFrames.size() - 1].matrixGlobal.Inverse()* kf.matrixGlobal;
 
 			}
 
@@ -208,10 +208,10 @@ void SkinInfo::buildBabylonSkeleton(BabylonSkeleton& skel){
 		auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 		auto animLengthInFrame = endFrame - startFrame + 1;
 
-		auto matrixAnim = std::make_shared<BabylonAnimation<FbxAMatrix>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"_matrix", L"_matrix", true, 0, static_cast<int>(animLengthInFrame), true);
+		auto matrixAnim = std::make_shared<BabylonAnimation<FbxMatrix>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"_matrix", L"_matrix", true, 0, static_cast<int>(animLengthInFrame), true);
 		for (auto& kf : b.keyFrames){
 
-			babylon_animation_key<FbxAMatrix> key;
+			babylon_animation_key<FbxMatrix> key;
 			key.frame = kf.frame;
 			//key.values = ConvertToBabylonCoordinateSystem(kf.matrixLocal);
 			key.values = kf.matrixLocal;

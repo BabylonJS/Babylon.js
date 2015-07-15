@@ -54,7 +54,11 @@ web::json::value BabylonScene::toJson()
 		jskeletons[jskeletons.size()] = skel->toJson();
 	}
 	jobj[L"skeletons"] = jskeletons;
-
+	auto jshadowGenerators = web::json::value::array();
+	for (auto& sg : _shadowGenerators) {
+		jshadowGenerators[jshadowGenerators.size()] = sg->toJson();
+	}
+	jobj[L"shadowGenerators"] = jshadowGenerators;
 	return jobj;
 }
 

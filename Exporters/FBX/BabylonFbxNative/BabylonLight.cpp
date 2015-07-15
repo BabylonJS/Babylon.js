@@ -22,7 +22,7 @@ web::json::value BabylonLight::toJson() const
 	jobj[L"angle"] = web::json::value::number(angle);
 	writeVector3(jobj, L"groundColor", groundColor);
 
-	if (animations.size() == 0){
+	if (animations.size() == 0) {
 
 		jobj[L"autoAnimate"] = web::json::value::boolean(false);
 		jobj[L"autoAnimateLoop"] = web::json::value::boolean(false);
@@ -30,7 +30,7 @@ web::json::value BabylonLight::toJson() const
 		jobj[L"autoAnimateTo"] = web::json::value::number(0);
 
 	}
-	else{
+	else {
 
 		jobj[L"autoAnimate"] = web::json::value::boolean(animations[0]->autoAnimate);
 		jobj[L"autoAnimateLoop"] = web::json::value::boolean(animations[0]->autoAnimateLoop);
@@ -39,22 +39,35 @@ web::json::value BabylonLight::toJson() const
 	}
 
 	auto janimations = web::json::value::array();
-	for (const auto& anim : animations){
+	for (const auto& anim : animations) {
 		janimations[janimations.size()] = anim->toJson();
 	}
 	jobj[L"animations"] = janimations;
+
+	auto jarray = web::json::value::array();
+	for (auto& id : excludedMeshesIds) {
+		jarray[jarray.size()] = web::json::value::string(id);
+	}
+	jobj[L"excludedMeshesIds"] = jarray;
+
+	jarray = web::json::value::array();
+	for (auto& id : includedOnlyMeshesIds) {
+		jarray[jarray.size()] = web::json::value::string(id);
+	}
+	jobj[L"includedOnlyMeshesIds"] = jarray;
+
 	return jobj;
 }
 
 BabylonLight::BabylonLight() :
-diffuse(1, 1, 1),
-specular(1, 1, 1)
+	diffuse(1, 1, 1),
+	specular(1, 1, 1)
 {
 }
 
 BabylonLight::BabylonLight(BabylonNode & babnode) :
-diffuse(1, 1, 1),
-specular(1, 1, 1)
+	diffuse(1, 1, 1),
+	specular(1, 1, 1)
 {
 	auto node = babnode.fbxNode();
 	std::string ansiName = node->GetName();
@@ -64,7 +77,8 @@ specular(1, 1, 1)
 	if (parent) {
 		parentId = getNodeId(parent);
 	}
-	position = babnode.localTranslate();
+	auto localTransform = babnode.GetLocal();
+	position = localTransform.translation();
 	auto light = node->GetLight();
 	switch (light->LightType)
 	{
@@ -74,10 +88,11 @@ specular(1, 1, 1)
 	case FbxLight::eDirectional:
 		type = type_direct;
 		{
-			FbxDouble3 vDir(0, 1, 0);
+			FbxDouble3 vDir(0, -1, 0);
 			FbxAMatrix rotM;
 			rotM.SetIdentity();
-			rotM.SetQ(babnode.localTransform().GetQ());
+
+			rotM.SetQ(localTransform.fbxrot());
 			auto transDir = rotM.MultT(vDir);
 			direction = transDir;
 
@@ -86,10 +101,10 @@ specular(1, 1, 1)
 	case FbxLight::eSpot:
 		type = type_Spot;
 		{
-			FbxDouble3 vDir(0, 1, 0);
+			FbxDouble3 vDir(0, -1, 0);
 			FbxAMatrix rotM;
 			rotM.SetIdentity();
-			rotM.SetQ(babnode.localTransform().GetQ());
+			rotM.SetQ(localTransform.fbxrot());
 			auto transDir = rotM.MultT(vDir);
 			direction = transDir;
 			exponent = 1;
@@ -106,8 +121,12 @@ specular(1, 1, 1)
 		range = static_cast<float>(light->FarAttenuationEnd.Get());
 	}
 	auto hasAnimStack = node->GetScene()->GetSrcObjectCount<FbxAnimStack>() > 0;
-	if (!hasAnimStack){
+	if (!hasAnimStack) {
 		return;
+	}
+	castShadows = light->CastShadows.Get();
+	if (castShadows) {
+		shadowGenerator = std::make_shared<BabylonShadowGenerator>(node);
 	}
 	auto animStack = node->GetScene()->GetSrcObject<FbxAnimStack>(0);
 	FbxString animStackName = animStack->GetName();
@@ -123,31 +142,31 @@ specular(1, 1, 1)
 	dirAnimName.append(L"_direction");
 	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), posAnimName, L"position", true, 0, static_cast<int>(animLengthInFrame), true);
 	auto dirAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), dirAnimName, L"direction", true, 0, static_cast<int>(animLengthInFrame), true);
-	for (auto ix = 0; ix < animLengthInFrame; ix++){
+	for (auto ix = 0; ix < animLengthInFrame; ix++) {
 		babylon_animation_key<babylon_vector3> key;
 		key.frame = ix;
 		FbxTime currTime;
 		currTime.SetFrame(startFrame + ix, animTimeMode);
-		key.values = babnode.localTranslate(currTime);
+		auto currTransform = babnode.GetLocal(currTime);
+		key.values = currTransform.translation();
 		posAnim->appendKey(key);
 
-		if (type == type_direct || type == type_Spot){
+		if (type == type_direct || type == type_Spot) {
 			babylon_animation_key<babylon_vector3> dirkey;
 			dirkey.frame = ix;
-			auto transformAtTime = babnode.localTransform(currTime);
-			FbxDouble3 vDir(0, 1, 0);
+			FbxDouble3 vDir(0, -1, 0);
 			FbxAMatrix rotM;
 			rotM.SetIdentity();
-			rotM.SetQ(transformAtTime.GetQ());
+			rotM.SetQ(currTransform.fbxrot());
 			auto transDir = rotM.MultT(vDir);
 			dirkey.values = transDir;
 			dirAnim->appendKey(dirkey);
 		}
 	}
-	if (!posAnim->isConstant()){
+	if (!posAnim->isConstant()) {
 		animations.push_back(posAnim);
 	}
-	if (!dirAnim->isConstant()){
+	if (!dirAnim->isConstant()) {
 		animations.push_back(dirAnim);
 	}
 }
@@ -155,4 +174,44 @@ specular(1, 1, 1)
 
 BabylonLight::~BabylonLight()
 {
+}
+
+BabylonShadowGenerator::BabylonShadowGenerator(FbxNode * lightNode)
+{
+	auto light = lightNode->GetLight();
+	lightId = getNodeId(lightNode);
+	mapSize = 2048;
+	bias = 0.00005f;
+	useBlurVarianceShadowMap = true;
+	blurScale = 2;
+	blurBoxOffset = 1;
+	useVarianceShadowMap = false;
+	usePoissonSampling = false;
+	auto nodeCount = lightNode->GetScene()->GetNodeCount();
+	for (auto ix = 0;ix < nodeCount;++ix) {
+		auto mnode = lightNode->GetScene()->GetNode(ix);
+		auto mesh = mnode->GetMesh();
+		if (mesh && mesh->CastShadow.Get()) {
+			renderList.push_back(getNodeId(mnode));
+		}
+	}
+
+}
+
+web::json::value BabylonShadowGenerator::toJson()
+{
+	auto jobj =web::json::value::object();
+	jobj[L"mapSize"] = web::json::value::number(mapSize);
+	jobj[L"lightId"] = web::json::value::string(lightId);
+	jobj[L"useVarianceShadowMap"] = web::json::value::boolean(useVarianceShadowMap);
+	jobj[L"usePoissonSampling"] = web::json::value::boolean(usePoissonSampling);
+	/*jobj[L"useBlurVarianceShadowMap"] = web::json::value::boolean(useBlurVarianceShadowMap);
+	jobj[L"blurScale"] = web::json::value::number(blurScale);
+	jobj[L"blurBoxOffset"] = web::json::value::number(blurBoxOffset);*/
+	auto jarr = web::json::value::array();
+	for (auto& id : renderList) {
+		jarr[jarr.size()] = web::json::value::string(id);
+	}
+	jobj[L"renderList"] = jarr;
+	return jobj;
 }

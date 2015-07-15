@@ -62,22 +62,6 @@ std::string wstringToUtf8(const std::wstring& src){
 	return result;
 }
 
-bool isNodeOrDescendantVisible(FbxNode* node){
-	if (node == nullptr){
-		return false;
-	}
-	if (node->GetVisibility()){
-		return true;
-	}
-
-	auto childCount = node->GetChildCount();
-	for (auto ix = 0; ix < childCount; ++ix){
-		if (isNodeOrDescendantVisible(node->GetChild(ix))){
-			return true;
-		}
-	}
-	return false;
-}
 
 void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) {
 	if (node.nodeType() == BabylonNodeType::Skeleton && node.hasOnlySkeletonDescendants()) {
@@ -135,7 +119,14 @@ void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) 
 	}
 	break;
 	case BabylonNodeType::Light:
+	{
 		scene.lights().emplace_back(node);
+		auto& l = scene.lights()[scene.lights().size() - 1];
+		if (l.shadowGenerator) {
+			scene.shadowGenerators().push_back(l.shadowGenerator);
+		}
+	}
+	break;
 	default:
 		break;
 	}

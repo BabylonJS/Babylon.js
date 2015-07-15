@@ -8,10 +8,11 @@ BabylonAbstractMesh::BabylonAbstractMesh()
 }
 
 BabylonAbstractMesh::BabylonAbstractMesh(BabylonNode* node)
-	: _position(node->localTranslate()),
-	_rotationQuaternion(node->localRotationQuat()),
-	_scaling(node->localScale())
 {
+	auto localTransform = node->GetLocal();
+	_position = localTransform.translation();
+	_rotationQuaternion = localTransform.rotationQuaternion();
+	_scaling = localTransform.scaling();
 	auto n = node->name();
 	_name = std::wstring(n.begin(), n.end());
 }

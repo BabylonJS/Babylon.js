@@ -104,8 +104,9 @@ BabylonCamera::BabylonCamera(BabylonNode& babnode)
 	else {
 		target = camera->InterestPosition.Get();
 	}
-	position = babnode.localTranslate();
-	rotationQuaternion = babnode.localRotationQuat();
+	auto localTransformAtStart = babnode.GetLocal();
+	position = localTransformAtStart.translation();
+	rotationQuaternion = localTransformAtStart.rotationQuaternion();
 	
 	fov = static_cast<float>(camera->FieldOfViewY * Euler2Rad);
 	minZ = static_cast<float>(camera->FrontPlaneDistance.Get());
@@ -137,8 +138,11 @@ BabylonCamera::BabylonCamera(BabylonNode& babnode)
 		poskey.frame = ix;
 		rotkey.frame = ix;
 
-		poskey.values = babnode.localTranslate(currTime);
-		rotkey.values = babnode.localRotationQuat(currTime);
+
+		auto transformAtT = babnode.GetLocal(currTime);
+
+		poskey.values = transformAtT.translation();
+		rotkey.values = transformAtT.rotationQuaternion();
 		posAnim->appendKey(poskey);
 		rotAnim->appendKey(rotkey);
 

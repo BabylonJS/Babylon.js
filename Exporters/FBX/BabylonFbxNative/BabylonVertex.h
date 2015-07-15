@@ -13,7 +13,8 @@ struct babylon_vector4{
 	float w;
 	babylon_vector4() :x(0), y(0), z(0), w(0){}
 	babylon_vector4(float x, float y, float z, float w) :x(x), y(y), z(z), w(w){}
-	babylon_vector4(const babylon_vector4& v) :x(v.x), y(v.y), z(v.z), w(v.w){}
+	babylon_vector4(const babylon_vector4& v) :x(v.x), y(v.y), z(v.z), w(v.w) {}
+	babylon_vector4(const FbxQuaternion& v) :x(static_cast<float>(v[0])), y(static_cast<float>(v[1])), z(static_cast<float>(v[2])), w(static_cast<float>(v[3])) {}
 };
 struct babylon_vector3{
 	float x;

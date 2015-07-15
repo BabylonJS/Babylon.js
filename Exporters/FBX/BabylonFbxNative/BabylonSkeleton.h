@@ -11,8 +11,8 @@ public:
 	std::wstring name;
 	int index;
 	int parentBoneIndex = -1;
-	FbxAMatrix matrix;
-	std::shared_ptr<BabylonAnimation<FbxAMatrix>> animation;
+	FbxMatrix matrix;
+	std::shared_ptr<BabylonAnimation<FbxMatrix>> animation;
 	web::json::value toJson();
 
 	//public BabylonAnimation animation{ get; set; }
