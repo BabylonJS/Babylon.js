@@ -19,22 +19,24 @@
     }
 
     var loadCubeTexture = (rootUrl, parsedTexture, scene) => {
-        var texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene);
-
-        texture.name = parsedTexture.name;
-        texture.hasAlpha = parsedTexture.hasAlpha;
-        texture.level = parsedTexture.level;
-        texture.coordinatesMode = parsedTexture.coordinatesMode;
+        var texture = null;
+        if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
+            texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+            texture.name = parsedTexture.name;
+            texture.hasAlpha = parsedTexture.hasAlpha;
+            texture.level = parsedTexture.level;
+            texture.coordinatesMode = parsedTexture.coordinatesMode;
+        }
         return texture;
     };
 
     var loadTexture = (rootUrl, parsedTexture, scene) => {
-        if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
-            return null;
-        }
-
         if (parsedTexture.isCube) {
             return loadCubeTexture(rootUrl, parsedTexture, scene);
+        }
+
+        if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+            return null;
         }
 
         var texture;
@@ -71,7 +73,7 @@
 
         texture.wrapU = parsedTexture.wrapU;
         texture.wrapV = parsedTexture.wrapV;
-       
+
         // Animations
         if (parsedTexture.animations) {
             for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
@@ -446,7 +448,7 @@
             // Free Camera is the default value
             camera = new FreeCamera(parsedCamera.name, position, scene);
         }
-        
+
         // apply 3d rig, when found
         if (parsedCamera.cameraRigMode) {
             var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
@@ -1316,7 +1318,7 @@
 
             mesh.setIndices(parsedGeometry.indices);
         }
-        
+
         // SubMeshes
         if (parsedGeometry.subMeshes) {
             mesh.subMeshes = [];
@@ -1682,7 +1684,7 @@
                     currentMesh._waitingFreezeWorldMatrix = undefined;
                 }
             }
-            
+
             // Particles Systems
             if (parsedData.particleSystems) {
                 for (index = 0; index < parsedData.particleSystems.length; index++) {
