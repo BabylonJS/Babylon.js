@@ -1425,6 +1425,10 @@
         }
 
         public setAlphaMode(mode: number): void {
+            if (this._alphaMode == mode) {
+                return;
+            }
+
             switch (mode) {
                 case Engine.ALPHA_DISABLE:
                     this.setDepthWrite(true);

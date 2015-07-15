@@ -4,6 +4,8 @@
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
     - New rewored StandardMaterial.isReady for better memory usage and performance [deltakosh](https://github.com/deltakosh)
   - **Updates**
+    - Added material.alphaMode (can be set to BABYLON.Engine.ALPHA_ADD or  BABYLON.Engine.ALPHA_COMBINE) [deltakosh](https://github.com/deltakosh)
+    - Added Animatable.reset() function [deltakosh](https://github.com/deltakosh)
     - New parameter for ArcRotateCamera.zoomOn to preserve maxZ [deltakosh](https://github.com/deltakosh)
     - PickingInfo.getNormal can now use either vertices normals or vertices positions [deltakosh](https://github.com/deltakosh)
     - Meshes can now support uv2, uv4, uv5 and uv6 for ShaderMaterials [deltakosh](https://github.com/deltakosh)
@@ -17,8 +19,9 @@
     - Added some utility functions to Vector2/3/4 [PR](https://github.com/BabylonJS/Babylon.js/pull/578) [jahow](https://github.com/jahow)
     - New rawTexture.update function [robgdl](https://github.com/robgdl)
     - Changes to meshes transform baking and added flipFaces [PR](https://github.com/BabylonJS/Babylon.js/pull/579) [jahow](https://github.com/jahow)
-    - SerializeMesh serializes a single mesh to be imported with the loader's ImportMesh. [PR](https://github.com/BabylonJS/Babylon.js/pull/583) [RaananW](https://github.com/RaananW)
+    - SerializeMesh serializes a mesh or array of meshes to be imported with the loader's ImportMesh. [PR](https://github.com/BabylonJS/Babylon.js/pull/583) [PR2](https://github.com/BabylonJS/Babylon.js/pull/609) [RaananW](https://github.com/RaananW)
 	- onCollide callback for meshes calling moveWithCollisions. [PR](https://github.com/BabylonJS/Babylon.js/pull/585) [RaananW](https://github.com/RaananW)
   - **Bug fixes**
     - Fixing bug with rig cameras positioning [deltakosh](https://github.com/deltakosh)
+    - Instance meshes' geometry ID is now serialized correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/607) [RaananW](https://github.com/RaananW)
   - **Breaking changes**

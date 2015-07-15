@@ -149,8 +149,8 @@
     }
 
     export class CloudProceduralTexture extends ProceduralTexture {
-        private _skyColor = new Color3(0.15, 0.68, 1.0);
-        private _cloudColor = new Color3(1, 1, 1);
+        private _skyColor = new Color4(0.15, 0.68, 1.0, 1.0);
+        private _cloudColor = new Color4(1, 1, 1, 1.0);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "cloud", scene, fallbackTexture, generateMipMaps);
@@ -159,24 +159,24 @@
         }
 
         public updateShaderUniforms() {
-            this.setColor3("skyColor", this._skyColor);
-            this.setColor3("cloudColor", this._cloudColor);
+            this.setColor4("skyColor", this._skyColor);
+            this.setColor4("cloudColor", this._cloudColor);
         }
 
-        public get skyColor(): Color3 {
+        public get skyColor(): Color4 {
             return this._skyColor;
         }
 
-        public set skyColor(value: Color3) {
+        public set skyColor(value: Color4) {
             this._skyColor = value;
             this.updateShaderUniforms();
         }
 
-        public get cloudColor(): Color3 {
+        public get cloudColor(): Color4 {
             return this._cloudColor;
         }
 
-        public set cloudColor(value: Color3) {
+        public set cloudColor(value: Color4) {
             this._cloudColor = value;
             this.updateShaderUniforms();
         }
@@ -365,3 +365,4 @@
         }
     }
 }
+

@@ -14,7 +14,7 @@ var BABYLON;
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
-        Animation.CreateAndStartAnimation = function (name, mesh, targetProperty, framePerSecond, totalFrame, from, to, loopMode) {
+        Animation.CreateAndStartAnimation = function (name, mesh, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction) {
             var dataType = undefined;
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
                 dataType = Animation.ANIMATIONTYPE_FLOAT;
@@ -39,10 +39,18 @@ var BABYLON;
             keys.push({ frame: 0, value: from });
             keys.push({ frame: totalFrame, value: to });
             animation.setKeys(keys);
+            if (easingFunction !== undefined) {
+                animation.setEasingFunction(easingFunction);
+            }
             mesh.animations.push(animation);
             return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
         };
         // Methods   
+        Animation.prototype.reset = function () {
+            this._offsetsCache = {};
+            this._highLimitsCache = {};
+            this.currentFrame = 0;
+        };
         Animation.prototype.isStopped = function () {
             return this._stopped;
         };

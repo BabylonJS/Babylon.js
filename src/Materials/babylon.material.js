@@ -8,6 +8,7 @@ var BABYLON;
             this.state = "";
             this.alpha = 1.0;
             this.backFaceCulling = true;
+            this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this._wasPreviouslyReady = false;
             this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;

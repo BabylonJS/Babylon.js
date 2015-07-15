@@ -157,7 +157,7 @@
                 this._isReadyToPlay = true;
                 if (this.autoplay) { this.play(); }
                 if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
-            }, (error) => { Tools.Error("Error while decoding audio data: " + error.err); });
+            },() => { Tools.Error("Error while decoding audio data for: " + this.name); });
         }
 
         public setAudioBuffer(audioBuffer: AudioBuffer): void {

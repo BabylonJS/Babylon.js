@@ -38,6 +38,14 @@ var BABYLON;
             }
             return null;
         };
+        Animatable.prototype.reset = function () {
+            var animations = this._animations;
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].reset();
+            }
+            this._localDelayOffset = null;
+            this._pausedDelay = null;
+        };
         Animatable.prototype.pause = function () {
             if (this._paused) {
                 return;

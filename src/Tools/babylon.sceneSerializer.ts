@@ -104,7 +104,7 @@
             serializationObject.type = "WebVRFreeCamera";
         } else if (camera instanceof VRDeviceOrientationFreeCamera) {
             serializationObject.type = "VRDeviceOrientationFreeCamera";
-        } 
+        }
 
         //special properties of specific cameras
         if (camera instanceof ArcRotateCamera || camera instanceof AnaglyphArcRotateCamera) {
@@ -293,6 +293,7 @@
         if (texture instanceof CubeTexture) {
             serializationObject.name = texture.name;
             serializationObject.hasAlpha = texture.hasAlpha;
+            serializationObject.isCube = true;
             serializationObject.level = texture.level;
             serializationObject.coordinatesMode = texture.coordinatesMode;
 
@@ -471,7 +472,7 @@
             serializationGeometries.torusKnots.push(serializeTorusKnot(<Geometry.Primitives.TorusKnot>geometry));
         }
         else if (geometry instanceof Geometry.Primitives._Primitive) {
-            throw new Error("Unknow primitive type");
+            throw new Error("Unknown primitive type");
         }
         else {
             serializationGeometries.vertexData.push(serializeVertexData(geometry));
@@ -740,6 +741,49 @@
         return serializationObject;
     };
 
+    var finalizeSingleMesh = function (mesh: Mesh, serializationObject : any) {
+        //only works if the mesh is already loaded
+        if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
+            //serialize material
+            if (mesh.material) {
+                if (mesh.material instanceof StandardMaterial) {
+                    serializationObject.materials = serializationObject.materials || [];
+                    serializationObject.materials.push(serializeMaterial(<StandardMaterial>mesh.material));
+                } else if (mesh.material instanceof MultiMaterial) {
+                    serializationObject.multiMaterials = serializationObject.multiMaterials || [];
+                    serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>mesh.material));
+                }
+            }
+            //serialize geometry
+            var geometry = mesh._geometry;
+            if (geometry) {
+                if (!serializationObject.geometries) {
+                    serializationObject.geometries = {};
+
+                    serializationObject.geometries.boxes = [];
+                    serializationObject.geometries.spheres = [];
+                    serializationObject.geometries.cylinders = [];
+                    serializationObject.geometries.toruses = [];
+                    serializationObject.geometries.grounds = [];
+                    serializationObject.geometries.planes = [];
+                    serializationObject.geometries.torusKnots = [];
+                    serializationObject.geometries.vertexData = [];
+                }
+
+                serializeGeometry(geometry, serializationObject.geometries);
+            }
+            // Skeletons
+            if (mesh.skeleton) {
+                serializationObject.skeletons = serializationObject.skeletons || [];
+                serializationObject.skeletons.push(serializeSkeleton(mesh.skeleton));
+            }
+
+            //serialize the actual mesh
+            serializationObject.meshes = serializationObject.meshes || [];
+            serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+        }
+    }
+
 
     export class SceneSerializer {
         public static Serialize(scene: Scene): any {
@@ -859,49 +903,26 @@
             return serializationObject;
         }
 
-        public static SerializeMesh(mesh: Mesh): any {
+        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents : boolean = false): any {
             var serializationObject: any = {};
-			
-            //only works if the mesh is already loaded
-            if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
-                //serialize material
-                if (mesh.material) {
-                    if (mesh.material instanceof StandardMaterial) {
-                        serializationObject.materials = [];
-                        serializationObject.materials.push(serializeMaterial(<StandardMaterial>mesh.material));
-                    } else if (mesh.material instanceof MultiMaterial) {
-                        serializationObject.multiMaterials = [];
-                        serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>mesh.material));
+
+            toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
+
+            if (withParents) {
+                //deliberate for loop! not for each, appended should be processed as well.
+                for (var i = 0; i < toSerialize.length; ++i) {
+                    if (toSerialize[i].parent) {
+                        toSerialize.push(toSerialize[i].parent);
                     }
                 }
-                //serialize geometry
-                var geometry = mesh._geometry;
-                if (geometry) {
-                    serializationObject.geometries = {};
-
-                    serializationObject.geometries.boxes = [];
-                    serializationObject.geometries.spheres = [];
-                    serializationObject.geometries.cylinders = [];
-                    serializationObject.geometries.toruses = [];
-                    serializationObject.geometries.grounds = [];
-                    serializationObject.geometries.planes = [];
-                    serializationObject.geometries.torusKnots = [];
-                    serializationObject.geometries.vertexData = [];
-
-                    serializeGeometry(geometry, serializationObject.geometries);
-                }
-                // Skeletons
-                if (mesh.skeleton) {
-                    serializationObject.skeletons = [];
-                    serializationObject.skeletons.push(serializeSkeleton(mesh.skeleton));
-                }
-				
-                //serialize the actual mesh
-                serializationObject.meshes = [];
-                serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
             }
+
+            toSerialize.forEach(function (mesh: Mesh) {
+                finalizeSingleMesh(mesh, serializationObject);
+            });
 
             return serializationObject;
         }
     }
 }
+
