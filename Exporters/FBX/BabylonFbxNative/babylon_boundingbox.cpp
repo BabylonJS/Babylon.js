@@ -19,12 +19,12 @@ babylon_boundingbox::babylon_boundingbox()
 babylon_boundingbox::babylon_boundingbox(FbxScene* scene){
 	FbxVector4 vmin, vmax, vcenter;
 	scene->ComputeBoundingBoxMinMaxCenter(vmin, vmax, vcenter);
-	_minX = vmin[0];
-	_minY = vmin[1];
-	_minZ = vmin[2];
-	_maxX = vmax[0];
-	_maxY = vmax[1];
-	_maxZ = vmax[2];
+	_minX = static_cast<float>(vmin[0]);
+	_minY = static_cast<float>(vmin[1]);
+	_minZ = static_cast<float>(vmin[2]);
+	_maxX = static_cast<float>(vmax[0]);
+	_maxY = static_cast<float>(vmax[1]);
+	_maxZ = static_cast<float>(vmax[2]);
 
 }
 void babylon_boundingbox::addPosition(float x, float y, float z){

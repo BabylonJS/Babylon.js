@@ -84,7 +84,7 @@ struct babylon_vector2{
 	babylon_vector2() :x(0), y(0){}
 	babylon_vector2(float x, float y, float z) :x(x), y(y){}
 	babylon_vector2(const babylon_vector2& v) :x(v.x), y(v.y){}
-	babylon_vector2(const FbxDouble2& v) :x(v[0]), y(v[1]){}
+	babylon_vector2(const FbxDouble2& v) :x(static_cast<float>(v[0])), y(static_cast<float>(v[1])){}
 
 };
 
@@ -253,7 +253,7 @@ struct babylon_color{
 	float a;
 
 	babylon_color() :r(0), g(0), b(0), a(0){}
-	babylon_color(const FbxColor& v) : r(v.mRed), g(v.mGreen), b(v.mBlue), a(v.mAlpha){}
+	babylon_color(const FbxColor& v) : r(static_cast<float>(v.mRed)), g(static_cast<float>(v.mGreen)), b(static_cast<float>(v.mBlue)), a(static_cast<float>(v.mAlpha)){}
 };
 
 inline bool operator <(const babylon_color& lhs, const babylon_color& rhs){

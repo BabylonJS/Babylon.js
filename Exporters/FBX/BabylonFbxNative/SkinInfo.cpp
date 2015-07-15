@@ -31,7 +31,7 @@ void ComputeBoneHierarchy(const std::vector<FbxNode*>& unsortedFlatListOfNodes,
 		info.linkNode = unsortedFlatListOfNodes[ix];
 		info.parentBoneIndex = currentRootIndex;
 		info.name = getNodeId(node);
-		auto boneIndex = output.size();
+		auto boneIndex = static_cast<int>(output.size());
 		output.push_back(info);
 		clusterIndexToBoneIndex[ix] = boneIndex;
 
@@ -45,7 +45,7 @@ void ComputeBoneHierarchy(const std::vector<FbxNode*>& unsortedFlatListOfNodes,
 			controlPointsData[controlPoint].push_back(biw);
 		}
 		// recursively parse children
-		ComputeBoneHierarchy(unsortedFlatListOfNodes, unsortedFlatListOfClusters, output, clusterIndexToBoneIndex, controlPointsData, node, boneIndex);
+		ComputeBoneHierarchy(unsortedFlatListOfNodes, unsortedFlatListOfClusters, output, clusterIndexToBoneIndex, controlPointsData, node, static_cast<int>(boneIndex));
 	}
 }
 FbxAMatrix NotDecomposedMultiply(const FbxAMatrix& lhs, const FbxAMatrix& rhs){
@@ -151,7 +151,7 @@ _node(meshNode), _mesh(meshNode->GetMesh()), _skin(nullptr)
 	auto animLengthInFrame = endFrame - startFrame + 1;
 
 
-	for (auto ix = 0ll; ix < animLengthInFrame; ix++){
+	for (auto ix = 0; ix < animLengthInFrame; ix++){
 		FbxTime currTime;
 		currTime.SetFrame(startFrame + ix, animTimeMode);
 
@@ -193,7 +193,7 @@ void SkinInfo::buildBabylonSkeleton(BabylonSkeleton& skel){
 	skel.name = getNodeId(_node) + L"_skeleton";
 	for (auto& b : _bones){
 		BabylonBone babbone;
-		babbone.index = skel.bones.size();
+		babbone.index = static_cast<int>(skel.bones.size());
 		//babbone.matrix = ConvertToBabylonCoordinateSystem( b.matrixLocalBindPose);
 		babbone.matrix = b.matrixLocalBindPose;
 		babbone.name = b.name;
@@ -208,7 +208,7 @@ void SkinInfo::buildBabylonSkeleton(BabylonSkeleton& skel){
 		auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 		auto animLengthInFrame = endFrame - startFrame + 1;
 
-		auto matrixAnim = std::make_shared<BabylonAnimation<FbxAMatrix>>(BabylonAnimationBase::loopBehavior_Cycle, animFrameRate, L"_matrix", L"_matrix", true, 0, animLengthInFrame, true);
+		auto matrixAnim = std::make_shared<BabylonAnimation<FbxAMatrix>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"_matrix", L"_matrix", true, 0, static_cast<int>(animLengthInFrame), true);
 		for (auto& kf : b.keyFrames){
 
 			babylon_animation_key<FbxAMatrix> key;
