@@ -398,8 +398,7 @@
             var vTotalDistance: number[] = []; 		//  vTotalDistance[i] : total distance between points i of first and last path from pathArray
             var minlg: number;          	        // minimal length among all paths from pathArray
             var lg: number[] = [];        		    // array of path lengths : nb of vertex per path
-            var idx: number[] = [];       		    // array of path indexes : index of each path (first vertex) in positions array
-
+            var idx: number[] = [];       		    // array of positions path indexes : index of each path (first vertex) in positions array
             var p: number;							// path iterator
             var i: number;							// point iterator
             var j: number;							// point iterator
@@ -417,15 +416,17 @@
 
             // positions and horizontal distances (u)
             var idc: number = 0;
-            minlg = pathArray[0].length;
+            minlg = (closePath) ? pathArray[0].length + 1 : pathArray[0].length;
             for (p = 0; p < pathArray.length; p++) {
                 uTotalDistance[p] = 0;
                 us[p] = [0];
                 var path: Vector3[] = pathArray[p];
+                if (closePath) {
+                    path.push(path[0]);
+                }
                 var l: number = path.length;
                 minlg = (minlg < l) ? minlg : l;
-                lg[p] = l;
-                idx[p] = idc;
+
                 j = 0;
                 while (j < l) {
                     positions.push(path[j].x, path[j].y, path[j].z);
@@ -437,11 +438,9 @@
                     }
                     j++;
                 }
-                if (closePath) {
-                    vectlg = path[0].subtract(path[j - 1]).length();
-                    dist = vectlg + uTotalDistance[p];
-                    uTotalDistance[p] = dist;
-                }
+                 
+                lg[p] = l;
+                idx[p] = idc;
                 idc += l;
             }
 
@@ -469,7 +468,7 @@
             }
 
 
-            // uvs
+            // uvs            
             var u: number;
             var v: number;
             for (p = 0; p < pathArray.length; p++) {
@@ -480,6 +479,7 @@
                 }
             }
 
+
             // indices
             p = 0;                    					// path index
             var pi: number = 0;                    		// positions array index
@@ -488,28 +488,14 @@
             var min: number = (l1 < l2) ? l1 : l2;   	// current path stop index
             var shft: number = idx[1] - idx[0];         // shift 
             var path1nb: number = closeArray ? lg.length : lg.length - 1;     // number of path1 to iterate	
-            var t1: number;								// two consecutive triangles, so 4 points : point1
-            var t2: number;								// point2
-            var t3: number;								// point3
-            var t4: number;								// point4
 
             while (pi <= min && p < path1nb) {       	//  stay under min and don't go over next to last path
                 // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
-                t1 = pi;
-                t2 = pi + shft;
-                t3 = pi + 1;
-                t4 = pi + shft + 1;
 
                 indices.push(pi, pi + shft, pi + 1);
                 indices.push(pi + shft + 1, pi + 1, pi + shft);
                 pi += 1;
-                if (pi === min) {                   			// if end of one of two consecutive paths reached, go next existing path
-                    if (closePath) {                          	// if closePath, add last triangles between start and end of the paths
-                        indices.push(pi, pi + shft, idx[p]);
-                        indices.push(idx[p] + shft, idx[p], pi + shft);
-                        t3 = idx[p];
-                        t4 = idx[p] + shft;
-                    }
+                if (pi === min) {                   			// if end of one of two consecutive paths reached, go to next existing path
                     p++;
                     if (p === lg.length - 1) {                 // last path of pathArray reached <=> closeArray == true
                         shft = idx[0] - idx[p];
@@ -521,7 +507,6 @@
                         l1 = lg[p] - 1;
                         l2 = lg[p + 1] - 1;
                     }
-
                     pi = idx[p];
                     min = (l1 < l2) ? l1 + pi : l2 + pi;
                 }
@@ -529,7 +514,27 @@
 
             // normals
             VertexData.ComputeNormals(positions, indices, normals);
-
+            
+            if (closePath) {
+                var indexFirst: number = 0;
+                var indexLast: number = 0; 
+                for (p = 0; p < pathArray.length; p++) {
+                    indexFirst = idx[p] * 3;
+                    if (p + 1 < pathArray.length) {
+                        indexLast = (idx[p + 1] - 1) * 3;
+                    }
+                    else {
+                        indexLast = normals.length - 3;
+                    }
+                    normals[indexFirst] = (normals[indexFirst] + normals[indexLast]) * 0.5;
+                    normals[indexFirst + 1] = (normals[indexFirst + 1] + normals[indexLast + 1]) * 0.5;
+                    normals[indexFirst + 2] = (normals[indexFirst + 2] + normals[indexLast + 2]) * 0.5;
+                    normals[indexLast] = normals[indexFirst];
+                    normals[indexLast + 1] = normals[indexFirst + 1];
+                    normals[indexLast + 2] = normals[indexFirst + 2];
+                }
+            }
+            
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
