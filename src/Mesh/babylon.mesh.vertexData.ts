@@ -419,7 +419,6 @@
             var closePathCorr: number = (closePath) ? 1 : 0;
             var path: Vector3[];
             var l: number;
-
             minlg = pathArray[0].length;
             
             for (p = 0; p < pathArray.length; p++) {
