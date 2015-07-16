@@ -307,53 +307,26 @@ BabylonTexture::BabylonTexture(FbxFileTexture* texture){
 		break;
 	}
 
-	auto translation = texture->Translation.Get();
-	auto rot = texture->Rotation.Get();
-	auto scale  = texture->Scaling.Get();
-	uOffset = static_cast<float>(translation[0]);
-	vOffset = static_cast<float>(translation[1]);
-	uScale = static_cast<float>(scale[0]);
-	vScale = static_cast<float>(scale[1]);
-	uAng = static_cast<float>(rot[0] * Euler2Rad);
-	vAng = static_cast<float>(rot[1] * Euler2Rad);
-	wAng = static_cast<float>(rot[2] * Euler2Rad);
+	babylon_vector3 rot = texture->Rotation.Get();
+	babylon_vector3 scaling = texture->Scaling.Get();
+
+	babylon_vector2 trans((float)texture->GetTranslationU(), (float)texture->GetTranslationV());
+	
+	
+	uOffset = trans.x;
+	vOffset = trans.y;
+	uScale = scaling.x;
+	vScale = scaling.y;
+	uAng = rot.x * Euler2Rad;
+	vAng = rot.y * Euler2Rad;
+	wAng = rot.z * Euler2Rad;
 	auto uwrapMode = texture->GetWrapModeU();
 	auto vwrapMode = texture->GetWrapModeV();
 	wrapU = uwrapMode == FbxTexture::eRepeat;
 	wrapV = vwrapMode == FbxTexture::eRepeat;
 
-	auto animStack = texture->GetScene()->GetSrcObject<FbxAnimStack>(0);
-	FbxString animStackName = animStack->GetName();
-	FbxTakeInfo* takeInfo = texture->GetScene()->GetTakeInfo(animStackName);
-	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
-	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
-	auto animLengthInFrame = endFrame - startFrame + 1;
-	auto uOffsetAnim = std::make_shared<BabylonAnimation<float>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"uOffset", L"uOffset", true, 0, static_cast<int>(animLengthInFrame), true);
-	auto vOffsetAnim = std::make_shared<BabylonAnimation<float>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"vOffset", L"vOffset", true, 0, static_cast<int>(animLengthInFrame), true);
 	
-	for (auto ix = 0; ix < animLengthInFrame; ix++) {
-		FbxTime currTime;
-		currTime.SetFrame(startFrame + ix, animTimeMode);
-
-		babylon_animation_key<float> uKey;
-		babylon_animation_key<float> vKey;
-		uKey.frame = ix;
-		vKey.frame = ix;
-		auto currTrans = texture->Translation.EvaluateValue(currTime);
-		uKey.values = static_cast<float>(currTrans[0]);
-		vKey.values = static_cast<float>(currTrans[1]);
-		uOffsetAnim->appendKey(uKey);
-		vOffsetAnim->appendKey(vKey);
-
-	}
-	if (!uOffsetAnim->isConstant()) {
-		animations.push_back(uOffsetAnim);
-	}
-	if (!vOffsetAnim->isConstant()) {
-		animations.push_back(vOffsetAnim);
-	}
+	
 	
 
 }

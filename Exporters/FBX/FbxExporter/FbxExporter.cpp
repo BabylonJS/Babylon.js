@@ -42,16 +42,6 @@ std::string toString(FbxDouble3 value) {
 	s << "(" << value[0] << "," << value[1] << "," << value[2] << ")";
 	return s.str();
 }
-void printNode(BabylonNode& node, int indent = 0) {
-	for (auto i = 0; i < indent; ++i) {
-		std::cout << '\t';
-	}
-	std::cout << node.uniqueId() << " : " << node.name() << " " << toString(node.nodeType()) << " has only skeleton desc : " << node.hasOnlySkeletonDescendants() << std::endl;
-	for (auto i = 0; i < indent; ++i) {
-		std::cout << '\t';
-	}
-	
-}
 
 
 std::string wstringToUtf8(const std::wstring& src){
@@ -250,10 +240,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	FbxSceneLoader sceneLoader(wstringToUtf8(wInputPath));
 	auto root = sceneLoader.rootNode();
-	printNode(*root);
 
 	BabylonScene babScene;
-	std::cout << "exporting empty nodes as empty meshes" << std::endl;
 	exploreMeshes(babScene, *root, skipEmptyNodes);
 
 	for (auto& mat : babScene.materials()){
