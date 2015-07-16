@@ -1079,17 +1079,53 @@ var BABYLON;
                                 j++;
                                 i += 3;
                             }
+                            if (ribbonInstance._closePath) {
+                                positions[i] = path[0].x;
+                                positions[i + 1] = path[0].y;
+                                positions[i + 2] = path[0].z;
+                                i += 3;
+                            }
                         }
                     }
                 };
-                var computeNormals = !(ribbonInstance.areNormalsFrozen);
-                ribbonInstance.updateMeshPositions(positionFunction, computeNormals);
+                var positions = ribbonInstance.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                positionFunction(positions);
+                ribbonInstance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+                if (!(ribbonInstance.areNormalsFrozen)) {
+                    var indices = ribbonInstance.getIndices();
+                    var normals = ribbonInstance.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                    BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+                    if (ribbonInstance._closePath) {
+                        var indexFirst = 0;
+                        var indexLast = 0;
+                        for (var p = 0; p < pathArray.length; p++) {
+                            indexFirst = ribbonInstance._idx[p] * 3;
+                            if (p + 1 < pathArray.length) {
+                                indexLast = (ribbonInstance._idx[p + 1] - 1) * 3;
+                            }
+                            else {
+                                indexLast = normals.length - 3;
+                            }
+                            normals[indexFirst] = (normals[indexFirst] + normals[indexLast]) * 0.5;
+                            normals[indexFirst + 1] = (normals[indexFirst + 1] + normals[indexLast + 1]) * 0.5;
+                            normals[indexFirst + 2] = (normals[indexFirst + 2] + normals[indexLast + 2]) * 0.5;
+                            normals[indexLast] = normals[indexFirst];
+                            normals[indexLast + 1] = normals[indexFirst + 1];
+                            normals[indexLast + 2] = normals[indexFirst + 2];
+                        }
+                    }
+                    ribbonInstance.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+                }
                 return ribbonInstance;
             }
             else {
                 var ribbon = new Mesh(name, scene);
                 ribbon.sideOrientation = sideOrientation;
                 var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                if (closePath) {
+                    ribbon._idx = vertexData._idx;
+                }
+                ribbon._closePath = closePath;
                 vertexData.applyToMesh(ribbon, updatable);
                 return ribbon;
             }

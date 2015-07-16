@@ -420,7 +420,7 @@
             var path: Vector3[];
             var l: number;
             minlg = pathArray[0].length;
-            
+
             for (p = 0; p < pathArray.length; p++) {
                 uTotalDistance[p] = 0;
                 us[p] = [0];
@@ -1460,3 +1460,4 @@
         }
     }
 } 
+
