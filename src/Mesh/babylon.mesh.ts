@@ -1257,11 +1257,45 @@
                                 j++;
                                 i += 3;
                             }
+                            if ((<any>ribbonInstance)._closePath) {
+                                positions[i] = path[0].x;
+                                positions[i + 1] = path[0].y;
+                                positions[i + 2] = path[0].z
+                                i += 3;
+                            }
                         }
                     }
                 };
-                var computeNormals = !(ribbonInstance.areNormalsFrozen);
-                ribbonInstance.updateMeshPositions(positionFunction, computeNormals);
+                var positions = ribbonInstance.getVerticesData(VertexBuffer.PositionKind);
+                positionFunction(positions);
+                ribbonInstance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
+                if ( !(ribbonInstance.areNormalsFrozen) ) {
+                    var indices = ribbonInstance.getIndices();
+                    var normals = ribbonInstance.getVerticesData(VertexBuffer.NormalKind);
+                    VertexData.ComputeNormals(positions, indices, normals);
+                    
+                    if ((<any>ribbonInstance)._closePath) {
+                        var indexFirst: number = 0;
+                        var indexLast: number = 0;
+                        for (var p = 0; p < pathArray.length; p++) {
+                            indexFirst = (<any>ribbonInstance)._idx[p] * 3;
+                            if (p + 1 < pathArray.length) {
+                                indexLast = ((<any>ribbonInstance)._idx[p + 1] - 1) * 3;
+                            }
+                            else {
+                                indexLast = normals.length - 3;
+                            }
+                            normals[indexFirst] = (normals[indexFirst] + normals[indexLast]) * 0.5;
+                            normals[indexFirst + 1] = (normals[indexFirst + 1] + normals[indexLast + 1]) * 0.5;
+                            normals[indexFirst + 2] = (normals[indexFirst + 2] + normals[indexLast + 2]) * 0.5;
+                            normals[indexLast] = normals[indexFirst];
+                            normals[indexLast + 1] = normals[indexFirst + 1];
+                            normals[indexLast + 2] = normals[indexFirst + 2];
+                        }
+                    }
+                    
+                    ribbonInstance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
+                }
 
                 return ribbonInstance;
             }
@@ -1271,6 +1305,10 @@
                 ribbon.sideOrientation = sideOrientation;
 
                 var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                if (closePath) {
+                    (<any>ribbon)._idx = (<any>vertexData)._idx;
+                }
+                (<any>ribbon)._closePath = closePath;
 
                 vertexData.applyToMesh(ribbon, updatable);
 

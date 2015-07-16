@@ -398,7 +398,7 @@
             var vTotalDistance: number[] = []; 		//  vTotalDistance[i] : total distance between points i of first and last path from pathArray
             var minlg: number;          	        // minimal length among all paths from pathArray
             var lg: number[] = [];        		    // array of path lengths : nb of vertex per path
-            var idx: number[] = [];       		    // array of positions path indexes : index of each path (first vertex) in positions array
+            var idx: number[] = [];       		    // array of path indexes : index of each path (first vertex) in the total vertex number
             var p: number;							// path iterator
             var i: number;							// point iterator
             var j: number;							// point iterator
@@ -416,15 +416,16 @@
 
             // positions and horizontal distances (u)
             var idc: number = 0;
-            minlg = (closePath) ? pathArray[0].length + 1 : pathArray[0].length;
+            var closePathCorr: number = (closePath) ? 1 : 0;
+            var path: Vector3[];
+            var l: number;
+            minlg = pathArray[0].length;
+            
             for (p = 0; p < pathArray.length; p++) {
                 uTotalDistance[p] = 0;
                 us[p] = [0];
-                var path: Vector3[] = pathArray[p];
-                if (closePath) {
-                    path.push(path[0]);
-                }
-                var l: number = path.length;
+                path = pathArray[p];
+                l = path.length;
                 minlg = (minlg < l) ? minlg : l;
 
                 j = 0;
@@ -439,21 +440,40 @@
                     j++;
                 }
 
-                lg[p] = l;
+                if (closePath) {
+                    j--;
+                    positions.push(path[0].x, path[0].y, path[0].z);
+                    vectlg = path[j].subtract(path[0]).length();
+                    dist = vectlg + uTotalDistance[p];
+                    us[p].push(dist);
+                    uTotalDistance[p] = dist;
+                }
+
+                lg[p] = l + closePathCorr;
                 idx[p] = idc;
-                idc += l;
+                idc += (l + closePathCorr);
             }
 
             // vertical distances (v)
-            for (i = 0; i < minlg; i++) {
+            var path1: Vector3[];
+            var path2: Vector3[];
+            var vertex1: Vector3;
+            var vertex2: Vector3;
+            for (i = 0; i < minlg + closePathCorr; i++) {
                 vTotalDistance[i] = 0;
                 vs[i] = [0];
-                var path1: Vector3[];
-                var path2: Vector3[];
                 for (p = 0; p < pathArray.length - 1; p++) {
                     path1 = pathArray[p];
                     path2 = pathArray[p + 1];
-                    vectlg = path2[i].subtract(path1[i]).length();
+                    if (i === minlg) {   // closePath
+                        vertex1 = path1[0];
+                        vertex2 = path2[0];
+                    }
+                    else {
+                        vertex1 = path1[i];
+                        vertex2 = path2[i];
+                    }
+                    vectlg = vertex2.subtract(vertex1).length();
                     dist = vectlg + vTotalDistance[i];
                     vs[i].push(dist);
                     vTotalDistance[i] = dist;
@@ -472,13 +492,12 @@
             var u: number;
             var v: number;
             for (p = 0; p < pathArray.length; p++) {
-                for (i = 0; i < minlg; i++) {
+                for (i = 0; i < minlg + closePathCorr; i++) {
                     u = us[p][i] / uTotalDistance[p];
                     v = vs[i][p] / vTotalDistance[i];
                     uvs.push(u, v);
                 }
             }
-
 
             // indices
             p = 0;                    					// path index
@@ -487,7 +506,7 @@
             var l2: number = lg[p + 1] - 1;         	// path2 length
             var min: number = (l1 < l2) ? l1 : l2;   	// current path stop index
             var shft: number = idx[1] - idx[0];         // shift 
-            var path1nb: number = closeArray ? lg.length : lg.length - 1;     // number of path1 to iterate	
+            var path1nb: number = closeArray ? lg.length : lg.length - 1;     // number of path1 to iterate	on
 
             while (pi <= min && p < path1nb) {       	//  stay under min and don't go over next to last path
                 // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
@@ -545,6 +564,10 @@
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+
+            if (closePath) {
+                (<any>vertexData)._idx = idx;
+            }
 
             return vertexData;
         }
