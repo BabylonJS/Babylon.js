@@ -15334,17 +15334,53 @@ var BABYLON;
                                 j++;
                                 i += 3;
                             }
+                            if (ribbonInstance._closePath) {
+                                positions[i] = path[0].x;
+                                positions[i + 1] = path[0].y;
+                                positions[i + 2] = path[0].z;
+                                i += 3;
+                            }
                         }
                     }
                 };
-                var computeNormals = !(ribbonInstance.areNormalsFrozen);
-                ribbonInstance.updateMeshPositions(positionFunction, computeNormals);
+                var positions = ribbonInstance.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                positionFunction(positions);
+                ribbonInstance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+                if (!(ribbonInstance.areNormalsFrozen)) {
+                    var indices = ribbonInstance.getIndices();
+                    var normals = ribbonInstance.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                    BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+                    if (ribbonInstance._closePath) {
+                        var indexFirst = 0;
+                        var indexLast = 0;
+                        for (var p = 0; p < pathArray.length; p++) {
+                            indexFirst = ribbonInstance._idx[p] * 3;
+                            if (p + 1 < pathArray.length) {
+                                indexLast = (ribbonInstance._idx[p + 1] - 1) * 3;
+                            }
+                            else {
+                                indexLast = normals.length - 3;
+                            }
+                            normals[indexFirst] = (normals[indexFirst] + normals[indexLast]) * 0.5;
+                            normals[indexFirst + 1] = (normals[indexFirst + 1] + normals[indexLast + 1]) * 0.5;
+                            normals[indexFirst + 2] = (normals[indexFirst + 2] + normals[indexLast + 2]) * 0.5;
+                            normals[indexLast] = normals[indexFirst];
+                            normals[indexLast + 1] = normals[indexFirst + 1];
+                            normals[indexLast + 2] = normals[indexFirst + 2];
+                        }
+                    }
+                    ribbonInstance.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+                }
                 return ribbonInstance;
             }
             else {
                 var ribbon = new Mesh(name, scene);
                 ribbon.sideOrientation = sideOrientation;
                 var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                if (closePath) {
+                    ribbon._idx = vertexData._idx;
+                }
+                ribbon._closePath = closePath;
                 vertexData.applyToMesh(ribbon, updatable);
                 return ribbon;
             }
@@ -25697,7 +25733,7 @@ var BABYLON;
             var vTotalDistance = []; //  vTotalDistance[i] : total distance between points i of first and last path from pathArray
             var minlg; // minimal length among all paths from pathArray
             var lg = []; // array of path lengths : nb of vertex per path
-            var idx = []; // array of positions path indexes : index of each path (first vertex) in positions array
+            var idx = []; // array of path indexes : index of each path (first vertex) in the total vertex number
             var p; // path iterator
             var i; // point iterator
             var j; // point iterator
@@ -25713,15 +25749,15 @@ var BABYLON;
             }
             // positions and horizontal distances (u)
             var idc = 0;
-            minlg = (closePath) ? pathArray[0].length + 1 : pathArray[0].length;
+            var closePathCorr = (closePath) ? 1 : 0;
+            var path;
+            var l;
+            minlg = pathArray[0].length;
             for (p = 0; p < pathArray.length; p++) {
                 uTotalDistance[p] = 0;
                 us[p] = [0];
-                var path = pathArray[p];
-                if (closePath) {
-                    path.push(path[0]);
-                }
-                var l = path.length;
+                path = pathArray[p];
+                l = path.length;
                 minlg = (minlg < l) ? minlg : l;
                 j = 0;
                 while (j < l) {
@@ -25734,20 +25770,38 @@ var BABYLON;
                     }
                     j++;
                 }
-                lg[p] = l;
+                if (closePath) {
+                    j--;
+                    positions.push(path[0].x, path[0].y, path[0].z);
+                    vectlg = path[j].subtract(path[0]).length();
+                    dist = vectlg + uTotalDistance[p];
+                    us[p].push(dist);
+                    uTotalDistance[p] = dist;
+                }
+                lg[p] = l + closePathCorr;
                 idx[p] = idc;
-                idc += l;
+                idc += (l + closePathCorr);
             }
             // vertical distances (v)
-            for (i = 0; i < minlg; i++) {
+            var path1;
+            var path2;
+            var vertex1;
+            var vertex2;
+            for (i = 0; i < minlg + closePathCorr; i++) {
                 vTotalDistance[i] = 0;
                 vs[i] = [0];
-                var path1;
-                var path2;
                 for (p = 0; p < pathArray.length - 1; p++) {
                     path1 = pathArray[p];
                     path2 = pathArray[p + 1];
-                    vectlg = path2[i].subtract(path1[i]).length();
+                    if (i === minlg) {
+                        vertex1 = path1[0];
+                        vertex2 = path2[0];
+                    }
+                    else {
+                        vertex1 = path1[i];
+                        vertex2 = path2[i];
+                    }
+                    vectlg = vertex2.subtract(vertex1).length();
                     dist = vectlg + vTotalDistance[i];
                     vs[i].push(dist);
                     vTotalDistance[i] = dist;
@@ -25764,7 +25818,7 @@ var BABYLON;
             var u;
             var v;
             for (p = 0; p < pathArray.length; p++) {
-                for (i = 0; i < minlg; i++) {
+                for (i = 0; i < minlg + closePathCorr; i++) {
                     u = us[p][i] / uTotalDistance[p];
                     v = vs[i][p] / vTotalDistance[i];
                     uvs.push(u, v);
@@ -25777,7 +25831,7 @@ var BABYLON;
             var l2 = lg[p + 1] - 1; // path2 length
             var min = (l1 < l2) ? l1 : l2; // current path stop index
             var shft = idx[1] - idx[0]; // shift 
-            var path1nb = closeArray ? lg.length : lg.length - 1; // number of path1 to iterate	
+            var path1nb = closeArray ? lg.length : lg.length - 1; // number of path1 to iterate	on
             while (pi <= min && p < path1nb) {
                 // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
                 indices.push(pi, pi + shft, pi + 1);
@@ -25828,6 +25882,9 @@ var BABYLON;
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            if (closePath) {
+                vertexData._idx = idx;
+            }
             return vertexData;
         };
         VertexData.CreateBox = function (size, sideOrientation) {

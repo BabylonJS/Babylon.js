@@ -1269,11 +1269,11 @@
                 var positions = ribbonInstance.getVerticesData(VertexBuffer.PositionKind);
                 positionFunction(positions);
                 ribbonInstance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
-                if ( !(ribbonInstance.areNormalsFrozen) ) {
+                if (!(ribbonInstance.areNormalsFrozen)) {
                     var indices = ribbonInstance.getIndices();
                     var normals = ribbonInstance.getVerticesData(VertexBuffer.NormalKind);
                     VertexData.ComputeNormals(positions, indices, normals);
-                    
+
                     if ((<any>ribbonInstance)._closePath) {
                         var indexFirst: number = 0;
                         var indexLast: number = 0;
@@ -1293,7 +1293,7 @@
                             normals[indexLast + 2] = normals[indexFirst + 2];
                         }
                     }
-                    
+
                     ribbonInstance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
                 }
 
@@ -1692,7 +1692,7 @@
                         rotationMatrix = Matrix.RotationAxis(tangents[i], step * t);
                         rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                         circlePath.push(rotated);
-                    }                    
+                    }
                     circlePaths[index] = circlePath;
                     index++;
                 }
