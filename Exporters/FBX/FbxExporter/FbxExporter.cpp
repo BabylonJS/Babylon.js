@@ -52,7 +52,33 @@ std::string wstringToUtf8(const std::wstring& src){
 	return result;
 }
 
-
+void fixupTextureCoordinateIndices(BabylonMaterial& mat, BabylonMesh& mesh) {
+	std::vector<std::shared_ptr<BabylonTexture>> textures;
+	if (mat.ambientTexture) {
+		textures.push_back(mat.ambientTexture);
+	}
+	if (mat.diffuseTexture) {
+		textures.push_back(mat.diffuseTexture);
+	}
+	if (mat.specularTexture) {
+		textures.push_back(mat.specularTexture);
+	}
+	if (mat.emissiveTexture) {
+		textures.push_back(mat.emissiveTexture);
+	}
+	if (mat.reflectionTexture) {
+		textures.push_back(mat.reflectionTexture);
+	}
+	if (mat.bumpTexture) {
+		textures.push_back(mat.bumpTexture);
+	}
+	for (auto& tex : textures) {
+		auto found = std::find(mesh.uvsets.begin(), mesh.uvsets.end(), tex->uvset);
+		if (found != mesh.uvsets.end()) {
+			tex->coordinatesIndex = static_cast<int>(found - mesh.uvsets.begin());
+		}
+	}
+}
 void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) {
 	if (node.nodeType() == BabylonNodeType::Skeleton && node.hasOnlySkeletonDescendants()) {
 		return;
@@ -67,25 +93,30 @@ void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) 
 	case BabylonNodeType::Mesh:
 	case BabylonNodeType::Skeleton:
 	{
+
+		scene.meshes().emplace_back(&node);
+		auto& mesh = scene.meshes()[scene.meshes().size() - 1];
 		auto matCount = node.fbxNode()->GetMaterialCount();
 		BabylonMultiMaterial multiMat;
 		for (auto i = 0; i < matCount; ++i) {
 			auto mat = node.fbxNode()->GetMaterial(i);
 			if (mat) {
-				BabylonMaterial babMat(mat);
-				auto id = babMat.id;
-				multiMat.materials.push_back(id);
+
+				auto id = getMaterialId(mat);
 				auto existing = std::find_if(scene.materials().begin(), scene.materials().end(), [id](const BabylonMaterial& e) {
 					return e.id == id;
 				});
 				if (existing == scene.materials().end()) {
+					auto babMat = BabylonMaterial(mat);
+					fixupTextureCoordinateIndices(babMat, mesh);
 					scene.materials().push_back(babMat);
 				}
+
+				multiMat.materials.push_back(id);
+				
 			}
 		}
 
-		scene.meshes().emplace_back(&node);
-		auto& mesh = scene.meshes()[scene.meshes().size() - 1];
 		if (mesh.associatedSkeleton){
 			mesh.associatedSkeleton->id = static_cast<int>(scene.skeletons().size()+1);
 			mesh.skeletonId(static_cast<int>(scene.skeletons().size()+1));
@@ -93,10 +124,15 @@ void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) 
 		}
 		if (multiMat.materials.size() > 0) {
 			auto& mesh = scene.meshes()[scene.meshes().size() - 1];
-			multiMat.id = mesh.id();
-			multiMat.name = mesh.name();
-			mesh.materialId(multiMat.id);
-			scene.multiMaterials().push_back(multiMat);
+			/*if (multiMat.materials.size() == 1) {
+				mesh.materialId(multiMat.materials[0]);
+			}
+			else {*/
+				multiMat.id = mesh.id();
+				multiMat.name = mesh.name();
+				mesh.materialId(multiMat.id);
+				scene.multiMaterials().push_back(multiMat);
+			//}
 		}
 	}
 	break;
@@ -311,7 +347,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	wOutputPath.erase(lastDot);
 	wOutputPath.append(L".babylon");
 	DeleteFile(wOutputPath.c_str());
-	std::wofstream stream(wOutputPath);
+	std::ofstream stream(wOutputPath);
 	json.serialize(stream);
 	stream.flush();
 	return 0;

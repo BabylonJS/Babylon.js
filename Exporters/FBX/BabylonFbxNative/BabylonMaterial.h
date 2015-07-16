@@ -13,7 +13,7 @@ public:
 	
 	 std::wstring name;
 	 std::wstring fullPath;
-
+	 std::string uvset;
 		
 	 float level = 1.0f;
 

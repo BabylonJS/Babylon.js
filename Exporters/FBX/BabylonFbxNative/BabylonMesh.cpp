@@ -424,6 +424,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 
 	pivotMatrix.SetIdentity();
 	auto fbxNode = node->fbxNode();
+	
 	std::string ansiName = fbxNode->GetName();
 	name(std::wstring(ansiName.begin(), ansiName.end()));
 	id(getNodeId(fbxNode));
@@ -441,35 +442,57 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
 	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
-	_visibility = node->fbxNode()->Visibility.Get();
+	_visibility = static_cast<float>(node->fbxNode()->Visibility.Get());
 	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"position", L"position", true, 0, static_cast<int>(animLengthInFrame), true);
 	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"rotationQuaternion", L"rotationQuaternion", true, 0, static_cast<int>(animLengthInFrame), true);
 	auto scaleAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"scaling", L"scaling", true, 0, static_cast<int>(animLengthInFrame), true);
 	auto visibilityAnim = std::make_shared<BabylonAnimation<float>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"visibility", L"visibility", true, 0, static_cast<int>(animLengthInFrame), true);
-	for (auto ix = 0; ix < animLengthInFrame; ix++){
-		FbxTime currTime;
-		currTime.SetFrame(startFrame + ix, animTimeMode);
+	auto mesh = fbxNode->GetMesh();
+	_isVisible = fbxNode->Show.Get();
+	
+	auto rotCurveNode = fbxNode->LclRotation.GetCurveNode();
+	auto translateCurveNode = fbxNode->LclTranslation.GetCurveNode();
+	auto scalingCurveNode = fbxNode->LclScaling.GetCurveNode();
+	auto visibilityCurveNode = fbxNode->Visibility.GetCurveNode();
+	if (rotCurveNode || translateCurveNode || scalingCurveNode) {
+		for (auto ix = 0; ix < animLengthInFrame; ix++) {
+			FbxTime currTime;
+			currTime.SetFrame(startFrame + ix, animTimeMode);
 
-		babylon_animation_key<babylon_vector3> poskey;
-		babylon_animation_key<babylon_vector4> rotkey;
-		babylon_animation_key<babylon_vector3> scalekey;
-		babylon_animation_key<float> visibilityKey;
-		poskey.frame = ix;
-		rotkey.frame = ix;
-		scalekey.frame = ix;
-		visibilityKey.frame = ix;
-		auto currTransform = node->GetLocal(currTime);
-		poskey.values = currTransform.translation();
-		rotkey.values = currTransform.rotationQuaternion();
-		scalekey.values = currTransform.scaling();
-		visibilityKey.values = node->fbxNode()->Visibility.EvaluateValue(currTime);
-		posAnim->appendKey(poskey);
-		rotAnim->appendKey(rotkey);
-		scaleAnim->appendKey(scalekey);
-		visibilityAnim->appendKey(visibilityKey);
+			babylon_animation_key<babylon_vector3> poskey;
+			babylon_animation_key<babylon_vector4> rotkey;
+			babylon_animation_key<babylon_vector3> scalekey;
+			poskey.frame = ix;
+			rotkey.frame = ix;
+			scalekey.frame = ix;
+			auto currTransform = node->GetLocal(currTime);
+			poskey.values = currTransform.translation();
+			rotkey.values = currTransform.rotationQuaternion();
+			scalekey.values = currTransform.scaling();
+			posAnim->appendKey(poskey);
+			rotAnim->appendKey(rotkey);
+			scaleAnim->appendKey(scalekey);
 
-		
+
+		}
 	}
+	if (visibilityCurveNode) {
+		for (auto ix = 0; ix < animLengthInFrame; ix++) {
+			FbxTime currTime;
+			currTime.SetFrame(startFrame + ix, animTimeMode);
+
+			babylon_animation_key<float> visibilityKey;
+
+			visibilityKey.frame = ix;
+
+			visibilityKey.values = static_cast<float>(node->fbxNode()->Visibility.EvaluateValue(currTime));
+
+			visibilityAnim->appendKey(visibilityKey);
+
+
+		}
+	}
+	
 	if (!posAnim->isConstant()){
 		animations.push_back(posAnim);
 	}
@@ -482,7 +505,6 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	if (!visibilityAnim->isConstant()) {
 		animations.push_back(visibilityAnim);
 	}
-	auto mesh = fbxNode->GetMesh();
 	if (!mesh) {
 		return;
 	}
@@ -512,6 +534,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 			uniqueUVSets.push_back(value);
 		}
 	}
+	uvsets = uniqueUVSets;
 	bool hasUv = uniqueUVSets.size() > 0;
 	bool hasUv2 = uniqueUVSets.size() > 1;
 	bool hasUv3 = uniqueUVSets.size() > 2;
