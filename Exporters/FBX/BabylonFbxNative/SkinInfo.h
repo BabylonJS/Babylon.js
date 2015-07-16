@@ -8,8 +8,8 @@
 
 struct BoneAnimKeyFrame{
 	int frame;
-	FbxAMatrix matrixLocal;
-	FbxAMatrix matrixGlobal;
+	FbxMatrix matrixLocal;
+	FbxMatrix matrixGlobal;
 };
 struct BoneInfo{
 	FbxNode*  linkNode;
@@ -18,8 +18,8 @@ struct BoneInfo{
 	int parentBoneIndex;
 	std::wstring name;
 
-	FbxAMatrix matrixGlobalBindPose;
-	FbxAMatrix matrixLocalBindPose;
+	FbxMatrix matrixGlobalBindPose;
+	FbxMatrix matrixLocalBindPose;
 	std::vector<BoneAnimKeyFrame> keyFrames;
 };
 
@@ -49,7 +49,7 @@ public:
 	}
 
 	int bonesCount() const{
-		return _bones.size();
+		return static_cast<int>( _bones.size());
 	}
 
 	void buildBabylonSkeleton(BabylonSkeleton& skel);

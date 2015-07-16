@@ -32,6 +32,7 @@ std::string toString(BabylonNodeType type) {
 		return "<empty>";
 		break;
 	default:
+		return "unknown";
 		break;
 	}
 }
@@ -41,43 +42,43 @@ std::string toString(FbxDouble3 value) {
 	s << "(" << value[0] << "," << value[1] << "," << value[2] << ")";
 	return s.str();
 }
-void printNode(BabylonNode& node, int indent = 0) {
-	for (auto i = 0; i < indent; ++i) {
-		std::cout << '\t';
-	}
-	std::cout << node.uniqueId() << " : " << node.name() << " " << toString(node.nodeType()) << " has only skeleton desc : " << node.hasOnlySkeletonDescendants() << std::endl;
-	for (auto i = 0; i < indent; ++i) {
-		std::cout << '\t';
-	}
-	
-}
 
 
 std::string wstringToUtf8(const std::wstring& src){
-	auto size = WideCharToMultiByte(CP_UTF8, 0, src.c_str(), src.size(), nullptr, 0, nullptr, nullptr);
+	auto size = WideCharToMultiByte(CP_UTF8, 0, src.c_str(), static_cast<int>( src.size()), nullptr, 0, nullptr, nullptr);
 	std::string result;
 	result.resize(size, ' ');
-	WideCharToMultiByte(CP_UTF8, 0, src.c_str(), src.size(), &result[0], result.size(),nullptr, nullptr);
+	WideCharToMultiByte(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), &result[0], size,nullptr, nullptr);
 	return result;
 }
 
-bool isNodeOrDescendantVisible(FbxNode* node){
-	if (node == nullptr){
-		return false;
+void fixupTextureCoordinateIndices(BabylonMaterial& mat, BabylonMesh& mesh) {
+	std::vector<std::shared_ptr<BabylonTexture>> textures;
+	if (mat.ambientTexture) {
+		textures.push_back(mat.ambientTexture);
 	}
-	if (node->GetVisibility()){
-		return true;
+	if (mat.diffuseTexture) {
+		textures.push_back(mat.diffuseTexture);
 	}
-
-	auto childCount = node->GetChildCount();
-	for (auto ix = 0; ix < childCount; ++ix){
-		if (isNodeOrDescendantVisible(node->GetChild(ix))){
-			return true;
+	if (mat.specularTexture) {
+		textures.push_back(mat.specularTexture);
+	}
+	if (mat.emissiveTexture) {
+		textures.push_back(mat.emissiveTexture);
+	}
+	if (mat.reflectionTexture) {
+		textures.push_back(mat.reflectionTexture);
+	}
+	if (mat.bumpTexture) {
+		textures.push_back(mat.bumpTexture);
+	}
+	for (auto& tex : textures) {
+		auto found = std::find(mesh.uvsets.begin(), mesh.uvsets.end(), tex->uvset);
+		if (found != mesh.uvsets.end()) {
+			tex->coordinatesIndex = static_cast<int>(found - mesh.uvsets.begin());
 		}
 	}
-	return false;
 }
-
 void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) {
 	if (node.nodeType() == BabylonNodeType::Skeleton && node.hasOnlySkeletonDescendants()) {
 		return;
@@ -92,36 +93,46 @@ void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) 
 	case BabylonNodeType::Mesh:
 	case BabylonNodeType::Skeleton:
 	{
+
+		scene.meshes().emplace_back(&node);
+		auto& mesh = scene.meshes()[scene.meshes().size() - 1];
 		auto matCount = node.fbxNode()->GetMaterialCount();
 		BabylonMultiMaterial multiMat;
 		for (auto i = 0; i < matCount; ++i) {
 			auto mat = node.fbxNode()->GetMaterial(i);
 			if (mat) {
-				BabylonMaterial babMat(mat);
-				auto id = babMat.id;
-				multiMat.materials.push_back(id);
+
+				auto id = getMaterialId(mat);
 				auto existing = std::find_if(scene.materials().begin(), scene.materials().end(), [id](const BabylonMaterial& e) {
 					return e.id == id;
 				});
 				if (existing == scene.materials().end()) {
+					auto babMat = BabylonMaterial(mat);
+					fixupTextureCoordinateIndices(babMat, mesh);
 					scene.materials().push_back(babMat);
 				}
+
+				multiMat.materials.push_back(id);
+				
 			}
 		}
 
-		scene.meshes().emplace_back(&node);
-		auto& mesh = scene.meshes()[scene.meshes().size() - 1];
 		if (mesh.associatedSkeleton){
-			mesh.associatedSkeleton->id = scene.skeletons().size()+1;
-			mesh.skeletonId(scene.skeletons().size()+1);
+			mesh.associatedSkeleton->id = static_cast<int>(scene.skeletons().size()+1);
+			mesh.skeletonId(static_cast<int>(scene.skeletons().size()+1));
 			scene.skeletons().push_back(mesh.associatedSkeleton);
 		}
 		if (multiMat.materials.size() > 0) {
 			auto& mesh = scene.meshes()[scene.meshes().size() - 1];
-			multiMat.id = mesh.id();
-			multiMat.name = mesh.name();
-			mesh.materialId(multiMat.id);
-			scene.multiMaterials().push_back(multiMat);
+			/*if (multiMat.materials.size() == 1) {
+				mesh.materialId(multiMat.materials[0]);
+			}
+			else {*/
+				multiMat.id = mesh.id();
+				multiMat.name = mesh.name();
+				mesh.materialId(multiMat.id);
+				scene.multiMaterials().push_back(multiMat);
+			//}
 		}
 	}
 	break;
@@ -134,7 +145,14 @@ void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) 
 	}
 	break;
 	case BabylonNodeType::Light:
+	{
 		scene.lights().emplace_back(node);
+		auto& l = scene.lights()[scene.lights().size() - 1];
+		if (l.shadowGenerator) {
+			scene.shadowGenerators().push_back(l.shadowGenerator);
+		}
+	}
+	break;
 	default:
 		break;
 	}
@@ -189,7 +207,7 @@ void exportTexture(const std::shared_ptr<BabylonTexture>& tex, const std::wstrin
 		}
 		outputPath[indexOfSlash] = L'\\';
 	}
-	auto start = 0;
+	size_t start = 0;
 	for (;;){
 		auto indexOfSlash = outputPath.find(L'\\', start);
 		if (indexOfSlash == outputPath.npos){
@@ -258,10 +276,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	FbxSceneLoader sceneLoader(wstringToUtf8(wInputPath));
 	auto root = sceneLoader.rootNode();
-	printNode(*root);
 
 	BabylonScene babScene;
-	std::cout << "exporting empty nodes as empty meshes" << std::endl;
 	exploreMeshes(babScene, *root, skipEmptyNodes);
 
 	for (auto& mat : babScene.materials()){
@@ -331,7 +347,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	wOutputPath.erase(lastDot);
 	wOutputPath.append(L".babylon");
 	DeleteFile(wOutputPath.c_str());
-	std::wofstream stream(wOutputPath);
+	std::ofstream stream(wOutputPath);
 	json.serialize(stream);
 	stream.flush();
 	return 0;

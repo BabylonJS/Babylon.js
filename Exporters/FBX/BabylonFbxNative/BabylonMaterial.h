@@ -5,7 +5,7 @@
 #include "BabylonVertex.h"
 #include <vector>
 #include <fbxsdk.h>
-
+#include "BabylonAnimation.h"
 
 
 class BabylonTexture{
@@ -13,7 +13,7 @@ public:
 	
 	 std::wstring name;
 	 std::wstring fullPath;
-
+	 std::string uvset;
 		
 	 float level = 1.0f;
 
@@ -61,6 +61,7 @@ public:
 
 		
 	 bool isRenderTarget = false;
+	 std::vector<std::shared_ptr<BabylonAnimationBase>> animations;
 
 	 BabylonTexture(FbxFileTexture* texture);
 

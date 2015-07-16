@@ -189,6 +189,7 @@
     <ClInclude Include="FbxSceneLoader.h" />
     <ClInclude Include="FbxVertexKey.h" />
     <ClInclude Include="GlobalSettings.h" />
+    <ClInclude Include="MatrixDecomposition.h" />
     <ClInclude Include="NodeHelpers.h" />
     <ClInclude Include="SkinInfo.h" />
     <ClInclude Include="stdafx.h" />
