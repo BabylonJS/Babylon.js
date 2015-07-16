@@ -24,6 +24,10 @@ void populateNodeMap(std::map<std::string, FbxNode*>& m, FbxNode* currNode){
 		return;
 	}
 	m[currNode->GetName()] = currNode;
+	auto mesh = currNode->GetMesh();
+	if (mesh) {
+		currNode->SetNodeAttribute(nullptr);
+	}
 	for (auto ix = 0; ix < currNode->GetChildCount(); ++ix){
 		populateNodeMap(m, currNode->GetChild(ix));
 	}
