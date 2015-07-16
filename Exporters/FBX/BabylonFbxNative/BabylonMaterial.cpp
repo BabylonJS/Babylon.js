@@ -317,15 +317,21 @@ BabylonTexture::BabylonTexture(FbxFileTexture* texture){
 	vOffset = trans.y;
 	uScale = scaling.x;
 	vScale = scaling.y;
-	uAng = rot.x * Euler2Rad;
-	vAng = rot.y * Euler2Rad;
-	wAng = rot.z * Euler2Rad;
+	std::string strFileName = texture->GetFileName();
+	auto lastDot = strFileName.find_last_of('.');
+	auto ext = strFileName.substr(lastDot);
+	if (_stricmp(ext.c_str(), ".dds") == 0) {
+		vScale *= -1;
+	}
+	uAng = static_cast<float>(rot.x * Euler2Rad);
+	vAng = static_cast<float>(rot.y * Euler2Rad);
+	wAng = static_cast<float>(rot.z * Euler2Rad);
 	auto uwrapMode = texture->GetWrapModeU();
 	auto vwrapMode = texture->GetWrapModeV();
 	wrapU = uwrapMode == FbxTexture::eRepeat;
 	wrapV = vwrapMode == FbxTexture::eRepeat;
 
-	
+	uvset = texture->UVSet.Get();
 	
 	
 

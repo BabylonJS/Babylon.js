@@ -142,25 +142,27 @@ BabylonLight::BabylonLight(BabylonNode & babnode) :
 	dirAnimName.append(L"_direction");
 	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), posAnimName, L"position", true, 0, static_cast<int>(animLengthInFrame), true);
 	auto dirAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), dirAnimName, L"direction", true, 0, static_cast<int>(animLengthInFrame), true);
-	for (auto ix = 0; ix < animLengthInFrame; ix++) {
-		babylon_animation_key<babylon_vector3> key;
-		key.frame = ix;
-		FbxTime currTime;
-		currTime.SetFrame(startFrame + ix, animTimeMode);
-		auto currTransform = babnode.GetLocal(currTime);
-		key.values = currTransform.translation();
-		posAnim->appendKey(key);
+	if (node->LclRotation.GetCurveNode() || node->LclTranslation.GetCurveNode()) {
+		for (auto ix = 0; ix < animLengthInFrame; ix++) {
+			babylon_animation_key<babylon_vector3> key;
+			key.frame = ix;
+			FbxTime currTime;
+			currTime.SetFrame(startFrame + ix, animTimeMode);
+			auto currTransform = babnode.GetLocal(currTime);
+			key.values = currTransform.translation();
+			posAnim->appendKey(key);
 
-		if (type == type_direct || type == type_Spot) {
-			babylon_animation_key<babylon_vector3> dirkey;
-			dirkey.frame = ix;
-			FbxDouble3 vDir(0, -1, 0);
-			FbxAMatrix rotM;
-			rotM.SetIdentity();
-			rotM.SetQ(currTransform.fbxrot());
-			auto transDir = rotM.MultT(vDir);
-			dirkey.values = transDir;
-			dirAnim->appendKey(dirkey);
+			if (type == type_direct || type == type_Spot) {
+				babylon_animation_key<babylon_vector3> dirkey;
+				dirkey.frame = ix;
+				FbxDouble3 vDir(0, -1, 0);
+				FbxAMatrix rotM;
+				rotM.SetIdentity();
+				rotM.SetQ(currTransform.fbxrot());
+				auto transDir = rotM.MultT(vDir);
+				dirkey.values = transDir;
+				dirAnim->appendKey(dirkey);
+			}
 		}
 	}
 	if (!posAnim->isConstant()) {

@@ -109,8 +109,10 @@ BabylonCamera::BabylonCamera(BabylonNode& babnode)
 	rotationQuaternion = localTransformAtStart.rotationQuaternion();
 	
 	fov = static_cast<float>(camera->FieldOfViewY * Euler2Rad);
-	minZ = static_cast<float>(camera->FrontPlaneDistance.Get());
-	maxZ = static_cast<float>(camera->BackPlaneDistance.Get());
+	
+	
+	minZ = static_cast<float>(camera->NearPlane.Get());
+	maxZ = static_cast<float>(camera->FarPlane.Get());
 
 	auto hasAnimStack = node->GetScene()->GetSrcObjectCount<FbxAnimStack>() > 0;
 	if (!hasAnimStack){
@@ -128,30 +130,31 @@ BabylonCamera::BabylonCamera(BabylonNode& babnode)
 	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"position", L"position", true, 0, static_cast<int>(animLengthInFrame), true);
 	auto rotAnim = std::make_shared<BabylonAnimation<babylon_vector4>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"rotation", L"rotation", true, 0, static_cast<int>(animLengthInFrame), true);
 	auto targetAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"target", L"target", true, 0, static_cast<int>(animLengthInFrame), true);
-	
-	for (auto ix = 0; ix < animLengthInFrame; ix++){
-		FbxTime currTime;
-		currTime.SetFrame(startFrame + ix, animTimeMode);
+	if (node->LclRotation.GetCurveNode() || node->LclScaling.GetCurveNode() || node->LclTranslation.GetCurveNode() || camera->InterestPosition.GetCurveNode()) {
+		for (auto ix = 0; ix < animLengthInFrame; ix++) {
+			FbxTime currTime;
+			currTime.SetFrame(startFrame + ix, animTimeMode);
 
-		babylon_animation_key<babylon_vector3> poskey;
-		babylon_animation_key<babylon_vector4> rotkey;
-		poskey.frame = ix;
-		rotkey.frame = ix;
+			babylon_animation_key<babylon_vector3> poskey;
+			babylon_animation_key<babylon_vector4> rotkey;
+			poskey.frame = ix;
+			rotkey.frame = ix;
 
 
-		auto transformAtT = babnode.GetLocal(currTime);
+			auto transformAtT = babnode.GetLocal(currTime);
 
-		poskey.values = transformAtT.translation();
-		rotkey.values = transformAtT.rotationQuaternion();
-		posAnim->appendKey(poskey);
-		rotAnim->appendKey(rotkey);
+			poskey.values = transformAtT.translation();
+			rotkey.values = transformAtT.rotationQuaternion();
+			posAnim->appendKey(poskey);
+			rotAnim->appendKey(rotkey);
 
-		if (lockedTargetId.size() == 0){
+			if (lockedTargetId.size() == 0) {
 
-			babylon_animation_key<babylon_vector3> targetKey;
-			targetKey.frame = ix;
-			targetKey.values = camera->InterestPosition.EvaluateValue(currTime);
-			targetAnim->appendKey(targetKey);
+				babylon_animation_key<babylon_vector3> targetKey;
+				targetKey.frame = ix;
+				targetKey.values = camera->InterestPosition.EvaluateValue(currTime);
+				targetAnim->appendKey(targetKey);
+			}
 		}
 	}
 	if (!posAnim->isConstant()){

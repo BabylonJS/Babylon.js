@@ -56,6 +56,7 @@ private:
 	bool _applyFog;
 	int _alphaIndex;
 public:
+	std::vector<std::string> uvsets;
 	const std::wstring& id(){ return _id; }
 	const std::wstring& parentId(){ return _parentId; }
 	const std::wstring& materialId(){ return _materialId; }
