@@ -2,6 +2,7 @@
 #include "BabylonMaterial.h"
 #include <Windows.h>
 #include "NodeHelpers.h"
+#include "GlobalSettings.h"
 
 web::json::value BabylonMaterial::toJson() const
 {
@@ -61,10 +62,10 @@ alpha(1)
 }
 
 std::wstring utf8ToWstring(const std::string& src){
-	auto size = MultiByteToWideChar(CP_UTF8, 0, src.c_str(), src.size(), nullptr, 0);
+	auto size = MultiByteToWideChar(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), nullptr, 0);
 	std::wstring result;
 	result.resize(size, ' ');
-	MultiByteToWideChar(CP_UTF8, 0, src.c_str(), src.size(), &result[0], result.size());
+	MultiByteToWideChar(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), &result[0], size);
 	return result;
 }
 
@@ -133,7 +134,7 @@ alpha(1){
 		transcolor = transColorProp.Get<FbxDouble3>();
 		if (transfactor== 1.0){ // from Maya .fbx
 			if (transcolor[0] >= DBL_MIN) {
-				alpha = 1 - transcolor[0];
+				alpha = static_cast<float>(1 - transcolor[0]);
 			}
 			else {
 				alpha = 1;
@@ -141,7 +142,7 @@ alpha(1){
 		}
 		else { // from 3dsmax .fbx
 			if (transfactor>=DBL_MIN){
-				alpha = 1 - transfactor;
+				alpha = static_cast<float>(1 - transfactor);
 			}
 			else {
 				alpha = 1;
@@ -156,7 +157,7 @@ alpha(1){
 	GetMaterialProperty(mat, FbxSurfaceMaterial::sReflection, FbxSurfaceMaterial::sReflectionFactor, reflectionTex);
 	auto shininessProp = mat->FindProperty(FbxSurfaceMaterial::sShininess);
 	if (shininessProp.IsValid()){
-		specularPower = shininessProp.Get<FbxDouble>();
+		specularPower = static_cast<float>(shininessProp.Get<FbxDouble>())*12;
 	}
 
 	auto normalMapProp = mat->FindProperty(FbxSurfaceMaterial::sNormalMap);
@@ -250,6 +251,11 @@ web::json::value BabylonTexture::toJson(){
 	jobj[L"wrapV"] = web::json::value::boolean(wrapV);
 	jobj[L"coordinatesIndex"] = web::json::value::number(coordinatesIndex);
 	jobj[L"isRenderTarget"] = web::json::value::boolean(isRenderTarget);
+	auto janims = web::json::value::array();
+	for (auto& anim : animations) {
+		janims[janims.size()] = anim->toJson();
+	}
+	jobj[L"animations"] = janims;
 	return jobj;
 }
 BabylonTexture::BabylonTexture(FbxFileTexture* texture){
@@ -301,20 +307,31 @@ BabylonTexture::BabylonTexture(FbxFileTexture* texture){
 		break;
 	}
 
-	auto translation = texture->Translation.Get();
-	auto rot = texture->Rotation.Get();
-	auto scale  = texture->Scaling.Get();
-	uOffset = translation[0];
-	vOffset = translation[1];
-	uScale = scale[0];
-	vScale = scale[1];
-	uAng = rot[0] * Euler2Rad;
-	vAng = rot[1] * Euler2Rad;
-	wAng = rot[2] * Euler2Rad;
+	babylon_vector3 rot = texture->Rotation.Get();
+	babylon_vector3 scaling = texture->Scaling.Get();
+
+	babylon_vector2 trans((float)texture->GetTranslationU(), (float)texture->GetTranslationV());
+	
+	
+	uOffset = trans.x;
+	vOffset = trans.y;
+	uScale = scaling.x;
+	vScale = scaling.y;
+	std::string strFileName = texture->GetFileName();
+	auto lastDot = strFileName.find_last_of('.');
+	auto ext = strFileName.substr(lastDot);
+	if (_stricmp(ext.c_str(), ".dds") == 0) {
+		vScale *= -1;
+	}
+	uAng = static_cast<float>(rot.x * Euler2Rad);
+	vAng = static_cast<float>(rot.y * Euler2Rad);
+	wAng = static_cast<float>(rot.z * Euler2Rad);
 	auto uwrapMode = texture->GetWrapModeU();
 	auto vwrapMode = texture->GetWrapModeV();
 	wrapU = uwrapMode == FbxTexture::eRepeat;
 	wrapV = vwrapMode == FbxTexture::eRepeat;
+
+	uvset = texture->UVSet.Get();
 	
 	
 

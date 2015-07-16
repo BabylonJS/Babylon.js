@@ -37,6 +37,11 @@ public:
 	bool autoAnimateLoop;
 	BabylonAnimationBase(int loopBehavior, int fps, const std::wstring& name, const std::wstring& animatedProperty, bool autoAnimate, int autoAnimateFrom, int autoAnimateTo, bool autoAnimateLoop);
 	virtual ~BabylonAnimationBase(){}
+
+
+	virtual bool isConstant() = 0;
+
+	virtual web::json::value toJson() const = 0;
 };
 
 template<typename T>
@@ -84,11 +89,11 @@ struct bab_anim_traits < babylon_vector4 >
 };
 
 template<>
-struct bab_anim_traits < FbxAMatrix >
+struct bab_anim_traits < FbxMatrix >
 {
 	static const int dataType = BabylonAnimationBase::dataType_Matrix;
 
-	static web::json::value jsonify(const FbxAMatrix& value){
+	static web::json::value jsonify(const FbxMatrix& value){
 		auto jmat = web::json::value::array();
 		for (auto x = 0; x < 4; ++x){
 			for (auto y = 0; y < 4; ++y){
@@ -120,7 +125,7 @@ inline bool isNear<float>(const float& lhs, const float& rhs){
 }
 
 template <>
-inline bool isNear<FbxAMatrix>(const FbxAMatrix& lhs, const FbxAMatrix& rhs){
+inline bool isNear<FbxMatrix>(const FbxMatrix& lhs, const FbxMatrix& rhs){
 	return lhs == rhs;
 }
 
@@ -143,10 +148,6 @@ inline T lerp(const T& start, const T& end, float factor){
 	return start + (end - start)*factor;
 }
 
-template<>
-inline FbxAMatrix lerp(const FbxAMatrix& start, const FbxAMatrix& end, float factor){
-	return start.Slerp(end, factor);
-}
 template<typename T>
 bool isLinearInterpolation(const babylon_animation_key<T>& key0, const babylon_animation_key<T>& key1, const babylon_animation_key<T>& key2){
 	auto testVal = lerp(key0.values, key2.values, static_cast<float>(key1.frame - key0.frame) / static_cast<float>(key2.frame - key0.frame));
@@ -190,7 +191,7 @@ public:
 		}
 	}
 
-	bool isConstant(){
+	virtual bool isConstant() override{
 		if (keys.size() < 2){
 			return true;
 		}
@@ -201,7 +202,7 @@ public:
 		return isNear(keys[0].values, keys[1].values);
 	}
 
-	web::json::value toJson() const{
+	virtual web::json::value toJson() const override {
 		auto jobj = web::json::value::object();
 
 		/*

@@ -12,10 +12,10 @@
 #include <memory>
 
 std::string wstringToUtf8(const std::wstring& src){
-	auto size = WideCharToMultiByte(CP_UTF8, 0, src.c_str(), src.size(), nullptr, 0, nullptr, nullptr);
+	auto size = WideCharToMultiByte(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), nullptr, 0, nullptr, nullptr);
 	std::string result;
 	result.resize(size, ' ');
-	WideCharToMultiByte(CP_UTF8, 0, src.c_str(), src.size(), &result[0], result.size(), nullptr, nullptr);
+	WideCharToMultiByte(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), &result[0], size, nullptr, nullptr);
 	return result;
 }
 
@@ -24,6 +24,10 @@ void populateNodeMap(std::map<std::string, FbxNode*>& m, FbxNode* currNode){
 		return;
 	}
 	m[currNode->GetName()] = currNode;
+	auto mesh = currNode->GetMesh();
+	if (mesh) {
+		currNode->SetNodeAttribute(nullptr);
+	}
 	for (auto ix = 0; ix < currNode->GetChildCount(); ++ix){
 		populateNodeMap(m, currNode->GetChild(ix));
 	}

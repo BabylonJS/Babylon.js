@@ -169,7 +169,7 @@ babylon_mesh<babylon_vertex_normal_uv_color> loadStaticMesh<babylon_vertex_norma
 			submesh.indices.push_back(found->second);
 		}
 		else{
-			int index = submesh.resolvedVertices.size();
+			int index = static_cast<int>(submesh.resolvedVertices.size());
 			babylon_vertex_normal_uv_color babVertex;
 			auto& elements = vertexKey.getKeyMembers();
 			babVertex.pos_x = (float) elements.at(0);
@@ -192,8 +192,8 @@ babylon_mesh<babylon_vertex_normal_uv_color> loadStaticMesh<babylon_vertex_norma
 	int totalVertices = 0;
 	int totalIndices = 0;
 	for (auto&& submesh : submeshes){
-		totalVertices += submesh.second.vertices.size();
-		totalIndices += submesh.second.indices.size();
+		totalVertices += static_cast<int>(submesh.second.vertices.size());
+		totalIndices += static_cast<int>(submesh.second.indices.size());
 	}
 	std::vector<babylon_vertex_normal_uv_color>vertices(totalVertices);
 	std::vector<int> indices(totalIndices);
@@ -218,10 +218,10 @@ babylon_mesh<babylon_vertex_normal_uv_color> loadStaticMesh<babylon_vertex_norma
 		babylon_submesh babSubmesh;
 		babSubmesh.material_id = materialHandler.RegisterMaterial(submesh.first);
 		babSubmesh.index_start = indicesFilled;
-		babSubmesh.index_count = submesh.second.indices.size();
+		babSubmesh.index_count = static_cast<int>(submesh.second.indices.size());
 		finalSubmeshes.push_back(babSubmesh);
-		verticesFilled += submesh.second.vertices.size();
-		indicesFilled += submesh.second.indices.size();
+		verticesFilled += static_cast<int>(submesh.second.vertices.size());
+		indicesFilled += static_cast<int>(submesh.second.indices.size());
 	}
 	return babylon_mesh<babylon_vertex_normal_uv_color>(mesh->GetName(), std::move(vertices), std::move(indices), std::move(finalSubmeshes), node->GetAnimationEvaluator()->GetNodeGlobalTransform(node));
 }

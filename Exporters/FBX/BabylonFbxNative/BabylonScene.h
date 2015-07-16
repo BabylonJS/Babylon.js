@@ -26,6 +26,7 @@ private:
 	std::vector<BabylonMaterial> _materials;
 	std::vector<BabylonMultiMaterial> _multiMaterials;
 	std::vector<BabylonLight> _lights;
+	std::vector<std::shared_ptr<BabylonShadowGenerator>> _shadowGenerators;
 	std::vector<std::shared_ptr<BabylonSkeleton>> _skeletons;
 	// particleSystems
 	// lensFlareSystems
@@ -52,6 +53,7 @@ public:
 	std::vector<BabylonMultiMaterial>& multiMaterials(){ return _multiMaterials; }
 
 	std::vector<BabylonLight>& lights() { return _lights; }
+	std::vector<std::shared_ptr<BabylonShadowGenerator>>& shadowGenerators() { return _shadowGenerators; }
 	std::vector<std::shared_ptr<BabylonSkeleton>>& skeletons() { return _skeletons; }
 	// particleSystems
 	// lensFlareSystems
