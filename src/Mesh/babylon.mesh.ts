@@ -1386,7 +1386,7 @@
             	    var position = circleVector.scale(radius).add(offset);
             	    var textureCoordinate = new Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
             		geometry_data.positions.push(position.x, position.y, position.z);
-            		geometry_data.normals.push(0, 1, 0);
+            		geometry_data.normals.push(0, isTop ? 1 : -1, 0);
             	    geometry_data.uvs.push(textureCoordinate.x, textureCoordinate.y);
             	}
             	// Indices
