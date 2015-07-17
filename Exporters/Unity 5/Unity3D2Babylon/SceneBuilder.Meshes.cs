@@ -39,9 +39,9 @@ namespace Unity3D2Babylon
             BabylonMesh babylonMesh = new BabylonMesh();
             var renderer = gameObject.GetComponent<Renderer>();
 
-            ExporterWindow.ReportProgress(progress, "Exporting mesh: " + mesh.name);
+            ExporterWindow.ReportProgress(progress, "Exporting mesh: " + gameObject.name);
 
-            babylonMesh.name = mesh.name;
+            babylonMesh.name = gameObject.name;
             babylonMesh.id = GetID(transform.gameObject);
             babylonMesh.receiveShadows = renderer.receiveShadows;
 
