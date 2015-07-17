@@ -22,8 +22,8 @@ var BABYLON;
             VirtualJoystick._globalJoystickIndex++;
             // By default left & right arrow keys are moving the X
             // and up & down keys are moving the Y
-            this._axisTargetedByLeftAndRight = JoystickAxis.X;
-            this._axisTargetedByUpAndDown = JoystickAxis.Y;
+            this._axisTargetedByLeftAndRight = 0 /* X */;
+            this._axisTargetedByUpAndDown = 1 /* Y */;
             this.reverseLeftRight = false;
             this.reverseUpDown = false;
             // collections of pointers
@@ -34,16 +34,17 @@ var BABYLON;
             this._rotationSpeed = 25;
             this._inverseRotationSpeed = 1 / (this._rotationSpeed / 1000);
             this._rotateOnAxisRelativeToMesh = false;
+            this._onResize = function (evt) {
+                VirtualJoystick.vjCanvasWidth = window.innerWidth;
+                VirtualJoystick.vjCanvasHeight = window.innerHeight;
+                VirtualJoystick.vjCanvas.width = VirtualJoystick.vjCanvasWidth;
+                VirtualJoystick.vjCanvas.height = VirtualJoystick.vjCanvasHeight;
+                VirtualJoystick.halfWidth = VirtualJoystick.vjCanvasWidth / 2;
+                VirtualJoystick.halfHeight = VirtualJoystick.vjCanvasHeight / 2;
+            };
             // injecting a canvas element on top of the canvas 3D game
             if (!VirtualJoystick.vjCanvas) {
-                window.addEventListener("resize", function () {
-                    VirtualJoystick.vjCanvasWidth = window.innerWidth;
-                    VirtualJoystick.vjCanvasHeight = window.innerHeight;
-                    VirtualJoystick.vjCanvas.width = VirtualJoystick.vjCanvasWidth;
-                    VirtualJoystick.vjCanvas.height = VirtualJoystick.vjCanvasHeight;
-                    VirtualJoystick.halfWidth = VirtualJoystick.vjCanvasWidth / 2;
-                    VirtualJoystick.halfHeight = VirtualJoystick.vjCanvasHeight / 2;
-                }, false);
+                window.addEventListener("resize", this._onResize, false);
                 VirtualJoystick.vjCanvas = document.createElement("canvas");
                 VirtualJoystick.vjCanvasWidth = window.innerWidth;
                 VirtualJoystick.vjCanvasHeight = window.innerHeight;
@@ -73,22 +74,28 @@ var BABYLON;
             // origin joystick position
             this._joystickPointerStartPos = new BABYLON.Vector2(0, 0);
             this._deltaJoystickVector = new BABYLON.Vector2(0, 0);
-            VirtualJoystick.vjCanvas.addEventListener('pointerdown', function (evt) {
+            this._onPointerDownHandlerRef = function (evt) {
                 _this._onPointerDown(evt);
-            }, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointermove', function (evt) {
+            };
+            this._onPointerMoveHandlerRef = function (evt) {
                 _this._onPointerMove(evt);
-            }, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointerup', function (evt) {
+            };
+            this._onPointerOutHandlerRef = function (evt) {
                 _this._onPointerUp(evt);
-            }, false);
-            VirtualJoystick.vjCanvas.addEventListener('pointerout', function (evt) {
+            };
+            this._onPointerUpHandlerRef = function (evt) {
                 _this._onPointerUp(evt);
-            }, false);
+            };
+            VirtualJoystick.vjCanvas.addEventListener('pointerdown', this._onPointerDownHandlerRef, false);
+            VirtualJoystick.vjCanvas.addEventListener('pointermove', this._onPointerMoveHandlerRef, false);
+            VirtualJoystick.vjCanvas.addEventListener('pointerup', this._onPointerUpHandlerRef, false);
+            VirtualJoystick.vjCanvas.addEventListener('pointerout', this._onPointerUpHandlerRef, false);
             VirtualJoystick.vjCanvas.addEventListener("contextmenu", function (evt) {
                 evt.preventDefault(); // Disables system menu
             }, false);
-            requestAnimationFrame(function () { _this._drawVirtualJoystick(); });
+            requestAnimationFrame(function () {
+                _this._drawVirtualJoystick();
+            });
         }
         VirtualJoystick.prototype.setJoystickSensibility = function (newJoystickSensibility) {
             this._joystickSensibility = newJoystickSensibility;
@@ -132,26 +139,26 @@ var BABYLON;
                 var directionLeftRight = this.reverseLeftRight ? -1 : 1;
                 var deltaJoystickX = directionLeftRight * this._deltaJoystickVector.x / this._inversedSensibility;
                 switch (this._axisTargetedByLeftAndRight) {
-                    case JoystickAxis.X:
+                    case 0 /* X */:
                         this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
-                    case JoystickAxis.Y:
+                    case 1 /* Y */:
                         this.deltaPosition.y = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
-                    case JoystickAxis.Z:
+                    case 2 /* Z */:
                         this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickX));
                         break;
                 }
                 var directionUpDown = this.reverseUpDown ? 1 : -1;
                 var deltaJoystickY = directionUpDown * this._deltaJoystickVector.y / this._inversedSensibility;
                 switch (this._axisTargetedByUpAndDown) {
-                    case JoystickAxis.X:
+                    case 0 /* X */:
                         this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
-                    case JoystickAxis.Y:
+                    case 1 /* Y */:
                         this.deltaPosition.y = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
-                    case JoystickAxis.Z:
+                    case 2 /* Z */:
                         this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickY));
                         break;
                 }
@@ -186,26 +193,26 @@ var BABYLON;
         // Define which axis you'd like to control for left & right 
         VirtualJoystick.prototype.setAxisForLeftRight = function (axis) {
             switch (axis) {
-                case JoystickAxis.X:
-                case JoystickAxis.Y:
-                case JoystickAxis.Z:
+                case 0 /* X */:
+                case 1 /* Y */:
+                case 2 /* Z */:
                     this._axisTargetedByLeftAndRight = axis;
                     break;
                 default:
-                    this._axisTargetedByLeftAndRight = JoystickAxis.X;
+                    this._axisTargetedByLeftAndRight = 0 /* X */;
                     break;
             }
         };
         // Define which axis you'd like to control for up & down 
         VirtualJoystick.prototype.setAxisForUpDown = function (axis) {
             switch (axis) {
-                case JoystickAxis.X:
-                case JoystickAxis.Y:
-                case JoystickAxis.Z:
+                case 0 /* X */:
+                case 1 /* Y */:
+                case 2 /* Z */:
                     this._axisTargetedByUpAndDown = axis;
                     break;
                 default:
-                    this._axisTargetedByUpAndDown = JoystickAxis.Y;
+                    this._axisTargetedByUpAndDown = 1 /* Y */;
                     break;
             }
         };
@@ -250,10 +257,17 @@ var BABYLON;
                     ;
                 });
             }
-            requestAnimationFrame(function () { _this._drawVirtualJoystick(); });
+            requestAnimationFrame(function () {
+                _this._drawVirtualJoystick();
+            });
         };
         VirtualJoystick.prototype.releaseCanvas = function () {
             if (VirtualJoystick.vjCanvas) {
+                VirtualJoystick.vjCanvas.removeEventListener('pointerdown', this._onPointerDownHandlerRef);
+                VirtualJoystick.vjCanvas.removeEventListener('pointermove', this._onPointerMoveHandlerRef);
+                VirtualJoystick.vjCanvas.removeEventListener('pointerup', this._onPointerUpHandlerRef);
+                VirtualJoystick.vjCanvas.removeEventListener('pointerout', this._onPointerUpHandlerRef);
+                window.removeEventListener("resize", this._onResize);
                 document.body.removeChild(VirtualJoystick.vjCanvas);
                 VirtualJoystick.vjCanvas = null;
             }
