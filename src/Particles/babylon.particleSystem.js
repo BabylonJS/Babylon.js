@@ -280,7 +280,7 @@ var BABYLON;
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, effect);
             // Draw order
             if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
-                engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_ONEONE);
             }
             else {
                 engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);

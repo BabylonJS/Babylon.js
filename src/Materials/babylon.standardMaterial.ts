@@ -69,11 +69,15 @@
         public BonesPerMesh = 0;
         public INSTANCES = false;
 
+        _keys: string[];
+
+        constructor() {
+            this._keys = Object.keys(this);
+        }
+
         public isEqual(other: StandardMaterialDefines): boolean {
-            for (var prop in this) {
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
 
                 if (this[prop] !== other[prop]) {
                     return false;
@@ -84,20 +88,16 @@
         }
 
         public cloneTo(other: StandardMaterialDefines): void {
-            for (var prop in this) {
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
 
                 other[prop] = this[prop];
             }
         }
 
         public reset(): void {
-            for (var prop in this) {
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
 
                 if (prop === "BonesPerMesh") {
                     this[prop] = 0;
@@ -110,10 +110,8 @@
 
         public toString(): string {
             var result = "";
-            for (var prop in this) {
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
 
                 if (prop === "BonesPerMesh" && this[prop] > 0) {
                     result += "#define BonesPerMesh " + this[prop] + "\n";

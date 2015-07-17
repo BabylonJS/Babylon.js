@@ -494,6 +494,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine, "ALPHA_ONEONE", {
+            get: function () {
+                return Engine._ALPHA_ONEONE;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine, "ALPHA_ADD", {
             get: function () {
                 return Engine._ALPHA_ADD;
@@ -504,6 +511,27 @@ var BABYLON;
         Object.defineProperty(Engine, "ALPHA_COMBINE", {
             get: function () {
                 return Engine._ALPHA_COMBINE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "ALPHA_SUBTRACT", {
+            get: function () {
+                return Engine._ALPHA_SUBTRACT;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "ALPHA_MULTIPLY", {
+            get: function () {
+                return Engine._ALPHA_MULTIPLY;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine, "ALPHA_MAXIMIZED", {
+            get: function () {
+                return Engine._ALPHA_MAXIMIZED;
             },
             enumerable: true,
             configurable: true
@@ -1203,9 +1231,29 @@ var BABYLON;
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
-                case Engine.ALPHA_ADD:
+                case Engine.ALPHA_ONEONE:
                     this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_ADD:
+                    this.setDepthWrite(false);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_SUBTRACT:
+                    this.setDepthWrite(false);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_MULTIPLY:
+                    this.setDepthWrite(false);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_MAXIMIZED:
+                    this.setDepthWrite(false);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
             }
@@ -1931,6 +1979,10 @@ var BABYLON;
         Engine._ALPHA_DISABLE = 0;
         Engine._ALPHA_ADD = 1;
         Engine._ALPHA_COMBINE = 2;
+        Engine._ALPHA_SUBTRACT = 3;
+        Engine._ALPHA_MULTIPLY = 4;
+        Engine._ALPHA_MAXIMIZED = 5;
+        Engine._ALPHA_ONEONE = 6;
         Engine._DELAYLOADSTATE_NONE = 0;
         Engine._DELAYLOADSTATE_LOADED = 1;
         Engine._DELAYLOADSTATE_LOADING = 2;

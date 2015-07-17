@@ -392,7 +392,8 @@
         private static _ALPHA_SUBTRACT = 3;
         private static _ALPHA_MULTIPLY = 4;
         private static _ALPHA_MAXIMIZED = 5;
-        
+        private static _ALPHA_ONEONE = 6;
+
         private static _DELAYLOADSTATE_NONE = 0;
         private static _DELAYLOADSTATE_LOADED = 1;
         private static _DELAYLOADSTATE_LOADING = 2;
@@ -409,6 +410,10 @@
 
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
+        }
+
+        public static get ALPHA_ONEONE(): number {
+            return Engine._ALPHA_ONEONE;
         }
 
         public static get ALPHA_ADD(): number {
@@ -1454,6 +1459,11 @@
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
+                case Engine.ALPHA_ONEONE:
+                    this.setDepthWrite(false);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
                 case Engine.ALPHA_ADD:
                     this.setDepthWrite(false);
                     this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
@@ -1653,7 +1663,7 @@
 
             return texture;
         }
-        
+
         public updateRawTexture(texture: WebGLTexture, data: ArrayBufferView, format: number, invertY: boolean): void {
             var internalFormat = this._gl.RGBA;
             switch (format) {
@@ -2342,3 +2352,4 @@
         }
     }
 }
+

@@ -78,12 +78,11 @@ var BABYLON;
             this.BONES4 = false;
             this.BonesPerMesh = 0;
             this.INSTANCES = false;
+            this._keys = Object.keys(this);
         }
         StandardMaterialDefines.prototype.isEqual = function (other) {
-            for (var prop in this) {
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
                 if (this[prop] !== other[prop]) {
                     return false;
                 }
@@ -91,18 +90,14 @@ var BABYLON;
             return true;
         };
         StandardMaterialDefines.prototype.cloneTo = function (other) {
-            for (var prop in this) {
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
                 other[prop] = this[prop];
             }
         };
         StandardMaterialDefines.prototype.reset = function () {
-            for (var prop in this) {
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
                 if (prop === "BonesPerMesh") {
                     this[prop] = 0;
                     continue;
@@ -112,10 +107,8 @@ var BABYLON;
         };
         StandardMaterialDefines.prototype.toString = function () {
             var result = "";
-            for (var prop in this) {
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
                 if (prop === "BonesPerMesh" && this[prop] > 0) {
                     result += "#define BonesPerMesh " + this[prop] + "\n";
                     continue;

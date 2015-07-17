@@ -169,7 +169,7 @@
             engine.enableEffect(this._effect);
             engine.setState(false);
             engine.setDepthBuffer(false);
-            engine.setAlphaMode(Engine.ALPHA_ADD);
+            engine.setAlphaMode(Engine.ALPHA_ONEONE);
 
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
