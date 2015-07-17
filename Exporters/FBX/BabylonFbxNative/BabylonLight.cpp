@@ -174,6 +174,28 @@ BabylonLight::BabylonLight(BabylonNode & babnode) :
 }
 
 
+BabylonLight::BabylonLight(BabylonLight && moved)  : 
+name(std::move(moved.name)),
+id(std::move(moved.id)),
+parentId(std::move(moved.parentId)),
+position(std::move(moved.position)),
+direction(std::move(moved.direction)),
+type(std::move(moved.type)),
+diffuse(std::move(moved.diffuse)),
+specular(std::move(moved.specular)),
+intensity(std::move(moved.intensity)),
+range(std::move(moved.range)),
+exponent(std::move(moved.exponent)),
+angle(std::move(moved.angle)),
+groundColor(std::move(moved.groundColor)),
+castShadows(std::move(moved.castShadows)),
+includedOnlyMeshesIds(std::move(moved.includedOnlyMeshesIds)),
+excludedMeshesIds(std::move(moved.excludedMeshesIds)),
+shadowGenerator(std::move(moved.shadowGenerator)),
+animations(std::move(moved.animations))
+{
+}
+
 BabylonLight::~BabylonLight()
 {
 }
@@ -198,6 +220,19 @@ BabylonShadowGenerator::BabylonShadowGenerator(FbxNode * lightNode)
 		}
 	}
 
+}
+
+BabylonShadowGenerator::BabylonShadowGenerator(BabylonShadowGenerator && moved) : 
+	mapSize(std::move(moved.mapSize)),
+	bias(std::move(moved.bias)),
+	lightId(std::move(moved.lightId)),
+	useVarianceShadowMap(std::move(moved.useVarianceShadowMap)),
+	usePoissonSampling(std::move(moved.usePoissonSampling)),
+	useBlurVarianceShadowMap(std::move(moved.useBlurVarianceShadowMap)),
+	blurScale(std::move(moved.blurScale)),
+	blurBoxOffset(std::move(moved.blurBoxOffset)),
+	renderList(std::move(moved.renderList))
+{
 }
 
 web::json::value BabylonShadowGenerator::toJson()

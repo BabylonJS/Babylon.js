@@ -4,6 +4,7 @@
 #include "BabylonVertex.h"
 #include "BabylonNode.h"
 
+// base class for meshes and mesh instances (instances not implemented yet)
 class BabylonAbstractMesh
 {
 private:
@@ -39,6 +40,7 @@ public:
 	BabylonAbstractMesh();
 
 	BabylonAbstractMesh(BabylonNode* node);
+	BabylonAbstractMesh(const BabylonAbstractMesh& ) = default;
 
 	virtual web::json::value toJson() ;
 	virtual ~BabylonAbstractMesh();
