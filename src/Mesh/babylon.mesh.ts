@@ -1355,10 +1355,10 @@
             }
 
             // setup tube creation parameters
-            var path = [
-            	new Vector3(0, -height/2, 0), 
-            	new Vector3(0, height/2, 0), 
-            ];
+            var path = [];
+            for (var i = 0; i <= subdivisions; i++) {
+            	path.push(new Vector3(0, height * (- 0.5 + i / subdivisions), 0));
+            }
             
             var radiusFunction = function (i, distance) {
             	return (diameterBottom + (diameterTop - diameterBottom) * distance / height)/2;
