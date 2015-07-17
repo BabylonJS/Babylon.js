@@ -389,7 +389,10 @@
         private static _ALPHA_DISABLE = 0;
         private static _ALPHA_ADD = 1;
         private static _ALPHA_COMBINE = 2;
-
+        private static _ALPHA_SUBTRACT = 3;
+        private static _ALPHA_MULTIPLY = 4;
+        private static _ALPHA_MAXIMIZED = 5;
+        
         private static _DELAYLOADSTATE_NONE = 0;
         private static _DELAYLOADSTATE_LOADED = 1;
         private static _DELAYLOADSTATE_LOADING = 2;
@@ -414,6 +417,18 @@
 
         public static get ALPHA_COMBINE(): number {
             return Engine._ALPHA_COMBINE;
+        }
+
+        public static get ALPHA_SUBTRACT(): number {
+            return Engine._ALPHA_SUBTRACT;
+        }
+
+        public static get ALPHA_MULTIPLY(): number {
+            return Engine._ALPHA_MULTIPLY;
+        }
+
+        public static get ALPHA_MAXIMIZED(): number {
+            return Engine._ALPHA_MAXIMIZED;
         }
 
         public static get DELAYLOADSTATE_NONE(): number {
@@ -1441,7 +1456,22 @@
                     break;
                 case Engine.ALPHA_ADD:
                     this.setDepthWrite(false);
-                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_SUBTRACT:
+                    this.setDepthWrite(false);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_MULTIPLY:
+                    this.setDepthWrite(false);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
+                    this._alphaState.alphaBlend = true;
+                    break;
+                case Engine.ALPHA_MAXIMIZED:
+                    this.setDepthWrite(false);
+                    this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
                     this._alphaState.alphaBlend = true;
                     break;
             }
