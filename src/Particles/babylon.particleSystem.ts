@@ -383,7 +383,7 @@
 
             // Draw order
             if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
-                engine.setAlphaMode(Engine.ALPHA_ADD);
+                engine.setAlphaMode(Engine.ALPHA_ONEONE);
             } else {
                 engine.setAlphaMode(Engine.ALPHA_COMBINE);
             }
