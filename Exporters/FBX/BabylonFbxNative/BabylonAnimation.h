@@ -3,22 +3,12 @@
 #include <vector>
 #include "BabylonVertex.h"
 #include <cpprest\json.h>
+
+// base class representing babylon animations
 class BabylonAnimationBase
 {
 public:
-	/*
-	"dataType": int (0 = float, 1 = vector3, 2 = quaternion, 3 = matrix),
-    "framePerSecond": int,
-    "loopBehavior": int (0 = relative, 1 = cycle, 2 = constant),
-    "name": string,
-    "property": string,
-    "keys": array of AnimationKeys (see below),
-    "autoAnimate": boolean,
-    "autoAnimateFrom": int,
-    "autoAnimateTo": int,
-    "autoAnimateLoop": boolean
 
-	*/
 	static const int dataType_Float = 0;
 	static const int dataType_Vector3 = 1;
 	static const int dataType_Quaternion = 2;
@@ -44,21 +34,22 @@ public:
 	virtual web::json::value toJson() const = 0;
 };
 
+// key frame data
 template<typename T>
 struct babylon_animation_key{
-	/*
-	"frame": int,
-    "values": array of float (depending of animated value)
-	*/
 	int frame;
 	T values;
 };
 
+// traits for animated babylon data types (must contain : 
+// static const int dataType
+// static web::json::value jsonify(const T& value)
 template<typename T>
 struct bab_anim_traits{
 
 };
 
+// specialization for vectors 3D
 template<>
 struct bab_anim_traits < babylon_vector3 >
 {
@@ -73,6 +64,7 @@ struct bab_anim_traits < babylon_vector3 >
 	}
 };
 
+// specialization for quaternions
 template<>
 struct bab_anim_traits < babylon_vector4 >
 {
@@ -88,6 +80,7 @@ struct bab_anim_traits < babylon_vector4 >
 	}
 };
 
+// specialization for matrices
 template<>
 struct bab_anim_traits < FbxMatrix >
 {
@@ -103,6 +96,8 @@ struct bab_anim_traits < FbxMatrix >
 		return jmat;
 	}
 };
+
+// specialization for scalar floats
 template<>
 struct bab_anim_traits < float >
 {
@@ -115,6 +110,7 @@ struct bab_anim_traits < float >
 	}
 };
 
+// used for interpolation simplification
 template<typename T>
 bool isNear(const T& lhs, const T& rhs);
 
@@ -153,7 +149,8 @@ bool isLinearInterpolation(const babylon_animation_key<T>& key0, const babylon_a
 	auto testVal = lerp(key0.values, key2.values, static_cast<float>(key1.frame - key0.frame) / static_cast<float>(key2.frame - key0.frame));
 	return isNear(testVal, key1.values);
 }
-
+// typed babylon animation.
+// requires bab_anim_traits<T>, isNear<T> and basic arithmetic operators
 template<typename T>
 class BabylonAnimation : public BabylonAnimationBase
 {
@@ -205,19 +202,6 @@ public:
 	virtual web::json::value toJson() const override {
 		auto jobj = web::json::value::object();
 
-		/*
-		"dataType": int (0 = float, 1 = vector3, 2 = quaternion, 3 = matrix),
-		"framePerSecond": int,
-		"loopBehavior": int (0 = relative, 1 = cycle, 2 = constant),
-		"name": string,
-		"property": string,
-		"keys": array of AnimationKeys (see below),
-		"autoAnimate": boolean,
-		"autoAnimateFrom": int,
-		"autoAnimateTo": int,
-		"autoAnimateLoop": boolean
-
-		*/
 
 		jobj[L"dataType"] = web::json::value::number(dataType);
 		jobj[L"framePerSecond"] = web::json::value::number(framePerSecond);

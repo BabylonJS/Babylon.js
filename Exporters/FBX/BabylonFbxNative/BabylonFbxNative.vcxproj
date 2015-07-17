@@ -181,13 +181,9 @@
     <ClInclude Include="BabylonScene.h" />
     <ClInclude Include="BabylonSkeleton.h" />
     <ClInclude Include="BabylonVertex.h" />
-    <ClInclude Include="Export.h" />
     <ClInclude Include="FbxDeleter.h" />
     <ClInclude Include="FbxLoadException.h" />
-    <ClInclude Include="FbxMaterialHandler.h" />
-    <ClInclude Include="FbxMeshLoader.h" />
     <ClInclude Include="FbxSceneLoader.h" />
-    <ClInclude Include="FbxVertexKey.h" />
     <ClInclude Include="GlobalSettings.h" />
     <ClInclude Include="MatrixDecomposition.h" />
     <ClInclude Include="NodeHelpers.h" />
@@ -207,9 +203,7 @@
     <ClCompile Include="BabylonSkeleton.cpp" />
     <ClCompile Include="babylon_boundingbox.cpp" />
     <ClCompile Include="FbxLoadException.cpp" />
-    <ClCompile Include="FbxMaterialHandler.cpp" />
     <ClCompile Include="FbxSceneLoader.cpp" />
-    <ClCompile Include="FbxVertexKey.cpp" />
     <ClCompile Include="GlobalSettings.cpp" />
     <ClCompile Include="SkinInfo.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -218,11 +212,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\3rdParty\DirectXTex\DirectXTex_Desktop_2013.vcxproj">
-      <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

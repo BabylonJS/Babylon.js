@@ -3,8 +3,6 @@
 
 #include "stdafx.h"
 #include "..\BabylonFbxNative\FbxSceneLoader.h"
-#include "..\BabylonFbxNative\FbxMeshLoader.h"
-#include "..\BabylonFbxNative\Export.h"
 #include <iostream>
 #include <fstream>
 #include <Windows.h>
@@ -12,36 +10,6 @@
 #include <sstream>
 #include "..\BabylonFbxNative\BabylonScene.h"
 #include "..\BabylonFbxNative\GlobalSettings.h"
-
-std::string toString(BabylonNodeType type) {
-	switch (type)
-	{
-	case BabylonNodeType::Camera:
-		return "camera";
-		break;
-	case BabylonNodeType::Mesh:
-		return "mesh";
-		break;
-	case BabylonNodeType::Skeleton:
-		return "skeleton";
-		break;
-	case BabylonNodeType::Light:
-		return "light";
-		break;
-	case BabylonNodeType::Empty:
-		return "<empty>";
-		break;
-	default:
-		return "unknown";
-		break;
-	}
-}
-
-std::string toString(FbxDouble3 value) {
-	std::stringstream s;
-	s << "(" << value[0] << "," << value[1] << "," << value[2] << ")";
-	return s.str();
-}
 
 
 std::string wstringToUtf8(const std::wstring& src){
@@ -52,139 +20,7 @@ std::string wstringToUtf8(const std::wstring& src){
 	return result;
 }
 
-void fixupTextureCoordinateIndices(BabylonMaterial& mat, BabylonMesh& mesh) {
-	std::vector<std::shared_ptr<BabylonTexture>> textures;
-	if (mat.ambientTexture) {
-		textures.push_back(mat.ambientTexture);
-	}
-	if (mat.diffuseTexture) {
-		textures.push_back(mat.diffuseTexture);
-	}
-	if (mat.specularTexture) {
-		textures.push_back(mat.specularTexture);
-	}
-	if (mat.emissiveTexture) {
-		textures.push_back(mat.emissiveTexture);
-	}
-	if (mat.reflectionTexture) {
-		textures.push_back(mat.reflectionTexture);
-	}
-	if (mat.bumpTexture) {
-		textures.push_back(mat.bumpTexture);
-	}
-	for (auto& tex : textures) {
-		auto found = std::find(mesh.uvsets.begin(), mesh.uvsets.end(), tex->uvset);
-		if (found != mesh.uvsets.end()) {
-			tex->coordinatesIndex = static_cast<int>(found - mesh.uvsets.begin());
-		}
-	}
-}
-void exploreMeshes(BabylonScene& scene, BabylonNode& node, bool skipEmptyNodes) {
-	if (node.nodeType() == BabylonNodeType::Skeleton && node.hasOnlySkeletonDescendants()) {
-		return;
-	}
-	if (skipEmptyNodes && node.isEmptySkeletonOrEmptyMeshRecursive()) {
-		return;
-	}
-	// append mesh
-	switch (node.nodeType())
-	{
-	case BabylonNodeType::Empty:
-	case BabylonNodeType::Mesh:
-	case BabylonNodeType::Skeleton:
-	{
 
-		scene.meshes().emplace_back(&node);
-		auto& mesh = scene.meshes()[scene.meshes().size() - 1];
-		auto matCount = node.fbxNode()->GetMaterialCount();
-		BabylonMultiMaterial multiMat;
-		for (auto i = 0; i < matCount; ++i) {
-			auto mat = node.fbxNode()->GetMaterial(i);
-			if (mat) {
-
-				auto id = getMaterialId(mat);
-				auto existing = std::find_if(scene.materials().begin(), scene.materials().end(), [id](const BabylonMaterial& e) {
-					return e.id == id;
-				});
-				if (existing == scene.materials().end()) {
-					auto babMat = BabylonMaterial(mat);
-					fixupTextureCoordinateIndices(babMat, mesh);
-					scene.materials().push_back(babMat);
-				}
-
-				multiMat.materials.push_back(id);
-				
-			}
-		}
-
-		if (mesh.associatedSkeleton){
-			mesh.associatedSkeleton->id = static_cast<int>(scene.skeletons().size()+1);
-			mesh.skeletonId(static_cast<int>(scene.skeletons().size()+1));
-			scene.skeletons().push_back(mesh.associatedSkeleton);
-		}
-		if (multiMat.materials.size() > 0) {
-			auto& mesh = scene.meshes()[scene.meshes().size() - 1];
-			/*if (multiMat.materials.size() == 1) {
-				mesh.materialId(multiMat.materials[0]);
-			}
-			else {*/
-				multiMat.id = mesh.id();
-				multiMat.name = mesh.name();
-				mesh.materialId(multiMat.id);
-				scene.multiMaterials().push_back(multiMat);
-			//}
-		}
-	}
-	break;
-	case BabylonNodeType::Camera:
-	{
-		scene.cameras().emplace_back(node);
-		if (scene.cameras().size() == 1) {
-			scene.activeCameraID(scene.cameras()[0].id);
-		}
-	}
-	break;
-	case BabylonNodeType::Light:
-	{
-		scene.lights().emplace_back(node);
-		auto& l = scene.lights()[scene.lights().size() - 1];
-		if (l.shadowGenerator) {
-			scene.shadowGenerators().push_back(l.shadowGenerator);
-		}
-	}
-	break;
-	default:
-		break;
-	}
-
-
-	for (auto& child : node.children()) {
-		exploreMeshes(scene, child, skipEmptyNodes);
-	}
-
-
-
-}
-
-TextureFormat getInputFormat(const std::wstring& fileName){
-	std::wstring ext = fileName.substr(fileName.find_last_of(L'.') + 1);
-	std::wstring extLower;
-	extLower.reserve(ext.size());
-	std::transform(ext.begin(), ext.end(), std::back_inserter(extLower), towlower);
-	if (extLower == L"png"){
-		return TextureFormat::Png;
-	}
-	else if (extLower == L"jpg"){
-		return TextureFormat::Jpg;
-	}
-	else if (extLower == L"tga"){
-		return TextureFormat::Tga;
-	}
-	else if (extLower == L"dds"){
-		return TextureFormat::Dds;
-	}
-	return TextureFormat::Unkwown;
-}
 
 void exportTexture(const std::shared_ptr<BabylonTexture>& tex, const std::wstring& wOutputPath){
 	if (!tex){
@@ -198,7 +34,6 @@ void exportTexture(const std::shared_ptr<BabylonTexture>& tex, const std::wstrin
 		}
 		fullPath[indexOfSlash] = L'\\';
 	}
-	auto inputFormat = getInputFormat(tex->fullPath);
 	auto outputPath = tex->name;
 	for (;;){
 		auto indexOfSlash = outputPath.find(L'/');
@@ -277,8 +112,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	FbxSceneLoader sceneLoader(wstringToUtf8(wInputPath));
 	auto root = sceneLoader.rootNode();
 
-	BabylonScene babScene;
-	exploreMeshes(babScene, *root, skipEmptyNodes);
+	BabylonScene babScene(*root, skipEmptyNodes);
 
 	for (auto& mat : babScene.materials()){
 		exportTexture(mat.ambientTexture, wOutputPath);
@@ -289,53 +123,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		exportTexture(mat.bumpTexture, wOutputPath);
 		
 	}
-	if (babScene.cameras().size() == 0){
-		babylon_boundingbox bbox(sceneLoader.getScene());
-		auto cam = buildCameraFromBoundingBox(bbox);
-		babScene.cameras().push_back(cam);
-		babScene.activeCameraID(cam.id);
-	}
-	if (babScene.lights().size() == 0){
-		babylon_boundingbox bbox(sceneLoader.getScene());
-		BabylonLight light;
-		light.diffuse = babylon_vector3(1, 1, 1);
-		light.specular = babylon_vector3(1, 1, 1);
-		light.position = babylon_vector3(0,0,0);
-		light.parentId = babScene.activeCameraID();
-		light.type = 0;
-		light.id = L"default_light";
-		light.name = L"default_light";
-		light.intensity = 1;
-		babScene.lights().push_back(light);
-		//	web::json::value defaultLight = web::json::value::object();
-		//	writeVector3(defaultLight, L"diffuse", babylon_vector3(1, 1, 1));
-		//	writeVector3(defaultLight, L"specular", babylon_vector3(1, 1, 1));
-		//	writeVector3(defaultLight, L"position", babylon_vector3(bbox.getMinX()*2, bbox.getMaxY()*2, bbox.getMinZ()*2));
-		//	defaultLight[L"type"] = web::json::value(0);
-		//	defaultLight[L"direction"] = web::json::value::null();
-		//	defaultLight[L"id"] = web::json::value(L"default light");
-		//	defaultLight[L"name"] = web::json::value(L"default light");
-		//	defaultLight[L"intensity"] = web::json::value(1);
-	}
-	/*auto camera = sceneLoader.GetDefaultCamera();
-	auto spaceshipSettings = sceneLoader.getGlobalSettings();
-	FbxMaterialStore materials(wInputDir, wOutputPath, texFormat);
-	for (int i = 0; i < sceneLoader.getMeshCount(); ++i){
-		meshes.push_back(loadStaticMesh<babylon_vertex_normal_uv_color>(sceneLoader.getFbxMesh(i), sceneLoader.getScene(), materials));
-	}
-	auto json = exportScene(spaceshipSettings, materials.buildMaterialVector(), meshes);
-	if ('\\' != *wOutputPath.cend()){
-		wOutputPath.append(L"\\");
-	}
-	wOutputPath.append(wInputFileName);
-
-	auto lastDot = wOutputPath.find_last_of(L'.');
-	wOutputPath.erase(lastDot);
-	wOutputPath.append(L".babylon");
-	DeleteFile(wOutputPath.c_str());
-	std::wofstream stream(wOutputPath);
-	json.serialize(stream);
-	stream.flush();*/
+	
+	
 
 	auto json = babScene.toJson();
 	if (L'\\' != *wOutputPath.crbegin()) {

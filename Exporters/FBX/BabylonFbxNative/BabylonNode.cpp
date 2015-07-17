@@ -9,6 +9,12 @@ BabylonNode::BabylonNode(FbxNode* fbxNode) : _node(fbxNode){
 	}
 }
 
+BabylonNode::BabylonNode(BabylonNode && moved) :
+	 _node(moved._node),
+	_children(std::move(moved._children))
+{
+}
+
 BabylonNodeType BabylonNode::nodeType(){
 	if (_node->GetMesh()){
 		return BabylonNodeType::Mesh;
