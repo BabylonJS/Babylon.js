@@ -184,9 +184,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\3rdParty\DirectXTex\DirectXTex_Desktop_2013.vcxproj">
-      <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\BabylonFbxNative\BabylonFbxNative.vcxproj">
       <Project>{6c145cfb-31ac-4b28-8b74-26680d26a6e3}</Project>
     </ProjectReference>

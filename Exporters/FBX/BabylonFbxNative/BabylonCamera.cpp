@@ -169,6 +169,32 @@ BabylonCamera::BabylonCamera(BabylonNode& babnode)
 }
 
 
+BabylonCamera::BabylonCamera(BabylonCamera && moved) : 
+	name(std::move(moved.name)),
+	id(std::move(moved.id)),
+	parentId(std::move(moved.parentId)),
+	lockedTargetId(std::move(moved.lockedTargetId)),
+	type(std::move(moved.type)),
+	position(std::move(moved.position)),
+	rotationQuaternion(std::move(moved.rotationQuaternion)),
+	target(std::move(moved.target)),
+	fov(std::move(moved.fov)),
+	minZ(std::move(moved.minZ)),
+	maxZ(std::move(moved.maxZ)),
+	speed(std::move(moved.speed)),
+	inertia(std::move(moved.inertia)),
+	checkCollisions(std::move(moved.checkCollisions)),
+	applyGravity(std::move(moved.applyGravity)),
+	ellipsoid(std::move(moved.ellipsoid)),
+	autoAnimate(std::move(moved.autoAnimate)),
+	autoAnimateFrom(std::move(moved.autoAnimateFrom)),
+	autoAnimateTo(std::move(moved.autoAnimateTo)),
+	autoAnimateLoop(std::move(moved.autoAnimateLoop)),
+	animations(std::move(moved.animations)),
+	quatAnimations(std::move(moved.quatAnimations))
+{
+}
+
 BabylonCamera::~BabylonCamera()
 {
 }

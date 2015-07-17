@@ -38,6 +38,8 @@ public:
 	std::vector<std::wstring> renderList;
 
 	BabylonShadowGenerator(FbxNode* lightNode);
+	BabylonShadowGenerator(const BabylonShadowGenerator&) = default;
+	BabylonShadowGenerator(BabylonShadowGenerator&& moved);
 	web::json::value toJson();
 
 };
@@ -97,12 +99,14 @@ public:
 
 		
 	std::shared_ptr<BabylonShadowGenerator> shadowGenerator;
+	std::vector<std::shared_ptr < BabylonAnimation<babylon_vector3>>> animations;
 
 	web::json::value toJson() const;
 
 	BabylonLight();
 	BabylonLight(BabylonNode& babnode);
-	std::vector<std::shared_ptr < BabylonAnimation<babylon_vector3>>> animations;
+	BabylonLight(const BabylonLight&) = default;
+	BabylonLight(BabylonLight&& moved);
 	~BabylonLight();
 };
 
