@@ -4,7 +4,7 @@
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
     - New rewored StandardMaterial.isReady for better memory usage and performance [deltakosh](https://github.com/deltakosh)
   - **Updates**
-    - Added material.alphaMode (can be set to BABYLON.Engine.ALPHA_ADD or  BABYLON.Engine.ALPHA_COMBINE) [deltakosh](https://github.com/deltakosh)
+    - Added material.alphaMode (default is BABYLON.Engine.ALPHA_COMBINE, can be set to BABYLON.Engine.ALPHA_ADD, *_SUBTRACT, *_MULTIPLY or *_MAXIMIZED ) [deltakosh](https://github.com/deltakosh), [jahow](https://github.com/jahow)
     - Added Animatable.reset() function [deltakosh](https://github.com/deltakosh)
     - New parameter for ArcRotateCamera.zoomOn to preserve maxZ [deltakosh](https://github.com/deltakosh)
     - PickingInfo.getNormal can now use either vertices normals or vertices positions [deltakosh](https://github.com/deltakosh)
@@ -25,3 +25,4 @@
     - Fixing bug with rig cameras positioning [deltakosh](https://github.com/deltakosh)
     - Instance meshes' geometry ID is now serialized correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/607) [RaananW](https://github.com/RaananW)
   - **Breaking changes**
+    - In LensRenderingPipeline: parameter `dof_focus_depth` (range 0..1) is deprecated, use `dof_focus_distance` (range 0..infinity) instead [jahow](https://github.com/jahow)
