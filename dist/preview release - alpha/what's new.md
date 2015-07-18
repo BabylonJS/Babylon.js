@@ -21,6 +21,7 @@
     - Changes to meshes transform baking and added flipFaces [PR](https://github.com/BabylonJS/Babylon.js/pull/579) [jahow](https://github.com/jahow)
     - SerializeMesh serializes a mesh or array of meshes to be imported with the loader's ImportMesh. [PR](https://github.com/BabylonJS/Babylon.js/pull/583) [PR2](https://github.com/BabylonJS/Babylon.js/pull/609) [RaananW](https://github.com/RaananW)
 	- onCollide callback for meshes calling moveWithCollisions. [PR](https://github.com/BabylonJS/Babylon.js/pull/585) [RaananW](https://github.com/RaananW)
+	- Unity Exporter now uses game object name as the Babylon.js mesh name, instead of mesh name which is not unique when dealing with primitive objects (cubes, spheres, planes, etc..) [ozRocker] (https://github.com/punkoffice)	
   - **Bug fixes**
     - Fixing bug with rig cameras positioning [deltakosh](https://github.com/deltakosh)
     - Instance meshes' geometry ID is now serialized correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/607) [RaananW](https://github.com/RaananW)
