@@ -1130,7 +1130,11 @@ class Camera(FCurveAnimatable):
         self.name = camera.name
         BabylonExporter.log('processing begun of camera (' + self.CameraType + '):  ' + self.name)
         self.position = camera.location
-        self.rotation = mathutils.Vector((-camera.rotation_euler[0] + math.pi / 2, camera.rotation_euler[1], -camera.rotation_euler[2])) # extra parens needed
+        if camera.rotation_mode == 'QUATERNION':
+            # need to apply a pre-rotation
+            self.rotationQuaternion = post_rotate_quaternion(camera.rotation_quaternion, math.pi*0.5)
+        else:
+            self.rotation = mathutils.Vector((-camera.rotation_euler[0] + math.pi / 2, camera.rotation_euler[1], -camera.rotation_euler[2])) # extra parens needed
         self.fov = camera.data.angle
         self.minZ = camera.data.clip_start
         self.maxZ = camera.data.clip_end
@@ -1188,7 +1192,10 @@ class Camera(FCurveAnimatable):
         write_string(file_handler, 'name', self.name, True)
         write_string(file_handler, 'id', self.name)
         write_vector(file_handler, 'position', self.position)
-        write_vector(file_handler, 'rotation', self.rotation)
+        if hasattr(self, 'rotationQuaternion'):
+            write_quaternion(file_handler, "rotationQuaternion", self.rotationQuaternion)
+        else:
+            write_vector(file_handler, 'rotation', self.rotation)
         write_float(file_handler, 'fov', self.fov)
         write_float(file_handler, 'minZ', self.minZ)
         write_float(file_handler, 'maxZ', self.maxZ)
@@ -1684,6 +1691,13 @@ def scale_vector(vector, mult, xOffset = 0):
 
 def same_vertex(vertA, vertB):
     return vertA.x == vertB.x and vertA.y == vertB.y and vertA.z == vertB.z
+
+def post_rotate_quaternion(quat, angle):
+    post = mathutils.Euler((angle, 0.0, 0.0)).to_matrix()
+    mqtn = quat.to_matrix()
+    quat = (mqtn*post).to_quaternion()
+    return quat
+
 #===============================================================================
 # module level methods for writing JSON (.babylon) files
 #===============================================================================
