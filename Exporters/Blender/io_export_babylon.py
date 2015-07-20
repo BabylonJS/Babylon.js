@@ -972,7 +972,10 @@ class Node(FCurveAnimatable):
             self.parentId = node.parent.name
 
         self.position = loc
-        self.rotation = scale_vector(rot.to_euler('XYZ'), -1)
+        if node.rotation_mode == 'QUATERNION':
+            self.rotationQuaternion = rot
+        else:
+            self.rotation = scale_vector(rot.to_euler('XYZ'), -1)
         self.scaling = scale
         self.isVisible = False
         self.isEnabled = True
@@ -991,7 +994,10 @@ class Node(FCurveAnimatable):
         if hasattr(self, 'parentId'): write_string(file_handler, 'parentId', self.parentId)
 
         write_vector(file_handler, 'position', self.position)
-        write_vector(file_handler, 'rotation', self.rotation)
+        if hasattr(self, "rotationQuaternion"):
+            write_quaternion(file_handler, "rotationQuaternion", self.rotationQuaternion)
+        else:
+            write_vector(file_handler, 'rotation', self.rotation)
         write_vector(file_handler, 'scaling', self.scaling)
         write_bool(file_handler, 'isVisible', self.isVisible)
         write_bool(file_handler, 'isEnabled', self.isEnabled)
