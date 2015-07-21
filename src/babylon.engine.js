@@ -387,7 +387,7 @@ var BABYLON;
             }
             // GL
             try {
-                this._gl = canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options);
+                this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
             }
             catch (e) {
                 throw new Error("WebGL not supported");
@@ -2003,4 +2003,3 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.engine.js.map

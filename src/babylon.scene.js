@@ -1746,4 +1746,3 @@ var BABYLON;
     })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.scene.js.map

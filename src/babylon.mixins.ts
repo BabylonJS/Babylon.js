@@ -30,14 +30,12 @@ interface Document {
     webkitCancelFullScreen(): void;
     mozCancelFullScreen(): void;
     msCancelFullScreen(): void;
-    webkitIsFullScreen: boolean;
     mozFullScreen: boolean;
     msIsFullScreen: boolean;
     fullscreen: boolean;
     mozPointerLockElement: HTMLElement;
     msPointerLockElement: HTMLElement;
     webkitPointerLockElement: HTMLElement;
-    pointerLockElement: HTMLElement;
 }
 
 interface HTMLCanvasElement {
@@ -56,7 +54,7 @@ interface CanvasRenderingContext2D {
 
 interface WebGLTexture {
     isReady: boolean;
-    isCube:boolean;
+    isCube: boolean;
     url: string;
     noMipmap: boolean;
     samplingMode: number;
@@ -84,8 +82,6 @@ interface WebGLBuffer {
 }
 
 interface MouseEvent {
-    movementX: number;
-    movementY: number;
     mozMovementX: number;
     mozMovementY: number;
     webkitMovementX: number;

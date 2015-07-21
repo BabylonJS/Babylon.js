@@ -572,106 +572,78 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        // Cylinder and cone (made using ribbons)
         VertexData.CreateCylinder = function (height, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation) {
             if (subdivisions === void 0) { subdivisions = 1; }
             if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
-            var radiusTop = diameterTop / 2;
-            var radiusBottom = diameterBottom / 2;
-            var indices = [];
-            var positions = [];
-            var normals = [];
-            var uvs = [];
-            height = height || 1;
-            diameterTop = diameterTop || 0.5;
-            diameterBottom = diameterBottom || 1;
-            tessellation = tessellation || 16;
-            subdivisions = subdivisions || 1;
-            subdivisions = (subdivisions < 1) ? 1 : subdivisions;
-            var getCircleVector = function (i) {
-                var angle = (i * 2.0 * Math.PI / tessellation);
-                var dx = Math.cos(angle);
-                var dz = Math.sin(angle);
-                return new BABYLON.Vector3(dx, 0, dz);
+            // setup tube creation parameters
+            var path = [];
+            for (var i = 0; i <= subdivisions; i++) {
+                path.push(new BABYLON.Vector3(0, height * (-0.5 + i / subdivisions), 0));
+            }
+            // this is what defines the radius along the cylinder
+            var radiusFunction = function (i, distance) {
+                return (diameterBottom + (diameterTop - diameterBottom) * distance / height) / 2;
             };
+            // shortcut to 3d path data
+            var path3D = new BABYLON.Path3D(path);
+            var tangents = path3D.getTangents();
+            var normals = path3D.getNormals();
+            var distances = path3D.getDistances();
+            // let's build the array of paths (rings)
+            var pathArray = [];
+            var ringVertex;
+            var angle;
+            var angle_step = Math.PI * 2 / tessellation;
+            var distance = 0;
+            for (var i = 0; i <= subdivisions; i++) {
+                pathArray[i] = [];
+                for (var j = 0; j < tessellation; j++) {
+                    angle = j * angle_step;
+                    ringVertex = BABYLON.Vector3.TransformCoordinates(normals[i], BABYLON.Matrix.RotationAxis(tangents[i], angle));
+                    ringVertex.scaleInPlace(radiusFunction(i, distances[i])).addInPlace(path[i]);
+                    pathArray[i].push(ringVertex);
+                }
+            }
+            // create ribbon based on computed paths (& close seam)
+            var vertexdata = VertexData.CreateRibbon(pathArray, false, true, 0, sideOrientation);
             var createCylinderCap = function (isTop) {
-                var radius = isTop ? radiusTop : radiusBottom;
+                var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
                 if (radius === 0) {
                     return;
                 }
-                var vbase = positions.length / 3;
-                var offset = new BABYLON.Vector3(0, height / 2, 0);
+                var vbase = vertexdata.positions.length / 3;
+                var offset = new BABYLON.Vector3(0, isTop ? height / 2 : -height / 2, 0);
                 var textureScale = new BABYLON.Vector2(0.5, 0.5);
-                if (!isTop) {
-                    offset.scaleInPlace(-1);
-                    textureScale.x = -textureScale.x;
-                }
                 // Positions, normals & uvs
+                var angle;
                 for (var i = 0; i < tessellation; i++) {
-                    var circleVector = getCircleVector(i);
+                    angle = Math.PI * 2 * i / tessellation;
+                    var circleVector = new BABYLON.Vector3(Math.cos(angle), 0, Math.sin(angle));
                     var position = circleVector.scale(radius).add(offset);
                     var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
-                    positions.push(position.x, position.y, position.z);
-                    uvs.push(textureCoordinate.x, textureCoordinate.y);
+                    vertexdata.positions.push(position.x, position.y, position.z);
+                    vertexdata.normals.push(0, isTop ? 1 : -1, 0);
+                    vertexdata.uvs.push(textureCoordinate.x, textureCoordinate.y);
                 }
                 // Indices
                 for (i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
-                        indices.push(vbase);
-                        indices.push(vbase + (i + 2) % tessellation);
-                        indices.push(vbase + (i + 1) % tessellation);
+                        vertexdata.indices.push(vbase);
+                        vertexdata.indices.push(vbase + (i + 2) % tessellation);
+                        vertexdata.indices.push(vbase + (i + 1) % tessellation);
                     }
                     else {
-                        indices.push(vbase);
-                        indices.push(vbase + (i + 1) % tessellation);
-                        indices.push(vbase + (i + 2) % tessellation);
+                        vertexdata.indices.push(vbase);
+                        vertexdata.indices.push(vbase + (i + 1) % tessellation);
+                        vertexdata.indices.push(vbase + (i + 2) % tessellation);
                     }
                 }
             };
-            var base = new BABYLON.Vector3(0, -1, 0).scale(height / 2);
-            var offset = new BABYLON.Vector3(0, 1, 0).scale(height / subdivisions);
-            var stride = tessellation + 1;
-            // Positions, normals & uvs
-            for (var i = 0; i <= tessellation; i++) {
-                var circleVector = getCircleVector(i);
-                var textureCoordinate = new BABYLON.Vector2(i / tessellation, 0);
-                var position, radius = radiusBottom;
-                for (var s = 0; s <= subdivisions; s++) {
-                    // Update variables
-                    position = circleVector.scale(radius);
-                    position.addInPlace(base.add(offset.scale(s)));
-                    textureCoordinate.y += 1 / subdivisions;
-                    radius += (radiusTop - radiusBottom) / subdivisions;
-                    // Push in arrays
-                    positions.push(position.x, position.y, position.z);
-                    uvs.push(textureCoordinate.x, textureCoordinate.y);
-                }
-            }
-            subdivisions += 1;
-            // Indices
-            for (s = 0; s < subdivisions - 1; s++) {
-                for (i = 0; i <= tessellation; i++) {
-                    indices.push(i * subdivisions + s);
-                    indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
-                    indices.push(i * subdivisions + (s + 1));
-                    indices.push(i * subdivisions + (s + 1));
-                    indices.push((i * subdivisions + (s + subdivisions)) % (stride * subdivisions));
-                    indices.push((i * subdivisions + (s + subdivisions + 1)) % (stride * subdivisions));
-                }
-            }
-            // Create flat triangle fan caps to seal the top and bottom.
+            // add caps to geometry
             createCylinderCap(true);
             createCylinderCap(false);
-            // Normals
-            VertexData.ComputeNormals(positions, indices, normals);
-            // Sides
-            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
-            // Result
-            var vertexData = new VertexData();
-            vertexData.indices = indices;
-            vertexData.positions = positions;
-            vertexData.normals = normals;
-            vertexData.uvs = uvs;
-            return vertexData;
+            return vertexdata;
         };
         VertexData.CreateTorus = function (diameter, thickness, tessellation, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
@@ -1192,4 +1164,3 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.vertexData.js.map

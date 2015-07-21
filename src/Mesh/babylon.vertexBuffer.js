@@ -190,4 +190,3 @@ var BABYLON;
     })();
     BABYLON.VertexBuffer = VertexBuffer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.vertexBuffer.js.map
