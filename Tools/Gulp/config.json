@@ -10,6 +10,7 @@
   "core": {
     "typescript": [
       "../../src/**/*.ts",
+      "!../../src/**/*.d.ts",
       "../../external references/**/*.d.ts"
     ],
     "files": [
