@@ -709,7 +709,7 @@
         }
 
         // Cylinder and cone (made using ribbons)
-        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: n umber = 1, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
 
             // setup tube creation parameters
             var path = [];
