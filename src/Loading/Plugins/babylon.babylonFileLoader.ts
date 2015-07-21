@@ -478,12 +478,7 @@
                 camera.target = BABYLON.Vector3.FromArray(parsedCamera.target);
             }
         } else {
-            if (parsedCamera.rotationQuaternion) {
-                camera.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedCamera.rotationQuaternion);
-            }
-            else {
-                camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
-            }
+            camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
         }
 
         camera.fov = parsedCamera.fov;

@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 8, 1),
+    'version': (1, 8, 2),
     'blender': (2, 72, 0),
     "location": "File > Export > Babylon.js (.babylon)",
     "description": "Export Babylon.js scenes (.babylon)",
@@ -1133,11 +1133,7 @@ class Camera(FCurveAnimatable):
         self.name = camera.name
         BabylonExporter.log('processing begun of camera (' + self.CameraType + '):  ' + self.name)
         self.position = camera.location
-        if camera.rotation_mode == 'QUATERNION':
-            # need to apply a pre-rotation
-            self.rotationQuaternion = post_rotate_quaternion(camera.rotation_quaternion, math.pi*0.5)
-        else:
-            self.rotation = mathutils.Vector((-camera.rotation_euler[0] + math.pi / 2, camera.rotation_euler[1], -camera.rotation_euler[2])) # extra parens needed
+        self.rotation = mathutils.Vector((-camera.rotation_euler[0] + math.pi / 2, camera.rotation_euler[1], -camera.rotation_euler[2])) # extra parens needed
         self.fov = camera.data.angle
         self.minZ = camera.data.clip_start
         self.maxZ = camera.data.clip_end
@@ -1195,10 +1191,7 @@ class Camera(FCurveAnimatable):
         write_string(file_handler, 'name', self.name, True)
         write_string(file_handler, 'id', self.name)
         write_vector(file_handler, 'position', self.position)
-        if hasattr(self, 'rotationQuaternion'):
-            write_quaternion(file_handler, "rotationQuaternion", self.rotationQuaternion)
-        else:
-            write_vector(file_handler, 'rotation', self.rotation)
+        write_vector(file_handler, 'rotation', self.rotation)
         write_float(file_handler, 'fov', self.fov)
         write_float(file_handler, 'minZ', self.minZ)
         write_float(file_handler, 'maxZ', self.maxZ)
