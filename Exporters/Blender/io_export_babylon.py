@@ -512,8 +512,11 @@ class FCurveAnimatable:
             BabylonExporter.log('FCurve animation processing begun for:  ' + object.name, 1)
             self.animations = []
             for fcurve in object.animation_data.action.fcurves:
-                if supportsRotation and fcurve.data_path == 'rotation_euler' and rotAnim == False:
+                if supportsRotation and fcurve.data_path == 'rotation_euler' and rotAnim == False and useQuat == False:
                     self.animations.append(VectorAnimation(object, 'rotation_euler', 'rotation', -1, xOffsetForRotation))
+                    rotAnim = True
+                elif supportsRotation and fcurve.data_path == 'rotation_quaternion' and rotAnim == False and useQuat == True:
+                    self.animations.append(QuaternionAnimation(object, 'rotation_quaternion', 'rotationQuaternion', 1, xOffsetForRotation))
                     rotAnim = True
                 elif supportsPosition and fcurve.data_path == 'location' and locAnim == False:
                     self.animations.append(VectorAnimation(object, 'location', 'position', 1))
@@ -1576,7 +1579,7 @@ class QuaternionAnimation(Animation):
         for Frame in sorted(frames):
             self.frames.append(Frame)
             bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
-            self.values.append(getattr(object, attrInBlender))
+            self.values.append(post_rotate_quaternion(getattr(object, attrInBlender), xOffset))
 #===============================================================================
 #  module level formatting methods, called from multiple classes
 #===============================================================================
