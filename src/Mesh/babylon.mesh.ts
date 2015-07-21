@@ -1343,7 +1343,7 @@
             return sphere;
         }
 
-        // Cylinder and cone (Code inspired by SharpDX.org)
+        // Cylinder and cone
         public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // subdivisions is a new parameter, we need to support old signature
             if (scene === undefined || !(scene instanceof Scene)) {
@@ -1354,60 +1354,10 @@
                 subdivisions = 1;
             }
 
-            // setup tube creation parameters
-            var path = [
-                new Vector3(0, -height / 2, 0),
-                new Vector3(0, height / 2, 0),
-            ];
+            var cylinder = new Mesh(name, scene);
+            var vertexData = VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation);
 
-            var radiusFunction = function (i, distance) {
-                return (diameterBottom + (diameterTop - diameterBottom) * distance / height) / 2;
-            };
-            
-            // create tube without caps
-            var cylinder = Mesh.CreateTube(name, path, 1.0, tessellation, radiusFunction, Mesh.NO_CAP, scene, updatable, sideOrientation);
-            
-            // extract geometry data to add caps
-            var geometry_data = VertexData.ExtractFromMesh(cylinder);
-
-            var createCylinderCap = function (isTop) {
-                var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
-                if (radius === 0) {
-                    return;
-                }
-                var vbase = geometry_data.positions.length / 3;
-                var offset = new Vector3(0, isTop ? height / 2 : -height / 2, 0);
-                var textureScale = new Vector2(0.5, 0.5);
-                // Positions, normals & uvs
-                var angle;
-                for (var i = 0; i < tessellation; i++) {
-                    angle = Math.PI * 2 * i / tessellation;
-                    var circleVector = new Vector3(Math.cos(angle), 0, Math.sin(angle));
-                    var position = circleVector.scale(radius).add(offset);
-                    var textureCoordinate = new Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
-                    geometry_data.positions.push(position.x, position.y, position.z);
-                    geometry_data.normals.push(0, isTop ? 1 : -1, 0);
-                    geometry_data.uvs.push(textureCoordinate.x, textureCoordinate.y);
-                }
-                // Indices
-                for (i = 0; i < tessellation - 2; i++) {
-                    if (!isTop) {
-                        geometry_data.indices.push(vbase);
-                        geometry_data.indices.push(vbase + (i + 2) % tessellation);
-                        geometry_data.indices.push(vbase + (i + 1) % tessellation);
-                    }
-                    else {
-                        geometry_data.indices.push(vbase);
-                        geometry_data.indices.push(vbase + (i + 1) % tessellation);
-                        geometry_data.indices.push(vbase + (i + 2) % tessellation);
-                    }
-                }
-            };
-            
-            // add caps to geometry and apply to mesh
-            createCylinderCap(true);
-            createCylinderCap(false);
-            geometry_data.applyToMesh(cylinder);
+            vertexData.applyToMesh(cylinder, updatable);
 
             return cylinder;
         }
