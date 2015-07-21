@@ -714,7 +714,7 @@
             // setup tube creation parameters
             var path = [];
             for (var i = 0; i <= subdivisions; i++) {
-               path.push(new Vector3(0, height * (- 0.5 + i / subdivisions), 0));
+                path.push(new Vector3(0, height * (- 0.5 + i / subdivisions), 0));
             }
 
             // this is what defines the radius along the cylinder
@@ -735,11 +735,11 @@
             var angle_step = Math.PI * 2 / tessellation;
             var distance = 0;
 
-            for(var i=0; i<=subdivisions; i++) {
+            for (var i = 0; i <= subdivisions; i++) {
 
                 pathArray[i] = [];
 
-                for(var j=0; j<tessellation; j++) {
+                for (var j = 0; j < tessellation; j++) {
                     angle = j * angle_step;
                     ringVertex = Vector3.TransformCoordinates(normals[i], Matrix.RotationAxis(tangents[i], angle));
                     ringVertex.scaleInPlace(radiusFunction(i, distances[i])).addInPlace(path[i]);
@@ -1419,4 +1419,5 @@
         }
     }
 } 
+
 

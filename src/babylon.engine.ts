@@ -576,7 +576,7 @@
 
             // GL
             try {
-                this._gl = canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options);
+                this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
             } catch (e) {
                 throw new Error("WebGL not supported");
             }

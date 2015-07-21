@@ -1,4 +1,4 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
@@ -50,4 +50,3 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.virtualJoysticksCamera.js.map
