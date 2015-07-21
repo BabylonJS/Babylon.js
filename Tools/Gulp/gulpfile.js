@@ -104,7 +104,7 @@ gulp.task("build", ["workers", "shaders"], function () {
 });
 
 gulp.task("typescript", function(cb) {
-    runSequence("typescript-compile", "build");
+    runSequence("typescript-compile", "default");
 });
 
 /**
