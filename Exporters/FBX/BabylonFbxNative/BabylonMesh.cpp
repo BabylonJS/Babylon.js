@@ -383,6 +383,12 @@ web::json::value BabylonMesh::toJson()
 		}
 		jobj[L"pivotMatrix"] = jpivot;
 	}
+
+	auto jinstances = web::json::value::array();
+	for (auto& instance : _instances) {
+		jinstances[jinstances.size()] = instance.toJson();
+	}
+	jobj[L"instances"] = jinstances;
 	return jobj;
 }
 
@@ -865,6 +871,11 @@ BabylonMesh::BabylonMesh(BabylonMesh && moved) :
 	animations(std::move(moved.animations)),
 	pivotMatrix(std::move(moved.pivotMatrix))
 {
+}
+
+void BabylonMesh::addInstance(BabylonNode * node)
+{
+	_instances.emplace_back(node);
 }
 
 BabylonMesh::~BabylonMesh()
