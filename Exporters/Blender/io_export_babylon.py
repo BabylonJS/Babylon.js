@@ -516,7 +516,13 @@ class FCurveAnimatable:
                     self.animations.append(VectorAnimation(object, 'rotation_euler', 'rotation', -1, xOffsetForRotation))
                     rotAnim = True
                 elif supportsRotation and fcurve.data_path == 'rotation_quaternion' and rotAnim == False and useQuat == True:
-                    self.animations.append(QuaternionAnimation(object, 'rotation_quaternion', 'rotationQuaternion', 1, xOffsetForRotation))
+                    anim = None
+                    if object.type == 'CAMERA':
+                        # if it's a camera, convert quaternions to euler XYZ
+                        anim = QuaternionToEulerAnimation(object, 'rotation_quaternion', 'rotation', -1, xOffsetForRotation)
+                    else:
+                        anim = QuaternionAnimation(object, 'rotation_quaternion', 'rotationQuaternion', 1, xOffsetForRotation)
+                    self.animations.append(anim)
                     rotAnim = True
                 elif supportsPosition and fcurve.data_path == 'location' and locAnim == False:
                     self.animations.append(VectorAnimation(object, 'location', 'position', 1))
@@ -1133,7 +1139,11 @@ class Camera(FCurveAnimatable):
         self.name = camera.name
         BabylonExporter.log('processing begun of camera (' + self.CameraType + '):  ' + self.name)
         self.position = camera.location
-        self.rotation = mathutils.Vector((-camera.rotation_euler[0] + math.pi / 2, camera.rotation_euler[1], -camera.rotation_euler[2])) # extra parens needed
+
+        # for quaternions, convert to euler XYZ, otherwise, use the default rotation_euler
+        eul = camera.rotation_quaternion.to_euler("XYZ") if camera.rotation_mode == 'QUATERNION' else camera.rotation_euler
+        self.rotation = mathutils.Vector((-eul[0] + math.pi / 2, eul[1], -eul[2]))
+
         self.fov = camera.data.angle
         self.minZ = camera.data.clip_start
         self.maxZ = camera.data.clip_end
@@ -1573,6 +1583,26 @@ class QuaternionAnimation(Animation):
             self.frames.append(Frame)
             bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
             self.values.append(post_rotate_quaternion(getattr(object, attrInBlender), xOffset))
+#===============================================================================
+class QuaternionToEulerAnimation(Animation):
+    def __init__(self, object, attrInBlender, propertyInBabylon, mult, xOffset = 0):
+        super().__init__(ANIMATIONTYPE_VECTOR3, 30, ANIMATIONLOOPMODE_CYCLE, propertyInBabylon + ' animation', propertyInBabylon)
+
+        # capture  built up from fcurves
+        frames = dict()
+        for fcurve in object.animation_data.action.fcurves:
+            if fcurve.data_path == attrInBlender:
+                for key in fcurve.keyframe_points:
+                    frame = key.co.x
+                    frames[frame] = 1
+
+        #for each frame (next step ==> set for key frames)
+        for Frame in sorted(frames):
+            self.frames.append(Frame)
+            bpy.context.scene.frame_set(int(Frame + bpy.context.scene.frame_start))
+            quat = getattr(object, attrInBlender)
+            eul  = quat.to_euler("XYZ")
+            self.values.append(scale_vector(eul, mult, xOffset))
 #===============================================================================
 #  module level formatting methods, called from multiple classes
 #===============================================================================
