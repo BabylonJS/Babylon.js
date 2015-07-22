@@ -89,6 +89,6 @@ public:
 	BabylonScene(BabylonScene&& moved);
 	~BabylonScene();
 private:
-	void exploreNodes(BabylonNode& node, bool skipEmptyNodes);
+	void exploreNodes(BabylonNode& node, bool skipEmptyNodes, std::map<FbxMesh*, size_t>& meshInstanceMap);
 };
 

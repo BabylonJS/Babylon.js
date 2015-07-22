@@ -123,6 +123,7 @@ public:
 	BabylonMesh(BabylonNode* node);
 	BabylonMesh(const BabylonMesh&) = default;
 	BabylonMesh(BabylonMesh&& moved);
+	void addInstance(BabylonNode* node);
 	virtual ~BabylonMesh();
 };
 
