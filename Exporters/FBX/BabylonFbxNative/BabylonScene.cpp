@@ -76,7 +76,8 @@ BabylonScene::BabylonScene(BabylonNode & rootNode, bool skipEmptyNodes) :
 	_ambientColor(0, 0, 0),
 	_gravity(0, 0, -.9f)
 {
-	exploreNodes(rootNode, skipEmptyNodes);
+	std::map<FbxMesh*, size_t> meshInstanceMap;
+	exploreNodes(rootNode, skipEmptyNodes, meshInstanceMap);
 	if (_cameras.size() == 0) {
 		babylon_boundingbox bbox(rootNode.fbxNode()->GetScene());
 		auto cam = buildCameraFromBoundingBox(bbox);
@@ -151,8 +152,20 @@ void fixupTextureCoordinateIndices(BabylonMaterial& mat, BabylonMesh& mesh) {
 		}
 	}
 }
+bool isAlreadyInstanciatedMesh(FbxNode* node, std::map<FbxMesh*, size_t>& meshInstanceMap, size_t* oIndex) {
+	auto mesh = node->GetMesh();
+	if (!mesh) {
+		return false;
+	}
+	auto found = meshInstanceMap.find(mesh);
+	if (found == meshInstanceMap.end()) {
+		return false;
+	}
 
-void BabylonScene::exploreNodes(BabylonNode & node, bool skipEmptyNodes)
+	*oIndex = found->second;
+	return true;
+}
+void BabylonScene::exploreNodes(BabylonNode & node, bool skipEmptyNodes, std::map<FbxMesh*, size_t>& meshInstanceMap)
 {
 	if (node.nodeType() == BabylonNodeType::Skeleton && node.hasOnlySkeletonDescendants()) {
 		return;
@@ -167,44 +180,53 @@ void BabylonScene::exploreNodes(BabylonNode & node, bool skipEmptyNodes)
 	case BabylonNodeType::Mesh:
 	case BabylonNodeType::Skeleton:
 	{
+		size_t instanceOwnerIndex;
+		if (isAlreadyInstanciatedMesh(node.fbxNode(), meshInstanceMap, &instanceOwnerIndex)) {
+			_meshes[instanceOwnerIndex].addInstance(&node);
+		}
+		else {
+			BabylonMesh mesh(&node);
 
-		BabylonMesh mesh(&node);
+			auto matCount = node.fbxNode()->GetMaterialCount();
+			BabylonMultiMaterial multiMat;
+			for (auto i = 0; i < matCount; ++i) {
+				auto mat = node.fbxNode()->GetMaterial(i);
+				if (mat) {
 
-		auto matCount = node.fbxNode()->GetMaterialCount();
-		BabylonMultiMaterial multiMat;
-		for (auto i = 0; i < matCount; ++i) {
-			auto mat = node.fbxNode()->GetMaterial(i);
-			if (mat) {
+					auto id = getMaterialId(mat);
+					auto existing = std::find_if(_materials.begin(), _materials.end(), [id](const BabylonMaterial& e) {
+						return e.id == id;
+					});
+					if (existing == _materials.end()) {
+						auto babMat = BabylonMaterial(mat);
+						fixupTextureCoordinateIndices(babMat, mesh);
+						_materials.push_back(std::move(babMat));
+					}
 
-				auto id = getMaterialId(mat);
-				auto existing = std::find_if(_materials.begin(), _materials.end(), [id](const BabylonMaterial& e) {
-					return e.id == id;
-				});
-				if (existing == _materials.end()) {
-					auto babMat = BabylonMaterial(mat);
-					fixupTextureCoordinateIndices(babMat, mesh);
-					_materials.push_back(std::move(babMat));
+					multiMat.materials.push_back(id);
+
 				}
-
-				multiMat.materials.push_back(id);
-
 			}
-		}
 
-		if (mesh.associatedSkeleton) {
-			mesh.associatedSkeleton->id = static_cast<int>(_skeletons.size() + 1);
-			mesh.skeletonId(static_cast<int>(_skeletons.size() + 1));
-			_skeletons.push_back(mesh.associatedSkeleton);
-		}
-		if (multiMat.materials.size() > 0) {
+			if (mesh.associatedSkeleton) {
+				mesh.associatedSkeleton->id = static_cast<int>(_skeletons.size() + 1);
+				mesh.skeletonId(static_cast<int>(_skeletons.size() + 1));
+				_skeletons.push_back(mesh.associatedSkeleton);
+			}
+			if (multiMat.materials.size() > 0) {
 
-			multiMat.id = mesh.id();
-			multiMat.name = mesh.name();
-			mesh.materialId(multiMat.id);
-			_multiMaterials.push_back(std::move(multiMat));
-		}
+				multiMat.id = mesh.id();
+				multiMat.name = mesh.name();
+				mesh.materialId(multiMat.id);
+				_multiMaterials.push_back(std::move(multiMat));
+			}
 
-		_meshes.push_back(std::move(mesh));
+			auto fbxMesh = node.fbxNode()->GetMesh();
+			if (fbxMesh) {
+				meshInstanceMap[fbxMesh] = _meshes.size();
+			}
+			_meshes.push_back(std::move(mesh));
+		}
 	}
 	break;
 	case BabylonNodeType::Camera:
@@ -230,7 +252,7 @@ void BabylonScene::exploreNodes(BabylonNode & node, bool skipEmptyNodes)
 
 
 	for (auto& child : node.children()) {
-		exploreNodes(child, skipEmptyNodes);
+		exploreNodes(child, skipEmptyNodes, meshInstanceMap);
 	}
 
 }

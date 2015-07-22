@@ -3,7 +3,8 @@ FBX Exporter produces a babylon scene file from an FBX asset
 ##Supported features
 - cameras
 - lights (including shadowcasting info)
-- meshes (with or without associated skeletons, no support for instancing yet)
+- meshes (with or without associated skeletons)
+- mesh instancing (make sure "preserve instances" is checked when exporting from 3DS Max)
 - bone hierarchies
 - materials (with any number of textures)
 - animations (transforms / opacities / hierarchical) except on materials / textures
