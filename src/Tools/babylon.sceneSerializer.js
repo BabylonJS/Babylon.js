@@ -739,14 +739,23 @@ var BABYLON;
             }
             return serializationObject;
         };
-        SceneSerializer.SerializeMesh = function (toSerialize /* Mesh || Mesh[] */, withParents) {
+        SceneSerializer.SerializeMesh = function (toSerialize /* Mesh || Mesh[] */, withParents, withChildren) {
             if (withParents === void 0) { withParents = false; }
+            if (withChildren === void 0) { withChildren = false; }
             var serializationObject = {};
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
-            if (withParents) {
+            if (withParents || withChildren) {
                 //deliberate for loop! not for each, appended should be processed as well.
                 for (var i = 0; i < toSerialize.length; ++i) {
-                    if (toSerialize[i].parent) {
+                    if (withChildren) {
+                        toSerialize[i].getDescendants().forEach(function (node) {
+                            if (node instanceof BABYLON.Mesh && (toSerialize.indexOf(node) < 0)) {
+                                toSerialize.push(node);
+                            }
+                        });
+                    }
+                    //make sure the array doesn't contain the object already
+                    if (withParents && toSerialize[i].parent && (toSerialize.indexOf(toSerialize[i].parent) < 0)) {
                         toSerialize.push(toSerialize[i].parent);
                     }
                 }
