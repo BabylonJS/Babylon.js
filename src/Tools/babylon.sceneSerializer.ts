@@ -903,15 +903,23 @@
             return serializationObject;
         }
 
-        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents: boolean = false): any {
+        public static SerializeMesh(toSerialize: any /* Mesh || Mesh[] */, withParents: boolean = false, withChildren: boolean = false): any {
             var serializationObject: any = {};
 
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
 
-            if (withParents) {
+			if (withParents || withChildren) {
                 //deliberate for loop! not for each, appended should be processed as well.
                 for (var i = 0; i < toSerialize.length; ++i) {
-                    if (toSerialize[i].parent) {
+					if(withChildren) {
+						toSerialize[i].getDescendants().forEach((node) => {
+							if(node instanceof Mesh && (toSerialize.indexOf(node) < 0)) {
+								toSerialize.push(node);
+							}
+						});
+					}
+					//make sure the array doesn't contain the object already
+                    if (withParents && toSerialize[i].parent && (toSerialize.indexOf(toSerialize[i].parent) < 0)) {
                         toSerialize.push(toSerialize[i].parent);
                     }
                 }
