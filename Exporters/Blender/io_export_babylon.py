@@ -468,9 +468,11 @@ class World:
         self.autoClear = True
         world = scene.world
         if world:
-            self.world_ambient = world.ambient_color
+            self.ambient_color = world.ambient_color
+            self.clear_color   = world.horizon_color
         else:
-            self.world_ambient = mathutils.Color((0.2, 0.2, 0.3))
+            self.ambient_color = mathutils.Color((0.2, 0.2, 0.3))
+            self.clear_color   = mathutils.Color((0.0, 0.0, 0.0))
 
         self.gravity = scene.gravity
 
@@ -485,8 +487,8 @@ class World:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         write_bool(file_handler, 'autoClear', self.autoClear, True)
-        write_color(file_handler, 'clearColor', self.world_ambient)
-        write_color(file_handler, 'ambientColor', self.world_ambient)
+        write_color(file_handler, 'clearColor', self.clear_color)
+        write_color(file_handler, 'ambientColor', self.ambient_color)
         write_vector(file_handler, 'gravity', self.gravity)
 
         if hasattr(self, 'fogMode'):
