@@ -3,6 +3,7 @@
     - Meshes can now be attached to bones. See [documentation here](http://babylondoc.azurewebsites.net/page.php?p=22421) and [sample here](http://www.babylonjs-playground.com/#11BH6Z#18) [deltakosh](https://github.com/deltakosh)
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
     - New rewored StandardMaterial.isReady for better memory usage and performance [deltakosh](https://github.com/deltakosh)
+    - Revamping of FBX exporter. Now supports animations and bones Simon Ferquel, [deltakosh](https://github.com/deltakosh)
   - **Updates**
     - Added material.alphaMode (default is BABYLON.Engine.ALPHA_COMBINE, can be set to BABYLON.Engine.ALPHA_ADD, *_SUBTRACT, *_MULTIPLY or *_MAXIMIZED ) [deltakosh](https://github.com/deltakosh), [jahow](https://github.com/jahow)
     - Added Animatable.reset() function [deltakosh](https://github.com/deltakosh)
