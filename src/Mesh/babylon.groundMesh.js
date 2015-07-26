@@ -20,9 +20,11 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        GroundMesh.prototype.optimize = function (chunksCount) {
+        GroundMesh.prototype.optimize = function (chunksCount, octreeBlocksSize) {
+            if (octreeBlocksSize === void 0) { octreeBlocksSize = 32; }
+            this._subdivisions = chunksCount;
             this.subdivide(this._subdivisions);
-            this.createOrUpdateSubmeshesOctree(32);
+            this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
         };
         GroundMesh.prototype.getHeightAtCoordinates = function (x, z) {
             var ray = new BABYLON.Ray(new BABYLON.Vector3(x, this.getBoundingInfo().boundingBox.maximumWorld.y + 1, z), new BABYLON.Vector3(0, -1, 0));
