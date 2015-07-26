@@ -908,17 +908,17 @@
 
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
 
-			if (withParents || withChildren) {
+            if (withParents || withChildren) {
                 //deliberate for loop! not for each, appended should be processed as well.
                 for (var i = 0; i < toSerialize.length; ++i) {
-					if(withChildren) {
-						toSerialize[i].getDescendants().forEach((node) => {
-							if(node instanceof Mesh && (toSerialize.indexOf(node) < 0)) {
-								toSerialize.push(node);
-							}
-						});
-					}
-					//make sure the array doesn't contain the object already
+                    if (withChildren) {
+                        toSerialize[i].getDescendants().forEach((node) => {
+                            if (node instanceof Mesh && (toSerialize.indexOf(node) < 0)) {
+                                toSerialize.push(node);
+                            }
+                        });
+                    }
+                    //make sure the array doesn't contain the object already
                     if (withParents && toSerialize[i].parent && (toSerialize.indexOf(toSerialize[i].parent) < 0)) {
                         toSerialize.push(toSerialize[i].parent);
                     }
@@ -933,5 +933,6 @@
         }
     }
 }
+
 
 
