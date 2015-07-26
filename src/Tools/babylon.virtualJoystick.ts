@@ -35,6 +35,7 @@ module BABYLON {
         private _joystickPointerID: number;
         private _joystickColor: string;
         private _joystickPointerPos: Vector2;
+        private _joystickPreviousPointerPos: Vector2;
         private _joystickPointerStartPos: Vector2;
         private _deltaJoystickVector: Vector2;
         private _leftJoystick: boolean;
@@ -115,6 +116,7 @@ module BABYLON {
             this._joystickPointerID = -1;
             // current joystick position
             this._joystickPointerPos = new Vector2(0, 0);
+            this._joystickPreviousPointerPos = new Vector2(0, 0);
             // origin joystick position
             this._joystickPointerStartPos = new Vector2(0, 0);
             this._deltaJoystickVector = new Vector2(0, 0);
@@ -165,6 +167,7 @@ module BABYLON {
                 this._joystickPointerStartPos.x = e.clientX;
                 this._joystickPointerStartPos.y = e.clientY;
                 this._joystickPointerPos = this._joystickPointerStartPos.clone();
+                this._joystickPreviousPointerPos = this._joystickPointerStartPos.clone();
                 this._deltaJoystickVector.x = 0;
                 this._deltaJoystickVector.y = 0;
                 this.pressed = true;
@@ -174,7 +177,7 @@ module BABYLON {
                 // You can only trigger the action buttons with a joystick declared
                 if (VirtualJoystick._globalJoystickIndex < 2 && this._action) {
                     this._action();
-                    this._touches.add(e.pointerId.toString(), e);
+                    this._touches.add(e.pointerId.toString(), { x: e.clientX, y: e.clientY, prevX: e.clientX, prevY: e.clientY });
                 }
             }
         }
@@ -217,16 +220,23 @@ module BABYLON {
             else {
                 if (this._touches.item(e.pointerId.toString())) {
                     this._touches.item(e.pointerId.toString()).x = e.clientX;
-                    this._touches.item(e.pointerId.toString()).y = e.clientY;
+                    this._touches.item(e.pointerId.toString()).y = e.clientY;                     
                 }
             }
         }
 
         private _onPointerUp(e: PointerEvent) {
-            this._clearCanvas();
             if (this._joystickPointerID == e.pointerId) {
+                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 63, this._joystickPointerStartPos.y - 63, 126, 126);
+                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 41, this._joystickPreviousPointerPos.y - 41, 82, 82);
                 this._joystickPointerID = -1;
                 this.pressed = false;
+            }
+            else {
+                var touch = this._touches.item(e.pointerId.toString());
+                if (touch) {
+                    VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
+                }
             }
             this._deltaJoystickVector.x = 0;
             this._deltaJoystickVector.y = 0;
@@ -285,25 +295,31 @@ module BABYLON {
 
         private _drawVirtualJoystick() {
             if (this.pressed) {
-                this._clearCanvas();
-                this._touches.forEach((touch: PointerEvent) => {
+                this._touches.forEach((touch: any) => {
                     if (touch.pointerId === this._joystickPointerID) {
+                        VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 63, this._joystickPointerStartPos.y - 63, 126, 126);                       
+                        VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 41, this._joystickPreviousPointerPos.y - 41, 82, 82);
                         VirtualJoystick.vjCanvasContext.beginPath();
-                        VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
                         VirtualJoystick.vjCanvasContext.lineWidth = 6;
+                        VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
                         VirtualJoystick.vjCanvasContext.arc(this._joystickPointerStartPos.x, this._joystickPointerStartPos.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.closePath();
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
                         VirtualJoystick.vjCanvasContext.lineWidth = 2;
                         VirtualJoystick.vjCanvasContext.arc(this._joystickPointerStartPos.x, this._joystickPointerStartPos.y, 60, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.closePath();
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
                         VirtualJoystick.vjCanvasContext.arc(this._joystickPointerPos.x, this._joystickPointerPos.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.closePath();
+                        this._joystickPreviousPointerPos = this._joystickPointerPos.clone();
                     }
                     else {
+                        VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.fillStyle = "white";
                         VirtualJoystick.vjCanvasContext.beginPath();
@@ -311,6 +327,9 @@ module BABYLON {
                         VirtualJoystick.vjCanvasContext.lineWidth = 6;
                         VirtualJoystick.vjCanvasContext.arc(touch.x, touch.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.closePath();
+                        touch.prevX = touch.x;
+                        touch.prevY = touch.y;
                     };
                 });
             }

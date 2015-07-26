@@ -71,6 +71,7 @@ var BABYLON;
             this._joystickPointerID = -1;
             // current joystick position
             this._joystickPointerPos = new BABYLON.Vector2(0, 0);
+            this._joystickPreviousPointerPos = new BABYLON.Vector2(0, 0);
             // origin joystick position
             this._joystickPointerStartPos = new BABYLON.Vector2(0, 0);
             this._deltaJoystickVector = new BABYLON.Vector2(0, 0);
@@ -114,6 +115,7 @@ var BABYLON;
                 this._joystickPointerStartPos.x = e.clientX;
                 this._joystickPointerStartPos.y = e.clientY;
                 this._joystickPointerPos = this._joystickPointerStartPos.clone();
+                this._joystickPreviousPointerPos = this._joystickPointerStartPos.clone();
                 this._deltaJoystickVector.x = 0;
                 this._deltaJoystickVector.y = 0;
                 this.pressed = true;
@@ -123,7 +125,7 @@ var BABYLON;
                 // You can only trigger the action buttons with a joystick declared
                 if (VirtualJoystick._globalJoystickIndex < 2 && this._action) {
                     this._action();
-                    this._touches.add(e.pointerId.toString(), e);
+                    this._touches.add(e.pointerId.toString(), { x: e.clientX, y: e.clientY, prevX: e.clientX, prevY: e.clientY });
                 }
             }
         };
@@ -169,10 +171,17 @@ var BABYLON;
             }
         };
         VirtualJoystick.prototype._onPointerUp = function (e) {
-            this._clearCanvas();
             if (this._joystickPointerID == e.pointerId) {
+                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 63, this._joystickPointerStartPos.y - 63, 126, 126);
+                VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 41, this._joystickPreviousPointerPos.y - 41, 82, 82);
                 this._joystickPointerID = -1;
                 this.pressed = false;
+            }
+            else {
+                var touch = this._touches.item(e.pointerId.toString());
+                if (touch) {
+                    VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
+                }
             }
             this._deltaJoystickVector.x = 0;
             this._deltaJoystickVector.y = 0;
@@ -225,25 +234,31 @@ var BABYLON;
         VirtualJoystick.prototype._drawVirtualJoystick = function () {
             var _this = this;
             if (this.pressed) {
-                this._clearCanvas();
                 this._touches.forEach(function (touch) {
                     if (touch.pointerId === _this._joystickPointerID) {
+                        VirtualJoystick.vjCanvasContext.clearRect(_this._joystickPointerStartPos.x - 63, _this._joystickPointerStartPos.y - 63, 126, 126);
+                        VirtualJoystick.vjCanvasContext.clearRect(_this._joystickPreviousPointerPos.x - 41, _this._joystickPreviousPointerPos.y - 41, 82, 82);
                         VirtualJoystick.vjCanvasContext.beginPath();
-                        VirtualJoystick.vjCanvasContext.strokeStyle = _this._joystickColor;
                         VirtualJoystick.vjCanvasContext.lineWidth = 6;
+                        VirtualJoystick.vjCanvasContext.strokeStyle = _this._joystickColor;
                         VirtualJoystick.vjCanvasContext.arc(_this._joystickPointerStartPos.x, _this._joystickPointerStartPos.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.closePath();
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.strokeStyle = _this._joystickColor;
                         VirtualJoystick.vjCanvasContext.lineWidth = 2;
                         VirtualJoystick.vjCanvasContext.arc(_this._joystickPointerStartPos.x, _this._joystickPointerStartPos.y, 60, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.closePath();
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.strokeStyle = _this._joystickColor;
                         VirtualJoystick.vjCanvasContext.arc(_this._joystickPointerPos.x, _this._joystickPointerPos.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.closePath();
+                        _this._joystickPreviousPointerPos = _this._joystickPointerPos.clone();
                     }
                     else {
+                        VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
                         VirtualJoystick.vjCanvasContext.beginPath();
                         VirtualJoystick.vjCanvasContext.fillStyle = "white";
                         VirtualJoystick.vjCanvasContext.beginPath();
@@ -251,6 +266,9 @@ var BABYLON;
                         VirtualJoystick.vjCanvasContext.lineWidth = 6;
                         VirtualJoystick.vjCanvasContext.arc(touch.x, touch.y, 40, 0, Math.PI * 2, true);
                         VirtualJoystick.vjCanvasContext.stroke();
+                        VirtualJoystick.vjCanvasContext.closePath();
+                        touch.prevX = touch.x;
+                        touch.prevY = touch.y;
                     }
                     ;
                 });
@@ -274,3 +292,4 @@ var BABYLON;
     })();
     BABYLON.VirtualJoystick = VirtualJoystick;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.virtualJoystick.js.map
