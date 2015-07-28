@@ -359,6 +359,8 @@ var BABYLON;
             this.isPointerLock = false;
             this.cullBackFaces = true;
             this.renderEvenInBackground = true;
+            // To enable/disable IDB support and avoid XHR on .manifest
+            this.enableOfflineSupport = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
             this._loadingDivBackgroundColor = "black";
@@ -2003,3 +2005,4 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.engine.js.map
