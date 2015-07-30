@@ -1013,8 +1013,10 @@
         public applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void {
             if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)
                 || !this.isVerticesDataPresent(VertexBuffer.NormalKind)
-                || !this.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                Tools.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing");
+                || !this.isVerticesDataPresent(VertexBuffer.UVKind)
+                || !this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable()
+                || !this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable()) {
+                Tools.Warn("Cannot call applyDisplacementMap: Given mesh is not complete. Position, Normal or UV are missing or not updatable");
                 return;
             }
 
