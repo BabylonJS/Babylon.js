@@ -17,9 +17,15 @@ var BABYLON;
             var _this = this;
             if (p_elementToMonitor) {
                 this._elementToMonitor = p_elementToMonitor;
-                this._elementToMonitor.addEventListener("dragenter", function (e) { _this.drag(e); }, false);
-                this._elementToMonitor.addEventListener("dragover", function (e) { _this.drag(e); }, false);
-                this._elementToMonitor.addEventListener("drop", function (e) { _this.drop(e); }, false);
+                this._elementToMonitor.addEventListener("dragenter", function (e) {
+                    _this.drag(e);
+                }, false);
+                this._elementToMonitor.addEventListener("dragover", function (e) {
+                    _this.drag(e);
+                }, false);
+                this._elementToMonitor.addEventListener("drop", function (e) {
+                    _this.drop(e);
+                }, false);
             }
         };
         FilesInput.prototype.renderFunction = function () {
@@ -76,9 +82,7 @@ var BABYLON;
                             FilesInput.FilesToLoad[this._filesToLoad[i].name] = this._filesToLoad[i];
                             break;
                         default:
-                            if (this._filesToLoad[i].name.indexOf(".babylon") !== -1 && this._filesToLoad[i].name.indexOf(".manifest") === -1
-                                && this._filesToLoad[i].name.indexOf(".incremental") === -1 && this._filesToLoad[i].name.indexOf(".babylonmeshdata") === -1
-                                && this._filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
+                            if (this._filesToLoad[i].name.indexOf(".babylon") !== -1 && this._filesToLoad[i].name.indexOf(".manifest") === -1 && this._filesToLoad[i].name.indexOf(".incremental") === -1 && this._filesToLoad[i].name.indexOf(".babylonmeshdata") === -1 && this._filesToLoad[i].name.indexOf(".babylongeometrydata") === -1 && this._filesToLoad[i].name.indexOf(".babylonbinarymeshdata") === -1 && this._filesToLoad[i].name.indexOf(".binary.babylon") === -1) {
                                 this._sceneFileToLoad = this._filesToLoad[i];
                             }
                             break;
@@ -93,6 +97,10 @@ var BABYLON;
             // If a ".babylon" file has been provided
             if (this._sceneFileToLoad) {
                 if (this._currentScene) {
+                    if (BABYLON.Tools.errorsCount > 0) {
+                        BABYLON.Tools.ClearLogCache();
+                        BABYLON.Tools.Log("Babylon.js engine (v" + BABYLON.Engine.Version + ") launched");
+                    }
                     this._engine.stopRenderLoop();
                     this._currentScene.dispose();
                 }
@@ -108,7 +116,9 @@ var BABYLON;
                         if (that._sceneLoadedCallback) {
                             that._sceneLoadedCallback(_this._sceneFileToLoad, that._currentScene);
                         }
-                        that._engine.runRenderLoop(function () { that.renderFunction(); });
+                        that._engine.runRenderLoop(function () {
+                            that.renderFunction();
+                        });
                     });
                 }, function (progress) {
                     if (_this._progressCallback) {
