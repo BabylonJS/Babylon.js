@@ -748,10 +748,19 @@
             if (mesh.material) {
                 if (mesh.material instanceof StandardMaterial) {
                     serializationObject.materials = serializationObject.materials || [];
-                    serializationObject.materials.push(serializeMaterial(<StandardMaterial>mesh.material));
+                    if (!serializationObject.materials.some(function (mat) {
+                        return mat.id == mesh.material.id;
+                    })) {
+                        serializationObject.materials.push(serializeMaterial(<StandardMaterial>mesh.material));
+                    }
                 } else if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
-                    serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>mesh.material));
+                    if (!serializationObject.multiMaterials.some(function (mat) {
+                        return mat.id == mesh.material.id;
+                    })) {
+                        serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>mesh.material));
+                    }
+                    
                 }
             }
             //serialize geometry
