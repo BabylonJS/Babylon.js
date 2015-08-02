@@ -760,9 +760,10 @@
                 var textureScale = new Vector2(0.5, 0.5);
                 // Positions, normals & uvs
                 var angle;
+                var circleVector;
                 for (var i = 0; i < tessellation; i++) {
                     angle = Math.PI * 2 * i / tessellation;
-                    var circleVector = new Vector3(Math.cos(angle), 0, Math.sin(angle));
+                    circleVector = Vector3.TransformCoordinates(normals[0], Matrix.RotationAxis(tangents[0], angle));
                     var position = circleVector.scale(radius).add(offset);
                     var textureCoordinate = new Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
                     vertexdata.positions.push(position.x, position.y, position.z);
@@ -773,13 +774,13 @@
                 for (i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
                         vertexdata.indices.push(vbase);
-                        vertexdata.indices.push(vbase + (i + 2) % tessellation);
                         vertexdata.indices.push(vbase + (i + 1) % tessellation);
+                        vertexdata.indices.push(vbase + (i + 2) % tessellation);
                     }
                     else {
                         vertexdata.indices.push(vbase);
-                        vertexdata.indices.push(vbase + (i + 1) % tessellation);
                         vertexdata.indices.push(vbase + (i + 2) % tessellation);
+                        vertexdata.indices.push(vbase + (i + 1) % tessellation);
                     }
                 }
             };
