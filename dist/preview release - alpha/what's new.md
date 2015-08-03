@@ -5,6 +5,7 @@
     - New rewored StandardMaterial.isReady for better memory usage and performance [deltakosh](https://github.com/deltakosh)
     - Revamping of FBX exporter. Now supports animations and bones Simon Ferquel, [deltakosh](https://github.com/deltakosh)
   - **Updates**
+    - Added material.disableDepthWrite (default is off) [deltakosh](https://github.com/deltakosh)
     - Added material.alphaMode (default is BABYLON.Engine.ALPHA_COMBINE, can be set to BABYLON.Engine.ALPHA_ADD, *_SUBTRACT, *_MULTIPLY or *_MAXIMIZED ) [deltakosh](https://github.com/deltakosh), [jahow](https://github.com/jahow)
     - Added Animatable.reset() function [deltakosh](https://github.com/deltakosh)
     - New parameter for ArcRotateCamera.zoomOn to preserve maxZ [deltakosh](https://github.com/deltakosh)

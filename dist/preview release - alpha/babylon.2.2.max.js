@@ -18263,6 +18263,7 @@ var BABYLON;
             this.alpha = 1.0;
             this.backFaceCulling = true;
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
+            this.disableDepthWrite = false;
             this._wasPreviouslyReady = false;
             this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;
@@ -18354,10 +18355,19 @@ var BABYLON;
             if (this.onBind) {
                 this.onBind(this, mesh);
             }
+            if (this.disableDepthWrite) {
+                var engine = this._scene.getEngine();
+                this._cachedDepthWriteState = engine.getDepthWrite();
+                engine.setDepthWrite(false);
+            }
         };
         Material.prototype.bindOnlyWorldMatrix = function (world) {
         };
         Material.prototype.unbind = function () {
+            if (this.disableDepthWrite) {
+                var engine = this._scene.getEngine();
+                engine.setDepthWrite(this._cachedDepthWriteState);
+            }
         };
         Material.prototype.clone = function (name) {
             return null;
@@ -18888,6 +18898,7 @@ var BABYLON;
             if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
                 this._effect.setTexture("reflection2DSampler", null);
             }
+            _super.prototype.unbind.call(this);
         };
         StandardMaterial.prototype.bindOnlyWorldMatrix = function (world) {
             this._effect.setMatrix("world", world);
@@ -19482,6 +19493,9 @@ var BABYLON;
             material.emissiveColor = BABYLON.Color3.FromArray(parsedMaterial.emissive);
             material.alpha = parsedMaterial.alpha;
             material.id = parsedMaterial.id;
+            if (parsedMaterial.disableDepthWrite) {
+                material.disableDepthWrite = parsedMaterial.disableDepthWrite;
+            }
             BABYLON.Tags.AddTagsTo(material, parsedMaterial.tags);
             material.backFaceCulling = parsedMaterial.backFaceCulling;
             material.wireframe = parsedMaterial.wireframe;

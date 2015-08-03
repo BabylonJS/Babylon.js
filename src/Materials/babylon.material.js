@@ -9,6 +9,7 @@ var BABYLON;
             this.alpha = 1.0;
             this.backFaceCulling = true;
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
+            this.disableDepthWrite = false;
             this._wasPreviouslyReady = false;
             this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;
@@ -100,10 +101,19 @@ var BABYLON;
             if (this.onBind) {
                 this.onBind(this, mesh);
             }
+            if (this.disableDepthWrite) {
+                var engine = this._scene.getEngine();
+                this._cachedDepthWriteState = engine.getDepthWrite();
+                engine.setDepthWrite(false);
+            }
         };
         Material.prototype.bindOnlyWorldMatrix = function (world) {
         };
         Material.prototype.unbind = function () {
+            if (this.disableDepthWrite) {
+                var engine = this._scene.getEngine();
+                engine.setDepthWrite(this._cachedDepthWriteState);
+            }
         };
         Material.prototype.clone = function (name) {
             return null;

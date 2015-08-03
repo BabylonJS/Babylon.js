@@ -502,6 +502,7 @@ var BABYLON;
             if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
                 this._effect.setTexture("reflection2DSampler", null);
             }
+            _super.prototype.unbind.call(this);
         };
         StandardMaterial.prototype.bindOnlyWorldMatrix = function (world) {
             this._effect.setMatrix("world", world);
