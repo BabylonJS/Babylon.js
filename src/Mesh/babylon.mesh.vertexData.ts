@@ -741,7 +741,7 @@
 
                 for (var j = 0; j < tessellation; j++) {
                     angle = j * angle_step;
-                    ringVertex = new BABYLON.Vector3(Math.cos(-angle), 0, Math.sin(-angle));
+                    ringVertex = new Vector3(Math.cos(-angle), 0, Math.sin(-angle));
                     ringVertex.scaleInPlace(radiusFunction(i, distances[i])).addInPlace(path[i]);
                     pathArray[i].push(ringVertex);
                 }
@@ -763,7 +763,7 @@
                 var circleVector;
                 for (var i = 0; i < tessellation; i++) {
                     angle = Math.PI * 2 * i / tessellation;
-                    circleVector = new BABYLON.Vector3(Math.cos(-angle), 0, Math.sin(-angle));
+                    circleVector = new Vector3(Math.cos(-angle), 0, Math.sin(-angle));
                     var position = circleVector.scale(radius).add(offset);
                     var textureCoordinate = new Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
                     vertexdata.positions.push(position.x, position.y, position.z);
@@ -1420,5 +1420,6 @@
         }
     }
 } 
+
 
 
