@@ -601,6 +601,8 @@
             if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
                 this._effect.setTexture("reflection2DSampler", null);
             }
+
+            super.unbind();
         }
 
         public bindOnlyWorldMatrix(world: Matrix): void {
