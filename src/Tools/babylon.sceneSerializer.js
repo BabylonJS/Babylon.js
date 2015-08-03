@@ -753,6 +753,7 @@ var BABYLON;
             var serializationObject = {};
             toSerialize = (toSerialize instanceof Array) ? toSerialize : [toSerialize];
             if (withParents || withChildren) {
+                //deliberate for loop! not for each, appended should be processed as well.
                 for (var i = 0; i < toSerialize.length; ++i) {
                     if (withChildren) {
                         toSerialize[i].getDescendants().forEach(function (node) {

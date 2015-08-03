@@ -530,6 +530,10 @@
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
 
+            // Wheel
+            this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
+            this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }
@@ -541,6 +545,10 @@
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
+
+            // Wheel
+            this._engine.getRenderingCanvas().removeEventListener('mousewheel', this._onPointerMove);
+            this._engine.getRenderingCanvas().removeEventListener('DOMMouseScroll', this._onPointerMove);
 
             Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },

@@ -760,7 +760,7 @@
                     })) {
                         serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>mesh.material));
                     }
-                    
+
                 }
             }
             //serialize geometry
@@ -942,6 +942,7 @@
         }
     }
 }
+
 
 
 
