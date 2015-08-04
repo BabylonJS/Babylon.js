@@ -5810,13 +5810,15 @@ var BABYLON;
         };
         Engine.prototype.unBindFramebuffer = function (texture) {
             this._currentRenderTarget = null;
+            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
             if (texture.generateMipMaps) {
                 var gl = this._gl;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 gl.bindTexture(gl.TEXTURE_2D, null);
             }
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+            this.setViewport(this._cachedViewport);
+            this.wipeCaches();
         };
         Engine.prototype.flushFramebuffer = function () {
             this._gl.flush();
@@ -12501,6 +12503,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Scene.prototype, "SelectionOctree", {
+            get: function () {
+                return this._selectionOctree;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Scene.prototype, "meshUnderPointer", {
             /**
              * The mesh that is currently under the pointer.
@@ -13405,9 +13414,6 @@ var BABYLON;
                 }
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._renderId++;
-            }
-            if (this._renderTargets.length > 0) {
-                engine.restoreDefaultFramebuffer();
             }
             this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
             // Prepare Frame
@@ -29671,9 +29677,23 @@ var BABYLON;
                     // Merge meshes
                     BABYLON.Mesh.MergeMeshes(currentPool);
                 }
+                if (MergeMeshesOptimization.UpdateSelectionTree) {
+                    scene.createOrUpdateSelectionOctree();
+                }
                 return true;
             };
         }
+        Object.defineProperty(MergeMeshesOptimization, "UpdateSelectionTree", {
+            get: function () {
+                return MergeMeshesOptimization._UpdateSelectionTree;
+            },
+            set: function (value) {
+                MergeMeshesOptimization._UpdateSelectionTree = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        MergeMeshesOptimization._UpdateSelectionTree = false;
         return MergeMeshesOptimization;
     })(SceneOptimization);
     BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;

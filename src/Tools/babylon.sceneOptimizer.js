@@ -181,9 +181,23 @@ var BABYLON;
                     // Merge meshes
                     BABYLON.Mesh.MergeMeshes(currentPool);
                 }
+                if (MergeMeshesOptimization.UpdateSelectionTree) {
+                    scene.createOrUpdateSelectionOctree();
+                }
                 return true;
             };
         }
+        Object.defineProperty(MergeMeshesOptimization, "UpdateSelectionTree", {
+            get: function () {
+                return MergeMeshesOptimization._UpdateSelectionTree;
+            },
+            set: function (value) {
+                MergeMeshesOptimization._UpdateSelectionTree = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        MergeMeshesOptimization._UpdateSelectionTree = false;
         return MergeMeshesOptimization;
     })(SceneOptimization);
     BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;

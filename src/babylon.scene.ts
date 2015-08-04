@@ -319,6 +319,10 @@
             return this._workerCollisions;
         }
 
+        public get SelectionOctree(): Octree<AbstractMesh> {
+            return this._selectionOctree;
+        }
+
         /**
          * The mesh that is currently under the pointer.
          * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
@@ -1415,13 +1419,9 @@
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
-
                 this._renderId++;
             }
 
-            if (this._renderTargets.length > 0) { // Restore back buffer
-                engine.restoreDefaultFramebuffer();
-            }
             this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
 
             // Prepare Frame
