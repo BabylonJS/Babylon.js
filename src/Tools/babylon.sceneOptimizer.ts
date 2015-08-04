@@ -89,6 +89,15 @@
     }
 
     export class MergeMeshesOptimization extends SceneOptimization {
+        static _UpdateSelectionTree = false;
+
+        public static get UpdateSelectionTree(): boolean {
+            return MergeMeshesOptimization._UpdateSelectionTree;
+        }
+
+        public static set UpdateSelectionTree(value: boolean) {
+            MergeMeshesOptimization._UpdateSelectionTree = value;
+        }
 
         private _canBeMerged = (abstractMesh: AbstractMesh): boolean => {
             if (!(abstractMesh instanceof Mesh)) {
@@ -158,6 +167,10 @@
 
                 // Merge meshes
                 Mesh.MergeMeshes(currentPool);
+            }
+
+            if (MergeMeshesOptimization.UpdateSelectionTree) {
+                scene.createOrUpdateSelectionOctree();
             }
 
             return true;

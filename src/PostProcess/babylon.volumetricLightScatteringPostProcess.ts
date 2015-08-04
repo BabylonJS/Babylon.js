@@ -301,7 +301,7 @@
             this._volumetricLightScatteringRTT.onAfterRender = (): void => {
                 scene.clearColor = savedSceneClearColor;
             };
-
+            
             this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
                 var engine = scene.getEngine();
                 var index: number;
