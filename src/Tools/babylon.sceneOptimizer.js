@@ -147,7 +147,7 @@ var BABYLON;
                 }
                 return true;
             };
-            this.apply = function (scene) {
+            this.apply = function (scene, updateSelectionTree) {
                 var globalPool = scene.meshes.slice(0);
                 var globalLength = globalPool.length;
                 for (var index = 0; index < globalLength; index++) {
@@ -181,7 +181,12 @@ var BABYLON;
                     // Merge meshes
                     BABYLON.Mesh.MergeMeshes(currentPool);
                 }
-                if (MergeMeshesOptimization.UpdateSelectionTree) {
+                if (updateSelectionTree != undefined) {
+                    if (updateSelectionTree) {
+                        scene.createOrUpdateSelectionOctree();
+                    }
+                }
+                else if (MergeMeshesOptimization.UpdateSelectionTree) {
                     scene.createOrUpdateSelectionOctree();
                 }
                 return true;
