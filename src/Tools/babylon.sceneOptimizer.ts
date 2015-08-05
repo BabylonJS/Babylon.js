@@ -121,7 +121,7 @@
             return true;
         }
 
-        public apply = (scene: Scene): boolean => {
+        public apply = (scene: Scene, updateSelectionTree?: boolean): boolean => {
 
             var globalPool = scene.meshes.slice(0);
             var globalLength = globalPool.length;
@@ -169,7 +169,12 @@
                 Mesh.MergeMeshes(currentPool);
             }
 
-            if (MergeMeshesOptimization.UpdateSelectionTree) {
+            if (updateSelectionTree != undefined) {
+                if (updateSelectionTree) {
+                    scene.createOrUpdateSelectionOctree();
+                }
+            }
+            else if (MergeMeshesOptimization.UpdateSelectionTree) {
                 scene.createOrUpdateSelectionOctree();
             }
 
