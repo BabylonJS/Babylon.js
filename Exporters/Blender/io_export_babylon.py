@@ -1475,7 +1475,7 @@ class Material:
                     if mtex.use_map_normal:
                         # Bump
                         BabylonExporter.log('Bump texture found');
-                        self.textures.append(Texture('bumpTexture', mtex.normal_factor, mtex, filepath))
+                        self.textures.append(Texture('bumpTexture', 1.0/mtex.normal_factor, mtex, filepath))
                     elif mtex.use_map_color_spec:
                         # Specular
                         BabylonExporter.log('Specular texture found');
