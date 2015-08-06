@@ -739,6 +739,14 @@
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
+        public static FromFloatArray(array: Float32Array, offset?: number): Vector3 {
+            if (!offset) {
+                offset = 0;
+            }
+
+            return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
+        }
+
         public static FromArrayToRef(array: number[], offset: number, result: Vector3): void {
             result.x = array[offset];
             result.y = array[offset + 1];
@@ -1791,6 +1799,38 @@
             return this;
         }
 
+        public reset(): Matrix {
+            for (var index = 0; index < 16; index++) {
+                this.m[index] = 0;
+            }
+
+            return this;
+        }
+
+        public add(other: Matrix): Matrix {
+            var result = new Matrix();
+
+            this.addToRef(other, result);
+
+            return result;
+        }
+
+        public addToRef(other: Matrix, result: Matrix): Matrix {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = this.m[index] + other.m[index];
+            }
+
+            return this;
+        }
+
+        public addToSelf(other: Matrix): Matrix {
+            for (var index = 0; index < 16; index++) {
+                this.m[index] += other.m[index];
+            }
+
+            return this;
+        }
+
         public invertToRef(other: Matrix): Matrix {
             var l1 = this.m[0];
             var l2 = this.m[1];
@@ -2179,9 +2219,14 @@
         }
 
         public static FromArrayToRef(array: number[], offset: number, result: Matrix) {
-
             for (var index = 0; index < 16; index++) {
                 result.m[index] = array[index + offset];
+            }
+        }
+
+        public static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix) {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = array[index + offset] * scale;
             }
         }
 

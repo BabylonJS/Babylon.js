@@ -239,6 +239,7 @@
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
         private _activeSkeletons = new SmartArray<Skeleton>(32);
+        private _softwareSkinnedMeshes = new SmartArray<Mesh>(32);
         public _activeBones = 0;
 
         private _renderingManager: RenderingManager;
@@ -1253,6 +1254,7 @@
             this._processedMaterials.reset();
             this._activeParticleSystems.reset();
             this._activeSkeletons.reset();
+            this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
 
             if (!this._frustumPlanes) {
@@ -1336,6 +1338,10 @@
         private _activeMesh(mesh: AbstractMesh): void {
             if (mesh.skeleton && this.skeletonsEnabled) {
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
+
+                if (!mesh.computeBonesUsingShaders) {
+                    this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
+                }
             }
 
             if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
@@ -1403,6 +1409,13 @@
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
 
                 skeleton.prepare();
+            }
+
+            // Software skinning
+            for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
+                var mesh = this._softwareSkinnedMeshes.data[softwareSkinnedMeshIndex];
+
+                mesh.applySkeleton(mesh.skeleton);
             }
 
             // Render targets

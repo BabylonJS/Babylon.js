@@ -95,7 +95,7 @@ var BABYLON;
                 defines.push("#define INSTANCES");
             }
             // Bones
-            if (mesh && mesh.useBones) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                 defines.push("#define BONES");
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                 defines.push("#define BONES4");
@@ -144,7 +144,7 @@ var BABYLON;
                     this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 }
                 // Bones
-                if (mesh && mesh.useBones) {
+                if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
                 // Texture

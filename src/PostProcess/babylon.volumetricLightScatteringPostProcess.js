@@ -128,7 +128,7 @@ var BABYLON;
                 }
             }
             // Bones
-            if (mesh.useBones) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
@@ -237,7 +237,7 @@ var BABYLON;
                         }
                     }
                     // Bones
-                    if (mesh.useBones) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
                         _this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
                     // Draw

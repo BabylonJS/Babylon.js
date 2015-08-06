@@ -125,6 +125,7 @@ var BABYLON;
             this._renderTargets = new BABYLON.SmartArray(256);
             this._activeParticleSystems = new BABYLON.SmartArray(256);
             this._activeSkeletons = new BABYLON.SmartArray(32);
+            this._softwareSkinnedMeshes = new BABYLON.SmartArray(32);
             this._activeBones = 0;
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
@@ -974,6 +975,7 @@ var BABYLON;
             this._processedMaterials.reset();
             this._activeParticleSystems.reset();
             this._activeSkeletons.reset();
+            this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
             if (!this._frustumPlanes) {
                 this._frustumPlanes = BABYLON.Frustum.GetPlanes(this._transformMatrix);
@@ -1041,6 +1043,9 @@ var BABYLON;
         Scene.prototype._activeMesh = function (mesh) {
             if (mesh.skeleton && this.skeletonsEnabled) {
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
+                if (!mesh.computeBonesUsingShaders) {
+                    this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
+                }
             }
             if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
@@ -1092,6 +1097,11 @@ var BABYLON;
             for (var skeletonIndex = 0; skeletonIndex < this._activeSkeletons.length; skeletonIndex++) {
                 var skeleton = this._activeSkeletons.data[skeletonIndex];
                 skeleton.prepare();
+            }
+            // Software skinning
+            for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
+                var mesh = this._softwareSkinnedMeshes.data[softwareSkinnedMeshIndex];
+                mesh.applySkeleton(mesh.skeleton);
             }
             // Render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;

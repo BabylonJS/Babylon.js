@@ -57,6 +57,7 @@
         public hasVertexAlpha = false;
         public useVertexColors = true;
         public applyFog = true;
+        public computeBonesUsingShaders = true;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;

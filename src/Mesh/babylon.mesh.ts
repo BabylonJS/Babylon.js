@@ -69,6 +69,9 @@
         private _sideOrientation: number = Mesh._DEFAULTSIDE;
         private _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
 
+        private _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
+        private _sourceNormals: Float32Array; // Will be used to save original normals when using software skinning
+
         /**
          * @constructor
          * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
@@ -1951,6 +1954,99 @@
             decal.rotation = new Vector3(pitch, yaw, angle);
 
             return decal;
+        }
+
+        // Skeletons
+
+        /**
+         * Update the vertex buffers by applying transformation from the bones
+         * @param {skeleton} skeleton to apply
+         */
+        public applySkeleton(skeleton: Skeleton): Mesh {
+            if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+                return this;
+            }
+            if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                return this;
+            }
+            if (!this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
+                return this;
+            }
+            if (!this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                return this;
+            }
+
+            if (!this._sourcePositions) {
+                var source = this.getVerticesData(VertexBuffer.PositionKind);
+                this._sourcePositions = new Float32Array(source);
+
+                if (!this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable()) {
+                    this.setVerticesData(VertexBuffer.PositionKind, source, true);
+                }
+            }
+
+            if (!this._sourceNormals) {
+                var source = this.getVerticesData(VertexBuffer.NormalKind);
+                this._sourceNormals = new Float32Array(source);
+
+                if (!this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable()) {
+                    this.setVerticesData(VertexBuffer.NormalKind, source, true);
+                }
+            }
+
+            var positionsData = this.getVerticesData(VertexBuffer.PositionKind);
+            var normalsData = this.getVerticesData(VertexBuffer.NormalKind);
+
+            var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+            var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+
+            var skeletonMatrices = skeleton.getTransformMatrices();
+
+            var tempVector3 = Vector3.Zero();
+            var finalMatrix = new Matrix();
+            var tempMatrix = new Matrix();
+
+            for (var index = 0; index < positionsData.length; index += 3) {
+                var index4 = (index / 3) * 4;
+                var matricesWeight0 = matricesWeightsData[index4];
+                var matricesWeight1 = matricesWeightsData[index4 + 1];
+                var matricesWeight2 = matricesWeightsData[index4 + 2];
+                var matricesWeight3 = matricesWeightsData[index4 + 3];
+                
+                if (matricesWeight0 > 0) {
+                    var matricesIndex0 = matricesIndicesData[index4];
+                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4] * 16, matricesWeight0, tempMatrix);
+                    finalMatrix.addToSelf(tempMatrix);
+                }
+
+                if (matricesWeight1> 0) {
+                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 1] * 16, matricesWeight1, tempMatrix);
+                    finalMatrix.addToSelf(tempMatrix);
+                }
+
+                if (matricesWeight2 > 0) {
+                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 2] * 16, matricesWeight2, tempMatrix);
+                    finalMatrix.addToSelf(tempMatrix);
+                }
+
+                if (matricesWeight3 > 0) {
+                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 3] * 16, matricesWeight3, tempMatrix);
+                    finalMatrix.addToSelf(tempMatrix);
+                }
+
+                Vector3.TransformCoordinatesFromFloatsToRef(this._sourcePositions[index], this._sourcePositions[index + 1], this._sourcePositions[index + 2], finalMatrix, tempVector3);
+                tempVector3.toArray(positionsData, index);
+
+                Vector3.TransformNormalFromFloatsToRef(this._sourceNormals[index], this._sourceNormals[index + 1], this._sourceNormals[index + 2], finalMatrix, tempVector3);
+                tempVector3.toArray(normalsData, index);
+
+                finalMatrix.reset();
+            }
+
+            this.updateVerticesData(VertexBuffer.PositionKind, positionsData);
+            this.updateVerticesData(VertexBuffer.NormalKind, normalsData);
+
+            return this;
         }
 
         // Tools

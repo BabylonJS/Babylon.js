@@ -53,7 +53,7 @@
                     bone.getWorldMatrix().copyFrom(bone.getLocalMatrix());
                 }
 
-                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);
+                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);                
             }
 
             this._identity.copyToArray(this._transformMatrices, this.bones.length * 16);

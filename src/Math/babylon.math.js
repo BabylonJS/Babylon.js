@@ -586,6 +586,12 @@ var BABYLON;
             }
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         };
+        Vector3.FromFloatArray = function (array, offset) {
+            if (!offset) {
+                offset = 0;
+            }
+            return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
+        };
         Vector3.FromArrayToRef = function (array, offset, result) {
             result.x = array[offset];
             result.y = array[offset + 1];
@@ -1453,6 +1459,29 @@ var BABYLON;
             this.invertToRef(this);
             return this;
         };
+        Matrix.prototype.reset = function () {
+            for (var index = 0; index < 16; index++) {
+                this.m[index] = 0;
+            }
+            return this;
+        };
+        Matrix.prototype.add = function (other) {
+            var result = new Matrix();
+            this.addToRef(other, result);
+            return result;
+        };
+        Matrix.prototype.addToRef = function (other, result) {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = this.m[index] + other.m[index];
+            }
+            return this;
+        };
+        Matrix.prototype.addToSelf = function (other) {
+            for (var index = 0; index < 16; index++) {
+                this.m[index] += other.m[index];
+            }
+            return this;
+        };
         Matrix.prototype.invertToRef = function (other) {
             var l1 = this.m[0];
             var l2 = this.m[1];
@@ -1756,6 +1785,11 @@ var BABYLON;
         Matrix.FromArrayToRef = function (array, offset, result) {
             for (var index = 0; index < 16; index++) {
                 result.m[index] = array[index + offset];
+            }
+        };
+        Matrix.FromFloat32ArrayToRefScaled = function (array, offset, scale, result) {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = array[index + offset] * scale;
             }
         };
         Matrix.FromValuesToRef = function (initialM11, initialM12, initialM13, initialM14, initialM21, initialM22, initialM23, initialM24, initialM31, initialM32, initialM33, initialM34, initialM41, initialM42, initialM43, initialM44, result) {
