@@ -20,7 +20,7 @@ var BABYLON;
             this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : 1.0);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            if (mesh.useBones) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
             mesh._bind(subMesh, this._effect, BABYLON.Material.TriangleFillMode);
@@ -50,7 +50,7 @@ var BABYLON;
                 }
             }
             // Bones
-            if (mesh.useBones) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");

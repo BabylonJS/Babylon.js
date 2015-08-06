@@ -68,6 +68,7 @@
         public BONES4 = false;
         public BonesPerMesh = 0;
         public INSTANCES = false;
+        public GLOSSINESS = false;
 
         _keys: string[];
 
@@ -149,6 +150,8 @@
         public opacityFresnelParameters: FresnelParameters;
         public reflectionFresnelParameters: FresnelParameters;
         public emissiveFresnelParameters: FresnelParameters;
+
+        public useGlossinessFromSpecularMapAlpha = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -272,6 +275,7 @@
                     } else {
                         needUVs = true;
                         this._defines.SPECULAR = true;
+                        this._defines.GLOSSINESS = this.useGlossinessFromSpecularMapAlpha;    
                     }
                 }
             }
@@ -441,7 +445,7 @@
                         this._defines.VERTEXALPHA = true
                     }
                 }
-                if (mesh.useBones) {
+                if (mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._defines.BONES = true;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
                     this._defines.BONES4 = true;
@@ -617,7 +621,7 @@
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh && mesh.useBones) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
 
