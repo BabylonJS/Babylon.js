@@ -1118,6 +1118,9 @@ var BABYLON;
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._renderId++;
             }
+            if (this._renderTargets.length > 0) {
+                engine.restoreDefaultFramebuffer();
+            }
             this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
             // Prepare Frame
             this.postProcessManager._prepareFrame();

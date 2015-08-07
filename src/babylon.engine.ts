@@ -962,10 +962,7 @@
         }
 
         public unBindFramebuffer(texture: WebGLTexture): void {
-            this._currentRenderTarget = null;
-
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
-
+            this._currentRenderTarget = null;           
             if (texture.generateMipMaps) {
                 var gl = this._gl;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -973,9 +970,7 @@
                 gl.bindTexture(gl.TEXTURE_2D, null);
             }
             
-            this.setViewport(this._cachedViewport);
-
-            this.wipeCaches();
+            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
         }
 
         public flushFramebuffer(): void {

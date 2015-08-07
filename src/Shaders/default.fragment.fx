@@ -539,8 +539,8 @@ void main(void) {
 
 
 	// Specular map
-	float glossiness = vSpecularColor.a;
 #ifdef SPECULARTERM
+	float glossiness = vSpecularColor.a;
 	vec3 specularColor = vSpecularColor.rgb;
 
 	#ifdef SPECULAR
@@ -550,6 +550,8 @@ void main(void) {
 			glossiness = specularMapColor.a;
 		#endif
 	#endif
+#else
+	float glossiness = 0;
 #endif
 
 	// Lighting
