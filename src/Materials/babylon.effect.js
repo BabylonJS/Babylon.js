@@ -329,6 +329,13 @@ var BABYLON;
             this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
             return this;
         };
+        Effect.prototype.setVector4 = function (uniformName, vector4) {
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector4.x && this._valueCache[uniformName][1] === vector4.y && this._valueCache[uniformName][2] === vector4.z && this._valueCache[uniformName][3] === vector4.w)
+                return this;
+            this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w);
+            this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
+            return this;
+        };
         Effect.prototype.setFloat4 = function (uniformName, x, y, z, w) {
             if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z && this._valueCache[uniformName][3] === w)
                 return this;
