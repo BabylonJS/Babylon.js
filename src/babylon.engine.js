@@ -842,15 +842,13 @@ var BABYLON;
         };
         Engine.prototype.unBindFramebuffer = function (texture) {
             this._currentRenderTarget = null;
-            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
             if (texture.generateMipMaps) {
                 var gl = this._gl;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 gl.bindTexture(gl.TEXTURE_2D, null);
             }
-            this.setViewport(this._cachedViewport);
-            this.wipeCaches();
+            this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
         };
         Engine.prototype.flushFramebuffer = function () {
             this._gl.flush();

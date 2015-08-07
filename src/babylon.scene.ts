@@ -1434,7 +1434,9 @@
 
                 this._renderId++;
             }
-
+            if (this._renderTargets.length > 0) { // Restore back buffer
+                engine.restoreDefaultFramebuffer();
+            }
             this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
 
             // Prepare Frame
