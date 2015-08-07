@@ -9,6 +9,7 @@
         private _colors4 = new Array<Color4>();
         private _vectors2 = new Array<Vector2>();
         private _vectors3 = new Array<Vector3>();
+        private _vectors4 = new Array<Vector4>();
         private _matrices = new Array<Matrix>();
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
@@ -87,6 +88,13 @@
         public setVector3(name: string, value: Vector3): ShaderMaterial {
             this._checkUniform(name);
             this._vectors3[name] = value;
+
+            return this;
+        }
+
+        public setVector4(name: string, value: Vector4): ShaderMaterial {
+            this._checkUniform(name);
+            this._vectors4[name] = value;
 
             return this;
         }
@@ -223,6 +231,11 @@
                 // Vector3        
                 for (name in this._vectors3) {
                     this._effect.setVector3(name, this._vectors3[name]);
+                }
+
+                // Vector4        
+                for (name in this._vectors4) {
+                    this._effect.setVector4(name, this._vectors4[name]);
                 }
 
                 // Matrix      
