@@ -5,7 +5,7 @@ bl_info = {
     'blender': (2, 72, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
-    'wiki_url': 'https://github.com/BabylonJS/Extensions/tree/master/TowerOfBabel',
+    'wiki_url': 'https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender',
     'tracker_url': '',
     'category': 'Import-Export'}
 
