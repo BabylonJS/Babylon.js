@@ -6,6 +6,10 @@
     - Revamping of FBX exporter. Now supports animations and bones [simonferquel](http://www.github.com/simonferquel), [deltakosh](https://github.com/deltakosh)
     - StandardMaterial.useGlossinessFromSpecularMapAlpha to use specular map alpha as glossiness level [deltakosh](https://github.com/deltakosh)
   - **Updates**
+    - Added scene.getLensFlareSystemByName() [deltakosh](https://github.com/deltakosh)
+    - Added LensFlareSystem.setEmitter() [deltakosh](https://github.com/deltakosh)
+    - Added Color3.FromHexString() and Color3.toHexString() [deltakosh](https://github.com/deltakosh)
+    - Added Color4.FromHexString() and Color4.toHexString() [deltakosh](https://github.com/deltakosh)
     - Added mesh.computeBonesUsingShaders to allow developers to disable HW skinning for low end devices [deltakosh](https://github.com/deltakosh)
     - Added material.disableDepthWrite (default is off) [deltakosh](https://github.com/deltakosh)
     - Added material.alphaMode (default is BABYLON.Engine.ALPHA_COMBINE, can be set to BABYLON.Engine.ALPHA_ADD, *_SUBTRACT, *_MULTIPLY or *_MAXIMIZED ) [deltakosh](https://github.com/deltakosh), [jahow](https://github.com/jahow)

@@ -928,6 +928,16 @@
             return null;
         }
 
+        public getLensFlareSystemByName(name: string): LensFlareSystem {
+            for (var index = 0; index < this.lensFlareSystems.length; index++) {
+                if (this.lensFlareSystems[index].name === name) {
+                    return this.lensFlareSystems[index];
+                }
+            }
+
+            return null;
+        }
+
         public getCameraByID(id: string): Camera {
             for (var index = 0; index < this.cameras.length; index++) {
                 if (this.cameras[index].id === id) {

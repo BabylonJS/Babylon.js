@@ -361,6 +361,18 @@
             return this;
         }
 
+        public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
+            this._engine.setMatrix3x3(this.getUniform(uniformName), matrix);
+
+            return this;
+        }
+
+        public setMatrix2x2(uniformname: string, matrix: Float32Array): Effect {
+            this._engine.setMatrix2x2(this.getUniform(uniformname), matrix);
+
+            return this;
+        }
+
         public setFloat(uniformName: string, value: number): Effect {
             if (this._valueCache[uniformName] && this._valueCache[uniformName] === value)
                 return this;

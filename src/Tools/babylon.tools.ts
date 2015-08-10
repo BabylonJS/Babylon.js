@@ -30,6 +30,16 @@
     export class Tools {
         public static BaseUrl = "";
 
+        public static ToHex(i: number): string {
+            var str = i.toString(16);
+
+            if (i <= 15) {
+                return ("0" + str).toUpperCase();
+            }
+
+            return str.toUpperCase();
+        }
+
         public static SetImmediate(action: () => void) {
             if (window.setImmediate) {
                 window.setImmediate(action);

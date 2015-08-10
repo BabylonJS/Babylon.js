@@ -705,6 +705,14 @@ var BABYLON;
             }
             return null;
         };
+        Scene.prototype.getLensFlareSystemByName = function (name) {
+            for (var index = 0; index < this.lensFlareSystems.length; index++) {
+                if (this.lensFlareSystems[index].name === name) {
+                    return this.lensFlareSystems[index];
+                }
+            }
+            return null;
+        };
         Scene.prototype.getCameraByID = function (id) {
             for (var index = 0; index < this.cameras.length; index++) {
                 if (this.cameras[index].id === id) {

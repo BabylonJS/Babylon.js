@@ -19,6 +19,13 @@ var BABYLON;
     var Tools = (function () {
         function Tools() {
         }
+        Tools.ToHex = function (i) {
+            var str = i.toString(16);
+            if (i <= 15) {
+                return ("0" + str).toUpperCase();
+            }
+            return str.toUpperCase();
+        };
         Tools.SetImmediate = function (action) {
             if (window.setImmediate) {
                 window.setImmediate(action);
