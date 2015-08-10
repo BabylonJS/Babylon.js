@@ -287,6 +287,14 @@ var BABYLON;
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
             return this;
         };
+        Effect.prototype.setMatrix3x3 = function (uniformName, matrix) {
+            this._engine.setMatrix3x3(this.getUniform(uniformName), matrix);
+            return this;
+        };
+        Effect.prototype.setMatrix2x2 = function (uniformname, matrix) {
+            this._engine.setMatrix2x2(this.getUniform(uniformname), matrix);
+            return this;
+        };
         Effect.prototype.setFloat = function (uniformName, value) {
             if (this._valueCache[uniformName] && this._valueCache[uniformName] === value)
                 return this;

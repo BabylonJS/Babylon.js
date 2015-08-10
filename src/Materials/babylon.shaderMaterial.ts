@@ -11,6 +11,8 @@
         private _vectors3 = new Array<Vector3>();
         private _vectors4 = new Array<Vector4>();
         private _matrices = new Array<Matrix>();
+        private _matrices3x3 = new Array<Float32Array>();
+        private _matrices2x2 = new Array<Float32Array>();
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
@@ -102,6 +104,20 @@
         public setMatrix(name: string, value: Matrix): ShaderMaterial {
             this._checkUniform(name);
             this._matrices[name] = value;
+
+            return this;
+        }
+
+        public setMatrix3x3(name: string, value: Float32Array): ShaderMaterial {
+            this._checkUniform(name);
+            this._matrices3x3[name] = value;
+
+            return this;
+        }
+
+        public setMatrix2x2(name: string, value: Float32Array): ShaderMaterial {
+            this._checkUniform(name);
+            this._matrices2x2[name] = value;
 
             return this;
         }
@@ -241,6 +257,16 @@
                 // Matrix      
                 for (name in this._matrices) {
                     this._effect.setMatrix(name, this._matrices[name]);
+                }
+
+                // Matrix 3x3
+                for (name in this._matrices3x3) {
+                    this._effect.setMatrix3x3(name, this._matrices3x3[name]);
+                }
+
+                // Matrix 2x2
+                for (name in this._matrices2x2) {
+                    this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
             }
 

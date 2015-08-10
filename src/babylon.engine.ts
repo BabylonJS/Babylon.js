@@ -1365,6 +1365,20 @@
             this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
         }
 
+        public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniformMatrix3fv(uniform, false, matrix);
+        }
+
+        public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniformMatrix2fv(uniform, false, matrix);
+        }
+
         public setFloat(uniform: WebGLUniformLocation, value: number): void {
             if (!uniform)
                 return;

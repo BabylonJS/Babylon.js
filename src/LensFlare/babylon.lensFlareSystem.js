@@ -47,6 +47,9 @@ var BABYLON;
         LensFlareSystem.prototype.getEmitter = function () {
             return this._emitter;
         };
+        LensFlareSystem.prototype.setEmitter = function (newEmitter) {
+            this._emitter = newEmitter;
+        };
         LensFlareSystem.prototype.getEmitterPosition = function () {
             return this._emitter.getAbsolutePosition ? this._emitter.getAbsolutePosition() : this._emitter.position;
         };
