@@ -143,3 +143,4 @@ var BABYLON;
     })();
     BABYLON.SubMesh = SubMesh;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.subMesh.js.map
