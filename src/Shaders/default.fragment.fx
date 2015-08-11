@@ -551,7 +551,7 @@ void main(void) {
 		#endif
 	#endif
 #else
-	float glossiness = 0;
+	float glossiness = 0.;
 #endif
 
 	// Lighting

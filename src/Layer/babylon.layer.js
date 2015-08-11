@@ -74,3 +74,4 @@ var BABYLON;
     })();
     BABYLON.Layer = Layer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.layer.js.map

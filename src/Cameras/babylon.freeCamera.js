@@ -224,3 +224,4 @@ var BABYLON;
     })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.freeCamera.js.map

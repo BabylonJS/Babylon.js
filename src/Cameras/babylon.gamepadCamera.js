@@ -50,3 +50,4 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.GamepadCamera = GamepadCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.gamepadCamera.js.map
