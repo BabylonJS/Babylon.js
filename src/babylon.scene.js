@@ -307,11 +307,16 @@ var BABYLON;
             this._onPointerMove = function (evt) {
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers; }, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady(); }, false, _this.cameraToUseForPointers);
                 if (pickResult.hit) {
                     _this._meshUnderPointer = pickResult.pickedMesh;
                     _this.setPointerOverMesh(pickResult.pickedMesh);
-                    canvas.style.cursor = "pointer";
+                    if (_this._meshUnderPointer.actionManager && _this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                        canvas.style.cursor = "pointer";
+                    }
+                    else {
+                        canvas.style.cursor = "";
+                    }
                 }
                 else {
                     _this.setPointerOverMesh(null);
@@ -894,6 +899,17 @@ var BABYLON;
                 }
             }
             return null;
+        };
+        Scene.prototype.getNodeByID = function (id) {
+            var mesh = this.getMeshByID(id);
+            if (mesh) {
+                return mesh;
+            }
+            var light = this.getLightByID(id);
+            if (light) {
+                return light;
+            }
+            return this.getCameraByID(id);
         };
         Scene.prototype.getNodeByName = function (name) {
             var mesh = this.getMeshByName(name);
@@ -1777,4 +1793,3 @@ var BABYLON;
     })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.scene.js.map

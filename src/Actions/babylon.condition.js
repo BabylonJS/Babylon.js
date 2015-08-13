@@ -116,4 +116,3 @@ var BABYLON;
     })(Condition);
     BABYLON.StateCondition = StateCondition;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.condition.js.map
