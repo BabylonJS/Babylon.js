@@ -1,5 +1,6 @@
 - 2.2.0:
   - **Major updates**
+    - Blender can now bake Procedural textures & Cycles materials.  Plus more. See [documentation here](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender) [Palmer-JC](https://github.com/Palmer-JC)
     - Meshes can now be attached to bones. See [documentation here](http://babylondoc.azurewebsites.net/page.php?p=22421) and [sample here](http://www.babylonjs-playground.com/#11BH6Z#18) [deltakosh](https://github.com/deltakosh)
     - HDR Rendering pipeline. See [demo here]() [julien-moreau](https://github.com/julien-moreau)
     - New rewored StandardMaterial.isReady for better memory usage and performance [deltakosh](https://github.com/deltakosh)
