@@ -1,8 +1,8 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (3, 0, 0),
-    'blender': (2, 72, 0),
+    'version': (3, 0, 1),
+    'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
     'wiki_url': 'https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender',
@@ -206,7 +206,8 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def getSourceMeshInstance(self, dataName):
         for mesh in self.meshesAndNodes:
-            if mesh.dataName == dataName:
+            # nodes have no 'dataName', cannot be instanced in any case
+            if hasattr(mesh, 'dataName') and mesh.dataName == dataName:
                 return mesh
 
         return None
@@ -680,7 +681,6 @@ class Mesh(FCurveAnimatable):
             self.physicsMass = mass
             self.physicsFriction = object.rigid_body.friction
             self.physicsRestitution = object.rigid_body.restitution
-
 
         # process all of the materials required
         maxVerts = MAX_VERTEX_ELEMENTS # change for multi-materials
@@ -1668,6 +1668,11 @@ class BakingRecipe:
                     if mtex.use_map_color_spec:
                         self.specularBaking = True
         self.multipleRenders = blenderRender and self.cyclesRender
+        
+        # check for really old .blend file, eg. 2.49, to ensure that everything requires exists
+        if self.needsBaking and bpy.data.screens.find('UV Editing') == -1:
+            Main.warn('Contains material requiring baking, but resources not available.  Probably .blend very old', 2)
+            self.needsBaking = False     
 #===============================================================================
 # Not intended to be instanced directly
 class Material:
