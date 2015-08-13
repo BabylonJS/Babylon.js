@@ -314,4 +314,3 @@ var BABYLON;
     })();
     BABYLON.OimoJSPlugin = OimoJSPlugin;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.oimoJSPlugin.js.map

@@ -441,7 +441,7 @@
                 this._updatePointerPosition(evt);
 
                 var pickResult = this.pick(this._pointerX, this._pointerY,
-                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers,
+                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady(),
                     false,
                     this.cameraToUseForPointers);
 
@@ -449,7 +449,12 @@
                     this._meshUnderPointer = pickResult.pickedMesh;
 
                     this.setPointerOverMesh(pickResult.pickedMesh);
-                    canvas.style.cursor = "pointer";
+
+                    if (this._meshUnderPointer.actionManager && this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                        canvas.style.cursor = "pointer";
+                    } else {
+                        canvas.style.cursor = "";
+                    }
                 } else {
                     this.setPointerOverMesh(null);
                     canvas.style.cursor = "";
@@ -1152,6 +1157,22 @@
             }
 
             return null;
+        }
+
+        public getNodeByID(id: string): Node {
+            var mesh = this.getMeshByID(id);
+
+            if (mesh) {
+                return mesh;
+            }
+
+            var light = this.getLightByID(id);
+
+            if (light) {
+                return light;
+            }
+
+            return this.getCameraByID(id);
         }
 
         public getNodeByName(name: string): Node {

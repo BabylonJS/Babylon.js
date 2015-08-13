@@ -191,4 +191,3 @@ var BABYLON;
     })(BABYLON.PostProcessRenderPipeline);
     BABYLON.SSAORenderingPipeline = SSAORenderingPipeline;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.ssaoRenderingPipeline.js.map
