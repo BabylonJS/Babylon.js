@@ -47,10 +47,14 @@ BABYLON.SceneLoader.ImportMesh("batmanface", "batman.obj", scene, function (mesh
     * specularTexture
     * bumpTexture
     * opacityTexture
+* Multimaterial
+	* For each material defined in the same mesh, it creates a new BABYLON.Mesh.
+	* The name of the created BABYLON.Mesh follows this syntax: meshName_mmX 
+	* X is the nth BABYLON.Mesh created with this method
+
     
 ## Not supported currently
-* Multimaterial for a same object/group 
-    * To be implemented: a new BABYLON.Mesh is created for each sub-mesh of the current object/group
 * Smoothing groups (s parameter in OBJ file)
 * Illumination (illum parameter in MTL file)
-
+* The differents options for loading textures in MTL file.
+* A good description about MTL file and his options could be found here: http://paulbourke.net/dataformats/mtl/
