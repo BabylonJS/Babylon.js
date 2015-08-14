@@ -259,10 +259,12 @@ module BABYLON {
             var unwrappedNormalsForBabylon      : Array<number>             = [];      //Value of normalsForBabylon w/o Vector3()  [x,y,z]
             var unwrappedUVForBabylon           : Array<number>             = [];      //Value of uvsForBabylon w/o Vector3()      [x,y,z]
             var triangles                       : Array<string>             = [];      //Indices from new triangles coming from polygons
-            var materialName                    : string                    = "";      //The name of the current material
+            var materialNameFromObj             : string                    = "";      //The name of the current material
             var fileToLoad                      : string                    = "";      //The name of the mtlFile to load
-            var materialsFromMTLFile               : MTLFileLoader             = new MTLFileLoader();
-
+            var materialsFromMTLFile            : MTLFileLoader             = new MTLFileLoader();
+            var objMeshName                     : string                    = "";      //The name of the current obj mesh
+            var increment                       : number                    =  1;      //Id for meshes created by the multimaterial
+            var isFirstMaterial                 : boolean                   = true;
 
             /**
              * Search for obj in the given array.
@@ -502,7 +504,33 @@ module BABYLON {
                 triangles = [];
             };
 
+            var addPreviousObjMesh = () => {
 
+                //Check if it is not the first mesh. Otherwise we don't have data.
+                if (meshesFromObj.length > 0) {
+                    //Get the previous mesh for applying the data about the faces
+                    //=> in obj file, faces definition append after the name of the mesh
+                    handledMesh = meshesFromObj[meshesFromObj.length - 1];
+
+                    //Set the data into Array for the mesh
+                    unwrapData();
+
+                    // Reverse tab. Otherwise face are displayed in the wrong sens
+                    indicesForBabylon.reverse();
+                    //Set the information for the mesh
+                    //Slice the array to avoid rewriting because of the fact this is the same var which be rewrited
+                    handledMesh.indices = indicesForBabylon.slice();
+                    handledMesh.positions = unwrappedPositionsForBabylon.slice();
+                    handledMesh.normals = unwrappedNormalsForBabylon.slice();
+                    handledMesh.uvs = unwrappedUVForBabylon.slice();
+
+                    //Reset the array for the next mesh
+                    indicesForBabylon = [];
+                    unwrappedPositionsForBabylon = [];
+                    unwrappedNormalsForBabylon = [];
+                    unwrappedUVForBabylon = [];
+                }
+            };
             //Main function
 
             //Split the file into lines
@@ -598,6 +626,7 @@ module BABYLON {
                 } else if (this.group.test(line) || this.obj.test(line)) {
                     //Create a new mesh corresponding to the name of the group.
                     //Definition of the mesh
+                    var objMeshName =  line.substring(2).trim();
                     var objMesh: {
                         name: string;
                         indices: Array<number>;
@@ -608,58 +637,62 @@ module BABYLON {
                     } =
                         //Set the name of the current obj mesh
                     {
-                        name: line.substring(2).trim(),
+                        name: objMeshName,
                         indices: undefined,
                         positions: undefined,
                         normals: undefined,
                         uvs: undefined,
                         materialName: ""
                     };
+                    addPreviousObjMesh();
 
-                    //Check if it is not the first mesh. Otherwise we don't have data.
-                    if (meshesFromObj.length > 0) {
-                        //Get the previous mesh for applying the data about the faces
-                        //=> in obj file, faces definition append after the name of the mesh
-                        handledMesh = meshesFromObj[meshesFromObj.length - 1];
-
-                        //Set the data into Array for the mesh
-                        unwrapData();
-
-                        // Reverse tab. Otherwise face are displayed in the wrong sens
-                        indicesForBabylon.reverse();
-                        //Set the information for the mesh
-                        //Slice the array to avoid rewriting because of the fact this is the same var which be rewrited
-                        handledMesh.indices = indicesForBabylon.slice();
-                        handledMesh.positions = unwrappedPositionsForBabylon.slice();
-                        handledMesh.normals = unwrappedNormalsForBabylon.slice();
-                        handledMesh.uvs = unwrappedUVForBabylon.slice();
-
-                        //Reset the array for the next mesh
-                        indicesForBabylon = [];
-                        unwrappedPositionsForBabylon = [];
-                        unwrappedNormalsForBabylon = [];
-                        unwrappedUVForBabylon = [];
-                    }
                     //Push the last mesh created with only the name
                     meshesFromObj.push(objMesh);
 
                     //Set this variable to indicate that now meshesFromObj has objects defined inside
                     hasMeshes = true;
-
-
+                    isFirstMaterial = true;
+                    increment = 1;
                     //Keyword for applying a material
                 } else if (this.usemtl.test(line)) {
                     //Get the name of the material
-                    materialName = line.substring(7).trim();
-                    //If meshes are already defined
-                    if (hasMeshes) {
+                    materialNameFromObj = line.substring(7).trim();
+
+                    //If this new material is in the same mesh
+
+                    if (!isFirstMaterial) {
+                        //Set the data for the previous mesh
+                        addPreviousObjMesh();
+                        //Create a new mesh
+                        var objMesh:{
+                            name: string;
+                            indices: Array<number>;
+                            positions: Array<number>;
+                            normals: Array<number>;
+                            uvs: Array<number>;
+                            materialName: string;
+                        } =
+                            //Set the name of the current obj mesh
+                        {
+                            name: objMeshName + "_mm" + increment.toString(),
+                            indices: undefined,
+                            positions: undefined,
+                            normals: undefined,
+                            uvs: undefined,
+                            materialName: materialNameFromObj
+                        };
+                        increment+=1;
+                        //If meshes are already defined
+                        meshesFromObj.push(objMesh);
+                    }
+                    //Set the material name if the previous line define a mesh
+
+                    if (hasMeshes && isFirstMaterial) {
                         var m = meshesFromObj.length;
                         //Set the material name to the previous mesh (1 material per mesh)
-                        meshesFromObj[m - 1].materialName = materialName;
-
-                        //Today multimaterial is not already set but obj can support multiple material
+                        meshesFromObj[m - 1].materialName = materialNameFromObj;
+                        isFirstMaterial = false;
                     }
-
                     //Keyword for loading the mtl file
                 } else if (this.mtllib.test(line)) {
                     //Get the name of mtl file
@@ -708,7 +741,7 @@ module BABYLON {
                     positions: unwrappedPositionsForBabylon,
                     normals: unwrappedNormalsForBabylon,
                     uvs: unwrappedUVForBabylon,
-                    materialName: materialName
+                    materialName: materialNameFromObj
                 });
             }
 
@@ -754,25 +787,36 @@ module BABYLON {
                 //Push the mesh into an array
                 babylonMeshesArray.push(babylonMesh);
             }
-
             //load the materials
             //Check if we have a file to load
             if (fileToLoad!== "") {
                 //Load the file synchronously
                 this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
-                    //Create materials thanks MTLLoader function
+                      //Create materials thanks MTLLoader function
                     materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
-
                     //Look at each material loaded in the mtl file
                     for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
-                        //Get the index of the MTL material corresponding with the BABYLON.Mesh material
-                        var _index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name);
-                        if (_index == -1) {
+                        //Three variables to get all meshes with the same material
+                        var startIndex = 0;
+                        var _indices = [];
+                        var _index;
+
+                        //The material from MTL file is used in the meshes loaded
+                        //Push the indice in an array
+                        //Check if the material is not used for another mesh
+                        while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
+                            _indices.push(_index);
+                            startIndex = _index + 1;
+                        }
+                        //If the material is not used dispose it
+                        if (_index == -1 && _indices.length == 0) {
                             //If the material is not needed, remove it
                             materialsFromMTLFile.materials[n].dispose();
                         } else {
-                            //Apply the material to the BABYLON.Mesh
-                            babylonMeshesArray[_index].material = materialsFromMTLFile.materials[n];
+                            for (var o =0; o<_indices.length; o++) {
+                                //Apply the material to the BABYLON.Mesh for each mesh with the material
+                                babylonMeshesArray[_indices[o]].material = materialsFromMTLFile.materials[n];
+                            }
                         }
                     }
 
