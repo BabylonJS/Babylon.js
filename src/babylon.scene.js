@@ -1225,7 +1225,7 @@ var BABYLON;
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
                         if (areIntersecting && currentIntersectionInProgress === -1) {
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             }
                             else if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
@@ -1236,7 +1236,7 @@ var BABYLON;
                             //They intersected, and now they don't.
                             //is this trigger an exit trigger? execute an event.
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                             }
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
                             if (!sourceMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger) || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {

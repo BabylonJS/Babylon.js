@@ -13629,7 +13629,7 @@ var BABYLON;
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
                         if (areIntersecting && currentIntersectionInProgress === -1) {
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             }
                             else if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
@@ -13640,7 +13640,7 @@ var BABYLON;
                             //They intersected, and now they don't.
                             //is this trigger an exit trigger? execute an event.
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                             }
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
                             if (!sourceMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger) || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
@@ -28055,21 +28055,22 @@ var BABYLON;
          * @param meshUnderPointer The mesh that is currently pointed at (can be null)
          * @param sourceEvent the original (browser) event that triggered the ActionEvent
          */
-        function ActionEvent(source, pointerX, pointerY, meshUnderPointer, sourceEvent) {
+        function ActionEvent(source, pointerX, pointerY, meshUnderPointer, sourceEvent, additionalData) {
             this.source = source;
             this.pointerX = pointerX;
             this.pointerY = pointerY;
             this.meshUnderPointer = meshUnderPointer;
             this.sourceEvent = sourceEvent;
+            this.additionalData = additionalData;
         }
         /**
          * Helper function to auto-create an ActionEvent from a source mesh.
          * @param source the source mesh that triggered the event
          * @param evt {Event} The original (browser) event
          */
-        ActionEvent.CreateNew = function (source, evt) {
+        ActionEvent.CreateNew = function (source, evt, additionalData) {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt, additionalData);
         };
         /**
          * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
