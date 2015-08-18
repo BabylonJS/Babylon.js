@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (3, 0, 1),
+    'version': (3, 0, 2),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -1642,7 +1642,7 @@ class BakingRecipe:
 
                 textures = [mtex for mtex in material.texture_slots if mtex and mtex.texture]
                 for mtex in textures:
-                    if mtex.texture.type == 'IMAGE':
+                    if mtex.texture.type == 'IMAGE' or mtex.texture.type == 'NONE':
                         continue
 
                     self.needsBaking = True
