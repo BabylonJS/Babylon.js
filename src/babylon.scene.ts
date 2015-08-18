@@ -1569,7 +1569,7 @@
 
                         if (areIntersecting && currentIntersectionInProgress === -1) {
                             if (action.trigger === ActionManager.OnIntersectionEnterTrigger) {
-                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             } else if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
@@ -1579,7 +1579,7 @@
 
                             //is this trigger an exit trigger? execute an event.
                             if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
-                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                             }
 
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
