@@ -1082,7 +1082,7 @@ class Node(FCurveAnimatable):
         self.castShadows = False
         self.receiveShadows = False
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def to_scene_file(self, file_handler, ignored):
+    def to_scene_file(self, file_handler):
         file_handler.write('{')
         write_string(file_handler, 'name', self.name, True)
         write_string(file_handler, 'id', self.name)
