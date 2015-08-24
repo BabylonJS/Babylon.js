@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (3, 0, 3),
+    'version': (3, 0, 4),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -137,8 +137,8 @@ class ExporterSettingsPanel(bpy.types.Panel):
     bpy.types.Scene.export_noVertexOpt = bpy.props.BoolProperty(
         name="No vertex sharing",
         description="Turns off an optimization which reduces vertices",
-        default = False,
-        )
+        default = True,
+        )        
     bpy.types.Scene.attachedSound = bpy.props.StringProperty(
         name='Sound',
         description='',
@@ -754,6 +754,7 @@ class Mesh(FCurveAnimatable):
 
         # used tracking of vertices as they are received
         alreadySavedVertices = []
+        vertices_Normals = []
         vertices_UVs = []
         vertices_UV2s = []
         vertices_Colors = []
@@ -763,6 +764,7 @@ class Mesh(FCurveAnimatable):
 
         for v in range(0, len(mesh.vertices)):
             alreadySavedVertices.append(False)
+            vertices_Normals.append([])
             vertices_UVs.append([])
             vertices_UV2s.append([])
             vertices_Colors.append([])
@@ -795,7 +797,11 @@ class Mesh(FCurveAnimatable):
 
                     vertex = mesh.vertices[vertex_index]
                     position = vertex.co
-                    normal = vertex.normal
+                    
+                    if (scene.export_noVertexOpt):
+                        normal = face.normal
+                    else:
+                        normal = vertex.normal
 
                     #skeletons
                     if hasSkeleton:
@@ -848,6 +854,10 @@ class Mesh(FCurveAnimatable):
                         # UV
                         index_UV = 0
                         for savedIndex in vertices_indices[vertex_index]:
+                            vNormal = vertices_Normals[vertex_index][index_UV]
+                            if (normal.x != vNormal.x or normal.y != vNormal.y or normal.z != vNormal.z):
+                                continue;
+                            
                             if hasUV:
                                 vUV = vertices_UVs[vertex_index][index_UV]
                                 if (vUV[0] != vertex_UV[0] or vUV[1] != vertex_UV[1]):
@@ -876,6 +886,10 @@ class Mesh(FCurveAnimatable):
                         # Export new one
                         index = verticesCount
                         alreadySavedVertices[vertex_index] = True
+                        
+                        vertices_Normals[vertex_index].append(normal)                        
+                        self.normals.append(normal)
+                        
                         if hasUV:
                             vertices_UVs[vertex_index].append(vertex_UV)
                             self.uvs.append(vertex_UV[0])
@@ -900,7 +914,6 @@ class Mesh(FCurveAnimatable):
                         vertices_indices[vertex_index].append(index)
 
                         self.positions.append(position)
-                        self.normals.append(normal)
 
                         verticesCount += 1
                     self.indices.append(index)
@@ -2401,3 +2414,4 @@ class ObjectPanel(bpy.types.Panel):
             box.prop(ob.data, 'shadowBlurBoxOffset')
 
             layout.prop(ob.data, 'autoAnimate')
+

@@ -103,3 +103,4 @@ var BABYLON;
     })();
     BABYLON.BoundingInfo = BoundingInfo;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.boundingInfo.js.map
