@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (3, 0, 2),
+    'version': (3, 0, 3),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -611,8 +611,8 @@ class Mesh(FCurveAnimatable):
                         if obj == objArmature:
                             self.skeletonId = i
                             break
-                    else:
-                        i += 1
+                        else:
+                            i += 1
 
         # determine Position, rotation, & scaling
         if forcedParent is None:
@@ -690,15 +690,12 @@ class Mesh(FCurveAnimatable):
         if recipe.needsBaking:
             if recipe.multipleRenders:
                 Main.warn('Mixing of Cycles & Blender Render in same mesh not supported.  No materials exported.', 2)
-                uvRequired = False
             else:
                 bakedMat = BakedMaterial(exporter, object, recipe)
                 exporter.materials.append(bakedMat)
-                uvRequired = True
                 self.materialId = bakedMat.name
 
         else:
-            uvRequired = False
             bjs_material_slots = []
             for slot in object.material_slots:
                 # None will be returned when either the first encounter or must be unique due to baked textures
@@ -710,7 +707,6 @@ class Mesh(FCurveAnimatable):
                     material = StdMaterial(slot, exporter, object)
                     exporter.materials.append(material)
 
-                uvRequired |= len(material.textures) > 0
                 bjs_material_slots.append(material)
 
             if len(bjs_material_slots) == 1:
@@ -775,6 +771,7 @@ class Mesh(FCurveAnimatable):
         materialsCount = 1 if recipe.needsBaking else max(1, len(object.material_slots))
         verticesCount = 0
         indicesCount = 0
+        maxInfluencersExceeded = 0
 
         for materialIndex in range(materialsCount):
             if self.offsetFace != 0:
@@ -819,7 +816,7 @@ class Mesh(FCurveAnimatable):
                             for boneIndex, bone in enumerate(objArmature.pose.bones):
                                 if object.vertex_groups[index].name == bone.name:
                                     if (i == MAX_INFLUENCERS_PER_VERTEX):
-                                        Main.warn('Maximum # of influencers exceeded for a vertex, extras ignored', 2)
+                                        maxInfluencersExceeded += 1
                                         break
                                     matricesWeights[i] = weight
                                     matricesIndicesCompressed += boneIndex << offset
@@ -913,6 +910,10 @@ class Mesh(FCurveAnimatable):
 
         if verticesCount > MAX_VERTEX_ELEMENTS:
             warn('Due to multi-materials & this meshes size, 32bit indices must be used.  This may not run on all hardware.', 2)
+
+        if maxInfluencersExceeded > 0:
+            Main.warn('Maximum # of influencers exceeded for ' + format_int(maxInfluencersExceeded) + ' vertices, extras ignored', 2)
+            
         BakedMaterial.meshBakingClean(object)
 
         Main.log('num positions      :  ' + str(len(self.positions)), 2)
@@ -924,9 +925,6 @@ class Mesh(FCurveAnimatable):
         if hasattr(self, 'skeletonWeights'):
             Main.log('num skeletonWeights:  ' + str(len(self.skeletonWeights)), 2)
             Main.log('num skeletonIndices:  ' + str(len(self.skeletonIndicesCompressed * 4)), 2)
-
-        if uvRequired and len(self.uvs) == 0:
-            Main.warn('Textures being used, but no UV Map found', 2)
 
         numZeroAreaFaces = self.find_zero_area_faces()
         if numZeroAreaFaces > 0:
@@ -1084,7 +1082,7 @@ class Node(FCurveAnimatable):
         self.castShadows = False
         self.receiveShadows = False
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def to_scene_file(self, file_handler, ignored):
+    def to_scene_file(self, file_handler):
         file_handler.write('{')
         write_string(file_handler, 'name', self.name, True)
         write_string(file_handler, 'id', self.name)
@@ -1478,7 +1476,10 @@ class Texture:
             self.hasAlpha = texture.texture.use_alpha
 
             usingMap = texture.uv_layer
-            Main.log('Image texture found, type:  ' + slot + ', mapped using: ' + usingMap, 3)
+            if len(usingMap) == 0:
+                usingMap = mesh.data.uv_textures[0].name
+                
+            Main.log('Image texture found, type:  ' + slot + ', mapped using: "' + usingMap + '"', 3)
             if mesh.data.uv_textures[0].name == usingMap:
                 self.coordinatesIndex = 0
             elif mesh.data.uv_textures[1].name == usingMap:
@@ -1727,8 +1728,8 @@ class StdMaterial(Material):
             elif not mtex.texture.image:
                 Main.warn('Material has un-assigned image texture:  "' + mtex.name + '" ignored', 3)
                 continue
-            elif len(mtex.uv_layer) == 0:
-                Main.warn('Material has image texture with no UV map assigned:  "' + mtex.name + '" ignored', 3)
+            elif len(mesh.data.uv_textures) == 0:
+                Main.warn('Mesh has no UV maps, material:  "' + mtex.name + '" ignored', 3)
                 continue
 
             if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
