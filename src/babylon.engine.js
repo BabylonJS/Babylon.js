@@ -2003,7 +2003,7 @@ var BABYLON;
         Engine._TEXTUREFORMAT_LUMINANCE = 1;
         Engine._TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         Engine._TEXTUREFORMAT_RGB = 4;
-        Engine._TEXTUREFORMAT_RGBA = 4;
+        Engine._TEXTUREFORMAT_RGBA = 5;
         Engine._TEXTURETYPE_UNSIGNED_INT = 0;
         Engine._TEXTURETYPE_FLOAT = 1;
         // Updatable statics so stick with vars here
@@ -2015,4 +2015,3 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.engine.js.map
