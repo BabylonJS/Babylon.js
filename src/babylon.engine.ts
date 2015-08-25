@@ -403,7 +403,7 @@
         private static _TEXTUREFORMAT_LUMINANCE = 1;
         private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         private static _TEXTUREFORMAT_RGB = 4;
-        private static _TEXTUREFORMAT_RGBA = 4;
+        private static _TEXTUREFORMAT_RGBA = 5;
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
