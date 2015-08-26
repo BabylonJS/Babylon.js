@@ -128,8 +128,8 @@
         sampler: string;
         source: string;
 
-        format?: number;
-        internalFormat?: number;
+        format?: ETextureFormat;
+        internalFormat?: ETextureFormat;
         target?: number;
         type?: number;
     }
