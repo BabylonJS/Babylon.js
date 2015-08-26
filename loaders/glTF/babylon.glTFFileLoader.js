@@ -55,6 +55,14 @@ var BABYLON;
         ETextureFilterType[ETextureFilterType["LINEAR_MIPMAP_LINEAR"] = 9987] = "LINEAR_MIPMAP_LINEAR";
     })(BABYLON.ETextureFilterType || (BABYLON.ETextureFilterType = {}));
     var ETextureFilterType = BABYLON.ETextureFilterType;
+    (function (ETextureFormat) {
+        ETextureFormat[ETextureFormat["ALPHA"] = 6406] = "ALPHA";
+        ETextureFormat[ETextureFormat["RGB"] = 6407] = "RGB";
+        ETextureFormat[ETextureFormat["RGBA"] = 6408] = "RGBA";
+        ETextureFormat[ETextureFormat["LUMINANCE"] = 6409] = "LUMINANCE";
+        ETextureFormat[ETextureFormat["LUMINANCE_ALPHA"] = 6410] = "LUMINANCE_ALPHA";
+    })(BABYLON.ETextureFormat || (BABYLON.ETextureFormat = {}));
+    var ETextureFormat = BABYLON.ETextureFormat;
     /**
     * Tokenizer. Used for shaders compatibility
     * Automatically map world, view, projection, worldViewProjection and attributes
@@ -106,8 +114,8 @@ var BABYLON;
     */
     var glTFTransforms = ["MODEL", "VIEW", "PROJECTION", "MODELVIEW", "MODELVIEWPROJECTION", "JOINTMATRIX"];
     var babylonTransforms = ["world", "view", "projection", "worldView", "worldViewProjection", "mBones"];
-    var glTFAnimationPaths = ["translation", "scale"];
-    var babylonAnimationPaths = ["position", "scaling"];
+    var glTFAnimationPaths = ["translation", "rotation", "scale"];
+    var babylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
     /**
     * Parse
     */
@@ -192,6 +200,23 @@ var BABYLON;
             default: break;
         }
     };
+    var setUniform = function (shaderMaterial, uniform, value, type) {
+        switch (type) {
+            case EParameterType.FLOAT:
+                shaderMaterial.setFloat(uniform, value);
+                return true;
+            case EParameterType.FLOAT_VEC2:
+                shaderMaterial.setVector2(uniform, BABYLON.Vector2.FromArray(value));
+                return true;
+            case EParameterType.FLOAT_VEC3:
+                shaderMaterial.setVector3(uniform, BABYLON.Vector3.FromArray(value));
+                return true;
+            case EParameterType.FLOAT_VEC4:
+                shaderMaterial.setVector4(uniform, BABYLON.Vector4.FromArray(value));
+                return true;
+            default: return false;
+        }
+    };
     var getWrapMode = function (mode) {
         switch (mode) {
             case ETextureWrapMode.CLAMP_TO_EDGE: return BABYLON.Texture.CLAMP_ADDRESSMODE;
@@ -260,6 +285,15 @@ var BABYLON;
     var isBase64 = function (uri) {
         return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
     };
+    var getTextureFromName = function (gltfRuntime, name) {
+        var textures = gltfRuntime.scene.textures;
+        for (var i = 0; i < textures.length; i++) {
+            if (textures[i].name === name) {
+                return textures[i];
+            }
+        }
+        return null;
+    };
     /**
     * Load animations
     */
@@ -300,21 +334,26 @@ var BABYLON;
                     targetPath = babylonAnimationPaths[targetPathIndex];
                 }
                 // Create key frames and animation
-                var babylonAnimation = new BABYLON.Animation(anim, targetPath, 1, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                var animationType = BABYLON.Animation.ANIMATIONTYPE_VECTOR3;
+                if (targetPath === "rotationQuaternion") {
+                    animationType = BABYLON.Animation.ANIMATIONTYPE_QUATERNION;
+                    targetNode.rotationQuaternion = new BABYLON.Quaternion();
+                }
+                var babylonAnimation = new BABYLON.Animation(anim, targetPath, 1, animationType, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
                 var keys = [];
                 for (var i = 0; i < bufferInput.length; i++) {
-                    var vector = null;
-                    if (targetPath === "rotation") {
-                        vector = BABYLON.Vector3.FromArray([bufferOutput[i * 4 + 3], bufferOutput[i * 4 + 1], bufferOutput[i * 4 + 2]]);
+                    var value = null;
+                    if (targetPath === "rotationQuaternion") {
+                        value = BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.FromArray([bufferOutput[i * 4], bufferOutput[i * 4 + 1], bufferOutput[i * 4 + 2]]).normalize(), bufferOutput[i * 4 + 3]);
                     }
                     else {
-                        vector = BABYLON.Vector3.FromArray([bufferOutput[i * 3], bufferOutput[i * 3 + 1], bufferOutput[i * 3 + 2]]);
+                        value = BABYLON.Vector3.FromArray([bufferOutput[i * 3], bufferOutput[i * 3 + 1], bufferOutput[i * 3 + 2]]);
                         // Y is up
-                        vector.z *= -1;
+                        value.z *= -1;
                     }
                     keys.push({
                         frame: bufferInput[i],
-                        value: vector
+                        value: value
                     });
                 }
                 // Finish
@@ -379,7 +418,6 @@ var BABYLON;
                 accessor = gltfRuntime.accessors[attributes[semantic]];
                 buffer = getBufferFromAccessor(gltfRuntime, accessor);
                 if (semantic === "NORMAL") {
-                    //normalizeBuffer(buffer);
                     tempVertexData.set(buffer, BABYLON.VertexBuffer.NormalKind);
                 }
                 else if (semantic === "POSITION") {
@@ -394,11 +432,9 @@ var BABYLON;
                     tempVertexData.set(buffer, uvKind);
                 }
                 else if (semantic === "JOINT") {
-                    //normalizeBuffer(buffer);
                     tempVertexData.set(buffer, BABYLON.VertexBuffer.MatricesIndicesKind);
                 }
                 else if (semantic === "WEIGHT") {
-                    //normalizeBuffer(buffer);
                     tempVertexData.set(buffer, BABYLON.VertexBuffer.MatricesWeightsKind);
                 }
             }
@@ -413,8 +449,8 @@ var BABYLON;
             var material = gltfRuntime.scene.getMaterialByID(primitive.material);
             multiMat.subMaterials.push(material === null ? gltfRuntime.scene.defaultMaterial : material);
             // Update vertices start and index start
-            verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 1]);
-            indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 1]);
+            verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
+            indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
         }
         // Apply geometry
         geometry.setAllVerticesData(vertexData);
@@ -659,22 +695,40 @@ var BABYLON;
     /**
     * Load shaders
     */
-    var onBindShaderMaterial = function (mesh, gltfRuntime, unTreatedUniforms, shaderMaterial) {
+    var onBindShaderMaterial = function (mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, pass, material) {
         for (var unif in unTreatedUniforms) {
             var uniform = unTreatedUniforms[unif];
             var type = uniform.type;
-            if (uniform.semantic && !uniform.source && !uniform.node) {
-                setMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial);
-            }
-            else if (uniform.semantic && (uniform.source || uniform.node)) {
-                var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node);
-                if (source === null) {
-                    source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node);
+            if (type === EParameterType.FLOAT_MAT2 || type === EParameterType.FLOAT_MAT3 || type === EParameterType.FLOAT_MAT4) {
+                if (uniform.semantic && !uniform.source && !uniform.node) {
+                    setMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial.getEffect());
                 }
-                if (source === null) {
+                else if (uniform.semantic && (uniform.source || uniform.node)) {
+                    var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node);
+                    if (source === null) {
+                        source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node);
+                    }
+                    if (source === null) {
+                        continue;
+                    }
+                    setMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial.getEffect());
+                }
+            }
+            else {
+                var value = material.instanceTechnique.values[pass.instanceProgram.uniforms[unif]];
+                if (!value) {
                     continue;
                 }
-                setMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial);
+                if (type === EParameterType.SAMPLER_2D) {
+                    var texture = getTextureFromName(gltfRuntime, value);
+                    if (texture === null) {
+                        continue;
+                    }
+                    shaderMaterial.getEffect().setTexture(unif, texture);
+                }
+                else {
+                    setUniform(shaderMaterial.getEffect(), unif, value, type);
+                }
             }
         }
     };
@@ -688,48 +742,38 @@ var BABYLON;
             var uniform = unTreatedUniforms[unif];
             var type = uniform.type;
             var value = materialValues[instanceProgramUniforms[unif]] || uniform.value;
-            if (value) {
-                // Texture (sampler2D)
-                if (type === EParameterType.SAMPLER_2D) {
-                    var texture = gltfRuntime.textures[value];
-                    var sampler = gltfRuntime.samplers[texture.sampler];
-                    if (texture && texture.source) {
-                        var source = gltfRuntime.images[texture.source];
-                        var newTexture = null;
-                        if (isBase64(source.uri)) {
-                            newTexture = BABYLON.Texture.CreateFromBase64String(source.uri, gltfRuntime.rootUrl + source.name, gltfRuntime.scene);
-                        }
-                        else {
-                            newTexture = new BABYLON.Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene);
-                        }
-                        if (sampler) {
-                            newTexture.wrapU = getWrapMode(sampler.wrapS);
-                            newTexture.wrapV = getWrapMode(sampler.wrapT);
-                        }
-                        shaderMaterial.setTexture(unif, newTexture);
-                        delete unTreatedUniforms[unif];
-                    }
+            if (!value) {
+                continue;
+            }
+            // Texture (sampler2D)
+            if (type === EParameterType.SAMPLER_2D) {
+                var texture = gltfRuntime.textures[value];
+                var sampler = gltfRuntime.samplers[texture.sampler];
+                if (!texture || !texture.source) {
+                    continue;
+                }
+                var source = gltfRuntime.images[texture.source];
+                var newTexture = null;
+                if (isBase64(source.uri)) {
+                    newTexture = new BABYLON.Texture(source.uri, gltfRuntime.scene, true, undefined, undefined, undefined, undefined, source.uri, true);
                 }
                 else {
-                    switch (type) {
-                        case EParameterType.FLOAT:
-                            shaderMaterial.setFloat(unif, value);
-                            delete unTreatedUniforms[unif];
-                            break;
-                        case EParameterType.FLOAT_VEC2:
-                            shaderMaterial.setVector2(unif, BABYLON.Vector2.FromArray(value));
-                            delete unTreatedUniforms[unif];
-                            break;
-                        case EParameterType.FLOAT_VEC3:
-                            shaderMaterial.setVector3(unif, BABYLON.Vector3.FromArray(value));
-                            delete unTreatedUniforms[unif];
-                            break;
-                        case EParameterType.FLOAT_VEC4:
-                            shaderMaterial.setVector4(unif, BABYLON.Vector4.FromArray(value));
-                            delete unTreatedUniforms[unif];
-                            break;
-                        default: break;
-                    }
+                    newTexture = new BABYLON.Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, true);
+                }
+                newTexture.name = value;
+                if (texture.internalFormat && (texture.internalFormat === ETextureFormat.ALPHA || texture.internalFormat === ETextureFormat.RGBA)) {
+                    newTexture.hasAlpha = true;
+                }
+                if (uniform.value) {
+                    // Static uniform
+                    shaderMaterial.setTexture(unif, newTexture);
+                    delete unTreatedUniforms[unif];
+                }
+            }
+            else {
+                if (uniform.value && setUniform(shaderMaterial, unif, value, type)) {
+                    // Static uniform
+                    delete unTreatedUniforms[unif];
                 }
             }
         }
@@ -744,12 +788,11 @@ var BABYLON;
         return function (_) {
             prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, pass, material, unTreatedUniforms);
             shaderMaterial.onBind = function (mat, mesh) {
-                onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial);
+                onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, pass, material);
             };
         };
     };
     var parseShaderUniforms = function (tokenizer, instanceProgram, technique, unTreatedUniforms) {
-        var foundUniform = false;
         for (var unif in instanceProgram.uniforms) {
             var uniform = instanceProgram.uniforms[unif];
             var uniformParameter = technique.parameters[uniform];
