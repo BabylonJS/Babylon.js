@@ -8,6 +8,7 @@
     - StandardMaterial.useGlossinessFromSpecularMapAlpha to use specular map alpha as glossiness level [deltakosh](https://github.com/deltakosh)
     - OBJ loader. See [demo here](http://www.babylonjs-playground.com/#28YUR5) [Temechon](https://github.com/Temechon)
   - **Updates**
+    - Added darkness support for soft shadows [deltakosh](https://github.com/deltakosh)
     - Added scene.getLensFlareSystemByName() [deltakosh](https://github.com/deltakosh)
     - Added LensFlareSystem.setEmitter() [deltakosh](https://github.com/deltakosh)
     - Added Color3.FromHexString() and Color3.toHexString() [deltakosh](https://github.com/deltakosh)
