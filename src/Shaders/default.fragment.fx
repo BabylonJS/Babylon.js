@@ -243,7 +243,7 @@ float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float dark
 	return 1.;
 }
 
-float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, float mapSize, float bias)
+float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, float mapSize, float bias, float darkness)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 	depth = 0.5 * depth + vec3(0.5);
@@ -270,7 +270,7 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 	if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / mapSize)) < biasedDepth) visibility -= 0.25;
 	if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / mapSize)) < biasedDepth) visibility -= 0.25;
 
-	return visibility;
+	return  min(1.0, visibility + darkness);
 }
 
 // Thanks to http://devmaster.net/
@@ -288,7 +288,7 @@ float ChebychevInequality(vec2 moments, float compare, float bias)
 	return clamp(max(p, p_max), 0.0, 1.0);
 }
 
-float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, float bias)
+float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, float bias, float darkness)
 {
 	vec3 depth = vPositionFromLight.xyz / vPositionFromLight.w;
 	depth = 0.5 * depth + vec3(0.5);
@@ -302,7 +302,7 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 	vec4 texel = texture2D(shadowSampler, uv);
 
 	vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
-	return 1.0 - ChebychevInequality(moments, depth.z, bias);
+	return min(1.0, 1.0 - ChebychevInequality(moments, depth.z, bias) + darkness);
 }
 #endif
 
@@ -576,10 +576,10 @@ void main(void) {
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
-	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0, shadowsInfo0.z);
+	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x);
 #else
 	#ifdef SHADOWPCF0
-		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z);
+		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
 	#else
 		shadow = computeShadow(vPositionFromLight0, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
 	#endif
@@ -608,10 +608,10 @@ void main(void) {
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
-	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1, shadowsInfo1.z);
+	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1, shadowsInfo1.z, shadowsInfo1.x);
 #else
 	#ifdef SHADOWPCF1
-		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z);
+		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
 	#else
 		shadow = computeShadow(vPositionFromLight1, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
 	#endif
@@ -640,10 +640,10 @@ void main(void) {
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
-	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2, shadowsInfo2.z);
+	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2, shadowsInfo2.z, shadowsInfo2.x);
 #else
 	#ifdef SHADOWPCF2
-		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z);
+		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
 	#else
 		shadow = computeShadow(vPositionFromLight2, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
 	#endif	
@@ -672,10 +672,10 @@ void main(void) {
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
-	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z);
+	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
 #else
 	#ifdef SHADOWPCF3
-		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z);
+		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 	#else
 		shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
 	#endif	
