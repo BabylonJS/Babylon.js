@@ -5683,7 +5683,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.2.0-alpha";
+                return "2.2.0-beta";
             },
             enumerable: true,
             configurable: true
