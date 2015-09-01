@@ -35,8 +35,6 @@ BABYLON.SceneLoader.Load("./", "duck.gltf", engine, function (scene) {
     * Skeletons
     * Bones
     * Hardware skinning (shaders support)
-* Shaders
-    * Set uniforms with types MAT2 and MAT3
 * Handle dummy nodes (empty nodes)
 
 ## To improve
