@@ -3619,17 +3619,16 @@
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
         private _normalVector(v0: Vector3, vt: Vector3, va: Vector3): Vector3 {
-            var epsilon = 0.001;
             var normal0: Vector3;
             if (va === undefined || va === null) {
                 var point: Vector3;
-                if (!Tools.WithinEpsilon(vt.y, 1, epsilon)) {     // search for a point in the plane
+                if (!Tools.WithinEpsilon(vt.y, 1, Engine.Epsilon)) {     // search for a point in the plane
                     point = new Vector3(0, -1, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.x, 1, epsilon)) {
+                else if (!Tools.WithinEpsilon(vt.x, 1, Engine.Epsilon)) {
                     point = new Vector3(1, 0, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.z, 1, epsilon)) {
+                else if (!Tools.WithinEpsilon(vt.z, 1, Engine.Epsilon)) {
                     point = new Vector3(0, 0, 1);
                 }
                 normal0 = Vector3.Cross(vt, point);
