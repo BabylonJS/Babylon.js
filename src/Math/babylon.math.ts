@@ -1083,17 +1083,16 @@
             var nbRevert = 0;
             var cross: Vector3;
             var dot = 0.0;
-            var epsilon = 0.001;
-
+            
             // step 1  : rotation around w
             // Rv3(u) = u1, and u1 belongs to plane xOz
             // Rv3(w) = w1 = w invariant
             var u1: Vector3;
             var v1: Vector3;
-            if (Tools.WithinEpsilon(w.z, 0, epsilon)) {
+            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
                 z = 1.0;
             }
-            else if (Tools.WithinEpsilon(w.x, 0, epsilon)) {
+            else if (Tools.WithinEpsilon(w.x, 0, Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -1132,7 +1131,7 @@
             y = 0.0;
             z = 0.0;
             sign = -1;
-            if (Tools.WithinEpsilon(w.z, 0, epsilon)) {
+            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
