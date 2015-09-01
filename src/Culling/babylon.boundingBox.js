@@ -6,6 +6,7 @@ var BABYLON;
             this.maximum = maximum;
             this.vectors = new Array();
             this.vectorsWorld = new Array();
+            this.vectorsWorldAA = new Array();
             // Bounding vectors            
             this.vectors.push(this.minimum.clone());
             this.vectors.push(this.maximum.clone());
@@ -21,12 +22,16 @@ var BABYLON;
             this.vectors[6].x = this.minimum.x;
             this.vectors.push(this.maximum.clone());
             this.vectors[7].y = this.minimum.y;
+            var index;
+            for (index = 0; index < 8; index++) {
+                this.vectorsWorldAA[index] = BABYLON.Vector3.Zero();
+            }
             // OBB
             this.center = this.maximum.add(this.minimum).scale(0.5);
             this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
             this.directions = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
             // World
-            for (var index = 0; index < this.vectors.length; index++) {
+            for (index = 0; index < this.vectors.length; index++) {
                 this.vectorsWorld[index] = BABYLON.Vector3.Zero();
             }
             this.minimumWorld = BABYLON.Vector3.Zero();
@@ -56,6 +61,30 @@ var BABYLON;
                 if (v.z > this.maximumWorld.z)
                     this.maximumWorld.z = v.z;
             }
+            this.vectorsWorldAA[0].x = this.minimumWorld.x;
+            this.vectorsWorldAA[0].y = this.minimumWorld.y;
+            this.vectorsWorldAA[0].z = this.minimumWorld.z;
+            this.vectorsWorldAA[1].x = this.minimumWorld.x;
+            this.vectorsWorldAA[1].y = this.maximumWorld.y;
+            this.vectorsWorldAA[1].z = this.minimumWorld.z;
+            this.vectorsWorldAA[2].x = this.maximumWorld.x;
+            this.vectorsWorldAA[2].y = this.minimumWorld.y;
+            this.vectorsWorldAA[2].z = this.minimumWorld.z;
+            this.vectorsWorldAA[3].x = this.maximumWorld.x;
+            this.vectorsWorldAA[3].y = this.maximumWorld.y;
+            this.vectorsWorldAA[3].z = this.minimumWorld.z;
+            this.vectorsWorldAA[4].x = this.minimumWorld.x;
+            this.vectorsWorldAA[4].y = this.minimumWorld.y;
+            this.vectorsWorldAA[4].z = this.maximumWorld.z;
+            this.vectorsWorldAA[5].x = this.minimumWorld.x;
+            this.vectorsWorldAA[5].y = this.maximumWorld.y;
+            this.vectorsWorldAA[5].z = this.maximumWorld.z;
+            this.vectorsWorldAA[6].x = this.maximumWorld.x;
+            this.vectorsWorldAA[6].y = this.minimumWorld.y;
+            this.vectorsWorldAA[6].z = this.maximumWorld.z;
+            this.vectorsWorldAA[7].x = this.maximumWorld.x;
+            this.vectorsWorldAA[7].y = this.maximumWorld.y;
+            this.vectorsWorldAA[7].z = this.maximumWorld.z;
             // OBB
             this.maximumWorld.addToRef(this.minimumWorld, this.center);
             this.center.scaleInPlace(0.5);
@@ -65,10 +94,10 @@ var BABYLON;
             this._worldMatrix = world;
         };
         BoundingBox.prototype.isInFrustum = function (frustumPlanes) {
-            return BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
+            return BoundingBox.IsInFrustum(this.vectorsWorldAA, frustumPlanes);
         };
         BoundingBox.prototype.isCompletelyInFrustum = function (frustumPlanes) {
-            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
+            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorldAA, frustumPlanes);
         };
         BoundingBox.prototype.intersectsPoint = function (point) {
             var delta = -BABYLON.Engine.Epsilon;
