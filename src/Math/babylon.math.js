@@ -99,7 +99,7 @@ var BABYLON;
         };
         // Statics
         Color3.FromHexString = function (hex) {
-            if (hex.substring(0, 1) !== "#" || hex.length != 7) {
+            if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
                 BABYLON.Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
@@ -208,7 +208,7 @@ var BABYLON;
         };
         // Statics
         Color4.FromHexString = function (hex) {
-            if (hex.substring(0, 1) !== "#" || hex.length != 9) {
+            if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
                 BABYLON.Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0, 0, 0, 0);
             }
@@ -837,12 +837,10 @@ var BABYLON;
          */
         Vector3.RotationFromAxis = function (axis1, axis2, axis3) {
             var u = Vector3.Normalize(axis1);
-            var v = Vector3.Normalize(axis2);
             var w = Vector3.Normalize(axis3);
             // world axis
             var X = Axis.X;
             var Y = Axis.Y;
-            var Z = Axis.Z;
             // equation unknowns and vars
             var yaw = 0.0;
             var pitch = 0.0;
@@ -852,7 +850,6 @@ var BABYLON;
             var z = 0.0;
             var t = 0.0;
             var sign = -1.0;
-            var pi = Math.PI;
             var nbRevert = 0;
             var cross;
             var dot = 0.0;
@@ -861,10 +858,10 @@ var BABYLON;
             // Rv3(w) = w1 = w invariant
             var u1;
             var v1;
-            if (w.z == 0) {
+            if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 z = 1.0;
             }
-            else if (w.x == 0) {
+            else if (BABYLON.Tools.WithinEpsilon(w.x, 0, BABYLON.Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -873,12 +870,16 @@ var BABYLON;
                 z = Math.sqrt(1 / (1 + t * t));
             }
             u1 = new Vector3(x, y, z);
+            u1.normalize();
             v1 = Vector3.Cross(w, u1); // v1 image of v through rotation around w
+            v1.normalize();
             cross = Vector3.Cross(u, u1); // returns same direction as w (=local z) if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(w, cross) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(u, u1);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             roll = Math.acos(dot) * sign;
             if (Vector3.Dot(u1, X) < 0) {
                 roll = Math.PI + roll;
@@ -895,7 +896,7 @@ var BABYLON;
             y = 0.0;
             z = 0.0;
             sign = -1;
-            if (w.z == 0) {
+            if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -904,12 +905,16 @@ var BABYLON;
                 z = Math.sqrt(1 / (1 + t * t));
             }
             w2 = new Vector3(x, y, z);
+            w2.normalize();
             v2 = Vector3.Cross(w2, u1); // v2 image of v1 through rotation around u1
+            v2.normalize();
             cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(u1, cross) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(w, w2);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             pitch = Math.acos(dot) * sign;
             if (Vector3.Dot(v2, Y) < 0) {
                 pitch = Math.PI + pitch;
@@ -921,10 +926,12 @@ var BABYLON;
             // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
             sign = -1;
             cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(cross, Y) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(u1, X);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             yaw = -Math.acos(dot) * sign; // negative : plane zOx oriented clockwise
             if (dot < 0 && nbRevert < 2) {
                 yaw = Math.PI + yaw;
@@ -2411,20 +2418,24 @@ var BABYLON;
         Ray.prototype.intersectsBoxMinMax = function (minimum, maximum) {
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
+            var inv;
+            var min;
+            var max;
+            var temp;
             if (Math.abs(this.direction.x) < 0.0000001) {
                 if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
                     return false;
                 }
             }
             else {
-                var inv = 1.0 / this.direction.x;
-                var min = (minimum.x - this.origin.x) * inv;
-                var max = (maximum.x - this.origin.x) * inv;
+                inv = 1.0 / this.direction.x;
+                min = (minimum.x - this.origin.x) * inv;
+                max = (maximum.x - this.origin.x) * inv;
                 if (max === -Infinity) {
                     max = Infinity;
                 }
                 if (min > max) {
-                    var temp = min;
+                    temp = min;
                     min = max;
                     max = temp;
                 }
@@ -2861,7 +2872,7 @@ var BABYLON;
             var prev; // previous vector (segment)
             var cur; // current vector (segment)
             var curTang; // current tangent
-            var prevNorm; // previous normal
+            // previous normal
             var prevBinor; // previous binormal
             for (var i = 1; i < l; i++) {
                 // tangents
@@ -2875,7 +2886,6 @@ var BABYLON;
                 // normals and binormals
                 // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
                 curTang = this._tangents[i];
-                prevNorm = this._normals[i - 1];
                 prevBinor = this._binormals[i - 1];
                 this._normals[i] = Vector3.Cross(prevBinor, curTang);
                 this._normals[i].normalize();
@@ -2888,7 +2898,7 @@ var BABYLON;
         Path3D.prototype._getFirstNonNullVector = function (index) {
             var i = 1;
             var nNVector = this._curve[index + i].subtract(this._curve[index]);
-            while (nNVector.length() == 0 && index + i + 1 < this._curve.length) {
+            while (nNVector.length() === 0 && index + i + 1 < this._curve.length) {
                 i++;
                 nNVector = this._curve[index + i].subtract(this._curve[index]);
             }
@@ -2899,7 +2909,7 @@ var BABYLON;
         Path3D.prototype._getLastNonNullVector = function (index) {
             var i = 1;
             var nLVector = this._curve[index].subtract(this._curve[index - i]);
-            while (nLVector.length() == 0 && index > i + 1) {
+            while (nLVector.length() === 0 && index > i + 1) {
                 i++;
                 nLVector = this._curve[index].subtract(this._curve[index - i]);
             }
@@ -2912,13 +2922,13 @@ var BABYLON;
             var normal0;
             if (va === undefined || va === null) {
                 var point;
-                if (vt.y !== 1) {
+                if (!BABYLON.Tools.WithinEpsilon(vt.y, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(0, -1, 0);
                 }
-                else if (vt.x !== 1) {
+                else if (!BABYLON.Tools.WithinEpsilon(vt.x, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(1, 0, 0);
                 }
-                else if (vt.z !== 1) {
+                else if (!BABYLON.Tools.WithinEpsilon(vt.z, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(0, 0, 1);
                 }
                 normal0 = Vector3.Cross(vt, point);
