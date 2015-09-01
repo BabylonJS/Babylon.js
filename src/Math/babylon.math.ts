@@ -1147,7 +1147,7 @@
             cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(u1, cross) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
 
             dot = Vector3.Dot(w, w2);
@@ -1166,7 +1166,7 @@
             cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(cross, Y) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(u1, X);
             dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
