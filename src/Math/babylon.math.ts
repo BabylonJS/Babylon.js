@@ -1102,13 +1102,17 @@
             }
 
             u1 = new Vector3(x, y, z);
+            u1.normalize();
             v1 = Vector3.Cross(w, u1);     // v1 image of v through rotation around w
+            v1.normalize();
             cross = Vector3.Cross(u, u1);  // returns same direction as w (=local z) if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(w, cross) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
 
             dot = Vector3.Dot(u, u1);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             roll = Math.acos(dot) * sign;
 
             if (Vector3.Dot(u1, X) < 0) { // checks X orientation
@@ -1137,13 +1141,17 @@
             }
 
             w2 = new Vector3(x, y, z);
+            w2.normalize();
             v2 = Vector3.Cross(w2, u1);   // v2 image of v1 through rotation around u1
+            v2.normalize();
             cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(u1, cross) < 0) {
                 sign = 1;
             }
 
             dot = Vector3.Dot(w, w2);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             pitch = Math.acos(dot) * sign;
             if (Vector3.Dot(v2, Y) < 0) { // checks for Y orientation
                 pitch = Math.PI + pitch;
@@ -1156,10 +1164,12 @@
             // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
             sign = -1;
             cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(cross, Y) < 0) {
                 sign = 1;
             }
             dot = Vector3.Dot(u1, X);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             yaw = - Math.acos(dot) * sign;         // negative : plane zOx oriented clockwise
             if (dot < 0 && nbRevert < 2) {
                 yaw = Math.PI + yaw;
