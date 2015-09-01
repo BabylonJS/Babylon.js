@@ -125,7 +125,7 @@
 
         // Statics
         public static FromHexString(hex: string): Color3 {
-            if (hex.substring(0, 1) !== "#" || hex.length != 7) {
+            if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
                 Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
@@ -256,7 +256,7 @@
 
         // Statics
         public static FromHexString(hex: string): Color4 {
-            if (hex.substring(0, 1) !== "#" || hex.length != 9) {
+            if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
                 Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0, 0, 0, 0);
             }
@@ -1062,14 +1062,12 @@
          */
         public static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3 {
             var u = Vector3.Normalize(axis1);
-            var v = Vector3.Normalize(axis2);
             var w = Vector3.Normalize(axis3);
 
             // world axis
             var X = Axis.X;
             var Y = Axis.Y;
-            var Z = Axis.Z;
-
+            
             // equation unknowns and vars
             var yaw = 0.0;
             var pitch = 0.0;
@@ -1079,20 +1077,19 @@
             var z = 0.0;
             var t = 0.0;
             var sign = -1.0;
-            var pi = Math.PI;
             var nbRevert = 0;
             var cross: Vector3;
             var dot = 0.0;
-            
+
             // step 1  : rotation around w
             // Rv3(u) = u1, and u1 belongs to plane xOz
             // Rv3(w) = w1 = w invariant
             var u1: Vector3;
             var v1: Vector3;
-            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
+            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) { 
                 z = 1.0;
             }
-            else if (Tools.WithinEpsilon(w.x, 0, Engine.Epsilon)) {
+            else if (Tools.WithinEpsilon(w.x, 0, Engine.Epsilon)) { 
                 x = 1.0;
             }
             else {
@@ -1131,7 +1128,7 @@
             y = 0.0;
             z = 0.0;
             sign = -1;
-            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
+            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) { 
                 x = 1.0;
             }
             else {
@@ -3034,23 +3031,25 @@
         public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean {
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
-
+            var inv: number;
+            var min: number;
+            var max: number;
+            var temp: number;
             if (Math.abs(this.direction.x) < 0.0000001) {
                 if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
                     return false;
                 }
             }
             else {
-                var inv = 1.0 / this.direction.x;
-                var min = (minimum.x - this.origin.x) * inv;
-                var max = (maximum.x - this.origin.x) * inv;
-
+                inv = 1.0 / this.direction.x;
+                min = (minimum.x - this.origin.x) * inv;
+                max = (maximum.x - this.origin.x) * inv;
                 if (max === -Infinity) {
                     max = Infinity;
                 }
 
                 if (min > max) {
-                    var temp = min;
+                    temp = min;
                     min = max;
                     max = temp;
                 }
@@ -3576,7 +3575,7 @@
             var prev: Vector3;        // previous vector (segment)
             var cur: Vector3;         // current vector (segment)
             var curTang: Vector3;     // current tangent
-            var prevNorm: Vector3;    // previous normal
+            // previous normal
             var prevBinor: Vector3;   // previous binormal
 
             for (var i = 1; i < l; i++) {
@@ -3592,7 +3591,6 @@
                 // normals and binormals
                 // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
                 curTang = this._tangents[i];
-                prevNorm = this._normals[i - 1];
                 prevBinor = this._binormals[i - 1];
                 this._normals[i] = Vector3.Cross(prevBinor, curTang);
                 this._normals[i].normalize();
@@ -3606,7 +3604,7 @@
         private _getFirstNonNullVector(index: number): Vector3 {
             var i = 1;
             var nNVector: Vector3 = this._curve[index + i].subtract(this._curve[index]);
-            while (nNVector.length() == 0 && index + i + 1 < this._curve.length) {
+            while (nNVector.length() === 0 && index + i + 1 < this._curve.length) {
                 i++;
                 nNVector = this._curve[index + i].subtract(this._curve[index]);
             }
@@ -3618,7 +3616,7 @@
         private _getLastNonNullVector(index: number): Vector3 {
             var i = 1;
             var nLVector: Vector3 = this._curve[index].subtract(this._curve[index - i]);
-            while (nLVector.length() == 0 && index > i + 1) {
+            while (nLVector.length() === 0 && index > i + 1) {
                 i++;
                 nLVector = this._curve[index].subtract(this._curve[index - i]);
             }
@@ -3630,15 +3628,16 @@
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
         private _normalVector(v0: Vector3, vt: Vector3, va: Vector3): Vector3 {
             var normal0: Vector3;
+
             if (va === undefined || va === null) {
                 var point: Vector3;
-                if (!Tools.WithinEpsilon(vt.y, 1, Engine.Epsilon)) {     // search for a point in the plane
+                if (!Tools.WithinEpsilon(vt.y, 1, Engine.Epsilon)) {     // search for a point in the plane 
                     point = new Vector3(0, -1, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.x, 1, Engine.Epsilon)) {
+                else if (!Tools.WithinEpsilon(vt.x, 1, Engine.Epsilon)) { 
                     point = new Vector3(1, 0, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.z, 1, Engine.Epsilon)) {
+                else if (!Tools.WithinEpsilon(vt.z, 1, Engine.Epsilon)) { 
                     point = new Vector3(0, 0, 1);
                 }
                 normal0 = Vector3.Cross(vt, point);
@@ -3646,6 +3645,7 @@
             else {
                 normal0 = Vector3.Cross(vt, va);
                 Vector3.CrossToRef(normal0, vt, normal0);
+                //normal0 = Vector3.Cross(normal0, vt);
             }
             normal0.normalize();
             return normal0;
@@ -3786,8 +3786,8 @@
             Vector3.TransformCoordinatesFromFloatsToRef = <any>Vector3.TransformCoordinatesFromFloatsToRefSIMD;
 
             Object.defineProperty(Vector3.prototype, "x", {
-                get: function () { return this._data[0]; },
-                set: function (value: number) {
+                get() { return this._data[0]; },
+                set(value: number) {
                     if (!this._data) {
                         this._data = new Float32Array(3);
                     }
@@ -3796,15 +3796,15 @@
             });
 
             Object.defineProperty(Vector3.prototype, "y", {
-                get: function () { return this._data[1]; },
-                set: function (value: number) {
+                get() { return this._data[1]; },
+                set(value: number) {
                     this._data[1] = value;
                 }
             });
 
             Object.defineProperty(Vector3.prototype, "z", {
-                get: function () { return this._data[2]; },
-                set: function (value: number) {
+                get() { return this._data[2]; },
+                set(value: number) {
                     this._data[2] = value;
                 }
             });
