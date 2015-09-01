@@ -5,6 +5,7 @@
         public extendSize: Vector3;
         public directions: Vector3[];
         public vectorsWorld: Vector3[] = new Array<Vector3>();
+        public vectorsWorldAA: Vector3[] = new Array<Vector3>();
         public minimumWorld: Vector3;
         public maximumWorld: Vector3;
 
@@ -33,13 +34,18 @@
             this.vectors.push(this.maximum.clone());
             this.vectors[7].y = this.minimum.y;
 
+            var index: number;
+            for (index = 0; index < 8; index++) {
+                this.vectorsWorldAA[index] = Vector3.Zero();
+            }
+
             // OBB
             this.center = this.maximum.add(this.minimum).scale(0.5);
             this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
             this.directions = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
 
             // World
-            for (var index = 0; index < this.vectors.length; index++) {
+            for (index = 0; index < this.vectors.length; index++) {
                 this.vectorsWorld[index] = Vector3.Zero();
             }
             this.minimumWorld = Vector3.Zero();
@@ -76,6 +82,39 @@
                     this.maximumWorld.z = v.z;
             }
 
+            this.vectorsWorldAA[0].x = this.minimumWorld.x;
+            this.vectorsWorldAA[0].y = this.minimumWorld.y;
+            this.vectorsWorldAA[0].z = this.minimumWorld.z;
+
+            this.vectorsWorldAA[1].x = this.minimumWorld.x;
+            this.vectorsWorldAA[1].y = this.maximumWorld.y;
+            this.vectorsWorldAA[1].z = this.minimumWorld.z;
+
+            this.vectorsWorldAA[2].x = this.maximumWorld.x;
+            this.vectorsWorldAA[2].y = this.minimumWorld.y;
+            this.vectorsWorldAA[2].z = this.minimumWorld.z;
+
+            this.vectorsWorldAA[3].x = this.maximumWorld.x;
+            this.vectorsWorldAA[3].y = this.maximumWorld.y;
+            this.vectorsWorldAA[3].z = this.minimumWorld.z;
+
+
+            this.vectorsWorldAA[4].x = this.minimumWorld.x;
+            this.vectorsWorldAA[4].y = this.minimumWorld.y;
+            this.vectorsWorldAA[4].z = this.maximumWorld.z;
+
+            this.vectorsWorldAA[5].x = this.minimumWorld.x;
+            this.vectorsWorldAA[5].y = this.maximumWorld.y;
+            this.vectorsWorldAA[5].z = this.maximumWorld.z;
+
+            this.vectorsWorldAA[6].x = this.maximumWorld.x;
+            this.vectorsWorldAA[6].y = this.minimumWorld.y;
+            this.vectorsWorldAA[6].z = this.maximumWorld.z;
+
+            this.vectorsWorldAA[7].x = this.maximumWorld.x;
+            this.vectorsWorldAA[7].y = this.maximumWorld.y;
+            this.vectorsWorldAA[7].z = this.maximumWorld.z;
+
             // OBB
             this.maximumWorld.addToRef(this.minimumWorld, this.center);
             this.center.scaleInPlace(0.5);
@@ -88,11 +127,11 @@
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            return BoundingBox.IsInFrustum(this.vectorsWorld, frustumPlanes);
+            return BoundingBox.IsInFrustum(this.vectorsWorldAA, frustumPlanes);
         }
 
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorld, frustumPlanes);
+            return BoundingBox.IsCompletelyInFrustum(this.vectorsWorldAA, frustumPlanes);
         }
 
         public intersectsPoint(point: Vector3): boolean {
