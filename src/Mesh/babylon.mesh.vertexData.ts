@@ -1295,9 +1295,6 @@
             var index = 0;
             
             // temp Vector3
-            var p1 = Vector3.Zero();
-            var p2 = Vector3.Zero();
-            var p3 = Vector3.Zero();
             var p1p2 = Vector3.Zero();
             var p3p2 = Vector3.Zero();
             var faceNormal = Vector3.Zero();
@@ -1307,21 +1304,21 @@
             for (index = 0; index < positions.length; index++) {
                 normals[index] = 0.0;
             }
-            
+
             // indice triplet = 1 face
             var nbFaces = indices.length / 3;
             for (index = 0; index < nbFaces; index++) {
                 var i1 = indices[index * 3];
                 var i2 = indices[index * 3 + 1];
                 var i3 = indices[index * 3 + 2];
-                
-                // setting the temp V3
-                Vector3.FromFloatsToRef(positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2], p1);
-                Vector3.FromFloatsToRef(positions[i2 * 3], positions[i2 * 3 + 1], positions[i2 * 3 + 2], p2);
-                Vector3.FromFloatsToRef(positions[i3 * 3], positions[i3 * 3 + 1], positions[i3 * 3 + 2], p3);
 
-                p1.subtractToRef(p2, p1p2);
-                p3.subtractToRef(p2, p3p2);
+                p1p2.x = positions[i1 * 3] - positions[i2 * 3];
+                p1p2.y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
+                p1p2.z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
+
+                p3p2.x = positions[i3 * 3] - positions[i2 * 3];
+                p3p2.y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
+                p3p2.z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
 
                 Vector3.CrossToRef(p1p2, p3p2, faceNormal);
                 faceNormal.normalize();
