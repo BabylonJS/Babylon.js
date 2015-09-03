@@ -53,6 +53,10 @@ var BABYLON;
             this._oldPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
             this._diffPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
             this._newPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
+            // Edges
+            this.edgesEpsilon = 0.95;
+            this.edgesWidth = 1.0;
+            this.edgesColor = BABYLON.Color3.Red();
             // Cache
             this._localScaling = BABYLON.Matrix.Zero();
             this._localRotation = BABYLON.Matrix.Zero();
@@ -123,8 +127,25 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
+        Object.defineProperty(AbstractMesh.prototype, "renderEdges", {
             // Methods
+            get: function () {
+                return this._edgesRenderer !== undefined;
+            },
+            set: function (value) {
+                if (value && this._edgesRenderer === undefined) {
+                    this._edgesRenderer = new BABYLON.EdgesRenderer(this);
+                    return;
+                }
+                if (!value && this._edgesRenderer !== undefined) {
+                    this._edgesRenderer.dispose();
+                    this._edgesRenderer = undefined;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
             get: function () {
                 return false;
             },
@@ -815,6 +836,11 @@ var BABYLON;
                 other._intersectionsInProgress.splice(pos, 1);
             }
             this._intersectionsInProgress = [];
+            // Edges
+            if (this._edgesRenderer) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = null;
+            }
             // SubMeshes
             this.releaseSubMeshes();
             // Remove from scene

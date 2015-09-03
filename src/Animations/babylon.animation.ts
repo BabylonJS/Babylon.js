@@ -10,6 +10,8 @@
         public targetPropertyPath: string[];
         public currentFrame: number;
 
+        public allowMatricesInterpolation = false;
+
         public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string,
             framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number, easingFunction?: EasingFunction) {
@@ -227,7 +229,9 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                // return this.matrixInterpolateFunction(startValue, endValue, gradient);
+                                    if (this.allowMatricesInterpolation) {
+                                        return this.matrixInterpolateFunction(startValue, endValue, gradient);
+                                    }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }
