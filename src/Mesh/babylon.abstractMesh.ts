@@ -86,6 +86,12 @@
         // Attach to bone
         private _meshToBoneReferal: AbstractMesh;
 
+        // Edges
+        public edgesEpsilon = 0.95;
+        public edgesWidth = 1.0;
+        public edgesColor = Color3.Red();
+        public _edgesRenderer: EdgesRenderer;
+
         // Cache
         private _localScaling = Matrix.Zero();
         private _localRotation = Matrix.Zero();
@@ -128,6 +134,22 @@
         }
 
         // Methods
+        public get renderEdges(): boolean {
+            return this._edgesRenderer !== undefined;
+        }
+
+        public set renderEdges(value: boolean) {
+            if (value && this._edgesRenderer === undefined) {
+                this._edgesRenderer = new EdgesRenderer(this);
+                return;
+            }
+
+            if (!value && this._edgesRenderer !== undefined) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = undefined;
+            }
+        }
+
         public get isBlocked(): boolean {
             return false;
         }
@@ -967,6 +989,12 @@
             }
 
             this._intersectionsInProgress = [];
+
+            // Edges
+            if (this._edgesRenderer) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = null;
+            }
 
             // SubMeshes
             this.releaseSubMeshes();
