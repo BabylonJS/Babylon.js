@@ -1303,8 +1303,10 @@
             var faceNormal = Vector3.Zero();
 
             var vertexNormali1 = Vector3.Zero();
-            var vertexNormali2 = Vector3.Zero();
-            var vertexNormali3 = Vector3.Zero();
+
+            for (index = 0; index < positions.length; index++) {
+                normals[index] = 0.0;
+            }
             
             // indice triplet = 1 face
             var nbFaces = indices.length / 3;
@@ -1324,35 +1326,15 @@
                 Vector3.CrossToRef(p1p2, p3p2, faceNormal);
                 faceNormal.normalize();
     
-                // All intermediate results are stored in the normals array :
-                // get the normals at i1, i2 and i3 indexes
-                normals[i1 * 3] = normals[i1 * 3] || 0.0;
-                normals[i1 * 3 + 1] = normals[i1 * 3 + 1] || 0.0;
-                normals[i1 * 3 + 2] = normals[i1 * 3 + 2] || 0.0;
-                normals[i2 * 3] = normals[i2 * 3] || 0.0;
-                normals[i2 * 3 + 1] = normals[i2 * 3 + 1] || 0.0;
-                normals[i2 * 3 + 2] = normals[i2 * 3 + 2] || 0.0;
-                normals[i3 * 3] = normals[i3 * 3] || 0.0;
-                normals[i3 * 3 + 1] = normals[i3 * 3 + 1] || 0.0;
-                normals[i3 * 3 + 2] = normals[i3 * 3 + 2] || 0.0;
-                // make intermediate vectors3 from normals values
-                Vector3.FromFloatsToRef(normals[i1 * 3], normals[i1 * 3 + 1], normals[i1 * 3 + 2], vertexNormali1);
-                Vector3.FromFloatsToRef(normals[i2 * 3], normals[i2 * 3 + 1], normals[i2 * 3 + 2], vertexNormali2);
-                Vector3.FromFloatsToRef(normals[i3 * 3], normals[i3 * 3 + 1], normals[i3 * 3 + 2], vertexNormali3);
-                // add the current face normals to these intermediate vectors3
-                vertexNormali1 = vertexNormali1.addInPlace(faceNormal);
-                vertexNormali2 = vertexNormali2.addInPlace(faceNormal);
-                vertexNormali3 = vertexNormali3.addInPlace(faceNormal);
-                // store back intermediate vectors3 into the normals array
-                normals[i1 * 3] = vertexNormali1.x;
-                normals[i1 * 3 + 1] = vertexNormali1.y;
-                normals[i1 * 3 + 2] = vertexNormali1.z;
-                normals[i2 * 3] = vertexNormali2.x;
-                normals[i2 * 3 + 1] = vertexNormali2.y;
-                normals[i2 * 3 + 2] = vertexNormali2.z;
-                normals[i3 * 3] = vertexNormali3.x;
-                normals[i3 * 3 + 1] = vertexNormali3.y;
-                normals[i3 * 3 + 2] = vertexNormali3.z;
+                normals[i1 * 3] += faceNormal.x;
+                normals[i1 * 3 + 1] += faceNormal.y;
+                normals[i1 * 3 + 2] += faceNormal.z;
+                normals[i2 * 3] += faceNormal.x;
+                normals[i2 * 3 + 1] += faceNormal.y;
+                normals[i2 * 3 + 2] += faceNormal.z;
+                normals[i3 * 3] += faceNormal.x;
+                normals[i3 * 3 + 1] += faceNormal.y;
+                normals[i3 * 3 + 2] += faceNormal.z;
             }
             
             // last normalization
