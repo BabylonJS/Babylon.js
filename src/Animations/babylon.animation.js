@@ -10,6 +10,7 @@ var BABYLON;
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._stopped = false;
+            this.allowMatricesInterpolation = false;
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
@@ -187,7 +188,9 @@ var BABYLON;
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                // return this.matrixInterpolateFunction(startValue, endValue, gradient);
+                                    if (this.allowMatricesInterpolation) {
+                                        return this.matrixInterpolateFunction(startValue, endValue, gradient);
+                                    }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }
