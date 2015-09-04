@@ -1803,7 +1803,7 @@ var BABYLON;
         };
         Engine.prototype.readPixels = function (x, y, width, height) {
             var data = new Uint8Array(height * width * 4);
-            this._gl.readPixels(0, 0, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
+            this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
         };
         // Dispose
