@@ -26,7 +26,7 @@ var BABYLON;
             }
             this._lineShader = new BABYLON.ShaderMaterial("lineShader", this._source.getScene(), "line", {
                 attributes: ["position", "normal"],
-                uniforms: ["worldViewProjection", "color", "width"]
+                uniforms: ["worldViewProjection", "color", "width", "aspectRatio"]
             });
             this._lineShader.disableDepthWrite = true;
             this._lineShader.backFaceCulling = false;
@@ -76,18 +76,22 @@ var BABYLON;
                 this._linesPositions.push(p1.y);
                 this._linesPositions.push(p1.z);
                 // Normals
-                this._linesNormals.push(normal.x);
-                this._linesNormals.push(normal.y);
-                this._linesNormals.push(normal.z);
-                this._linesNormals.push(-normal.x);
-                this._linesNormals.push(-normal.y);
-                this._linesNormals.push(-normal.z);
-                this._linesNormals.push(-normal.x);
-                this._linesNormals.push(-normal.y);
-                this._linesNormals.push(-normal.z);
-                this._linesNormals.push(normal.x);
-                this._linesNormals.push(normal.y);
-                this._linesNormals.push(normal.z);
+                this._linesNormals.push(p1.x);
+                this._linesNormals.push(p1.y);
+                this._linesNormals.push(p1.z);
+                this._linesNormals.push(-1);
+                this._linesNormals.push(p1.x);
+                this._linesNormals.push(p1.y);
+                this._linesNormals.push(p1.z);
+                this._linesNormals.push(1);
+                this._linesNormals.push(p0.x);
+                this._linesNormals.push(p0.y);
+                this._linesNormals.push(p0.z);
+                this._linesNormals.push(-1);
+                this._linesNormals.push(p0.x);
+                this._linesNormals.push(p0.y);
+                this._linesNormals.push(p0.z);
+                this._linesNormals.push(1);
                 // Indices
                 this._linesIndices.push(offset);
                 this._linesIndices.push(offset + 1);
@@ -173,7 +177,7 @@ var BABYLON;
             // Merge into a single mesh
             var engine = this._source.getScene().getEngine();
             this._vb0 = new BABYLON.VertexBuffer(engine, this._linesPositions, BABYLON.VertexBuffer.PositionKind, false);
-            this._vb1 = new BABYLON.VertexBuffer(engine, this._linesNormals, BABYLON.VertexBuffer.NormalKind, false);
+            this._vb1 = new BABYLON.VertexBuffer(engine, this._linesNormals, BABYLON.VertexBuffer.NormalKind, false, false, 4);
             this._buffers[BABYLON.VertexBuffer.PositionKind] = this._vb0;
             this._buffers[BABYLON.VertexBuffer.NormalKind] = this._vb1;
             this._ib = engine.createIndexBuffer(this._linesIndices);
@@ -190,7 +194,8 @@ var BABYLON;
             engine.bindMultiBuffers(this._buffers, this._ib, this._lineShader.getEffect());
             scene.resetCachedMaterial();
             this._lineShader.setColor4("color", this._source.edgesColor);
-            this._lineShader.setFloat("width", this._source.edgesWidth / 100.0);
+            this._lineShader.setFloat("width", this._source.edgesWidth / 50.0);
+            this._lineShader.setFloat("aspectRatio", engine.getAspectRatio(scene.activeCamera));
             this._lineShader.bind(this._source.getWorldMatrix());
             // Draw order
             engine.draw(true, 0, this._indicesCount);
