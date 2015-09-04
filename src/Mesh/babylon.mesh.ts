@@ -762,7 +762,7 @@
                 scene.getOutlineRenderer().render(subMesh, batch);
                 engine.setColorWrite(true);
             }
-
+            
             // Overlay
             if (this.renderOverlay) {
                 var currentMode = engine.getAlphaMode();
