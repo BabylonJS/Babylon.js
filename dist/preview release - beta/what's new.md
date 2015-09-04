@@ -7,6 +7,7 @@
     - Revamping of FBX exporter. Now supports animations and bones [simonferquel](http://www.github.com/simonferquel), [deltakosh](https://github.com/deltakosh)
     - StandardMaterial.useGlossinessFromSpecularMapAlpha to use specular map alpha as glossiness level [deltakosh](https://github.com/deltakosh)
     - OBJ loader. See [demo here](http://www.babylonjs-playground.com/#28YUR5) [Temechon](https://github.com/Temechon)
+    - EdgesRenderer. See [demo here](http://www.babylonjs-playground.com/#TYAHX#10) [deltakosh](https://github.com/deltakosh)
   - **Updates**
     - Added darkness support for soft shadows [deltakosh](https://github.com/deltakosh)
     - Added scene.getLensFlareSystemByName() [deltakosh](https://github.com/deltakosh)

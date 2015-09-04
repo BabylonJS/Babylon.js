@@ -10,27 +10,48 @@
 
     export class EdgesRenderer {
         private _source: AbstractMesh;
-        private _lines = new Array<Mesh>();
-        private _renderMesh: Mesh;
-        private _material: StandardMaterial;
+        private _linesPositions = new Array<number>();
+        private _linesNormals = new Array<number>();
+        private _linesIndices = new Array<number>();
+        private _epsilon: number;
+        private _indicesCount: number;
 
-        constructor(source: AbstractMesh) {
+        private _lineShader: ShaderMaterial;
+        private _vb0: VertexBuffer;
+        private _vb1: VertexBuffer;
+        private _ib: WebGLBuffer;
+        private _buffers = new Array<VertexBuffer>();
+
+        // Beware when you use this class with complex objects as the adjacencies computation can be really long
+        constructor(source: AbstractMesh, epsilon = 0.95) {
             this._source = source;
 
-            this._material = new StandardMaterial(this._source.name + "EdgeMaterial", this._source.getScene());
-            this._material.emissiveColor = this._source.edgesColor;
-            this._material.diffuseColor = Color3.Black();
-            this._material.specularColor = Color3.Black();
+            this._epsilon = epsilon;
 
+            this._prepareRessources();
             this._generateEdgesLines();
         }
 
-        public dispose(): void {
-            for (var index = 0; index < this._lines.length; index++) {
-                this._lines[index].dispose();
+        private _prepareRessources(): void {
+            if (this._lineShader) {
+                return;
             }
 
-            this._lines = new Array<LinesMesh>();
+            this._lineShader = new ShaderMaterial("lineShader", this._source.getScene(), "line",
+                {
+                    attributes: ["position", "normal"],
+                    uniforms: ["worldViewProjection", "color", "width"]
+                });
+
+            this._lineShader.disableDepthWrite = true;
+            this._lineShader.backFaceCulling = false;
+        }
+
+        public dispose(): void {
+            this._vb0.dispose();
+            this._vb1.dispose();
+            this._source.getScene().getEngine()._releaseBuffer(this._ib);
+            this._lineShader.dispose();
         }
 
         private _processEdgeForAdjacencies(pa: number, pb: number, p0: number, p1: number, p2: number): number {
@@ -57,14 +78,55 @@
             } else {
                 var dotProduct = Vector3.Dot(faceNormals[faceIndex], faceNormals[edge]);
 
-                needToCreateLine = dotProduct < this._source.edgesEpsilon;
+                needToCreateLine = dotProduct < this._epsilon;
             }
 
             if (needToCreateLine) {
-                var scene = this._source.getScene();
-                var lineMesh = BABYLON.Mesh.CreateTube(this._source.name + "edge", [p0, p1], this._source.edgesWidth / 100.0, 5, null, BABYLON.Mesh.CAP_ALL, scene, false, BABYLON.Mesh.DEFAULTSIDE);
+                var offset = this._linesPositions.length / 3;
+                var normal = p0.subtract(p1);
+                normal.normalize();
 
-                this._lines.push(lineMesh);
+                // Positions
+                this._linesPositions.push(p0.x);
+                this._linesPositions.push(p0.y);
+                this._linesPositions.push(p0.z);
+
+                this._linesPositions.push(p0.x);
+                this._linesPositions.push(p0.y);
+                this._linesPositions.push(p0.z);
+
+                this._linesPositions.push(p1.x);
+                this._linesPositions.push(p1.y);
+                this._linesPositions.push(p1.z);
+
+                this._linesPositions.push(p1.x);
+                this._linesPositions.push(p1.y);
+                this._linesPositions.push(p1.z);
+
+                // Normals
+                this._linesNormals.push(normal.x);
+                this._linesNormals.push(normal.y);
+                this._linesNormals.push(normal.z);
+
+                this._linesNormals.push(-normal.x);
+                this._linesNormals.push(-normal.y);
+                this._linesNormals.push(-normal.z);
+
+                this._linesNormals.push(-normal.x);
+                this._linesNormals.push(-normal.y);
+                this._linesNormals.push(-normal.z);
+
+                this._linesNormals.push(normal.x);
+                this._linesNormals.push(normal.y);
+                this._linesNormals.push(normal.z);
+
+                // Indices
+                this._linesIndices.push(offset);
+                this._linesIndices.push(offset + 1);
+                this._linesIndices.push(offset + 2);
+                this._linesIndices.push(offset);
+                this._linesIndices.push(offset + 2);
+                this._linesIndices.push(offset + 3);
             }
         }
 
@@ -101,8 +163,14 @@
                 faceAdjacencies = adjacencies[index];
 
                 for (var otherIndex = index + 1; otherIndex < adjacencies.length; otherIndex++) {
-                    if (faceAdjacencies.edgesConnectedCount === 3) {
+                    var otherFaceAdjacencies = adjacencies[otherIndex];
+
+                    if (faceAdjacencies.edgesConnectedCount === 3) { // Full
                         break;
+                    }
+
+                    if (otherFaceAdjacencies.edgesConnectedCount === 3) { // Full
+                        continue;
                     }
 
                     var otherP0 = indices[otherIndex * 3];
@@ -111,6 +179,10 @@
 
                     for (var edgeIndex = 0; edgeIndex < 3; edgeIndex++) {
                         var otherEdgeIndex: number;
+
+                        if (faceAdjacencies.edges[edgeIndex] !== undefined) {
+                            continue;
+                        }
 
                         switch (edgeIndex) {
                             case 0:
@@ -129,10 +201,14 @@
                         }
 
                         faceAdjacencies.edges[edgeIndex] = otherIndex;
-                        adjacencies[otherIndex].edges[otherEdgeIndex] = index;
+                        otherFaceAdjacencies.edges[otherEdgeIndex] = index;
 
                         faceAdjacencies.edgesConnectedCount++;
-                        adjacencies[otherIndex].edgesConnectedCount++;
+                        otherFaceAdjacencies.edgesConnectedCount++;
+
+                        if (faceAdjacencies.edgesConnectedCount === 3) {
+                            break;
+                        }
                     }
                 }
             }
@@ -148,10 +224,39 @@
             }
 
             // Merge into a single mesh
-            this._renderMesh = Mesh.MergeMeshes(this._lines, true, true);
-            this._renderMesh.parent = this._source;
-            this._renderMesh.material = this._material;
-            this._renderMesh.name = this._source.name + "edge";
+            var engine = this._source.getScene().getEngine();
+            this._vb0 = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
+            this._vb1 = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false);
+
+            this._buffers[VertexBuffer.PositionKind] = this._vb0;
+            this._buffers[VertexBuffer.NormalKind] = this._vb1;
+
+            this._ib = engine.createIndexBuffer(this._linesIndices);
+
+            this._indicesCount = this._linesIndices.length;
+        }
+
+        public render(): void {
+            if (!this._lineShader.isReady()) {
+                return;
+            }
+
+            var scene = this._source.getScene();
+            var engine = scene.getEngine();
+            this._lineShader._preBind();
+
+            // VBOs
+            engine.bindMultiBuffers(this._buffers, this._ib, this._lineShader.getEffect());
+
+            scene.resetCachedMaterial();
+            this._lineShader.setColor4("color", this._source.edgesColor);
+            this._lineShader.setFloat("width", this._source.edgesWidth / 100.0);
+            this._lineShader.bind(this._source.getWorldMatrix());
+
+            // Draw order
+            engine.draw(true, 0, this._indicesCount);
+            this._lineShader.unbind();
+            engine.setDepthWrite(true);
         }
     }
 } 
