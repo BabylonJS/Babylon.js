@@ -87,9 +87,8 @@
         private _meshToBoneReferal: AbstractMesh;
 
         // Edges
-        public edgesEpsilon = 0.95;
-        public edgesWidth = 1.0;
-        public edgesColor = Color3.Red();
+        public edgesWidth = 1;
+        public edgesColor = new Color4(1, 0, 0, 1);
         public _edgesRenderer: EdgesRenderer;
 
         // Cache
@@ -134,20 +133,16 @@
         }
 
         // Methods
-        public get renderEdges(): boolean {
-            return this._edgesRenderer !== undefined;
-        }
-
-        public set renderEdges(value: boolean) {
-            if (value && this._edgesRenderer === undefined) {
-                this._edgesRenderer = new EdgesRenderer(this);
-                return;
-            }
-
-            if (!value && this._edgesRenderer !== undefined) {
+        public disableEdgesRendering(): void {
+            if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
                 this._edgesRenderer = undefined;
             }
+        }
+        public enableEdgesRendering(epsilon = 0.95) {
+            this.disableEdgesRendering();
+
+            this._edgesRenderer = new EdgesRenderer(this, epsilon);
         }
 
         public get isBlocked(): boolean {

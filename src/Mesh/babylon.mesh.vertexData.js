@@ -1051,58 +1051,36 @@ var BABYLON;
         VertexData.ComputeNormals = function (positions, indices, normals) {
             var index = 0;
             // temp Vector3
-            var p1 = BABYLON.Vector3.Zero();
-            var p2 = BABYLON.Vector3.Zero();
-            var p3 = BABYLON.Vector3.Zero();
             var p1p2 = BABYLON.Vector3.Zero();
             var p3p2 = BABYLON.Vector3.Zero();
             var faceNormal = BABYLON.Vector3.Zero();
             var vertexNormali1 = BABYLON.Vector3.Zero();
-            var vertexNormali2 = BABYLON.Vector3.Zero();
-            var vertexNormali3 = BABYLON.Vector3.Zero();
+            for (index = 0; index < positions.length; index++) {
+                normals[index] = 0.0;
+            }
             // indice triplet = 1 face
             var nbFaces = indices.length / 3;
             for (index = 0; index < nbFaces; index++) {
                 var i1 = indices[index * 3];
                 var i2 = indices[index * 3 + 1];
                 var i3 = indices[index * 3 + 2];
-                // setting the temp V3
-                BABYLON.Vector3.FromFloatsToRef(positions[i1 * 3], positions[i1 * 3 + 1], positions[i1 * 3 + 2], p1);
-                BABYLON.Vector3.FromFloatsToRef(positions[i2 * 3], positions[i2 * 3 + 1], positions[i2 * 3 + 2], p2);
-                BABYLON.Vector3.FromFloatsToRef(positions[i3 * 3], positions[i3 * 3 + 1], positions[i3 * 3 + 2], p3);
-                p1.subtractToRef(p2, p1p2);
-                p3.subtractToRef(p2, p3p2);
+                p1p2.x = positions[i1 * 3] - positions[i2 * 3];
+                p1p2.y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
+                p1p2.z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
+                p3p2.x = positions[i3 * 3] - positions[i2 * 3];
+                p3p2.y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
+                p3p2.z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
                 BABYLON.Vector3.CrossToRef(p1p2, p3p2, faceNormal);
                 faceNormal.normalize();
-                // All intermediate results are stored in the normals array :
-                // get the normals at i1, i2 and i3 indexes
-                normals[i1 * 3] = normals[i1 * 3] || 0.0;
-                normals[i1 * 3 + 1] = normals[i1 * 3 + 1] || 0.0;
-                normals[i1 * 3 + 2] = normals[i1 * 3 + 2] || 0.0;
-                normals[i2 * 3] = normals[i2 * 3] || 0.0;
-                normals[i2 * 3 + 1] = normals[i2 * 3 + 1] || 0.0;
-                normals[i2 * 3 + 2] = normals[i2 * 3 + 2] || 0.0;
-                normals[i3 * 3] = normals[i3 * 3] || 0.0;
-                normals[i3 * 3 + 1] = normals[i3 * 3 + 1] || 0.0;
-                normals[i3 * 3 + 2] = normals[i3 * 3 + 2] || 0.0;
-                // make intermediate vectors3 from normals values
-                BABYLON.Vector3.FromFloatsToRef(normals[i1 * 3], normals[i1 * 3 + 1], normals[i1 * 3 + 2], vertexNormali1);
-                BABYLON.Vector3.FromFloatsToRef(normals[i2 * 3], normals[i2 * 3 + 1], normals[i2 * 3 + 2], vertexNormali2);
-                BABYLON.Vector3.FromFloatsToRef(normals[i3 * 3], normals[i3 * 3 + 1], normals[i3 * 3 + 2], vertexNormali3);
-                // add the current face normals to these intermediate vectors3
-                vertexNormali1 = vertexNormali1.addInPlace(faceNormal);
-                vertexNormali2 = vertexNormali2.addInPlace(faceNormal);
-                vertexNormali3 = vertexNormali3.addInPlace(faceNormal);
-                // store back intermediate vectors3 into the normals array
-                normals[i1 * 3] = vertexNormali1.x;
-                normals[i1 * 3 + 1] = vertexNormali1.y;
-                normals[i1 * 3 + 2] = vertexNormali1.z;
-                normals[i2 * 3] = vertexNormali2.x;
-                normals[i2 * 3 + 1] = vertexNormali2.y;
-                normals[i2 * 3 + 2] = vertexNormali2.z;
-                normals[i3 * 3] = vertexNormali3.x;
-                normals[i3 * 3 + 1] = vertexNormali3.y;
-                normals[i3 * 3 + 2] = vertexNormali3.z;
+                normals[i1 * 3] += faceNormal.x;
+                normals[i1 * 3 + 1] += faceNormal.y;
+                normals[i1 * 3 + 2] += faceNormal.z;
+                normals[i2 * 3] += faceNormal.x;
+                normals[i2 * 3 + 1] += faceNormal.y;
+                normals[i2 * 3 + 2] += faceNormal.z;
+                normals[i3 * 3] += faceNormal.x;
+                normals[i3 * 3 + 1] += faceNormal.y;
+                normals[i3 * 3 + 2] += faceNormal.z;
             }
             // last normalization
             for (index = 0; index < normals.length / 3; index++) {

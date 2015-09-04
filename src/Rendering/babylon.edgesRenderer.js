@@ -8,20 +8,34 @@ var BABYLON;
         return FaceAdjacencies;
     })();
     var EdgesRenderer = (function () {
-        function EdgesRenderer(source) {
-            this._lines = new Array();
+        // Beware when you use this class with complex objects as the adjacencies computation can be really long
+        function EdgesRenderer(source, epsilon) {
+            if (epsilon === void 0) { epsilon = 0.95; }
+            this._linesPositions = new Array();
+            this._linesNormals = new Array();
+            this._linesIndices = new Array();
+            this._buffers = new Array();
             this._source = source;
-            this._material = new BABYLON.StandardMaterial(this._source.name + "EdgeMaterial", this._source.getScene());
-            this._material.emissiveColor = this._source.edgesColor;
-            this._material.diffuseColor = BABYLON.Color3.Black();
-            this._material.specularColor = BABYLON.Color3.Black();
+            this._epsilon = epsilon;
+            this._prepareRessources();
             this._generateEdgesLines();
         }
-        EdgesRenderer.prototype.dispose = function () {
-            for (var index = 0; index < this._lines.length; index++) {
-                this._lines[index].dispose();
+        EdgesRenderer.prototype._prepareRessources = function () {
+            if (this._lineShader) {
+                return;
             }
-            this._lines = new Array();
+            this._lineShader = new BABYLON.ShaderMaterial("lineShader", this._source.getScene(), "line", {
+                attributes: ["position", "normal"],
+                uniforms: ["worldViewProjection", "color", "width"]
+            });
+            this._lineShader.disableDepthWrite = true;
+            this._lineShader.backFaceCulling = false;
+        };
+        EdgesRenderer.prototype.dispose = function () {
+            this._vb0.dispose();
+            this._vb1.dispose();
+            this._source.getScene().getEngine()._releaseBuffer(this._ib);
+            this._lineShader.dispose();
         };
         EdgesRenderer.prototype._processEdgeForAdjacencies = function (pa, pb, p0, p1, p2) {
             if (pa === p0 && pb === p1 || pa === p1 && pb === p0) {
@@ -42,12 +56,45 @@ var BABYLON;
             }
             else {
                 var dotProduct = BABYLON.Vector3.Dot(faceNormals[faceIndex], faceNormals[edge]);
-                needToCreateLine = dotProduct < this._source.edgesEpsilon;
+                needToCreateLine = dotProduct < this._epsilon;
             }
             if (needToCreateLine) {
-                var scene = this._source.getScene();
-                var lineMesh = BABYLON.Mesh.CreateTube(this._source.name + "edge", [p0, p1], this._source.edgesWidth / 100.0, 5, null, BABYLON.Mesh.CAP_ALL, scene, false, BABYLON.Mesh.DEFAULTSIDE);
-                this._lines.push(lineMesh);
+                var offset = this._linesPositions.length / 3;
+                var normal = p0.subtract(p1);
+                normal.normalize();
+                // Positions
+                this._linesPositions.push(p0.x);
+                this._linesPositions.push(p0.y);
+                this._linesPositions.push(p0.z);
+                this._linesPositions.push(p0.x);
+                this._linesPositions.push(p0.y);
+                this._linesPositions.push(p0.z);
+                this._linesPositions.push(p1.x);
+                this._linesPositions.push(p1.y);
+                this._linesPositions.push(p1.z);
+                this._linesPositions.push(p1.x);
+                this._linesPositions.push(p1.y);
+                this._linesPositions.push(p1.z);
+                // Normals
+                this._linesNormals.push(normal.x);
+                this._linesNormals.push(normal.y);
+                this._linesNormals.push(normal.z);
+                this._linesNormals.push(-normal.x);
+                this._linesNormals.push(-normal.y);
+                this._linesNormals.push(-normal.z);
+                this._linesNormals.push(-normal.x);
+                this._linesNormals.push(-normal.y);
+                this._linesNormals.push(-normal.z);
+                this._linesNormals.push(normal.x);
+                this._linesNormals.push(normal.y);
+                this._linesNormals.push(normal.z);
+                // Indices
+                this._linesIndices.push(offset);
+                this._linesIndices.push(offset + 1);
+                this._linesIndices.push(offset + 2);
+                this._linesIndices.push(offset);
+                this._linesIndices.push(offset + 2);
+                this._linesIndices.push(offset + 3);
             }
         };
         EdgesRenderer.prototype._generateEdgesLines = function () {
@@ -76,14 +123,21 @@ var BABYLON;
             for (index = 0; index < adjacencies.length; index++) {
                 faceAdjacencies = adjacencies[index];
                 for (var otherIndex = index + 1; otherIndex < adjacencies.length; otherIndex++) {
+                    var otherFaceAdjacencies = adjacencies[otherIndex];
                     if (faceAdjacencies.edgesConnectedCount === 3) {
                         break;
+                    }
+                    if (otherFaceAdjacencies.edgesConnectedCount === 3) {
+                        continue;
                     }
                     var otherP0 = indices[otherIndex * 3];
                     var otherP1 = indices[otherIndex * 3 + 1];
                     var otherP2 = indices[otherIndex * 3 + 2];
                     for (var edgeIndex = 0; edgeIndex < 3; edgeIndex++) {
                         var otherEdgeIndex;
+                        if (faceAdjacencies.edges[edgeIndex] !== undefined) {
+                            continue;
+                        }
                         switch (edgeIndex) {
                             case 0:
                                 otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3], indices[index * 3 + 1], otherP0, otherP1, otherP2);
@@ -99,9 +153,12 @@ var BABYLON;
                             continue;
                         }
                         faceAdjacencies.edges[edgeIndex] = otherIndex;
-                        adjacencies[otherIndex].edges[otherEdgeIndex] = index;
+                        otherFaceAdjacencies.edges[otherEdgeIndex] = index;
                         faceAdjacencies.edgesConnectedCount++;
-                        adjacencies[otherIndex].edgesConnectedCount++;
+                        otherFaceAdjacencies.edgesConnectedCount++;
+                        if (faceAdjacencies.edgesConnectedCount === 3) {
+                            break;
+                        }
                     }
                 }
             }
@@ -114,10 +171,31 @@ var BABYLON;
                 this._checkEdge(index, current.edges[2], faceNormals, current.p2, current.p0);
             }
             // Merge into a single mesh
-            this._renderMesh = BABYLON.Mesh.MergeMeshes(this._lines, true, true);
-            this._renderMesh.parent = this._source;
-            this._renderMesh.material = this._material;
-            this._renderMesh.name = this._source.name + "edge";
+            var engine = this._source.getScene().getEngine();
+            this._vb0 = new BABYLON.VertexBuffer(engine, this._linesPositions, BABYLON.VertexBuffer.PositionKind, false);
+            this._vb1 = new BABYLON.VertexBuffer(engine, this._linesNormals, BABYLON.VertexBuffer.NormalKind, false);
+            this._buffers[BABYLON.VertexBuffer.PositionKind] = this._vb0;
+            this._buffers[BABYLON.VertexBuffer.NormalKind] = this._vb1;
+            this._ib = engine.createIndexBuffer(this._linesIndices);
+            this._indicesCount = this._linesIndices.length;
+        };
+        EdgesRenderer.prototype.render = function () {
+            if (!this._lineShader.isReady()) {
+                return;
+            }
+            var scene = this._source.getScene();
+            var engine = scene.getEngine();
+            this._lineShader._preBind();
+            // VBOs
+            engine.bindMultiBuffers(this._buffers, this._ib, this._lineShader.getEffect());
+            scene.resetCachedMaterial();
+            this._lineShader.setColor4("color", this._source.edgesColor);
+            this._lineShader.setFloat("width", this._source.edgesWidth / 100.0);
+            this._lineShader.bind(this._source.getWorldMatrix());
+            // Draw order
+            engine.draw(true, 0, this._indicesCount);
+            this._lineShader.unbind();
+            engine.setDepthWrite(true);
         };
         return EdgesRenderer;
     })();

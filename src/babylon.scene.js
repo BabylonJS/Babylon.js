@@ -129,6 +129,7 @@ var BABYLON;
             this._activeBones = 0;
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
+            this._edgesRenderers = new BABYLON.SmartArray(16);
             this._uniqueIdCounter = 0;
             this._engine = engine;
             engine.scenes.push(this);
@@ -411,7 +412,8 @@ var BABYLON;
             if (this._pendingData.length > 0) {
                 return false;
             }
-            for (var index = 0; index < this._geometries.length; index++) {
+            var index;
+            for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
                 if (geometry.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                     return false;
@@ -883,7 +885,8 @@ var BABYLON;
          * @return {BABYLON.Node|null} the node found or null if not found at all.
          */
         Scene.prototype.getLastEntryByID = function (id) {
-            for (var index = this.meshes.length - 1; index >= 0; index--) {
+            var index;
+            for (index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
                     return this.meshes[index];
                 }
@@ -1001,6 +1004,7 @@ var BABYLON;
             this._activeSkeletons.reset();
             this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
+            this._edgesRenderers.reset();
             if (!this._frustumPlanes) {
                 this._frustumPlanes = BABYLON.Frustum.GetPlanes(this._transformMatrix);
             }
@@ -1073,6 +1077,9 @@ var BABYLON;
             }
             if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
+            }
+            if (mesh._edgesRenderer) {
+                this._edgesRenderers.push(mesh._edgesRenderer);
             }
             if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
@@ -1150,9 +1157,9 @@ var BABYLON;
             this.postProcessManager._prepareFrame();
             var beforeRenderDate = BABYLON.Tools.Now;
             // Backgrounds
+            var layerIndex;
             if (this.layers.length) {
                 engine.setDepthBuffer(false);
-                var layerIndex;
                 var layer;
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
@@ -1168,6 +1175,10 @@ var BABYLON;
             BABYLON.Tools.EndPerformanceCounter("Main render");
             // Bounding boxes
             this._boundingBoxRenderer.render();
+            // Edges
+            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
+                this._edgesRenderers.data[edgesRendererIndex].render();
+            }
             // Lens flares
             if (this.lensFlaresEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
@@ -1274,7 +1285,8 @@ var BABYLON;
             if (this.beforeRender) {
                 this.beforeRender();
             }
-            for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            var callbackIndex;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex]();
             }
             // Animations
@@ -1399,7 +1411,8 @@ var BABYLON;
                 var cameraDirection = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, -1), mat);
                 cameraDirection.normalize();
                 audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
-                for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                var i;
+                for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                     var sound = this.mainSoundTrack.soundCollection[i];
                     if (sound.useCustomAttenuation) {
                         sound.updateDistanceFromListener();
@@ -1433,7 +1446,8 @@ var BABYLON;
             configurable: true
         });
         Scene.prototype._disableAudio = function () {
-            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+            var i;
+            for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                 this.mainSoundTrack.soundCollection[i].pause();
             }
             for (i = 0; i < this.soundTracks.length; i++) {
@@ -1443,7 +1457,8 @@ var BABYLON;
             }
         };
         Scene.prototype._enableAudio = function () {
-            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+            var i;
+            for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                 if (this.mainSoundTrack.soundCollection[i].isPaused) {
                     this.mainSoundTrack.soundCollection[i].play();
                 }

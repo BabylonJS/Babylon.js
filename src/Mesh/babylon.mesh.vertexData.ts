@@ -1322,7 +1322,7 @@
 
                 Vector3.CrossToRef(p1p2, p3p2, faceNormal);
                 faceNormal.normalize();
-    
+
                 normals[i1 * 3] += faceNormal.x;
                 normals[i1 * 3 + 1] += faceNormal.y;
                 normals[i1 * 3 + 2] += faceNormal.z;
@@ -1399,6 +1399,7 @@
         }
     }
 } 
+
 
 
 
