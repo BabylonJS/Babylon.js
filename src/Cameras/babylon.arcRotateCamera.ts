@@ -30,7 +30,8 @@
         private _keys = [];
         public _viewMatrix = new Matrix();
         private _attachedElement: HTMLElement;
-
+        
+        private _angularSensibility: number = 1000.0;
         private _onContextMenu: (e: PointerEvent) => void;
         private _onPointerDown: (e: PointerEvent) => void;
         private _onPointerUp: (e: PointerEvent) => void;
@@ -64,7 +65,19 @@
         private _previousRadius: number;
         //due to async collision inspection
         private _collisionTriggered: boolean;
-
+        
+        public get angularSensibility() {
+            this.angularSensibilityX = this._angularSensibility;
+            this.angularSensibilityY = this._angularSensibility;
+            return this._angularSensibility;
+        }
+        
+        public set angularSensibility(value) {
+            this._angularSensibility = value;
+            this.angularSensibilityX = value;
+            this.angularSensibilityY = value;
+        }
+        
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
