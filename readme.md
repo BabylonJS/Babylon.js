@@ -8,6 +8,8 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 - http://cdn.babylonjs.com/2-1/babylon.max.js 
 - http://cdn.babylonjs.com/2-1/babylon.noworker.js 
 
+Gzipped size: 190 kb.
+
 ## Preview release
 You can help by testing or contributing to the next version.
 - **2.2-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release%20-%20alpha)
