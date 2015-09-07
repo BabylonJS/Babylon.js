@@ -30,8 +30,7 @@
         private _keys = [];
         public _viewMatrix = new Matrix();
         private _attachedElement: HTMLElement;
-        
-        private _angularSensibility: number = 1000.0;
+
         private _onContextMenu: (e: PointerEvent) => void;
         private _onPointerDown: (e: PointerEvent) => void;
         private _onPointerUp: (e: PointerEvent) => void;
@@ -66,14 +65,15 @@
         //due to async collision inspection
         private _collisionTriggered: boolean;
         
+        //depreciated angularSensibility support
         public get angularSensibility() {
-            this.angularSensibilityX = this._angularSensibility;
-            this.angularSensibilityY = this._angularSensibility;
-            return this._angularSensibility;
+            Tools.Warn("Warning: angularSensibility is depreciated, use angularSensibilityX and angularSensibilityY");
+            return max(this.angularSensibilityX, this.angularSensibilityY);
         }
         
+        //depreciated angularSensibility support
         public set angularSensibility(value) {
-            this._angularSensibility = value;
+            Tools.Warn("Warning: angularSensibility is depreciated, use angularSensibilityX and angularSensibilityY");
             this.angularSensibilityX = value;
             this.angularSensibilityY = value;
         }
