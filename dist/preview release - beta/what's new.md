@@ -30,6 +30,8 @@
     - Adding onAfterRender function in BABYLON.PostProcess [PR](https://github.com/BabylonJS/Babylon.js/pull/572) [julien-moreau](https://github.com/julien-moreau)
     - Improved shaders optimizer to remove specular code when not needed [deltakosh](https://github.com/deltakosh)    
     - Added some utility functions to Vector2/3/4 [PR](https://github.com/BabylonJS/Babylon.js/pull/578) [jahow](https://github.com/jahow)
+    - Added split angularSensibiliy into X and Y for arcRotateCamera [PR](https://github.com/BabylonJS/Babylon.js/pull/683) [Remwrath](https://github.com/Remwrath)
+    - Added function getFrontPosition(distance) for Camera [PR](https://github.com/BabylonJS/Babylon.js/pull/681) [dad72](https://github.com/dad72)
     - New rawTexture.update function [robgdl](https://github.com/robgdl)
     - Changes to meshes transform baking and added flipFaces [PR](https://github.com/BabylonJS/Babylon.js/pull/579) [jahow](https://github.com/jahow)
     - SerializeMesh serializes a mesh or array of meshes to be imported with the loader's ImportMesh optionally including their children and/or parents. [PR](https://github.com/BabylonJS/Babylon.js/pull/583) [PR2](https://github.com/BabylonJS/Babylon.js/pull/609) [RaananW](https://github.com/RaananW)
@@ -38,5 +40,6 @@
   - **Bug fixes**
     - Fixing bug with rig cameras positioning [deltakosh](https://github.com/deltakosh)
     - Instance meshes' geometry ID is now serialized correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/607) [RaananW](https://github.com/RaananW)
+    - Bug fix at set numberOfBricksWidth [PR](https://github.com/BabylonJS/Babylon.js/pull/684) [Polatouche](https://github.com/Polatouche)
   - **Breaking changes**
     - In LensRenderingPipeline: parameter `dof_focus_depth` (range 0..1) is deprecated, use `dof_focus_distance` (range 0..infinity) instead [jahow](https://github.com/jahow)
