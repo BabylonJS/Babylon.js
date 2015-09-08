@@ -11,7 +11,8 @@
         public upperBetaLimit = Math.PI;
         public lowerRadiusLimit = null;
         public upperRadiusLimit = null;
-        public angularSensibility = 1000.0;
+        public angularSensibilityX = 1000.0;
+        public angularSensibilityY = 1000.0;
         public wheelPrecision = 3.0;
         public pinchPrecision = 2.0;
         public panningSensibility: number = 50.0;
@@ -63,7 +64,20 @@
         private _previousRadius: number;
         //due to async collision inspection
         private _collisionTriggered: boolean;
-
+        
+        //depreciated angularSensibility support
+        public get angularSensibility() {
+            Tools.Warn("Warning: angularSensibility is depreciated, use angularSensibilityX and angularSensibilityY");
+            return max(this.angularSensibilityX, this.angularSensibilityY);
+        }
+        
+        //depreciated angularSensibility support
+        public set angularSensibility(value) {
+            Tools.Warn("Warning: angularSensibility is depreciated, use angularSensibilityX and angularSensibilityY");
+            this.angularSensibilityX = value;
+            this.angularSensibilityY = value;
+        }
+        
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
@@ -171,8 +185,8 @@
                             } else {
                                 var offsetX = evt.clientX - cacheSoloPointer.x;
                                 var offsetY = evt.clientY - cacheSoloPointer.y;
-                                this.inertialAlphaOffset -= offsetX / this.angularSensibility;
-                                this.inertialBetaOffset -= offsetY / this.angularSensibility;
+                                this.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
+                                this.inertialBetaOffset -= offsetY / this.angularSensibilityY;
                             }
                             cacheSoloPointer.x = evt.clientX;
                             cacheSoloPointer.y = evt.clientY;
@@ -192,7 +206,7 @@
                             }
 
                             if (pinchSquaredDistance !== previousPinchDistance) {
-                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * this.angularSensibility * direction);
+                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * ((this.angularSensibilityX+this.angularSensibilityY)/2) * direction);
                                 previousPinchDistance = pinchSquaredDistance;
                             }
                             break;
@@ -213,8 +227,8 @@
                     var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                     var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
-                    this.inertialAlphaOffset -= offsetX / this.angularSensibility;
-                    this.inertialBetaOffset -= offsetY / this.angularSensibility;
+                    this.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
+                    this.inertialBetaOffset -= offsetY / this.angularSensibilityY;
 
                     if (!noPreventDefault) {
                         evt.preventDefault();
