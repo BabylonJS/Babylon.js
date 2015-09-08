@@ -320,7 +320,7 @@ var BABYLON;
                 return this._numberOfBricksWidth;
             },
             set: function (value) {
-                this._numberOfBricksHeight = value;
+                this._numberOfBricksWidth = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,

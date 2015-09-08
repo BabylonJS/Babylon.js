@@ -65,19 +65,19 @@
         //due to async collision inspection
         private _collisionTriggered: boolean;
         
-        //depreciated angularSensibility support
+        //deprecated angularSensibility support
         public get angularSensibility() {
-            Tools.Warn("Warning: angularSensibility is depreciated, use angularSensibilityX and angularSensibilityY");
-            return max(this.angularSensibilityX, this.angularSensibilityY);
+            Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+            return Math.max(this.angularSensibilityX, this.angularSensibilityY);
         }
         
-        //depreciated angularSensibility support
+        //deprecated angularSensibility support
         public set angularSensibility(value) {
-            Tools.Warn("Warning: angularSensibility is depreciated, use angularSensibilityX and angularSensibilityY");
+            Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
             this.angularSensibilityX = value;
             this.angularSensibilityY = value;
         }
-        
+
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
@@ -161,7 +161,7 @@
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
                     pointers.empty();
-                                       
+
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -206,7 +206,7 @@
                             }
 
                             if (pinchSquaredDistance !== previousPinchDistance) {
-                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * ((this.angularSensibilityX+this.angularSensibilityY)/2) * direction);
+                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * ((this.angularSensibilityX + this.angularSensibilityY) / 2) * direction);
                                 previousPinchDistance = pinchSquaredDistance;
                             }
                             break;
@@ -642,3 +642,4 @@
         }
     }
 } 
+
