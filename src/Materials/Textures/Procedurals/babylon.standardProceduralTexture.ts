@@ -284,7 +284,7 @@
         }
 
         public set numberOfBricksWidth(value: number) {
-            this._numberOfBricksHeight = value;
+            this._numberOfBricksWidth = value;
             this.updateShaderUniforms();
         }
 
@@ -365,4 +365,3 @@
         }
     }
 }
-
