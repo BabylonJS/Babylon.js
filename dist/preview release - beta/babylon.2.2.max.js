@@ -7881,10 +7881,11 @@ var BABYLON;
                 this._edgesRenderer = undefined;
             }
         };
-        AbstractMesh.prototype.enableEdgesRendering = function (epsilon) {
+        AbstractMesh.prototype.enableEdgesRendering = function (epsilon, checkVerticesInsteadOfIndices) {
             if (epsilon === void 0) { epsilon = 0.95; }
+            if (checkVerticesInsteadOfIndices === void 0) { checkVerticesInsteadOfIndices = false; }
             this.disableEdgesRendering();
-            this._edgesRenderer = new BABYLON.EdgesRenderer(this, epsilon);
+            this._edgesRenderer = new BABYLON.EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
         };
         Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
             get: function () {
@@ -10398,6 +10399,12 @@ var BABYLON;
             this._lookAtTemp = BABYLON.Matrix.Zero();
             this._tempMatrix = BABYLON.Matrix.Zero();
         }
+        TargetCamera.prototype.getFrontPosition = function (distance) {
+            var direction = this.getTarget().subtract(this.position);
+            direction.normalize();
+            direction.scaleInPlace(distance);
+            return this.globalPosition.add(direction);
+        };
         TargetCamera.prototype._getLockedTargetPosition = function () {
             if (!this.lockedTarget) {
                 return null;
@@ -11071,7 +11078,8 @@ var BABYLON;
             this.upperBetaLimit = Math.PI;
             this.lowerRadiusLimit = null;
             this.upperRadiusLimit = null;
-            this.angularSensibility = 1000.0;
+            this.angularSensibilityX = 1000.0;
+            this.angularSensibilityY = 1000.0;
             this.wheelPrecision = 3.0;
             this.pinchPrecision = 2.0;
             this.panningSensibility = 50.0;
@@ -11132,6 +11140,21 @@ var BABYLON;
             }
             this.getViewMatrix();
         }
+        Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
+            //deprecated angularSensibility support
+            get: function () {
+                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+                return Math.max(this.angularSensibilityX, this.angularSensibilityY);
+            },
+            //deprecated angularSensibility support
+            set: function (value) {
+                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+                this.angularSensibilityX = value;
+                this.angularSensibilityY = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         ArcRotateCamera.prototype._getTargetPosition = function () {
             return this.target.position || this.target;
         };
@@ -11215,8 +11238,8 @@ var BABYLON;
                             else {
                                 var offsetX = evt.clientX - cacheSoloPointer.x;
                                 var offsetY = evt.clientY - cacheSoloPointer.y;
-                                _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
-                                _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
+                                _this.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                                _this.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                             }
                             cacheSoloPointer.x = evt.clientX;
                             cacheSoloPointer.y = evt.clientY;
@@ -11234,7 +11257,7 @@ var BABYLON;
                                 return;
                             }
                             if (pinchSquaredDistance !== previousPinchDistance) {
-                                _this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * _this.wheelPrecision * _this.angularSensibility * direction);
+                                _this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * _this.wheelPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
                                 previousPinchDistance = pinchSquaredDistance;
                             }
                             break;
@@ -11251,8 +11274,8 @@ var BABYLON;
                     }
                     var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                     var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
-                    _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
+                    _this.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                    _this.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -18054,7 +18077,7 @@ var BABYLON;
                 return this._numberOfBricksWidth;
             },
             set: function (value) {
-                this._numberOfBricksHeight = value;
+                this._numberOfBricksWidth = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -25873,6 +25896,7 @@ var BABYLON;
             options.attributes = options.attributes || ["position", "normal", "uv"];
             options.uniforms = options.uniforms || ["worldViewProjection"];
             options.samplers = options.samplers || [];
+            options.defines = options.defines || [];
             this._options = options;
         }
         ShaderMaterial.prototype.needAlphaBlending = function () {
@@ -25956,6 +25980,9 @@ var BABYLON;
             var fallbacks = new BABYLON.EffectFallbacks();
             if (useInstances) {
                 defines.push("#define INSTANCES");
+            }
+            for (var index = 0; index < this._options.defines.length; index++) {
+                defines.push(this._options.defines[index]);
             }
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
@@ -33712,13 +33739,16 @@ var BABYLON;
     })();
     var EdgesRenderer = (function () {
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
-        function EdgesRenderer(source, epsilon) {
+        function EdgesRenderer(source, epsilon, checkVerticesInsteadOfIndices) {
             if (epsilon === void 0) { epsilon = 0.95; }
+            if (checkVerticesInsteadOfIndices === void 0) { checkVerticesInsteadOfIndices = false; }
             this._linesPositions = new Array();
             this._linesNormals = new Array();
             this._linesIndices = new Array();
             this._buffers = new Array();
+            this._checkVerticesInsteadOfIndices = false;
             this._source = source;
+            this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
             this._epsilon = epsilon;
             this._prepareRessources();
             this._generateEdgesLines();
@@ -33748,6 +33778,18 @@ var BABYLON;
                 return 1;
             }
             if (pa === p2 && pb === p0 || pa === p0 && pb === p2) {
+                return 2;
+            }
+            return -1;
+        };
+        EdgesRenderer.prototype._processEdgeForAdjacenciesWithVertices = function (pa, pb, p0, p1, p2) {
+            if (pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p1) || pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p0)) {
+                return 0;
+            }
+            if (pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p2) || pa.equalsWithEpsilon(p2) && pb.equalsWithEpsilon(p1)) {
+                return 1;
+            }
+            if (pa.equalsWithEpsilon(p2) && pb.equalsWithEpsilon(p0) || pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p2)) {
                 return 2;
             }
             return -1;
@@ -33847,13 +33889,28 @@ var BABYLON;
                         }
                         switch (edgeIndex) {
                             case 0:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3], indices[index * 3 + 1], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p0, faceAdjacencies.p1, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                }
+                                else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3], indices[index * 3 + 1], otherP0, otherP1, otherP2);
+                                }
                                 break;
                             case 1:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 1], indices[index * 3 + 2], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p1, faceAdjacencies.p2, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                }
+                                else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 1], indices[index * 3 + 2], otherP0, otherP1, otherP2);
+                                }
                                 break;
                             case 2:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 2], indices[index * 3], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p2, faceAdjacencies.p0, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                }
+                                else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 2], indices[index * 3], otherP0, otherP1, otherP2);
+                                }
                                 break;
                         }
                         if (otherEdgeIndex === -1) {

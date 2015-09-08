@@ -25,6 +25,7 @@
             options.attributes = options.attributes || ["position", "normal", "uv"];
             options.uniforms = options.uniforms || ["worldViewProjection"];
             options.samplers = options.samplers || [];
+            options.defines = options.defines || [];
 
             this._options = options;
         }
@@ -137,6 +138,10 @@
             var fallbacks = new EffectFallbacks();
             if (useInstances) {
                 defines.push("#define INSTANCES");
+            }
+
+            for (var index = 0; index < this._options.defines.length; index++) {
+                defines.push(this._options.defines[index]);
             }
 
             // Bones

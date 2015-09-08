@@ -26,6 +26,12 @@ var BABYLON;
             this._lookAtTemp = BABYLON.Matrix.Zero();
             this._tempMatrix = BABYLON.Matrix.Zero();
         }
+        TargetCamera.prototype.getFrontPosition = function (distance) {
+            var direction = this.getTarget().subtract(this.position);
+            direction.normalize();
+            direction.scaleInPlace(distance);
+            return this.globalPosition.add(direction);
+        };
         TargetCamera.prototype._getLockedTargetPosition = function () {
             if (!this.lockedTarget) {
                 return null;

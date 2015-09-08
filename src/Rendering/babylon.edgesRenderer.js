@@ -9,13 +9,16 @@ var BABYLON;
     })();
     var EdgesRenderer = (function () {
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
-        function EdgesRenderer(source, epsilon) {
+        function EdgesRenderer(source, epsilon, checkVerticesInsteadOfIndices) {
             if (epsilon === void 0) { epsilon = 0.95; }
+            if (checkVerticesInsteadOfIndices === void 0) { checkVerticesInsteadOfIndices = false; }
             this._linesPositions = new Array();
             this._linesNormals = new Array();
             this._linesIndices = new Array();
             this._buffers = new Array();
+            this._checkVerticesInsteadOfIndices = false;
             this._source = source;
+            this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
             this._epsilon = epsilon;
             this._prepareRessources();
             this._generateEdgesLines();
@@ -45,6 +48,18 @@ var BABYLON;
                 return 1;
             }
             if (pa === p2 && pb === p0 || pa === p0 && pb === p2) {
+                return 2;
+            }
+            return -1;
+        };
+        EdgesRenderer.prototype._processEdgeForAdjacenciesWithVertices = function (pa, pb, p0, p1, p2) {
+            if (pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p1) || pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p0)) {
+                return 0;
+            }
+            if (pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p2) || pa.equalsWithEpsilon(p2) && pb.equalsWithEpsilon(p1)) {
+                return 1;
+            }
+            if (pa.equalsWithEpsilon(p2) && pb.equalsWithEpsilon(p0) || pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p2)) {
                 return 2;
             }
             return -1;
@@ -144,13 +159,28 @@ var BABYLON;
                         }
                         switch (edgeIndex) {
                             case 0:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3], indices[index * 3 + 1], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p0, faceAdjacencies.p1, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                }
+                                else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3], indices[index * 3 + 1], otherP0, otherP1, otherP2);
+                                }
                                 break;
                             case 1:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 1], indices[index * 3 + 2], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p1, faceAdjacencies.p2, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                }
+                                else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 1], indices[index * 3 + 2], otherP0, otherP1, otherP2);
+                                }
                                 break;
                             case 2:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 2], indices[index * 3], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p2, faceAdjacencies.p0, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                }
+                                else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 2], indices[index * 3], otherP0, otherP1, otherP2);
+                                }
                                 break;
                         }
                         if (otherEdgeIndex === -1) {

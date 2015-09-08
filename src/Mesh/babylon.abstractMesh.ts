@@ -139,10 +139,10 @@
                 this._edgesRenderer = undefined;
             }
         }
-        public enableEdgesRendering(epsilon = 0.95) {
+        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
             this.disableEdgesRendering();
 
-            this._edgesRenderer = new EdgesRenderer(this, epsilon);
+            this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
         }
 
         public get isBlocked(): boolean {

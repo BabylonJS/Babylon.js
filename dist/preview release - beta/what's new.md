@@ -9,6 +9,7 @@
     - OBJ loader. See [demo here](http://www.babylonjs-playground.com/#28YUR5) [Temechon](https://github.com/Temechon)
     - EdgesRenderer. See [demo here](http://www.babylonjs-playground.com/#TYAHX#10) [deltakosh](https://github.com/deltakosh)
   - **Updates**
+    - ShaderMaterial now accept custom defines [deltakosh](https://github.com/deltakosh) 
     - Added darkness support for soft shadows [deltakosh](https://github.com/deltakosh)
     - Added scene.getLensFlareSystemByName() [deltakosh](https://github.com/deltakosh)
     - Added LensFlareSystem.setEmitter() [deltakosh](https://github.com/deltakosh)

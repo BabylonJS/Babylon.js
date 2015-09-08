@@ -450,13 +450,6 @@
             Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth, this.orthoRight || halfWidth, this.orthoBottom || -halfHeight, this.orthoTop || halfHeight, this.minZ, this.maxZ, this._projectionMatrix);
             return this._projectionMatrix;
         }
-        
-        public getFrontPosition(num: num): void {
-	        var dir = this.getTarget().subtract(this.position);
-	        dir.normalize();
-	        dir.scaleInPlace(num);		
-	        return this.position.add(dir);
-        }
 
         public dispose(): void {
             // Remove from scene
@@ -592,3 +585,4 @@
         }
     }
 }
+

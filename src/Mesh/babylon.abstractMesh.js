@@ -133,10 +133,11 @@ var BABYLON;
                 this._edgesRenderer = undefined;
             }
         };
-        AbstractMesh.prototype.enableEdgesRendering = function (epsilon) {
+        AbstractMesh.prototype.enableEdgesRendering = function (epsilon, checkVerticesInsteadOfIndices) {
             if (epsilon === void 0) { epsilon = 0.95; }
+            if (checkVerticesInsteadOfIndices === void 0) { checkVerticesInsteadOfIndices = false; }
             this.disableEdgesRendering();
-            this._edgesRenderer = new BABYLON.EdgesRenderer(this, epsilon);
+            this._edgesRenderer = new BABYLON.EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
         };
         Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
             get: function () {
