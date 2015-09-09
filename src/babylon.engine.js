@@ -1415,7 +1415,8 @@ var BABYLON;
             }
             return texture;
         };
-        Engine.prototype.updateRawTexture = function (texture, data, format, invertY) {
+        Engine.prototype.updateRawTexture = function (texture, data, format, invertY, compression) {
+            if (compression === void 0) { compression = null; }
             var internalFormat = this._gl.RGBA;
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
@@ -1436,7 +1437,12 @@ var BABYLON;
             }
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture._width, texture._height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            if (compression) {
+                this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
+            }
+            else {
+                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture._width, texture._height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            }
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
@@ -1444,14 +1450,15 @@ var BABYLON;
             this._activeTexturesCache = [];
             texture.isReady = true;
         };
-        Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
+        Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode, compression) {
+            if (compression === void 0) { compression = null; }
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
             texture._width = width;
             texture._height = height;
             texture.references = 1;
-            this.updateRawTexture(texture, data, format, invertY);
+            this.updateRawTexture(texture, data, format, invertY, compression);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
@@ -2015,3 +2022,4 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.engine.js.map

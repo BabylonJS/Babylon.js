@@ -144,7 +144,8 @@
       "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
       "../../src/Cameras/babylon.stereoscopicCameras.js",
       "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
-      "../../src/Rendering/babylon.edgesRenderer.js"
+      "../../src/Rendering/babylon.edgesRenderer.js",
+      "../../src/PostProcess/babylon.tonemapPostProcess.js"
     ]
   },
   "shadersDirectories": [
