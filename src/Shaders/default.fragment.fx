@@ -174,6 +174,10 @@ uniform vec3 vReflectionInfos;
 uniform mat4 reflectionMatrix;
 uniform mat4 view;
 
+#ifdef ROUGHNESS
+uniform float roughness;
+#endif
+
 vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
 {
 	if (mode == MAP_SPHERICAL)
@@ -697,7 +701,21 @@ void main(void) {
 
 	if (vReflectionInfos.z != 0.0)
 	{
-		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y * shadow;
+		float bias = 0.;
+
+#ifdef ROUGHNESS
+		bias = roughness;
+#endif
+
+#ifdef SPECULARTERM
+#ifdef SPECULAR
+#ifdef GLOSSINESS
+		bias *= (1.0 - specularMapColor.a);
+#endif
+#endif
+#endif
+
+		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.y * shadow;
 	}
 	else
 	{

@@ -69,6 +69,7 @@
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public GLOSSINESS = false;
+        public ROUGHNESS = false;
 
         _keys: string[];
 
@@ -144,7 +145,9 @@
         public emissiveColor = new Color3(0, 0, 0);
         public useAlphaFromDiffuseTexture = false;
         public useSpecularOverAlpha = true;
-		public fogEnabled = true;
+        public fogEnabled = true;
+
+        public roughness = 0;
 
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
@@ -257,6 +260,10 @@
                         needNormals = true;
                         needUVs = true;
                         this._defines.REFLECTION = true;
+
+                        if (this.roughness > 0) {
+                            this._defines.ROUGHNESS = true;
+                        }
                     }
                 }
 
@@ -584,7 +591,8 @@
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
+                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
+                        "roughness"
                     ],
                     ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -674,6 +682,9 @@
                 if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                     if (this.reflectionTexture.isCube) {
                         this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
+                        if (this._defines.ROUGHNESS) {
+                            this._effect.setFloat("roughness", this.roughness);
+                        }
                     } else {
                         this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
                     }
