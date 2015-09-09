@@ -94,6 +94,8 @@
                 // Deep copy
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
 
+                this.id = name + "." + source.id;
+
                 // Material
                 this.material = source.material;
 
@@ -1328,9 +1330,13 @@
             return disc;
         }
 
-        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateBox(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            // Check parameters
+            updatable = updatable || options.updatable;
+            sideOrientation = sideOrientation || options.sideOrientation;
+
             var box = new Mesh(name, scene);
-            var vertexData = VertexData.CreateBox(size, sideOrientation);
+            var vertexData = VertexData.CreateBox(options, sideOrientation);
 
             vertexData.applyToMesh(box, updatable);
 

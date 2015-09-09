@@ -49,6 +49,7 @@ var BABYLON;
                 }
                 // Deep copy
                 BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
+                this.id = name + "." + source.id;
                 // Material
                 this.material = source.material;
                 if (!doNotCloneChildren) {
@@ -1137,10 +1138,13 @@ var BABYLON;
             vertexData.applyToMesh(disc, updatable);
             return disc;
         };
-        Mesh.CreateBox = function (name, size, scene, updatable, sideOrientation) {
+        Mesh.CreateBox = function (name, options, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            // Check parameters
+            updatable = updatable || options.updatable;
+            sideOrientation = sideOrientation || options.sideOrientation;
             var box = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateBox(size, sideOrientation);
+            var vertexData = BABYLON.VertexData.CreateBox(options, sideOrientation);
             vertexData.applyToMesh(box, updatable);
             return box;
         };
