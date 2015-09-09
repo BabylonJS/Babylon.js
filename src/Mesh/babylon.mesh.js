@@ -1148,10 +1148,24 @@ var BABYLON;
             vertexData.applyToMesh(box, updatable);
             return box;
         };
-        Mesh.CreateSphere = function (name, segments, diameter, scene, updatable, sideOrientation) {
+        Mesh.CreateSphere = function (name, options, diameterOrScene, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            if (diameterOrScene instanceof BABYLON.Scene) {
+                scene = diameterOrScene;
+                updatable = options.updatable;
+            }
+            else {
+                var segments = options;
+                options = {
+                    segments: segments,
+                    diameterX: diameterOrScene,
+                    diameterY: diameterOrScene,
+                    diameterZ: diameterOrScene,
+                    sideOrientation: sideOrientation
+                };
+            }
             var sphere = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateSphere(segments, diameter, sideOrientation);
+            var vertexData = BABYLON.VertexData.CreateSphere(options);
             vertexData.applyToMesh(sphere, updatable);
             return sphere;
         };

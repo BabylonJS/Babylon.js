@@ -1343,9 +1343,24 @@
             return box;
         }
 
-        public static CreateSphere(name: string, segments: number, diameter: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateSphere(name: string, options: any, diameterOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            if (diameterOrScene instanceof Scene) {
+                scene = diameterOrScene;
+                updatable = options.updatable;
+            } else {
+                var segments = options;
+
+                options = {
+                    segments: segments,
+                    diameterX: diameterOrScene,
+                    diameterY: diameterOrScene,
+                    diameterZ: diameterOrScene,
+                    sideOrientation: sideOrientation
+                }
+            }
+
             var sphere = new Mesh(name, scene);
-            var vertexData = VertexData.CreateSphere(segments, diameter, sideOrientation);
+            var vertexData = VertexData.CreateSphere(options);
 
             vertexData.applyToMesh(sphere, updatable);
 
