@@ -21,10 +21,12 @@
         private _vb1: VertexBuffer;
         private _ib: WebGLBuffer;
         private _buffers = new Array<VertexBuffer>();
+        private _checkVerticesInsteadOfIndices = false;
 
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
-        constructor(source: AbstractMesh, epsilon = 0.95) {
+        constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
             this._source = source;
+            this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
 
             this._epsilon = epsilon;
 
@@ -40,7 +42,7 @@
             this._lineShader = new ShaderMaterial("lineShader", this._source.getScene(), "line",
                 {
                     attributes: ["position", "normal"],
-                    uniforms: ["worldViewProjection", "color", "width"]
+                    uniforms: ["worldViewProjection", "color", "width", "aspectRatio"]
                 });
 
             this._lineShader.disableDepthWrite = true;
@@ -64,6 +66,22 @@
             }
 
             if (pa === p2 && pb === p0 || pa === p0 && pb === p2) {
+                return 2;
+            }
+
+            return -1;
+        }
+
+        private _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number {
+            if (pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p1) || pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p0)) {
+                return 0;
+            }
+
+            if (pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p2) || pa.equalsWithEpsilon(p2) && pb.equalsWithEpsilon(p1)) {
+                return 1;
+            }
+
+            if (pa.equalsWithEpsilon(p2) && pb.equalsWithEpsilon(p0) || pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p2)) {
                 return 2;
             }
 
@@ -104,21 +122,25 @@
                 this._linesPositions.push(p1.z);
 
                 // Normals
-                this._linesNormals.push(normal.x);
-                this._linesNormals.push(normal.y);
-                this._linesNormals.push(normal.z);
+                this._linesNormals.push(p1.x);
+                this._linesNormals.push(p1.y);
+                this._linesNormals.push(p1.z);
+                this._linesNormals.push(-1);
 
-                this._linesNormals.push(-normal.x);
-                this._linesNormals.push(-normal.y);
-                this._linesNormals.push(-normal.z);
+                this._linesNormals.push(p1.x);
+                this._linesNormals.push(p1.y);
+                this._linesNormals.push(p1.z);
+                this._linesNormals.push(1);
 
-                this._linesNormals.push(-normal.x);
-                this._linesNormals.push(-normal.y);
-                this._linesNormals.push(-normal.z);
+                this._linesNormals.push(p0.x);
+                this._linesNormals.push(p0.y);
+                this._linesNormals.push(p0.z);
+                this._linesNormals.push(-1);
 
-                this._linesNormals.push(normal.x);
-                this._linesNormals.push(normal.y);
-                this._linesNormals.push(normal.z);
+                this._linesNormals.push(p0.x);
+                this._linesNormals.push(p0.y);
+                this._linesNormals.push(p0.z);
+                this._linesNormals.push(1);
 
                 // Indices
                 this._linesIndices.push(offset);
@@ -186,13 +208,25 @@
 
                         switch (edgeIndex) {
                             case 0:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3], indices[index * 3 + 1], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p0, faceAdjacencies.p1, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                } else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3], indices[index * 3 + 1], otherP0, otherP1, otherP2);
+                                }
                                 break;
                             case 1:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 1], indices[index * 3 + 2], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p1, faceAdjacencies.p2, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                } else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 1], indices[index * 3 + 2], otherP0, otherP1, otherP2);
+                                }
                                 break;
                             case 2:
-                                otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 2], indices[index * 3], otherP0, otherP1, otherP2);
+                                if (this._checkVerticesInsteadOfIndices) {
+                                    otherEdgeIndex = this._processEdgeForAdjacenciesWithVertices(faceAdjacencies.p2, faceAdjacencies.p0, otherFaceAdjacencies.p0, otherFaceAdjacencies.p1, otherFaceAdjacencies.p2);
+                                } else {
+                                    otherEdgeIndex = this._processEdgeForAdjacencies(indices[index * 3 + 2], indices[index * 3], otherP0, otherP1, otherP2);
+                                }
                                 break;
                         }
 
@@ -226,7 +260,7 @@
             // Merge into a single mesh
             var engine = this._source.getScene().getEngine();
             this._vb0 = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
-            this._vb1 = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false);
+            this._vb1 = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
 
             this._buffers[VertexBuffer.PositionKind] = this._vb0;
             this._buffers[VertexBuffer.NormalKind] = this._vb1;
@@ -250,7 +284,8 @@
 
             scene.resetCachedMaterial();
             this._lineShader.setColor4("color", this._source.edgesColor);
-            this._lineShader.setFloat("width", this._source.edgesWidth / 100.0);
+            this._lineShader.setFloat("width", this._source.edgesWidth / 50.0);
+            this._lineShader.setFloat("aspectRatio", engine.getAspectRatio(scene.activeCamera));
             this._lineShader.bind(this._source.getWorldMatrix());
 
             // Draw order
