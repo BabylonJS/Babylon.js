@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (3, 0, 4),
+    'version': (3, 0, 5),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -922,7 +922,7 @@ class Mesh(FCurveAnimatable):
             self.subMeshes.append(SubMesh(materialIndex, subMeshVerticesStart, subMeshIndexStart, verticesCount - subMeshVerticesStart, indicesCount - subMeshIndexStart))
 
         if verticesCount > MAX_VERTEX_ELEMENTS:
-            warn('Due to multi-materials & this meshes size, 32bit indices must be used.  This may not run on all hardware.', 2)
+            Main.warn('Due to multi-materials & this meshes size, 32bit indices must be used.  This may not run on all hardware.', 2)
 
         if maxInfluencersExceeded > 0:
             Main.warn('Maximum # of influencers exceeded for ' + format_int(maxInfluencersExceeded) + ' vertices, extras ignored', 2)
@@ -1653,34 +1653,83 @@ class BakingRecipe:
 
             else:
                 blenderRender = True
+                nDiffuseImages = 0
+                nReflectionImages = 0
+                nAmbientImages = 0
+                nOpacityImages = 0
+                nEmissiveImages = 0
+                nBumpImages = 0
+                nSpecularImages = 0
 
                 textures = [mtex for mtex in material.texture_slots if mtex and mtex.texture]
                 for mtex in textures:
-                    if mtex.texture.type == 'IMAGE' or mtex.texture.type == 'NONE':
+                    # ignore empty slots
+                    if mtex.texture.type == 'NONE':
                         continue
+                    
+                    # for images, just need to make sure there is only 1 per type
+                    if mtex.texture.type == 'IMAGE':
+                        if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
+                            if mtex.texture_coords == 'REFLECTION':
+                                nReflectionImages += 1
+                            else:
+                                nDiffuseImages += 1
+    
+                        if mtex.use_map_ambient:
+                            nAmbientImages += 1
+    
+                        if mtex.use_map_alpha:
+                            nOpacityImages += 1
+    
+                        if mtex.use_map_emit:
+                            nEmissiveImages += 1
+    
+                        if mtex.use_map_normal:
+                            nBumpImages += 1
+    
+                        if mtex.use_map_color_spec:
+                            nSpecularImages += 1
 
-                    self.needsBaking = True
-
-                    if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
-                        if mtex.texture_coords == 'REFLECTION':
-                            self.reflectionBaking = True
-                        else:
-                            self.diffuseBaking = True
-
-                    if mtex.use_map_ambient:
-                        self.ambientBaking = True
-
-                    if mtex.use_map_alpha:
-                        self.opacityBaking = True
-
-                    if mtex.use_map_emit:
-                        self.emissiveBaking = True
-
-                    if mtex.use_map_normal:
-                        self.bumpBaking = True
-
-                    if mtex.use_map_color_spec:
-                        self.specularBaking = True
+                    else:
+                        self.needsBaking = True
+    
+                        if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
+                            if mtex.texture_coords == 'REFLECTION':
+                                self.reflectionBaking = True
+                            else:
+                                self.diffuseBaking = True
+    
+                        if mtex.use_map_ambient:
+                            self.ambientBaking = True
+    
+                        if mtex.use_map_alpha:
+                            self.opacityBaking = True
+    
+                        if mtex.use_map_emit:
+                            self.emissiveBaking = True
+    
+                        if mtex.use_map_normal:
+                            self.bumpBaking = True
+    
+                        if mtex.use_map_color_spec:
+                            self.specularBaking = True
+                            
+                # 2nd pass 2 check for multiples of a given image type
+                if nDiffuseImages > 1:
+                    self.needsBaking = self.diffuseBaking = True
+                if nReflectionImages > 1:
+                    self.needsBaking = self.nReflectionImages = True
+                if nAmbientImages > 1:
+                    self.needsBaking = self.ambientBaking = True
+                if nOpacityImages > 1:
+                    self.needsBaking = self.opacityBaking = True
+                if nEmissiveImages > 1:
+                    self.needsBaking = self.emissiveBaking = True
+                if nBumpImages > 1:
+                    self.needsBaking = self.bumpBaking = True
+                if nSpecularImages > 1:
+                    self.needsBaking = self.specularBaking = True
+                        
         self.multipleRenders = blenderRender and self.cyclesRender
         
         # check for really old .blend file, eg. 2.49, to ensure that everything requires exists
