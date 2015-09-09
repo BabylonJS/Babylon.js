@@ -9,6 +9,8 @@
     - OBJ loader. See [demo here](http://www.babylonjs-playground.com/#28YUR5) [Temechon](https://github.com/Temechon)
     - EdgesRenderer. See [demo here](http://www.babylonjs-playground.com/#TYAHX#10) [deltakosh](https://github.com/deltakosh)
   - **Updates**
+    - Compression supported for raw textures [deltakosh](https://github.com/deltakosh)
+    - New TonemapPostProcess. See [demo here](http://www.babylonjs-playground.com/#ELTGD) [deltakosh](https://github.com/deltakosh)
     - New options parameters for Box and Sphere. See [demo here](http://www.html5gamedevs.com/topic/17044-evolution-for-out-of-the-box-meshes-creation/) [deltakosh](https://github.com/deltakosh)
     - Added darkness support for soft shadows [deltakosh](https://github.com/deltakosh)
     - Added scene.getLensFlareSystemByName() [deltakosh](https://github.com/deltakosh)

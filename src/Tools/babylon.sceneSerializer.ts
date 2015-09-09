@@ -8,22 +8,22 @@
 
         if (light instanceof PointLight) {
             serializationObject.type = 0;
-            serializationObject.position = (<PointLight>light).position.asArray();
+            serializationObject.position = (light).position.asArray();
         } else if (light instanceof DirectionalLight) {
             serializationObject.type = 1;
-            var directionalLight = <DirectionalLight>light;
+            var directionalLight = light;
             serializationObject.position = directionalLight.position.asArray();
             serializationObject.direction = directionalLight.direction.asArray();
         } else if (light instanceof SpotLight) {
             serializationObject.type = 2;
-            var spotLight = <SpotLight>light;
+            var spotLight = light;
             serializationObject.position = spotLight.position.asArray();
             serializationObject.direction = spotLight.position.asArray();
             serializationObject.angle = spotLight.angle;
             serializationObject.exponent = spotLight.exponent;
         } else if (light instanceof HemisphericLight) {
             serializationObject.type = 3;
-            var hemisphericLight = <HemisphericLight>light;
+            var hemisphericLight = light;
             serializationObject.direction = hemisphericLight.direction.asArray();
             serializationObject.groundColor = hemisphericLight.groundColor.asArray();
         }
@@ -51,7 +51,7 @@
 
         return serializationObject;
     }
-
+    var serializeAnimation: (animation: Animation) => any;
     var appendAnimations = (source: IAnimatable, destination: any): any => {
         if (source.animations) {
             destination.animations = [];
@@ -108,7 +108,7 @@
 
         //special properties of specific cameras
         if (camera instanceof ArcRotateCamera || camera instanceof AnaglyphArcRotateCamera) {
-            var arcCamera = <ArcRotateCamera> camera;
+            var arcCamera = camera;
             serializationObject.alpha = arcCamera.alpha;
             serializationObject.beta = arcCamera.beta;
             serializationObject.radius = arcCamera.radius;
@@ -116,7 +116,7 @@
                 serializationObject.lockedTargetId = arcCamera.target.id;
             }
         } else if (camera instanceof FollowCamera) {
-            var followCam = <FollowCamera> camera;
+            var followCam = camera;
             serializationObject.radius = followCam.radius;
             serializationObject.heightOffset = followCam.heightOffset;
             serializationObject.rotationOffset = followCam.rotationOffset;
@@ -161,8 +161,7 @@
 
         return serializationObject;
     };
-
-    var serializeAnimation = (animation: Animation): any => {
+    serializeAnimation = (animation: Animation): any => {
         var serializationObject: any = {};
 
         serializationObject.name = animation.name;
@@ -181,14 +180,14 @@
             key.frame = animationKey.frame;
 
             switch (dataType) {
-                case Animation.ANIMATIONTYPE_FLOAT:
-                    key.values = [animationKey.value];
-                    break;
-                case Animation.ANIMATIONTYPE_QUATERNION:
-                case Animation.ANIMATIONTYPE_MATRIX:
-                case Animation.ANIMATIONTYPE_VECTOR3:
-                    key.values = animationKey.value.asArray();
-                    break;
+            case Animation.ANIMATIONTYPE_FLOAT:
+                key.values = [animationKey.value];
+                break;
+            case Animation.ANIMATIONTYPE_QUATERNION:
+            case Animation.ANIMATIONTYPE_MATRIX:
+            case Animation.ANIMATIONTYPE_VECTOR3:
+                key.values = animationKey.value.asArray();
+                break;
             }
 
             serializationObject.keys.push(key);
@@ -196,7 +195,6 @@
 
         return serializationObject;
     };
-
     var serializeMultiMaterial = (material: MultiMaterial): any => {
         var serializationObject: any = {};
 
@@ -218,7 +216,7 @@
 
         return serializationObject;
     };
-
+    var serializeTexture: (texture: BaseTexture) => any;
     var serializeMaterial = (material: StandardMaterial): any => {
         var serializationObject: any = {};
 
@@ -282,8 +280,7 @@
 
         return serializationObject;
     };
-
-    var serializeTexture = (texture: BaseTexture): any => {
+    serializeTexture = (texture: BaseTexture): any => {
         var serializationObject: any = {};
 
         if (!texture.name) {
@@ -299,19 +296,19 @@
 
             return serializationObject;
         }
-
+        var index: number;
         if (texture instanceof MirrorTexture) {
-            var mirrorTexture = <MirrorTexture>texture;
+            var mirrorTexture = texture;
             serializationObject.renderTargetSize = mirrorTexture.getRenderSize();
             serializationObject.renderList = [];
 
-            for (var index = 0; index < mirrorTexture.renderList.length; index++) {
+            for (index = 0; index < mirrorTexture.renderList.length; index++) {
                 serializationObject.renderList.push(mirrorTexture.renderList[index].id);
             }
 
             serializationObject.mirrorPlane = mirrorTexture.mirrorPlane.asArray();
         } else if (texture instanceof RenderTargetTexture) {
-            var renderTargetTexture = <RenderTargetTexture>texture;
+            var renderTargetTexture = texture;
             serializationObject.renderTargetSize = renderTargetTexture.getRenderSize();
             serializationObject.renderList = [];
 
@@ -344,7 +341,6 @@
 
         return serializationObject;
     };
-
     var serializeSkeleton = (skeleton: Skeleton): any => {
         var serializationObject: any = {};
 
@@ -446,30 +442,38 @@
     };
 
     var serializedGeometries: Geometry[] = [];
+    var serializeVertexData: (vertexData: Geometry) => any;
+    var serializeTorusKnot: (torusKnot: Geometry.Primitives.TorusKnot) => any;
+    var serializePlane: (plane) => any;
+    var serializeGround: (ground: Geometry.Primitives.Ground) => any;
+    var serializeTorus: (torus: Geometry.Primitives.Torus) => any;
+    var serializeCylinder: (cylinder: Geometry.Primitives.Cylinder) => any;
+    var serializeSphere: (sphere: Geometry.Primitives.Sphere) => any;
+    var serializeBox: (box: Geometry.Primitives.Box) => any;
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
         if (serializedGeometries[geometry.id]) {
             return;
         }
         if (geometry instanceof Geometry.Primitives.Box) {
-            serializationGeometries.boxes.push(serializeBox(<Geometry.Primitives.Box>geometry));
+            serializationGeometries.boxes.push(serializeBox(geometry));
         }
         else if (geometry instanceof Geometry.Primitives.Sphere) {
-            serializationGeometries.spheres.push(serializeSphere(<Geometry.Primitives.Sphere>geometry));
+            serializationGeometries.spheres.push(serializeSphere(geometry));
         }
         else if (geometry instanceof Geometry.Primitives.Cylinder) {
-            serializationGeometries.cylinders.push(serializeCylinder(<Geometry.Primitives.Cylinder>geometry));
+            serializationGeometries.cylinders.push(serializeCylinder(geometry));
         }
         else if (geometry instanceof Geometry.Primitives.Torus) {
-            serializationGeometries.toruses.push(serializeTorus(<Geometry.Primitives.Torus>geometry));
+            serializationGeometries.toruses.push(serializeTorus(geometry));
         }
         else if (geometry instanceof Geometry.Primitives.Ground) {
-            serializationGeometries.grounds.push(serializeGround(<Geometry.Primitives.Ground>geometry));
+            serializationGeometries.grounds.push(serializeGround(geometry));
         }
         else if (geometry instanceof Geometry.Primitives.Plane) {
-            serializationGeometries.planes.push(serializePlane(<Geometry.Primitives.Plane>geometry));
+            serializationGeometries.planes.push(serializePlane(geometry));
         }
         else if (geometry instanceof Geometry.Primitives.TorusKnot) {
-            serializationGeometries.torusKnots.push(serializeTorusKnot(<Geometry.Primitives.TorusKnot>geometry));
+            serializationGeometries.torusKnots.push(serializeTorusKnot(geometry));
         }
         else if (geometry instanceof Geometry.Primitives._Primitive) {
             throw new Error("Unknown primitive type");
@@ -492,8 +496,7 @@
 
         return serializationObject;
     };
-
-    var serializeVertexData = (vertexData: Geometry): any => {
+    serializeVertexData = (vertexData: Geometry): any => {
         var serializationObject = serializeGeometryBase(vertexData);
 
         if (vertexData.isVerticesDataPresent(VertexBuffer.PositionKind)) {
@@ -545,7 +548,6 @@
 
         return serializationObject;
     };
-
     var serializePrimitive = (primitive: Geometry.Primitives._Primitive): any => {
         var serializationObject = serializeGeometryBase(primitive);
 
@@ -553,16 +555,14 @@
 
         return serializationObject;
     };
-
-    var serializeBox = (box: Geometry.Primitives.Box): any => {
+    serializeBox = (box: Geometry.Primitives.Box): any => {
         var serializationObject = serializePrimitive(box);
 
         serializationObject.size = box.size;
 
         return serializationObject;
     };
-
-    var serializeSphere = (sphere: Geometry.Primitives.Sphere): any => {
+    serializeSphere = (sphere: Geometry.Primitives.Sphere): any => {
         var serializationObject = serializePrimitive(sphere);
 
         serializationObject.segments = sphere.segments;
@@ -570,8 +570,7 @@
 
         return serializationObject;
     };
-
-    var serializeCylinder = (cylinder: Geometry.Primitives.Cylinder): any => {
+    serializeCylinder = (cylinder: Geometry.Primitives.Cylinder): any => {
         var serializationObject = serializePrimitive(cylinder);
 
         serializationObject.height = cylinder.height;
@@ -581,8 +580,7 @@
 
         return serializationObject;
     };
-
-    var serializeTorus = (torus: Geometry.Primitives.Torus): any => {
+    serializeTorus = (torus: Geometry.Primitives.Torus): any => {
         var serializationObject = serializePrimitive(torus);
 
         serializationObject.diameter = torus.diameter;
@@ -591,8 +589,7 @@
 
         return serializationObject;
     };
-
-    var serializeGround = (ground: Geometry.Primitives.Ground): any => {
+    serializeGround = (ground: Geometry.Primitives.Ground): any => {
         var serializationObject = serializePrimitive(ground);
 
         serializationObject.width = ground.width;
@@ -601,16 +598,14 @@
 
         return serializationObject;
     };
-
-    var serializePlane = (plane: Geometry.Primitives.Plane): any => {
+    serializePlane = (plane: Geometry.Primitives.Plane): any => {
         var serializationObject = serializePrimitive(plane);
 
         serializationObject.size = plane.size;
 
         return serializationObject;
     };
-
-    var serializeTorusKnot = (torusKnot: Geometry.Primitives.TorusKnot): any => {
+    serializeTorusKnot = (torusKnot: Geometry.Primitives.TorusKnot): any => {
         var serializationObject = serializePrimitive(torusKnot);
 
         serializationObject.radius = torusKnot.radius;
@@ -622,7 +617,6 @@
 
         return serializationObject;
     };
-
     var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
         var serializationObject: any = {};
 
@@ -741,23 +735,19 @@
         return serializationObject;
     };
 
-    var finalizeSingleMesh = function (mesh: Mesh, serializationObject: any) {
+    var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
         //only works if the mesh is already loaded
         if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
             //serialize material
             if (mesh.material) {
                 if (mesh.material instanceof StandardMaterial) {
                     serializationObject.materials = serializationObject.materials || [];
-                    if (!serializationObject.materials.some(function (mat) {
-                        return mat.id == mesh.material.id;
-                    })) {
+                    if (!serializationObject.materials.some(mat => (mat.id === mesh.material.id))) {
                         serializationObject.materials.push(serializeMaterial(<StandardMaterial>mesh.material));
                     }
                 } else if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
-                    if (!serializationObject.multiMaterials.some(function (mat) {
-                        return mat.id == mesh.material.id;
-                    })) {
+                    if (!serializationObject.multiMaterials.some(mat => (mat.id === mesh.material.id))) {
                         serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>mesh.material));
                     }
 
@@ -816,9 +806,10 @@
 
             // Lights
             serializationObject.lights = [];
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-
+            var index: number;
+            var light: Light;
+            for (index = 0; index < scene.lights.length; index++) {
+                light = scene.lights[index];
                 serializationObject.lights.push(serializeLight(light));
             }
 
@@ -836,13 +827,25 @@
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
+            var material: Material;
             for (index = 0; index < scene.materials.length; index++) {
-                var material = scene.materials[index];
+                material = scene.materials[index];
+                serializationObject.materials.push(serializeMaterial(<StandardMaterial>material));
+            }
 
+            // MultiMaterials
+            serializationObject.multiMaterials = [];
+            for (index = 0; index < scene.multiMaterials.length; index++) {
+                var multiMaterial = scene.multiMaterials[index];
+                serializationObject.multiMaterials.push(serializeMultiMaterial(multiMaterial));
+            }
+
+            for (index = 0; index < scene.materials.length; index++) {
+                material = scene.materials[index];
                 if (material instanceof StandardMaterial) {
-                    serializationObject.materials.push(serializeMaterial(<StandardMaterial>material));
+                    serializationObject.materials.push(serializeMaterial(material));
                 } else if (material instanceof MultiMaterial) {
-                    serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>material));
+                    serializationObject.multiMaterials.push(serializeMultiMaterial(material));
                 }
             }
 
@@ -880,7 +883,7 @@
                 var abstractMesh = scene.meshes[index];
 
                 if (abstractMesh instanceof Mesh) {
-                    var mesh = <Mesh>abstractMesh;
+                    var mesh = abstractMesh;
                     if (mesh.delayLoadState === Engine.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Engine.DELAYLOADSTATE_NONE) {
                         serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
                     }
@@ -934,7 +937,7 @@
                 }
             }
 
-            toSerialize.forEach(function (mesh: Mesh) {
+            toSerialize.forEach((mesh: Mesh) => {
                 finalizeSingleMesh(mesh, serializationObject);
             });
 

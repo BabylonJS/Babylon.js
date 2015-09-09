@@ -7,7 +7,7 @@ var BABYLON;
         serializationObject.tags = BABYLON.Tags.GetTags(light);
         if (light instanceof BABYLON.PointLight) {
             serializationObject.type = 0;
-            serializationObject.position = light.position.asArray();
+            serializationObject.position = (light).position.asArray();
         }
         else if (light instanceof BABYLON.DirectionalLight) {
             serializationObject.type = 1;
@@ -46,6 +46,7 @@ var BABYLON;
         serializationObject.power = fresnelParameter.power;
         return serializationObject;
     };
+    var serializeAnimation;
     var appendAnimations = function (source, destination) {
         if (source.animations) {
             destination.animations = [];
@@ -151,7 +152,7 @@ var BABYLON;
         serializationObject.layerMask = camera.layerMask;
         return serializationObject;
     };
-    var serializeAnimation = function (animation) {
+    serializeAnimation = function (animation) {
         var serializationObject = {};
         serializationObject.name = animation.name;
         serializationObject.property = animation.targetProperty;
@@ -196,6 +197,7 @@ var BABYLON;
         }
         return serializationObject;
     };
+    var serializeTexture;
     var serializeMaterial = function (material) {
         var serializationObject = {};
         serializationObject.name = material.name;
@@ -243,7 +245,7 @@ var BABYLON;
         }
         return serializationObject;
     };
-    var serializeTexture = function (texture) {
+    serializeTexture = function (texture) {
         var serializationObject = {};
         if (!texture.name) {
             return null;
@@ -256,11 +258,12 @@ var BABYLON;
             serializationObject.coordinatesMode = texture.coordinatesMode;
             return serializationObject;
         }
+        var index;
         if (texture instanceof BABYLON.MirrorTexture) {
             var mirrorTexture = texture;
             serializationObject.renderTargetSize = mirrorTexture.getRenderSize();
             serializationObject.renderList = [];
-            for (var index = 0; index < mirrorTexture.renderList.length; index++) {
+            for (index = 0; index < mirrorTexture.renderList.length; index++) {
                 serializationObject.renderList.push(mirrorTexture.renderList[index].id);
             }
             serializationObject.mirrorPlane = mirrorTexture.mirrorPlane.asArray();
@@ -370,6 +373,14 @@ var BABYLON;
         return serializationObject;
     };
     var serializedGeometries = [];
+    var serializeVertexData;
+    var serializeTorusKnot;
+    var serializePlane;
+    var serializeGround;
+    var serializeTorus;
+    var serializeCylinder;
+    var serializeSphere;
+    var serializeBox;
     var serializeGeometry = function (geometry, serializationGeometries) {
         if (serializedGeometries[geometry.id]) {
             return;
@@ -411,7 +422,7 @@ var BABYLON;
         }
         return serializationObject;
     };
-    var serializeVertexData = function (vertexData) {
+    serializeVertexData = function (vertexData) {
         var serializationObject = serializeGeometryBase(vertexData);
         if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
             serializationObject.positions = vertexData.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -455,18 +466,18 @@ var BABYLON;
         serializationObject.canBeRegenerated = primitive.canBeRegenerated();
         return serializationObject;
     };
-    var serializeBox = function (box) {
+    serializeBox = function (box) {
         var serializationObject = serializePrimitive(box);
         serializationObject.size = box.size;
         return serializationObject;
     };
-    var serializeSphere = function (sphere) {
+    serializeSphere = function (sphere) {
         var serializationObject = serializePrimitive(sphere);
         serializationObject.segments = sphere.segments;
         serializationObject.diameter = sphere.diameter;
         return serializationObject;
     };
-    var serializeCylinder = function (cylinder) {
+    serializeCylinder = function (cylinder) {
         var serializationObject = serializePrimitive(cylinder);
         serializationObject.height = cylinder.height;
         serializationObject.diameterTop = cylinder.diameterTop;
@@ -474,26 +485,26 @@ var BABYLON;
         serializationObject.tessellation = cylinder.tessellation;
         return serializationObject;
     };
-    var serializeTorus = function (torus) {
+    serializeTorus = function (torus) {
         var serializationObject = serializePrimitive(torus);
         serializationObject.diameter = torus.diameter;
         serializationObject.thickness = torus.thickness;
         serializationObject.tessellation = torus.tessellation;
         return serializationObject;
     };
-    var serializeGround = function (ground) {
+    serializeGround = function (ground) {
         var serializationObject = serializePrimitive(ground);
         serializationObject.width = ground.width;
         serializationObject.height = ground.height;
         serializationObject.subdivisions = ground.subdivisions;
         return serializationObject;
     };
-    var serializePlane = function (plane) {
+    serializePlane = function (plane) {
         var serializationObject = serializePrimitive(plane);
         serializationObject.size = plane.size;
         return serializationObject;
     };
-    var serializeTorusKnot = function (torusKnot) {
+    serializeTorusKnot = function (torusKnot) {
         var serializationObject = serializePrimitive(torusKnot);
         serializationObject.radius = torusKnot.radius;
         serializationObject.tube = torusKnot.tube;
@@ -606,17 +617,13 @@ var BABYLON;
             if (mesh.material) {
                 if (mesh.material instanceof BABYLON.StandardMaterial) {
                     serializationObject.materials = serializationObject.materials || [];
-                    if (!serializationObject.materials.some(function (mat) {
-                        return mat.id == mesh.material.id;
-                    })) {
+                    if (!serializationObject.materials.some(function (mat) { return (mat.id === mesh.material.id); })) {
                         serializationObject.materials.push(serializeMaterial(mesh.material));
                     }
                 }
                 else if (mesh.material instanceof BABYLON.MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
-                    if (!serializationObject.multiMaterials.some(function (mat) {
-                        return mat.id == mesh.material.id;
-                    })) {
+                    if (!serializationObject.multiMaterials.some(function (mat) { return (mat.id === mesh.material.id); })) {
                         serializationObject.multiMaterials.push(serializeMultiMaterial(mesh.material));
                     }
                 }
@@ -668,8 +675,10 @@ var BABYLON;
             }
             // Lights
             serializationObject.lights = [];
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
+            var index;
+            var light;
+            for (index = 0; index < scene.lights.length; index++) {
+                light = scene.lights[index];
                 serializationObject.lights.push(serializeLight(light));
             }
             // Cameras
@@ -684,8 +693,19 @@ var BABYLON;
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
+            var material;
             for (index = 0; index < scene.materials.length; index++) {
-                var material = scene.materials[index];
+                material = scene.materials[index];
+                serializationObject.materials.push(serializeMaterial(material));
+            }
+            // MultiMaterials
+            serializationObject.multiMaterials = [];
+            for (index = 0; index < scene.multiMaterials.length; index++) {
+                var multiMaterial = scene.multiMaterials[index];
+                serializationObject.multiMaterials.push(serializeMultiMaterial(multiMaterial));
+            }
+            for (index = 0; index < scene.materials.length; index++) {
+                material = scene.materials[index];
                 if (material instanceof BABYLON.StandardMaterial) {
                     serializationObject.materials.push(serializeMaterial(material));
                 }
@@ -777,3 +797,4 @@ var BABYLON;
     })();
     BABYLON.SceneSerializer = SceneSerializer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.sceneSerializer.js.map
