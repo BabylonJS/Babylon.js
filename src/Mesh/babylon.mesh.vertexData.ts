@@ -731,9 +731,9 @@
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
                 for (var j = 0; j <= tessellation; j++) {
                     angle = j * angle_step;
-                    ringVertex.x = Math.cos(angle) * radius;
+                    ringVertex.x = Math.cos(-angle) * radius;
                     ringVertex.y = -height / 2 + h * height;
-                    ringVertex.z = Math.sin(angle) * radius;
+                    ringVertex.z = Math.sin(-angle) * radius;
                     if (diameterTop === 0 && i === subdivisions) {
                         // if no top cap, reuse former normals
                         ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
@@ -804,6 +804,9 @@
             // add caps to geometry
             createCylinderCap(true);
             createCylinderCap(false);
+
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
             var vertexData = new VertexData();
 
