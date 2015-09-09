@@ -547,7 +547,7 @@ void main(void) {
 		vec4 specularMapColor = texture2D(specularSampler, vSpecularUV);
 		specularColor = specularMapColor.rgb;
 		#ifdef GLOSSINESS
-			glossiness = specularMapColor.a;
+			glossiness *= specularMapColor.a;
 		#endif
 	#endif
 #else
