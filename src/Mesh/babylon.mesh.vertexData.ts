@@ -178,11 +178,11 @@
 
         public transform(matrix: Matrix): void {
             var transformed = Vector3.Zero();
-
+            var index: number;
             if (this.positions) {
                 var position = Vector3.Zero();
 
-                for (var index = 0; index < this.positions.length; index += 3) {
+                for (index = 0; index < this.positions.length; index += 3) {
                     Vector3.FromArrayToRef(this.positions, index, position);
 
                     Vector3.TransformCoordinatesToRef(position, matrix, transformed);
@@ -207,13 +207,14 @@
         }
 
         public merge(other: VertexData): void {
+            var index: number;
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
                 }
 
                 var offset = this.positions ? this.positions.length / 3 : 0;
-                for (var index = 0; index < other.indices.length; index++) {
+                for (index = 0; index < other.indices.length; index++) {
                     this.indices.push(other.indices[index] + offset);
                 }
             }
@@ -420,7 +421,8 @@
             var path: Vector3[];
             var l: number;
             minlg = pathArray[0].length;
-
+            var vectlg: number;
+            var dist: number;
             for (p = 0; p < pathArray.length; p++) {
                 uTotalDistance[p] = 0;
                 us[p] = [0];
@@ -432,8 +434,8 @@
                 while (j < l) {
                     positions.push(path[j].x, path[j].y, path[j].z);
                     if (j > 0) {
-                        var vectlg: number = path[j].subtract(path[j - 1]).length();
-                        var dist: number = vectlg + uTotalDistance[p];
+                        vectlg = path[j].subtract(path[j - 1]).length();
+                        dist = vectlg + uTotalDistance[p];
                         us[p].push(dist);
                         uTotalDistance[p] = dist;
                     }
@@ -657,12 +659,27 @@
             return vertexData;
         }
 
-        public static CreateSphere(segments: number, diameter: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateSphere(options: any, diameter?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+            var segments: number;
+            var diameterX: number;
+            var diameterY: number;
+            var diameterZ: number;
 
-            segments = segments || 32;
-            diameter = diameter || 1;
+            if (options.segments) {
+                segments = options.segments || 32;
+                diameterX = options.diameterX || 1;
+                diameterY = options.diameterY || 1;
+                diameterZ = options.diameterZ || 1;
+            } else { // Back-compat
+                segments = options || 32;
+                diameterX = diameter || 1;
+                diameterY = diameterX;
+                diameterZ = diameterX;
+            }
 
-            var radius = diameter / 2;
+            sideOrientation = sideOrientation || options.sideOrientation;
+
+            var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
 
             var totalZRotationSteps = 2 + segments;
             var totalYRotationSteps = 2 * totalZRotationSteps;
@@ -686,7 +703,7 @@
                     var afterRotZ = Vector3.TransformCoordinates(Vector3.Up(), rotationZ);
                     var complete = Vector3.TransformCoordinates(afterRotZ, rotationY);
 
-                    var vertex = complete.scale(radius);
+                    var vertex = complete.multiply(radius);
                     var normal = Vector3.Normalize(vertex);
 
                     positions.push(vertex.x, vertex.y, vertex.z);
@@ -732,7 +749,6 @@
 
             var angle_step = Math.PI * 2 / tessellation;
             var angle: number;
-            var subdivision_step = height / subdivisions;
             var h: number;
             var radius: number;
             var tan = (diameterBottom - diameterTop) / 2 / height;
@@ -740,10 +756,12 @@
             var ringNormal: Vector3 = Vector3.Zero();
 
             // positions, normals, uvs
-            for (var i = 0; i <= subdivisions; i++) {
+            var i: number;
+            var j: number;
+            for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
-                for (var j = 0; j <= tessellation; j++) {
+                for (j = 0; j <= tessellation; j++) {
                     angle = j * angle_step;
                     ringVertex.x = Math.cos(-angle) * radius;
                     ringVertex.y = -height / 2 + h * height;
@@ -756,7 +774,7 @@
                     }
                     else {
                         ringNormal.x = ringVertex.x;
-                        ringNormal.z = ringVertex.z
+                        ringNormal.z = ringVertex.z;
                         ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
                         ringNormal.normalize();
                     }
@@ -767,8 +785,8 @@
             }
 
             // indices
-            for (var i = 0; i < subdivisions; i++) {
-                for (var j = 0; j < tessellation; j++) {
+            for (i = 0; i < subdivisions; i++) {
+                for (j = 0; j < tessellation; j++) {
                     var i0 = i * (tessellation + 1) + j;
                     var i1 = (i + 1) * (tessellation + 1) + j;
                     var i2 = i * (tessellation + 1) + (j + 1);
@@ -779,7 +797,7 @@
             }
 
             // Caps
-            var createCylinderCap = function (isTop) {
+            var createCylinderCap = isTop => {
                 var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
                 if (radius === 0) {
                     return;
@@ -790,7 +808,8 @@
                 // Cap positions, normals & uvs
                 var angle;
                 var circleVector;
-                for (var i = 0; i < tessellation; i++) {
+                var i: number;
+                for (i = 0; i < tessellation; i++) {
                     angle = Math.PI * 2 * i / tessellation;
                     circleVector = new Vector3(Math.cos(-angle), 0, Math.sin(-angle));
                     var position = circleVector.scale(radius).add(offset);
@@ -1265,7 +1284,9 @@
             };
 
             // Vertices
-            for (var i = 0; i <= radialSegments; i++) {
+            var i: number;
+            var j: number;
+            for (i = 0; i <= radialSegments; i++) {
                 var modI = i % radialSegments;
                 var u = modI / radialSegments * 2 * p * Math.PI;
                 var p1 = getPos(u);
@@ -1279,7 +1300,7 @@
                 bitan.normalize();
                 n.normalize();
 
-                for (var j = 0; j < tubularSegments; j++) {
+                for (j = 0; j < tubularSegments; j++) {
                     var modJ = j % tubularSegments;
                     var v = modJ / tubularSegments * 2 * Math.PI;
                     var cx = -tube * Math.cos(v);
