@@ -79,6 +79,7 @@ var BABYLON;
             this.BonesPerMesh = 0;
             this.INSTANCES = false;
             this.GLOSSINESS = false;
+            this.ROUGHNESS = false;
             this._keys = Object.keys(this);
         }
         StandardMaterialDefines.prototype.isEqual = function (other) {
@@ -135,6 +136,7 @@ var BABYLON;
             this.useAlphaFromDiffuseTexture = false;
             this.useSpecularOverAlpha = true;
             this.fogEnabled = true;
+            this.roughness = 0;
             this.useGlossinessFromSpecularMapAlpha = false;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -221,6 +223,9 @@ var BABYLON;
                         needNormals = true;
                         needUVs = true;
                         this._defines.REFLECTION = true;
+                        if (this.roughness > 0) {
+                            this._defines.ROUGHNESS = true;
+                        }
                     }
                 }
                 if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -489,7 +494,8 @@ var BABYLON;
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
                     "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
+                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
+                    "roughness"
                 ], ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
                     "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                 ], join, fallbacks, this.onCompiled, this.onError);
@@ -557,6 +563,9 @@ var BABYLON;
                 if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                     if (this.reflectionTexture.isCube) {
                         this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
+                        if (this._defines.ROUGHNESS) {
+                            this._effect.setFloat("roughness", this.roughness);
+                        }
                     }
                     else {
                         this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
