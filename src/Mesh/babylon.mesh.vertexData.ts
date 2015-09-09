@@ -711,54 +711,69 @@
         // Cylinder and cone (made using ribbons)
         public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
 
-            // setup tube creation parameters
-            var path = [];
-            for (var i = 0; i <= subdivisions; i++) {
-                path.push(new Vector3(0, height * (- 0.5 + i / subdivisions), 0));
-            }
+            var indices = [];
+            var positions = [];
+            var normals = [];
+            var uvs = [];
 
-            // this is what defines the radius along the cylinder
-            var radiusFunction = function (i, distance) {
-                return (diameterBottom + (diameterTop - diameterBottom) * distance / height) / 2;
-            };
-            
-            // shortcut to 3d path data
-            var path3D = new Path3D(path);
-            var tangents = path3D.getTangents();
-            var normals = path3D.getNormals();
-            var distances = path3D.getDistances();
-
-            // let's build the array of paths (rings)
-            var pathArray: Vector3[][] = [];
-            var ringVertex: Vector3;
-            var angle;
             var angle_step = Math.PI * 2 / tessellation;
-            var distance = 0;
+            var angle: number;
+            var subdivision_step = height / subdivisions;
+            var h: number;
+            var radius: number;
+            var tan = (diameterBottom - diameterTop) / 2 / height;
+            var ringVertex: Vector3 = Vector3.Zero();
+            var ringNormal: Vector3 = Vector3.Zero();
 
+            // positions, normals, uvs
             for (var i = 0; i <= subdivisions; i++) {
-
-                pathArray[i] = [];
-
-                for (var j = 0; j < tessellation; j++) {
+                h = i / subdivisions;
+                radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
+                for (var j = 0; j <= tessellation; j++) {
                     angle = j * angle_step;
-                    ringVertex = new Vector3(Math.cos(-angle), 0, Math.sin(-angle));
-                    ringVertex.scaleInPlace(radiusFunction(i, distances[i])).addInPlace(path[i]);
-                    pathArray[i].push(ringVertex);
+                    ringVertex.x = Math.cos(-angle) * radius;
+                    ringVertex.y = -height / 2 + h * height;
+                    ringVertex.z = Math.sin(-angle) * radius;
+                    if (diameterTop === 0 && i === subdivisions) {
+                        // if no top cap, reuse former normals
+                        ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
+                        ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
+                        ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
+                    }
+                    else {
+                        ringNormal.x = ringVertex.x;
+                        ringNormal.z = ringVertex.z
+                        ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
+                        ringNormal.normalize();
+                    }
+                    positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
+                    normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
+                    uvs.push(j / tessellation, 1 -h);
                 }
             }
 
-            // create ribbon based on computed paths (& close seam)
-            var vertexdata = VertexData.CreateRibbon(pathArray, false, true, 0, sideOrientation);
+            // indices
+            for(var i = 0; i < subdivisions; i++) {
+                for (var j = 0; j < tessellation; j++)  {
+                    var i0 = i * (tessellation + 1) + j;
+                    var i1 = (i + 1) * (tessellation + 1) + j;
+                    var i2 = i * (tessellation + 1) + (j + 1);
+                    var i3 = (i + 1) * (tessellation + 1) + (j + 1);
+                    indices.push(i0, i1, i2);
+                    indices.push(i3, i2, i1);
+                }
+            }
 
+            // Caps
             var createCylinderCap = function (isTop) {
                 var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
                 if (radius === 0) {
                     return;
                 }
-                var vbase = vertexdata.positions.length / 3;
+                var vbase = positions.length / 3;
                 var offset = new Vector3(0, isTop ? height / 2 : -height / 2, 0);
                 var textureScale = new Vector2(0.5, 0.5);
-                // Positions, normals & uvs
+                // Cap positions, normals & uvs
                 var angle;
                 var circleVector;
                 for (var i = 0; i < tessellation; i++) {
@@ -766,21 +781,22 @@
                     circleVector = new Vector3(Math.cos(-angle), 0, Math.sin(-angle));
                     var position = circleVector.scale(radius).add(offset);
                     var textureCoordinate = new Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
-                    vertexdata.positions.push(position.x, position.y, position.z);
-                    vertexdata.normals.push(0, isTop ? 1 : -1, 0);
-                    vertexdata.uvs.push(textureCoordinate.x, textureCoordinate.y);
+                    positions.push(position.x, position.y, position.z);
+                    normals.push(0, isTop ? 1 : -1, 0);
+                    uvs.push(textureCoordinate.x, textureCoordinate.y);
                 }
-                // Indices
+                // Cap indices
                 for (i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
-                        vertexdata.indices.push(vbase);
-                        vertexdata.indices.push(vbase + (i + 1) % tessellation);
-                        vertexdata.indices.push(vbase + (i + 2) % tessellation);
+                        indices.push(vbase);
+                        indices.push(vbase + (i + 1) % tessellation);
+                        indices.push(vbase + (i + 2) % tessellation);
                     }
-                    else {
-                        vertexdata.indices.push(vbase);
-                        vertexdata.indices.push(vbase + (i + 2) % tessellation);
-                        vertexdata.indices.push(vbase + (i + 1) % tessellation);
+                    else 
+                    {
+                        indices.push(vbase);
+                        indices.push(vbase + (i + 2) % tessellation);
+                        indices.push(vbase + (i + 1) % tessellation);
                     }
                 }
             };
@@ -789,7 +805,17 @@
             createCylinderCap(true);
             createCylinderCap(false);
 
-            return vertexdata;
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
+            var vertexData = new VertexData();
+
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+
+            return vertexData;
         }
 
         public static CreateTorus(diameter, thickness, tessellation, sideOrientation: number = Mesh.DEFAULTSIDE) {
