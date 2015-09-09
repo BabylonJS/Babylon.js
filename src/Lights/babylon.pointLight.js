@@ -40,4 +40,3 @@ var BABYLON;
     })(BABYLON.Light);
     BABYLON.PointLight = PointLight;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.pointLight.js.map

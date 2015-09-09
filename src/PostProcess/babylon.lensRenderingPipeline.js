@@ -217,4 +217,3 @@ var BABYLON;
     })(BABYLON.PostProcessRenderPipeline);
     BABYLON.LensRenderingPipeline = LensRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.lensRenderingPipeline.js.map

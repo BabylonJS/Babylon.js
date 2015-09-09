@@ -72,4 +72,3 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.WebVRFreeCamera = WebVRFreeCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.webVRCamera.js.map
