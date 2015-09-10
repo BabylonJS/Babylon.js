@@ -452,7 +452,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 		// Specular
 		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);
 		float specComp = max(0., dot(vNormal, angleW));
-		specComp = pow(specComp, glossiness);
+		specComp = pow(specComp, max(1., glossiness));
 
 		result.specular = specComp * specularColor * spotAtten * attenuation;
 #endif
@@ -479,7 +479,7 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightData.xyz);
 	float specComp = max(0., dot(vNormal, angleW));
-	specComp = pow(specComp, glossiness);
+	specComp = pow(specComp, max(1., glossiness));
 
 	result.specular = specComp * specularColor;
 #endif
@@ -551,7 +551,7 @@ void main(void) {
 		vec4 specularMapColor = texture2D(specularSampler, vSpecularUV);
 		specularColor = specularMapColor.rgb;
 		#ifdef GLOSSINESS
-			glossiness *= specularMapColor.a;
+			glossiness = glossiness * specularMapColor.a;
 		#endif
 	#endif
 #else
