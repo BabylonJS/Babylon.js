@@ -1142,7 +1142,6 @@ var BABYLON;
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             // Check parameters
             updatable = updatable || options.updatable;
-            sideOrientation = sideOrientation || options.sideOrientation;
             var box = new Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateBox(options, sideOrientation);
             vertexData.applyToMesh(box, updatable);
@@ -1405,19 +1404,31 @@ var BABYLON;
             return lathe;
         };
         // Plane & ground
-        Mesh.CreatePlane = function (name, size, scene, updatable, sideOrientation) {
+        Mesh.CreatePlane = function (name, options, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var plane = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreatePlane(size, sideOrientation);
-            vertexData.applyToMesh(plane, updatable);
+            var vertexData = BABYLON.VertexData.CreatePlane(options, sideOrientation);
+            vertexData.applyToMesh(plane, updatable || options.updatable);
             return plane;
         };
-        Mesh.CreateGround = function (name, width, height, subdivisions, scene, updatable) {
+        Mesh.CreateGround = function (name, options, heightOrScene, subdivisions, scene, updatable) {
+            if (heightOrScene instanceof BABYLON.Scene) {
+                scene = heightOrScene;
+                updatable = options.updatable;
+            }
+            else {
+                var width = options;
+                options = {
+                    width: width,
+                    height: heightOrScene,
+                    subdivisions: subdivisions
+                };
+            }
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._setReady(false);
-            ground._subdivisions = subdivisions;
-            var vertexData = BABYLON.VertexData.CreateGround(width, height, subdivisions);
-            vertexData.applyToMesh(ground, updatable);
+            ground._subdivisions = options.subdivisions || 1;
+            var vertexData = BABYLON.VertexData.CreateGround(options);
+            vertexData.applyToMesh(ground, updatable || options.updatable);
             ground._setReady(true);
             return ground;
         };
