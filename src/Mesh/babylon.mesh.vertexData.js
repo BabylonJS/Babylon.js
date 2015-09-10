@@ -497,6 +497,7 @@ var BABYLON;
                 height = options || 1;
                 depth = options || 1;
             }
+            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var scaleVector = new BABYLON.Vector3(width / 2, height / 2, depth / 2);
             // Create each face in turn.
             for (var index = 0; index < normalsSource.length; index++) {
@@ -558,7 +559,7 @@ var BABYLON;
                 diameterY = diameterX;
                 diameterZ = diameterX;
             }
-            sideOrientation = sideOrientation || options.sideOrientation;
+            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var radius = new BABYLON.Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
             var totalZRotationSteps = 2 + segments;
             var totalYRotationSteps = 2 * totalZRotationSteps;
@@ -809,15 +810,23 @@ var BABYLON;
             vertexData.indices = indices;
             return vertexData;
         };
-        VertexData.CreateGround = function (width, height, subdivisions) {
+        VertexData.CreateGround = function (options, height, subdivisions) {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row, col;
-            width = width || 1;
-            height = height || 1;
-            subdivisions = subdivisions || 1;
+            var width;
+            if (options.width) {
+                width = options.width || 1;
+                height = options.height || 1;
+                subdivisions = options.subdivisions || 1;
+            }
+            else {
+                width = options || 1;
+                height = height || 1;
+                subdivisions = subdivisions || 1;
+            }
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
                     var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
@@ -954,25 +963,36 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreatePlane = function (size, sideOrientation) {
+        VertexData.CreatePlane = function (options, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
-            size = size || 1;
+            var width;
+            var height;
+            if (options.width) {
+                width = options.width || 1;
+                height = options.height || 1;
+                sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            }
+            else {
+                width = options || 1;
+                height = options || 1;
+            }
             // Vertices
-            var halfSize = size / 2.0;
-            positions.push(-halfSize, -halfSize, 0);
+            var halfWidth = width / 2.0;
+            var halfHeight = height / 2.0;
+            positions.push(-halfWidth, -halfHeight, 0);
             normals.push(0, 0, -1.0);
             uvs.push(0.0, 0.0);
-            positions.push(halfSize, -halfSize, 0);
+            positions.push(halfWidth, -halfHeight, 0);
             normals.push(0, 0, -1.0);
             uvs.push(1.0, 0.0);
-            positions.push(halfSize, halfSize, 0);
+            positions.push(halfWidth, halfHeight, 0);
             normals.push(0, 0, -1.0);
             uvs.push(1.0, 1.0);
-            positions.push(-halfSize, halfSize, 0);
+            positions.push(-halfWidth, halfHeight, 0);
             normals.push(0, 0, -1.0);
             uvs.push(0.0, 1.0);
             // Indices

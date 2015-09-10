@@ -1333,7 +1333,6 @@
         public static CreateBox(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // Check parameters
             updatable = updatable || options.updatable;
-            sideOrientation = sideOrientation || options.sideOrientation;
 
             var box = new Mesh(name, scene);
             var vertexData = VertexData.CreateBox(options, sideOrientation);
@@ -1617,23 +1616,37 @@
         }
 
         // Plane & ground
-        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreatePlane(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var plane = new Mesh(name, scene);
-            var vertexData = VertexData.CreatePlane(size, sideOrientation);
 
-            vertexData.applyToMesh(plane, updatable);
+            var vertexData = VertexData.CreatePlane(options, sideOrientation);
+
+            vertexData.applyToMesh(plane, updatable || options.updatable);
 
             return plane;
         }
 
-        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateGround(name: string, options: any, heightOrScene: any, subdivisions: number, scene: Scene, updatable?: boolean): Mesh {
+            if (heightOrScene instanceof Scene) {
+                scene = heightOrScene;
+                updatable = options.updatable;
+            } else {
+                var width = options;
+
+                options = {
+                    width: width,
+                    height: heightOrScene,
+                    subdivisions: subdivisions
+                }
+            }
+
             var ground = new GroundMesh(name, scene);
             ground._setReady(false);
-            ground._subdivisions = subdivisions;
+            ground._subdivisions = options.subdivisions || 1;
 
-            var vertexData = VertexData.CreateGround(width, height, subdivisions);
+            var vertexData = VertexData.CreateGround(options);
 
-            vertexData.applyToMesh(ground, updatable);
+            vertexData.applyToMesh(ground, updatable || options.updatable);
 
             ground._setReady(true);
 

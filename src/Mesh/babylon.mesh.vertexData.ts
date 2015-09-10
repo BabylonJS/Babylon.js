@@ -603,6 +603,8 @@
                 depth = options || 1;
             }
 
+            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
+
             var scaleVector = new Vector3(width / 2, height / 2, depth / 2);
 
             // Create each face in turn.
@@ -677,7 +679,7 @@
                 diameterZ = diameterX;
             }
 
-            sideOrientation = sideOrientation || options.sideOrientation;
+            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
 
@@ -982,16 +984,24 @@
             return vertexData;
         }
 
-        public static CreateGround(width: number, height: number, subdivisions: number): VertexData {
+        public static CreateGround(options: any, height?: number, subdivisions?: number): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row: number, col: number;
 
-            width = width || 1;
-            height = height || 1;
-            subdivisions = subdivisions || 1;
+            var width: number;
+
+            if (options.width) {
+                width = options.width || 1;
+                height = options.height || 1;
+                subdivisions = options.subdivisions || 1;
+            } else {
+                width = options || 1;
+                height = height || 1;
+                subdivisions = subdivisions || 1;
+            }
 
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
@@ -1163,29 +1173,41 @@
             return vertexData;
         }
 
-        public static CreatePlane(size: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreatePlane(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
 
-            size = size || 1;
+            var width: number;
+            var height: number;
+
+            if (options.width) {
+                width = options.width || 1;
+                height = options.height || 1;
+                sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
+            } else {
+                width = options || 1;
+                height = options || 1;
+            }
 
             // Vertices
-            var halfSize = size / 2.0;
-            positions.push(-halfSize, -halfSize, 0);
+            var halfWidth = width / 2.0;
+            var halfHeight = height / 2.0;
+
+            positions.push(-halfWidth, -halfHeight, 0);
             normals.push(0, 0, -1.0);
             uvs.push(0.0, 0.0);
 
-            positions.push(halfSize, -halfSize, 0);
+            positions.push(halfWidth, -halfHeight, 0);
             normals.push(0, 0, -1.0);
             uvs.push(1.0, 0.0);
 
-            positions.push(halfSize, halfSize, 0);
+            positions.push(halfWidth, halfHeight, 0);
             normals.push(0, 0, -1.0);
             uvs.push(1.0, 1.0);
 
-            positions.push(-halfSize, halfSize, 0);
+            positions.push(-halfWidth, halfHeight, 0);
             normals.push(0, 0, -1.0);
             uvs.push(0.0, 1.0);
 
