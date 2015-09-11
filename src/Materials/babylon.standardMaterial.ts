@@ -70,6 +70,8 @@
         public INSTANCES = false;
         public GLOSSINESS = false;
         public ROUGHNESS = false;
+        public EMISSIVEASILLUMINATION = false;
+        public REFLECTIONFRESNELFROMSPECULAR = false;
 
         _keys: string[];
 
@@ -144,6 +146,8 @@
         public specularPower = 64;
         public emissiveColor = new Color3(0, 0, 0);
         public useAlphaFromDiffuseTexture = false;
+        public useEmissiveAsIllumination = false;
+        public useReflectionFresnelFromSpecular = false;
         public useSpecularOverAlpha = true;
         public fogEnabled = true;
 
@@ -307,6 +311,14 @@
 
             if (this._shouldUseAlphaFromDiffuseTexture()) {
                 this._defines.ALPHAFROMDIFFUSE = true;
+            }
+
+            if (this.useEmissiveAsIllumination) {
+                this._defines.EMISSIVEASILLUMINATION = true;
+            }
+
+            if (this.useReflectionFresnelFromSpecular) {
+                this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
             }
 
             // Point size

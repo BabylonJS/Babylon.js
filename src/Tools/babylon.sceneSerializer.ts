@@ -227,6 +227,8 @@
         serializationObject.specular = material.specularColor.asArray();
         serializationObject.specularPower = material.specularPower;
         serializationObject.emissive = material.emissiveColor.asArray();
+        serializationObject.useReflectionFresnelFromSpecular = serializationObject.useReflectionFresnelFromSpecular;
+        serializationObject.useEmissiveAsIllumination = serializationObject.useEmissiveAsIllumination;
 
         serializationObject.alpha = material.alpha;
 

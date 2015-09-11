@@ -1330,6 +1330,7 @@
             return disc;
         }
 
+        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number);
         public static CreateBox(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // Check parameters
             updatable = updatable || options.updatable;
@@ -1342,6 +1343,7 @@
             return box;
         }
 
+        public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number);
         public static CreateSphere(name: string, options: any, diameterOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             if (diameterOrScene instanceof Scene) {
                 scene = diameterOrScene;
@@ -1616,6 +1618,7 @@
         }
 
         // Plane & ground
+        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number);
         public static CreatePlane(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var plane = new Mesh(name, scene);
 
@@ -1626,7 +1629,8 @@
             return plane;
         }
 
-        public static CreateGround(name: string, options: any, heightOrScene: any, subdivisions: number, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean);
+        public static CreateGround(name: string, options: any, heightOrScene: any, subdivisions?: number, scene?: Scene, updatable?: boolean): Mesh {
             if (heightOrScene instanceof Scene) {
                 scene = heightOrScene;
                 updatable = options.updatable;

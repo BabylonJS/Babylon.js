@@ -80,6 +80,8 @@ var BABYLON;
             this.INSTANCES = false;
             this.GLOSSINESS = false;
             this.ROUGHNESS = false;
+            this.EMISSIVEASILLUMINATION = false;
+            this.REFLECTIONFRESNELFROMSPECULAR = false;
             this._keys = Object.keys(this);
         }
         StandardMaterialDefines.prototype.isEqual = function (other) {
@@ -134,6 +136,8 @@ var BABYLON;
             this.specularPower = 64;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
+            this.useEmissiveAsIllumination = false;
+            this.useReflectionFresnelFromSpecular = false;
             this.useSpecularOverAlpha = true;
             this.fogEnabled = true;
             this.roughness = 0;
@@ -266,6 +270,12 @@ var BABYLON;
             }
             if (this._shouldUseAlphaFromDiffuseTexture()) {
                 this._defines.ALPHAFROMDIFFUSE = true;
+            }
+            if (this.useEmissiveAsIllumination) {
+                this._defines.EMISSIVEASILLUMINATION = true;
+            }
+            if (this.useReflectionFresnelFromSpecular) {
+                this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
             }
             // Point size
             if (this.pointsCloud || scene.forcePointsCloud) {

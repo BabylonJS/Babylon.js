@@ -109,6 +109,8 @@ var BABYLON;
             material.specularColor = BABYLON.Color3.FromArray(parsedMaterial.specular);
             material.specularPower = parsedMaterial.specularPower;
             material.emissiveColor = BABYLON.Color3.FromArray(parsedMaterial.emissive);
+            material.useReflectionFresnelFromSpecular = parsedMaterial.useReflectionFresnelFromSpecular;
+            material.useEmissiveAsIllumination = parsedMaterial.useEmissiveAsIllumination;
             material.alpha = parsedMaterial.alpha;
             material.id = parsedMaterial.id;
             if (parsedMaterial.disableDepthWrite) {

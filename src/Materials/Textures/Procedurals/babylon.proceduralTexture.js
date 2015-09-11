@@ -11,6 +11,7 @@ var BABYLON;
         function ProceduralTexture(name, size, fragment, scene, fallbackTexture, generateMipMaps) {
             if (generateMipMaps === void 0) { generateMipMaps = true; }
             _super.call(this, null, scene, !generateMipMaps);
+            this.isEnabled = true;
             this._currentRefreshId = -1;
             this._refreshRate = 1;
             this._vertexDeclaration = [2];
@@ -103,7 +104,7 @@ var BABYLON;
             configurable: true
         });
         ProceduralTexture.prototype._shouldRender = function () {
-            if (!this.isReady() || !this._texture) {
+            if (!this.isEnabled || !this.isReady() || !this._texture) {
                 return false;
             }
             if (this._fallbackTextureUsed) {
