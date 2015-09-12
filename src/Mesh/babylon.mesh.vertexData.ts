@@ -574,6 +574,8 @@
             return vertexData;
         }
 
+        public static CreateBox(options: { width?: number, height?: number, depth?: number, sideOrientation?: number }): VertexData;
+        public static CreateBox(size: number, sideOrientation?: number): VertexData;
         public static CreateBox(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var normalsSource = [
                 new Vector3(0, 0, 1),
@@ -660,7 +662,8 @@
 
             return vertexData;
         }
-
+        public static CreateSphere(options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number }): VertexData;
+        public static CreateSphere(segments: number, diameter?: number, sideOrientation?: number): VertexData;
         public static CreateSphere(options: any, diameter?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var segments: number;
             var diameterX: number;
@@ -984,6 +987,8 @@
             return vertexData;
         }
 
+        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, sideOrientation?: number }): VertexData;
+        public static CreateGround(width: number, height: number, subdivisions?: number): VertexData;
         public static CreateGround(options: any, height?: number, subdivisions?: number): VertexData {
             var indices = [];
             var positions = [];
@@ -1172,7 +1177,8 @@
 
             return vertexData;
         }
-
+        public static CreatePlane(options: { width?: number, height?: number, sideOrientation?: number }): VertexData;
+        public static CreatePlane(size: number, sideOrientation?: number): VertexData;
         public static CreatePlane(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var indices = [];
             var positions = [];

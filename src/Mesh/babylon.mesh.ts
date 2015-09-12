@@ -707,8 +707,8 @@
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
-
-            for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            var callbackIndex: number;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex](this);
             }
 
@@ -862,7 +862,8 @@
 
         public setMaterialByID(id: string): void {
             var materials = this.getScene().materials;
-            for (var index = 0; index < materials.length; index++) {
+            var index: number;
+            for (index = 0; index < materials.length; index++) {
                 if (materials[index].id === id) {
                     this.material = materials[index];
                     return;
@@ -904,7 +905,8 @@
 
             var data = this.getVerticesData(VertexBuffer.PositionKind);
             var temp = [];
-            for (var index = 0; index < data.length; index += 3) {
+            var index: number;
+            for (index = 0; index < data.length; index += 3) {
                 Vector3.TransformCoordinates(Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
 
@@ -1069,8 +1071,10 @@
             var data = [];
             var newdata = [];
             var updatableNormals = false;
-            for (var kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
-                var kind = kinds[kindIndex];
+            var kindIndex: number;
+            var kind: string;
+            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                kind = kinds[kindIndex];
                 var vertexBuffer = this.getVertexBuffer(kind);
 
                 if (kind === VertexBuffer.NormalKind) {
@@ -1092,7 +1096,8 @@
             var totalIndices = this.getTotalIndices();
 
             // Generating unique vertices per face
-            for (var index = 0; index < totalIndices; index++) {
+            var index: number;
+            for (index = 0; index < totalIndices; index++) {
                 var vertexIndex = indices[index];
 
                 for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
@@ -1152,15 +1157,15 @@
         // will inverse faces orientations, and invert normals too if specified
         public flipFaces(flipNormals: boolean = false): void {
             var vertex_data = VertexData.ExtractFromMesh(this);
-
+            var i: number;
             if (flipNormals && this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                for (var i = 0; i < vertex_data.normals.length; i++) {
+                for (i = 0; i < vertex_data.normals.length; i++) {
                     vertex_data.normals[i] *= -1;
                 }
             }
 
             var temp;
-            for (var i = 0; i < vertex_data.indices.length; i += 3) {
+            for (i = 0; i < vertex_data.indices.length; i += 3) {
                 // reassign indices
                 temp = vertex_data.indices[i + 1];
                 vertex_data.indices[i + 1] = vertex_data.indices[i + 2];
@@ -1330,7 +1335,8 @@
             return disc;
         }
 
-        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number);
+        public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateBox(name: string, options: { width?: number, height?: number, depth?: number, sideOrientation?: number, updatable?: boolean}, scene: Scene): Mesh;
         public static CreateBox(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // Check parameters
             updatable = updatable || options.updatable;
@@ -1343,7 +1349,8 @@
             return box;
         }
 
-        public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number);
+        public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateSphere(name: string, options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number, updatable?: boolean}, scene: any): Mesh;
         public static CreateSphere(name: string, options: any, diameterOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             if (diameterOrScene instanceof Scene) {
                 scene = diameterOrScene;
@@ -1587,7 +1594,6 @@
             radius = radius || 1;
             tessellation = tessellation || radius * 60;
             var pi2 = Math.PI * 2;
-            var Y = Axis.Y;
             var shapeLathe = new Array<Vector3>();
 
             // first rotatable point
@@ -1618,7 +1624,8 @@
         }
 
         // Plane & ground
-        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number);
+        public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreatePlane(name: string, options: { width?: number, height?: number, sideOrientation?: number, updatable?: boolean}, scene: Scene): Mesh;
         public static CreatePlane(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var plane = new Mesh(name, scene);
 
@@ -1629,7 +1636,8 @@
             return plane;
         }
 
-        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean);
+        public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh;
+        public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: any): Mesh;
         public static CreateGround(name: string, options: any, heightOrScene: any, subdivisions?: number, scene?: Scene, updatable?: boolean): Mesh {
             if (heightOrScene instanceof Scene) {
                 scene = heightOrScene;

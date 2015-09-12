@@ -503,6 +503,10 @@
             this._checkLimits();
         }
 
+        public setTarget(target: Vector3): void {
+            this.target = target;
+        }
+
         public _getViewMatrix(): Matrix {
             // Compute
             var cosa = Math.cos(this.alpha);
