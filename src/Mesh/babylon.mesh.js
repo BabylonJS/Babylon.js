@@ -620,7 +620,8 @@ var BABYLON;
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
-            for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            var callbackIndex;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex](this);
             }
             var engine = scene.getEngine();
@@ -741,7 +742,8 @@ var BABYLON;
         };
         Mesh.prototype.setMaterialByID = function (id) {
             var materials = this.getScene().materials;
-            for (var index = 0; index < materials.length; index++) {
+            var index;
+            for (index = 0; index < materials.length; index++) {
                 if (materials[index].id === id) {
                     this.material = materials[index];
                     return;
@@ -775,7 +777,8 @@ var BABYLON;
             this._resetPointsArrayCache();
             var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var temp = [];
-            for (var index = 0; index < data.length; index += 3) {
+            var index;
+            for (index = 0; index < data.length; index += 3) {
                 BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.FromArray(data, index), transform).toArray(temp, index);
             }
             this.setVerticesData(BABYLON.VertexBuffer.PositionKind, temp, this.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).isUpdatable());
@@ -908,8 +911,10 @@ var BABYLON;
             var data = [];
             var newdata = [];
             var updatableNormals = false;
-            for (var kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
-                var kind = kinds[kindIndex];
+            var kindIndex;
+            var kind;
+            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                kind = kinds[kindIndex];
                 var vertexBuffer = this.getVertexBuffer(kind);
                 if (kind === BABYLON.VertexBuffer.NormalKind) {
                     updatableNormals = vertexBuffer.isUpdatable();
@@ -926,7 +931,8 @@ var BABYLON;
             var indices = this.getIndices();
             var totalIndices = this.getTotalIndices();
             // Generating unique vertices per face
-            for (var index = 0; index < totalIndices; index++) {
+            var index;
+            for (index = 0; index < totalIndices; index++) {
                 var vertexIndex = indices[index];
                 for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
                     kind = kinds[kindIndex];
@@ -975,13 +981,14 @@ var BABYLON;
         Mesh.prototype.flipFaces = function (flipNormals) {
             if (flipNormals === void 0) { flipNormals = false; }
             var vertex_data = BABYLON.VertexData.ExtractFromMesh(this);
+            var i;
             if (flipNormals && this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                for (var i = 0; i < vertex_data.normals.length; i++) {
+                for (i = 0; i < vertex_data.normals.length; i++) {
                     vertex_data.normals[i] *= -1;
                 }
             }
             var temp;
-            for (var i = 0; i < vertex_data.indices.length; i += 3) {
+            for (i = 0; i < vertex_data.indices.length; i += 3) {
                 // reassign indices
                 temp = vertex_data.indices[i + 1];
                 vertex_data.indices[i + 1] = vertex_data.indices[i + 2];
@@ -1376,7 +1383,6 @@ var BABYLON;
             radius = radius || 1;
             tessellation = tessellation || radius * 60;
             var pi2 = Math.PI * 2;
-            var Y = BABYLON.Axis.Y;
             var shapeLathe = new Array();
             // first rotatable point
             var i = 0;

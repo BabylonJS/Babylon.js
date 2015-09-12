@@ -458,6 +458,9 @@ var BABYLON;
             this.beta = Math.acos(radiusv3.y / this.radius);
             this._checkLimits();
         };
+        ArcRotateCamera.prototype.setTarget = function (target) {
+            this.target = target;
+        };
         ArcRotateCamera.prototype._getViewMatrix = function () {
             // Compute
             var cosa = Math.cos(this.alpha);
