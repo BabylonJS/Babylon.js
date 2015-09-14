@@ -10,15 +10,8 @@
 #include <sstream>
 #include "..\BabylonFbxNative\BabylonScene.h"
 #include "..\BabylonFbxNative\GlobalSettings.h"
+#include "..\BabylonFbxNative\StringUtils.h"
 
-
-std::string wstringToUtf8(const std::wstring& src){
-	auto size = WideCharToMultiByte(CP_UTF8, 0, src.c_str(), static_cast<int>( src.size()), nullptr, 0, nullptr, nullptr);
-	std::string result;
-	result.resize(size, ' ');
-	WideCharToMultiByte(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), &result[0], size,nullptr, nullptr);
-	return result;
-}
 
 
 
@@ -66,7 +59,8 @@ void exportTexture(const std::shared_ptr<BabylonTexture>& tex, const std::wstrin
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::wcout << L"Usage : FbxExporter <path to fbx file> <outdir> [/fps:60|30|24] [/skipemptynodes]" << std::endl;
+	std::wcout << L"version : 2015.09.14" << std::endl;
+	std::wcout << L"Usage : FbxExporter <path to fbx file> <outdir> [/fps:60|30|24] [/skipemptynodes] [/animstack:\"animstack name\"]" << std::endl;
 	if (argc < 3) {
 		std::wcerr << L"Invalid argument count" << std::endl;
 		return -1;
@@ -85,6 +79,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::wstring wOutputPath(argv[2]);
 	CreateDirectory(wOutputPath.c_str(), nullptr);
 	bool skipEmptyNodes = false;
+	std::wstring animStackName;
 	for (int i = 3; i < argc; ++i){
 		std::wstring warg = argv[i];
 		if (warg == L"/skipemptynodes") {
@@ -105,11 +100,51 @@ int _tmain(int argc, _TCHAR* argv[])
 				return -2;
 			}
 		}
+		else if (warg.find(L"/animstack:") == 0) {
+			animStackName = warg.substr(11);
+			
+			if (animStackName.size()>0 && animStackName[0] == L'\"') {
+				animStackName.erase(0, 1);
+			}
+			if (animStackName.size() > 0 && animStackName[animStackName.size() - 1] == L'\"') {
+				animStackName.erase(animStackName.size() - 1, 1);
+			}
+		}
 		
 	}
 	
 
 	FbxSceneLoader sceneLoader(wstringToUtf8(wInputPath));
+	auto animStackCount = sceneLoader.getScene()->GetSrcObjectCount<FbxAnimStack>();
+	if (animStackName.size() == 0) {
+		GlobalSettings::Current().AnimStackIndex = 0;
+	}
+	else {
+		for (auto ix = 0; ix < animStackCount; ++ix) {
+			auto animStack = sceneLoader.getScene()->GetSrcObject<FbxAnimStack>(ix);
+			if (utf8ToWstring(animStack->GetName()) == animStackName) {
+				GlobalSettings::Current().AnimStackIndex = ix;
+			}
+		}
+	}
+	std::wcout << L"Animation stacks : " << std::endl;
+	for (auto ix = 0; ix < animStackCount; ++ix) {
+		auto animStack = sceneLoader.getScene()->GetSrcObject<FbxAnimStack>(ix);
+		if (ix == GlobalSettings::Current().AnimStackIndex) {
+			std::wcout << L"[X] ";
+			sceneLoader.getScene()->SetCurrentAnimationStack(animStack);
+		}
+		else {
+			std::wcout << L"[ ] ";
+		}
+		
+		std::wcout << utf8ToWstring(animStack->GetName());
+		auto ts=animStack->GetLocalTimeSpan();
+		auto start = ts.GetStart();
+		auto stop = ts.GetStop();
+		std::wcout << L"(" << start.GetMilliSeconds() << L" - " << stop.GetMilliSeconds() << L")" << std::endl;
+	}
+
 	auto root = sceneLoader.rootNode();
 
 	BabylonScene babScene(*root, skipEmptyNodes);

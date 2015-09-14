@@ -7,6 +7,7 @@ BabylonSkeleton::BabylonSkeleton()
 }
 
 
+
 web::json::value BabylonBone::toJson(){
 	auto jobj = web::json::value::object();
 	jobj[L"name"] = web::json::value::string(name);
