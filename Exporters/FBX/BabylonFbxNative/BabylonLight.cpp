@@ -128,13 +128,13 @@ BabylonLight::BabylonLight(BabylonNode & babnode) :
 	if (castShadows) {
 		shadowGenerator = std::make_shared<BabylonShadowGenerator>(node);
 	}
-	auto animStack = node->GetScene()->GetSrcObject<FbxAnimStack>(0);
+	auto animStack = node->GetScene()->GetCurrentAnimationStack();
 	FbxString animStackName = animStack->GetName();
-	FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
+	//FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
 	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
 	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
+	auto startFrame = animStack->GetLocalTimeSpan().GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = animStack->GetLocalTimeSpan().GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 	auto posAnimName = getNodeId(node);
 	auto dirAnimName = getNodeId(node);
