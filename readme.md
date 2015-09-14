@@ -3,6 +3,8 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/deltakosh/babylon.js/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
 ## CDN
 - http://cdn.babylonjs.com/2-1/babylon.js 
 - http://cdn.babylonjs.com/2-1/babylon.max.js 
