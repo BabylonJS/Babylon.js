@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include "NodeHelpers.h"
 #include "GlobalSettings.h"
+#include "StringUtils.h"
 
 web::json::value BabylonMaterial::toJson() const
 {
@@ -61,13 +62,7 @@ alpha(1)
 {
 }
 
-std::wstring utf8ToWstring(const std::string& src){
-	auto size = MultiByteToWideChar(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), nullptr, 0);
-	std::wstring result;
-	result.resize(size, ' ');
-	MultiByteToWideChar(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), &result[0], size);
-	return result;
-}
+
 
 
 FbxDouble3 GetMaterialProperty(const FbxSurfaceMaterial * pMaterial,

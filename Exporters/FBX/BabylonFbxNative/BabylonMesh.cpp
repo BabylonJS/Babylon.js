@@ -440,13 +440,13 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	}
 	pivotMatrix = ConvertToBabylonCoordinateSystem( GetGeometryTransformation(fbxNode));
 
-	auto animStack = fbxNode->GetScene()->GetSrcObject<FbxAnimStack>(0);
+	auto animStack = fbxNode->GetScene()->GetCurrentAnimationStack();
 	FbxString animStackName = animStack->GetName();
-	FbxTakeInfo* takeInfo = fbxNode->GetScene()->GetTakeInfo(animStackName);
+	//FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
 	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
 	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
+	auto startFrame = animStack->GetLocalTimeSpan().GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = animStack->GetLocalTimeSpan().GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 	_visibility = static_cast<float>(node->fbxNode()->Visibility.Get());
 	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"position", L"position", true, 0, static_cast<int>(animLengthInFrame), true);
@@ -734,7 +734,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 			}
 			if (skinInfo.hasSkin()){
 				auto& skinData = skinInfo.controlPointBoneIndicesAndWeights(controlPointIndex);
-				for (auto boneix = 0; boneix < skinData.size()&&boneix<4; ++boneix){
+				for (std::size_t boneix = 0; boneix < skinData.size()&&boneix< (size_t)4; ++boneix){
 					v.boneIndices[boneix] = skinData[boneix].index;
 					v.boneWeights[boneix] = static_cast<float>(skinData[boneix].weight);
 				}
