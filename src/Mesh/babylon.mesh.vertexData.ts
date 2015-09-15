@@ -574,7 +574,7 @@
             return vertexData;
         }
 
-        public static CreateBox(options: { width?: number, height?: number, depth?: number, faceUV: Vector4[], sideOrientation?: number }): VertexData;
+        public static CreateBox(options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], sideOrientation?: number }): VertexData;
         public static CreateBox(size: number, sideOrientation?: number): VertexData;
         public static CreateBox(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var normalsSource = [
@@ -594,7 +594,7 @@
             var width = 1;
             var height = 1;
             var depth = 1;
-            var faceUV = options.faceUV || new Array(6);
+            var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
 
             if (options.width !== undefined) {
                 width = options.width || 1;
