@@ -16,11 +16,16 @@
             }
 
             // Particles
+            var activeCamera = this._scene.activeCamera;
             var beforeParticlesDate = Tools.Now;
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
 
                 if (particleSystem.renderingGroupId !== index) {
+                    continue;
+                }
+
+                if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
                     continue;
                 }
 
@@ -39,11 +44,12 @@
             }
 
             // Sprites       
+            var activeCamera = this._scene.activeCamera;
             var beforeSpritessDate = Tools.Now;
             for (var id = 0; id < this._scene.spriteManagers.length; id++) {
                 var spriteManager = this._scene.spriteManagers[id];
 
-                if (spriteManager.renderingGroupId === index) {
+                if (spriteManager.renderingGroupId === index && ((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
                     this._clearDepthBuffer();
                     spriteManager.render();
                 }
