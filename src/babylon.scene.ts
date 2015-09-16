@@ -1204,7 +1204,8 @@
         }
 
         public getSoundByName(name: string): Sound {
-            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+            var index: number;
+            for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
                 if (this.mainSoundTrack.soundCollection[index].name === name) {
                     return this.mainSoundTrack.soundCollection[index];
                 }
@@ -1483,9 +1484,9 @@
             var beforeRenderDate = Tools.Now;
             // Backgrounds
             var layerIndex;
+            var layer;
             if (this.layers.length) {
                 engine.setDepthBuffer(false);
-                var layer;
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
                     if (layer.isBackground) {
@@ -1512,7 +1513,11 @@
             if (this.lensFlaresEnabled) {
                 Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
                 for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-                    this.lensFlareSystems[lensFlareSystemIndex].render();
+
+                    var lensFlareSystem = this.lensFlareSystems[lensFlareSystemIndex];
+                    if ((camera.layerMask & lensFlareSystem.layerMask) !== 0) {
+                        lensFlareSystem.render();
+                    }
                 }
                 Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
             }
