@@ -18,7 +18,7 @@ You can help by testing or contributing to the next version.
 
 ## Documentation
 - [Documentation](http://doc.babylonjs.com)
-- [Roadmap](http://doc.babylonjs.com/page.php?p=22681)
+- [Roadmap](http://doc.babylonjs.com/generals/Roadmap)
 - [Samples](https://github.com/BabylonJS/Samples)
 - [Video overview (1 hour) of BabylonJS features](http://www.youtube.com/watch?v=z80TYMqsdEM)
 - [Complete course (8 hours)](http://www.microsoftvirtualacademy.com/training-courses/introduction-to-webgl-3d-with-html5-and-babylon-js)
