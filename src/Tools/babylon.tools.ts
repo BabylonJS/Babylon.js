@@ -325,7 +325,7 @@
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
-                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: []}));
+                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
             };
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
@@ -505,12 +505,12 @@
                 var a = window.document.createElement("a");
                 a.href = base64Image;
                 var date = new Date();
-                var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0'+date.getMinutes()).slice(-2);
+                var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
                 a.setAttribute("download", "screenshot_" + stringDate + ".png");
 
                 window.document.body.appendChild(a);
 
-                a.addEventListener("click",() => {
+                a.addEventListener("click", () => {
                     a.parentElement.removeChild(a);
                 });
                 a.click();
@@ -910,7 +910,7 @@
          * @constructor
          */
         public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0) {
-            AsyncLoop.Run(Math.ceil(iterations / syncedIterations),(loop: AsyncLoop) => {
+            AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
                 if (breakFunction && breakFunction()) loop.breakLoop();
                 else {
                     setTimeout(() => {

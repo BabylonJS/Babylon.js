@@ -5,6 +5,7 @@ var BABYLON;
             this.name = name;
             this.lensFlares = new Array();
             this.borderLimit = 300;
+            this.layerMask = 0x0FFFFFFF;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
             this._isEnabled = true;
