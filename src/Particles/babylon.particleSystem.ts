@@ -37,6 +37,8 @@
 
         public particleTexture: Texture;
 
+        public layerMask: number = 0x0FFFFFFF;
+
         public onDispose: () => void;
         public updateFunction: (particles: Particle[]) => void;
 

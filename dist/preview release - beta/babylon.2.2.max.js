@@ -4651,8 +4651,8 @@ var BABYLON;
                 var a = window.document.createElement("a");
                 a.href = base64Image;
                 var date = new Date();
-                var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                a.setAttribute("download", "screenshot-" + stringDate + ".png");
+                var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                a.setAttribute("download", "screenshot_" + stringDate + ".png");
                 window.document.body.appendChild(a);
                 a.addEventListener("click", function () {
                     a.parentElement.removeChild(a);
@@ -12293,10 +12293,14 @@ var BABYLON;
                 return;
             }
             // Particles
+            var activeCamera = this._scene.activeCamera;
             var beforeParticlesDate = BABYLON.Tools.Now;
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
                 if (particleSystem.renderingGroupId !== index) {
+                    continue;
+                }
+                if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
                     continue;
                 }
                 this._clearDepthBuffer();
@@ -12311,10 +12315,11 @@ var BABYLON;
                 return;
             }
             // Sprites       
+            var activeCamera = this._scene.activeCamera;
             var beforeSpritessDate = BABYLON.Tools.Now;
             for (var id = 0; id < this._scene.spriteManagers.length; id++) {
                 var spriteManager = this._scene.spriteManagers[id];
-                if (spriteManager.renderingGroupId === index) {
+                if (spriteManager.renderingGroupId === index && ((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
                     this._clearDepthBuffer();
                     spriteManager.render();
                 }
@@ -13399,7 +13404,8 @@ var BABYLON;
             return null;
         };
         Scene.prototype.getSoundByName = function (name) {
-            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+            var index;
+            for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
                 if (this.mainSoundTrack.soundCollection[index].name === name) {
                     return this.mainSoundTrack.soundCollection[index];
                 }
@@ -13623,9 +13629,9 @@ var BABYLON;
             var beforeRenderDate = BABYLON.Tools.Now;
             // Backgrounds
             var layerIndex;
+            var layer;
             if (this.layers.length) {
                 engine.setDepthBuffer(false);
-                var layer;
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
                     if (layer.isBackground) {
@@ -13648,7 +13654,10 @@ var BABYLON;
             if (this.lensFlaresEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
                 for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-                    this.lensFlareSystems[lensFlareSystemIndex].render();
+                    var lensFlareSystem = this.lensFlareSystems[lensFlareSystemIndex];
+                    if ((camera.layerMask & lensFlareSystem.layerMask) !== 0) {
+                        lensFlareSystem.render();
+                    }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
             }
@@ -21183,6 +21192,7 @@ var BABYLON;
             this.cellSize = cellSize;
             this.sprites = new Array();
             this.renderingGroupId = 0;
+            this.layerMask = 0x0FFFFFFF;
             this.fogEnabled = true;
             this._vertexDeclaration = [4, 4, 4, 4];
             this._vertexStrideSize = 16 * 4; // 15 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
@@ -21535,6 +21545,7 @@ var BABYLON;
             this.maxSize = 1;
             this.minAngularSpeed = 0;
             this.maxAngularSpeed = 0;
+            this.layerMask = 0x0FFFFFFF;
             this.blendMode = ParticleSystem.BLENDMODE_ONEONE;
             this.forceDepthWrite = false;
             this.gravity = BABYLON.Vector3.Zero();
@@ -23442,6 +23453,7 @@ var BABYLON;
             this.name = name;
             this.lensFlares = new Array();
             this.borderLimit = 300;
+            this.layerMask = 0x0FFFFFFF;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
             this._isEnabled = true;
@@ -26677,6 +26689,7 @@ var BABYLON;
             var width = 1;
             var height = 1;
             var depth = 1;
+            var faceUV = options.faceUV || new Array(6);
             if (options.width !== undefined) {
                 width = options.width || 1;
                 height = options.height || 1;
@@ -26686,6 +26699,11 @@ var BABYLON;
                 width = options || 1;
                 height = options || 1;
                 depth = options || 1;
+            }
+            for (var f = 0; f < 6; f++) {
+                if (faceUV[f] === undefined) {
+                    faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
+                }
             }
             sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var scaleVector = new BABYLON.Vector3(width / 2, height / 2, depth / 2);
@@ -26707,19 +26725,19 @@ var BABYLON;
                 var vertex = normal.subtract(side1).subtract(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
-                uvs.push(1.0, 1.0);
+                uvs.push(faceUV[index].z, faceUV[index].w);
                 vertex = normal.subtract(side1).add(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
-                uvs.push(0.0, 1.0);
+                uvs.push(faceUV[index].x, faceUV[index].w);
                 vertex = normal.add(side1).add(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
-                uvs.push(0.0, 0.0);
+                uvs.push(faceUV[index].x, faceUV[index].y);
                 vertex = normal.add(side1).subtract(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
-                uvs.push(1.0, 0.0);
+                uvs.push(faceUV[index].z, faceUV[index].y);
             }
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);

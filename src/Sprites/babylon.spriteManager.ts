@@ -2,6 +2,7 @@
     export class SpriteManager {
         public sprites = new Array<Sprite>();
         public renderingGroupId = 0;
+        public layerMask: number = 0x0FFFFFFF;
         public onDispose: () => void;
         public fogEnabled = true;
 

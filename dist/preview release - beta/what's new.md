@@ -10,6 +10,7 @@
     - OBJ loader. See [demo here](http://www.babylonjs-playground.com/#28YUR5) [Temechon](https://github.com/Temechon)
     - EdgesRenderer. See [demo here](http://www.babylonjs-playground.com/#TYAHX#10) [deltakosh](https://github.com/deltakosh)
   - **Updates**
+    - Adding layerMask to lensFlareSystem, spritesManager, particleSystem [deltakosh](https://github.com/deltakosh)
     - Adding emissiveAsIllumination and reflectionFresnelFromSpecular for StandardMaterial [deltakosh](https://github.com/deltakosh)
     - Adding isEnabled for ProceduralTexture [deltakosh](https://github.com/deltakosh)
     - Compression supported for raw textures [deltakosh](https://github.com/deltakosh)
