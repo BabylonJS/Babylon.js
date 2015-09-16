@@ -1336,7 +1336,7 @@
         }
 
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateBox(name: string, options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], sideOrientation?: number, updatable?: boolean}, scene: Scene): Mesh;
+        public static CreateBox(name: string, options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean}, scene: Scene): Mesh;
         public static CreateBox(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // Check parameters
             updatable = updatable || options.updatable;
