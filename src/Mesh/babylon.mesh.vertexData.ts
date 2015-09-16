@@ -574,7 +574,7 @@
             return vertexData;
         }
 
-        public static CreateBox(options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], sideOrientation?: number }): VertexData;
+        public static CreateBox(options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData;
         public static CreateBox(size: number, sideOrientation?: number): VertexData;
         public static CreateBox(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var normalsSource = [
@@ -590,11 +590,13 @@
             var positions = [];
             var normals = [];
             var uvs = [];
+            var colors = [];
 
             var width = 1;
             var height = 1;
             var depth = 1;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
+            var faceColors: Color4[] = options.faceColors || new Array<Color4>(6);
 
             if (options.width !== undefined) {
                 width = options.width || 1;
@@ -605,14 +607,17 @@
                 height = options || 1;
                 depth = options || 1;
             }
+            
+            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
 
             for (var f = 0; f < 6; f++) {
                 if (faceUV[f] === undefined) {
                     faceUV[f] = new Vector4(0, 0, 1, 1);
                 }
-            }
-
-            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
+                if (faceColors[f] === undefined) {
+                    faceColors[f] = new Color4(1, 1, 1, 1);
+                }
+            }            
 
             var scaleVector = new Vector3(width / 2, height / 2, depth / 2);
 
@@ -639,21 +644,25 @@
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(faceUV[index].z, faceUV[index].w);
+                colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
 
                 vertex = normal.subtract(side1).add(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(faceUV[index].x, faceUV[index].w);
+                colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
 
                 vertex = normal.add(side1).add(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(faceUV[index].x, faceUV[index].y);
+                colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
 
                 vertex = normal.add(side1).subtract(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(faceUV[index].z, faceUV[index].y);
+                colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
             }
 
             // sides
@@ -666,6 +675,8 @@
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            var totalColors = (sideOrientation == Mesh.DOUBLESIDE) ? colors.concat(colors) : colors;
+            vertexData.colors = totalColors;
 
             return vertexData;
         }
