@@ -58,3 +58,4 @@ var BABYLON;
     })();
     BABYLON.PostProcessRenderPipelineManager = PostProcessRenderPipelineManager;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.postProcessRenderPipelineManager.js.map
