@@ -421,8 +421,8 @@ var BABYLON;
                 var a = window.document.createElement("a");
                 a.href = base64Image;
                 var date = new Date();
-                var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                a.setAttribute("download", "screenshot-" + stringDate + ".png");
+                var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                a.setAttribute("download", "screenshot_" + stringDate + ".png");
                 window.document.body.appendChild(a);
                 a.addEventListener("click", function () {
                     a.parentElement.removeChild(a);
