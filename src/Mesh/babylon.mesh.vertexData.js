@@ -488,6 +488,11 @@ var BABYLON;
             var height = 1;
             var depth = 1;
             var faceUV = options.faceUV || new Array(6);
+            var faceColors;
+            var colors = [];
+            if (options.faceColors) {
+                faceColors = options.faceColors;
+            }
             if (options.width !== undefined) {
                 width = options.width || 1;
                 height = options.height || 1;
@@ -498,12 +503,15 @@ var BABYLON;
                 height = options || 1;
                 depth = options || 1;
             }
+            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             for (var f = 0; f < 6; f++) {
                 if (faceUV[f] === undefined) {
                     faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
                 }
+                if (faceColors && faceColors[f] === undefined) {
+                    faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
+                }
             }
-            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var scaleVector = new BABYLON.Vector3(width / 2, height / 2, depth / 2);
             // Create each face in turn.
             for (var index = 0; index < normalsSource.length; index++) {
@@ -524,18 +532,30 @@ var BABYLON;
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(faceUV[index].z, faceUV[index].w);
+                if (faceColors) {
+                    colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
+                }
                 vertex = normal.subtract(side1).add(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(faceUV[index].x, faceUV[index].w);
+                if (faceColors) {
+                    colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
+                }
                 vertex = normal.add(side1).add(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(faceUV[index].x, faceUV[index].y);
+                if (faceColors) {
+                    colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
+                }
                 vertex = normal.add(side1).subtract(side2).multiply(scaleVector);
                 positions.push(vertex.x, vertex.y, vertex.z);
                 normals.push(normal.x, normal.y, normal.z);
                 uvs.push(faceUV[index].z, faceUV[index].y);
+                if (faceColors) {
+                    colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
+                }
             }
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
@@ -545,6 +565,10 @@ var BABYLON;
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            if (faceColors) {
+                var totalColors = (sideOrientation === BABYLON.Mesh.DOUBLESIDE) ? colors.concat(colors) : colors;
+                vertexData.colors = totalColors;
+            }
             return vertexData;
         };
         VertexData.CreateSphere = function (options, diameter, sideOrientation) {
