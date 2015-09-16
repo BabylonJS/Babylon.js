@@ -607,6 +607,8 @@
                 height = options || 1;
                 depth = options || 1;
             }
+            
+            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
 
             for (var f = 0; f < 6; f++) {
                 if (faceUV[f] === undefined) {
@@ -615,9 +617,7 @@
                 if (faceColors[f] === undefined) {
                     faceColors[f] = new Color4(1, 1, 1, 1);
                 }
-            }
-
-            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
+            }            
 
             var scaleVector = new Vector3(width / 2, height / 2, depth / 2);
 
@@ -675,7 +675,8 @@
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
-            vertexData.colors = colors;
+            var totalColors = (sideOrientation == Mesh.DOUBLESIDE) ? colors.concat(colors) : colors;
+            vertexData.colors = totalColors;
 
             return vertexData;
         }
