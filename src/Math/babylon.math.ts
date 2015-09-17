@@ -3515,6 +3515,12 @@
         private _binormals = new Array<Vector3>();
         private _raw: boolean;
 
+        /** 
+        * new Path3D(path, normal, raw) 
+        * path : an array of Vector3, the axis curve of the path3d
+        * normal (optional) : Vector3, the first desired normal to the curve. Ex (0, 1, 0) for vertical normal.
+        * raw (optional, default false) : boolean, if true the returned path3d is not normalized. Useful to depict path acceleration or speed.
+        */
         constructor(public path: Vector3[], firstNormal?: Vector3, raw?: boolean) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
