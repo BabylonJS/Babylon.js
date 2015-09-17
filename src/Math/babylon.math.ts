@@ -1066,7 +1066,7 @@
         }
 
         /** 
-         * The same than RotationFromAxis but update the passed ref Vector3 parameter.
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
          */
         public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
             var u = Vector3.Normalize(axis1);
@@ -3528,9 +3528,9 @@
 
         /** 
         * new Path3D(path, normal, raw) 
-        * path : an array of Vector3, the axis curve of the path3d
-        * normal (optional) : Vector3, the first desired normal to the curve. Ex (0, 1, 0) for vertical normal.
-        * raw (optional, default false) : boolean, if true the returned path3d is not normalized. Useful to depict path acceleration or speed.
+        * path : an array of Vector3, the curve axis of the Path3D
+        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
         */
         constructor(public path: Vector3[], firstNormal?: Vector3, raw?: boolean) {
             for (var p = 0; p < path.length; p++) {
