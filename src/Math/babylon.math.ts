@@ -1060,6 +1060,15 @@
          * to something in order to rotate it from its local system to the given target system.
          */
         public static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3 {
+            var rotation = Vector3.Zero();
+            Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
+            return rotation;
+        }
+
+        /** 
+         * The same than RotationFromAxis but update the passed ref Vector3 parameter.
+         */
+        public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
             var u = Vector3.Normalize(axis1);
             var w = Vector3.Normalize(axis3);
 
@@ -1171,7 +1180,9 @@
                 yaw = Math.PI + yaw;
             }
 
-            return new Vector3(pitch, yaw, roll);
+            ref.x = pitch;
+            ref.y = yaw;
+            ref.z = roll;
         }
     }
 
