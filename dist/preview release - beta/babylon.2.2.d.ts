@@ -2229,6 +2229,48 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Texture;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        private _scene;
+        private _emitter;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class BoundingBox {
         minimum: Vector3;
         maximum: Vector3;
@@ -2285,48 +2327,6 @@ declare module BABYLON {
         isInFrustum(frustumPlanes: Plane[]): boolean;
         intersectsPoint(point: Vector3): boolean;
         static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        private _scene;
-        private _emitter;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
     }
 }
 
@@ -2693,6 +2693,668 @@ declare module BABYLON {
         static SpecularTextureEnabled: boolean;
         static BumpTextureEnabled: boolean;
         static FresnelEnabled: boolean;
+    }
+}
+
+declare module BABYLON {
+    class Color3 {
+        r: number;
+        g: number;
+        b: number;
+        constructor(r?: number, g?: number, b?: number);
+        toString(): string;
+        toArray(array: number[], index?: number): Color3;
+        toColor4(alpha?: number): Color4;
+        asArray(): number[];
+        toLuminance(): number;
+        multiply(otherColor: Color3): Color3;
+        multiplyToRef(otherColor: Color3, result: Color3): Color3;
+        equals(otherColor: Color3): boolean;
+        equalsFloats(r: number, g: number, b: number): boolean;
+        scale(scale: number): Color3;
+        scaleToRef(scale: number, result: Color3): Color3;
+        add(otherColor: Color3): Color3;
+        addToRef(otherColor: Color3, result: Color3): Color3;
+        subtract(otherColor: Color3): Color3;
+        subtractToRef(otherColor: Color3, result: Color3): Color3;
+        clone(): Color3;
+        copyFrom(source: Color3): Color3;
+        copyFromFloats(r: number, g: number, b: number): Color3;
+        toHexString(): string;
+        static FromHexString(hex: string): Color3;
+        static FromArray(array: number[], offset?: number): Color3;
+        static FromInts(r: number, g: number, b: number): Color3;
+        static Lerp(start: Color3, end: Color3, amount: number): Color3;
+        static Red(): Color3;
+        static Green(): Color3;
+        static Blue(): Color3;
+        static Black(): Color3;
+        static White(): Color3;
+        static Purple(): Color3;
+        static Magenta(): Color3;
+        static Yellow(): Color3;
+        static Gray(): Color3;
+    }
+    class Color4 {
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+        constructor(r: number, g: number, b: number, a: number);
+        addInPlace(right: any): Color4;
+        asArray(): number[];
+        toArray(array: number[], index?: number): Color4;
+        add(right: Color4): Color4;
+        subtract(right: Color4): Color4;
+        subtractToRef(right: Color4, result: Color4): Color4;
+        scale(scale: number): Color4;
+        scaleToRef(scale: number, result: Color4): Color4;
+        toString(): string;
+        clone(): Color4;
+        copyFrom(source: Color4): Color4;
+        toHexString(): string;
+        static FromHexString(hex: string): Color4;
+        static Lerp(left: Color4, right: Color4, amount: number): Color4;
+        static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
+        static FromArray(array: number[], offset?: number): Color4;
+        static FromInts(r: number, g: number, b: number, a: number): Color4;
+    }
+    class Vector2 {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+        toString(): string;
+        toArray(array: number[], index?: number): Vector2;
+        asArray(): number[];
+        copyFrom(source: Vector2): Vector2;
+        copyFromFloats(x: number, y: number): Vector2;
+        add(otherVector: Vector2): Vector2;
+        addVector3(otherVector: Vector3): Vector2;
+        subtract(otherVector: Vector2): Vector2;
+        subtractInPlace(otherVector: Vector2): Vector2;
+        multiplyInPlace(otherVector: Vector2): Vector2;
+        multiply(otherVector: Vector2): Vector2;
+        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
+        multiplyByFloats(x: number, y: number): Vector2;
+        divide(otherVector: Vector2): Vector2;
+        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
+        negate(): Vector2;
+        scaleInPlace(scale: number): Vector2;
+        scale(scale: number): Vector2;
+        equals(otherVector: Vector2): boolean;
+        equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
+        length(): number;
+        lengthSquared(): number;
+        normalize(): Vector2;
+        clone(): Vector2;
+        static Zero(): Vector2;
+        static FromArray(array: number[], offset?: number): Vector2;
+        static FromArrayToRef(array: number[], offset: number, result: Vector2): void;
+        static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
+        static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
+        static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2;
+        static Lerp(start: Vector2, end: Vector2, amount: number): Vector2;
+        static Dot(left: Vector2, right: Vector2): number;
+        static Normalize(vector: Vector2): Vector2;
+        static Minimize(left: Vector2, right: Vector2): Vector2;
+        static Maximize(left: Vector2, right: Vector2): Vector2;
+        static Transform(vector: Vector2, transformation: Matrix): Vector2;
+        static Distance(value1: Vector2, value2: Vector2): number;
+        static DistanceSquared(value1: Vector2, value2: Vector2): number;
+    }
+    class Vector3 {
+        x: number;
+        y: number;
+        z: number;
+        constructor(x: number, y: number, z: number);
+        toString(): string;
+        asArray(): number[];
+        toArray(array: number[], index?: number): Vector3;
+        toQuaternion(): Quaternion;
+        addInPlace(otherVector: Vector3): Vector3;
+        add(otherVector: Vector3): Vector3;
+        addToRef(otherVector: Vector3, result: Vector3): Vector3;
+        subtractInPlace(otherVector: Vector3): Vector3;
+        subtract(otherVector: Vector3): Vector3;
+        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
+        subtractFromFloats(x: number, y: number, z: number): Vector3;
+        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
+        negate(): Vector3;
+        scaleInPlace(scale: number): Vector3;
+        scale(scale: number): Vector3;
+        scaleToRef(scale: number, result: Vector3): void;
+        equals(otherVector: Vector3): boolean;
+        equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
+        equalsToFloats(x: number, y: number, z: number): boolean;
+        multiplyInPlace(otherVector: Vector3): Vector3;
+        multiply(otherVector: Vector3): Vector3;
+        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
+        multiplyByFloats(x: number, y: number, z: number): Vector3;
+        divide(otherVector: Vector3): Vector3;
+        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
+        MinimizeInPlace(other: Vector3): Vector3;
+        MaximizeInPlace(other: Vector3): Vector3;
+        length(): number;
+        lengthSquared(): number;
+        normalize(): Vector3;
+        clone(): Vector3;
+        copyFrom(source: Vector3): Vector3;
+        copyFromFloats(x: number, y: number, z: number): Vector3;
+        static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: any): number;
+        static FromArray(array: number[], offset?: number): Vector3;
+        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
+        static FromArrayToRef(array: number[], offset: number, result: Vector3): void;
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
+        static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
+        static Zero(): Vector3;
+        static Up(): Vector3;
+        static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
+        static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
+        static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
+        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
+        static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3;
+        static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3;
+        static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3;
+        static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
+        static Dot(left: Vector3, right: Vector3): number;
+        static Cross(left: Vector3, right: Vector3): Vector3;
+        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
+        static Normalize(vector: Vector3): Vector3;
+        static NormalizeToRef(vector: Vector3, result: Vector3): void;
+        static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
+        static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
+        static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
+        static Minimize(left: Vector3, right: Vector3): Vector3;
+        static Maximize(left: Vector3, right: Vector3): Vector3;
+        static Distance(value1: Vector3, value2: Vector3): number;
+        static DistanceSquared(value1: Vector3, value2: Vector3): number;
+        static Center(value1: Vector3, value2: Vector3): Vector3;
+        /**
+         * Given three orthogonal left-handed oriented Vector3 axis in space (target system),
+         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
+         * to something in order to rotate it from its local system to the given target system.
+         */
+        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
+        /**
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
+         */
+        static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void;
+    }
+    class Vector4 {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        constructor(x: number, y: number, z: number, w: number);
+        toString(): string;
+        asArray(): number[];
+        toArray(array: number[], index?: number): Vector4;
+        addInPlace(otherVector: Vector4): Vector4;
+        add(otherVector: Vector4): Vector4;
+        addToRef(otherVector: Vector4, result: Vector4): Vector4;
+        subtractInPlace(otherVector: Vector4): Vector4;
+        subtract(otherVector: Vector4): Vector4;
+        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
+        subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
+        negate(): Vector4;
+        scaleInPlace(scale: number): Vector4;
+        scale(scale: number): Vector4;
+        scaleToRef(scale: number, result: Vector4): void;
+        equals(otherVector: Vector4): boolean;
+        equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
+        equalsToFloats(x: number, y: number, z: number, w: number): boolean;
+        multiplyInPlace(otherVector: Vector4): Vector4;
+        multiply(otherVector: Vector4): Vector4;
+        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
+        multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
+        divide(otherVector: Vector4): Vector4;
+        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
+        MinimizeInPlace(other: Vector4): Vector4;
+        MaximizeInPlace(other: Vector4): Vector4;
+        length(): number;
+        lengthSquared(): number;
+        normalize(): Vector4;
+        clone(): Vector4;
+        copyFrom(source: Vector4): Vector4;
+        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
+        static FromArray(array: number[], offset?: number): Vector4;
+        static FromArrayToRef(array: number[], offset: number, result: Vector4): void;
+        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
+        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
+        static Zero(): Vector4;
+        static Normalize(vector: Vector4): Vector4;
+        static NormalizeToRef(vector: Vector4, result: Vector4): void;
+        static Minimize(left: Vector4, right: Vector4): Vector4;
+        static Maximize(left: Vector4, right: Vector4): Vector4;
+        static Distance(value1: Vector4, value2: Vector4): number;
+        static DistanceSquared(value1: Vector4, value2: Vector4): number;
+        static Center(value1: Vector4, value2: Vector4): Vector4;
+    }
+    class Quaternion {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+        constructor(x?: number, y?: number, z?: number, w?: number);
+        toString(): string;
+        asArray(): number[];
+        equals(otherQuaternion: Quaternion): boolean;
+        clone(): Quaternion;
+        copyFrom(other: Quaternion): Quaternion;
+        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
+        add(other: Quaternion): Quaternion;
+        subtract(other: Quaternion): Quaternion;
+        scale(value: number): Quaternion;
+        multiply(q1: Quaternion): Quaternion;
+        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
+        length(): number;
+        normalize(): Quaternion;
+        toEulerAngles(): Vector3;
+        toEulerAnglesToRef(result: Vector3): Quaternion;
+        toRotationMatrix(result: Matrix): Quaternion;
+        fromRotationMatrix(matrix: Matrix): Quaternion;
+        static FromRotationMatrix(matrix: Matrix): Quaternion;
+        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
+        static Inverse(q: Quaternion): Quaternion;
+        static Identity(): Quaternion;
+        static RotationAxis(axis: Vector3, angle: number): Quaternion;
+        static FromArray(array: number[], offset?: number): Quaternion;
+        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
+        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
+        static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
+        static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
+        static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
+    }
+    class Matrix {
+        private static _tempQuaternion;
+        private static _xAxis;
+        private static _yAxis;
+        private static _zAxis;
+        m: Float32Array;
+        isIdentity(): boolean;
+        determinant(): number;
+        toArray(): Float32Array;
+        asArray(): Float32Array;
+        invert(): Matrix;
+        reset(): Matrix;
+        add(other: Matrix): Matrix;
+        addToRef(other: Matrix, result: Matrix): Matrix;
+        addToSelf(other: Matrix): Matrix;
+        invertToRef(other: Matrix): Matrix;
+        invertToRefSIMD(other: Matrix): Matrix;
+        setTranslation(vector3: Vector3): Matrix;
+        multiply(other: Matrix): Matrix;
+        copyFrom(other: Matrix): Matrix;
+        copyToArray(array: Float32Array, offset?: number): Matrix;
+        multiplyToRef(other: Matrix, result: Matrix): Matrix;
+        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
+        multiplyToArraySIMD(other: Matrix, result: Matrix, offset?: number): void;
+        equals(value: Matrix): boolean;
+        clone(): Matrix;
+        decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
+        static FromArray(array: number[], offset?: number): Matrix;
+        static FromArrayToRef(array: number[], offset: number, result: Matrix): void;
+        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
+        static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
+        static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
+        static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
+        static Identity(): Matrix;
+        static IdentityToRef(result: Matrix): void;
+        static Zero(): Matrix;
+        static RotationX(angle: number): Matrix;
+        static Invert(source: Matrix): Matrix;
+        static RotationXToRef(angle: number, result: Matrix): void;
+        static RotationY(angle: number): Matrix;
+        static RotationYToRef(angle: number, result: Matrix): void;
+        static RotationZ(angle: number): Matrix;
+        static RotationZToRef(angle: number, result: Matrix): void;
+        static RotationAxis(axis: Vector3, angle: number): Matrix;
+        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
+        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
+        static Scaling(x: number, y: number, z: number): Matrix;
+        static ScalingToRef(x: number, y: number, z: number, result: Matrix): void;
+        static Translation(x: number, y: number, z: number): Matrix;
+        static TranslationToRef(x: number, y: number, z: number, result: Matrix): void;
+        static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
+        static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
+        static LookAtLHToRefSIMD(eyeRef: Vector3, targetRef: Vector3, upRef: Vector3, result: Matrix): void;
+        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
+        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
+        static OrthoOffCenterLHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
+        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
+        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode?: number): void;
+        static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
+        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
+        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
+        static Transpose(matrix: Matrix): Matrix;
+        static Reflection(plane: Plane): Matrix;
+        static ReflectionToRef(plane: Plane, result: Matrix): void;
+    }
+    class Plane {
+        normal: Vector3;
+        d: number;
+        constructor(a: number, b: number, c: number, d: number);
+        asArray(): number[];
+        clone(): Plane;
+        normalize(): Plane;
+        transform(transformation: Matrix): Plane;
+        dotCoordinate(point: any): number;
+        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
+        isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
+        signedDistanceTo(point: Vector3): number;
+        static FromArray(array: number[]): Plane;
+        static FromPoints(point1: any, point2: any, point3: any): Plane;
+        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
+    }
+    class Viewport {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        constructor(x: number, y: number, width: number, height: number);
+        toGlobal(engine: any): Viewport;
+    }
+    class Frustum {
+        static GetPlanes(transform: Matrix): Plane[];
+        static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
+    }
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: any): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+    }
+    enum Space {
+        LOCAL = 0,
+        WORLD = 1,
+    }
+    class Axis {
+        static X: Vector3;
+        static Y: Vector3;
+        static Z: Vector3;
+    }
+    class BezierCurve {
+        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
+    }
+    enum Orientation {
+        CW = 0,
+        CCW = 1,
+    }
+    class Angle {
+        private _radians;
+        constructor(radians: number);
+        degrees: () => number;
+        radians: () => number;
+        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
+        static FromRadians(radians: number): Angle;
+        static FromDegrees(degrees: number): Angle;
+    }
+    class Arc2 {
+        startPoint: Vector2;
+        midPoint: Vector2;
+        endPoint: Vector2;
+        centerPoint: Vector2;
+        radius: number;
+        angle: Angle;
+        startAngle: Angle;
+        orientation: Orientation;
+        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
+    }
+    class PathCursor {
+        private path;
+        private _onchange;
+        value: number;
+        animations: Animation[];
+        constructor(path: Path2);
+        getPoint(): Vector3;
+        moveAhead(step?: number): PathCursor;
+        moveBack(step?: number): PathCursor;
+        move(step: number): PathCursor;
+        private ensureLimits();
+        private markAsDirty(propertyName);
+        private raiseOnChange();
+        onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+    class Path2 {
+        private _points;
+        private _length;
+        closed: boolean;
+        constructor(x: number, y: number);
+        addLineTo(x: number, y: number): Path2;
+        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
+        close(): Path2;
+        length(): number;
+        getPoints(): Vector2[];
+        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
+        static StartingAt(x: number, y: number): Path2;
+    }
+    class Path3D {
+        path: Vector3[];
+        private _curve;
+        private _distances;
+        private _tangents;
+        private _normals;
+        private _binormals;
+        private _raw;
+        /**
+        * new Path3D(path, normal, raw)
+        * path : an array of Vector3, the curve axis of the Path3D
+        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        */
+        constructor(path: Vector3[], firstNormal?: Vector3, raw?: boolean);
+        getCurve(): Vector3[];
+        getTangents(): Vector3[];
+        getNormals(): Vector3[];
+        getBinormals(): Vector3[];
+        getDistances(): number[];
+        update(path: Vector3[], firstNormal?: Vector3): Path3D;
+        private _compute(firstNormal);
+        private _getFirstNonNullVector(index);
+        private _getLastNonNullVector(index);
+        private _normalVector(v0, vt, va);
+    }
+    class Curve3 {
+        private _points;
+        private _length;
+        static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
+        static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
+        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
+        constructor(points: Vector3[]);
+        getPoints(): Vector3[];
+        length(): number;
+        continue(curve: Curve3): Curve3;
+        private _computeLength(path);
+    }
+    class PositionNormalVertex {
+        position: Vector3;
+        normal: Vector3;
+        constructor(position?: Vector3, normal?: Vector3);
+        clone(): PositionNormalVertex;
+    }
+    class PositionNormalTextureVertex {
+        position: Vector3;
+        normal: Vector3;
+        uv: Vector2;
+        constructor(position?: Vector3, normal?: Vector3, uv?: Vector2);
+        clone(): PositionNormalTextureVertex;
+    }
+    class SIMDHelper {
+        private static _isEnabled;
+        static IsEnabled: boolean;
+        static DisableSIMD(): void;
+        static EnableSIMD(): void;
+    }
+}
+
+declare module BABYLON {
+    class Particle {
+        position: Vector3;
+        direction: Vector3;
+        color: Color4;
+        colorStep: Color4;
+        lifeTime: number;
+        age: number;
+        size: number;
+        angle: number;
+        angularSpeed: number;
+        copyTo(other: Particle): void;
+    }
+}
+
+declare module BABYLON {
+    class ParticleSystem implements IDisposable {
+        name: string;
+        static BLENDMODE_ONEONE: number;
+        static BLENDMODE_STANDARD: number;
+        id: string;
+        renderingGroupId: number;
+        emitter: any;
+        emitRate: number;
+        manualEmitCount: number;
+        updateSpeed: number;
+        targetStopDuration: number;
+        disposeOnStop: boolean;
+        minEmitPower: number;
+        maxEmitPower: number;
+        minLifeTime: number;
+        maxLifeTime: number;
+        minSize: number;
+        maxSize: number;
+        minAngularSpeed: number;
+        maxAngularSpeed: number;
+        particleTexture: Texture;
+        layerMask: number;
+        onDispose: () => void;
+        updateFunction: (particles: Particle[]) => void;
+        blendMode: number;
+        forceDepthWrite: boolean;
+        gravity: Vector3;
+        direction1: Vector3;
+        direction2: Vector3;
+        minEmitBox: Vector3;
+        maxEmitBox: Vector3;
+        color1: Color4;
+        color2: Color4;
+        colorDead: Color4;
+        textureMask: Color4;
+        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
+        private particles;
+        private _capacity;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _stockParticles;
+        private _newPartsExcess;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _vertices;
+        private _effect;
+        private _customEffect;
+        private _cachedDefines;
+        private _scaledColorStep;
+        private _colorDiff;
+        private _scaledDirection;
+        private _scaledGravity;
+        private _currentRenderId;
+        private _alive;
+        private _started;
+        private _stopped;
+        private _actualFrame;
+        private _scaledUpdateSpeed;
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
+        recycleParticle(particle: Particle): void;
+        getCapacity(): number;
+        isAlive(): boolean;
+        isStarted(): boolean;
+        start(): void;
+        stop(): void;
+        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
+        private _update(newParticles);
+        private _getEffect();
+        animate(): void;
+        render(): number;
+        dispose(): void;
+        clone(name: string, newEmitter: any): ParticleSystem;
+    }
+}
+
+declare module BABYLON {
+    interface IPhysicsEnginePlugin {
+        initialize(iterations?: number): any;
+        setGravity(gravity: Vector3): void;
+        runOneStep(delta: number): void;
+        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
+        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
+        unregisterMesh(mesh: AbstractMesh): any;
+        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
+        dispose(): void;
+        isSupported(): boolean;
+        updateBodyPosition(mesh: AbstractMesh): void;
+    }
+    interface PhysicsBodyCreationOptions {
+        mass: number;
+        friction: number;
+        restitution: number;
+    }
+    interface PhysicsCompoundBodyPart {
+        mesh: Mesh;
+        impostor: number;
+    }
+    class PhysicsEngine {
+        gravity: Vector3;
+        private _currentPlugin;
+        constructor(plugin?: IPhysicsEnginePlugin);
+        _initialize(gravity?: Vector3): void;
+        _runOneStep(delta: number): void;
+        _setGravity(gravity: Vector3): void;
+        _registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
+        _registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
+        _unregisterMesh(mesh: AbstractMesh): void;
+        _applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        _createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
+        _updateBodyPosition(mesh: AbstractMesh): void;
+        dispose(): void;
+        isSupported(): boolean;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CapsuleImpostor: number;
+        static ConeImpostor: number;
+        static CylinderImpostor: number;
+        static ConvexHullImpostor: number;
+        static Epsilon: number;
     }
 }
 
@@ -3125,10 +3787,7 @@ declare module BABYLON {
         color: Color3;
         alpha: number;
         private _colorShader;
-        private _ib;
-        private _indicesLength;
-        private _indices;
-        constructor(name: string, scene: Scene, updatable?: boolean);
+        constructor(name: string, scene: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean);
         material: Material;
         isPickable: boolean;
         checkCollisions: boolean;
@@ -3136,6 +3795,7 @@ declare module BABYLON {
         _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
         intersects(ray: Ray, fastCheck?: boolean): any;
         dispose(doNotRecurse?: boolean): void;
+        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh;
     }
 }
 
@@ -3688,657 +4348,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Particle {
-        position: Vector3;
-        direction: Vector3;
-        color: Color4;
-        colorStep: Color4;
-        lifeTime: number;
-        age: number;
-        size: number;
-        angle: number;
-        angularSpeed: number;
-        copyTo(other: Particle): void;
-    }
-}
-
-declare module BABYLON {
-    class ParticleSystem implements IDisposable {
-        name: string;
-        static BLENDMODE_ONEONE: number;
-        static BLENDMODE_STANDARD: number;
-        id: string;
-        renderingGroupId: number;
-        emitter: any;
-        emitRate: number;
-        manualEmitCount: number;
-        updateSpeed: number;
-        targetStopDuration: number;
-        disposeOnStop: boolean;
-        minEmitPower: number;
-        maxEmitPower: number;
-        minLifeTime: number;
-        maxLifeTime: number;
-        minSize: number;
-        maxSize: number;
-        minAngularSpeed: number;
-        maxAngularSpeed: number;
-        particleTexture: Texture;
-        layerMask: number;
-        onDispose: () => void;
-        updateFunction: (particles: Particle[]) => void;
-        blendMode: number;
-        forceDepthWrite: boolean;
-        gravity: Vector3;
-        direction1: Vector3;
-        direction2: Vector3;
-        minEmitBox: Vector3;
-        maxEmitBox: Vector3;
-        color1: Color4;
-        color2: Color4;
-        colorDead: Color4;
-        textureMask: Color4;
-        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
-        private particles;
-        private _capacity;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _stockParticles;
-        private _newPartsExcess;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _vertices;
-        private _effect;
-        private _customEffect;
-        private _cachedDefines;
-        private _scaledColorStep;
-        private _colorDiff;
-        private _scaledDirection;
-        private _scaledGravity;
-        private _currentRenderId;
-        private _alive;
-        private _started;
-        private _stopped;
-        private _actualFrame;
-        private _scaledUpdateSpeed;
-        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
-        recycleParticle(particle: Particle): void;
-        getCapacity(): number;
-        isAlive(): boolean;
-        isStarted(): boolean;
-        start(): void;
-        stop(): void;
-        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
-        private _update(newParticles);
-        private _getEffect();
-        animate(): void;
-        render(): number;
-        dispose(): void;
-        clone(name: string, newEmitter: any): ParticleSystem;
-    }
-}
-
-declare module BABYLON {
-    class Color3 {
-        r: number;
-        g: number;
-        b: number;
-        constructor(r?: number, g?: number, b?: number);
-        toString(): string;
-        toArray(array: number[], index?: number): Color3;
-        toColor4(alpha?: number): Color4;
-        asArray(): number[];
-        toLuminance(): number;
-        multiply(otherColor: Color3): Color3;
-        multiplyToRef(otherColor: Color3, result: Color3): Color3;
-        equals(otherColor: Color3): boolean;
-        equalsFloats(r: number, g: number, b: number): boolean;
-        scale(scale: number): Color3;
-        scaleToRef(scale: number, result: Color3): Color3;
-        add(otherColor: Color3): Color3;
-        addToRef(otherColor: Color3, result: Color3): Color3;
-        subtract(otherColor: Color3): Color3;
-        subtractToRef(otherColor: Color3, result: Color3): Color3;
-        clone(): Color3;
-        copyFrom(source: Color3): Color3;
-        copyFromFloats(r: number, g: number, b: number): Color3;
-        toHexString(): string;
-        static FromHexString(hex: string): Color3;
-        static FromArray(array: number[], offset?: number): Color3;
-        static FromInts(r: number, g: number, b: number): Color3;
-        static Lerp(start: Color3, end: Color3, amount: number): Color3;
-        static Red(): Color3;
-        static Green(): Color3;
-        static Blue(): Color3;
-        static Black(): Color3;
-        static White(): Color3;
-        static Purple(): Color3;
-        static Magenta(): Color3;
-        static Yellow(): Color3;
-        static Gray(): Color3;
-    }
-    class Color4 {
-        r: number;
-        g: number;
-        b: number;
-        a: number;
-        constructor(r: number, g: number, b: number, a: number);
-        addInPlace(right: any): Color4;
-        asArray(): number[];
-        toArray(array: number[], index?: number): Color4;
-        add(right: Color4): Color4;
-        subtract(right: Color4): Color4;
-        subtractToRef(right: Color4, result: Color4): Color4;
-        scale(scale: number): Color4;
-        scaleToRef(scale: number, result: Color4): Color4;
-        toString(): string;
-        clone(): Color4;
-        copyFrom(source: Color4): Color4;
-        toHexString(): string;
-        static FromHexString(hex: string): Color4;
-        static Lerp(left: Color4, right: Color4, amount: number): Color4;
-        static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
-        static FromArray(array: number[], offset?: number): Color4;
-        static FromInts(r: number, g: number, b: number, a: number): Color4;
-    }
-    class Vector2 {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
-        toString(): string;
-        toArray(array: number[], index?: number): Vector2;
-        asArray(): number[];
-        copyFrom(source: Vector2): Vector2;
-        copyFromFloats(x: number, y: number): Vector2;
-        add(otherVector: Vector2): Vector2;
-        addVector3(otherVector: Vector3): Vector2;
-        subtract(otherVector: Vector2): Vector2;
-        subtractInPlace(otherVector: Vector2): Vector2;
-        multiplyInPlace(otherVector: Vector2): Vector2;
-        multiply(otherVector: Vector2): Vector2;
-        multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
-        multiplyByFloats(x: number, y: number): Vector2;
-        divide(otherVector: Vector2): Vector2;
-        divideToRef(otherVector: Vector2, result: Vector2): Vector2;
-        negate(): Vector2;
-        scaleInPlace(scale: number): Vector2;
-        scale(scale: number): Vector2;
-        equals(otherVector: Vector2): boolean;
-        equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
-        length(): number;
-        lengthSquared(): number;
-        normalize(): Vector2;
-        clone(): Vector2;
-        static Zero(): Vector2;
-        static FromArray(array: number[], offset?: number): Vector2;
-        static FromArrayToRef(array: number[], offset: number, result: Vector2): void;
-        static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
-        static Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
-        static Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: number): Vector2;
-        static Lerp(start: Vector2, end: Vector2, amount: number): Vector2;
-        static Dot(left: Vector2, right: Vector2): number;
-        static Normalize(vector: Vector2): Vector2;
-        static Minimize(left: Vector2, right: Vector2): Vector2;
-        static Maximize(left: Vector2, right: Vector2): Vector2;
-        static Transform(vector: Vector2, transformation: Matrix): Vector2;
-        static Distance(value1: Vector2, value2: Vector2): number;
-        static DistanceSquared(value1: Vector2, value2: Vector2): number;
-    }
-    class Vector3 {
-        x: number;
-        y: number;
-        z: number;
-        constructor(x: number, y: number, z: number);
-        toString(): string;
-        asArray(): number[];
-        toArray(array: number[], index?: number): Vector3;
-        toQuaternion(): Quaternion;
-        addInPlace(otherVector: Vector3): Vector3;
-        add(otherVector: Vector3): Vector3;
-        addToRef(otherVector: Vector3, result: Vector3): Vector3;
-        subtractInPlace(otherVector: Vector3): Vector3;
-        subtract(otherVector: Vector3): Vector3;
-        subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
-        subtractFromFloats(x: number, y: number, z: number): Vector3;
-        subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3;
-        negate(): Vector3;
-        scaleInPlace(scale: number): Vector3;
-        scale(scale: number): Vector3;
-        scaleToRef(scale: number, result: Vector3): void;
-        equals(otherVector: Vector3): boolean;
-        equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
-        equalsToFloats(x: number, y: number, z: number): boolean;
-        multiplyInPlace(otherVector: Vector3): Vector3;
-        multiply(otherVector: Vector3): Vector3;
-        multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
-        multiplyByFloats(x: number, y: number, z: number): Vector3;
-        divide(otherVector: Vector3): Vector3;
-        divideToRef(otherVector: Vector3, result: Vector3): Vector3;
-        MinimizeInPlace(other: Vector3): Vector3;
-        MaximizeInPlace(other: Vector3): Vector3;
-        length(): number;
-        lengthSquared(): number;
-        normalize(): Vector3;
-        clone(): Vector3;
-        copyFrom(source: Vector3): Vector3;
-        copyFromFloats(x: number, y: number, z: number): Vector3;
-        static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: any): number;
-        static FromArray(array: number[], offset?: number): Vector3;
-        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
-        static FromArrayToRef(array: number[], offset: number, result: Vector3): void;
-        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
-        static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
-        static Zero(): Vector3;
-        static Up(): Vector3;
-        static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
-        static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
-        static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
-        static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
-        static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3;
-        static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3;
-        static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3;
-        static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
-        static Dot(left: Vector3, right: Vector3): number;
-        static Cross(left: Vector3, right: Vector3): Vector3;
-        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
-        static Normalize(vector: Vector3): Vector3;
-        static NormalizeToRef(vector: Vector3, result: Vector3): void;
-        static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3;
-        static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3;
-        static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3;
-        static Minimize(left: Vector3, right: Vector3): Vector3;
-        static Maximize(left: Vector3, right: Vector3): Vector3;
-        static Distance(value1: Vector3, value2: Vector3): number;
-        static DistanceSquared(value1: Vector3, value2: Vector3): number;
-        static Center(value1: Vector3, value2: Vector3): Vector3;
-        /**
-         * Given three orthogonal left-handed oriented Vector3 axis in space (target system),
-         * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
-         * to something in order to rotate it from its local system to the given target system.
-         */
-        static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
-    }
-    class Vector4 {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
-        constructor(x: number, y: number, z: number, w: number);
-        toString(): string;
-        asArray(): number[];
-        toArray(array: number[], index?: number): Vector4;
-        addInPlace(otherVector: Vector4): Vector4;
-        add(otherVector: Vector4): Vector4;
-        addToRef(otherVector: Vector4, result: Vector4): Vector4;
-        subtractInPlace(otherVector: Vector4): Vector4;
-        subtract(otherVector: Vector4): Vector4;
-        subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
-        subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
-        negate(): Vector4;
-        scaleInPlace(scale: number): Vector4;
-        scale(scale: number): Vector4;
-        scaleToRef(scale: number, result: Vector4): void;
-        equals(otherVector: Vector4): boolean;
-        equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
-        equalsToFloats(x: number, y: number, z: number, w: number): boolean;
-        multiplyInPlace(otherVector: Vector4): Vector4;
-        multiply(otherVector: Vector4): Vector4;
-        multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
-        multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
-        divide(otherVector: Vector4): Vector4;
-        divideToRef(otherVector: Vector4, result: Vector4): Vector4;
-        MinimizeInPlace(other: Vector4): Vector4;
-        MaximizeInPlace(other: Vector4): Vector4;
-        length(): number;
-        lengthSquared(): number;
-        normalize(): Vector4;
-        clone(): Vector4;
-        copyFrom(source: Vector4): Vector4;
-        copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
-        static FromArray(array: number[], offset?: number): Vector4;
-        static FromArrayToRef(array: number[], offset: number, result: Vector4): void;
-        static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
-        static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
-        static Zero(): Vector4;
-        static Normalize(vector: Vector4): Vector4;
-        static NormalizeToRef(vector: Vector4, result: Vector4): void;
-        static Minimize(left: Vector4, right: Vector4): Vector4;
-        static Maximize(left: Vector4, right: Vector4): Vector4;
-        static Distance(value1: Vector4, value2: Vector4): number;
-        static DistanceSquared(value1: Vector4, value2: Vector4): number;
-        static Center(value1: Vector4, value2: Vector4): Vector4;
-    }
-    class Quaternion {
-        x: number;
-        y: number;
-        z: number;
-        w: number;
-        constructor(x?: number, y?: number, z?: number, w?: number);
-        toString(): string;
-        asArray(): number[];
-        equals(otherQuaternion: Quaternion): boolean;
-        clone(): Quaternion;
-        copyFrom(other: Quaternion): Quaternion;
-        copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
-        add(other: Quaternion): Quaternion;
-        subtract(other: Quaternion): Quaternion;
-        scale(value: number): Quaternion;
-        multiply(q1: Quaternion): Quaternion;
-        multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
-        length(): number;
-        normalize(): Quaternion;
-        toEulerAngles(): Vector3;
-        toEulerAnglesToRef(result: Vector3): Quaternion;
-        toRotationMatrix(result: Matrix): Quaternion;
-        fromRotationMatrix(matrix: Matrix): Quaternion;
-        static FromRotationMatrix(matrix: Matrix): Quaternion;
-        static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
-        static Inverse(q: Quaternion): Quaternion;
-        static Identity(): Quaternion;
-        static RotationAxis(axis: Vector3, angle: number): Quaternion;
-        static FromArray(array: number[], offset?: number): Quaternion;
-        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
-        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
-        static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
-        static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
-        static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
-    }
-    class Matrix {
-        private static _tempQuaternion;
-        private static _xAxis;
-        private static _yAxis;
-        private static _zAxis;
-        m: Float32Array;
-        isIdentity(): boolean;
-        determinant(): number;
-        toArray(): Float32Array;
-        asArray(): Float32Array;
-        invert(): Matrix;
-        reset(): Matrix;
-        add(other: Matrix): Matrix;
-        addToRef(other: Matrix, result: Matrix): Matrix;
-        addToSelf(other: Matrix): Matrix;
-        invertToRef(other: Matrix): Matrix;
-        invertToRefSIMD(other: Matrix): Matrix;
-        setTranslation(vector3: Vector3): Matrix;
-        multiply(other: Matrix): Matrix;
-        copyFrom(other: Matrix): Matrix;
-        copyToArray(array: Float32Array, offset?: number): Matrix;
-        multiplyToRef(other: Matrix, result: Matrix): Matrix;
-        multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix;
-        multiplyToArraySIMD(other: Matrix, result: Matrix, offset?: number): void;
-        equals(value: Matrix): boolean;
-        clone(): Matrix;
-        decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
-        static FromArray(array: number[], offset?: number): Matrix;
-        static FromArrayToRef(array: number[], offset: number, result: Matrix): void;
-        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
-        static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
-        static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
-        static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
-        static Identity(): Matrix;
-        static IdentityToRef(result: Matrix): void;
-        static Zero(): Matrix;
-        static RotationX(angle: number): Matrix;
-        static Invert(source: Matrix): Matrix;
-        static RotationXToRef(angle: number, result: Matrix): void;
-        static RotationY(angle: number): Matrix;
-        static RotationYToRef(angle: number, result: Matrix): void;
-        static RotationZ(angle: number): Matrix;
-        static RotationZToRef(angle: number, result: Matrix): void;
-        static RotationAxis(axis: Vector3, angle: number): Matrix;
-        static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
-        static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
-        static Scaling(x: number, y: number, z: number): Matrix;
-        static ScalingToRef(x: number, y: number, z: number, result: Matrix): void;
-        static Translation(x: number, y: number, z: number): Matrix;
-        static TranslationToRef(x: number, y: number, z: number, result: Matrix): void;
-        static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix;
-        static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void;
-        static LookAtLHToRefSIMD(eyeRef: Vector3, targetRef: Vector3, upRef: Vector3, result: Matrix): void;
-        static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix;
-        static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void;
-        static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix;
-        static OrthoOffCenterLHToRef(left: number, right: any, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void;
-        static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix;
-        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode?: number): void;
-        static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
-        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
-        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
-        static Transpose(matrix: Matrix): Matrix;
-        static Reflection(plane: Plane): Matrix;
-        static ReflectionToRef(plane: Plane, result: Matrix): void;
-    }
-    class Plane {
-        normal: Vector3;
-        d: number;
-        constructor(a: number, b: number, c: number, d: number);
-        asArray(): number[];
-        clone(): Plane;
-        normalize(): Plane;
-        transform(transformation: Matrix): Plane;
-        dotCoordinate(point: any): number;
-        copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
-        isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
-        signedDistanceTo(point: Vector3): number;
-        static FromArray(array: number[]): Plane;
-        static FromPoints(point1: any, point2: any, point3: any): Plane;
-        static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
-        static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
-    }
-    class Viewport {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        constructor(x: number, y: number, width: number, height: number);
-        toGlobal(engine: any): Viewport;
-    }
-    class Frustum {
-        static GetPlanes(transform: Matrix): Plane[];
-        static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
-    }
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: any): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-    }
-    enum Space {
-        LOCAL = 0,
-        WORLD = 1,
-    }
-    class Axis {
-        static X: Vector3;
-        static Y: Vector3;
-        static Z: Vector3;
-    }
-    class BezierCurve {
-        static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
-    }
-    enum Orientation {
-        CW = 0,
-        CCW = 1,
-    }
-    class Angle {
-        private _radians;
-        constructor(radians: number);
-        degrees: () => number;
-        radians: () => number;
-        static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
-        static FromRadians(radians: number): Angle;
-        static FromDegrees(degrees: number): Angle;
-    }
-    class Arc2 {
-        startPoint: Vector2;
-        midPoint: Vector2;
-        endPoint: Vector2;
-        centerPoint: Vector2;
-        radius: number;
-        angle: Angle;
-        startAngle: Angle;
-        orientation: Orientation;
-        constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
-    }
-    class PathCursor {
-        private path;
-        private _onchange;
-        value: number;
-        animations: Animation[];
-        constructor(path: Path2);
-        getPoint(): Vector3;
-        moveAhead(step?: number): PathCursor;
-        moveBack(step?: number): PathCursor;
-        move(step: number): PathCursor;
-        private ensureLimits();
-        private markAsDirty(propertyName);
-        private raiseOnChange();
-        onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-    class Path2 {
-        private _points;
-        private _length;
-        closed: boolean;
-        constructor(x: number, y: number);
-        addLineTo(x: number, y: number): Path2;
-        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
-        close(): Path2;
-        length(): number;
-        getPoints(): Vector2[];
-        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
-        static StartingAt(x: number, y: number): Path2;
-    }
-    class Path3D {
-        path: Vector3[];
-        private _curve;
-        private _distances;
-        private _tangents;
-        private _normals;
-        private _binormals;
-        constructor(path: Vector3[], firstNormal?: Vector3);
-        getCurve(): Vector3[];
-        getTangents(): Vector3[];
-        getNormals(): Vector3[];
-        getBinormals(): Vector3[];
-        getDistances(): number[];
-        update(path: Vector3[], firstNormal?: Vector3): Path3D;
-        private _compute(firstNormal);
-        private _getFirstNonNullVector(index);
-        private _getLastNonNullVector(index);
-        private _normalVector(v0, vt, va);
-    }
-    class Curve3 {
-        private _points;
-        private _length;
-        static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3;
-        static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3;
-        static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3;
-        constructor(points: Vector3[]);
-        getPoints(): Vector3[];
-        length(): number;
-        continue(curve: Curve3): Curve3;
-        private _computeLength(path);
-    }
-    class PositionNormalVertex {
-        position: Vector3;
-        normal: Vector3;
-        constructor(position?: Vector3, normal?: Vector3);
-        clone(): PositionNormalVertex;
-    }
-    class PositionNormalTextureVertex {
-        position: Vector3;
-        normal: Vector3;
-        uv: Vector2;
-        constructor(position?: Vector3, normal?: Vector3, uv?: Vector2);
-        clone(): PositionNormalTextureVertex;
-    }
-    class SIMDHelper {
-        private static _isEnabled;
-        static IsEnabled: boolean;
-        static DisableSIMD(): void;
-        static EnableSIMD(): void;
-    }
-}
-
-declare module BABYLON {
-    interface IPhysicsEnginePlugin {
-        initialize(iterations?: number): any;
-        setGravity(gravity: Vector3): void;
-        runOneStep(delta: number): void;
-        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
-        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        unregisterMesh(mesh: AbstractMesh): any;
-        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
-        dispose(): void;
-        isSupported(): boolean;
-        updateBodyPosition(mesh: AbstractMesh): void;
-    }
-    interface PhysicsBodyCreationOptions {
-        mass: number;
-        friction: number;
-        restitution: number;
-    }
-    interface PhysicsCompoundBodyPart {
-        mesh: Mesh;
-        impostor: number;
-    }
-    class PhysicsEngine {
-        gravity: Vector3;
-        private _currentPlugin;
-        constructor(plugin?: IPhysicsEnginePlugin);
-        _initialize(gravity?: Vector3): void;
-        _runOneStep(delta: number): void;
-        _setGravity(gravity: Vector3): void;
-        _registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
-        _registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        _unregisterMesh(mesh: AbstractMesh): void;
-        _applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        _createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
-        _updateBodyPosition(mesh: AbstractMesh): void;
-        dispose(): void;
-        isSupported(): boolean;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CapsuleImpostor: number;
-        static ConeImpostor: number;
-        static CylinderImpostor: number;
-        static ConvexHullImpostor: number;
-        static Epsilon: number;
-    }
-}
-
-declare module BABYLON {
     class BoundingBoxRenderer {
         frontColor: Color3;
         backColor: Color3;
@@ -4437,6 +4446,64 @@ declare module BABYLON {
         render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
         reset(): void;
         dispatch(subMesh: SubMesh): void;
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _frameCount;
+        private _manager;
+        private _time;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        cellSize: number;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        onDispose: () => void;
+        fogEnabled: boolean;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _vertices;
+        private _effectBase;
+        private _effectFog;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -4993,64 +5060,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _frameCount;
-        private _manager;
-        private _time;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        cellSize: number;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        onDispose: () => void;
-        fogEnabled: boolean;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _vertices;
-        private _effectBase;
-        private _effectFog;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        render(): void;
-        dispose(): void;
-    }
-}
-
 declare module BABYLON.Internals {
     class AndOrNotEvaluator {
         static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean;
@@ -5540,8 +5549,8 @@ declare module BABYLON {
             name: string;
             handler: EventListener;
         }[]): void;
-        static DumpFramebuffer(width: number, height: number, engine: Engine): void;
-        static CreateScreenshot(engine: Engine, camera: Camera, size: any): void;
+        static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: String) => void): void;
+        static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: String) => void): void;
         static ValidateXHRData(xhr: XMLHttpRequest, dataType?: number): boolean;
         private static _NoneLogLevel;
         private static _MessageLogLevel;

@@ -1430,7 +1430,7 @@
             }
 
             // lines creation
-            var lines = new LinesMesh(name, scene, updatable);
+            var lines = new LinesMesh(name, scene);
             var vertexData = VertexData.CreateLines(points);
             vertexData.applyToMesh(lines, updatable);
             return lines;
@@ -1484,7 +1484,7 @@
                 return linesInstance;
             }
             // dashed lines creation
-            var dashedLines = new LinesMesh(name, scene, updatable);
+            var dashedLines = new LinesMesh(name, scene);
             var vertexData = VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
             vertexData.applyToMesh(dashedLines, updatable);
             (<any>dashedLines).dashSize = dashSize;

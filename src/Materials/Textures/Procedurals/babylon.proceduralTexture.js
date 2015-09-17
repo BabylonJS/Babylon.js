@@ -248,4 +248,3 @@ var BABYLON;
     })(BABYLON.Texture);
     BABYLON.ProceduralTexture = ProceduralTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.proceduralTexture.js.map

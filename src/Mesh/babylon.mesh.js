@@ -1223,7 +1223,7 @@ var BABYLON;
                 return linesInstance;
             }
             // lines creation
-            var lines = new BABYLON.LinesMesh(name, scene, updatable);
+            var lines = new BABYLON.LinesMesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateLines(points);
             vertexData.applyToMesh(lines, updatable);
             return lines;
@@ -1277,7 +1277,7 @@ var BABYLON;
                 return linesInstance;
             }
             // dashed lines creation
-            var dashedLines = new BABYLON.LinesMesh(name, scene, updatable);
+            var dashedLines = new BABYLON.LinesMesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
             vertexData.applyToMesh(dashedLines, updatable);
             dashedLines.dashSize = dashSize;
