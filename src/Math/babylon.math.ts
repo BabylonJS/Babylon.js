@@ -1094,10 +1094,10 @@
             // Rv3(w) = w1 = w invariant
             var u1: Vector3;
             var v1: Vector3;
-            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) { 
+            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
                 z = 1.0;
             }
-            else if (Tools.WithinEpsilon(w.x, 0, Engine.Epsilon)) { 
+            else if (Tools.WithinEpsilon(w.x, 0, Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -1136,7 +1136,7 @@
             y = 0.0;
             z = 0.0;
             sign = -1;
-            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) { 
+            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -3664,10 +3664,10 @@
                 if (!Tools.WithinEpsilon(vt.y, 1, Engine.Epsilon)) {     // search for a point in the plane 
                     point = new Vector3(0, -1, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.x, 1, Engine.Epsilon)) { 
+                else if (!Tools.WithinEpsilon(vt.x, 1, Engine.Epsilon)) {
                     point = new Vector3(1, 0, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.z, 1, Engine.Epsilon)) { 
+                else if (!Tools.WithinEpsilon(vt.z, 1, Engine.Epsilon)) {
                     point = new Vector3(0, 0, 1);
                 }
                 normal0 = Vector3.Cross(vt, point);
@@ -3843,3 +3843,4 @@
         }
     }
 }
+
