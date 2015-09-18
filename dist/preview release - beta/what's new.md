@@ -16,6 +16,7 @@
     - Compression supported for raw textures [deltakosh](https://github.com/deltakosh)
     - New TonemapPostProcess. See [demo here](http://www.babylonjs-playground.com/#ELTGD) [deltakosh](https://github.com/deltakosh)
     - New options parameters for Box, Sphere, Plane and Ground. See [demo here](http://www.html5gamedevs.com/topic/17044-evolution-for-out-of-the-box-meshes-creation/) [deltakosh](https://github.com/deltakosh)
+    - Added per face UV and Colors options for `CreateBox` [jerome](https://github.com/jbousquie)
     - Added darkness support for soft shadows [deltakosh](https://github.com/deltakosh)
     - Added scene.getLensFlareSystemByName() [deltakosh](https://github.com/deltakosh)
     - Added LensFlareSystem.setEmitter() [deltakosh](https://github.com/deltakosh)
@@ -42,10 +43,18 @@
     - Changes to meshes transform baking and added flipFaces [PR](https://github.com/BabylonJS/Babylon.js/pull/579) [jahow](https://github.com/jahow)
     - SerializeMesh serializes a mesh or array of meshes to be imported with the loader's ImportMesh optionally including their children and/or parents. [PR](https://github.com/BabylonJS/Babylon.js/pull/583) [PR2](https://github.com/BabylonJS/Babylon.js/pull/609) [RaananW](https://github.com/RaananW)
 	- onCollide callback for meshes calling moveWithCollisions. [PR](https://github.com/BabylonJS/Babylon.js/pull/585) [RaananW](https://github.com/RaananW)
-	- Unity Exporter now uses game object name as the Babylon.js mesh name, instead of mesh name which is not unique when dealing with primitive objects (cubes, spheres, planes, etc..) [ozRocker] (https://github.com/punkoffice)	
+	- Unity Exporter now uses game object name as the Babylon.js mesh name, instead of mesh name which is not unique when dealing with primitive objects (cubes, spheres, planes, etc..) [ozRocker] (https://github.com/punkoffice)
+	- Path3D construction : new _raw_ parameter, if true returns a non-normalized Path3D object
+	- added `Vector3.RotationFromAxisToRef()` :  same as `RotationFromAxis()` but assigns a reference [jerome](https://github.com/jbousquie)
+	- `ComputeNormals` optimization : less object allocation and normal array initialization
+	- Ribbon : _closePath_ parameter now creates a smooth seam [jerome](https://github.com/jbousquie)
   - **Bug fixes**
     - Fixing bug with rig cameras positioning [deltakosh](https://github.com/deltakosh)
     - Instance meshes' geometry ID is now serialized correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/607) [RaananW](https://github.com/RaananW)
     - Bug fix at set numberOfBricksWidth [PR](https://github.com/BabylonJS/Babylon.js/pull/684) [Polatouche](https://github.com/Polatouche)
   - **Breaking changes**
     - In LensRenderingPipeline: parameter `dof_focus_depth` (range 0..1) is deprecated, use `dof_focus_distance` (range 0..infinity) instead [jahow](https://github.com/jahow)
+    - Cylinder Mesh complete reimplementation for better normals [jerome](https://github.com/jbousquie)
+    - `RotationFromAxis()` : fixed the dot product case outside the range [-1, 1]
+    - Path3D : fix wrong normal/binormal due to normalization approximations
+
