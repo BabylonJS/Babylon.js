@@ -1,0 +1,48 @@
+
+=== SINKIN SANS 100 THIN ===
+=== SINKIN SANS 100 THIN ITALIC ===
+=== SINKIN SANS 200 X LIGHT ===
+=== SINKIN SANS 200 X LIGHT ITALIC ===
+=== SINKIN SANS 300 LIGHT ===
+=== SINKIN SANS 300 LIGHT ITALIC ===
+=== SINKIN SANS 400 REGULAR ===
+=== SINKIN SANS 400 ITALIC ===
+=== SINKIN SANS 500 MEDIUM ===
+=== SINKIN SANS 500 MEDIUM ITALIC ===
+=== SINKIN SANS 600 SEMIBOLD ===
+=== SINKIN SANS 600 SEMIBOLD ITALIC ===
+=== SINKIN SANS 700 BOLD ===
+=== SINKIN SANS 700 BOLD ITALIC ===
+=== SINKIN SANS 800 BLACK ===
+=== SINKIN SANS 800 BLACK ITALIC ===
+=== SINKIN SANS 900 X BLACK ===
+=== SINKIN SANS 900 X BLACK ITALIC ===
+
+Keith Bates / K-Type © 2014 (version 1.1)
+www.k-type.com  -  info@k-type.com
+
+SINKIN SANS is a simple, pleasantly proportioned sans serif with tiny, inconspicuous notches that sink into verticals at the intersections of strokes adding highlights to congested corners. The incisions make right angles appear sharper and improve definition in more intricate glyphs. Although the nicks are barely noticeable they add emphasis to outlines and give a lift to shady nooks.
+
+------------------------------------------------
+
+== Licence Information ==
+
+All weights of SINKIN SANS are totally free for commercial and personal use as desktop and web fonts. For @font-face users, a link to www.k-type.com somewhere on your site is requested, elsewhere a credit to K-Type is appreciated.
+
+You can freely distribute and modify SINKIN SANS provided the original copyright, license information and details of any modifications are included. SINKIN SANS is gifted 'as is', without warranty. SINKIN SANS is a trademark of K-Type. Licensed under the Apache License, Version 2.0
+
+http://www.apache.org/licenses/LICENSE-2.0.html
+
+------------------------------------------------
+
+== Installing Fonts ==
+
+Fonts are placed in your operating system's Fonts folder and will be made available to all the applications or programs you use.
+
+= Windows =
+Put the .ttf or .otf font file into C:\Windows\Fonts, or right-click on the font files > Install
+
+= Mac =
+Put the .ttf or .otf font file into /Library/Fonts
+
+------------------------------------------------
