@@ -1,0 +1,72 @@
+﻿<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Actions Builder</title>
+
+    <!-- CSS FILES -->
+    <link href="./index.css" rel="stylesheet" />
+    <link href="./fonts.css" rel="stylesheet" />
+
+</head>
+
+<body>
+
+    <!-- PARENT CONTAINER -->
+    <div id="ParentContainerID">
+
+        <ul id="ToolsButtonsID">
+            <li id="ToolsButtonIDSaveActionGraph">save action graph</li>
+            <li id="ResetActionGraphID">reset action graph</li>
+            <li id="TestActionGraphID">test action graph</li>
+        </ul>
+
+        <!-- LIST CONTAINER -->
+        <div id="ListsElementID">
+            <div id="TriggersListID"></div>
+            <div id="ActionsListID"></div>
+            <div id="FlowActionsListID"></div>
+        </div>
+
+        <!-- GRAPH CONTAINER -->
+        <div id="GraphContainerID">
+            <div id="GraphElementID"></div>
+
+            <div id="ToolbarElementID">
+                <ul>
+                    <li id="ViewerReduceAll">reduce all</li>
+                    <li id="ViewerExpandAll">expand all</li>
+                    <li id="ViewerDisconnectAll">disconnect all</li>
+                    <li id="ViewerReconnectAll">reconnect all</li>
+                    <li class="border" style="width: 15px; text-align: center" id="ViewerDeZoomID"> - </li>
+                    <li class="border" style="width: 15px; text-align: center" id="ViewerZoomID"> + </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PARAMETERS CONTAINER -->
+        <div id="ParametersContainerID">
+            <div id="ParametersElementID"></div>
+            <div id="ParametersHelpElementID"></div>
+        </div>
+
+    </div>
+
+    <canvas id="RenderCanvasID" style="display:none;"></canvas>
+    <input id="ActionsBuilderObjectName" type="hidden" />
+    <input id="ActionsBuilderJSON" type="hidden" />
+
+    <!-- JS FILES -->
+    <script src="raphael.js" type="text/javascript"></script>
+    <script src="babylon.max.js" type="text/javascript"></script>
+    <script src="actionsbuilder.max.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        run();
+    </script>
+
+</body>
+
+</html>
