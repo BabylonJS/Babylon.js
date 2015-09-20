@@ -8,7 +8,6 @@ interface Window {
     IDBKeyRange(func: any): any;
     webkitIDBKeyRange(func: any): any;
     msIDBKeyRange(func: any): any;
-    URL: HTMLURL;
     webkitURL: HTMLURL;
     webkitRequestAnimationFrame(func: any): any;
     mozRequestAnimationFrame(func: any): any;

@@ -466,9 +466,9 @@ var BABYLON;
             if (submeshIndex > 0) {
                 this._reconstructedMesh.subMeshes = [];
                 submeshesArray.forEach(function (submesh) {
-                    new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                    new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, /* 0, newPositionData.length/3, */ submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, /* 0, newPositionData.length / 3, */ startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         };
         QuadraticErrorSimplification.prototype.initDecimatedMesh = function () {
