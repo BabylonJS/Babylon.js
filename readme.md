@@ -3,16 +3,14 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/deltakosh/babylon.js/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
 ## CDN
-- http://cdn.babylonjs.com/2-1/babylon.js 
-- http://cdn.babylonjs.com/2-1/babylon.max.js 
-- http://cdn.babylonjs.com/2-1/babylon.noworker.js 
+- http://cdn.babylonjs.com/2-2/babylon.js 
+- http://cdn.babylonjs.com/2-2/babylon.max.js 
+- http://cdn.babylonjs.com/2-2/babylon.noworker.js 
 
 ## Preview release
 You can help by testing or contributing to the next version.
-- **2.2-beta** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release%20-%20beta)
+- **2.3-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release%20-%20alpha)
 - We are not complicate people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
 - Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
 
@@ -93,8 +91,10 @@ Unity 5 [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters
  - SSAO
  - Volumetric Light Scattering 
  - Depth of field and lens effects
+ - HDR rendering pipeline
  - Lens flares
  - Multi-views
+ - Edges renderer
 -  Textures:
  - Render target textures
  - Dynamic textures (canvas)
@@ -120,12 +120,13 @@ Unity 5 [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters
  - Parametric shapes (Ribbon, tube, etc.)
  - Hardware instances
 -  Import: 
- - Babylon scene file can be converted from .OBJ, .FBX
+ - Babylon scene file can be converted from .FBX
  - Exporter for Blender
  - Exporter for Cheetah3d
  - Exporter for 3ds Max
  - Exporter for Unity 5
  - STL importer
+ - OBJ importer
  - Assets manager
 
 [![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)

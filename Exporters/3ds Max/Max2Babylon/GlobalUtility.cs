@@ -54,7 +54,7 @@ namespace Max2Babylon
                 actionTable = Loader.Global.ActionTable.Create(idActionTable, 0, ref actionTableName);
                 actionTable.AppendOperation(new BabylonExportActionItem());
                 actionTable.AppendOperation(new BabylonPropertiesActionItem());
-               // actionTable.AppendOperation(new BabylonActionsBuilderActionItem());
+                actionTable.AppendOperation(new BabylonActionsBuilderActionItem());
                 actionCallback = new BabylonActionCallback();
 
                 actionManager.RegisterActionTable(actionTable);
@@ -107,11 +107,11 @@ namespace Max2Babylon
                 menuItemBabylon = Loader.Global.IMenuItem;
                 menuItemBabylon.Title = "Babylon Properties";
                 menuItemBabylon.ActionItem = actionTable[1];
-                //menu.AddItem(menuItemBabylon, -1);
+                menu.AddItem(menuItemBabylon, -1);
 
-                //menuItemBabylon = Loader.Global.IMenuItem;
-                //menuItemBabylon.Title = "Babylon Actions Builder";
-                //menuItemBabylon.ActionItem = actionTable[2];
+                menuItemBabylon = Loader.Global.IMenuItem;
+                menuItemBabylon.Title = "Babylon Actions Builder";
+                menuItemBabylon.ActionItem = actionTable[2];
                 menu.AddItem(menuItemBabylon, -1);
 
                 menuItem = Loader.Global.IMenuItem;
