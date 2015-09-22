@@ -3,6 +3,8 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it. 
 
+[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
+
 ## CDN
 - http://cdn.babylonjs.com/2-2/babylon.js 
 - http://cdn.babylonjs.com/2-2/babylon.max.js 
@@ -128,8 +130,6 @@ Unity 5 [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters
  - STL importer
  - OBJ importer
  - Assets manager
-
-[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
 
 ## Apache License 2.0 (Apache)
 
