@@ -5,7 +5,7 @@ Changes list
     - Blender can now bake Procedural textures & Cycles materials.  Plus more. See [documentation here](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender) ([Palmer-JC](https://github.com/Palmer-JC))
     - Meshes can now be attached to bones. See [documentation here](http://babylondoc.azurewebsites.net/page.php?p=22421) and [sample here](http://www.babylonjs-playground.com/#11BH6Z#18) ([deltakosh](https://github.com/deltakosh))
     - HDR Rendering pipeline. See [demo here](http://www.babylonjs-playground.com/#2EGN4U#2) ([julien-moreau](https://github.com/julien-moreau))
-    - New rewored StandardMaterial.isReady for better memory usage and performance ([deltakosh](https://github.com/deltakosh))
+    - New reworked StandardMaterial.isReady for better memory usage and performance ([deltakosh](https://github.com/deltakosh))
     - Revamping of FBX exporter. Now supports animations and bones ([simonferquel](http://www.github.com/simonferquel), [deltakosh](https://github.com/deltakosh))
     - StandardMaterial.useGlossinessFromSpecularMapAlpha to use specular map alpha as glossiness level ([deltakosh](https://github.com/deltakosh))    
     - Added support for StandardMaterial.roughness. See [demo here](http://www.babylonjs-playground.com/#RNBKQ#8) ([deltakosh](https://github.com/deltakosh))
