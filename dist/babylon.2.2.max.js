@@ -5716,7 +5716,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.2.0-beta";
+                return "2.2.0";
             },
             enumerable: true,
             configurable: true
@@ -30520,6 +30520,7 @@ var BABYLON;
             this._coneInnerAngle = 360;
             this._coneOuterAngle = 360;
             this._coneOuterGain = 0;
+            this._isOutputConnected = false;
             this.name = name;
             this._scene = scene;
             this._readyToPlayCallback = readyToPlayCallback;
@@ -30698,8 +30699,11 @@ var BABYLON;
         };
         Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                this._ouputAudioNode.disconnect();
+                if (this._isOutputConnected) {
+                    this._ouputAudioNode.disconnect();
+                }
                 this._ouputAudioNode.connect(soundTrackAudioNode);
+                this._isOutputConnected = true;
             }
         };
         /**
@@ -32335,9 +32339,9 @@ var BABYLON;
             if (submeshIndex > 0) {
                 this._reconstructedMesh.subMeshes = [];
                 submeshesArray.forEach(function (submesh) {
-                    new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                    new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, /* 0, newPositionData.length/3, */ submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, /* 0, newPositionData.length / 3, */ startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         };
         QuadraticErrorSimplification.prototype.initDecimatedMesh = function () {
@@ -33426,7 +33430,9 @@ var BABYLON;
         // colors shifting and distortion
         LensRenderingPipeline.prototype._createChromaticAberrationPostProcess = function (ratio) {
             var _this = this;
-            this._chromaticAberrationPostProcess = new BABYLON.PostProcess("LensChromaticAberration", "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._chromaticAberrationPostProcess = new BABYLON.PostProcess("LensChromaticAberration", "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height"], // uniforms
+            [], // samplers
+            ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._chromaticAberrationPostProcess.onApply = function (effect) {
                 effect.setFloat('chromatic_aberration', _this._chromaticAberration);
                 effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
@@ -33436,7 +33442,9 @@ var BABYLON;
         // highlights enhancing
         LensRenderingPipeline.prototype._createHighlightsPostProcess = function (ratio) {
             var _this = this;
-            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["pentagon", "gain", "threshold", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["pentagon", "gain", "threshold", "screen_width", "screen_height"], // uniforms
+            [], // samplers
+            ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._highlightsPostProcess.onApply = function (effect) {
                 effect.setFloat('gain', _this._highlightsGain);
                 effect.setFloat('threshold', _this._highlightsThreshold);

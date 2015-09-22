@@ -26,7 +26,7 @@ namespace Max2Babylon
             // Finish
             _babylonActionsBuilderAction = babylonActionsBuilderAction;
         }
-         
+        
         private void ActionsBuilderForm_Load(object sender, EventArgs e)
         {
             if (Loader.Core.SelNodeCount > 0)
