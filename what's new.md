@@ -48,9 +48,9 @@ Changes list
     - onCollide callback for meshes calling moveWithCollisions. [PR](https://github.com/BabylonJS/Babylon.js/pull/585) ([RaananW](https://github.com/RaananW))
     - Unity Exporter now uses game object name as the Babylon.js mesh name, instead of mesh name which is not unique when dealing with primitive objects (cubes, spheres, planes, etc..) ([ozRocker](https://github.com/punkoffice))
     - Path3D construction : new _raw_ parameter, if true returns a non-normalized Path3D object ([jerome](https://github.com/jbousquie))
-	  - Added `Vector3.RotationFromAxisToRef()` :  same as `RotationFromAxis()` but assigns a reference ([jerome](https://github.com/jbousquie))
-	  - `ComputeNormals` optimization : less object allocation and normal array initialization ([jerome](https://github.com/jbousquie))
-	  - Ribbon : _closePath_ parameter now creates a smooth seam ([jerome](https://github.com/jbousquie))
+    - Added `Vector3.RotationFromAxisToRef()` :  same as `RotationFromAxis()` but assigns a reference ([jerome](https://github.com/jbousquie))
+    - `ComputeNormals` optimization : less object allocation and normal array initialization ([jerome](https://github.com/jbousquie))
+    - Ribbon : _closePath_ parameter now creates a smooth seam ([jerome](https://github.com/jbousquie))
   - **Bug fixes**
     - Fixing bug with rig cameras positioning ([deltakosh](https://github.com/deltakosh))
     - Instance meshes' geometry ID is now serialized correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/607) ([RaananW](https://github.com/RaananW))
