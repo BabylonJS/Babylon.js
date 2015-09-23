@@ -1719,6 +1719,7 @@
         }
 
         public static RotationAxis(axis: Vector3, angle: number): Quaternion {
+            axis.normalize();
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);
 
