@@ -1674,6 +1674,79 @@ var BABYLON;
             decal.rotation = new BABYLON.Vector3(pitch, yaw, angle);
             return decal;
         };
+        // Skeletons
+        /**
+         * Update the vertex buffers by applying transformation from the bones
+         * @param {skeleton} skeleton to apply
+         */
+        Mesh.prototype.applySkeleton = function (skeleton) {
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
+                return this;
+            }
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                return this;
+            }
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
+                return this;
+            }
+            if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+                return this;
+            }
+            if (!this._sourcePositions) {
+                var source = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                this._sourcePositions = new Float32Array(source);
+                if (!this.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).isUpdatable()) {
+                    this.setVerticesData(BABYLON.VertexBuffer.PositionKind, source, true);
+                }
+            }
+            if (!this._sourceNormals) {
+                var source = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                this._sourceNormals = new Float32Array(source);
+                if (!this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable()) {
+                    this.setVerticesData(BABYLON.VertexBuffer.NormalKind, source, true);
+                }
+            }
+            var positionsData = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var normalsData = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var matricesIndicesData = this.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+            var matricesWeightsData = this.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+            var skeletonMatrices = skeleton.getTransformMatrices();
+            var tempVector3 = BABYLON.Vector3.Zero();
+            var finalMatrix = new BABYLON.Matrix();
+            var tempMatrix = new BABYLON.Matrix();
+            for (var index = 0; index < positionsData.length; index += 3) {
+                var index4 = (index / 3) * 4;
+                var matricesWeight0 = matricesWeightsData[index4];
+                var matricesWeight1 = matricesWeightsData[index4 + 1];
+                var matricesWeight2 = matricesWeightsData[index4 + 2];
+                var matricesWeight3 = matricesWeightsData[index4 + 3];
+                if (matricesWeight0 > 0) {
+                    var matricesIndex0 = matricesIndicesData[index4];
+                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4] * 16, matricesWeight0, tempMatrix);
+                    finalMatrix.addToSelf(tempMatrix);
+                }
+                if (matricesWeight1 > 0) {
+                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 1] * 16, matricesWeight1, tempMatrix);
+                    finalMatrix.addToSelf(tempMatrix);
+                }
+                if (matricesWeight2 > 0) {
+                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 2] * 16, matricesWeight2, tempMatrix);
+                    finalMatrix.addToSelf(tempMatrix);
+                }
+                if (matricesWeight3 > 0) {
+                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 3] * 16, matricesWeight3, tempMatrix);
+                    finalMatrix.addToSelf(tempMatrix);
+                }
+                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(this._sourcePositions[index], this._sourcePositions[index + 1], this._sourcePositions[index + 2], finalMatrix, tempVector3);
+                tempVector3.toArray(positionsData, index);
+                BABYLON.Vector3.TransformNormalFromFloatsToRef(this._sourceNormals[index], this._sourceNormals[index + 1], this._sourceNormals[index + 2], finalMatrix, tempVector3);
+                tempVector3.toArray(normalsData, index);
+                finalMatrix.reset();
+            }
+            this.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positionsData);
+            this.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normalsData);
+            return this;
+        };
         // Tools
         Mesh.MinMax = function (meshes) {
             var minVector = null;
@@ -1768,3 +1841,4 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.mesh.js.map

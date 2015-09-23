@@ -143,7 +143,7 @@
             }
 
             // Bones
-            if (mesh.useBones) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
@@ -279,7 +279,7 @@
                     }
 
                     // Bones
-                    if (mesh.useBones) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
                         this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
 
@@ -301,7 +301,7 @@
             this._volumetricLightScatteringRTT.onAfterRender = (): void => {
                 scene.clearColor = savedSceneClearColor;
             };
-
+            
             this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
                 var engine = scene.getEngine();
                 var index: number;

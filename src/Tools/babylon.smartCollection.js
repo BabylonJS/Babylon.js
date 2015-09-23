@@ -98,3 +98,4 @@ var BABYLON;
     })();
     BABYLON.SmartCollection = SmartCollection;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.smartCollection.js.map

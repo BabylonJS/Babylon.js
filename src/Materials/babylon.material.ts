@@ -28,11 +28,13 @@
         public onBind: (material: Material, mesh: Mesh) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
         public alphaMode = Engine.ALPHA_COMBINE;
+        public disableDepthWrite = false;
 
         public _effect: Effect;
         public _wasPreviouslyReady = false;
         private _scene: Scene;
         private _fillMode = Material.TriangleFillMode;
+        private _cachedDepthWriteState: boolean;
 
         public pointSize = 1.0;
 
@@ -112,12 +114,22 @@
             if (this.onBind) {
                 this.onBind(this, mesh);
             }
+
+            if (this.disableDepthWrite) {
+                var engine = this._scene.getEngine();
+                this._cachedDepthWriteState = engine.getDepthWrite();
+                engine.setDepthWrite(false);
+            }
         }
 
         public bindOnlyWorldMatrix(world: Matrix): void {
         }
 
         public unbind(): void {
+            if (this.disableDepthWrite) {
+                var engine = this._scene.getEngine();
+                engine.setDepthWrite(this._cachedDepthWriteState);
+            }
         }
 
         public clone(name: string): Material {

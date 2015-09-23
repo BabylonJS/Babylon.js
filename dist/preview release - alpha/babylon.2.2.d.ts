@@ -96,6 +96,7 @@ declare module BABYLON {
         isPointerLock: boolean;
         cullBackFaces: boolean;
         renderEvenInBackground: boolean;
+        enableOfflineSupport: boolean;
         scenes: Scene[];
         _gl: WebGLRenderingContext;
         private _renderingCanvas;
@@ -246,6 +247,8 @@ declare module BABYLON {
         setArray4(uniform: WebGLUniformLocation, array: number[]): void;
         setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
         setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
         setFloat(uniform: WebGLUniformLocation, value: number): void;
         setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
         setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
@@ -631,6 +634,7 @@ declare module BABYLON {
         private _renderTargets;
         _activeParticleSystems: SmartArray<ParticleSystem>;
         private _activeSkeletons;
+        private _softwareSkinnedMeshes;
         _activeBones: number;
         private _renderingManager;
         private _physicsEngine;
@@ -654,6 +658,7 @@ declare module BABYLON {
         constructor(engine: Engine);
         debugLayer: DebugLayer;
         workerCollisions: boolean;
+        SelectionOctree: Octree<AbstractMesh>;
         /**
          * The mesh that is currently under the pointer.
          * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
@@ -764,6 +769,7 @@ declare module BABYLON {
          * @return {BABYLON.Material|null} the material or null if none found.
          */
         getMaterialByName(name: string): Material;
+        getLensFlareSystemByName(name: string): LensFlareSystem;
         getCameraByID(id: string): Camera;
         getCameraByUniqueID(uniqueId: number): Camera;
         /**
@@ -1156,6 +1162,157 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Animatable {
+        target: any;
+        fromFrame: number;
+        toFrame: number;
+        loopAnimation: boolean;
+        speedRatio: number;
+        onAnimationEnd: any;
+        private _localDelayOffset;
+        private _pausedDelay;
+        private _animations;
+        private _paused;
+        private _scene;
+        animationStarted: boolean;
+        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: any, animations?: any);
+        appendAnimations(target: any, animations: Animation[]): void;
+        getAnimationByTargetProperty(property: string): Animation;
+        reset(): void;
+        pause(): void;
+        restart(): void;
+        stop(): void;
+        _animate(delay: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Animation {
+        name: string;
+        targetProperty: string;
+        framePerSecond: number;
+        dataType: number;
+        loopMode: number;
+        private _keys;
+        private _offsetsCache;
+        private _highLimitsCache;
+        private _stopped;
+        _target: any;
+        private _easingFunction;
+        targetPropertyPath: string[];
+        currentFrame: number;
+        static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animatable;
+        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number);
+        reset(): void;
+        isStopped(): boolean;
+        getKeys(): any[];
+        getEasingFunction(): IEasingFunction;
+        setEasingFunction(easingFunction: EasingFunction): void;
+        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
+        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
+        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
+        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
+        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
+        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        clone(): Animation;
+        setKeys(values: Array<any>): void;
+        private _getKeyValue(value);
+        private _interpolate(currentFrame, repeatCount, loopMode, offsetValue?, highLimitValue?);
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean;
+        private static _ANIMATIONTYPE_FLOAT;
+        private static _ANIMATIONTYPE_VECTOR3;
+        private static _ANIMATIONTYPE_QUATERNION;
+        private static _ANIMATIONTYPE_MATRIX;
+        private static _ANIMATIONTYPE_COLOR3;
+        private static _ANIMATIONTYPE_VECTOR2;
+        private static _ANIMATIONLOOPMODE_RELATIVE;
+        private static _ANIMATIONLOOPMODE_CYCLE;
+        private static _ANIMATIONLOOPMODE_CONSTANT;
+        static ANIMATIONTYPE_FLOAT: number;
+        static ANIMATIONTYPE_VECTOR3: number;
+        static ANIMATIONTYPE_VECTOR2: number;
+        static ANIMATIONTYPE_QUATERNION: number;
+        static ANIMATIONTYPE_MATRIX: number;
+        static ANIMATIONTYPE_COLOR3: number;
+        static ANIMATIONLOOPMODE_RELATIVE: number;
+        static ANIMATIONLOOPMODE_CYCLE: number;
+        static ANIMATIONLOOPMODE_CONSTANT: number;
+    }
+}
+
+declare module BABYLON {
+    interface IEasingFunction {
+        ease(gradient: number): number;
+    }
+    class EasingFunction implements IEasingFunction {
+        private static _EASINGMODE_EASEIN;
+        private static _EASINGMODE_EASEOUT;
+        private static _EASINGMODE_EASEINOUT;
+        static EASINGMODE_EASEIN: number;
+        static EASINGMODE_EASEOUT: number;
+        static EASINGMODE_EASEINOUT: number;
+        private _easingMode;
+        setEasingMode(easingMode: number): void;
+        getEasingMode(): number;
+        easeInCore(gradient: number): number;
+        ease(gradient: number): number;
+    }
+    class CircleEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BackEase extends EasingFunction implements IEasingFunction {
+        amplitude: number;
+        constructor(amplitude?: number);
+        easeInCore(gradient: number): number;
+    }
+    class BounceEase extends EasingFunction implements IEasingFunction {
+        bounces: number;
+        bounciness: number;
+        constructor(bounces?: number, bounciness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class CubicEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class ElasticEase extends EasingFunction implements IEasingFunction {
+        oscillations: number;
+        springiness: number;
+        constructor(oscillations?: number, springiness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class ExponentialEase extends EasingFunction implements IEasingFunction {
+        exponent: number;
+        constructor(exponent?: number);
+        easeInCore(gradient: number): number;
+    }
+    class PowerEase extends EasingFunction implements IEasingFunction {
+        power: number;
+        constructor(power?: number);
+        easeInCore(gradient: number): number;
+    }
+    class QuadraticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuarticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuinticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class SineEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BezierCurveEase extends EasingFunction implements IEasingFunction {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
+        easeInCore(gradient: number): number;
+    }
+}
+
+declare module BABYLON {
     class Analyser {
         SMOOTHING: number;
         FFT_SIZE: number;
@@ -1315,157 +1472,6 @@ declare module BABYLON {
         switchPanningModelToHRTF(): void;
         switchPanningModelToEqualPower(): void;
         connectToAnalyser(analyser: Analyser): void;
-    }
-}
-
-declare module BABYLON {
-    class Animatable {
-        target: any;
-        fromFrame: number;
-        toFrame: number;
-        loopAnimation: boolean;
-        speedRatio: number;
-        onAnimationEnd: any;
-        private _localDelayOffset;
-        private _pausedDelay;
-        private _animations;
-        private _paused;
-        private _scene;
-        animationStarted: boolean;
-        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: any, animations?: any);
-        appendAnimations(target: any, animations: Animation[]): void;
-        getAnimationByTargetProperty(property: string): Animation;
-        reset(): void;
-        pause(): void;
-        restart(): void;
-        stop(): void;
-        _animate(delay: number): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Animation {
-        name: string;
-        targetProperty: string;
-        framePerSecond: number;
-        dataType: number;
-        loopMode: number;
-        private _keys;
-        private _offsetsCache;
-        private _highLimitsCache;
-        private _stopped;
-        _target: any;
-        private _easingFunction;
-        targetPropertyPath: string[];
-        currentFrame: number;
-        static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animatable;
-        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number);
-        reset(): void;
-        isStopped(): boolean;
-        getKeys(): any[];
-        getEasingFunction(): IEasingFunction;
-        setEasingFunction(easingFunction: EasingFunction): void;
-        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
-        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
-        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
-        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
-        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
-        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        clone(): Animation;
-        setKeys(values: Array<any>): void;
-        private _getKeyValue(value);
-        private _interpolate(currentFrame, repeatCount, loopMode, offsetValue?, highLimitValue?);
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean;
-        private static _ANIMATIONTYPE_FLOAT;
-        private static _ANIMATIONTYPE_VECTOR3;
-        private static _ANIMATIONTYPE_QUATERNION;
-        private static _ANIMATIONTYPE_MATRIX;
-        private static _ANIMATIONTYPE_COLOR3;
-        private static _ANIMATIONTYPE_VECTOR2;
-        private static _ANIMATIONLOOPMODE_RELATIVE;
-        private static _ANIMATIONLOOPMODE_CYCLE;
-        private static _ANIMATIONLOOPMODE_CONSTANT;
-        static ANIMATIONTYPE_FLOAT: number;
-        static ANIMATIONTYPE_VECTOR3: number;
-        static ANIMATIONTYPE_VECTOR2: number;
-        static ANIMATIONTYPE_QUATERNION: number;
-        static ANIMATIONTYPE_MATRIX: number;
-        static ANIMATIONTYPE_COLOR3: number;
-        static ANIMATIONLOOPMODE_RELATIVE: number;
-        static ANIMATIONLOOPMODE_CYCLE: number;
-        static ANIMATIONLOOPMODE_CONSTANT: number;
-    }
-}
-
-declare module BABYLON {
-    interface IEasingFunction {
-        ease(gradient: number): number;
-    }
-    class EasingFunction implements IEasingFunction {
-        private static _EASINGMODE_EASEIN;
-        private static _EASINGMODE_EASEOUT;
-        private static _EASINGMODE_EASEINOUT;
-        static EASINGMODE_EASEIN: number;
-        static EASINGMODE_EASEOUT: number;
-        static EASINGMODE_EASEINOUT: number;
-        private _easingMode;
-        setEasingMode(easingMode: number): void;
-        getEasingMode(): number;
-        easeInCore(gradient: number): number;
-        ease(gradient: number): number;
-    }
-    class CircleEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BackEase extends EasingFunction implements IEasingFunction {
-        amplitude: number;
-        constructor(amplitude?: number);
-        easeInCore(gradient: number): number;
-    }
-    class BounceEase extends EasingFunction implements IEasingFunction {
-        bounces: number;
-        bounciness: number;
-        constructor(bounces?: number, bounciness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class CubicEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class ElasticEase extends EasingFunction implements IEasingFunction {
-        oscillations: number;
-        springiness: number;
-        constructor(oscillations?: number, springiness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class ExponentialEase extends EasingFunction implements IEasingFunction {
-        exponent: number;
-        constructor(exponent?: number);
-        easeInCore(gradient: number): number;
-    }
-    class PowerEase extends EasingFunction implements IEasingFunction {
-        power: number;
-        constructor(power?: number);
-        easeInCore(gradient: number): number;
-    }
-    class QuadraticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuarticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuinticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class SineEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BezierCurveEase extends EasingFunction implements IEasingFunction {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
-        easeInCore(gradient: number): number;
     }
 }
 
@@ -2306,43 +2312,12 @@ declare module BABYLON {
         isEnabled: boolean;
         getScene(): Scene;
         getEmitter(): any;
+        setEmitter(newEmitter: any): void;
         getEmitterPosition(): Vector3;
         computeEffectivePosition(globalViewport: Viewport): boolean;
         _isVisible(): boolean;
         render(): boolean;
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPlugin {
-        extensions: string;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        private static _registeredPlugins;
-        private static _getPluginForFilename(sceneFilename);
-        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -2451,6 +2426,38 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface ISceneLoaderPlugin {
+        extensions: string;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        private static _registeredPlugins;
+        private static _getPluginForFilename(sceneFilename);
+        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+    }
+}
+
+declare module BABYLON {
     class EffectFallbacks {
         private _defines;
         private _currentRank;
@@ -2502,12 +2509,15 @@ declare module BABYLON {
         setArray4(uniformName: string, array: number[]): Effect;
         setMatrices(uniformName: string, matrices: Float32Array): Effect;
         setMatrix(uniformName: string, matrix: Matrix): Effect;
+        setMatrix3x3(uniformName: string, matrix: Float32Array): Effect;
+        setMatrix2x2(uniformname: string, matrix: Float32Array): Effect;
         setFloat(uniformName: string, value: number): Effect;
         setBool(uniformName: string, bool: boolean): Effect;
         setVector2(uniformName: string, vector2: Vector2): Effect;
         setFloat2(uniformName: string, x: number, y: number): Effect;
         setVector3(uniformName: string, vector3: Vector3): Effect;
         setFloat3(uniformName: string, x: number, y: number, z: number): Effect;
+        setVector4(uniformName: string, vector4: Vector4): Effect;
         setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect;
         setColor3(uniformName: string, color3: Color3): Effect;
         setColor4(uniformName: string, color3: Color3, alpha: number): Effect;
@@ -2536,10 +2546,12 @@ declare module BABYLON {
         onBind: (material: Material, mesh: Mesh) => void;
         getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
         alphaMode: number;
+        disableDepthWrite: boolean;
         _effect: Effect;
         _wasPreviouslyReady: boolean;
         private _scene;
         private _fillMode;
+        private _cachedDepthWriteState;
         pointSize: number;
         zOffset: number;
         wireframe: boolean;
@@ -2583,7 +2595,10 @@ declare module BABYLON {
         private _colors4;
         private _vectors2;
         private _vectors3;
+        private _vectors4;
         private _matrices;
+        private _matrices3x3;
+        private _matrices2x2;
         private _cachedWorldViewMatrix;
         private _renderId;
         constructor(name: string, scene: Scene, shaderPath: any, options: any);
@@ -2597,7 +2612,10 @@ declare module BABYLON {
         setColor4(name: string, value: Color4): ShaderMaterial;
         setVector2(name: string, value: Vector2): ShaderMaterial;
         setVector3(name: string, value: Vector3): ShaderMaterial;
+        setVector4(name: string, value: Vector4): ShaderMaterial;
         setMatrix(name: string, value: Matrix): ShaderMaterial;
+        setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
+        setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
         bindOnlyWorldMatrix(world: Matrix): void;
         bind(world: Matrix, mesh?: Mesh): void;
@@ -2634,6 +2652,7 @@ declare module BABYLON {
         opacityFresnelParameters: FresnelParameters;
         reflectionFresnelParameters: FresnelParameters;
         emissiveFresnelParameters: FresnelParameters;
+        useGlossinessFromSpecularMapAlpha: boolean;
         private _renderTargets;
         private _worldViewProjectionMatrix;
         private _globalAmbientColor;
@@ -2689,6 +2708,8 @@ declare module BABYLON {
         clone(): Color3;
         copyFrom(source: Color3): Color3;
         copyFromFloats(r: number, g: number, b: number): Color3;
+        toHexString(): string;
+        static FromHexString(hex: string): Color3;
         static FromArray(array: number[], offset?: number): Color3;
         static FromInts(r: number, g: number, b: number): Color3;
         static Lerp(start: Color3, end: Color3, amount: number): Color3;
@@ -2719,6 +2740,8 @@ declare module BABYLON {
         toString(): string;
         clone(): Color4;
         copyFrom(source: Color4): Color4;
+        toHexString(): string;
+        static FromHexString(hex: string): Color4;
         static Lerp(left: Color4, right: Color4, amount: number): Color4;
         static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
         static FromArray(array: number[], offset?: number): Color4;
@@ -2807,6 +2830,7 @@ declare module BABYLON {
         copyFromFloats(x: number, y: number, z: number): Vector3;
         static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: any): number;
         static FromArray(array: number[], offset?: number): Vector3;
+        static FromFloatArray(array: Float32Array, offset?: number): Vector3;
         static FromArrayToRef(array: number[], offset: number, result: Vector3): void;
         static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
         static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void;
@@ -2941,6 +2965,10 @@ declare module BABYLON {
         toArray(): Float32Array;
         asArray(): Float32Array;
         invert(): Matrix;
+        reset(): Matrix;
+        add(other: Matrix): Matrix;
+        addToRef(other: Matrix, result: Matrix): Matrix;
+        addToSelf(other: Matrix): Matrix;
         invertToRef(other: Matrix): Matrix;
         invertToRefSIMD(other: Matrix): Matrix;
         setTranslation(vector3: Vector3): Matrix;
@@ -2955,6 +2983,7 @@ declare module BABYLON {
         decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
         static FromArray(array: number[], offset?: number): Matrix;
         static FromArrayToRef(array: number[], offset: number, result: Matrix): void;
+        static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix): void;
         static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
         static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix;
         static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix;
@@ -2986,6 +3015,8 @@ declare module BABYLON {
         static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix;
         static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode?: number): void;
         static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix;
+        static GetAsMatrix2x2(matrix: Matrix): Float32Array;
+        static GetAsMatrix3x3(matrix: Matrix): Float32Array;
         static Transpose(matrix: Matrix): Matrix;
         static Reflection(plane: Plane): Matrix;
         static ReflectionToRef(plane: Plane, result: Matrix): void;
@@ -3201,6 +3232,7 @@ declare module BABYLON {
         hasVertexAlpha: boolean;
         useVertexColors: boolean;
         applyFog: boolean;
+        computeBonesUsingShaders: boolean;
         useOctreeForRenderingSelection: boolean;
         useOctreeForPicking: boolean;
         useOctreeForCollisions: boolean;
@@ -3641,6 +3673,8 @@ declare module BABYLON {
         private _preActivateId;
         private _sideOrientation;
         private _areNormalsFrozen;
+        private _sourcePositions;
+        private _sourceNormals;
         /**
          * @constructor
          * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
@@ -3769,6 +3803,11 @@ declare module BABYLON {
             (i: number, distance: number): number;
         }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, tubeInstance?: Mesh): Mesh;
         static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle?: number): Mesh;
+        /**
+         * Update the vertex buffers by applying transformation from the bones
+         * @param {skeleton} skeleton to apply
+         */
+        applySkeleton(skeleton: Skeleton): Mesh;
         static MinMax(meshes: AbstractMesh[]): {
             min: Vector3;
             max: Vector3;
@@ -5212,8 +5251,10 @@ declare module BABYLON {
         apply: (scene: Scene) => boolean;
     }
     class MergeMeshesOptimization extends SceneOptimization {
+        static _UpdateSelectionTree: boolean;
+        static UpdateSelectionTree: boolean;
         private _canBeMerged;
-        apply: (scene: Scene) => boolean;
+        apply: (scene: Scene, updateSelectionTree?: boolean) => boolean;
     }
     class SceneOptimizerOptions {
         targetFrameRate: number;
@@ -5344,6 +5385,7 @@ declare module BABYLON {
     }
     class Tools {
         static BaseUrl: string;
+        static ToHex(i: number): string;
         static SetImmediate(action: () => void): void;
         static IsExponantOfTwo(value: number): boolean;
         static GetExponantOfTwo(value: number, max: number): number;
@@ -5392,6 +5434,7 @@ declare module BABYLON {
         private static _WarningLogLevel;
         private static _ErrorLogLevel;
         private static _LogCache;
+        static errorsCount: number;
         static OnNewCacheEntry: (entry: string) => void;
         static NoneLogLevel: number;
         static MessageLogLevel: number;
@@ -5410,6 +5453,7 @@ declare module BABYLON {
         private static _ErrorDisabled(message);
         private static _ErrorEnabled(message);
         static LogCache: string;
+        static ClearLogCache(): void;
         static LogLevels: number;
         private static _PerformanceNoneLogLevel;
         private static _PerformanceUserMarkLogLevel;
@@ -5611,9 +5655,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON.Internals {
-}
-
 declare module BABYLON {
     class ShadowGenerator {
         private static _FILTER_NONE;
@@ -5665,6 +5706,9 @@ declare module BABYLON {
         private _packHalf(depth);
         dispose(): void;
     }
+}
+
+declare module BABYLON.Internals {
 }
 
 declare module BABYLON {

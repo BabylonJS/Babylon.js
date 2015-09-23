@@ -147,7 +147,7 @@ var BABYLON;
                 }
                 return true;
             };
-            this.apply = function (scene) {
+            this.apply = function (scene, updateSelectionTree) {
                 var globalPool = scene.meshes.slice(0);
                 var globalLength = globalPool.length;
                 for (var index = 0; index < globalLength; index++) {
@@ -181,9 +181,28 @@ var BABYLON;
                     // Merge meshes
                     BABYLON.Mesh.MergeMeshes(currentPool);
                 }
+                if (updateSelectionTree != undefined) {
+                    if (updateSelectionTree) {
+                        scene.createOrUpdateSelectionOctree();
+                    }
+                }
+                else if (MergeMeshesOptimization.UpdateSelectionTree) {
+                    scene.createOrUpdateSelectionOctree();
+                }
                 return true;
             };
         }
+        Object.defineProperty(MergeMeshesOptimization, "UpdateSelectionTree", {
+            get: function () {
+                return MergeMeshesOptimization._UpdateSelectionTree;
+            },
+            set: function (value) {
+                MergeMeshesOptimization._UpdateSelectionTree = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        MergeMeshesOptimization._UpdateSelectionTree = false;
         return MergeMeshesOptimization;
     })(SceneOptimization);
     BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;
@@ -311,3 +330,4 @@ var BABYLON;
     })();
     BABYLON.SceneOptimizer = SceneOptimizer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.sceneOptimizer.js.map

@@ -19,6 +19,13 @@ var BABYLON;
     var Tools = (function () {
         function Tools() {
         }
+        Tools.ToHex = function (i) {
+            var str = i.toString(16);
+            if (i <= 15) {
+                return ("0" + str).toUpperCase();
+            }
+            return str.toUpperCase();
+        };
         Tools.SetImmediate = function (action) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -384,6 +391,7 @@ var BABYLON;
             var halfHeight = height / 2;
             //Reading datas from WebGL
             var data = engine.readPixels(0, 0, width, height);
+            //To flip image on Y axis.
             for (var i = 0; i < halfHeight; i++) {
                 for (var j = 0; j < numberOfChannelsByLine; j++) {
                     var currentCell = j + i * numberOfChannelsByLine;
@@ -824,3 +832,4 @@ var BABYLON;
     })();
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tools.js.map

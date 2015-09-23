@@ -239,6 +239,7 @@
         private _renderTargets = new SmartArray<RenderTargetTexture>(256);
         public _activeParticleSystems = new SmartArray<ParticleSystem>(256);
         private _activeSkeletons = new SmartArray<Skeleton>(32);
+        private _softwareSkinnedMeshes = new SmartArray<Mesh>(32);
         public _activeBones = 0;
 
         private _renderingManager: RenderingManager;
@@ -317,6 +318,10 @@
 
         public get workerCollisions(): boolean {
             return this._workerCollisions;
+        }
+
+        public get SelectionOctree(): Octree<AbstractMesh> {
+            return this._selectionOctree;
         }
 
         /**
@@ -530,6 +535,10 @@
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
             this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
 
+            // Wheel
+            this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
+            this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }
@@ -541,6 +550,10 @@
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "move", this._onPointerMove);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "down", this._onPointerDown);
             this._engine.getRenderingCanvas().removeEventListener(eventPrefix + "up", this._onPointerUp);
+
+            // Wheel
+            this._engine.getRenderingCanvas().removeEventListener('mousewheel', this._onPointerMove);
+            this._engine.getRenderingCanvas().removeEventListener('DOMMouseScroll', this._onPointerMove);
 
             Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -915,6 +928,16 @@
             return null;
         }
 
+        public getLensFlareSystemByName(name: string): LensFlareSystem {
+            for (var index = 0; index < this.lensFlareSystems.length; index++) {
+                if (this.lensFlareSystems[index].name === name) {
+                    return this.lensFlareSystems[index];
+                }
+            }
+
+            return null;
+        }
+
         public getCameraByID(id: string): Camera {
             for (var index = 0; index < this.cameras.length; index++) {
                 if (this.cameras[index].id === id) {
@@ -1241,6 +1264,7 @@
             this._processedMaterials.reset();
             this._activeParticleSystems.reset();
             this._activeSkeletons.reset();
+            this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
 
             if (!this._frustumPlanes) {
@@ -1324,6 +1348,10 @@
         private _activeMesh(mesh: AbstractMesh): void {
             if (mesh.skeleton && this.skeletonsEnabled) {
                 this._activeSkeletons.pushNoDuplicate(mesh.skeleton);
+
+                if (!mesh.computeBonesUsingShaders) {
+                    this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
+                }
             }
 
             if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
@@ -1393,6 +1421,13 @@
                 skeleton.prepare();
             }
 
+            // Software skinning
+            for (var softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
+                var mesh = this._softwareSkinnedMeshes.data[softwareSkinnedMeshIndex];
+
+                mesh.applySkeleton(mesh.skeleton);
+            }
+
             // Render targets
             var beforeRenderTargetDate = Tools.Now;
             if (this.renderTargetsEnabled) {
@@ -1407,10 +1442,8 @@
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
-
                 this._renderId++;
             }
-
             if (this._renderTargets.length > 0) { // Restore back buffer
                 engine.restoreDefaultFramebuffer();
             }

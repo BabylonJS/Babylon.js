@@ -192,7 +192,7 @@
                     }
 
                     // Bones
-                    if (mesh.useBones) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
                         this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
 
@@ -258,7 +258,7 @@
             }
 
             // Bones
-            if (mesh.useBones) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
