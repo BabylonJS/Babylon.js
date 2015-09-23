@@ -268,6 +268,11 @@
             serializationObject.emissiveTexture = serializeTexture(material.emissiveTexture);
         }
 
+        if (material.lightmapTexture) {
+            serializationObject.lightmapTexture = serializeTexture(material.lightmapTexture);
+            serializationObject.lightmapThreshold = material.lightmapThreshold;
+        }
+
         if (material.emissiveFresnelParameters) {
             serializationObject.emissiveFresnelParameters = serializeFresnelParameter(material.emissiveFresnelParameters);
         }

@@ -617,7 +617,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.2.0-beta";
+                return "2.3.0-alpha";
             },
             enumerable: true,
             configurable: true
@@ -1202,12 +1202,15 @@ var BABYLON;
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         };
         // States
-        Engine.prototype.setState = function (culling, zOffset, force) {
+        Engine.prototype.setState = function (culling, zOffset, force, reverseSide) {
             if (zOffset === void 0) { zOffset = 0; }
+            if (reverseSide === void 0) { reverseSide = false; }
             // Culling        
             if (this._depthCullingState.cull !== culling || force) {
                 if (culling) {
-                    this._depthCullingState.cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+                    var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
+                    var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
+                    this._depthCullingState.cullFace = this.cullBackFaces ? showSide : hideSide;
                     this._depthCullingState.cull = true;
                 }
                 else {

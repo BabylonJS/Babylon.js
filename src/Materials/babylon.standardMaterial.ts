@@ -72,6 +72,7 @@
         public ROUGHNESS = false;
         public EMISSIVEASILLUMINATION = false;
         public REFLECTIONFRESNELFROMSPECULAR = false;
+        public LIGHTMAP = false;
 
         _keys: string[];
 
@@ -139,6 +140,7 @@
         public emissiveTexture: BaseTexture;
         public specularTexture: BaseTexture;
         public bumpTexture: BaseTexture;
+        public lightmapTexture: BaseTexture;
 
         public ambientColor = new Color3(0, 0, 0);
         public diffuseColor = new Color3(1, 1, 1);
@@ -152,6 +154,8 @@
         public fogEnabled = true;
 
         public roughness = 0;
+
+        public lightmapThreshold = 0;
 
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
@@ -277,6 +281,15 @@
                     } else {
                         needUVs = true;
                         this._defines.EMISSIVE = true;
+                    }
+                }
+
+                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                    if (!this.lightmapTexture.isReady()) {
+                        return false;
+                    } else {
+                        needUVs = true;
+                        this._defines.LIGHTMAP = true;
                     }
                 }
 
@@ -599,14 +612,14 @@
                         "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                         "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                         "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
+                        "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos",
                         "mBones",
-                        "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
+                        "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
                         "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
                         "roughness"
                     ],
-                    ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
+                    ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                     ],
                     join, fallbacks, this.onCompiled, this.onError);
@@ -710,6 +723,13 @@
 
                     this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
                     this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
+                }
+
+                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                    this._effect.setTexture("lightmapSampler", this.lightmapTexture);
+
+                    this._effect.setFloat3("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level, this.lightmapThreshold);
+                    this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
                 }
 
                 if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
@@ -943,5 +963,6 @@
         public static SpecularTextureEnabled = true;
         public static BumpTextureEnabled = true;
         public static FresnelEnabled = true;
+        public static LightmapEnabled = true;
     }
 } 

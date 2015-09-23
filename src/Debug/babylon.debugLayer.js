@@ -512,6 +512,7 @@ var BABYLON;
                 this._generateCheckBox(this._optionsSubsetDiv, "Opacity", BABYLON.StandardMaterial.OpacityTextureEnabled, function (element) { BABYLON.StandardMaterial.OpacityTextureEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", BABYLON.StandardMaterial.ReflectionTextureEnabled, function (element) { BABYLON.StandardMaterial.ReflectionTextureEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", BABYLON.StandardMaterial.FresnelEnabled, function (element) { BABYLON.StandardMaterial.FresnelEnabled = element.checked; });
+                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", BABYLON.StandardMaterial.LightmapEnabled, function (element) { BABYLON.StandardMaterial.LightmapEnabled = element.checked; });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Animations", this._scene.animationsEnabled, function (element) { _this._scene.animationsEnabled = element.checked; });

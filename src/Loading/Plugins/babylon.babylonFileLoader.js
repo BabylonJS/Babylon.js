@@ -143,6 +143,10 @@ var BABYLON;
             if (parsedMaterial.emissiveTexture) {
                 material.emissiveTexture = loadTexture(rootUrl, parsedMaterial.emissiveTexture, scene);
             }
+            if (parsedMaterial.lightmapTexture) {
+                material.lightmapTexture = loadTexture(rootUrl, parsedMaterial.lightmapTexture, scene);
+                material.lightmapThreshold = parsedMaterial.lightmapThreshold;
+            }
             if (parsedMaterial.emissiveFresnelParameters) {
                 material.emissiveFresnelParameters = parseFresnelParameters(parsedMaterial.emissiveFresnelParameters);
             }

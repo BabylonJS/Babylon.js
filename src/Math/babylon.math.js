@@ -2047,9 +2047,14 @@ var BABYLON;
             // Z axis
             target.subtractToRef(eye, this._zAxis);
             this._zAxis.normalize();
-            // X axis
+            // X axis            
             Vector3.CrossToRef(up, this._zAxis, this._xAxis);
-            this._xAxis.normalize();
+            if (this._xAxis.lengthSquared() === 0) {
+                this._xAxis.x = 1.0;
+            }
+            else {
+                this._xAxis.normalize();
+            }
             // Y axis
             Vector3.CrossToRef(this._zAxis, this._xAxis, this._yAxis);
             this._yAxis.normalize();
