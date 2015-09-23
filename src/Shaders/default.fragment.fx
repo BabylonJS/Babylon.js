@@ -131,6 +131,12 @@ uniform vec2 vEmissiveInfos;
 uniform sampler2D emissiveSampler;
 #endif
 
+#ifdef LIGHTMAP
+varying vec2 vLightmapUV;
+uniform vec3 vLightmapInfos;
+uniform sampler2D lightmapSampler;
+#endif
+
 #if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
@@ -810,6 +816,20 @@ void main(void) {
     vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor, 0.0, 1.0), alpha);
 #else
     vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
+#endif
+
+#ifdef LIGHTMAP
+	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
+	float lightmapIllum = clamp(dot(lightmapColor, vec3(0.3, 0.59, 0.11)), 0., 1.);
+
+	if (lightmapIllum > vLightmapInfos.z)
+	{
+		color.rgb += lightmapColor;
+	}
+	else
+	{
+		color.rgb *= lightmapColor;
+	}
 #endif
 
 #ifdef FOG

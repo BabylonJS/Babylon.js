@@ -35,6 +35,7 @@ var BABYLON;
             this._coneInnerAngle = 360;
             this._coneOuterAngle = 360;
             this._coneOuterGain = 0;
+            this._isOutputConnected = false;
             this.name = name;
             this._scene = scene;
             this._readyToPlayCallback = readyToPlayCallback;
@@ -213,8 +214,11 @@ var BABYLON;
         };
         Sound.prototype.connectToSoundTrackAudioNode = function (soundTrackAudioNode) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                this._ouputAudioNode.disconnect();
+                if (this._isOutputConnected) {
+                    this._ouputAudioNode.disconnect();
+                }
                 this._ouputAudioNode.connect(soundTrackAudioNode);
+                this._isOutputConnected = true;
             }
         };
         /**

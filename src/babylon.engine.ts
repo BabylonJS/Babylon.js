@@ -481,7 +481,7 @@
         }
 
         public static get Version(): string {
-            return "2.2.0-beta";
+            return "2.3.0-alpha";
         }
 
         // Updatable statics so stick with vars here
@@ -1429,11 +1429,13 @@
         }
 
         // States
-        public setState(culling: boolean, zOffset: number = 0, force?: boolean): void {
+        public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
             // Culling        
             if (this._depthCullingState.cull !== culling || force) {
                 if (culling) {
-                    this._depthCullingState.cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+                    var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
+                    var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
+                    this._depthCullingState.cullFace = this.cullBackFaces ? showSide : hideSide;
                     this._depthCullingState.cull = true;
                 } else {
                     this._depthCullingState.cull = false;

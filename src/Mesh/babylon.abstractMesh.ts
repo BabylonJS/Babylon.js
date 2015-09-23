@@ -232,9 +232,9 @@
                 this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = Vector3.Zero();
             }
-
+            var rotationQuaternion: Quaternion;
             if (!space || space === Space.LOCAL) {
-                var rotationQuaternion = Quaternion.RotationAxis(axis, amount);
+                rotationQuaternion = Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
             else {
@@ -493,7 +493,7 @@
                     Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
 
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
@@ -650,7 +650,7 @@
             var physicsEngine = this.getScene().getPhysicsEngine();
 
             if (!physicsEngine) {
-                return;
+                return null;
             }
 
             impostor = impostor || PhysicsEngine.NoImpostor;
@@ -663,7 +663,7 @@
 
             if (impostor === PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
-                return;
+                return null;
             }
 
             if (!options) {

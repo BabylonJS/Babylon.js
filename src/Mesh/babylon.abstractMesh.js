@@ -226,8 +226,9 @@ var BABYLON;
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = BABYLON.Vector3.Zero();
             }
+            var rotationQuaternion;
             if (!space || space === BABYLON.Space.LOCAL) {
-                var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
+                rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
             else {
@@ -445,7 +446,7 @@ var BABYLON;
                     localPosition.addInPlace(this.parent.position);
                     BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + BABYLON.Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
@@ -568,7 +569,7 @@ var BABYLON;
         AbstractMesh.prototype.setPhysicsState = function (impostor, options) {
             var physicsEngine = this.getScene().getPhysicsEngine();
             if (!physicsEngine) {
-                return;
+                return null;
             }
             impostor = impostor || BABYLON.PhysicsEngine.NoImpostor;
             if (impostor.impostor) {
@@ -578,7 +579,7 @@ var BABYLON;
             }
             if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
-                return;
+                return null;
             }
             if (!options) {
                 options = { mass: 0, friction: 0.2, restitution: 0.2 };
