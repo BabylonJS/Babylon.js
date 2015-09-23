@@ -1156,6 +1156,16 @@ var BABYLON;
                 return;
             this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
         };
+        Engine.prototype.setMatrix3x3 = function (uniform, matrix) {
+            if (!uniform)
+                return;
+            this._gl.uniformMatrix3fv(uniform, false, matrix);
+        };
+        Engine.prototype.setMatrix2x2 = function (uniform, matrix) {
+            if (!uniform)
+                return;
+            this._gl.uniformMatrix2fv(uniform, false, matrix);
+        };
         Engine.prototype.setFloat = function (uniform, value) {
             if (!uniform)
                 return;

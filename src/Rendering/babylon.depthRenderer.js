@@ -47,7 +47,7 @@ var BABYLON;
                         _this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
                     // Bones
-                    if (mesh.useBones) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
                     // Draw
@@ -83,7 +83,7 @@ var BABYLON;
                 }
             }
             // Bones
-            if (mesh.useBones) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
                 defines.push("#define BONES");
@@ -116,3 +116,4 @@ var BABYLON;
     })();
     BABYLON.DepthRenderer = DepthRenderer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.depthRenderer.js.map

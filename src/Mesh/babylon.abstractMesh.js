@@ -37,6 +37,7 @@ var BABYLON;
             this.hasVertexAlpha = false;
             this.useVertexColors = true;
             this.applyFog = true;
+            this.computeBonesUsingShaders = true;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
@@ -860,3 +861,4 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.abstractMesh.js.map

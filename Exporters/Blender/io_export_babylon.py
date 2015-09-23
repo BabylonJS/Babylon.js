@@ -1,16 +1,18 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (1, 8, 2),
+    'version': (3, 0, 0),
     'blender': (2, 72, 0),
-    "location": "File > Export > Babylon.js (.babylon)",
-    "description": "Export Babylon.js scenes (.babylon)",
-    'wiki_url': 'https://github.com/BabylonJS/Babylon.js/wiki/13-Blender',
+    'location': 'File > Export > Babylon.js (.babylon)',
+    'description': 'Export Babylon.js scenes (.babylon)',
+    'wiki_url': 'https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/Blender',
     'tracker_url': '',
     'category': 'Import-Export'}
 
+import base64
 import bpy
 import bpy_extras.io_utils
+import time
 import io
 import math
 import mathutils
@@ -20,36 +22,22 @@ import sys, traceback # for writing errors to log file
 #===============================================================================
 # Registration the calling of the INFO_MT_file_export file selector
 def menu_func(self, context):
-    self.layout.operator(BabylonExporter.bl_idname, text = 'Babylon.js [.babylon]')
-
-# store keymaps here to access after registration (commented out for now)
-#addon_keymaps = []
+    self.layout.operator(Main.bl_idname, text = 'Babylon.js [.babylon]')
 
 def register():
     bpy.utils.register_module(__name__)
     bpy.types.INFO_MT_file_export.append(menu_func)
 
-    # create the hotkey
-#    kc = bpy.context.window_manager.keyconfigs.addon
-#    km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
-#    kmi = km.keymap_items.new('wm.call_menu', 'W', 'PRESS', alt=True)
-#    kmi.properties.name = BabylonExporter.bl_idname
-#    kmi.active = True
-#    addon_keymaps.append((km, kmi))
-
 def unregister():
     bpy.utils.unregister_module(__name__)
     bpy.types.INFO_MT_file_export.remove(menu_func)
-
-#    for km, kmi in addon_keymaps:
-#        km.keymap_items.remove(kmi)
-#    addon_keymaps.clear()
 
 if __name__ == '__main__':
     register()
 #===============================================================================
 # output related constants
 MAX_VERTEX_ELEMENTS = 65535
+MAX_VERTEX_ELEMENTS_32Bit = 16777216
 VERTEX_OUTPUT_PER_LINE = 1000
 MAX_FLOAT_PRECISION = '%.4f'
 MAX_INFLUENCERS_PER_VERTEX = 4
@@ -78,8 +66,6 @@ CYLINDER_IMPOSTER = 7
 CONVEX_HULL_IMPOSTER = 8
 
 # camera class names, never formally defined in Babylon, but used in babylonFileLoader
-ANAGLYPH_ARC_CAM = 'AnaglyphArcRotateCamera'
-ANAGLYPH_FREE_CAM = 'AnaglyphFreeCamera'
 ARC_ROTATE_CAM = 'ArcRotateCamera'
 DEV_ORIENT_CAM = 'DeviceOrientationCamera'
 FOLLOW_CAM = 'FollowCamera'
@@ -90,11 +76,26 @@ V_JOYSTICKS_CAM = 'VirtualJoysticksCamera'
 VR_DEV_ORIENT_FREE_CAM ='VRDeviceOrientationFreeCamera'
 WEB_VR_FREE_CAM = 'WebVRFreeCamera'
 
+# 3D camera rigs, defined in BABYLON.Camera, must be strings to be in 'dropdown'
+RIG_MODE_NONE = '0'
+RIG_MODE_STEREOSCOPIC_ANAGLYPH = '10'
+RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = '11'
+RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = '12'
+RIG_MODE_STEREOSCOPIC_OVERUNDER = '13'
+RIG_MODE_VR = '20'
+
 # used in Light constructor, never formally defined in Babylon, but used in babylonFileLoader
 POINT_LIGHT = 0
 DIRECTIONAL_LIGHT = 1
 SPOT_LIGHT = 2
 HEMI_LIGHT = 3
+
+#used in ShadowGenerators
+NO_SHADOWS = 'NONE'
+STD_SHADOWS = 'STD'
+POISSON_SHADOWS = 'POISSON'
+VARIANCE_SHADOWS = 'VARIANCE'
+BLUR_VARIANCE_SHADOWS = 'BLUR_VARIANCE'
 
 # used in Texture constructor, defined in BABYLON.Texture
 CLAMP_ADDRESSMODE = 0
@@ -121,7 +122,58 @@ ANIMATIONTYPE_MATRIX = 3
 ANIMATIONLOOPMODE_CYCLE = 1
 #ANIMATIONLOOPMODE_CONSTANT = 2
 #===============================================================================
-class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
+# Panel displayed in Scene Tab of properties, so settings can be saved in a .blend file
+class ExporterSettingsPanel(bpy.types.Panel):
+    bl_label = 'Exporter Settings'
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'scene'
+
+    bpy.types.Scene.export_onlySelectedLayer = bpy.props.BoolProperty(
+        name="Export only selected layers",
+        description="Export only selected layers",
+        default = False,
+        )
+    bpy.types.Scene.export_noVertexOpt = bpy.props.BoolProperty(
+        name="No vertex sharing",
+        description="Turns off an optimization which reduces vertices",
+        default = False,
+        )
+    bpy.types.Scene.attachedSound = bpy.props.StringProperty(
+        name='Sound',
+        description='',
+        default = ''
+        )
+    bpy.types.Scene.loopSound = bpy.props.BoolProperty(
+        name='Loop sound',
+        description='',
+        default = True
+        )
+    bpy.types.Scene.autoPlaySound = bpy.props.BoolProperty(
+        name='Auto play sound',
+        description='',
+        default = True
+        )
+    bpy.types.Scene.inlineTextures = bpy.props.BoolProperty(
+        name="inline textures",
+        description="turn textures into encoded strings, for direct inclusion into source code",
+        default = False,
+        )
+
+    def draw(self, context):
+        layout = self.layout
+
+        scene = context.scene
+        layout.prop(scene, "export_onlySelectedLayer")
+        layout.prop(scene, "export_noVertexOpt")
+        layout.prop(scene, "inlineTextures")
+
+        box = layout.box()
+        box.prop(scene, 'attachedSound')
+        box.prop(scene, 'autoPlaySound')
+        box.prop(scene, 'loopSound')
+#===============================================================================
+class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     bl_idname = 'scene.babylon'         # module will not load with out it, also must have a dot
     bl_label = 'Export Babylon.js scene'            # used on the label of the actual 'save' button
     filename_ext = '.babylon'          # required to have one, although not really used
@@ -130,95 +182,61 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     log_handler = None  # assigned in execute
     nameSpace   = None  # assigned in execute
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    export_onlyCurrentLayer = bpy.props.BoolProperty(
-        name="Export only current layer",
-        description="Export only current layer",
-        default = False,
-        )
-
-    export_noVertexOpt = bpy.props.BoolProperty(
-        name="No vertex sharing",
-        description="Turns off an optimization which reduces vertices",
-        default = False,
-        )
-
-    attachedSound = bpy.props.StringProperty(
-        name='Music',
-        description='',
-        default = ''
-    )
-    loopSound = bpy.props.BoolProperty(
-        name='Loop sound',
-        description='',
-        default = True
-    )
-    autoPlaySound = bpy.props.BoolProperty(
-        name='Auto play sound',
-        description='',
-        default = True
-    )
-
-    def draw(self, context):
-        layout = self.layout
-
-        layout.prop(self, 'export_onlyCurrentLayer')
-        layout.prop(self, "export_noVertexOpt")
-
-        layout.separator()
-
-        layout.prop(self, 'attachedSound')
-        layout.prop(self, 'autoPlaySound')
-        layout.prop(self, 'loopSound')
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     nWarnings = 0
     @staticmethod
     def warn(msg, numTabIndent = 1, noNewLine = False):
-        BabylonExporter.log(msg, numTabIndent, noNewLine)
-        BabylonExporter.nWarnings += 1
+        Main.log('WARNING: ' + msg, numTabIndent, noNewLine)
+        Main.nWarnings += 1
 
     @staticmethod
     def log(msg, numTabIndent = 1, noNewLine = False):
         for i in range(numTabIndent):
-            BabylonExporter.log_handler.write('\t')
+            Main.log_handler.write('\t')
 
-        BabylonExporter.log_handler.write(msg)
-        if not noNewLine: BabylonExporter.log_handler.write('\n')
+        Main.log_handler.write(msg)
+        if not noNewLine: Main.log_handler.write('\n')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    materials = []
-    @staticmethod
-    def uvRequiredForMaterial(baseMaterialId):
-        fullName = BabylonExporter.nameSpace + '.' + baseMaterialId
-        for material in BabylonExporter.materials:
-            if material.name == fullName and len(material.textures) > 0:
-                return True
-        return False
+    def getMaterial(self, baseMaterialId):
+        fullName = Main.nameSpace + '.' + baseMaterialId
+        for material in self.materials:
+            if material.name == fullName:
+                return material
+
+        return None
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def getSourceMeshInstance(self, dataName):
+        for mesh in self.meshesAndNodes:
+            if mesh.dataName == dataName:
+                return mesh
+
+        return None
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def execute(self, context):
+        scene = context.scene
+        self.scene = scene # reference for passing
         try:
+            start_time = time.time()
             filepathDotExtension = self.filepath.rpartition('.')
             self.filepathMinusExtension = filepathDotExtension[0]
 
             # assign nameSpace, based on OS
             if self.filepathMinusExtension.find('\\') != -1:
-                BabylonExporter.nameSpace = legal_js_identifier(self.filepathMinusExtension.rpartition('\\')[2])
+                Main.nameSpace = legal_js_identifier(self.filepathMinusExtension.rpartition('\\')[2])
             else:
-                BabylonExporter.nameSpace = legal_js_identifier(self.filepathMinusExtension.rpartition('/')[2])
+                Main.nameSpace = legal_js_identifier(self.filepathMinusExtension.rpartition('/')[2])
 
             # explicitly reset globals, in case there was an earlier export this session
-            BabylonExporter.nWarnings = 0
-            BabylonExporter.materials = []
+            Main.nWarnings = 0
 
-            BabylonExporter.log_handler = io.open(self.filepathMinusExtension + '.log', 'w', encoding='utf8')
-            BabylonExporter_version = bl_info['version']
-            BabylonExporter.log('Babylon.js Exporter version: ' + str(BabylonExporter_version[0]) + '.' + str(BabylonExporter_version[1]) +  '.' + str(BabylonExporter_version[2]) +
+            Main.log_handler = io.open(self.filepathMinusExtension + '.log', 'w', encoding='utf8')
+            version = bl_info['version']
+            Main.log('Exporter version: ' + str(version[0]) + '.' + str(version[1]) +  '.' + str(version[2]) +
                              ', Blender version: ' + bpy.app.version_string)
 
             if bpy.ops.object.mode_set.poll():
                 bpy.ops.object.mode_set(mode = 'OBJECT')
 
-            scene = context.scene
-            BabylonExporter.log('========= Conversion from Blender to Babylon.js =========', 0)
+            Main.log('========= Conversion from Blender to Babylon.js =========', 0)
             self.world = World(scene)
 
             bpy.ops.screen.animation_cancel()
@@ -229,12 +247,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             if scene.camera != None:
                 self.activeCamera = scene.camera.name
             else:
-                BabylonExporter.warn('WARNING: No active camera has been assigned, or is not in a currently selected Blender layer')
-
-            # Materials, static for ease of uvs requirement testing
-            stuffs = [mat for mat in bpy.data.materials if mat.users >= 1]
-            for material in stuffs:
-                BabylonExporter.materials.append(Material(material, scene, self.filepath)) # need file path incase an image texture
+                Main.warn('No active camera has been assigned, or is not in a currently selected Blender layer')
 
             self.cameras = []
             self.lights = []
@@ -242,17 +255,13 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             self.skeletons = []
             skeletonId = 0
             self.meshesAndNodes = []
+            self.materials = []
             self.multiMaterials = []
-            self.meshesWithSound = []
+            self.sounds = []
 
-            # Music
-            if self.attachedSound != '':
-                music = type('', (), {})()  #Fake mesh object
-                music.data = type('', (), {})()
-                music.data.attachedSound = self.attachedSound
-                music.data.loopSound = self.loopSound
-                music.data.autoPlaySound = self.autoPlaySound
-                self.meshesWithSound.append(music)
+            # Scene level sound
+            if scene.attachedSound != '':
+                self.sounds.append(Sound(scene.attachedSound, scene.autoPlaySound, scene.loopSound))
 
             # exclude lamps in this pass, so ShadowGenerator constructor can be passed meshesAnNodes
             for object in [object for object in scene.objects]:
@@ -260,14 +269,14 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                     if object.is_visible(scene): # no isInSelectedLayer() required, is_visible() handles this for them
                         self.cameras.append(Camera(object))
                     else:
-                        BabylonExporter.warn('WARNING: The following camera not visible in scene thus ignored: ' + object.name)
+                        Main.warn('The following camera not visible in scene thus ignored: ' + object.name)
 
                 elif object.type == 'ARMATURE':  #skeleton.pose.bones
                     if object.is_visible(scene):
                         self.skeletons.append(Skeleton(object, scene, skeletonId))
                         skeletonId += 1
                     else:
-                        BabylonExporter.warn('WARNING: The following armature not visible in scene thus ignored: ' + object.name)
+                        Main.warn('The following armature not visible in scene thus ignored: ' + object.name)
 
                 elif object.type == 'MESH':
                     forcedParent = None
@@ -275,11 +284,14 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                     nextStartFace = 0
 
                     while True and self.isInSelectedLayer(object, scene):
-                        mesh = Mesh(object, scene, self.multiMaterials, nextStartFace, forcedParent, nameID, self.export_noVertexOpt)
-                        self.meshesAndNodes.append(mesh)
+                        mesh = Mesh(object, scene, nextStartFace, forcedParent, nameID, self)
+                        if hasattr(mesh, 'instances'):
+                            self.meshesAndNodes.append(mesh)
+                        else:
+                            break
 
                         if object.data.attachedSound != '':
-                            self.meshesWithSound.append(object)
+                            self.sounds.append(Sound(object.data.attachedSound, object.data.autoPlaySound, object.data.loopSound, object))
 
                         nextStartFace = mesh.offsetFace
                         if nextStartFace == 0:
@@ -288,7 +300,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                         if forcedParent is None:
                             nameID = 0
                             forcedParent = object
-                            BabylonExporter.warn('WARNING: The following mesh has exceeded the maximum # of vertex elements & will be broken into multiple Babylon meshes: ' + object.name)
+                            Main.warn('The following mesh has exceeded the maximum # of vertex elements & will be broken into multiple Babylon meshes: ' + object.name)
 
                         nameID = nameID + 1
 
@@ -296,7 +308,7 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                     self.meshesAndNodes.append(Node(object))
 
                 elif object.type != 'LAMP':
-                    BabylonExporter.warn('WARNING: The following object is not currently exportable thus ignored: ' + object.name)
+                    Main.warn('The following object (type - ' +  object.type + ') is not currently exportable thus ignored: ' + object.name)
 
             # Lamp / shadow Generator pass; meshesAnNodes complete & forceParents included
             for object in [object for object in scene.objects]:
@@ -308,9 +320,9 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                             if bulb.light_type == DIRECTIONAL_LIGHT or bulb.light_type == SPOT_LIGHT:
                                 self.shadowGenerators.append(ShadowGenerator(object, self.meshesAndNodes, scene))
                             else:
-                                BabylonExporter.warn('WARNING: Only directional (sun) and spot types of lamp are valid for shadows thus ignored: ' + object.name)
+                                Main.warn('Only directional (sun) and spot types of lamp are valid for shadows thus ignored: ' + object.name)
                     else:
-                        BabylonExporter.warn('WARNING: The following lamp not visible in scene thus ignored: ' + object.name)
+                        Main.warn('The following lamp not visible in scene thus ignored: ' + object.name)
 
             bpy.context.scene.frame_set(currentFrame)
 
@@ -319,25 +331,29 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 
         except:# catch *all* exceptions
             ex = sys.exc_info()
-            BabylonExporter.log('========= An error was encountered =========', 0)
+            Main.log('========= An error was encountered =========', 0)
             stack = traceback.format_tb(ex[2])
             for line in stack:
-               BabylonExporter.log_handler.write(line) # avoid tabs & extra newlines by not calling log() inside catch
+               Main.log_handler.write(line) # avoid tabs & extra newlines by not calling log() inside catch
 
-            BabylonExporter.log_handler.write('ERROR:  ' + str(ex[1]) + '\n')
+            Main.log_handler.write('ERROR:  ' + str(ex[1]) + '\n')
             raise
 
         finally:
-            BabylonExporter.log('========= end of processing =========', 0)
-            BabylonExporter.log_handler.close()
+            Main.log('========= end of processing =========', 0)
+            elapsed_time = time.time() - start_time
+            minutes = math.floor(elapsed_time / 60)
+            seconds = elapsed_time - (minutes * 60)
+            Main.log('elapsed time:  ' + str(minutes) + ' min, ' + format_f(seconds) + ' secs', 0)
+            Main.log_handler.close()
 
-            if (BabylonExporter.nWarnings > 0):
-                self.report({'WARNING'}, 'Processing completed, but ' + str(BabylonExporter.nWarnings) + ' WARNINGS were raised,  see log file.')
+            if (Main.nWarnings > 0):
+                self.report({'WARNING'}, 'Processing completed, but ' + str(Main.nWarnings) + ' WARNINGS were raised,  see log file.')
 
         return {'FINISHED'}
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self):
-        BabylonExporter.log('========= Writing of scene file started =========', 0)
+        Main.log('========= Writing of scene file started =========', 0)
         # Open file
         file_handler = io.open(self.filepathMinusExtension + '.babylon', 'w', encoding='utf8')
         file_handler.write('{')
@@ -346,9 +362,9 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         # Materials
         file_handler.write(',\n"materials":[')
         first = True
-        for material in BabylonExporter.materials:
+        for material in self.materials:
             if first != True:
-                file_handler.write(',')
+                file_handler.write(',\n')
 
             first = False
             material.to_scene_file(file_handler)
@@ -381,19 +397,11 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         first = True
         for m in range(0, len(self.meshesAndNodes)):
             mesh = self.meshesAndNodes[m]
-
-            # skip if mesh already written by that name, since this one is an instance
-            skip = False
-            for n in range(0, m):
-                skip |= hasattr(mesh, "dataName") and hasattr(self.meshesAndNodes[n], "dataName") and mesh.dataName == self.meshesAndNodes[n].dataName # nodes have no dataname, so no need to check for
-
-            if skip: continue
-
             if first != True:
                 file_handler.write(',')
 
             first = False
-            mesh.to_scene_file(file_handler, self.meshesAndNodes)
+            mesh.to_scene_file(file_handler)
         file_handler.write(']')
 
         # Cameras
@@ -436,32 +444,31 @@ class BabylonExporter(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         file_handler.write(']')
 
         # Sounds
-        if len(self.meshesWithSound) > 0:
+        if len(self.sounds) > 0:
             file_handler.write('\n,"sounds":[')
             first = True
-            for mesh in self.meshesWithSound:
-                if first == False:
+            for sound in self.sounds:
+                if first != True:
                     file_handler.write(',')
-                file_handler.write('{')
-                write_string(file_handler, 'name', mesh.data.attachedSound, True)
-                write_bool(file_handler, 'autoplay', mesh.data.autoPlaySound)
-                write_bool(file_handler, 'loop', mesh.data.loopSound)
 
-                if hasattr(mesh, 'name'):
-                    write_string(file_handler, 'connectedMeshId', mesh.name)
-                    write_float(file_handler, 'maxDistance', mesh.data.maxSoundDistance)
-
-                file_handler.write('}')
+                first = False
+                sound.to_scene_file(file_handler)
 
             file_handler.write(']')
 
         # Closing
-        file_handler.write('}')
+        file_handler.write('\n}')
         file_handler.close()
-        BabylonExporter.log('========= Writing of scene file completed =========', 0)
+        Main.log('========= Writing of scene file completed =========', 0)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def isInSelectedLayer(self, obj, scene):
-        return not self.export_onlyCurrentLayer or obj.layers[scene.active_layer]
+        if not scene.export_onlySelectedLayer:
+            return True
+
+        for l in range(0, len(scene.layers)):
+            if obj.layers[l] and scene.layers[l]:
+                return True
+        return False
 #===============================================================================
 class World:
     def __init__(self, scene):
@@ -483,7 +490,7 @@ class World:
             self.fogEnd = world.mist_settings.depth
             self.fogDensity = 0.1
 
-        BabylonExporter.log('Python World class constructor completed')
+        Main.log('Python World class constructor completed')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         write_bool(file_handler, 'autoClear', self.autoClear, True)
@@ -499,6 +506,26 @@ class World:
             write_float(file_handler, 'fogDensity', self.fogDensity)
 
 #===============================================================================
+class Sound:
+    def __init__(self, name, autoplay, loop, connectedMesh = None):
+        self.name = name;
+        self.autoplay = autoplay
+        self.loop = loop
+        if connectedMesh != None:
+            self.connectedMeshId = connectedMesh.name
+            self.maxDistance = connectedMesh.data.maxSoundDistance
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def to_scene_file(self, file_handler):
+        file_handler.write('{')
+        write_string(file_handler, 'name', self.name, True)
+        write_bool(file_handler, 'autoplay', self.autoplay)
+        write_bool(file_handler, 'loop', self.loop)
+
+        if hasattr(self, 'connectedMeshId'):
+            write_string(file_handler, 'connectedMeshId', self.connectedMeshId)
+            write_float(file_handler, 'maxDistance', self.maxDistance)
+        file_handler.write('}')
+#===============================================================================
 class FCurveAnimatable:
     def __init__(self, object, supportsRotation, supportsPosition, supportsScaling, xOffsetForRotation = 0):
 
@@ -511,20 +538,14 @@ class FCurveAnimatable:
         useQuat = object.rotation_mode=='QUATERNION'
 
         if (self.animationsPresent):
-            BabylonExporter.log('FCurve animation processing begun for:  ' + object.name, 1)
+            Main.log('FCurve animation processing begun for:  ' + object.name, 1)
             self.animations = []
             for fcurve in object.animation_data.action.fcurves:
                 if supportsRotation and fcurve.data_path == 'rotation_euler' and rotAnim == False and useQuat == False:
                     self.animations.append(VectorAnimation(object, 'rotation_euler', 'rotation', -1, xOffsetForRotation))
                     rotAnim = True
                 elif supportsRotation and fcurve.data_path == 'rotation_quaternion' and rotAnim == False and useQuat == True:
-                    anim = None
-                    if object.type == 'CAMERA':
-                        # if it's a camera, convert quaternions to euler XYZ
-                        anim = QuaternionToEulerAnimation(object, 'rotation_quaternion', 'rotation', -1, xOffsetForRotation)
-                    else:
-                        anim = QuaternionAnimation(object, 'rotation_quaternion', 'rotationQuaternion', 1, xOffsetForRotation)
-                    self.animations.append(anim)
+                    self.animations.append(QuaternionAnimation(object, 'rotation_quaternion', 'rotationQuaternion', 1, xOffsetForRotation))
                     rotAnim = True
                 elif supportsPosition and fcurve.data_path == 'location' and locAnim == False:
                     self.animations.append(VectorAnimation(object, 'location', 'position', 1))
@@ -563,18 +584,58 @@ class FCurveAnimatable:
                 write_bool(file_handler, 'autoAnimateLoop', self.autoAnimateLoop)
 #===============================================================================
 class Mesh(FCurveAnimatable):
-    def __init__(self, object, scene, multiMaterials, startFace, forcedParent, nameID, noVertexOpt):
+    def __init__(self, object, scene, startFace, forcedParent, nameID, exporter):
         super().__init__(object, True, True, True)  #Should animations be done when forcedParent
 
         self.name = object.name + str(nameID)
-        BabylonExporter.log('processing begun of mesh:  ' + self.name)
+        Main.log('processing begun of mesh:  ' + self.name)
         self.isVisible = not object.hide_render
         self.isEnabled = True
         self.useFlatShading = object.data.useFlatShading
         self.checkCollisions = object.data.checkCollisions
         self.receiveShadows = object.data.receiveShadows
         self.castShadows = object.data.castShadows
+        self.freezeWorldMatrix = object.data.freezeWorldMatrix
 
+        # hasSkeleton detection & skeletonID determination
+        hasSkeleton = False
+        objArmature = None      # if there's an armature, this will be the one!
+        if len(object.vertex_groups) > 0:
+            objArmature = object.find_armature()
+            if objArmature != None:
+                hasSkeleton = True
+                i = 0
+                for obj in scene.objects:
+                    if obj.type == "ARMATURE":
+                        if obj == objArmature:
+                            self.skeletonId = i
+                            break
+                    else:
+                        i += 1
+
+        # determine Position, rotation, & scaling
+        if forcedParent is None:
+            # Use local matrix
+            locMatrix = object.matrix_local
+            if objArmature != None:
+                # unless the armature is the parent
+                if object.parent and object.parent == objArmature:
+                    locMatrix = object.matrix_world * object.parent.matrix_world.inverted()
+
+            loc, rot, scale = locMatrix.decompose()
+            self.position = loc
+            if object.rotation_mode == 'QUATERNION':
+                self.rotationQuaternion = rot
+            else:
+                self.rotation = scale_vector(rot.to_euler('XYZ'), -1)
+            self.scaling  = scale
+        else:
+            # use defaults when not None
+            self.position = mathutils.Vector((0, 0, 0))
+            self.rotation = scale_vector(mathutils.Vector((0, 0, 0)), 1) # isn't scaling 0's by 1 same as 0?
+            self.scaling  = mathutils.Vector((1, 1, 1))
+
+        # determine parent & dataName
         if forcedParent is None:
             self.dataName = object.data.name # used to support shared vertex instances in later passed
             if object.parent and object.parent.type != 'ARMATURE':
@@ -582,6 +643,24 @@ class Mesh(FCurveAnimatable):
         else:
             self.dataName = self.name
             self.parentId = forcedParent.name
+
+        # Get if this will be an instance of another, before processing materials, to avoid multi-bakes
+        sourceMesh = exporter.getSourceMeshInstance(self.dataName)
+        if sourceMesh is not None:
+            #need to make sure rotation mode matches, since value initially copied in InstancedMesh constructor
+            if hasattr(sourceMesh, 'rotationQuaternion'):
+                instRot = None
+                instRotq = rot
+            else:
+                instRot = scale_vector(rot.to_euler('XYZ'), -1)
+                instRotq = None
+
+            instance = MeshInstance(self.name, self.position, instRot, instRotq, self.scaling, self.freezeWorldMatrix)
+            sourceMesh.instances.append(instance)
+            Main.log('mesh is an instance of :  ' + sourceMesh.name + '.  Processing halted.', 2)
+            return
+        else:
+            self.instances = []
 
         # Physics
         if object.rigid_body != None:
@@ -602,63 +681,51 @@ class Mesh(FCurveAnimatable):
             self.physicsFriction = object.rigid_body.friction
             self.physicsRestitution = object.rigid_body.restitution
 
-        # hasSkeleton detection & skeletonID determination
-        hasSkeleton = False
-        objArmature = None      # if there's an armature, this will be the one!
-        if len(object.vertex_groups) > 0:
-            objArmature = object.find_armature()
-            if objArmature != None:
-                hasSkeleton = True
-                i = 0
-                for obj in scene.objects:
-                    if obj.type == "ARMATURE":
-                        if obj == objArmature:
-                            self.skeletonId = i
-                            break
-                        else:
-                            i += 1
 
-        # detect if any textures in the material slots, which would mean UV mapping is required
-        uvRequired = False
-        for slot in object.material_slots:
-            uvRequired |= BabylonExporter.uvRequiredForMaterial(slot.name)
+        # process all of the materials required
+        maxVerts = MAX_VERTEX_ELEMENTS # change for multi-materials
+        recipe = BakingRecipe(object)
+        self.billboardMode = recipe.billboardMode
 
-        if len(object.material_slots) == 1:
-            self.materialId = BabylonExporter.nameSpace + '.' + object.material_slots[0].name
-            self.billboardMode = BILLBOARDMODE_ALL if object.material_slots[0].material.game_settings.face_orientation == 'BILLBOARD' else BILLBOARDMODE_NONE;
+        if recipe.needsBaking:
+            if recipe.multipleRenders:
+                Main.warn('Mixing of Cycles & Blender Render in same mesh not supported.  No materials exported.', 2)
+                uvRequired = False
+            else:
+                bakedMat = BakedMaterial(exporter, object, recipe)
+                exporter.materials.append(bakedMat)
+                uvRequired = True
+                self.materialId = bakedMat.name
 
-        elif len(object.material_slots) > 1:
-            multimat = MultiMaterial(object.material_slots, len(multiMaterials))
-            self.materialId = multimat.name
-            multiMaterials.append(multimat)
-            self.billboardMode = BILLBOARDMODE_NONE
         else:
-            self.billboardMode = BILLBOARDMODE_NONE
-            BabylonExporter.warn('WARNING:  No materials have been assigned: ', 2)
+            uvRequired = False
+            bjs_material_slots = []
+            for slot in object.material_slots:
+                # None will be returned when either the first encounter or must be unique due to baked textures
+                material = exporter.getMaterial(slot.name)
+                if (material != None):
+                    material.numOfUsers = material.numOfUsers + 1
+                    Main.log('registered as also a user of material:  ' + slot.name, 2)
+                else:
+                    material = StdMaterial(slot, exporter, object)
+                    exporter.materials.append(material)
+
+                uvRequired |= len(material.textures) > 0
+                bjs_material_slots.append(material)
+
+            if len(bjs_material_slots) == 1:
+                self.materialId = bjs_material_slots[0].name
+
+            elif len(bjs_material_slots) > 1:
+                multimat = MultiMaterial(bjs_material_slots, len(exporter.multiMaterials))
+                self.materialId = multimat.name
+                exporter.multiMaterials.append(multimat)
+                maxVerts = MAX_VERTEX_ELEMENTS_32Bit
+            else:
+                Main.warn('No materials have been assigned: ', 2)
 
         # Get mesh
         mesh = object.to_mesh(scene, True, 'PREVIEW')
-
-        # use defaults when not None
-        if forcedParent is None:
-            # Use local matrix
-            locMatrix = object.matrix_local
-            if objArmature != None:
-                # unless the armature is the parent
-                if object.parent and object.parent == objArmature:
-                    locMatrix = object.matrix_world * object.parent.matrix_world.inverted()
-
-            loc, rot, scale = locMatrix.decompose()
-            self.position = loc
-            if object.rotation_mode == 'QUATERNION':
-                self.rotationQuaternion = rot
-            else:
-                self.rotation = scale_vector(rot.to_euler('XYZ'), -1)
-            self.scaling  = scale
-        else:
-            self.position = mathutils.Vector((0, 0, 0))
-            self.rotation = scale_vector(mathutils.Vector((0, 0, 0)), 1) # isn't scaling 0's by 1 same as 0?
-            self.scaling  = mathutils.Vector((1, 1, 1))
 
         # Triangulate mesh if required
         Mesh.mesh_triangulate(mesh)
@@ -674,9 +741,10 @@ class Mesh(FCurveAnimatable):
 
         hasUV = len(mesh.tessface_uv_textures) > 0
         if hasUV:
-            UVmap = mesh.tessface_uv_textures[0].data
+            which = len(mesh.tessface_uv_textures) - 1 if recipe.needsBaking else 0
+            UVmap = mesh.tessface_uv_textures[which].data
 
-        hasUV2 = len(mesh.tessface_uv_textures) > 1
+        hasUV2 = len(mesh.tessface_uv_textures) > 1 and not recipe.needsBaking
         if hasUV2:
             UV2map = mesh.tessface_uv_textures[1].data
 
@@ -704,7 +772,7 @@ class Mesh(FCurveAnimatable):
             vertices_Colors.append([])
             vertices_indices.append([])
 
-        materialsCount = max(1, len(object.material_slots))
+        materialsCount = 1 if recipe.needsBaking else max(1, len(object.material_slots))
         verticesCount = 0
         indicesCount = 0
 
@@ -718,10 +786,10 @@ class Mesh(FCurveAnimatable):
             for faceIndex in range(startFace, len(mesh.tessfaces)):  # For each face
                 face = mesh.tessfaces[faceIndex]
 
-                if face.material_index != materialIndex:
+                if face.material_index != materialIndex and not recipe.needsBaking:
                     continue
 
-                if verticesCount + 3 > MAX_VERTEX_ELEMENTS:
+                if verticesCount + 3 > maxVerts:
                     self.offsetFace = faceIndex
                     break
 
@@ -751,7 +819,7 @@ class Mesh(FCurveAnimatable):
                             for boneIndex, bone in enumerate(objArmature.pose.bones):
                                 if object.vertex_groups[index].name == bone.name:
                                     if (i == MAX_INFLUENCERS_PER_VERTEX):
-                                        BabylonExporter.warn('WARNING: Maximum # of influencers exceeded for a vertex, extras ignored', 2)
+                                        Main.warn('Maximum # of influencers exceeded for a vertex, extras ignored', 2)
                                         break
                                     matricesWeights[i] = weight
                                     matricesIndicesCompressed += boneIndex << offset
@@ -776,7 +844,7 @@ class Mesh(FCurveAnimatable):
                             vertex_Color = Colormap[face.index].color3
 
                     # Check if the current vertex is already saved
-                    alreadySaved = alreadySavedVertices[vertex_index] and not (hasSkeleton or noVertexOpt)
+                    alreadySaved = alreadySavedVertices[vertex_index] and not (hasSkeleton or scene.export_noVertexOpt)
                     if alreadySaved:
                         alreadySaved = False
 
@@ -843,22 +911,26 @@ class Mesh(FCurveAnimatable):
 
             self.subMeshes.append(SubMesh(materialIndex, subMeshVerticesStart, subMeshIndexStart, verticesCount - subMeshVerticesStart, indicesCount - subMeshIndexStart))
 
-        BabylonExporter.log('num positions      :  ' + str(len(self.positions)), 2)
-        BabylonExporter.log('num normals        :  ' + str(len(self.normals  )), 2)
-        BabylonExporter.log('num uvs            :  ' + str(len(self.uvs      )), 2)
-        BabylonExporter.log('num uvs2           :  ' + str(len(self.uvs2     )), 2)
-        BabylonExporter.log('num colors         :  ' + str(len(self.colors   )), 2)
-        BabylonExporter.log('num indices        :  ' + str(len(self.indices  )), 2)
+        if verticesCount > MAX_VERTEX_ELEMENTS:
+            warn('Due to multi-materials & this meshes size, 32bit indices must be used.  This may not run on all hardware.', 2)
+        BakedMaterial.meshBakingClean(object)
+
+        Main.log('num positions      :  ' + str(len(self.positions)), 2)
+        Main.log('num normals        :  ' + str(len(self.normals  )), 2)
+        Main.log('num uvs            :  ' + str(len(self.uvs      )), 2)
+        Main.log('num uvs2           :  ' + str(len(self.uvs2     )), 2)
+        Main.log('num colors         :  ' + str(len(self.colors   )), 2)
+        Main.log('num indices        :  ' + str(len(self.indices  )), 2)
         if hasattr(self, 'skeletonWeights'):
-            BabylonExporter.log('num skeletonWeights:  ' + str(len(self.skeletonWeights)), 2)
-            BabylonExporter.log('num skeletonIndices:  ' + str(len(self.skeletonIndicesCompressed * 4)), 2)
+            Main.log('num skeletonWeights:  ' + str(len(self.skeletonWeights)), 2)
+            Main.log('num skeletonIndices:  ' + str(len(self.skeletonIndicesCompressed * 4)), 2)
 
         if uvRequired and len(self.uvs) == 0:
-            BabylonExporter.warn('WARNING: textures being used, but no UV Map found', 2)
+            Main.warn('Textures being used, but no UV Map found', 2)
 
         numZeroAreaFaces = self.find_zero_area_faces()
         if numZeroAreaFaces > 0:
-            BabylonExporter.warn('WARNING: # of 0 area faces found:  ' + str(numZeroAreaFaces), 2)
+            Main.warn('# of 0 area faces found:  ' + str(numZeroAreaFaces), 2)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def find_zero_area_faces(self):
         nFaces = int(len(self.indices) / 3)
@@ -886,7 +958,7 @@ class Mesh(FCurveAnimatable):
         except:
             pass
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def to_scene_file(self, file_handler, meshesAndNodes):
+    def to_scene_file(self, file_handler):
         file_handler.write('{')
         write_string(file_handler, 'name', self.name, True)
         write_string(file_handler, 'id', self.name)
@@ -903,6 +975,7 @@ class Mesh(FCurveAnimatable):
 
         write_vector(file_handler, 'scaling', self.scaling)
         write_bool(file_handler, 'isVisible', self.isVisible)
+        write_bool(file_handler, 'freezeWorldMatrix', self.freezeWorldMatrix)
         write_bool(file_handler, 'isEnabled', self.isEnabled)
         write_bool(file_handler, 'useFlatShading', self.useFlatShading)
         write_bool(file_handler, 'checkCollisions', self.checkCollisions)
@@ -949,38 +1022,54 @@ class Mesh(FCurveAnimatable):
         # Instances
         first = True
         file_handler.write('\n,"instances":[')
-        for mesh in meshesAndNodes:
-            if hasattr(mesh, "dataName") and mesh.dataName == self.dataName and mesh != self:  # nodes have no dataname, so no need to check for
-                if first == False:
-                    file_handler.write(',')
-                file_handler.write('{')
+        for instance in self.instances:
+            if first == False:
+                file_handler.write(',')
 
-                write_string(file_handler, 'name', mesh.name, True)
-                write_vector(file_handler, 'position', mesh.position)
-                write_vector(file_handler, 'rotation', mesh.rotation)
-                write_vector(file_handler, 'scaling', mesh.scaling)
+            instance.to_scene_file(file_handler)
 
-                file_handler.write('}')
-                first = False
+            first = False
         file_handler.write(']')
 
         # Close mesh
         file_handler.write('}\n')
         self.alreadyExported = True
 #===============================================================================
+class MeshInstance:
+     def __init__(self, name, position, rotation, rotationQuaternion, scaling, freezeWorldMatrix):
+        self.name = name
+        self.position = position
+        if rotation is not None:
+            self.rotation = rotation
+        if rotationQuaternion is not None:
+            self.rotationQuaternion = rotationQuaternion
+        self.scaling = scaling
+        self.freezeWorldMatrix = freezeWorldMatrix
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     def to_scene_file(self, file_handler):
+        file_handler.write('{')
+        write_string(file_handler, 'name', self.name, True)
+        write_vector(file_handler, 'position', self.position)
+        if hasattr(self, 'rotation'):
+            write_vector(file_handler, 'rotation', self.rotation)
+        else:
+            write_quaternion(file_handler, 'rotationQuaternion', self.rotationQuaternion)
+
+        write_vector(file_handler, 'scaling', self.scaling)
+        # freeze World Matrix currently ignored for instances
+        write_bool(file_handler, 'freezeWorldMatrix', self.freezeWorldMatrix)
+        file_handler.write('}')
+#===============================================================================
 class Node(FCurveAnimatable):
     def __init__(self, node):
-        super().__init__(node, True, True, True)  #Should animations be done when foredParent
-        BabylonExporter.log('processing begun of node:  ' + node.name)
+        super().__init__(node, True, True, True)  #Should animations be done when forcedParent
+        Main.log('processing begun of node:  ' + node.name)
         self.name = node.name
 
         if node.parent and node.parent.type != 'ARMATURE':
             self.parentId = node.parent.name
 
         loc, rot, scale = node.matrix_local.decompose()
-
-        if node.parent != None:
-            self.parentId = node.parent.name
 
         self.position = loc
         if node.rotation_mode == 'QUATERNION':
@@ -994,9 +1083,6 @@ class Node(FCurveAnimatable):
         self.billboardMode = BILLBOARDMODE_NONE
         self.castShadows = False
         self.receiveShadows = False
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def get_proper_name(self):
-        return legal_js_identifier(self.name)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler, ignored):
         file_handler.write('{')
@@ -1038,7 +1124,7 @@ class SubMesh:
 #===============================================================================
 class Bone:
     def __init__(self, bone, skeleton, scene, index):
-        BabylonExporter.log('processing begun of bone:  ' + bone.name + ', index:  '+ str(index))
+        Main.log('processing begun of bone:  ' + bone.name + ', index:  '+ str(index))
         self.name = bone.name
         self.index = index
 
@@ -1056,7 +1142,7 @@ class Bone:
 
         #animation
         if (skeleton.animation_data):
-            BabylonExporter.log('animation begun of bone:  ' + self.name)
+            Main.log('animation begun of bone:  ' + self.name)
             self.animation = Animation(ANIMATIONTYPE_MATRIX, scene.render.fps, ANIMATIONLOOPMODE_CYCLE, 'anim', '_matrix')
 
             start_frame = scene.frame_start
@@ -1100,7 +1186,7 @@ class Bone:
 #===============================================================================
 class Skeleton:
     def __init__(self, skeleton, scene, id):
-        BabylonExporter.log('processing begun of skeleton:  ' + skeleton.name + ', id:  '+ str(id))
+        Main.log('processing begun of skeleton:  ' + skeleton.name + ', id:  '+ str(id))
         self.name = skeleton.name
         self.id = id
         self.bones = []
@@ -1111,7 +1197,7 @@ class Skeleton:
             self.bones.append(Bone(bone, skeleton, scene, j))
             j = j + 1
 
-        BabylonExporter.log('processing complete of skeleton:  ' + skeleton.name)
+        Main.log('processing complete of skeleton:  ' + skeleton.name)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('{')
@@ -1139,7 +1225,7 @@ class Camera(FCurveAnimatable):
 
         self.CameraType = camera.data.CameraType
         self.name = camera.name
-        BabylonExporter.log('processing begun of camera (' + self.CameraType + '):  ' + self.name)
+        Main.log('processing begun of camera (' + self.CameraType + '):  ' + self.name)
         self.position = camera.location
 
         # for quaternions, convert to euler XYZ, otherwise, use the default rotation_euler
@@ -1155,17 +1241,18 @@ class Camera(FCurveAnimatable):
         self.applyGravity = camera.data.applyGravity
         self.ellipsoid = camera.data.ellipsoid
 
+        self.Camera3DRig = camera.data.Camera3DRig
+        self.interaxialDistance = camera.data.interaxialDistance
+
         for constraint in camera.constraints:
             if constraint.type == 'TRACK_TO':
                 self.lockedTargetId = constraint.target.name
                 break
 
-        if self.CameraType == ANAGLYPH_ARC_CAM or self.CameraType == ANAGLYPH_FREE_CAM:
-            self.anaglyphEyeSpace = camera.data.anaglyphEyeSpace
 
-        if self.CameraType == ANAGLYPH_ARC_CAM or self.CameraType == ARC_ROTATE_CAM or self.CameraType == FOLLOW_CAM:
+        if self.CameraType == ARC_ROTATE_CAM or self.CameraType == FOLLOW_CAM:
             if not hasattr(self, 'lockedTargetId'):
-                BabylonExporter.warn('ERROR: Camera type with manditory target specified, but no target to track set', 2)
+                Main.warn('Camera type with manditory target specified, but no target to track set.  Ignored', 2)
                 self.fatalProblem = True
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def update_for_target_attributes(self, meshesAndNodes):
@@ -1193,7 +1280,7 @@ class Camera(FCurveAnimatable):
             self.followDistance = distance3D
             self.followRotation =  90 + (alpha * 180 / math.pi)
 
-        elif self.CameraType ==  ANAGLYPH_ARC_CAM or self.CameraType == ARC_ROTATE_CAM:
+        elif self.CameraType == self.CameraType == ARC_ROTATE_CAM:
             self.arcRotAlpha  = alpha
             self.arcRotBeta   = beta
             self.arcRotRadius = distance3D
@@ -1213,6 +1300,10 @@ class Camera(FCurveAnimatable):
         write_bool(file_handler, 'applyGravity', self.applyGravity)
         write_array3(file_handler, 'ellipsoid', self.ellipsoid)
 
+        # always assign rig, even when none, Reason:  Could have VR camera with different Rig than default
+        write_int(file_handler, 'cameraRigMode', self.Camera3DRig)
+        write_float(file_handler, 'interaxial_distance', self.interaxialDistance)
+
         write_string(file_handler, 'type', self.CameraType)
 
         if hasattr(self, 'parentId'): write_string(file_handler, 'parentId', self.parentId)
@@ -1222,16 +1313,10 @@ class Camera(FCurveAnimatable):
             write_float(file_handler, 'radius',  self.followDistance)
             write_float(file_handler, 'rotationOffset',  self.followRotation)
 
-        elif self.CameraType == ANAGLYPH_ARC_CAM or self.CameraType == ARC_ROTATE_CAM:
+        elif self.CameraType == ARC_ROTATE_CAM:
             write_float(file_handler, 'alpha', self.arcRotAlpha)
             write_float(file_handler, 'beta', self.arcRotBeta)
             write_float(file_handler, 'radius',  self.arcRotRadius)
-
-            if self.CameraType ==  ANAGLYPH_ARC_CAM:
-                write_float(file_handler, 'eye_space',  self.anaglyphEyeSpace)
-
-        elif self.CameraType == ANAGLYPH_FREE_CAM:
-            write_float(file_handler, 'eye_space',  self.anaglyphEyeSpace)
 
         if hasattr(self, 'lockedTargetId'):
             write_string(file_handler, 'lockedTargetId', self.lockedTargetId)
@@ -1247,8 +1332,8 @@ class Light(FCurveAnimatable):
             self.parentId = light.parent.name
 
         self.name = light.name
-        BabylonExporter.log('processing begun of light (' + light.data.type + '):  ' + self.name)
-        light_type_items = {'POINT': POINT_LIGHT, 'SUN': DIRECTIONAL_LIGHT, 'SPOT': SPOT_LIGHT, 'HEMI': HEMI_LIGHT, 'AREA': 0}
+        Main.log('processing begun of light (' + light.data.type + '):  ' + self.name)
+        light_type_items = {'POINT': POINT_LIGHT, 'SUN': DIRECTIONAL_LIGHT, 'SPOT': SPOT_LIGHT, 'HEMI': HEMI_LIGHT, 'AREA': POINT_LIGHT}
         self.light_type = light_type_items[light.data.type]
 
         if self.light_type == POINT_LIGHT:
@@ -1270,7 +1355,7 @@ class Light(FCurveAnimatable):
                 self.range = light.data.distance
 
         else:
-            # Hemi & Area
+            # Hemi
             matrix_local = light.matrix_local.copy()
             matrix_local.translation = mathutils.Vector((0, 0, 0))
             self.direction = (mathutils.Vector((0, 0, -1)) * matrix_local)
@@ -1287,7 +1372,7 @@ class Light(FCurveAnimatable):
         write_string(file_handler, 'id', self.name)
         write_float(file_handler, 'type', self.light_type)
 
-        if hasattr(self, 'parentId'   ): write_string(file_handler, 'parentId', self.parentId)
+        if hasattr(self, 'parentId'   ): write_string(file_handler, 'parentId'   , self.parentId   )
         if hasattr(self, 'position'   ): write_vector(file_handler, 'position'   , self.position   )
         if hasattr(self, 'direction'  ): write_vector(file_handler, 'direction'  , self.direction  )
         if hasattr(self, 'angle'      ): write_float (file_handler, 'angle'      , self.angle      )
@@ -1307,11 +1392,21 @@ class Light(FCurveAnimatable):
 #===============================================================================
 class ShadowGenerator:
     def __init__(self, lamp, meshesAndNodes, scene):
-        BabylonExporter.log('processing begun of shadows for light:  ' + lamp.name)
-        self.useVarianceShadowMap = lamp.data.shadowMap == 'VAR' if True else False
-        self.mapSize = lamp.data.shadowMapSize
+        Main.log('processing begun of shadows for light:  ' + lamp.name)
         self.lightId = lamp.name
+        self.mapSize = lamp.data.shadowMapSize
+        self.shadowBias = lamp.data.shadowBias
 
+        if lamp.data.shadowMap == VARIANCE_SHADOWS:
+            self.useVarianceShadowMap = True
+        elif lamp.data.shadowMap == POISSON_SHADOWS:
+            self.usePoissonSampling = True
+        elif lamp.data.shadowMap == BLUR_VARIANCE_SHADOWS:
+            self.useBlurVarianceShadowMap = True
+            self.shadowBlurScale = lamp.data.shadowBlurScale
+            self.shadowBlurBoxOffset = lamp.data.shadowBlurBoxOffset
+
+        # .babylon specific section
         self.shadowCasters = []
         for mesh in meshesAndNodes:
             if (mesh.castShadows):
@@ -1319,9 +1414,18 @@ class ShadowGenerator:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('{')
-        write_bool(file_handler, 'useVarianceShadowMap', self.useVarianceShadowMap, True)
-        write_int(file_handler, 'mapSize', self.mapSize)
+        write_int(file_handler, 'mapSize', self.mapSize, True)
         write_string(file_handler, 'lightId', self.lightId)
+        write_float(file_handler, 'bias', self.shadowBias)
+
+        if hasattr(self, 'useVarianceShadowMap') :
+            write_bool(file_handler, 'useVarianceShadowMap', self.useVarianceShadowMap)
+        elif hasattr(self, 'usePoissonSampling'):
+            write_bool(file_handler, 'usePoissonSampling', self.usePoissonSampling)
+        elif hasattr(self, 'useBlurVarianceShadowMap'):
+            write_bool(file_handler, 'useBlurVarianceShadowMap', self.useBlurVarianceShadowMap)
+            write_int(file_handler, 'blurScale', self.shadowBlurScale)
+            write_int(file_handler, 'blurBoxOffset', self.shadowBlurBoxOffset)
 
         file_handler.write(',"renderList":[')
         first = True
@@ -1337,12 +1441,9 @@ class ShadowGenerator:
 #===============================================================================
 class MultiMaterial:
     def __init__(self, material_slots, idx):
-        self.name = BabylonExporter.nameSpace + '.' + 'Multimaterial#' + str(idx)
-        BabylonExporter.log('processing begun of multimaterial:  ' + self.name, 2)
-        self.materials = []
-
-        for mat in material_slots:
-            self.materials.append(BabylonExporter.nameSpace + '.' + mat.name)
+        self.name = Main.nameSpace + '.' + 'Multimaterial#' + str(idx)
+        Main.log('processing begun of multimaterial:  ' + self.name, 2)
+        self.material_slots = material_slots
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('{')
@@ -1351,56 +1452,97 @@ class MultiMaterial:
 
         file_handler.write(',"materials":[')
         first = True
-        for materialName in self.materials:
+        for material in self.material_slots:
             if first != True:
                 file_handler.write(',')
-            file_handler.write('"' + materialName +'"')
+            file_handler.write('"' + material.name +'"')
             first = False
         file_handler.write(']')
         file_handler.write('}')
 #===============================================================================
 class Texture:
-    def __init__(self, slot, level, texture, filepath):
-        # Copy image to output
-        try:
+    def __init__(self, slot, level, textureOrImage, mesh, exporter):
+        wasBaked = not hasattr(textureOrImage, 'uv_layer')
+        if wasBaked:
+            image = textureOrImage
+            texture = None
+
+            repeat = False
+            self.hasAlpha = False
+            self.coordinatesIndex = 0
+        else:
+            texture = textureOrImage
             image = texture.texture.image
+
+            repeat = texture.texture.extension == 'REPEAT'
+            self.hasAlpha = texture.texture.use_alpha
+
+            usingMap = texture.uv_layer
+            Main.log('Image texture found, type:  ' + slot + ', mapped using: ' + usingMap, 3)
+            if mesh.data.uv_textures[0].name == usingMap:
+                self.coordinatesIndex = 0
+            elif mesh.data.uv_textures[1].name == usingMap:
+                self.coordinatesIndex = 1
+            else:
+                Main.warn('Texture is not mapped as UV or UV2, assigned 1', 4)
+                self.coordinatesIndex = 0
+
+        # always write the file out, since base64 encoding is easiest from a file
+        try:
             imageFilepath = os.path.normpath(bpy.path.abspath(image.filepath))
             basename = os.path.basename(imageFilepath)
-            targetdir = os.path.dirname(filepath)
-            targetpath = os.path.join(targetdir, basename)
+            targetdir = os.path.dirname(exporter.filepath)
 
-            if image.packed_file:
-                image.save_render(targetpath)
+            internalImage = image.packed_file or wasBaked
+
+            # when coming from either a packed image or a baked image, then save_render
+            if internalImage:
+                if exporter.scene.inlineTextures:
+                    textureFile = os.path.join(targetdir, basename + "temp")
+                else:
+                    textureFile = os.path.join(targetdir, basename)
+
+                image.save_render(textureFile)
+
+            # when backed by an actual file, copy to target dir, unless inlining
             else:
-                sourcepath = bpy.path.abspath(image.filepath)
-                shutil.copy(sourcepath, targetdir)
+                textureFile = bpy.path.abspath(image.filepath)
+                if not exporter.scene.inlineTextures:
+                    shutil.copy(textureFile, targetdir)
         except:
             ex = sys.exc_info()
-            BabylonExporter.log_handler.write('Error encountered processing image file:  ' + imageFilepath + ', Error:  '+ str(ex[1]) + '\n')
-            #pass
+            Main.log('Error encountered processing image file:  ' + ', Error:  '+ str(ex[1]))
 
-        # Export
+        if exporter.scene.inlineTextures:
+            # base64 is easiest from a file, so sometimes a temp file was made above;  need to delete those
+            with open(textureFile, "rb") as image_file:
+                asString = base64.b64encode(image_file.read()).decode()
+            self.encoded_URI = 'data:image/' + image.file_format + ';base64,' + asString
+
+            if internalImage:
+                os.remove(textureFile)
+
+        # capture texture attributes
         self.slot = slot
         self.name = basename
         self.level = level
-        self.hasAlpha = texture.texture.use_alpha
 
-        if (texture.mapping == 'CUBE'):
+        if (texture and texture.mapping == 'CUBE'):
             self.coordinatesMode = CUBIC_MODE
-        if (texture.mapping == 'SPHERE'):
+        if (texture and texture.mapping == 'SPHERE'):
             self.coordinatesMode = SPHERICAL_MODE
         else:
             self.coordinatesMode = EXPLICIT_MODE
 
-        self.uOffset = texture.offset.x
-        self.vOffset = texture.offset.y
-        self.uScale  = texture.scale.x
-        self.vScale  = texture.scale.y
+        self.uOffset = texture.offset.x if texture else 0.0
+        self.vOffset = texture.offset.y if texture else 0.0
+        self.uScale  = texture.scale.x  if texture else 1.0
+        self.vScale  = texture.scale.y  if texture else 1.0
         self.uAng = 0
         self.vAng = 0
         self.wAng = 0
 
-        if (texture.texture.extension == 'REPEAT'):
+        if (repeat):
             if (texture.texture.use_mirror_x):
                 self.wrapU = MIRROR_ADDRESSMODE
             else:
@@ -1413,11 +1555,9 @@ class Texture:
         else:
             self.wrapU = CLAMP_ADDRESSMODE
             self.wrapV = CLAMP_ADDRESSMODE
-
-        self.coordinatesIndex = 0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
-        file_handler.write(', "' + self.slot + '":{')
+        file_handler.write(', \n"' + self.slot + '":{')
         write_string(file_handler, 'name', self.name, True)
         write_float(file_handler, 'level', self.level)
         write_float(file_handler, 'hasAlpha', self.hasAlpha)
@@ -1432,56 +1572,111 @@ class Texture:
         write_int(file_handler, 'wrapU', self.wrapU)
         write_int(file_handler, 'wrapV', self.wrapV)
         write_int(file_handler, 'coordinatesIndex', self.coordinatesIndex)
+        if hasattr(self,'encoded_URI'):
+            write_string(file_handler, 'base64String', self.encoded_URI)
         file_handler.write('}')
 #===============================================================================
-class Material:
-    def __init__(self, material, scene, filepath):
-        self.name = BabylonExporter.nameSpace + '.' + material.name
-        BabylonExporter.log('processing begun of material:  ' + self.name)
-        self.ambient = material.ambient * material.diffuse_color
-        self.diffuse = material.diffuse_intensity * material.diffuse_color
-        self.specular = material.specular_intensity * material.specular_color
-        self.emissive = material.emit * material.diffuse_color
-        self.specularPower = material.specular_hardness
-        self.alpha = material.alpha
-        self.backFaceCulling = material.game_settings.use_backface_culling
+# need to evaluate the need to bake a mesh before even starting; class also stores specific types of bakes
+class BakingRecipe:
+    def __init__(self, mesh, forceBaking = False):
+        # initialize all members
+        self.needsBaking      = forceBaking
+        self.diffuseBaking    = forceBaking
+        self.ambientBaking    = False
+        self.opacityBaking    = False
+        self.reflectionBaking = False
+        self.emissiveBaking   = False
+        self.bumpBaking       = False
+        self.specularBaking   = False
 
-        # Textures
-        self.textures = []
-        textures = [mtex for mtex in material.texture_slots if mtex and mtex.texture]
-        for mtex in textures:
-            if mtex.texture.type == 'IMAGE':
-                if mtex.texture.image:
-                    if (mtex.use_map_color_diffuse and (mtex.texture_coords != 'REFLECTION')):
-                        # Diffuse
-                        BabylonExporter.log('Diffuse texture found');
-                        self.textures.append(Texture('diffuseTexture', mtex.diffuse_color_factor, mtex, filepath))
-                    if mtex.use_map_ambient:
-                        # Ambient
-                        BabylonExporter.log('Ambient texture found');
-                        self.textures.append(Texture('ambientTexture', mtex.ambient_factor, mtex, filepath))
-                    if mtex.use_map_alpha:
-                        # Opacity
-                        BabylonExporter.log('Opacity texture found');
-                        self.textures.append(Texture('opacityTexture', mtex.alpha_factor, mtex, filepath))
-                    if mtex.use_map_color_diffuse and (mtex.texture_coords == 'REFLECTION'):
-                        # Reflection
-                        BabylonExporter.log('Reflection texture found');
-                        self.textures.append(Texture('reflectionTexture', mtex.diffuse_color_factor, mtex, filepath))
-                    if mtex.use_map_emit:
-                        # Emissive
-                        BabylonExporter.log('Emissive texture found');
-                        self.textures.append(Texture('emissiveTexture', mtex.emit_factor, mtex, filepath))
-                    if mtex.use_map_normal:
-                        # Bump
-                        BabylonExporter.log('Bump texture found');
-                        self.textures.append(Texture('bumpTexture', mtex.normal_factor, mtex, filepath))
-                    elif mtex.use_map_color_spec:
-                        # Specular
-                        BabylonExporter.log('Specular texture found');
-                        self.textures.append(Texture('specularTexture', mtex.specular_color_factor, mtex, filepath))
+        # need to make sure a single render
+        self.cyclesRender     = False
+        blenderRender         = False
+
+        # transfer from Mesh custom properties
+        self.bakeSize    = mesh.data.bakeSize
+        self.bakeQuality = mesh.data.bakeQuality # for lossy compression formats
+
+        # accumulators set by Blender Game
+        self.backFaceCulling = True  # used only when baking
+        self.billboardMode = BILLBOARDMODE_ALL if len(mesh.material_slots) == 1 and mesh.material_slots[0].material.game_settings.face_orientation == 'BILLBOARD' else BILLBOARDMODE_NONE
+
+        # Cycles specific, need to get the node trees of each material
+        self.nodeTrees = []
+
+        for material_slot in mesh.material_slots:
+            # a material slot is not a reference to an actual material; need to look up
+            material = material_slot.material
+
+            self.backFaceCulling &= material.game_settings.use_backface_culling
+
+            # testing for Cycles renderer has to be different
+            if material.use_nodes == True:
+                self.needsBaking = True
+                self.cyclesRender = True
+                self.nodeTrees.append(material.node_tree)
+
+                for node in material.node_tree.nodes:
+                    id = node.bl_idname
+                    if id == 'ShaderNodeBsdfDiffuse':
+                        self.diffuseBaking = True
+
+                    if id == 'ShaderNodeAmbientOcclusion':
+                        self.ambientBaking = True
+
+                    # there is no opacity baking for Cycles AFAIK
+                    if id == '':
+                        self.opacityBaking = True
+
+                    if id == 'ShaderNodeEmission':
+                        self.emissiveBaking = True
+
+                    if id == 'ShaderNodeNormal' or id == 'ShaderNodeNormalMap':
+                        self.bumpBaking = True
+
+                    if id == '':
+                        self.specularBaking = True
+
             else:
-                 BabylonExporter.warn('WARNING texture type not currently supported:  ' + mtex.texture.type + ', ignored.')
+                blenderRender = True
+
+                textures = [mtex for mtex in material.texture_slots if mtex and mtex.texture]
+                for mtex in textures:
+                    if mtex.texture.type == 'IMAGE':
+                        continue
+
+                    self.needsBaking = True
+
+                    if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
+                        if mtex.texture_coords == 'REFLECTION':
+                            self.reflectionBaking = True
+                        else:
+                            self.diffuseBaking = True
+
+                    if mtex.use_map_ambient:
+                        self.ambientBaking = True
+
+                    if mtex.use_map_alpha:
+                        self.opacityBaking = True
+
+                    if mtex.use_map_emit:
+                        self.emissiveBaking = True
+
+                    if mtex.use_map_normal:
+                        self.bumpBaking = True
+
+                    if mtex.use_map_color_spec:
+                        self.specularBaking = True
+        self.multipleRenders = blenderRender and self.cyclesRender
+#===============================================================================
+# Not intended to be instanced directly
+class Material:
+    def __init__(self):
+        # the number of users == 1 will cause the checkReadyOnlyOnce attribute to be set to true
+        self.numOfUsers = 1
+
+        # first pass of textures, either appending image type or recording types of bakes to do
+        self.textures = []
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('{')
@@ -1494,10 +1689,227 @@ class Material:
         write_float(file_handler, 'specularPower', self.specularPower)
         write_float(file_handler, 'alpha', self.alpha)
         write_bool(file_handler, 'backFaceCulling', self.backFaceCulling)
+        if self.numOfUsers == 1:
+             write_bool(file_handler, 'checkReadyOnlyOnce', True)
         for texSlot in self.textures:
             texSlot.to_scene_file(file_handler)
 
         file_handler.write('}')
+#===============================================================================
+class StdMaterial(Material):
+    def __init__(self, material_slot, exporter, mesh):
+        super().__init__()
+        self.name = Main.nameSpace + '.' + material_slot.name
+        Main.log('processing begun of Standard material:  ' +  material_slot.name, 2)
+
+        # a material slot is not a reference to an actual material; need to look up
+        material = material_slot.material
+
+        self.ambient = material.ambient * material.diffuse_color
+        self.diffuse = material.diffuse_intensity * material.diffuse_color
+        self.specular = material.specular_intensity * material.specular_color
+        self.emissive = material.emit * material.diffuse_color
+        self.specularPower = material.specular_hardness
+        self.alpha = material.alpha
+
+        self.backFaceCulling = material.game_settings.use_backface_culling
+
+        textures = [mtex for mtex in material.texture_slots if mtex and mtex.texture]
+        for mtex in textures:
+            # test should be un-neccessary, since should be a BakedMaterial; just for completeness
+            if (mtex.texture.type != 'IMAGE'):
+                continue
+            elif not mtex.texture.image:
+                Main.warn('Material has un-assigned image texture:  "' + mtex.name + '" ignored', 3)
+                continue
+            elif len(mtex.uv_layer) == 0:
+                Main.warn('Material has image texture with no UV map assigned:  "' + mtex.name + '" ignored', 3)
+                continue
+
+            if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
+                if mtex.texture_coords == 'REFLECTION':
+                    Main.log('Reflection texture found', 2)
+                    self.textures.append(Texture('reflectionTexture', mtex.diffuse_color_factor, mtex, mesh, exporter))
+                else:
+                    Main.log('Diffuse texture found', 2)
+                    self.textures.append(Texture('diffuseTexture', mtex.diffuse_color_factor, mtex, mesh, exporter))
+
+            if mtex.use_map_ambient:
+                Main.log('Ambient texture found', 2)
+                self.textures.append(Texture('ambientTexture', mtex.ambient_factor, mtex, mesh, exporter))
+
+            if mtex.use_map_alpha:
+                Main.log('Opacity texture found', 2)
+                self.textures.append(Texture('opacityTexture', mtex.alpha_factor, mtex, mesh, exporter))
+
+            if mtex.use_map_emit:
+                Main.log('Emissive texture found', 2)
+                self.textures.append(Texture('emissiveTexture', mtex.emit_factor, mtex, mesh, exporter))
+
+            if mtex.use_map_normal:
+                Main.log('Bump texture found', 2)
+                self.textures.append(Texture('bumpTexture', 1.0 / mtex.normal_factor, mtex, mesh, exporter))
+
+            if mtex.use_map_color_spec:
+                Main.log('Specular texture found', 2)
+                self.textures.append(Texture('specularTexture', mtex.specular_color_factor, mtex, mesh, exporter))
+#===============================================================================
+class BakedMaterial(Material):
+    def __init__(self, exporter, mesh, recipe):
+        super().__init__()
+        self.name = Main.nameSpace + '.' + mesh.name
+        Main.log('processing begun of baked material:  ' +  mesh.name, 2)
+
+        # any baking already took in the values. Do not want to apply them again, but want shadows to show.
+        # These are the default values from StandardMaterials
+        self.ambient = mathutils.Color((0, 0, 0))
+        self.diffuse = mathutils.Color((0.8, 0.8, 0.8)) # needed for shadows, but not change anything else
+        self.specular = mathutils.Color((1, 1, 1))
+        self.emissive = mathutils.Color((0, 0, 0))
+        self.specularPower = 64
+        self.alpha = 1.0
+
+        self.backFaceCulling = recipe.backFaceCulling
+
+        # texture is baked from selected mesh(es), need to insure this mesh is only one selected
+        bpy.ops.object.select_all(action='DESELECT')
+        mesh.select = True
+
+        # store setting to restore
+        engine = exporter.scene.render.engine
+
+        # mode_set's only work when there is an active object
+        exporter.scene.objects.active = mesh
+
+        # you need UV on a mesh in order to bake image.  This is not reqd for procedural textures, so may not exist
+        # need to look if it might already be created, as for a mesh with multi-materials
+        uv = None
+        for uvMap in mesh.data.uv_textures:
+            if uvMap.name == 'BakingUV':
+                uv = uvMap
+                break
+
+        if uv == None:
+            mesh.data.uv_textures.new('BakingUV')
+            uv = mesh.data.uv_textures['BakingUV']
+
+        uv.active = True
+        uv.active_render = True
+
+        # UV unwrap operates on mesh in only edit mode
+        # select all verticies of mesh, since smart_project works only with selected verticies
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.uv.smart_project(angle_limit = 66.0, island_margin = 0.0, user_area_weight = 1.0, use_aspect = True)
+
+        # create a temporary image & link it to the UV/Image Editor so bake_image works
+        bpy.data.images.new(name = mesh.name + '_BJS_BAKE', width = recipe.bakeSize, height = recipe.bakeSize, alpha = False, float_buffer = False)
+        image = bpy.data.images[mesh.name + '_BJS_BAKE']
+        image.file_format = 'JPEG'
+        image.mapping = 'UV' # default value
+
+        image_settings = exporter.scene.render.image_settings
+        image_settings.file_format = 'JPEG'
+        image_settings.quality = recipe.bakeQuality # for lossy compression formats
+#        image_settings.compression = 100  # Amount of time to determine best compression: 0 = no compression with fast file output, 100 = maximum lossless compression with slow file output
+
+        # now go thru all the textures that need to be baked
+        if recipe.diffuseBaking:
+            self.bake('diffuseTexture', 'DIFFUSE_COLOR', 'TEXTURE', image, mesh, exporter, recipe)
+
+        if recipe.ambientBaking:
+            self.bake('ambientTexture', 'AO', 'AO', image, mesh, exporter, recipe)
+
+        if recipe.opacityBaking:  # no eqivalent found for cycles
+            self.bake('opacityTexture', None, 'ALPHA', image, mesh, exporter, recipe)
+
+        if recipe.reflectionBaking:
+            self.bake('reflectionTexture', 'REFLECTION', 'MIRROR_COLOR', image, mesh, exporter, recipe)
+
+        if recipe.emissiveBaking:
+            self.bake('emissiveTexture', 'EMIT', 'EMIT', image, mesh, exporter, recipe)
+
+        if recipe.bumpBaking:
+            self.bake('bumpTexture', 'NORMAL', 'NORMALS', image, mesh, exporter, recipe)
+
+        if recipe.specularBaking:
+            self.bake('specularTexture', 'SPECULAR', 'SPEC_COLOR', image, mesh, exporter, recipe)
+
+        # Toggle vertex selection & mode, if setting changed their value
+        bpy.ops.mesh.select_all(action='TOGGLE')  # still in edit mode toggle select back to previous
+        bpy.ops.object.mode_set(toggle=True)      # change back to Object
+
+        bpy.ops.object.select_all(action='TOGGLE') # change scene selection back, not seeming to work
+
+        exporter.scene.render.engine = engine
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def bake(self, bjs_type, cycles_type, internal_type, image, mesh, exporter, recipe):
+        if recipe.cyclesRender:
+            if cycles_type is None:
+                return
+            self.bakeCycles(cycles_type, image, recipe.nodeTrees)
+        else:
+            self.bakeInternal(internal_type, image)
+
+        self.textures.append(Texture(bjs_type, 1.0, image, mesh, exporter))
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def bakeInternal(self, bake_type, image):
+        Main.log('Internal baking texture, type: ' + bake_type + ', mapped using: BakingUV', 3)
+        image.filepath = self.name + '_' + bake_type + '.jpg'
+
+        scene = bpy.context.scene
+        scene.render.engine = 'BLENDER_RENDER'
+
+        scene.render.bake_type = bake_type
+
+        # assign the image to the UV Editor, which does not have to shown
+        bpy.data.screens['UV Editing'].areas[1].spaces[0].image = image
+
+        renderer = scene.render
+        renderer.use_bake_selected_to_active = False
+        renderer.use_bake_to_vertex_color = False
+        renderer.use_bake_clear = True
+        renderer.bake_quad_split = 'AUTO'
+        renderer.bake_margin = 5
+        renderer.use_file_extension = True
+
+        renderer.use_bake_normalize = True
+        renderer.use_bake_antialiasing = True
+
+        bpy.ops.object.bake_image()
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def bakeCycles(self, bake_type, image, nodeTrees):
+        Main.log('Cycles baking texture, type: ' + bake_type + ', mapped using: BakingUV', 3)
+        image.filepath = self.name + '_' + bake_type + '.jpg'
+
+        scene = bpy.context.scene
+        scene.render.engine = 'CYCLES'
+
+        # create an unlinked temporary node to bake to for each material
+        for tree in nodeTrees:
+            bakeNode = tree.nodes.new(type='ShaderNodeTexImage')
+            bakeNode.image = image
+            bakeNode.select = True
+            tree.nodes.active = bakeNode
+
+        bpy.ops.object.bake(type = bake_type, use_clear = True, margin = 5, use_selected_to_active = False)
+
+        for tree in nodeTrees:
+            tree.nodes.remove(tree.nodes.active)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    @staticmethod
+    def meshBakingClean(mesh):
+        for uvMap in mesh.data.uv_textures:
+            if uvMap.name == 'BakingUV':
+                mesh.data.uv_textures.remove(uvMap)
+                break
+
+        # remove an image if it was baked
+        for image in bpy.data.images:
+            if image.name == mesh.name + '_BJS_BAKE':
+                image.user_clear() # cannot remove image unless 0 references
+                bpy.data.images.remove(image)
+                break
 #===============================================================================
 class Animation:
     def __init__(self, dataType, framePerSecond, loopBehavior, name, propertyInBabylon):
@@ -1719,13 +2131,6 @@ def scale_vector(vector, mult, xOffset = 0):
 
 def same_vertex(vertA, vertB):
     return vertA.x == vertB.x and vertA.y == vertB.y and vertA.z == vertB.z
-
-def post_rotate_quaternion(quat, angle):
-    post = mathutils.Euler((angle, 0.0, 0.0)).to_matrix()
-    mqtn = quat.to_matrix()
-    quat = (mqtn*post).to_quaternion()
-    return quat
-
 #===============================================================================
 # module level methods for writing JSON (.babylon) files
 #===============================================================================
@@ -1771,7 +2176,7 @@ def write_bool(file_handler, name, bool, noComma = False):
 # custom properties definition and display
 #===============================================================================
 bpy.types.Mesh.autoAnimate = bpy.props.BoolProperty(
-    name='Automatically launch animations',
+    name='Auto launch animations',
     description='',
     default = False
 )
@@ -1793,6 +2198,21 @@ bpy.types.Mesh.castShadows = bpy.props.BoolProperty(
 bpy.types.Mesh.receiveShadows = bpy.props.BoolProperty(
     name='Receive Shadows',
     description='',
+    default = False
+)
+bpy.types.Mesh.bakeSize = bpy.props.IntProperty(
+    name='Texture Size',
+    description='',
+    default = 1024
+)
+bpy.types.Mesh.bakeQuality = bpy.props.IntProperty(
+    name='Quality 1-100',
+    description='The trade-off between Quality - File size(100 highest quality)',
+    default = 50
+)
+bpy.types.Mesh.freezeWorldMatrix = bpy.props.BoolProperty(
+    name='Freeze World Matrix',
+    description='Indicate the position, rotation, & scale do not change for performance reasons',
     default = False
 )
 bpy.types.Mesh.attachedSound = bpy.props.StringProperty(
@@ -1817,7 +2237,7 @@ bpy.types.Mesh.maxSoundDistance = bpy.props.FloatProperty(
 )
 #===============================================================================
 bpy.types.Camera.autoAnimate = bpy.props.BoolProperty(
-    name='Automatically launch animations',
+    name='Auto launch animations',
     description='',
     default = False
 )
@@ -1833,8 +2253,6 @@ bpy.types.Camera.CameraType = bpy.props.EnumProperty(
              (FOLLOW_CAM             , 'Follow'                  , 'Use Follow Camera'),
              (DEV_ORIENT_CAM         , 'Device Orientation'      , 'Use Device Orientation Camera'),
              (ARC_ROTATE_CAM         , 'Arc Rotate'              , 'Use Arc Rotate Camera'),
-             (ANAGLYPH_FREE_CAM      , 'Anaglyph Free'           , 'Use Anaglyph Free Camera'),
-             (ANAGLYPH_ARC_CAM       , 'Anaglyph Arc Rotate'     , 'Use Anaglyph Arc Rotate Camera'),
              (VR_DEV_ORIENT_FREE_CAM , 'VR Dev Orientation Free' , 'Use VR Dev Orientation Free Camera'),
              (WEB_VR_FREE_CAM        , 'Web VR Free'             , 'Use Web VR Free Camera')
             ),
@@ -1855,28 +2273,65 @@ bpy.types.Camera.ellipsoid = bpy.props.FloatVectorProperty(
     description='',
     default = mathutils.Vector((0.2, 0.9, 0.2))
 )
-bpy.types.Camera.anaglyphEyeSpace = bpy.props.IntProperty(
-    name='Anaglyph Eye space',
-    description='Used by the Anaglyph Arc Rotate camera',
-    default = 1
+bpy.types.Camera.Camera3DRig = bpy.props.EnumProperty(
+    name='Rig',
+    description='',
+    items = (
+             (RIG_MODE_NONE                             , 'None'                  , 'No 3D effects'),
+             (RIG_MODE_STEREOSCOPIC_ANAGLYPH            , 'Anaaglph'              , 'Stereoscopic Anagylph'),
+             (RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL , 'side-by-side Parallel' , 'Stereoscopic side-by-side parallel'),
+             (RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED, 'side-by-side crosseyed', 'Stereoscopic side-by-side crosseyed'),
+             (RIG_MODE_STEREOSCOPIC_OVERUNDER           , 'over-under'            , 'Stereoscopic over-under'),
+             (RIG_MODE_VR                               , 'VR distortion'         , 'Use Web VR Free Camera')
+            ),
+    default = RIG_MODE_NONE
+)
+bpy.types.Camera.interaxialDistance = bpy.props.FloatProperty(
+    name='Interaxial Distance',
+    description='Distance between cameras.  Used by all but VR 3D rigs.',
+    default = 0.0637
 )
 #===============================================================================
 bpy.types.Lamp.autoAnimate = bpy.props.BoolProperty(
-    name='Automatically launch animations',
+    name='Auto launch animations',
     description='',
     default = False
 )
 bpy.types.Lamp.shadowMap = bpy.props.EnumProperty(
-    name='Shadow Map Type',
+    name='Shadow Map',
     description='',
-    items = (('NONE', 'None', 'No Shadow Maps'), ('STD', 'Standard', 'Use Standard Shadow Maps'), ('VAR', 'Variance', 'Use Variance Shadow Maps')),
-    default = 'NONE'
+    items = ((NO_SHADOWS           , 'None'         , 'No Shadow Maps'),
+             (STD_SHADOWS          , 'Standard'     , 'Use Standard Shadow Maps'),
+             (POISSON_SHADOWS      , 'Poisson'      , 'Use Poisson Sampling'),
+             (VARIANCE_SHADOWS     , 'Variance'     , 'Use Variance Shadow Maps'),
+             (BLUR_VARIANCE_SHADOWS, 'Blur Variance', 'Use Blur Variance Shadow Maps')
+            ),
+    default = NO_SHADOWS
 )
+
 bpy.types.Lamp.shadowMapSize = bpy.props.IntProperty(
     name='Shadow Map Size',
     description='',
     default = 512
 )
+bpy.types.Lamp.shadowBias = bpy.props.FloatProperty(
+    name='Shadow Bias',
+    description='',
+    default = 0.00005
+)
+
+bpy.types.Lamp.shadowBlurScale = bpy.props.IntProperty(
+    name='Blur Scale',
+    description='',
+    default = 2
+)
+
+bpy.types.Lamp.shadowBlurBoxOffset = bpy.props.IntProperty(
+    name='Blur Box Offset',
+    description='',
+    default = 0
+)
+
 class ObjectPanel(bpy.types.Panel):
     bl_label = 'Babylon.js'
     bl_space_type = 'PROPERTIES'
@@ -1903,12 +2358,18 @@ class ObjectPanel(bpy.types.Panel):
 
             layout.prop(ob.data, 'autoAnimate')
 
-            layout.separator()
+            box = layout.box()
+            box.label(text="Procedural Texture / Cycles Baking")
+            box.prop(ob.data, 'bakeSize')
+            box.prop(ob.data, 'bakeQuality')
 
-            layout.prop(ob.data, 'attachedSound')
-            layout.prop(ob.data, 'autoPlaySound')
-            layout.prop(ob.data, 'loopSound')
-            layout.prop(ob.data, 'maxSoundDistance')
+            layout.prop(ob.data, 'freezeWorldMatrix')
+
+            box = layout.box()
+            box.prop(ob.data, 'attachedSound')
+            box.prop(ob.data, 'autoPlaySound')
+            box.prop(ob.data, 'loopSound')
+            box.prop(ob.data, 'maxSoundDistance')
 
         elif isCamera:
             layout.prop(ob.data, 'CameraType')
@@ -1916,18 +2377,21 @@ class ObjectPanel(bpy.types.Panel):
             layout.prop(ob.data, 'applyGravity')
             layout.prop(ob.data, 'ellipsoid')
 
-            layout.separator()
-
-            layout.prop(ob.data, 'anaglyphEyeSpace')
-
-            layout.separator()
+            box = layout.box()
+            box.label(text="3D Camera Rigs")
+            box.prop(ob.data, 'Camera3DRig')
+            box.prop(ob.data, 'interaxialDistance')
 
             layout.prop(ob.data, 'autoAnimate')
 
         elif isLight:
             layout.prop(ob.data, 'shadowMap')
             layout.prop(ob.data, 'shadowMapSize')
+            layout.prop(ob.data, 'shadowBias')
 
-            layout.separator()
+            box = layout.box()
+            box.label(text="Blur Variance Shadows")
+            box.prop(ob.data, 'shadowBlurScale')
+            box.prop(ob.data, 'shadowBlurBoxOffset')
 
             layout.prop(ob.data, 'autoAnimate')

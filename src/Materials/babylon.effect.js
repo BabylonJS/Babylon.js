@@ -287,6 +287,14 @@ var BABYLON;
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
             return this;
         };
+        Effect.prototype.setMatrix3x3 = function (uniformName, matrix) {
+            this._engine.setMatrix3x3(this.getUniform(uniformName), matrix);
+            return this;
+        };
+        Effect.prototype.setMatrix2x2 = function (uniformname, matrix) {
+            this._engine.setMatrix2x2(this.getUniform(uniformname), matrix);
+            return this;
+        };
         Effect.prototype.setFloat = function (uniformName, value) {
             if (this._valueCache[uniformName] && this._valueCache[uniformName] === value)
                 return this;
@@ -329,6 +337,13 @@ var BABYLON;
             this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
             return this;
         };
+        Effect.prototype.setVector4 = function (uniformName, vector4) {
+            if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === vector4.x && this._valueCache[uniformName][1] === vector4.y && this._valueCache[uniformName][2] === vector4.z && this._valueCache[uniformName][3] === vector4.w)
+                return this;
+            this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w);
+            this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
+            return this;
+        };
         Effect.prototype.setFloat4 = function (uniformName, x, y, z, w) {
             if (this._valueCache[uniformName] && this._valueCache[uniformName][0] === x && this._valueCache[uniformName][1] === y && this._valueCache[uniformName][2] === z && this._valueCache[uniformName][3] === w)
                 return this;
@@ -356,3 +371,4 @@ var BABYLON;
     })();
     BABYLON.Effect = Effect;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.effect.js.map

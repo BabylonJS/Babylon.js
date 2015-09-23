@@ -600,7 +600,7 @@ var BABYLON;
                 pathArray[i] = [];
                 for (var j = 0; j < tessellation; j++) {
                     angle = j * angle_step;
-                    ringVertex = BABYLON.Vector3.TransformCoordinates(normals[i], BABYLON.Matrix.RotationAxis(tangents[i], angle));
+                    ringVertex = new BABYLON.Vector3(Math.cos(-angle), 0, Math.sin(-angle));
                     ringVertex.scaleInPlace(radiusFunction(i, distances[i])).addInPlace(path[i]);
                     pathArray[i].push(ringVertex);
                 }
@@ -617,9 +617,10 @@ var BABYLON;
                 var textureScale = new BABYLON.Vector2(0.5, 0.5);
                 // Positions, normals & uvs
                 var angle;
+                var circleVector;
                 for (var i = 0; i < tessellation; i++) {
                     angle = Math.PI * 2 * i / tessellation;
-                    var circleVector = new BABYLON.Vector3(Math.cos(angle), 0, Math.sin(angle));
+                    circleVector = new BABYLON.Vector3(Math.cos(-angle), 0, Math.sin(-angle));
                     var position = circleVector.scale(radius).add(offset);
                     var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
                     vertexdata.positions.push(position.x, position.y, position.z);
@@ -630,13 +631,13 @@ var BABYLON;
                 for (i = 0; i < tessellation - 2; i++) {
                     if (!isTop) {
                         vertexdata.indices.push(vbase);
-                        vertexdata.indices.push(vbase + (i + 2) % tessellation);
                         vertexdata.indices.push(vbase + (i + 1) % tessellation);
+                        vertexdata.indices.push(vbase + (i + 2) % tessellation);
                     }
                     else {
                         vertexdata.indices.push(vbase);
-                        vertexdata.indices.push(vbase + (i + 1) % tessellation);
                         vertexdata.indices.push(vbase + (i + 2) % tessellation);
+                        vertexdata.indices.push(vbase + (i + 1) % tessellation);
                     }
                 }
             };
@@ -1164,3 +1165,4 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.mesh.vertexData.js.map

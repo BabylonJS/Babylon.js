@@ -111,6 +111,9 @@ var BABYLON;
             material.emissiveColor = BABYLON.Color3.FromArray(parsedMaterial.emissive);
             material.alpha = parsedMaterial.alpha;
             material.id = parsedMaterial.id;
+            if (parsedMaterial.disableDepthWrite) {
+                material.disableDepthWrite = parsedMaterial.disableDepthWrite;
+            }
             BABYLON.Tags.AddTagsTo(material, parsedMaterial.tags);
             material.backFaceCulling = parsedMaterial.backFaceCulling;
             material.wireframe = parsedMaterial.wireframe;
@@ -1422,3 +1425,4 @@ var BABYLON;
         });
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.babylonFileLoader.js.map

@@ -73,3 +73,4 @@ var BABYLON;
     })();
     BABYLON.PickingInfo = PickingInfo;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.pickingInfo.js.map

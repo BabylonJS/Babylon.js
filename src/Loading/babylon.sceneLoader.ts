@@ -79,14 +79,14 @@
                     try {
                         if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
                             if (onerror) {
-                                onerror(scene, 'unable to load the scene');
+                                onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename);
                             }
                             scene._removePendingData(loadingToken);
                             return;
                         }
                     } catch (e) {
                         if (onerror) {
-                            onerror(scene, e);
+                            onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename + ' (Exception: ' + e + ')');
                         }
                         scene._removePendingData(loadingToken);
                         return;

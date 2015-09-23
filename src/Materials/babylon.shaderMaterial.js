@@ -17,7 +17,10 @@ var BABYLON;
             this._colors4 = new Array();
             this._vectors2 = new Array();
             this._vectors3 = new Array();
+            this._vectors4 = new Array();
             this._matrices = new Array();
+            this._matrices3x3 = new Array();
+            this._matrices2x2 = new Array();
             this._cachedWorldViewMatrix = new BABYLON.Matrix();
             this._shaderPath = shaderPath;
             options.needAlphaBlending = options.needAlphaBlending || false;
@@ -75,9 +78,24 @@ var BABYLON;
             this._vectors3[name] = value;
             return this;
         };
+        ShaderMaterial.prototype.setVector4 = function (name, value) {
+            this._checkUniform(name);
+            this._vectors4[name] = value;
+            return this;
+        };
         ShaderMaterial.prototype.setMatrix = function (name, value) {
             this._checkUniform(name);
             this._matrices[name] = value;
+            return this;
+        };
+        ShaderMaterial.prototype.setMatrix3x3 = function (name, value) {
+            this._checkUniform(name);
+            this._matrices3x3[name] = value;
+            return this;
+        };
+        ShaderMaterial.prototype.setMatrix2x2 = function (name, value) {
+            this._checkUniform(name);
+            this._matrices2x2[name] = value;
             return this;
         };
         ShaderMaterial.prototype.isReady = function (mesh, useInstances) {
@@ -95,7 +113,7 @@ var BABYLON;
                 defines.push("#define INSTANCES");
             }
             // Bones
-            if (mesh && mesh.useBones) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                 defines.push("#define BONES");
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
                 defines.push("#define BONES4");
@@ -144,7 +162,7 @@ var BABYLON;
                     this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 }
                 // Bones
-                if (mesh && mesh.useBones) {
+                if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
                 // Texture
@@ -176,9 +194,21 @@ var BABYLON;
                 for (name in this._vectors3) {
                     this._effect.setVector3(name, this._vectors3[name]);
                 }
+                // Vector4        
+                for (name in this._vectors4) {
+                    this._effect.setVector4(name, this._vectors4[name]);
+                }
                 // Matrix      
                 for (name in this._matrices) {
                     this._effect.setMatrix(name, this._matrices[name]);
+                }
+                // Matrix 3x3
+                for (name in this._matrices3x3) {
+                    this._effect.setMatrix3x3(name, this._matrices3x3[name]);
+                }
+                // Matrix 2x2
+                for (name in this._matrices2x2) {
+                    this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
             }
             _super.prototype.bind.call(this, world, mesh);
@@ -198,3 +228,4 @@ var BABYLON;
     })(BABYLON.Material);
     BABYLON.ShaderMaterial = ShaderMaterial;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.shaderMaterial.js.map

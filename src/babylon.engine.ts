@@ -962,14 +962,14 @@
         }
 
         public unBindFramebuffer(texture: WebGLTexture): void {
-            this._currentRenderTarget = null;
+            this._currentRenderTarget = null;           
             if (texture.generateMipMaps) {
                 var gl = this._gl;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 gl.bindTexture(gl.TEXTURE_2D, null);
             }
-
+            
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
         }
 
@@ -1363,6 +1363,20 @@
                 return;
 
             this._gl.uniformMatrix4fv(uniform, false, matrix.toArray());
+        }
+
+        public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniformMatrix3fv(uniform, false, matrix);
+        }
+
+        public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniformMatrix2fv(uniform, false, matrix);
         }
 
         public setFloat(uniform: WebGLUniformLocation, value: number): void {

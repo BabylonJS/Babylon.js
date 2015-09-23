@@ -67,6 +67,10 @@
             return this._emitter;
         }
 
+        public setEmitter(newEmitter: any): void {
+            this._emitter = newEmitter;
+        }
+
         public getEmitterPosition(): Vector3 {
             return this._emitter.getAbsolutePosition ? this._emitter.getAbsolutePosition() : this._emitter.position;
         }

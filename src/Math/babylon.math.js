@@ -91,7 +91,23 @@ var BABYLON;
             this.b = b;
             return this;
         };
+        Color3.prototype.toHexString = function () {
+            var intR = (this.r * 255) | 0;
+            var intG = (this.g * 255) | 0;
+            var intB = (this.b * 255) | 0;
+            return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB);
+        };
         // Statics
+        Color3.FromHexString = function (hex) {
+            if (hex.substring(0, 1) !== "#" || hex.length != 7) {
+                BABYLON.Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
+                return new Color3(0, 0, 0);
+            }
+            var r = parseInt(hex.substring(1, 3), 16);
+            var g = parseInt(hex.substring(3, 5), 16);
+            var b = parseInt(hex.substring(5, 7), 16);
+            return Color3.FromInts(r, g, b);
+        };
         Color3.FromArray = function (array, offset) {
             if (offset === void 0) { offset = 0; }
             return new Color3(array[offset], array[offset + 1], array[offset + 2]);
@@ -183,7 +199,25 @@ var BABYLON;
             this.a = source.a;
             return this;
         };
+        Color4.prototype.toHexString = function () {
+            var intR = (this.r * 255) | 0;
+            var intG = (this.g * 255) | 0;
+            var intB = (this.b * 255) | 0;
+            var intA = (this.a * 255) | 0;
+            return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB) + BABYLON.Tools.ToHex(intA);
+        };
         // Statics
+        Color4.FromHexString = function (hex) {
+            if (hex.substring(0, 1) !== "#" || hex.length != 9) {
+                BABYLON.Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
+                return new Color4(0, 0, 0, 0);
+            }
+            var r = parseInt(hex.substring(1, 3), 16);
+            var g = parseInt(hex.substring(3, 5), 16);
+            var b = parseInt(hex.substring(5, 7), 16);
+            var a = parseInt(hex.substring(7, 9), 16);
+            return Color4.FromInts(r, g, b, a);
+        };
         Color4.Lerp = function (left, right, amount) {
             var result = new Color4(0, 0, 0, 0);
             Color4.LerpToRef(left, right, amount, result);
@@ -581,6 +615,12 @@ var BABYLON;
             return s;
         };
         Vector3.FromArray = function (array, offset) {
+            if (!offset) {
+                offset = 0;
+            }
+            return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
+        };
+        Vector3.FromFloatArray = function (array, offset) {
             if (!offset) {
                 offset = 0;
             }
@@ -1453,6 +1493,29 @@ var BABYLON;
             this.invertToRef(this);
             return this;
         };
+        Matrix.prototype.reset = function () {
+            for (var index = 0; index < 16; index++) {
+                this.m[index] = 0;
+            }
+            return this;
+        };
+        Matrix.prototype.add = function (other) {
+            var result = new Matrix();
+            this.addToRef(other, result);
+            return result;
+        };
+        Matrix.prototype.addToRef = function (other, result) {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = this.m[index] + other.m[index];
+            }
+            return this;
+        };
+        Matrix.prototype.addToSelf = function (other) {
+            for (var index = 0; index < 16; index++) {
+                this.m[index] += other.m[index];
+            }
+            return this;
+        };
         Matrix.prototype.invertToRef = function (other) {
             var l1 = this.m[0];
             var l2 = this.m[1];
@@ -1756,6 +1819,11 @@ var BABYLON;
         Matrix.FromArrayToRef = function (array, offset, result) {
             for (var index = 0; index < 16; index++) {
                 result.m[index] = array[index + offset];
+            }
+        };
+        Matrix.FromFloat32ArrayToRefScaled = function (array, offset, scale, result) {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = array[index + offset] * scale;
             }
         };
         Matrix.FromValuesToRef = function (initialM11, initialM12, initialM13, initialM14, initialM21, initialM22, initialM23, initialM24, initialM31, initialM32, initialM33, initialM34, initialM41, initialM42, initialM43, initialM44, result) {
@@ -2101,6 +2169,19 @@ var BABYLON;
             var cy = viewport.y;
             var viewportMatrix = Matrix.FromValues(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, zmax - zmin, 0, cx + cw / 2.0, ch / 2.0 + cy, zmin, 1);
             return world.multiply(view).multiply(projection).multiply(viewportMatrix);
+        };
+        Matrix.GetAsMatrix2x2 = function (matrix) {
+            return new Float32Array([
+                matrix.m[0], matrix.m[1],
+                matrix.m[4], matrix.m[5]
+            ]);
+        };
+        Matrix.GetAsMatrix3x3 = function (matrix) {
+            return new Float32Array([
+                matrix.m[0], matrix.m[1], matrix.m[2],
+                matrix.m[4], matrix.m[5], matrix.m[6],
+                matrix.m[8], matrix.m[9], matrix.m[10]
+            ]);
         };
         Matrix.Transpose = function (matrix) {
             var result = new Matrix();
@@ -3011,3 +3092,4 @@ var BABYLON;
     })();
     BABYLON.SIMDHelper = SIMDHelper;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.math.js.map

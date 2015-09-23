@@ -78,6 +78,7 @@ var BABYLON;
             this.BONES4 = false;
             this.BonesPerMesh = 0;
             this.INSTANCES = false;
+            this.GLOSSINESS = false;
             this._keys = Object.keys(this);
         }
         StandardMaterialDefines.prototype.isEqual = function (other) {
@@ -134,6 +135,7 @@ var BABYLON;
             this.useAlphaFromDiffuseTexture = false;
             this.useSpecularOverAlpha = true;
             this.fogEnabled = true;
+            this.useGlossinessFromSpecularMapAlpha = false;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
             this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
@@ -237,6 +239,7 @@ var BABYLON;
                     else {
                         needUVs = true;
                         this._defines.SPECULAR = true;
+                        this._defines.GLOSSINESS = this.useGlossinessFromSpecularMapAlpha;
                     }
                 }
             }
@@ -377,7 +380,7 @@ var BABYLON;
                         this._defines.VERTEXALPHA = true;
                     }
                 }
-                if (mesh.useBones) {
+                if (mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._defines.BONES = true;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
                     this._defines.BONES4 = true;
@@ -502,6 +505,7 @@ var BABYLON;
             if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
                 this._effect.setTexture("reflection2DSampler", null);
             }
+            _super.prototype.unbind.call(this);
         };
         StandardMaterial.prototype.bindOnlyWorldMatrix = function (world) {
             this._effect.setMatrix("world", world);
@@ -512,7 +516,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            if (mesh && mesh.useBones) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
             if (scene.getCachedMaterial() !== this) {
@@ -758,3 +762,4 @@ var BABYLON;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.standardMaterial.js.map
