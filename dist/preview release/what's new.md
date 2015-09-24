@@ -4,5 +4,6 @@
   - **Updates**
     - New `Material.sideOrientation` property to define clockwise or counter-clockwise faces selection. [Demo here](http://www.babylonjs-playground.com/#1TZJQY) ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**
+    - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
   - **Breaking changes**
 
