@@ -26,6 +26,7 @@ var BABYLON;
             this.maxSize = 1;
             this.minAngularSpeed = 0;
             this.maxAngularSpeed = 0;
+            this.layerMask = 0x0FFFFFFF;
             this.blendMode = ParticleSystem.BLENDMODE_ONEONE;
             this.forceDepthWrite = false;
             this.gravity = BABYLON.Vector3.Zero();
@@ -334,4 +335,3 @@ var BABYLON;
     })();
     BABYLON.ParticleSystem = ParticleSystem;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.particleSystem.js.map

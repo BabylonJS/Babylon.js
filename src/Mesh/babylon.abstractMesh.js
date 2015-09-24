@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -53,6 +52,9 @@ var BABYLON;
             this._oldPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
             this._diffPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
             this._newPositionForCollisions = new BABYLON.Vector3(0, 0, 0);
+            // Edges
+            this.edgesWidth = 1;
+            this.edgesColor = new BABYLON.Color4(1, 0, 0, 1);
             // Cache
             this._localScaling = BABYLON.Matrix.Zero();
             this._localRotation = BABYLON.Matrix.Zero();
@@ -123,8 +125,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        // Methods
+        AbstractMesh.prototype.disableEdgesRendering = function () {
+            if (this._edgesRenderer !== undefined) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = undefined;
+            }
+        };
+        AbstractMesh.prototype.enableEdgesRendering = function (epsilon, checkVerticesInsteadOfIndices) {
+            if (epsilon === void 0) { epsilon = 0.95; }
+            if (checkVerticesInsteadOfIndices === void 0) { checkVerticesInsteadOfIndices = false; }
+            this.disableEdgesRendering();
+            this._edgesRenderer = new BABYLON.EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+        };
         Object.defineProperty(AbstractMesh.prototype, "isBlocked", {
-            // Methods
             get: function () {
                 return false;
             },
@@ -212,8 +226,9 @@ var BABYLON;
                 this.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = BABYLON.Vector3.Zero();
             }
+            var rotationQuaternion;
             if (!space || space === BABYLON.Space.LOCAL) {
-                var rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
+                rotationQuaternion = BABYLON.Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
             else {
@@ -431,7 +446,7 @@ var BABYLON;
                     localPosition.addInPlace(this.parent.position);
                     BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + BABYLON.Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
@@ -554,7 +569,7 @@ var BABYLON;
         AbstractMesh.prototype.setPhysicsState = function (impostor, options) {
             var physicsEngine = this.getScene().getPhysicsEngine();
             if (!physicsEngine) {
-                return;
+                return null;
             }
             impostor = impostor || BABYLON.PhysicsEngine.NoImpostor;
             if (impostor.impostor) {
@@ -564,7 +579,7 @@ var BABYLON;
             }
             if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
-                return;
+                return null;
             }
             if (!options) {
                 options = { mass: 0, friction: 0.2, restitution: 0.2 };
@@ -815,6 +830,11 @@ var BABYLON;
                 other._intersectionsInProgress.splice(pos, 1);
             }
             this._intersectionsInProgress = [];
+            // Edges
+            if (this._edgesRenderer) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = null;
+            }
             // SubMeshes
             this.releaseSubMeshes();
             // Remove from scene
@@ -861,4 +881,3 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.abstractMesh.js.map

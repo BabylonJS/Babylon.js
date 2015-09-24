@@ -128,6 +128,8 @@
         material.specularColor = BABYLON.Color3.FromArray(parsedMaterial.specular);
         material.specularPower = parsedMaterial.specularPower;
         material.emissiveColor = BABYLON.Color3.FromArray(parsedMaterial.emissive);
+        material.useReflectionFresnelFromSpecular = parsedMaterial.useReflectionFresnelFromSpecular;
+        material.useEmissiveAsIllumination = parsedMaterial.useEmissiveAsIllumination;
 
         material.alpha = parsedMaterial.alpha;
 
@@ -171,6 +173,11 @@
 
         if (parsedMaterial.emissiveTexture) {
             material.emissiveTexture = loadTexture(rootUrl, parsedMaterial.emissiveTexture, scene);
+        }
+
+        if (parsedMaterial.lightmapTexture) {
+            material.lightmapTexture = loadTexture(rootUrl, parsedMaterial.lightmapTexture, scene);
+            material.lightmapThreshold = parsedMaterial.lightmapThreshold;
         }
 
         if (parsedMaterial.emissiveFresnelParameters) {

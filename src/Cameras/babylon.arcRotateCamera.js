@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -25,7 +24,8 @@ var BABYLON;
             this.upperBetaLimit = Math.PI;
             this.lowerRadiusLimit = null;
             this.upperRadiusLimit = null;
-            this.angularSensibility = 1000.0;
+            this.angularSensibilityX = 1000.0;
+            this.angularSensibilityY = 1000.0;
             this.wheelPrecision = 3.0;
             this.pinchPrecision = 2.0;
             this.panningSensibility = 50.0;
@@ -86,6 +86,21 @@ var BABYLON;
             }
             this.getViewMatrix();
         }
+        Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
+            //deprecated angularSensibility support
+            get: function () {
+                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+                return Math.max(this.angularSensibilityX, this.angularSensibilityY);
+            },
+            //deprecated angularSensibility support
+            set: function (value) {
+                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+                this.angularSensibilityX = value;
+                this.angularSensibilityY = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         ArcRotateCamera.prototype._getTargetPosition = function () {
             return this.target.position || this.target;
         };
@@ -169,8 +184,8 @@ var BABYLON;
                             else {
                                 var offsetX = evt.clientX - cacheSoloPointer.x;
                                 var offsetY = evt.clientY - cacheSoloPointer.y;
-                                _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
-                                _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
+                                _this.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                                _this.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                             }
                             cacheSoloPointer.x = evt.clientX;
                             cacheSoloPointer.y = evt.clientY;
@@ -188,7 +203,7 @@ var BABYLON;
                                 return;
                             }
                             if (pinchSquaredDistance !== previousPinchDistance) {
-                                _this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * _this.wheelPrecision * _this.angularSensibility * direction);
+                                _this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * _this.wheelPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
                                 previousPinchDistance = pinchSquaredDistance;
                             }
                             break;
@@ -205,8 +220,8 @@ var BABYLON;
                     }
                     var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                     var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
-                    _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
+                    _this.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                    _this.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -442,6 +457,9 @@ var BABYLON;
             this.beta = Math.acos(radiusv3.y / this.radius);
             this._checkLimits();
         };
+        ArcRotateCamera.prototype.setTarget = function (target) {
+            this.target = target;
+        };
         ArcRotateCamera.prototype._getViewMatrix = function () {
             // Compute
             var cosa = Math.cos(this.alpha);
@@ -535,4 +553,3 @@ var BABYLON;
     })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.arcRotateCamera.js.map

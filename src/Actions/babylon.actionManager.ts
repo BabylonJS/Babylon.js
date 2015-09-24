@@ -12,7 +12,7 @@
          * @param meshUnderPointer The mesh that is currently pointed at (can be null)
          * @param sourceEvent the original (browser) event that triggered the ActionEvent
          */
-        constructor(public source: AbstractMesh, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh, public sourceEvent?: any) {
+        constructor(public source: AbstractMesh, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh, public sourceEvent?: any, public additionalData?: any) {
 
         }
 
@@ -21,9 +21,9 @@
          * @param source the source mesh that triggered the event
          * @param evt {Event} The original (browser) event
          */
-        public static CreateNew(source: AbstractMesh, evt?: Event): ActionEvent {
+        public static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt, additionalData);
         }
 
         /**

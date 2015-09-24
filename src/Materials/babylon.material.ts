@@ -16,12 +16,24 @@
             return Material._PointFillMode;
         }
 
+        private static _ClockWiseSideOrientation = 0;
+        private static _CounterClockWiseSideOrientation = 1;
+
+        public static get ClockWiseSideOrientation(): number {
+            return Material._ClockWiseSideOrientation;
+        }
+
+        public static get CounterClockWiseSideOrientation(): number {
+            return Material._CounterClockWiseSideOrientation;
+        }
+
         public id: string;
         public checkReadyOnEveryCall = true;
         public checkReadyOnlyOnce = false;
         public state = "";
         public alpha = 1.0;
         public backFaceCulling = true;
+        public sideOrientation = Material.CounterClockWiseSideOrientation;
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onDispose: () => void;
@@ -105,7 +117,7 @@
             var engine = this._scene.getEngine();
 
             engine.enableEffect(this._effect);
-            engine.setState(this.backFaceCulling, this.zOffset);
+            engine.setState(this.backFaceCulling, this.zOffset, false, this.sideOrientation === Material.ClockWiseSideOrientation);
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {

@@ -403,7 +403,7 @@
         private static _TEXTUREFORMAT_LUMINANCE = 1;
         private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         private static _TEXTUREFORMAT_RGB = 4;
-        private static _TEXTUREFORMAT_RGBA = 4;
+        private static _TEXTUREFORMAT_RGBA = 5;
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
@@ -481,7 +481,7 @@
         }
 
         public static get Version(): string {
-            return "2.2.0-alpha";
+            return "2.3.0-alpha";
         }
 
         // Updatable statics so stick with vars here
@@ -1429,11 +1429,13 @@
         }
 
         // States
-        public setState(culling: boolean, zOffset: number = 0, force?: boolean): void {
+        public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
             // Culling        
             if (this._depthCullingState.cull !== culling || force) {
                 if (culling) {
-                    this._depthCullingState.cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+                    var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
+                    var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
+                    this._depthCullingState.cullFace = this.cullBackFaces ? showSide : hideSide;
                     this._depthCullingState.cull = true;
                 } else {
                     this._depthCullingState.cull = false;
@@ -1680,7 +1682,7 @@
             return texture;
         }
 
-        public updateRawTexture(texture: WebGLTexture, data: ArrayBufferView, format: number, invertY: boolean): void {
+        public updateRawTexture(texture: WebGLTexture, data: ArrayBufferView, format: number, invertY: boolean, compression: string = null): void {
             var internalFormat = this._gl.RGBA;
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
@@ -1701,7 +1703,13 @@
             }
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture._width, texture._height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+
+            if (compression) {
+                this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
+            } else {
+                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture._width, texture._height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            }
+
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
@@ -1710,7 +1718,7 @@
             texture.isReady = true;
         }
 
-        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number): WebGLTexture {
+        public createRawTexture(data: ArrayBufferView, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: string = null): WebGLTexture {
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
@@ -1718,7 +1726,7 @@
             texture._height = height;
             texture.references = 1;
 
-            this.updateRawTexture(texture, data, format, invertY);
+            this.updateRawTexture(texture, data, format, invertY, compression);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
 
             // Filters
@@ -2147,7 +2155,7 @@
 
         public readPixels(x: number, y: number, width: number, height: number): Uint8Array {
             var data = new Uint8Array(height * width * 4);
-            this._gl.readPixels(0, 0, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
+            this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
         }
 

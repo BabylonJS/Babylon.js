@@ -12,21 +12,22 @@ var BABYLON;
          * @param meshUnderPointer The mesh that is currently pointed at (can be null)
          * @param sourceEvent the original (browser) event that triggered the ActionEvent
          */
-        function ActionEvent(source, pointerX, pointerY, meshUnderPointer, sourceEvent) {
+        function ActionEvent(source, pointerX, pointerY, meshUnderPointer, sourceEvent, additionalData) {
             this.source = source;
             this.pointerX = pointerX;
             this.pointerY = pointerY;
             this.meshUnderPointer = meshUnderPointer;
             this.sourceEvent = sourceEvent;
+            this.additionalData = additionalData;
         }
         /**
          * Helper function to auto-create an ActionEvent from a source mesh.
          * @param source the source mesh that triggered the event
          * @param evt {Event} The original (browser) event
          */
-        ActionEvent.CreateNew = function (source, evt) {
+        ActionEvent.CreateNew = function (source, evt, additionalData) {
             var scene = source.getScene();
-            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt, additionalData);
         };
         /**
          * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
@@ -286,4 +287,3 @@ var BABYLON;
     })();
     BABYLON.ActionManager = ActionManager;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.actionManager.js.map

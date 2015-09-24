@@ -250,6 +250,7 @@
         private _transformMatrix = Matrix.Zero();
         private _pickWithRayInverseMatrix: Matrix;
 
+        private _edgesRenderers = new SmartArray<EdgesRenderer>(16);
         private _boundingBoxRenderer: BoundingBoxRenderer;
         private _outlineRenderer: OutlineRenderer;
 
@@ -304,8 +305,8 @@
 
         public set workerCollisions(enabled: boolean) {
         
-            enabled = (enabled && !!Worker)
-        
+            enabled = (enabled && !!Worker);
+
             this._workerCollisions = enabled;
             if (this.collisionCoordinator) {
                 this.collisionCoordinator.destroy();
@@ -441,7 +442,7 @@
                 this._updatePointerPosition(evt);
 
                 var pickResult = this.pick(this._pointerX, this._pointerY,
-                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers,
+                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady(),
                     false,
                     this.cameraToUseForPointers);
 
@@ -449,7 +450,12 @@
                     this._meshUnderPointer = pickResult.pickedMesh;
 
                     this.setPointerOverMesh(pickResult.pickedMesh);
-                    canvas.style.cursor = "pointer";
+
+                    if (this._meshUnderPointer.actionManager && this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                        canvas.style.cursor = "pointer";
+                    } else {
+                        canvas.style.cursor = "";
+                    }
                 } else {
                     this.setPointerOverMesh(null);
                     canvas.style.cursor = "";
@@ -566,8 +572,8 @@
             if (this._pendingData.length > 0) {
                 return false;
             }
-
-            for (var index = 0; index < this._geometries.length; index++) {
+            var index: number;
+            for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
 
                 if (geometry.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
@@ -1133,7 +1139,8 @@
          * @return {BABYLON.Node|null} the node found or null if not found at all.
          */
         public getLastEntryByID(id: string): Node {
-            for (var index = this.meshes.length - 1; index >= 0; index--) {
+            var index: number;
+            for (index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
                     return this.meshes[index];
                 }
@@ -1152,6 +1159,22 @@
             }
 
             return null;
+        }
+
+        public getNodeByID(id: string): Node {
+            var mesh = this.getMeshByID(id);
+
+            if (mesh) {
+                return mesh;
+            }
+
+            var light = this.getLightByID(id);
+
+            if (light) {
+                return light;
+            }
+
+            return this.getCameraByID(id);
         }
 
         public getNodeByName(name: string): Node {
@@ -1181,7 +1204,8 @@
         }
 
         public getSoundByName(name: string): Sound {
-            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+            var index: number;
+            for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
                 if (this.mainSoundTrack.soundCollection[index].name === name) {
                     return this.mainSoundTrack.soundCollection[index];
                 }
@@ -1266,6 +1290,7 @@
             this._activeSkeletons.reset();
             this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
+            this._edgesRenderers.reset();
 
             if (!this._frustumPlanes) {
                 this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
@@ -1356,6 +1381,10 @@
 
             if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
+            }
+
+            if (mesh._edgesRenderer) {
+                this._edgesRenderers.push(mesh._edgesRenderer);
             }
 
             if (mesh && mesh.subMeshes) {
@@ -1454,10 +1483,10 @@
 
             var beforeRenderDate = Tools.Now;
             // Backgrounds
+            var layerIndex;
+            var layer;
             if (this.layers.length) {
                 engine.setDepthBuffer(false);
-                var layerIndex;
-                var layer;
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
                     if (layer.isBackground) {
@@ -1475,11 +1504,20 @@
             // Bounding boxes
             this._boundingBoxRenderer.render();
 
+            // Edges
+            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
+                this._edgesRenderers.data[edgesRendererIndex].render();
+            }
+
             // Lens flares
             if (this.lensFlaresEnabled) {
                 Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
                 for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-                    this.lensFlareSystems[lensFlareSystemIndex].render();
+
+                    var lensFlareSystem = this.lensFlareSystems[lensFlareSystemIndex];
+                    if ((camera.layerMask & lensFlareSystem.layerMask) !== 0) {
+                        lensFlareSystem.render();
+                    }
                 }
                 Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
             }
@@ -1548,7 +1586,7 @@
 
                         if (areIntersecting && currentIntersectionInProgress === -1) {
                             if (action.trigger === ActionManager.OnIntersectionEnterTrigger) {
-                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             } else if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
@@ -1558,7 +1596,7 @@
 
                             //is this trigger an exit trigger? execute an event.
                             if (action.trigger === ActionManager.OnIntersectionExitTrigger) {
-                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                             }
 
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
@@ -1602,8 +1640,8 @@
             if (this.beforeRender) {
                 this.beforeRender();
             }
-
-            for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            var callbackIndex: number;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex]();
             }
 
@@ -1756,7 +1794,8 @@
                 var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
                 cameraDirection.normalize();
                 audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
-                for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                var i: number;
+                for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                     var sound = this.mainSoundTrack.soundCollection[i];
                     if (sound.useCustomAttenuation) {
                         sound.updateDistanceFromListener();
@@ -1789,7 +1828,8 @@
         }
 
         private _disableAudio() {
-            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+            var i: number;
+            for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                 this.mainSoundTrack.soundCollection[i].pause();
             }
             for (i = 0; i < this.soundTracks.length; i++) {
@@ -1800,7 +1840,8 @@
         }
 
         private _enableAudio() {
-            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+            var i: number;
+            for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                 if (this.mainSoundTrack.soundCollection[i].isPaused) {
                     this.mainSoundTrack.soundCollection[i].play();
                 }

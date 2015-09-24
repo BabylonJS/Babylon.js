@@ -7,6 +7,7 @@ var BABYLON;
             this.cellSize = cellSize;
             this.sprites = new Array();
             this.renderingGroupId = 0;
+            this.layerMask = 0x0FFFFFFF;
             this.fogEnabled = true;
             this._vertexDeclaration = [4, 4, 4, 4];
             this._vertexStrideSize = 16 * 4; // 15 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
@@ -142,4 +143,3 @@ var BABYLON;
     })();
     BABYLON.SpriteManager = SpriteManager;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.spriteManager.js.map

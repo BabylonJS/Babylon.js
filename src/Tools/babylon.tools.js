@@ -385,7 +385,7 @@ var BABYLON;
                 }
             }
         };
-        Tools.DumpFramebuffer = function (width, height, engine) {
+        Tools.DumpFramebuffer = function (width, height, engine, successCallback) {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -416,27 +416,32 @@ var BABYLON;
             castData.set(data);
             context.putImageData(imageData, 0, 0);
             var base64Image = screenshotCanvas.toDataURL();
-            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-            if (("download" in document.createElement("a"))) {
-                var a = window.document.createElement("a");
-                a.href = base64Image;
-                var date = new Date();
-                var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                a.setAttribute("download", "screenshot-" + stringDate + ".png");
-                window.document.body.appendChild(a);
-                a.addEventListener("click", function () {
-                    a.parentElement.removeChild(a);
-                });
-                a.click();
+            if (successCallback) {
+                successCallback(base64Image);
             }
             else {
-                var newWindow = window.open("");
-                var img = newWindow.document.createElement("img");
-                img.src = base64Image;
-                newWindow.document.body.appendChild(img);
+                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                if (("download" in document.createElement("a"))) {
+                    var a = window.document.createElement("a");
+                    a.href = base64Image;
+                    var date = new Date();
+                    var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                    a.setAttribute("download", "screenshot_" + stringDate + ".png");
+                    window.document.body.appendChild(a);
+                    a.addEventListener("click", function () {
+                        a.parentElement.removeChild(a);
+                    });
+                    a.click();
+                }
+                else {
+                    var newWindow = window.open("");
+                    var img = newWindow.document.createElement("img");
+                    img.src = base64Image;
+                    newWindow.document.body.appendChild(img);
+                }
             }
         };
-        Tools.CreateScreenshot = function (engine, camera, size) {
+        Tools.CreateScreenshot = function (engine, camera, size, successCallback) {
             var width;
             var height;
             var scene = camera.getScene();
@@ -477,7 +482,7 @@ var BABYLON;
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false);
             texture.renderList = scene.meshes;
             texture.onAfterRender = function () {
-                Tools.DumpFramebuffer(width, height, engine);
+                Tools.DumpFramebuffer(width, height, engine, successCallback);
             };
             scene.incrementRenderId();
             texture.render(true);
@@ -832,4 +837,3 @@ var BABYLON;
     })();
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.tools.js.map

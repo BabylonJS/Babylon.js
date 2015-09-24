@@ -3,6 +3,7 @@
         public lensFlares = new Array<LensFlare>();
         public borderLimit = 300;
         public meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        public layerMask: number = 0x0FFFFFFF;
 
         private _scene: Scene;
         private _emitter: any;

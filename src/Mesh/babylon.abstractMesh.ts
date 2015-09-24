@@ -86,6 +86,11 @@
         // Attach to bone
         private _meshToBoneReferal: AbstractMesh;
 
+        // Edges
+        public edgesWidth = 1;
+        public edgesColor = new Color4(1, 0, 0, 1);
+        public _edgesRenderer: EdgesRenderer;
+
         // Cache
         private _localScaling = Matrix.Zero();
         private _localRotation = Matrix.Zero();
@@ -128,6 +133,18 @@
         }
 
         // Methods
+        public disableEdgesRendering(): void {
+            if (this._edgesRenderer !== undefined) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = undefined;
+            }
+        }
+        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
+            this.disableEdgesRendering();
+
+            this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+        }
+
         public get isBlocked(): boolean {
             return false;
         }
@@ -215,9 +232,9 @@
                 this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = Vector3.Zero();
             }
-
+            var rotationQuaternion: Quaternion;
             if (!space || space === Space.LOCAL) {
-                var rotationQuaternion = Quaternion.RotationAxis(axis, amount);
+                rotationQuaternion = Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
             else {
@@ -476,7 +493,7 @@
                     Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
 
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
@@ -633,7 +650,7 @@
             var physicsEngine = this.getScene().getPhysicsEngine();
 
             if (!physicsEngine) {
-                return;
+                return null;
             }
 
             impostor = impostor || PhysicsEngine.NoImpostor;
@@ -646,7 +663,7 @@
 
             if (impostor === PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
-                return;
+                return null;
             }
 
             if (!options) {
@@ -967,6 +984,12 @@
             }
 
             this._intersectionsInProgress = [];
+
+            // Edges
+            if (this._edgesRenderer) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = null;
+            }
 
             // SubMeshes
             this.releaseSubMeshes();

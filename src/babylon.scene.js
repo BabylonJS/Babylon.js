@@ -129,6 +129,7 @@ var BABYLON;
             this._activeBones = 0;
             this._activeAnimatables = new Array();
             this._transformMatrix = BABYLON.Matrix.Zero();
+            this._edgesRenderers = new BABYLON.SmartArray(16);
             this._uniqueIdCounter = 0;
             this._engine = engine;
             engine.scenes.push(this);
@@ -307,11 +308,16 @@ var BABYLON;
             this._onPointerMove = function (evt) {
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers; }, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady(); }, false, _this.cameraToUseForPointers);
                 if (pickResult.hit) {
                     _this._meshUnderPointer = pickResult.pickedMesh;
                     _this.setPointerOverMesh(pickResult.pickedMesh);
-                    canvas.style.cursor = "pointer";
+                    if (_this._meshUnderPointer.actionManager && _this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                        canvas.style.cursor = "pointer";
+                    }
+                    else {
+                        canvas.style.cursor = "";
+                    }
                 }
                 else {
                     _this.setPointerOverMesh(null);
@@ -406,7 +412,8 @@ var BABYLON;
             if (this._pendingData.length > 0) {
                 return false;
             }
-            for (var index = 0; index < this._geometries.length; index++) {
+            var index;
+            for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
                 if (geometry.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                     return false;
@@ -878,7 +885,8 @@ var BABYLON;
          * @return {BABYLON.Node|null} the node found or null if not found at all.
          */
         Scene.prototype.getLastEntryByID = function (id) {
-            for (var index = this.meshes.length - 1; index >= 0; index--) {
+            var index;
+            for (index = this.meshes.length - 1; index >= 0; index--) {
                 if (this.meshes[index].id === id) {
                     return this.meshes[index];
                 }
@@ -894,6 +902,17 @@ var BABYLON;
                 }
             }
             return null;
+        };
+        Scene.prototype.getNodeByID = function (id) {
+            var mesh = this.getMeshByID(id);
+            if (mesh) {
+                return mesh;
+            }
+            var light = this.getLightByID(id);
+            if (light) {
+                return light;
+            }
+            return this.getCameraByID(id);
         };
         Scene.prototype.getNodeByName = function (name) {
             var mesh = this.getMeshByName(name);
@@ -915,7 +934,8 @@ var BABYLON;
             return null;
         };
         Scene.prototype.getSoundByName = function (name) {
-            for (var index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+            var index;
+            for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
                 if (this.mainSoundTrack.soundCollection[index].name === name) {
                     return this.mainSoundTrack.soundCollection[index];
                 }
@@ -985,6 +1005,7 @@ var BABYLON;
             this._activeSkeletons.reset();
             this._softwareSkinnedMeshes.reset();
             this._boundingBoxRenderer.reset();
+            this._edgesRenderers.reset();
             if (!this._frustumPlanes) {
                 this._frustumPlanes = BABYLON.Frustum.GetPlanes(this._transformMatrix);
             }
@@ -1057,6 +1078,9 @@ var BABYLON;
             }
             if (mesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 this._boundingBoxRenderer.renderList.push(mesh.getBoundingInfo().boundingBox);
+            }
+            if (mesh._edgesRenderer) {
+                this._edgesRenderers.push(mesh._edgesRenderer);
             }
             if (mesh && mesh.subMeshes) {
                 // Submeshes Octrees
@@ -1134,10 +1158,10 @@ var BABYLON;
             this.postProcessManager._prepareFrame();
             var beforeRenderDate = BABYLON.Tools.Now;
             // Backgrounds
+            var layerIndex;
+            var layer;
             if (this.layers.length) {
                 engine.setDepthBuffer(false);
-                var layerIndex;
-                var layer;
                 for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
                     layer = this.layers[layerIndex];
                     if (layer.isBackground) {
@@ -1152,11 +1176,18 @@ var BABYLON;
             BABYLON.Tools.EndPerformanceCounter("Main render");
             // Bounding boxes
             this._boundingBoxRenderer.render();
+            // Edges
+            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
+                this._edgesRenderers.data[edgesRendererIndex].render();
+            }
             // Lens flares
             if (this.lensFlaresEnabled) {
                 BABYLON.Tools.StartPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
                 for (var lensFlareSystemIndex = 0; lensFlareSystemIndex < this.lensFlareSystems.length; lensFlareSystemIndex++) {
-                    this.lensFlareSystems[lensFlareSystemIndex].render();
+                    var lensFlareSystem = this.lensFlareSystems[lensFlareSystemIndex];
+                    if ((camera.layerMask & lensFlareSystem.layerMask) !== 0) {
+                        lensFlareSystem.render();
+                    }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
             }
@@ -1209,7 +1240,7 @@ var BABYLON;
                         var currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
                         if (areIntersecting && currentIntersectionInProgress === -1) {
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionEnterTrigger) {
-                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                                 sourceMesh._intersectionsInProgress.push(otherMesh);
                             }
                             else if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
@@ -1220,7 +1251,7 @@ var BABYLON;
                             //They intersected, and now they don't.
                             //is this trigger an exit trigger? execute an event.
                             if (action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
-                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh));
+                                action._executeCurrent(BABYLON.ActionEvent.CreateNew(sourceMesh, null, otherMesh));
                             }
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
                             if (!sourceMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnIntersectionExitTrigger) || action.trigger === BABYLON.ActionManager.OnIntersectionExitTrigger) {
@@ -1258,7 +1289,8 @@ var BABYLON;
             if (this.beforeRender) {
                 this.beforeRender();
             }
-            for (var callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+            var callbackIndex;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex]();
             }
             // Animations
@@ -1383,7 +1415,8 @@ var BABYLON;
                 var cameraDirection = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, -1), mat);
                 cameraDirection.normalize();
                 audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
-                for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+                var i;
+                for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                     var sound = this.mainSoundTrack.soundCollection[i];
                     if (sound.useCustomAttenuation) {
                         sound.updateDistanceFromListener();
@@ -1417,7 +1450,8 @@ var BABYLON;
             configurable: true
         });
         Scene.prototype._disableAudio = function () {
-            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+            var i;
+            for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                 this.mainSoundTrack.soundCollection[i].pause();
             }
             for (i = 0; i < this.soundTracks.length; i++) {
@@ -1427,7 +1461,8 @@ var BABYLON;
             }
         };
         Scene.prototype._enableAudio = function () {
-            for (var i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
+            var i;
+            for (i = 0; i < this.mainSoundTrack.soundCollection.length; i++) {
                 if (this.mainSoundTrack.soundCollection[i].isPaused) {
                     this.mainSoundTrack.soundCollection[i].play();
                 }
@@ -1777,4 +1812,3 @@ var BABYLON;
     })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.scene.js.map
