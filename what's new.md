@@ -55,11 +55,12 @@ Changes list
     - Fixing bug with rig cameras positioning ([deltakosh](https://github.com/deltakosh))
     - Instance meshes' geometry ID is now serialized correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/607) ([RaananW](https://github.com/RaananW))
     - Bug fix at set numberOfBricksWidth [PR](https://github.com/BabylonJS/Babylon.js/pull/684) ([Polatouche](https://github.com/Polatouche))
-  - **Breaking changes**
-    - In LensRenderingPipeline: parameter `dof_focus_depth` (range 0..1) is deprecated, use `dof_focus_distance` (range 0..infinity) instead ([jahow](https://github.com/jahow))
     - Cylinder Mesh complete reimplementation for better normals ([jerome](https://github.com/jbousquie))
     - `RotationFromAxis()` : fixed the dot product case outside the range [-1, 1] ([jerome](https://github.com/jbousquie))
     - Path3D : fix wrong normal/binormal due to normalization approximations ([jerome](https://github.com/jbousquie))
+  - **Breaking changes**
+    - In LensRenderingPipeline: parameter `dof_focus_depth` (range 0..1) is deprecated, use `dof_focus_distance` (range 0..infinity) instead ([jahow](https://github.com/jahow))
+
 
 - 2.1.0:
   - **Major updates**
