@@ -58,6 +58,7 @@
         public useVertexColors = true;
         public applyFog = true;
         public computeBonesUsingShaders = true;
+        public scalingDeterminant = 1;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
@@ -453,7 +454,7 @@
             this._isDirty = false;
 
             // Scaling
-            Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
+            Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, this._localScaling);
 
             // Rotation
             if (this.rotationQuaternion) {
@@ -604,9 +605,17 @@
         public attachToBone(bone: Bone, affectedMesh: AbstractMesh): void {
             this._meshToBoneReferal = affectedMesh;
             this.parent = bone;
+
+            if (bone.getWorldMatrix().determinant() < 0) {
+                this.scalingDeterminant *= -1;
+            }
         }
 
         public detachFromBone(): void {
+            if (this.parent.getWorldMatrix().determinant() < 0) {
+                this.scalingDeterminant *= -1;
+            }
+
             this._meshToBoneReferal = null;
             this.parent = null;
         }

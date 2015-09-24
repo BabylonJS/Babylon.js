@@ -23,4 +23,3 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.StereoscopicInterlacePostProcess = StereoscopicInterlacePostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.stereoscopicInterlacePostProcess.js.map

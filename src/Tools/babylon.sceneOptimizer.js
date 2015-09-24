@@ -329,4 +329,3 @@ var BABYLON;
     })();
     BABYLON.SceneOptimizer = SceneOptimizer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sceneOptimizer.js.map
