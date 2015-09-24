@@ -1636,15 +1636,6 @@
                 this.simplificationQueue.executeNext();
             }
 
-            // Before render
-            if (this.beforeRender) {
-                this.beforeRender();
-            }
-            var callbackIndex: number;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
-            }
-
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
@@ -1655,6 +1646,15 @@
                 Tools.StartPerformanceCounter("Physics");
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
                 Tools.EndPerformanceCounter("Physics");
+            }
+
+            // Before render
+            if (this.beforeRender) {
+                this.beforeRender();
+            }
+            var callbackIndex: number;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+                this._onBeforeRenderCallbacks[callbackIndex]();
             }
 
             // Customs render targets
