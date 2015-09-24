@@ -746,7 +746,7 @@
 
                     positions.push(vertex.x, vertex.y, vertex.z);
                     normals.push(normal.x, normal.y, normal.z);
-                    uvs.push(normalizedZ, normalizedY);
+                    uvs.push(normalizedY, normalizedZ);
                 }
 
                 if (zRotationStep > 0) {
