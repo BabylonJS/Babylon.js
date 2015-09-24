@@ -532,14 +532,6 @@
             var width: number;
             var height: number;
 
-            var scene = camera.getScene();
-            var previousCamera: Camera = null;
-
-            if (scene.activeCamera !== camera) {
-                previousCamera = scene.activeCamera;
-                scene.activeCamera = camera;
-            }
-
             //If a precision value is specified
             if (size.precision) {
                 width = Math.round(engine.getRenderWidth() * size.precision);
@@ -570,6 +562,14 @@
             else {
                 Tools.Error("Invalid 'size' parameter !");
                 return;
+            }
+			
+			var scene = camera.getScene();
+            var previousCamera: Camera = null;
+			
+			if (scene.activeCamera !== camera) {
+                previousCamera = scene.activeCamera;
+                scene.activeCamera = camera;
             }
 
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
