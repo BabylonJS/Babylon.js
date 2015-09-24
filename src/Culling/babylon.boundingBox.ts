@@ -32,7 +32,7 @@
 
             this.vectors.push(this.maximum.clone());
             this.vectors[7].y = this.minimum.y;
-
+            
             // OBB
             this.center = this.maximum.add(this.minimum).scale(0.5);
             this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);

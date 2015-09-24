@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -320,7 +319,7 @@ var BABYLON;
                 return this._numberOfBricksWidth;
             },
             set: function (value) {
-                this._numberOfBricksHeight = value;
+                this._numberOfBricksWidth = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,
@@ -418,4 +417,3 @@ var BABYLON;
     })(BABYLON.ProceduralTexture);
     BABYLON.MarbleProceduralTexture = MarbleProceduralTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.standardProceduralTexture.js.map

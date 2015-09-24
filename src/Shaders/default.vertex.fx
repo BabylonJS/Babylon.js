@@ -59,6 +59,12 @@ uniform vec2 vEmissiveInfos;
 uniform mat4 emissiveMatrix;
 #endif
 
+#ifdef LIGHTMAP
+varying vec2 vLightmapUV;
+uniform vec3 vLightmapInfos;
+uniform mat4 lightmapMatrix;
+#endif
+
 #if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
@@ -205,6 +211,17 @@ void main(void) {
 	else
 	{
 		vEmissiveUV = vec2(emissiveMatrix * vec4(uv2, 1.0, 0.0));
+	}
+#endif
+
+#ifdef LIGHTMAP
+	if (vLightmapInfos.x == 0.)
+	{
+		vLightmapUV = vec2(lightmapMatrix * vec4(uv, 1.0, 0.0));
+	}
+	else
+	{
+		vLightmapUV = vec2(lightmapMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 

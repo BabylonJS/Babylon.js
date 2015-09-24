@@ -39,6 +39,7 @@
         private _connectedMesh: AbstractMesh;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
         private _registerFunc: (connectedMesh: AbstractMesh) => any;
+        private _isOutputConnected = false;
 
         /**
         * Create a sound and attach it to a scene
@@ -233,8 +234,11 @@
 
         public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode) {
             if (Engine.audioEngine.canUseWebAudio) {
-                this._ouputAudioNode.disconnect();
+                if (this._isOutputConnected) {
+                    this._ouputAudioNode.disconnect();
+                }
                 this._ouputAudioNode.connect(soundTrackAudioNode);
+                this._isOutputConnected = true;
             }
         }
 

@@ -8,6 +8,7 @@ var BABYLON;
             this.state = "";
             this.alpha = 1.0;
             this.backFaceCulling = true;
+            this.sideOrientation = Material.CounterClockWiseSideOrientation;
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this.disableDepthWrite = false;
             this._wasPreviouslyReady = false;
@@ -37,6 +38,20 @@ var BABYLON;
         Object.defineProperty(Material, "PointFillMode", {
             get: function () {
                 return Material._PointFillMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material, "ClockWiseSideOrientation", {
+            get: function () {
+                return Material._ClockWiseSideOrientation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material, "CounterClockWiseSideOrientation", {
+            get: function () {
+                return Material._CounterClockWiseSideOrientation;
             },
             enumerable: true,
             configurable: true
@@ -94,7 +109,7 @@ var BABYLON;
         Material.prototype._preBind = function () {
             var engine = this._scene.getEngine();
             engine.enableEffect(this._effect);
-            engine.setState(this.backFaceCulling, this.zOffset);
+            engine.setState(this.backFaceCulling, this.zOffset, false, this.sideOrientation === Material.ClockWiseSideOrientation);
         };
         Material.prototype.bind = function (world, mesh) {
             this._scene._cachedMaterial = this;
@@ -135,8 +150,9 @@ var BABYLON;
         Material._TriangleFillMode = 0;
         Material._WireFrameFillMode = 1;
         Material._PointFillMode = 2;
+        Material._ClockWiseSideOrientation = 0;
+        Material._CounterClockWiseSideOrientation = 1;
         return Material;
     })();
     BABYLON.Material = Material;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.material.js.map

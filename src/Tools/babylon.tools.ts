@@ -325,7 +325,7 @@
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
-                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: []}));
+                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
             };
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
@@ -462,7 +462,7 @@
             }
         }
 
-        public static DumpFramebuffer(width: number, height: number, engine: Engine): void {
+        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: String) => void): void {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -500,31 +500,35 @@
 
             var base64Image = screenshotCanvas.toDataURL();
 
-            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-            if (("download" in document.createElement("a"))) {
-                var a = window.document.createElement("a");
-                a.href = base64Image;
-                var date = new Date();
-                var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                a.setAttribute("download", "screenshot-" + stringDate + ".png");
-
-                window.document.body.appendChild(a);
-
-                a.addEventListener("click",() => {
-                    a.parentElement.removeChild(a);
-                });
-                a.click();
-
-                //Or opening a new tab with the image if it is not possible to automatically start download.
+            if (successCallback) {
+                successCallback(base64Image);
             } else {
-                var newWindow = window.open("");
-                var img = newWindow.document.createElement("img");
-                img.src = base64Image;
-                newWindow.document.body.appendChild(img);
+                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                if (("download" in document.createElement("a"))) {
+                    var a = window.document.createElement("a");
+                    a.href = base64Image;
+                    var date = new Date();
+                    var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                    a.setAttribute("download", "screenshot_" + stringDate + ".png");
+
+                    window.document.body.appendChild(a);
+
+                    a.addEventListener("click", () => {
+                        a.parentElement.removeChild(a);
+                    });
+                    a.click();
+
+                    //Or opening a new tab with the image if it is not possible to automatically start download.
+                } else {
+                    var newWindow = window.open("");
+                    var img = newWindow.document.createElement("img");
+                    img.src = base64Image;
+                    newWindow.document.body.appendChild(img);
+                }
             }
         }
 
-        public static CreateScreenshot(engine: Engine, camera: Camera, size: any): void {
+        public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: String) => void): void {
             var width: number;
             var height: number;
 
@@ -573,7 +577,7 @@
             texture.renderList = scene.meshes;
 
             texture.onAfterRender = () => {
-                Tools.DumpFramebuffer(width, height, engine);
+                Tools.DumpFramebuffer(width, height, engine, successCallback);
             };
 
             scene.incrementRenderId();
@@ -910,7 +914,7 @@
          * @constructor
          */
         public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0) {
-            AsyncLoop.Run(Math.ceil(iterations / syncedIterations),(loop: AsyncLoop) => {
+            AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
                 if (breakFunction && breakFunction()) loop.breakLoop();
                 else {
                     setTimeout(() => {

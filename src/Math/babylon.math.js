@@ -99,7 +99,7 @@ var BABYLON;
         };
         // Statics
         Color3.FromHexString = function (hex) {
-            if (hex.substring(0, 1) !== "#" || hex.length != 7) {
+            if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
                 BABYLON.Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
@@ -208,7 +208,7 @@ var BABYLON;
         };
         // Statics
         Color4.FromHexString = function (hex) {
-            if (hex.substring(0, 1) !== "#" || hex.length != 9) {
+            if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
                 BABYLON.Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0, 0, 0, 0);
             }
@@ -797,10 +797,9 @@ var BABYLON;
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
             var matrix = world.multiply(view).multiply(projection);
             matrix.invert();
-            source.x = source.x / viewportWidth * 2 - 1;
-            source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = Vector3.TransformCoordinates(source, matrix);
-            var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
+            var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), source.z);
+            var vector = Vector3.TransformCoordinates(screenSource, matrix);
+            var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
             if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
@@ -836,13 +835,19 @@ var BABYLON;
          * to something in order to rotate it from its local system to the given target system.
          */
         Vector3.RotationFromAxis = function (axis1, axis2, axis3) {
+            var rotation = Vector3.Zero();
+            Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
+            return rotation;
+        };
+        /**
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
+         */
+        Vector3.RotationFromAxisToRef = function (axis1, axis2, axis3, ref) {
             var u = Vector3.Normalize(axis1);
-            var v = Vector3.Normalize(axis2);
             var w = Vector3.Normalize(axis3);
             // world axis
             var X = Axis.X;
             var Y = Axis.Y;
-            var Z = Axis.Z;
             // equation unknowns and vars
             var yaw = 0.0;
             var pitch = 0.0;
@@ -852,7 +857,6 @@ var BABYLON;
             var z = 0.0;
             var t = 0.0;
             var sign = -1.0;
-            var pi = Math.PI;
             var nbRevert = 0;
             var cross;
             var dot = 0.0;
@@ -861,10 +865,10 @@ var BABYLON;
             // Rv3(w) = w1 = w invariant
             var u1;
             var v1;
-            if (w.z == 0) {
+            if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 z = 1.0;
             }
-            else if (w.x == 0) {
+            else if (BABYLON.Tools.WithinEpsilon(w.x, 0, BABYLON.Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -873,12 +877,16 @@ var BABYLON;
                 z = Math.sqrt(1 / (1 + t * t));
             }
             u1 = new Vector3(x, y, z);
+            u1.normalize();
             v1 = Vector3.Cross(w, u1); // v1 image of v through rotation around w
+            v1.normalize();
             cross = Vector3.Cross(u, u1); // returns same direction as w (=local z) if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(w, cross) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(u, u1);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             roll = Math.acos(dot) * sign;
             if (Vector3.Dot(u1, X) < 0) {
                 roll = Math.PI + roll;
@@ -895,7 +903,7 @@ var BABYLON;
             y = 0.0;
             z = 0.0;
             sign = -1;
-            if (w.z == 0) {
+            if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -904,12 +912,16 @@ var BABYLON;
                 z = Math.sqrt(1 / (1 + t * t));
             }
             w2 = new Vector3(x, y, z);
+            w2.normalize();
             v2 = Vector3.Cross(w2, u1); // v2 image of v1 through rotation around u1
+            v2.normalize();
             cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(u1, cross) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(w, w2);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             pitch = Math.acos(dot) * sign;
             if (Vector3.Dot(v2, Y) < 0) {
                 pitch = Math.PI + pitch;
@@ -921,15 +933,19 @@ var BABYLON;
             // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
             sign = -1;
             cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(cross, Y) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(u1, X);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             yaw = -Math.acos(dot) * sign; // negative : plane zOx oriented clockwise
             if (dot < 0 && nbRevert < 2) {
                 yaw = Math.PI + yaw;
             }
-            return new Vector3(pitch, yaw, roll);
+            ref.x = pitch;
+            ref.y = yaw;
+            ref.z = roll;
         };
         return Vector3;
     })();
@@ -1383,6 +1399,7 @@ var BABYLON;
         Quaternion.RotationAxis = function (axis, angle) {
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);
+            axis.normalize();
             result.w = Math.cos(angle / 2);
             result.x = axis.x * sin;
             result.y = axis.y * sin;
@@ -2031,9 +2048,14 @@ var BABYLON;
             // Z axis
             target.subtractToRef(eye, this._zAxis);
             this._zAxis.normalize();
-            // X axis
+            // X axis            
             Vector3.CrossToRef(up, this._zAxis, this._xAxis);
-            this._xAxis.normalize();
+            if (this._xAxis.lengthSquared() === 0) {
+                this._xAxis.x = 1.0;
+            }
+            else {
+                this._xAxis.normalize();
+            }
             // Y axis
             Vector3.CrossToRef(this._zAxis, this._xAxis, this._yAxis);
             this._yAxis.normalize();
@@ -2363,7 +2385,7 @@ var BABYLON;
             // Near
             frustumPlanes[0].normal.x = transform.m[3] + transform.m[2];
             frustumPlanes[0].normal.y = transform.m[7] + transform.m[6];
-            frustumPlanes[0].normal.z = transform.m[10] + transform.m[10];
+            frustumPlanes[0].normal.z = transform.m[11] + transform.m[10];
             frustumPlanes[0].d = transform.m[15] + transform.m[14];
             frustumPlanes[0].normalize();
             // Far
@@ -2411,20 +2433,24 @@ var BABYLON;
         Ray.prototype.intersectsBoxMinMax = function (minimum, maximum) {
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
+            var inv;
+            var min;
+            var max;
+            var temp;
             if (Math.abs(this.direction.x) < 0.0000001) {
                 if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
                     return false;
                 }
             }
             else {
-                var inv = 1.0 / this.direction.x;
-                var min = (minimum.x - this.origin.x) * inv;
-                var max = (maximum.x - this.origin.x) * inv;
+                inv = 1.0 / this.direction.x;
+                min = (minimum.x - this.origin.x) * inv;
+                max = (maximum.x - this.origin.x) * inv;
                 if (max === -Infinity) {
                     max = Infinity;
                 }
                 if (min > max) {
-                    var temp = min;
+                    temp = min;
                     min = max;
                     max = temp;
                 }
@@ -2805,7 +2831,13 @@ var BABYLON;
     })();
     BABYLON.Path2 = Path2;
     var Path3D = (function () {
-        function Path3D(path, firstNormal) {
+        /**
+        * new Path3D(path, normal, raw)
+        * path : an array of Vector3, the curve axis of the Path3D
+        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        */
+        function Path3D(path, firstNormal, raw) {
             this.path = path;
             this._curve = new Array();
             this._distances = new Array();
@@ -2815,6 +2847,7 @@ var BABYLON;
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
             }
+            this._raw = raw || false;
             this._compute(firstNormal);
         }
         Path3D.prototype.getCurve = function () {
@@ -2846,22 +2879,30 @@ var BABYLON;
             var l = this._curve.length;
             // first and last tangents
             this._tangents[0] = this._getFirstNonNullVector(0);
-            this._tangents[0].normalize();
+            if (!this._raw) {
+                this._tangents[0].normalize();
+            }
             this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
-            this._tangents[l - 1].normalize();
+            if (!this._raw) {
+                this._tangents[l - 1].normalize();
+            }
             // normals and binormals at first point : arbitrary vector with _normalVector()
             var tg0 = this._tangents[0];
             var pp0 = this._normalVector(this._curve[0], tg0, firstNormal);
             this._normals[0] = pp0;
-            this._normals[0].normalize();
+            if (!this._raw) {
+                this._normals[0].normalize();
+            }
             this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
-            this._binormals[0].normalize();
+            if (!this._raw) {
+                this._binormals[0].normalize();
+            }
             this._distances[0] = 0;
             // normals and binormals : next points
             var prev; // previous vector (segment)
             var cur; // current vector (segment)
             var curTang; // current tangent
-            var prevNorm; // previous normal
+            // previous normal
             var prevBinor; // previous binormal
             for (var i = 1; i < l; i++) {
                 // tangents
@@ -2875,12 +2916,15 @@ var BABYLON;
                 // normals and binormals
                 // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
                 curTang = this._tangents[i];
-                prevNorm = this._normals[i - 1];
                 prevBinor = this._binormals[i - 1];
                 this._normals[i] = Vector3.Cross(prevBinor, curTang);
-                this._normals[i].normalize();
+                if (!this._raw) {
+                    this._normals[i].normalize();
+                }
                 this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
-                this._binormals[i].normalize();
+                if (!this._raw) {
+                    this._binormals[i].normalize();
+                }
             }
         };
         // private function getFirstNonNullVector(index)
@@ -2888,7 +2932,7 @@ var BABYLON;
         Path3D.prototype._getFirstNonNullVector = function (index) {
             var i = 1;
             var nNVector = this._curve[index + i].subtract(this._curve[index]);
-            while (nNVector.length() == 0 && index + i + 1 < this._curve.length) {
+            while (nNVector.length() === 0 && index + i + 1 < this._curve.length) {
                 i++;
                 nNVector = this._curve[index + i].subtract(this._curve[index]);
             }
@@ -2899,7 +2943,7 @@ var BABYLON;
         Path3D.prototype._getLastNonNullVector = function (index) {
             var i = 1;
             var nLVector = this._curve[index].subtract(this._curve[index - i]);
-            while (nLVector.length() == 0 && index > i + 1) {
+            while (nLVector.length() === 0 && index > i + 1) {
                 i++;
                 nLVector = this._curve[index].subtract(this._curve[index - i]);
             }
@@ -2912,13 +2956,13 @@ var BABYLON;
             var normal0;
             if (va === undefined || va === null) {
                 var point;
-                if (vt.y !== 1) {
+                if (!BABYLON.Tools.WithinEpsilon(vt.y, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(0, -1, 0);
                 }
-                else if (vt.x !== 1) {
+                else if (!BABYLON.Tools.WithinEpsilon(vt.x, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(1, 0, 0);
                 }
-                else if (vt.z !== 1) {
+                else if (!BABYLON.Tools.WithinEpsilon(vt.z, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(0, 0, 1);
                 }
                 normal0 = Vector3.Cross(vt, point);
@@ -3092,4 +3136,3 @@ var BABYLON;
     })();
     BABYLON.SIMDHelper = SIMDHelper;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.math.js.map

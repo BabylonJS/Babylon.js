@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -26,6 +25,12 @@ var BABYLON;
             this._lookAtTemp = BABYLON.Matrix.Zero();
             this._tempMatrix = BABYLON.Matrix.Zero();
         }
+        TargetCamera.prototype.getFrontPosition = function (distance) {
+            var direction = this.getTarget().subtract(this.position);
+            direction.normalize();
+            direction.scaleInPlace(distance);
+            return this.globalPosition.add(direction);
+        };
         TargetCamera.prototype._getLockedTargetPosition = function () {
             if (!this.lockedTarget) {
                 return null;
@@ -239,4 +244,3 @@ var BABYLON;
     })(BABYLON.Camera);
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.targetCamera.js.map

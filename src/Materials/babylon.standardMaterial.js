@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -79,6 +78,10 @@ var BABYLON;
             this.BonesPerMesh = 0;
             this.INSTANCES = false;
             this.GLOSSINESS = false;
+            this.ROUGHNESS = false;
+            this.EMISSIVEASILLUMINATION = false;
+            this.REFLECTIONFRESNELFROMSPECULAR = false;
+            this.LIGHTMAP = false;
             this._keys = Object.keys(this);
         }
         StandardMaterialDefines.prototype.isEqual = function (other) {
@@ -133,8 +136,12 @@ var BABYLON;
             this.specularPower = 64;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
+            this.useEmissiveAsIllumination = false;
+            this.useReflectionFresnelFromSpecular = false;
             this.useSpecularOverAlpha = true;
             this.fogEnabled = true;
+            this.roughness = 0;
+            this.lightmapThreshold = 0;
             this.useGlossinessFromSpecularMapAlpha = false;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -221,6 +228,9 @@ var BABYLON;
                         needNormals = true;
                         needUVs = true;
                         this._defines.REFLECTION = true;
+                        if (this.roughness > 0) {
+                            this._defines.ROUGHNESS = true;
+                        }
                     }
                 }
                 if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -230,6 +240,15 @@ var BABYLON;
                     else {
                         needUVs = true;
                         this._defines.EMISSIVE = true;
+                    }
+                }
+                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                    if (!this.lightmapTexture.isReady()) {
+                        return false;
+                    }
+                    else {
+                        needUVs = true;
+                        this._defines.LIGHTMAP = true;
                     }
                 }
                 if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
@@ -261,6 +280,12 @@ var BABYLON;
             }
             if (this._shouldUseAlphaFromDiffuseTexture()) {
                 this._defines.ALPHAFROMDIFFUSE = true;
+            }
+            if (this.useEmissiveAsIllumination) {
+                this._defines.EMISSIVEASILLUMINATION = true;
+            }
+            if (this.useReflectionFresnelFromSpecular) {
+                this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
             }
             // Point size
             if (this.pointsCloud || scene.forcePointsCloud) {
@@ -485,12 +510,13 @@ var BABYLON;
                     "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                     "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                     "vFogInfos", "vFogColor", "pointSize",
-                    "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos",
+                    "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix",
+                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
                     "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
-                ], ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler",
+                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
+                    "roughness"
+                ], ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
                     "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                 ], join, fallbacks, this.onCompiled, this.onError);
             }
@@ -557,6 +583,9 @@ var BABYLON;
                 if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                     if (this.reflectionTexture.isCube) {
                         this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
+                        if (this._defines.ROUGHNESS) {
+                            this._effect.setFloat("roughness", this.roughness);
+                        }
                     }
                     else {
                         this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
@@ -568,6 +597,11 @@ var BABYLON;
                     this._effect.setTexture("emissiveSampler", this.emissiveTexture);
                     this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
                     this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
+                }
+                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                    this._effect.setTexture("lightmapSampler", this.lightmapTexture);
+                    this._effect.setFloat3("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level, this.lightmapThreshold);
+                    this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
                 }
                 if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
                     this._effect.setTexture("specularSampler", this.specularTexture);
@@ -758,8 +792,8 @@ var BABYLON;
         StandardMaterial.SpecularTextureEnabled = true;
         StandardMaterial.BumpTextureEnabled = true;
         StandardMaterial.FresnelEnabled = true;
+        StandardMaterial.LightmapEnabled = true;
         return StandardMaterial;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.standardMaterial.js.map

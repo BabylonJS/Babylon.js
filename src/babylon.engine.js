@@ -617,7 +617,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.2.0-alpha";
+                return "2.3.0-alpha";
             },
             enumerable: true,
             configurable: true
@@ -1202,12 +1202,15 @@ var BABYLON;
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         };
         // States
-        Engine.prototype.setState = function (culling, zOffset, force) {
+        Engine.prototype.setState = function (culling, zOffset, force, reverseSide) {
             if (zOffset === void 0) { zOffset = 0; }
+            if (reverseSide === void 0) { reverseSide = false; }
             // Culling        
             if (this._depthCullingState.cull !== culling || force) {
                 if (culling) {
-                    this._depthCullingState.cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+                    var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
+                    var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
+                    this._depthCullingState.cullFace = this.cullBackFaces ? showSide : hideSide;
                     this._depthCullingState.cull = true;
                 }
                 else {
@@ -1415,7 +1418,8 @@ var BABYLON;
             }
             return texture;
         };
-        Engine.prototype.updateRawTexture = function (texture, data, format, invertY) {
+        Engine.prototype.updateRawTexture = function (texture, data, format, invertY, compression) {
+            if (compression === void 0) { compression = null; }
             var internalFormat = this._gl.RGBA;
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
@@ -1436,7 +1440,12 @@ var BABYLON;
             }
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture._width, texture._height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            if (compression) {
+                this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
+            }
+            else {
+                this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, texture._width, texture._height, 0, internalFormat, this._gl.UNSIGNED_BYTE, data);
+            }
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
@@ -1444,14 +1453,15 @@ var BABYLON;
             this._activeTexturesCache = [];
             texture.isReady = true;
         };
-        Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode) {
+        Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode, compression) {
+            if (compression === void 0) { compression = null; }
             var texture = this._gl.createTexture();
             texture._baseWidth = width;
             texture._baseHeight = height;
             texture._width = width;
             texture._height = height;
             texture.references = 1;
-            this.updateRawTexture(texture, data, format, invertY);
+            this.updateRawTexture(texture, data, format, invertY, compression);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
@@ -1803,7 +1813,7 @@ var BABYLON;
         };
         Engine.prototype.readPixels = function (x, y, width, height) {
             var data = new Uint8Array(height * width * 4);
-            this._gl.readPixels(0, 0, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
+            this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
         };
         // Dispose
@@ -2003,7 +2013,7 @@ var BABYLON;
         Engine._TEXTUREFORMAT_LUMINANCE = 1;
         Engine._TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         Engine._TEXTUREFORMAT_RGB = 4;
-        Engine._TEXTUREFORMAT_RGBA = 4;
+        Engine._TEXTUREFORMAT_RGBA = 5;
         Engine._TEXTURETYPE_UNSIGNED_INT = 0;
         Engine._TEXTURETYPE_FLOAT = 1;
         // Updatable statics so stick with vars here
@@ -2015,4 +2025,3 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.engine.js.map

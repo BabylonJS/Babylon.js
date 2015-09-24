@@ -197,7 +197,7 @@ namespace Max2Babylon
                         babylonScene.fogColor = fog.GetColor(0).ToArray();
                         babylonScene.fogMode = 3;
                     }
-#if !MAX2015
+#if !MAX2015 && !MAX2016
                     else
                     {
                         var paramBlock = atmospheric.GetReference(0) as IIParamBlock;

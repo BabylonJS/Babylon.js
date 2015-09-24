@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -146,7 +145,9 @@ var BABYLON;
         // colors shifting and distortion
         LensRenderingPipeline.prototype._createChromaticAberrationPostProcess = function (ratio) {
             var _this = this;
-            this._chromaticAberrationPostProcess = new BABYLON.PostProcess("LensChromaticAberration", "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._chromaticAberrationPostProcess = new BABYLON.PostProcess("LensChromaticAberration", "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height"], // uniforms
+            [], // samplers
+            ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._chromaticAberrationPostProcess.onApply = function (effect) {
                 effect.setFloat('chromatic_aberration', _this._chromaticAberration);
                 effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
@@ -156,7 +157,9 @@ var BABYLON;
         // highlights enhancing
         LensRenderingPipeline.prototype._createHighlightsPostProcess = function (ratio) {
             var _this = this;
-            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["pentagon", "gain", "threshold", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["pentagon", "gain", "threshold", "screen_width", "screen_height"], // uniforms
+            [], // samplers
+            ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._highlightsPostProcess.onApply = function (effect) {
                 effect.setFloat('gain', _this._highlightsGain);
                 effect.setFloat('threshold', _this._highlightsThreshold);
@@ -217,4 +220,3 @@ var BABYLON;
     })(BABYLON.PostProcessRenderPipeline);
     BABYLON.LensRenderingPipeline = LensRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.lensRenderingPipeline.js.map

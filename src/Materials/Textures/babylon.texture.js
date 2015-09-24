@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -72,14 +71,14 @@ var BABYLON;
             this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         };
         Texture.prototype._prepareRowForTextureGeneration = function (x, y, z, t) {
-            x -= this.uOffset + 0.5;
-            y -= this.vOffset + 0.5;
+            x *= this.uScale;
+            y *= this.vScale;
+            x -= 0.5 * this.uScale;
+            y -= 0.5 * this.vScale;
             z -= 0.5;
             BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix, t);
-            t.x *= this.uScale;
-            t.y *= this.vScale;
-            t.x += 0.5;
-            t.y += 0.5;
+            t.x += 0.5 * this.uScale + this.uOffset;
+            t.y += 0.5 * this.vScale + this.vOffset;
             t.z += 0.5;
         };
         Texture.prototype.getTextureMatrix = function () {
@@ -212,4 +211,3 @@ var BABYLON;
     })(BABYLON.BaseTexture);
     BABYLON.Texture = Texture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.texture.js.map
