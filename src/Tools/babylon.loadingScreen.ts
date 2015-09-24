@@ -3,6 +3,10 @@ module BABYLON {
 	export interface ILoadingScreen {
 		displayLoadingUI : () => void;
 		hideLoadingUI : () => void;
+        //default loader support
+        loadingUIBackgroundColor : string;
+        loadingUIText : string;
+                
 	}
 	
 	export class DefaultLoadingScreen implements ILoadingScreen {
