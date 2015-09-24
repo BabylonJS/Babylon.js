@@ -107,17 +107,17 @@
         }
 
         private _prepareRowForTextureGeneration(x: number, y: number, z: number, t: Vector3): void {
-            x -= this.uOffset + 0.5;
-            y -= this.vOffset + 0.5;
+            x *= this.uScale;
+            y *= this.vScale;
+
+            x -= 0.5 * this.uScale;
+            y -= 0.5 * this.vScale;
             z -= 0.5;
 
             Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix, t);
 
-            t.x *= this.uScale;
-            t.y *= this.vScale;
-
-            t.x += 0.5;
-            t.y += 0.5;
+            t.x += 0.5 * this.uScale + this.uOffset;
+            t.y += 0.5 * this.vScale + this.vOffset;
             t.z += 0.5;
         }
 
