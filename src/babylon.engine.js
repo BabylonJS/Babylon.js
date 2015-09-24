@@ -1206,11 +1206,12 @@ var BABYLON;
             if (zOffset === void 0) { zOffset = 0; }
             if (reverseSide === void 0) { reverseSide = false; }
             // Culling        
-            if (this._depthCullingState.cull !== culling || force) {
+            var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
+            var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
+            var cullFace = this.cullBackFaces ? showSide : hideSide;
+            if (this._depthCullingState.cull !== culling || force || this._depthCullingState.cullFace != cullFace) {
                 if (culling) {
-                    var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
-                    var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
-                    this._depthCullingState.cullFace = this.cullBackFaces ? showSide : hideSide;
+                    this._depthCullingState.cullFace = cullFace;
                     this._depthCullingState.cull = true;
                 }
                 else {
@@ -2025,3 +2026,4 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.engine.js.map
