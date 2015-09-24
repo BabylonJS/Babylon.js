@@ -50,7 +50,10 @@ gulp.task('typescript-compile', function() {
                     target: 'ES5', 
                     declarationFiles: true,
                     typescript: require('typescript')
-                }));
+                })).on('error', function(error) {
+                    console.log('Typescript compile failed');
+                    process.exit(1);
+                });
     return merge2([
         tsResult.dts
             .pipe(concat(config.build.declarationFilename))
