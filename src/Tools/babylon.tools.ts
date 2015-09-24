@@ -1,4 +1,4 @@
-﻿module BABYLON {
+﻿﻿module BABYLON {
     export interface IAnimatable {
         animations: Array<Animation>;
     }
@@ -494,7 +494,7 @@
             // Copy the pixels to a 2D canvas
             var imageData = context.createImageData(width, height);
             //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
-            var castData = <Uint8Array> (<any> imageData.data);
+            var castData = <Uint8Array>(<any>imageData.data);
             castData.set(data);
             context.putImageData(imageData, 0, 0);
 
@@ -563,11 +563,11 @@
                 Tools.Error("Invalid 'size' parameter !");
                 return;
             }
-			
-			var scene = camera.getScene();
+
+            var scene = camera.getScene();
             var previousCamera: Camera = null;
-			
-			if (scene.activeCamera !== camera) {
+
+            if (scene.activeCamera !== camera) {
                 previousCamera = scene.activeCamera;
                 scene.activeCamera = camera;
             }
