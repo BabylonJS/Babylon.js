@@ -10,7 +10,7 @@ module BABYLON {
 		private _loadingDiv: HTMLDivElement;
         private _loadingTextDiv: HTMLDivElement;
 		
-		constructor(private _loadingText = "", private _loadingDivBackgroundColor = "black") {
+		constructor(private _renderingCanvas : HTMLCanvasElement, private _loadingText = "", private _loadingDivBackgroundColor = "black") {
 			
 		}
 		
@@ -109,7 +109,7 @@ module BABYLON {
             this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
         }	
 
-		ublic set loadingUIText(text: string) {
+		public set loadingUIText(text: string) {
             this._loadingText = text;
 			
 			if (this._loadingTextDiv) {
@@ -133,7 +133,7 @@ module BABYLON {
 
 		// Resize
 		private _resizeLoadingUI = () => {
-			var canvasRect = this.getRenderingCanvasClientRect();
+			var canvasRect = this._renderingCanvas.getBoundingClientRect();
 			this._loadingDiv.style.position = "absolute";
 			this._loadingDiv.style.left = canvasRect.left + "px";
 			this._loadingDiv.style.top = canvasRect.top + "px";
