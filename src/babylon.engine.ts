@@ -2215,8 +2215,16 @@
             return this._loadingScreen;
         }
 
-        public set loadingUIBackgroundColor(loadingScreen: ILoadingScreen) {
+        public set loadingScreen(loadingScreen: ILoadingScreen) {
             this._loadingScreen = loadingScreen;
+        }
+        
+        public set loadingUIText(text: string) {
+            this._loadingScreen.loadingUIText = text;
+        }
+
+        public set loadingUIBackgroundColor(color: string) {
+            this._loadingScreen.loadingUIBackgroundColor = color;
         }
 
         // FPS

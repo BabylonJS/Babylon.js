@@ -1862,12 +1862,22 @@ var BABYLON;
             get: function () {
                 return this._loadingScreen;
             },
+            set: function (loadingScreen) {
+                this._loadingScreen = loadingScreen;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "loadingUIText", {
+            set: function (text) {
+                this._loadingScreen.loadingUIText = text;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Engine.prototype, "loadingUIBackgroundColor", {
-            set: function (loadingScreen) {
-                this._loadingScreen = loadingScreen;
+            set: function (color) {
+                this._loadingScreen.loadingUIBackgroundColor = color;
             },
             enumerable: true,
             configurable: true
