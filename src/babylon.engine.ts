@@ -690,6 +690,9 @@
             if (!Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
             }
+			
+			//default loading screen
+			this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
@@ -2202,18 +2205,6 @@
 
         public displayLoadingUI(): void {
             this._loadingScreen.displayLoadingUI();
-        }
-
-        public set loadingUIText(text: string) {
-            this._loadingScreen.loadingUIText = text;
-        }
-
-        public get loadingUIBackgroundColor(): string {
-            return this._loadingScreen.loadingUIBackgroundColor;
-        }
-
-        public set loadingUIBackgroundColor(color: string) {
-            this._loadingScreen.loadingUIBackgroundColor = color;
         }
 
         public hideLoadingUI(): void {
