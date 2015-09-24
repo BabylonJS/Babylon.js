@@ -6311,11 +6311,12 @@ var BABYLON;
             if (zOffset === void 0) { zOffset = 0; }
             if (reverseSide === void 0) { reverseSide = false; }
             // Culling        
-            if (this._depthCullingState.cull !== culling || force) {
+            var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
+            var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
+            var cullFace = this.cullBackFaces ? showSide : hideSide;
+            if (this._depthCullingState.cull !== culling || force || this._depthCullingState.cullFace != cullFace) {
                 if (culling) {
-                    var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
-                    var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
-                    this._depthCullingState.cullFace = this.cullBackFaces ? showSide : hideSide;
+                    this._depthCullingState.cullFace = cullFace;
                     this._depthCullingState.cull = true;
                 }
                 else {
@@ -7835,6 +7836,7 @@ var BABYLON;
             this.useVertexColors = true;
             this.applyFog = true;
             this.computeBonesUsingShaders = true;
+            this.scalingDeterminant = 1;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;
@@ -8211,7 +8213,7 @@ var BABYLON;
             this._currentRenderId = this.getScene().getRenderId();
             this._isDirty = false;
             // Scaling
-            BABYLON.Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
+            BABYLON.Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, this._localScaling);
             // Rotation
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(this._localRotation);
@@ -8333,8 +8335,14 @@ var BABYLON;
         AbstractMesh.prototype.attachToBone = function (bone, affectedMesh) {
             this._meshToBoneReferal = affectedMesh;
             this.parent = bone;
+            if (bone.getWorldMatrix().determinant() < 0) {
+                this.scalingDeterminant *= -1;
+            }
         };
         AbstractMesh.prototype.detachFromBone = function () {
+            if (this.parent.getWorldMatrix().determinant() < 0) {
+                this.scalingDeterminant *= -1;
+            }
             this._meshToBoneReferal = null;
             this.parent = null;
         };

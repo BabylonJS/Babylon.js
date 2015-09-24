@@ -62,4 +62,3 @@ var BABYLON;
     })(BABYLON.Action);
     BABYLON.InterpolateValueAction = InterpolateValueAction;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.interpolateValueAction.js.map

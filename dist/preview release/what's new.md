@@ -6,5 +6,6 @@
   - **Bug fixes**
     - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
     - Fixed Sphere texture coordinates generation ([deltakosh](https://github.com/deltakosh))
+    - Fixed bug with `Mesh.attachToBone` when bone's matrix has a negative determinant ([deltakosh](https://github.com/deltakosh))
   - **Breaking changes**
 
