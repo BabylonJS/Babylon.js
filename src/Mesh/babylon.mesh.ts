@@ -1376,18 +1376,27 @@
         }
 
         // Cylinder and cone
-        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-            // subdivisions is a new parameter, we need to support old signature
-            if (scene === undefined || !(scene instanceof Scene)) {
-                if (scene !== undefined) {
-                    updatable = scene;
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateCylinder(name: string, options: {height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, updatable?: boolean}, scene: any): Mesh
+        public static CreateCylinder(name: string, options: any, diameterTopOrScene: any, diameterBottom?: number, tessellation?: number, subdivisions?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        
+            if (diameterTopOrScene instanceof Scene ) {
+                scene = diameterTopOrScene;
+                updatable = options.updatable;
+            } else {
+                var height = options;
+                options = {
+                    height: height,
+                    diameterTop: diameterTopOrScene,
+                    diameterBottom: diameterBottom,
+                    tessellation: tessellation,
+                    subdivisions: subdivisions,
+                    sideOrientation: sideOrientation
                 }
-                scene = <Scene>subdivisions;
-                subdivisions = 1;
-            }
 
+            }
             var cylinder = new Mesh(name, scene);
-            var vertexData = VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation);
+            var vertexData = VertexData.CreateCylinder(options);
 
             vertexData.applyToMesh(cylinder, updatable);
 
