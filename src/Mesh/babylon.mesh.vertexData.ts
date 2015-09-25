@@ -788,7 +788,7 @@
             var subdivisions: number;
 
             if (options.height) {
-                height = options.height;
+                height = options.height || 3;
                 diameterTop = options.diameterTop || 1;
                 diameterBottom = options.diameterBottom || 1;
                 tessellation = options.tessellation || 24;
