@@ -777,8 +777,31 @@
             return vertexData;
         }
 
-        // Cylinder and cone (made using ribbons)
-        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        // Cylinder and cone 
+        public static CreateCylinder(options: {height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number}): VertexData;
+        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, sideOrientation?: number): VertexData;
+        public static CreateCylinder(options: any, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+            var height: number;
+            var diameterTop: number;
+            var diameterBottom: number;
+            var tessellation: number;
+            var subdivisions: number;
+
+            if (options.height) {
+                height = options.height;
+                diameterTop = options.diameterTop || 1;
+                diameterBottom = options.diameterBottom || 1;
+                tessellation = options.tessellation || 24;
+                subdivisions = options.subdivisions || 1;
+            } else { // back compat
+                height = options || 3;
+                diameterTop = diameterTop || 1;
+                diameterBottom = diameterBottom || 1;
+                tessellation = tessellation || 24;
+                subdivisions = subdivisions || 1;
+            }
+
+            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var indices = [];
             var positions = [];
