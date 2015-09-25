@@ -787,7 +787,6 @@
         public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, sideOrientation?: number): VertexData;
         public static CreateCylinder(options: any, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
             var height = height || options.height || 3;
-            height = options.height || 3;
             diameterTop = diameterTop || options.diameterTop || 1;
             diameterBottom = diameterBottom || options.diameterBottom || 1;
             tessellation = tessellation || options.tessellation || 24;
