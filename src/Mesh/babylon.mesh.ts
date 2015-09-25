@@ -1246,14 +1246,37 @@
         }
 
         // Statics
-        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, ribbonInstance: Mesh = null): Mesh {
-            if (ribbonInstance) {   // existing ribbon instance update
+        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        public static CreateRibbon(name: string, options: {pathArray?: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh}, scene: Scene): Mesh;
+        public static CreateRibbon(name: string, options: any, closeArrayOrScene: any, closePath?: boolean, offset?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
+            var pathArray;
+            if (closeArrayOrScene instanceof Scene) {
+                scene = closeArrayOrScene;
+                updatable = options.updatable;
+                if (options.instance) { // instance case
+                    pathArray = options.pathArray;
+                    instance = options.instance;
+                    closePath = options.closePath;
+                    var closeArray = options.closeArray;
+                }
+            } else {
+                pathArray = options;
+                options = {
+                    pathArray: pathArray,
+                    closeArray: closeArrayOrScene,
+                    closePath: closePath,
+                    offset: offset,
+                    sideOrientation: sideOrientation,
+                }
+            }
+
+            if (instance) {   // existing ribbon instance update
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
                 var positionFunction = positions => {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (ribbonInstance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (instance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -1267,7 +1290,7 @@
                                 j++;
                                 i += 3;
                             }
-                            if ((<any>ribbonInstance)._closePath) {
+                            if ((<any>instance)._closePath) {
                                 positions[i] = path[0].x;
                                 positions[i + 1] = path[0].y;
                                 positions[i + 2] = path[0].z;
@@ -1276,21 +1299,21 @@
                         }
                     }
                 };
-                var positions = ribbonInstance.getVerticesData(VertexBuffer.PositionKind);
+                var positions = instance.getVerticesData(VertexBuffer.PositionKind);
                 positionFunction(positions);
-                ribbonInstance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
-                if (!(ribbonInstance.areNormalsFrozen)) {
-                    var indices = ribbonInstance.getIndices();
-                    var normals = ribbonInstance.getVerticesData(VertexBuffer.NormalKind);
+                instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
+                if (!(instance.areNormalsFrozen)) {
+                    var indices = instance.getIndices();
+                    var normals = instance.getVerticesData(VertexBuffer.NormalKind);
                     VertexData.ComputeNormals(positions, indices, normals);
 
-                    if ((<any>ribbonInstance)._closePath) {
+                    if ((<any>instance)._closePath) {
                         var indexFirst: number = 0;
                         var indexLast: number = 0;
                         for (var p = 0; p < pathArray.length; p++) {
-                            indexFirst = (<any>ribbonInstance)._idx[p] * 3;
+                            indexFirst = (<any>instance)._idx[p] * 3;
                             if (p + 1 < pathArray.length) {
-                                indexLast = ((<any>ribbonInstance)._idx[p + 1] - 1) * 3;
+                                indexLast = ((<any>instance)._idx[p + 1] - 1) * 3;
                             }
                             else {
                                 indexLast = normals.length - 3;
@@ -1304,17 +1327,17 @@
                         }
                     }
 
-                    ribbonInstance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
+                    instance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
                 }
 
-                return ribbonInstance;
+                return instance;
             }
             else {  // new ribbon creation
 
                 var ribbon = new Mesh(name, scene);
                 ribbon.sideOrientation = sideOrientation;
 
-                var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                var vertexData = VertexData.CreateRibbon(options);
                 if (closePath) {
                     (<any>ribbon)._idx = (<any>vertexData)._idx;
                 }
