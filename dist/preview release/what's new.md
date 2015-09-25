@@ -3,9 +3,11 @@
     - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.lightmapThreshold`. [Demo here](#NEEDDEMO) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New `Material.sideOrientation` property to define clockwise or counter-clockwise faces selection. [Demo here](http://www.babylonjs-playground.com/#1TZJQY) ([deltakosh](https://github.com/deltakosh))
+    - It is now possible to create a custom loading screen ([RaananW](https://github.com/RaananW))
   - **Bug fixes**
     - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
     - Fixed Sphere texture coordinates generation ([deltakosh](https://github.com/deltakosh))
     - Fixed bug with `Mesh.attachToBone` when bone's matrix has a negative determinant ([deltakosh](https://github.com/deltakosh))
+    - Fixed a possible but with the active camera while taking a screenshot ([RaananW](https://github.com/RaananW))
   - **Breaking changes**
 
