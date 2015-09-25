@@ -1377,7 +1377,7 @@
 
         // Cylinder and cone
         public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateCylinder(name: string, options: {height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, updatable?: boolean}, scene: any): Mesh
+        public static CreateCylinder(name: string, options: {height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, updatable?: boolean, sideOrientation?: number}, scene: any): Mesh
         public static CreateCylinder(name: string, options: any, diameterTopOrScene: any, diameterBottom?: number, tessellation?: number, subdivisions?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
         
             if (diameterTopOrScene instanceof Scene ) {
