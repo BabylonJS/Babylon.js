@@ -1062,17 +1062,37 @@ var BABYLON;
                 }
             });
         };
-        // Statics
-        Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation, ribbonInstance) {
+        Mesh.CreateRibbon = function (name, options, closeArrayOrScene, closePath, offset, scene, updatable, sideOrientation, instance) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            if (ribbonInstance === void 0) { ribbonInstance = null; }
-            if (ribbonInstance) {
+            if (instance === void 0) { instance = null; }
+            var pathArray;
+            if (closeArrayOrScene instanceof BABYLON.Scene) {
+                scene = closeArrayOrScene;
+                updatable = options.updatable;
+                if (options.instance) {
+                    pathArray = options.pathArray;
+                    instance = options.instance;
+                    closePath = options.closePath;
+                    var closeArray = options.closeArray;
+                }
+            }
+            else {
+                pathArray = options;
+                options = {
+                    pathArray: pathArray,
+                    closeArray: closeArrayOrScene,
+                    closePath: closePath,
+                    offset: offset,
+                    sideOrientation: sideOrientation,
+                };
+            }
+            if (instance) {
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
                 var positionFunction = function (positions) {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (ribbonInstance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (instance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -1086,7 +1106,7 @@ var BABYLON;
                                 j++;
                                 i += 3;
                             }
-                            if (ribbonInstance._closePath) {
+                            if (instance._closePath) {
                                 positions[i] = path[0].x;
                                 positions[i + 1] = path[0].y;
                                 positions[i + 2] = path[0].z;
@@ -1095,20 +1115,20 @@ var BABYLON;
                         }
                     }
                 };
-                var positions = ribbonInstance.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var positions = instance.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                 positionFunction(positions);
-                ribbonInstance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
-                if (!(ribbonInstance.areNormalsFrozen)) {
-                    var indices = ribbonInstance.getIndices();
-                    var normals = ribbonInstance.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                instance.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false, false);
+                if (!(instance.areNormalsFrozen)) {
+                    var indices = instance.getIndices();
+                    var normals = instance.getVerticesData(BABYLON.VertexBuffer.NormalKind);
                     BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-                    if (ribbonInstance._closePath) {
+                    if (instance._closePath) {
                         var indexFirst = 0;
                         var indexLast = 0;
                         for (var p = 0; p < pathArray.length; p++) {
-                            indexFirst = ribbonInstance._idx[p] * 3;
+                            indexFirst = instance._idx[p] * 3;
                             if (p + 1 < pathArray.length) {
-                                indexLast = (ribbonInstance._idx[p + 1] - 1) * 3;
+                                indexLast = (instance._idx[p + 1] - 1) * 3;
                             }
                             else {
                                 indexLast = normals.length - 3;
@@ -1121,14 +1141,14 @@ var BABYLON;
                             normals[indexLast + 2] = normals[indexFirst + 2];
                         }
                     }
-                    ribbonInstance.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
+                    instance.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false, false);
                 }
-                return ribbonInstance;
+                return instance;
             }
             else {
                 var ribbon = new Mesh(name, scene);
                 ribbon.sideOrientation = sideOrientation;
-                var vertexData = BABYLON.VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                var vertexData = BABYLON.VertexData.CreateRibbon(options);
                 if (closePath) {
                     ribbon._idx = vertexData._idx;
                 }
@@ -1174,19 +1194,25 @@ var BABYLON;
             vertexData.applyToMesh(sphere, updatable);
             return sphere;
         };
-        // Cylinder and cone
-        Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable, sideOrientation) {
+        Mesh.CreateCylinder = function (name, options, diameterTopOrScene, diameterBottom, tessellation, subdivisions, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            // subdivisions is a new parameter, we need to support old signature
-            if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
-                if (scene !== undefined) {
-                    updatable = scene;
-                }
-                scene = subdivisions;
-                subdivisions = 1;
+            if (diameterTopOrScene instanceof BABYLON.Scene) {
+                scene = diameterTopOrScene;
+                updatable = options.updatable;
+            }
+            else {
+                var height = options;
+                options = {
+                    height: height,
+                    diameterTop: diameterTopOrScene,
+                    diameterBottom: diameterBottom,
+                    tessellation: tessellation,
+                    subdivisions: subdivisions,
+                    sideOrientation: sideOrientation
+                };
             }
             var cylinder = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation);
+            var vertexData = BABYLON.VertexData.CreateCylinder(options);
             vertexData.applyToMesh(cylinder, updatable);
             return cylinder;
         };

@@ -297,13 +297,15 @@ var BABYLON;
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
             return result;
         };
-        VertexData.CreateRibbon = function (pathArray, closeArray, closePath, offset, sideOrientation) {
+        VertexData.CreateRibbon = function (options, closeArray, closePath, offset, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
-            closeArray = closeArray || false;
-            closePath = closePath || false;
+            var pathArray = pathArray || options.pathArray;
+            closeArray = closeArray || options.closeArray || false;
+            closePath = closePath || options.closePath || false;
             var defaultOffset = Math.floor(pathArray[0].length / 2);
-            offset = offset || defaultOffset;
+            offset = offset || options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
+            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var positions = [];
             var indices = [];
             var normals = [];
@@ -635,10 +637,14 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        // Cylinder and cone (made using ribbons)
-        VertexData.CreateCylinder = function (height, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation) {
-            if (subdivisions === void 0) { subdivisions = 1; }
+        VertexData.CreateCylinder = function (options, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
+            var height = height || options.height || 3;
+            diameterTop = diameterTop || options.diameterTop || 1;
+            diameterBottom = diameterBottom || options.diameterBottom || 1;
+            tessellation = tessellation || options.tessellation || 24;
+            subdivisions = subdivisions || options.subdivisions || 1;
+            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var indices = [];
             var positions = [];
             var normals = [];
