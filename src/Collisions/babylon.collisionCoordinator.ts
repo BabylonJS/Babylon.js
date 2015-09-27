@@ -158,7 +158,7 @@ module BABYLON {
             if (mesh instanceof Mesh) {
                 geometryId = (<Mesh>mesh).geometry ? (<Mesh>mesh).geometry.id : null;
             } else if (mesh instanceof InstancedMesh) {
-                geometryId = (<InstancedMesh>mesh).sourceMesh.geometry ? (<InstancedMesh>mesh).sourceMesh.geometry.id : null;
+                geometryId = ((<InstancedMesh>mesh).sourceMesh && (<InstancedMesh>mesh).sourceMesh.geometry) ? (<InstancedMesh>mesh).sourceMesh.geometry.id : null;
             }
 
             return {
