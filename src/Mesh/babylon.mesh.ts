@@ -1005,7 +1005,7 @@
 
                 // Create VertexData from map data
                 //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-                var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
+                var buffer = <Uint8Array>(<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
 
                 this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
                 //execute success callback, if set
@@ -1247,7 +1247,7 @@
 
         // Statics
         public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        public static CreateRibbon(name: string, options: {pathArray?: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh}, scene: Scene): Mesh;
+        public static CreateRibbon(name: string, options: { pathArray?: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
         public static CreateRibbon(name: string, options: any, closeArrayOrScene: any, closePath?: boolean, offset?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
             var pathArray;
             if (closeArrayOrScene instanceof Scene) {
@@ -1359,7 +1359,7 @@
         }
 
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateBox(name: string, options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean}, scene: Scene): Mesh;
+        public static CreateBox(name: string, options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh;
         public static CreateBox(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // Check parameters
             updatable = updatable || options.updatable;
@@ -1373,7 +1373,7 @@
         }
 
         public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateSphere(name: string, options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number, updatable?: boolean}, scene: any): Mesh;
+        public static CreateSphere(name: string, options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number, updatable?: boolean }, scene: any): Mesh;
         public static CreateSphere(name: string, options: any, diameterOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             if (diameterOrScene instanceof Scene) {
                 scene = diameterOrScene;
@@ -1399,14 +1399,22 @@
         }
 
         // Cylinder and cone
-        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateCylinder(name: string, options: {height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, updatable?: boolean, sideOrientation?: number}, scene: any): Mesh
-        public static CreateCylinder(name: string, options: any, diameterTopOrScene: any, diameterBottom?: number, tessellation?: number, subdivisions?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-        
-            if (diameterTopOrScene instanceof Scene ) {
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh;
+        public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, updatable?: boolean, sideOrientation?: number }, scene: any): Mesh;
+        public static CreateCylinder(name: string, options: any, diameterTopOrScene: any, diameterBottom?: number, tessellation?: number, subdivisions?: any, scene?: Scene, updatable?: any, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+
+            if (diameterTopOrScene instanceof Scene) {
                 scene = diameterTopOrScene;
                 updatable = options.updatable;
             } else {
+                if (scene === undefined || !(scene instanceof Scene)) {
+                    if (scene !== undefined) {
+                        sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                        updatable = scene;
+                    }
+                    scene = <Scene>subdivisions;
+                    subdivisions = 1;
+                }
                 var height = options;
                 options = {
                     height: height,
@@ -1582,20 +1590,20 @@
                     return pointCap;
                 };
                 switch (cap) {
-                case Mesh.NO_CAP:
-                    break;
-                case Mesh.CAP_START:
-                    shapePaths.unshift(capPath(shapePaths[0]));
-                    break;
-                case Mesh.CAP_END:
-                    shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
-                    break;
-                case Mesh.CAP_ALL:
-                    shapePaths.unshift(capPath(shapePaths[0]));
-                    shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
-                    break;
-                default:
-                    break;
+                    case Mesh.NO_CAP:
+                        break;
+                    case Mesh.CAP_START:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        break;
+                    case Mesh.CAP_END:
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    case Mesh.CAP_ALL:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    default:
+                        break;
                 }
                 return shapePaths;
             };
@@ -1657,7 +1665,7 @@
 
         // Plane & ground
         public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreatePlane(name: string, options: { width?: number, height?: number, sideOrientation?: number, updatable?: boolean}, scene: Scene): Mesh;
+        public static CreatePlane(name: string, options: { width?: number, height?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh;
         public static CreatePlane(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var plane = new Mesh(name, scene);
 
@@ -1726,7 +1734,7 @@
 
                 // Create VertexData from map data
                 // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-                var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
+                var buffer = <Uint8Array>(<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
                 var vertexData = VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
 
                 vertexData.applyToMesh(ground, updatable);
@@ -1783,20 +1791,20 @@
                     return pointCap;
                 };
                 switch (cap) {
-                case Mesh.NO_CAP:
-                    break;
-                case Mesh.CAP_START:
-                    circlePaths.unshift(capPath(tessellation + 1, 0));
-                    break;
-                case Mesh.CAP_END:
-                    circlePaths.push(capPath(tessellation + 1, path.length - 1));
-                    break;
-                case Mesh.CAP_ALL:
-                    circlePaths.unshift(capPath(tessellation + 1, 0));
-                    circlePaths.push(capPath(tessellation + 1, path.length - 1));
-                    break;
-                default:
-                    break;
+                    case Mesh.NO_CAP:
+                        break;
+                    case Mesh.CAP_START:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        break;
+                    case Mesh.CAP_END:
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    case Mesh.CAP_ALL:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    default:
+                        break;
                 }
                 return circlePaths;
             };
@@ -1883,7 +1891,7 @@
                     return new PositionNormalVertex(
                         Vector3.Lerp(v0.position, v1.position, clipFactor),
                         Vector3.Lerp(v0.normal, v1.normal, clipFactor)
-                        );
+                    );
                 };
                 var result = new Array<PositionNormalVertex>();
 
@@ -2081,13 +2089,13 @@
                 var matricesWeight1 = matricesWeightsData[index4 + 1];
                 var matricesWeight2 = matricesWeightsData[index4 + 2];
                 var matricesWeight3 = matricesWeightsData[index4 + 3];
-                
+
                 if (matricesWeight0 > 0) {
                     Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4] * 16, matricesWeight0, tempMatrix);
                     finalMatrix.addToSelf(tempMatrix);
                 }
 
-                if (matricesWeight1> 0) {
+                if (matricesWeight1 > 0) {
                     Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 1] * 16, matricesWeight1, tempMatrix);
                     finalMatrix.addToSelf(tempMatrix);
                 }
@@ -2211,5 +2219,6 @@
         }
     }
 }
+
 
 

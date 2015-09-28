@@ -638,13 +638,22 @@ var BABYLON;
             return vertexData;
         };
         VertexData.CreateCylinder = function (options, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
             var height = height || options.height || 3;
-            diameterTop = diameterTop || options.diameterTop || 1;
+            if (diameterTop === 0 || options.diameterTop === 0) {
+                diameterTop = 0;
+            }
+            else {
+                diameterTop = diameterTop || options.diameterTop || 1;
+            }
             diameterBottom = diameterBottom || options.diameterBottom || 1;
             tessellation = tessellation || options.tessellation || 24;
             subdivisions = subdivisions || options.subdivisions || 1;
-            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            if (sideOrientation === 0 || options.sideOrientation === 0) {
+                sideOrientation = 0;
+            }
+            else {
+                sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            }
             var indices = [];
             var positions = [];
             var normals = [];

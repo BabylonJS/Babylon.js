@@ -1201,6 +1201,14 @@ var BABYLON;
                 updatable = options.updatable;
             }
             else {
+                if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
+                    if (scene !== undefined) {
+                        sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                        updatable = scene;
+                    }
+                    scene = subdivisions;
+                    subdivisions = 1;
+                }
                 var height = options;
                 options = {
                     height: height,
