@@ -36,7 +36,7 @@ BABYLON.SceneLoader.Load("./", "duck.gltf", engine, function (scene) {
 ## Unsupported features
 * ImportMesh function
 * Skinning
-    * Bones
+    * Bones animations
 
 ## To improve
 * Bones import
