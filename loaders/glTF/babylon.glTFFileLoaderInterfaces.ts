@@ -53,6 +53,8 @@
         node?: string;
         value?: number|boolean|string|Array<any>;
         source?: string;
+
+        babylonValue?: any;
     }
 
     export interface IGLTFTechniquePassCommonProfile {
@@ -69,9 +71,15 @@
         uniforms: Object;
     }
 
+    export interface IGLTFTechniquePassStatesFunctions {
+        blendColor?: number[];
+        blendEquationSeparate?: number[];
+        blendFuncSeparate?: number[];
+    }
+
     export interface IGLTFTechniquePassStates {
         enable: number[];
-        functions: Object;
+        functions: IGLTFTechniquePassStatesFunctions;
     }
 
     export interface IGLTFTechniquePassDetails {
@@ -82,7 +90,7 @@
     export interface IGLTFTechniquePass {
         details: IGLTFTechniquePassDetails;
         instanceProgram: IGLTFTechniquePassInstanceProgram;
-        states: Object;
+        states: IGLTFTechniquePassStates;
     }
 
     export interface IGLTFTechnique extends IGLTFChildRootProperty {
@@ -132,6 +140,9 @@
         internalFormat?: ETextureFormat;
         target?: number;
         type?: number;
+        
+        // Babylon.js values (optimize)
+        babylonTexture?: Texture;
     }
 
     export interface IGLTFAmbienLight {
@@ -222,6 +233,7 @@
         jointName?: string;
         light?: string;
         matrix: number[];
+        mesh?: string;
         meshes?: string[];
         rotation?: number[];
         scale?: number[];
@@ -254,13 +266,15 @@
         skins: Object;
         currentScene: Object;
 
-        buffersCount: number,
-        shaderscount: number,
+        buffersCount: number;
+        shaderscount: number;
 
         scene: Scene;
         rootUrl: string;
         loadedBuffers: number;
         loadedShaders: number;
         arrayBuffers: Object;
+
+        dummyNodes: Node[];
     }
 }
