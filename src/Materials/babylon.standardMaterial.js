@@ -14,6 +14,11 @@ var BABYLON;
             this.bias = 0;
             this.power = 1;
         }
+        FresnelParameters.prototype.clone = function () {
+            var newFresnelParameters = new FresnelParameters();
+            BABYLON.Tools.DeepCopy(this, newFresnelParameters);
+            return new FresnelParameters;
+        };
         return FresnelParameters;
     })();
     BABYLON.FresnelParameters = FresnelParameters;
@@ -139,7 +144,6 @@ var BABYLON;
             this.useEmissiveAsIllumination = false;
             this.useReflectionFresnelFromSpecular = false;
             this.useSpecularOverAlpha = true;
-            this.fogEnabled = true;
             this.roughness = 0;
             this.lightmapThreshold = 0;
             this.useGlossinessFromSpecularMapAlpha = false;
@@ -749,10 +753,7 @@ var BABYLON;
         StandardMaterial.prototype.clone = function (name) {
             var newStandardMaterial = new StandardMaterial(name, this.getScene());
             // Base material
-            newStandardMaterial.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
-            newStandardMaterial.alpha = this.alpha;
-            newStandardMaterial.fillMode = this.fillMode;
-            newStandardMaterial.backFaceCulling = this.backFaceCulling;
+            this.copyTo(newStandardMaterial);
             // Standard material
             if (this.diffuseTexture && this.diffuseTexture.clone) {
                 newStandardMaterial.diffuseTexture = this.diffuseTexture.clone();
@@ -775,11 +776,26 @@ var BABYLON;
             if (this.bumpTexture && this.bumpTexture.clone) {
                 newStandardMaterial.bumpTexture = this.bumpTexture.clone();
             }
+            if (this.lightmapTexture && this.lightmapTexture.clone) {
+                newStandardMaterial.bumpTexture = this.bumpTexture.clone();
+                newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
+                newStandardMaterial.lightmapThreshold = this.lightmapThreshold;
+            }
             newStandardMaterial.ambientColor = this.ambientColor.clone();
             newStandardMaterial.diffuseColor = this.diffuseColor.clone();
             newStandardMaterial.specularColor = this.specularColor.clone();
             newStandardMaterial.specularPower = this.specularPower;
             newStandardMaterial.emissiveColor = this.emissiveColor.clone();
+            newStandardMaterial.useAlphaFromDiffuseTexture = this.useAlphaFromDiffuseTexture;
+            newStandardMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
+            newStandardMaterial.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
+            newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
+            newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
+            newStandardMaterial.roughness = this.roughness;
+            newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
+            newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
+            newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
+            newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
             return newStandardMaterial;
         };
         // Statics
@@ -797,3 +813,4 @@ var BABYLON;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.standardMaterial.js.map

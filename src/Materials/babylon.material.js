@@ -11,6 +11,7 @@ var BABYLON;
             this.sideOrientation = Material.CounterClockWiseSideOrientation;
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this.disableDepthWrite = false;
+            this.fogEnabled = true;
             this._wasPreviouslyReady = false;
             this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;
@@ -147,6 +148,22 @@ var BABYLON;
                 this.onDispose();
             }
         };
+        Material.prototype.copyTo = function (other) {
+            other.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
+            other.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
+            other.alpha = this.alpha;
+            other.fillMode = this.fillMode;
+            other.backFaceCulling = this.backFaceCulling;
+            other.wireframe = this.wireframe;
+            other.fogEnabled = this.fogEnabled;
+            other.wireframe = this.wireframe;
+            other.zOffset = this.zOffset;
+            other.alphaMode = this.alphaMode;
+            other.sideOrientation = this.sideOrientation;
+            other.disableDepthWrite = this.disableDepthWrite;
+            other.pointSize = this.pointSize;
+            other.pointsCloud = this.pointsCloud;
+        };
         Material._TriangleFillMode = 0;
         Material._WireFrameFillMode = 1;
         Material._PointFillMode = 2;
@@ -156,3 +173,4 @@ var BABYLON;
     })();
     BABYLON.Material = Material;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.material.js.map
