@@ -785,14 +785,21 @@
         // Cylinder and cone 
         public static CreateCylinder(options: {height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number}): VertexData;
         public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, sideOrientation?: number): VertexData;
-        public static CreateCylinder(options: any, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateCylinder(options: any, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number): VertexData {
             var height = height || options.height || 3;
-            diameterTop = diameterTop || options.diameterTop || 1;
+            if (diameterTop === 0 || options.diameterTop === 0) {
+                diameterTop = 0;
+            } else {    
+                diameterTop = diameterTop || options.diameterTop || 1;
+            }
             diameterBottom = diameterBottom || options.diameterBottom || 1;
             tessellation = tessellation || options.tessellation || 24;
             subdivisions = subdivisions || options.subdivisions || 1;
-                
-            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
+            if (sideOrientation === 0 || options.sideOrientation === 0) {
+                sideOrientation = 0;
+            } else {
+                sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
+            }
 
             var indices = [];
             var positions = [];
