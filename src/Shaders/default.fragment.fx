@@ -824,11 +824,11 @@ void main(void) {
 
 	if (lightmapIllum > vLightmapInfos.z)
 	{
-		color.rgb += vec3(lightmapIllum, lightmapIllum, lightmapIllum);
+		color.rgb += lightmapColor;
 	}
 	else
 	{
-		color.rgb *= lightmapIllum;
+		color.rgb *= lightmapColor;
 	}
 #endif
 

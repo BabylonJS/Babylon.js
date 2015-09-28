@@ -76,3 +76,4 @@ var BABYLON;
     })();
     BABYLON.OutlineRenderer = OutlineRenderer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.outlineRenderer.js.map
