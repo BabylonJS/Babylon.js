@@ -22,6 +22,10 @@ module BABYLON {
         public addMesh(mesh: SerializedMesh) {
             this._meshes[mesh.uniqueId] = mesh;
         }
+		
+		public removeMesh(uniqueId: number) {
+            delete this._meshes[uniqueId];
+        }
 
         public getGeometry(id: string): SerializedGeometry {
             return this._geometries[id];
@@ -29,6 +33,10 @@ module BABYLON {
 
         public addGeometry(geometry: SerializedGeometry) {
             this._geometries[geometry.id] = geometry;
+        }
+		
+		public removeGeometry(id: string) {
+            delete this._geometries[id];
         }
     }
 
@@ -192,21 +200,36 @@ module BABYLON {
         }
 
         public onUpdate(payload: UpdatePayload) {
-            for (var id in payload.updatedGeometries) {
-                if (payload.updatedGeometries.hasOwnProperty(id)) {
-                    this._collisionCache.addGeometry(payload.updatedGeometries[id]);
-                }
-            }
-            for (var uniqueId in payload.updatedMeshes) {
-                if (payload.updatedMeshes.hasOwnProperty(uniqueId)) {
-                    this._collisionCache.addMesh(payload.updatedMeshes[uniqueId]);
-                }
-            }
-
-            var replay: WorkerReply = {
+			var replay: WorkerReply = {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.UPDATE
             }
+			
+			try {
+				for (var id in payload.updatedGeometries) {
+					if (payload.updatedGeometries.hasOwnProperty(id)) {
+						this._collisionCache.addGeometry(payload.updatedGeometries[id]);
+					}
+				}
+				for (var uniqueId in payload.updatedMeshes) {
+					if (payload.updatedMeshes.hasOwnProperty(uniqueId)) {
+						this._collisionCache.addMesh(payload.updatedMeshes[uniqueId]);
+					}
+				}
+				
+				payload.removedGeometries.forEach(function(id) {
+					this._collisionCache.removeGeometry(id);
+				});
+				
+				payload.removedMeshes.forEach(function(uniqueId) {
+					this._collisionCache.removeMesh(uniqueId);
+				});
+				
+			} catch(x) {
+				replay.error = WorkerReplyType.UNKNOWN_ERROR;
+			}
+
+            
             postMessage(replay, undefined);
         }
 
