@@ -217,11 +217,11 @@ module BABYLON {
 					}
 				}
 				
-				payload.removedGeometries.forEach(function(id) {
+				payload.removedGeometries.forEach((id) => {
 					this._collisionCache.removeGeometry(id);
 				});
 				
-				payload.removedMeshes.forEach(function(uniqueId) {
+				payload.removedMeshes.forEach((uniqueId) => {
 					this._collisionCache.removeMesh(uniqueId);
 				});
 				
