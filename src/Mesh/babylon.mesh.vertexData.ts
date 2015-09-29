@@ -381,17 +381,14 @@
             return result;
         }
 
-        public static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, sideOrientation?: number): VertexData;
-        public static CreateRibbon(options: { pathArray?: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData;
-        public static CreateRibbon(options: any, closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
-
-            var pathArray = pathArray || options.pathArray;
-            closeArray = closeArray || options.closeArray || false;
-            closePath = closePath || options.closePath || false;
-            var defaultOffset = Math.floor(pathArray[0].length / 2);
-            offset = offset || options.offset || defaultOffset;
+        public static CreateRibbon(options: { pathArray?: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData {
+            var pathArray:Vector3[][] = options.pathArray;
+            var closeArray: boolean = options.closeArray || false;
+            var closePath: boolean = options.closePath || false;
+            var defaultOffset: number = Math.floor(pathArray[0].length / 2);
+            var offset:number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
-            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation:number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var positions: number[] = [];
             var indices: number[] = [];
@@ -783,23 +780,13 @@
         }
 
         // Cylinder and cone 
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number }): VertexData;
-        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, sideOrientation?: number): VertexData;
-        public static CreateCylinder(options: any, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number): VertexData {
-            var height = height || options.height || 3;
-            if (diameterTop === 0 || options.diameterTop === 0) {
-                diameterTop = 0;
-            } else {
-                diameterTop = diameterTop || options.diameterTop || 1;
-            }
-            diameterBottom = diameterBottom || options.diameterBottom || 1;
-            tessellation = tessellation || options.tessellation || 24;
-            subdivisions = subdivisions || options.subdivisions || 1;
-            if (sideOrientation === 0 || options.sideOrientation === 0) {
-                sideOrientation = 0;
-            } else {
-                sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
-            }
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
+            var height: number = options.height || 3;
+            var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
+            var diameterBottom: number = options.diameterBottom || 1;
+            var tessellation:number =  options.tessellation || 24;
+            var subdivisions:number =  options.subdivisions || 1;
+            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var indices = [];
             var positions = [];
