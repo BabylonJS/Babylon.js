@@ -12,5 +12,6 @@
     - Fixed a bug with worker-collisions and instances [PR](https://github.com/BabylonJS/Babylon.js/pull/705) ([RaananW](https://github.com/RaananW))
     - Fixed a bug with removed meshes and geometries from the worker-cache [PR](https://github.com/BabylonJS/Babylon.js/pull/711) ([RaananW](https://github.com/RaananW))
   - **Breaking changes**
-    - `Mesh.CreateCylinder()` old signature (without _subdivisions_ parameter) deprecated ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateCylinder()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateRibbon()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
 
