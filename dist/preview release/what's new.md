@@ -11,5 +11,6 @@
     - Fixed a possible but with the active camera while taking a screenshot [PR](https://github.com/BabylonJS/Babylon.js/pull/701) ([RaananW](https://github.com/RaananW))
     - Fixed a bug with worker-collisions and instances [PR](https://github.com/BabylonJS/Babylon.js/pull/705) ([RaananW](https://github.com/RaananW))
   - **Breaking changes**
-    - `Mesh.CreateCylinder()` old signature (without _subdivisions_ parameter) deprecated ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateCylinder()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateRibbon()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
 
