@@ -783,23 +783,13 @@
         }
 
         // Cylinder and cone 
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number }): VertexData;
-        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number, sideOrientation?: number): VertexData;
-        public static CreateCylinder(options: any, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number): VertexData {
-            var height = height || options.height || 3;
-            if (diameterTop === 0 || options.diameterTop === 0) {
-                diameterTop = 0;
-            } else {
-                diameterTop = diameterTop || options.diameterTop || 1;
-            }
-            diameterBottom = diameterBottom || options.diameterBottom || 1;
-            tessellation = tessellation || options.tessellation || 24;
-            subdivisions = subdivisions || options.subdivisions || 1;
-            if (sideOrientation === 0 || options.sideOrientation === 0) {
-                sideOrientation = 0;
-            } else {
-                sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
-            }
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
+            var height: number = options.height || 3;
+            var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
+            var diameterBottom: number = options.diameterBottom || 1;
+            var tessellation:number =  options.tessellation || 24;
+            var subdivisions:number =  options.subdivisions || 1;
+            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var indices = [];
             var positions = [];
