@@ -632,7 +632,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.side);
+                return VertexData.CreateCylinder({height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
