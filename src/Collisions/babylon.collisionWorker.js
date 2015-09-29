@@ -19,11 +19,17 @@ var BABYLON;
         CollisionCache.prototype.addMesh = function (mesh) {
             this._meshes[mesh.uniqueId] = mesh;
         };
+        CollisionCache.prototype.removeMesh = function (uniqueId) {
+            delete this._meshes[uniqueId];
+        };
         CollisionCache.prototype.getGeometry = function (id) {
             return this._geometries[id];
         };
         CollisionCache.prototype.addGeometry = function (geometry) {
             this._geometries[geometry.id] = geometry;
+        };
+        CollisionCache.prototype.removeGeometry = function (id) {
+            delete this._geometries[id];
         };
         return CollisionCache;
     })();
@@ -156,20 +162,31 @@ var BABYLON;
             postMessage(reply, undefined);
         };
         CollisionDetectorTransferable.prototype.onUpdate = function (payload) {
-            for (var id in payload.updatedGeometries) {
-                if (payload.updatedGeometries.hasOwnProperty(id)) {
-                    this._collisionCache.addGeometry(payload.updatedGeometries[id]);
-                }
-            }
-            for (var uniqueId in payload.updatedMeshes) {
-                if (payload.updatedMeshes.hasOwnProperty(uniqueId)) {
-                    this._collisionCache.addMesh(payload.updatedMeshes[uniqueId]);
-                }
-            }
             var replay = {
                 error: BABYLON.WorkerReplyType.SUCCESS,
                 taskType: BABYLON.WorkerTaskType.UPDATE
             };
+            try {
+                for (var id in payload.updatedGeometries) {
+                    if (payload.updatedGeometries.hasOwnProperty(id)) {
+                        this._collisionCache.addGeometry(payload.updatedGeometries[id]);
+                    }
+                }
+                for (var uniqueId in payload.updatedMeshes) {
+                    if (payload.updatedMeshes.hasOwnProperty(uniqueId)) {
+                        this._collisionCache.addMesh(payload.updatedMeshes[uniqueId]);
+                    }
+                }
+                payload.removedGeometries.forEach(function (id) {
+                    this._collisionCache.removeGeometry(id);
+                });
+                payload.removedMeshes.forEach(function (uniqueId) {
+                    this._collisionCache.removeMesh(uniqueId);
+                });
+            }
+            catch (x) {
+                replay.error = BABYLON.WorkerReplyType.UNKNOWN_ERROR;
+            }
             postMessage(replay, undefined);
         };
         CollisionDetectorTransferable.prototype.onCollision = function (payload) {
@@ -227,4 +244,3 @@ var BABYLON;
         console.log("single worker init");
     }
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.collisionWorker.js.map
