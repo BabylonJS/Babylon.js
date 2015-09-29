@@ -812,9 +812,17 @@
         public static Zero(): Vector3 {
             return new Vector3(0, 0, 0);
         }
+        
+        public static One(): Vector3 {
+            return new Vector3(1.0, 1.0, 1.0);
+        }
 
         public static Up(): Vector3 {
             return new Vector3(0, 1.0, 0);
+        }
+        
+        public static Down(): Vector3 {
+            return new Vector3(0, -1.0, 0);
         }
 
         public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3 {
