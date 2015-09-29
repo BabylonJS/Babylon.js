@@ -162,6 +162,7 @@ var BABYLON;
             postMessage(reply, undefined);
         };
         CollisionDetectorTransferable.prototype.onUpdate = function (payload) {
+            var _this = this;
             var replay = {
                 error: BABYLON.WorkerReplyType.SUCCESS,
                 taskType: BABYLON.WorkerTaskType.UPDATE
@@ -178,10 +179,10 @@ var BABYLON;
                     }
                 }
                 payload.removedGeometries.forEach(function (id) {
-                    this._collisionCache.removeGeometry(id);
+                    _this._collisionCache.removeGeometry(id);
                 });
                 payload.removedMeshes.forEach(function (uniqueId) {
-                    this._collisionCache.removeMesh(uniqueId);
+                    _this._collisionCache.removeMesh(uniqueId);
                 });
             }
             catch (x) {
