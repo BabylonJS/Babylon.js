@@ -10,6 +10,7 @@
     - Fixed bug with `Mesh.attachToBone` when bone's matrix has a negative determinant ([deltakosh](https://github.com/deltakosh))
     - Fixed a possible but with the active camera while taking a screenshot [PR](https://github.com/BabylonJS/Babylon.js/pull/701) ([RaananW](https://github.com/RaananW))
     - Fixed a bug with worker-collisions and instances [PR](https://github.com/BabylonJS/Babylon.js/pull/705) ([RaananW](https://github.com/RaananW))
+    - Fixed a bug with removed meshes and geometries from the worker-cache [PR](https://github.com/BabylonJS/Babylon.js/pull/711) ([RaananW](https://github.com/RaananW))
   - **Breaking changes**
     - `Mesh.CreateCylinder()` old signature (without _subdivisions_ parameter) deprecated ([jerome](https://github.com/jbousquie))
 
