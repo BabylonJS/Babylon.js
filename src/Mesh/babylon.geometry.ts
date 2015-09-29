@@ -559,7 +559,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateRibbon(this.pathArray, this.closeArray, this.closePath, this.offset, this.side);
+                return VertexData.CreateRibbon({pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
