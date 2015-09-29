@@ -381,7 +381,7 @@
             return result;
         }
 
-        public static CreateRibbon(options: { pathArray?: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData {
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData {
             var pathArray:Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
