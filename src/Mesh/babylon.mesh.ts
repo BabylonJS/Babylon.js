@@ -1724,7 +1724,7 @@
         }
 
         public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh;
-        public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: any): Mesh;
+        public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, updatable?: boolean }, scene: any): Mesh;
         public static CreateGround(name: string, options: any, heightOrScene: any, subdivisions?: number, scene?: Scene, updatable?: boolean): Mesh {
             if (heightOrScene instanceof Scene) {
                 scene = heightOrScene;
