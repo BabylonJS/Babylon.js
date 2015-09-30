@@ -51,9 +51,10 @@ var BABYLON;
                 this.id = name + "." + source.id;
                 // Material
                 this.material = source.material;
+                var index;
                 if (!doNotCloneChildren) {
                     // Children
-                    for (var index = 0; index < scene.meshes.length; index++) {
+                    for (index = 0; index < scene.meshes.length; index++) {
                         var mesh = scene.meshes[index];
                         if (mesh.parent === source) {
                             // doNotCloneChildren is always going to be False
@@ -1083,7 +1084,7 @@ var BABYLON;
                     closeArray: closeArrayOrScene,
                     closePath: closePath,
                     offset: offset,
-                    sideOrientation: sideOrientation,
+                    sideOrientation: sideOrientation
                 };
             }
             if (instance) {
@@ -1168,8 +1169,15 @@ var BABYLON;
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             // Check parameters
             updatable = updatable || options.updatable;
+            if (typeof options === 'number') {
+                var size = options;
+                options = {
+                    size: size,
+                    sideOrientation: sideOrientation
+                };
+            }
             var box = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateBox(options, sideOrientation);
+            var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, updatable);
             return box;
         };
@@ -1224,18 +1232,44 @@ var BABYLON;
             vertexData.applyToMesh(cylinder, updatable);
             return cylinder;
         };
-        // Torus  (Code from SharpDX.org)
-        Mesh.CreateTorus = function (name, diameter, thickness, tessellation, scene, updatable, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+        Mesh.CreateTorus = function (name, options, thicknessOrScene, tessellation, scene, updatable, sideOrientation) {
+            if (thicknessOrScene instanceof BABYLON.Scene) {
+                scene = thicknessOrScene;
+                updatable = options.updatable;
+            }
+            else {
+                var diameter = options;
+                options = {
+                    diameter: diameter,
+                    thickness: thicknessOrScene,
+                    tessellation: tessellation,
+                    sideOrientation: sideOrientation
+                };
+            }
             var torus = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateTorus(diameter, thickness, tessellation, sideOrientation);
+            var vertexData = BABYLON.VertexData.CreateTorus(options);
             vertexData.applyToMesh(torus, updatable);
             return torus;
         };
-        Mesh.CreateTorusKnot = function (name, radius, tube, radialSegments, tubularSegments, p, q, scene, updatable, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+        Mesh.CreateTorusKnot = function (name, options, tubeOrScene, radialSegments, tubularSegments, p, q, scene, updatable, sideOrientation) {
+            if (tubeOrScene instanceof BABYLON.Scene) {
+                scene = tubeOrScene;
+                updatable = options.updatable;
+            }
+            else {
+                var radius = options;
+                options = {
+                    radius: radius,
+                    tube: tubeOrScene,
+                    radialSegments: radialSegments,
+                    tubularSegments: tubularSegments,
+                    p: p,
+                    q: q,
+                    sideOrientation: sideOrientation
+                };
+            }
             var torusKnot = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q, sideOrientation);
+            var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
             vertexData.applyToMesh(torusKnot, updatable);
             return torusKnot;
         };
@@ -1444,8 +1478,17 @@ var BABYLON;
         };
         Mesh.CreatePlane = function (name, options, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            if (typeof options === 'number') {
+                var size = options;
+                options = {
+                    size: size,
+                    width: size,
+                    height: size,
+                    sideOrientation: sideOrientation
+                };
+            }
             var plane = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreatePlane(options, sideOrientation);
+            var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, updatable || options.updatable);
             return plane;
         };
@@ -1911,4 +1954,3 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.js.map

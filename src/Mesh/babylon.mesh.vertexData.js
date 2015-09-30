@@ -297,15 +297,14 @@ var BABYLON;
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
             return result;
         };
-        VertexData.CreateRibbon = function (options, closeArray, closePath, offset, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
-            var pathArray = pathArray || options.pathArray;
-            closeArray = closeArray || options.closeArray || false;
-            closePath = closePath || options.closePath || false;
+        VertexData.CreateRibbon = function (options) {
+            var pathArray = options.pathArray;
+            var closeArray = options.closeArray || false;
+            var closePath = options.closePath || false;
             var defaultOffset = Math.floor(pathArray[0].length / 2);
-            offset = offset || options.offset || defaultOffset;
+            var offset = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
-            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var positions = [];
             var indices = [];
             var normals = [];
@@ -472,8 +471,7 @@ var BABYLON;
             }
             return vertexData;
         };
-        VertexData.CreateBox = function (options, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
+        VertexData.CreateBox = function (options) {
             var normalsSource = [
                 new BABYLON.Vector3(0, 0, 1),
                 new BABYLON.Vector3(0, 0, -1),
@@ -486,26 +484,17 @@ var BABYLON;
             var positions = [];
             var normals = [];
             var uvs = [];
-            var width = 1;
-            var height = 1;
-            var depth = 1;
+            var width = options.width || options.size || 1;
+            var height = options.height || options.size || 1;
+            var depth = options.depth || options.size || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(6);
             var faceColors;
             var colors = [];
             if (options.faceColors) {
                 faceColors = options.faceColors;
             }
-            if (options.width !== undefined) {
-                width = options.width || 1;
-                height = options.height || 1;
-                depth = options.depth || 1;
-            }
-            else {
-                width = options || 1;
-                height = options || 1;
-                depth = options || 1;
-            }
-            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            // default face colors and UV if undefined
             for (var f = 0; f < 6; f++) {
                 if (faceUV[f] === undefined) {
                     faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
@@ -573,25 +562,12 @@ var BABYLON;
             }
             return vertexData;
         };
-        VertexData.CreateSphere = function (options, diameter, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
-            var segments;
-            var diameterX;
-            var diameterY;
-            var diameterZ;
-            if (options.segments) {
-                segments = options.segments || 32;
-                diameterX = options.diameterX || 1;
-                diameterY = options.diameterY || 1;
-                diameterZ = options.diameterZ || 1;
-            }
-            else {
-                segments = options || 32;
-                diameterX = diameter || 1;
-                diameterY = diameterX;
-                diameterZ = diameterX;
-            }
-            sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+        VertexData.CreateSphere = function (options) {
+            var segments = options.segments || 32;
+            var diameterX = options.diameterX || options.diameter || 1;
+            var diameterY = options.diameterY || options.diameter || 1;
+            var diameterZ = options.diameterZ || options.diameter || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var radius = new BABYLON.Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
             var totalZRotationSteps = 2 + segments;
             var totalYRotationSteps = 2 * totalZRotationSteps;
@@ -637,23 +613,14 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateCylinder = function (options, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation) {
-            var height = height || options.height || 3;
-            if (diameterTop === 0 || options.diameterTop === 0) {
-                diameterTop = 0;
-            }
-            else {
-                diameterTop = diameterTop || options.diameterTop || 1;
-            }
-            diameterBottom = diameterBottom || options.diameterBottom || 1;
-            tessellation = tessellation || options.tessellation || 24;
-            subdivisions = subdivisions || options.subdivisions || 1;
-            if (sideOrientation === 0 || options.sideOrientation === 0) {
-                sideOrientation = 0;
-            }
-            else {
-                sideOrientation = sideOrientation || options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
-            }
+        // Cylinder and cone 
+        VertexData.CreateCylinder = function (options) {
+            var height = options.height || 2;
+            var diameterTop = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
+            var diameterBottom = options.diameterBottom || 1;
+            var tessellation = options.tessellation || 24;
+            var subdivisions = options.subdivisions || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var indices = [];
             var positions = [];
             var normals = [];
@@ -752,15 +719,15 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateTorus = function (diameter, thickness, tessellation, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
+        VertexData.CreateTorus = function (options) {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
-            diameter = diameter || 1;
-            thickness = thickness || 0.5;
-            tessellation = tessellation || 16;
+            var diameter = options.diameter || 1;
+            var thickness = options.thickness || 0.5;
+            var tessellation = options.tessellation || 16;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var stride = tessellation + 1;
             for (var i = 0; i <= tessellation; i++) {
                 var u = i / tessellation;
@@ -855,23 +822,15 @@ var BABYLON;
             vertexData.indices = indices;
             return vertexData;
         };
-        VertexData.CreateGround = function (options, height, subdivisions) {
+        VertexData.CreateGround = function (options) {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row, col;
-            var width;
-            if (options.width) {
-                width = options.width || 1;
-                height = options.height || 1;
-                subdivisions = options.subdivisions || 1;
-            }
-            else {
-                width = options || 1;
-                height = height || 1;
-                subdivisions = subdivisions || 1;
-            }
+            var width = options.width || 1;
+            var height = options.height || 1;
+            var subdivisions = options.subdivisions || 1;
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
                     var position = new BABYLON.Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
@@ -1008,23 +967,14 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreatePlane = function (options, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
+        VertexData.CreatePlane = function (options) {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
-            var width;
-            var height;
-            if (options.width) {
-                width = options.width || 1;
-                height = options.height || 1;
-                sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
-            }
-            else {
-                width = options || 1;
-                height = options || 1;
-            }
+            var width = options.width || options.size || 1;
+            var height = options.height || options.size || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             // Vertices
             var halfWidth = width / 2.0;
             var halfHeight = height / 2.0;
@@ -1093,18 +1043,18 @@ var BABYLON;
             return vertexData;
         };
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
-        VertexData.CreateTorusKnot = function (radius, tube, radialSegments, tubularSegments, p, q, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
+        VertexData.CreateTorusKnot = function (options) {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
-            radius = radius || 2;
-            tube = tube || 0.5;
-            radialSegments = radialSegments || 32;
-            tubularSegments = tubularSegments || 32;
-            p = p || 2;
-            q = q || 3;
+            var radius = options.radius || 2;
+            var tube = options.tube || 0.5;
+            var radialSegments = options.radialSegments || 32;
+            var tubularSegments = options.tubularSegments || 32;
+            var p = options.p || 2;
+            var q = options.q || 3;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             // Helper
             var getPos = function (angle) {
                 var cu = Math.cos(angle);
@@ -1270,4 +1220,3 @@ var BABYLON;
     })();
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.vertexData.js.map

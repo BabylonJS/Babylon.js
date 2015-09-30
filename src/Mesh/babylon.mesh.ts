@@ -98,10 +98,10 @@
 
                 // Material
                 this.material = source.material;
-
+                var index: number;
                 if (!doNotCloneChildren) {
                     // Children
-                    for (var index = 0; index < scene.meshes.length; index++) {
+                    for (index = 0; index < scene.meshes.length; index++) {
                         var mesh = scene.meshes[index];
 
                         if (mesh.parent === source) {
@@ -1266,7 +1266,7 @@
                     closeArray: closeArrayOrScene,
                     closePath: closePath,
                     offset: offset,
-                    sideOrientation: sideOrientation,
+                    sideOrientation: sideOrientation
                 }
             }
 
@@ -1370,7 +1370,7 @@
                     sideOrientation: sideOrientation
                 };
             }
-            
+
             var box = new Mesh(name, scene);
             var vertexData = VertexData.CreateBox(options);
 
@@ -1443,7 +1443,7 @@
 
         // Torus  (Code from SharpDX.org)
         public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number}, scene: any): Mesh;
+        public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number }, scene: any): Mesh;
         public static CreateTorus(name: string, options: any, thicknessOrScene: any, tessellation?: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
             if (thicknessOrScene instanceof Scene) {
                 scene = thicknessOrScene;
@@ -1830,7 +1830,7 @@
                     index++;
                 }
                 // cap
-                var capPath = function (nbPoints, pathIndex) {
+                var capPath = (nbPoints, pathIndex) => {
                     var pointCap = Array<Vector3>();
                     for (var i = 0; i < nbPoints; i++) {
                         pointCap.push(path[pathIndex]);
@@ -2266,6 +2266,7 @@
         }
     }
 }
+
 
 
 

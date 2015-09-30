@@ -382,13 +382,13 @@
         }
 
         public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData {
-            var pathArray:Vector3[][] = options.pathArray;
+            var pathArray: Vector3[][] = options.pathArray;
             var closeArray: boolean = options.closeArray || false;
             var closePath: boolean = options.closePath || false;
             var defaultOffset: number = Math.floor(pathArray[0].length / 2);
-            var offset:number = options.offset || defaultOffset;
+            var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
-            var sideOrientation:number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var positions: number[] = [];
             var indices: number[] = [];
@@ -757,8 +757,8 @@
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
             var diameterBottom: number = options.diameterBottom || 1;
-            var tessellation:number =  options.tessellation || 24;
-            var subdivisions:number =  options.subdivisions || 1;
+            var tessellation: number = options.tessellation || 24;
+            var subdivisions: number = options.subdivisions || 1;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var indices = [];
@@ -1484,6 +1484,7 @@
         }
     }
 } 
+
 
 
 
