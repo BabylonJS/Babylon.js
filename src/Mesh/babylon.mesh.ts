@@ -1363,9 +1363,16 @@
         public static CreateBox(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // Check parameters
             updatable = updatable || options.updatable;
-
+            if (typeof options === 'number') {
+                var size = options;
+                options = {
+                    size: size,
+                    sideOrientation: sideOrientation
+                };
+            }
+            
             var box = new Mesh(name, scene);
-            var vertexData = VertexData.CreateBox(options, sideOrientation);
+            var vertexData = VertexData.CreateBox(options);
 
             vertexData.applyToMesh(box, updatable);
 
@@ -1373,7 +1380,7 @@
         }
 
         public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateSphere(name: string, options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number, updatable?: boolean }, scene: any): Mesh;
+        public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number, updatable?: boolean }, scene: any): Mesh;
         public static CreateSphere(name: string, options: any, diameterOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             if (diameterOrScene instanceof Scene) {
                 scene = diameterOrScene;
