@@ -680,7 +680,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateGround(this.width, this.height, this.subdivisions);
+                return VertexData.CreateGround({width: this.width, height: this.height, subdivisions: this.subdivisions});
             }
 
             public copy(id: string): Geometry {
