@@ -869,15 +869,16 @@
             return vertexData;
         }
 
-        public static CreateTorus(diameter, thickness, tessellation, sideOrientation: number = Mesh.DEFAULTSIDE) {
+        public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number }) {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
 
-            diameter = diameter || 1;
-            thickness = thickness || 0.5;
-            tessellation = tessellation || 16;
+            var diameter = options.diameter || 1;
+            var thickness = options.thickness || 0.5;
+            var tessellation = options.tessellation || 16;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var stride = tessellation + 1;
 
