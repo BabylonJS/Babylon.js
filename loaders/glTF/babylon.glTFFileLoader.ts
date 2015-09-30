@@ -182,6 +182,12 @@
         if (parameter.semantic === "MODEL") {
             mat = source.getWorldMatrix();
         }
+        else if (parameter.semantic === "PROJECTION") {
+            mat = scene.getProjectionMatrix();
+        }
+        else if (parameter.semantic === "VIEW") {
+            mat = scene.getViewMatrix();
+        }
         else if (parameter.semantic === "MODELVIEWINVERSETRANSPOSE") {
             mat = Matrix.Transpose(source.getWorldMatrix().multiply(scene.getViewMatrix()).invert());
         }
@@ -265,6 +271,10 @@
     };
 
     var normalizeUVs = (buffer: any) => {
+        if (!buffer) {
+            return;
+        }
+
         for (var i = 0; i < buffer.length / 2; i++) {
             buffer[i * 2 + 1] = 1.0 - buffer[i * 2 + 1];
         }
@@ -291,6 +301,9 @@
         else if (attributeParameter.semantic === "WEIGHT") {
             return "matricesWeights";
         }
+        else if (attributeParameter.semantic === "COLOR") {
+            return "color";
+        }
         else if (attributeParameter.semantic.indexOf("TEXCOORD_") !== -1) {
             var channel = Number(attributeParameter.semantic.split("_")[1]);
             return "uv" + (channel === 0 ? "" : channel + 1);
@@ -299,28 +312,6 @@
 
     var isBase64 = (uri: string): boolean => {
         return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
-    };
-
-    var textureHasAlpha = (texture: Texture) => {
-        var image = new Image();
-
-        image.onload = (ev: Event) => {
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            context.drawImage(image, 0, 0);
-
-            var data = context.getImageData(0, 0, image.width, image.height).data;
-            var foundAlpha = false;
-
-            for (var i = 0; i < data.length; i+=4) {
-                if (data[i + 3] === 0) {
-                    texture.hasAlpha = true;
-                    break;
-                }
-            }
-        };
-
-        image.src = texture.url;
     };
 
     /**
@@ -389,15 +380,18 @@
                 // Create animation and key frames
                 var babylonAnimation = new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
                 var keys = [];
+                var arrayOffset = 0;
 
                 for (var i = 0; i < bufferInput.length; i++) {
                     var value: any = null;
 
                     if (targetPath === "rotationQuaternion") { // VEC4
-                        value = Quaternion.RotationAxis(Vector3.FromArray([bufferOutput[i * 4], bufferOutput[i * 4 + 1], bufferOutput[i * 4 + 2]]).normalize(), bufferOutput[i * 4 + 3]);
+                        value = Quaternion.RotationAxis(Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]).normalize(), bufferOutput[arrayOffset + 3]);
+                        arrayOffset += 4;
                     }
                     else { // Position and scaling are VEC3
-                        value = Vector3.FromArray([bufferOutput[i * 3], bufferOutput[i * 3 + 1], bufferOutput[i * 3 + 2]]);
+                        value = Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
+                        arrayOffset += 3;
                     }
 
                     if (isBone) {
@@ -406,7 +400,7 @@
                         var scaling = Vector3.Zero();
                         var bone = <Bone>targetNode;
 
-                        var mat = bone.getLocalMatrix();
+                        var mat = bone.getBaseMatrix();
                         mat.decompose(scaling, rotationQuaternion, translation);
 
                         if (targetPath === "position") {
@@ -417,10 +411,6 @@
                         }
                         else {
                             scaling = value;
-                        }
-
-                        if (targetNode instanceof Mesh) {
-                            targetNode.a
                         }
 
                         value = Matrix.Compose(scaling, rotationQuaternion, translation);
@@ -435,10 +425,8 @@
                 // Finish
                 babylonAnimation.setKeys(keys);
                 targetNode.animations.push(babylonAnimation);
-
-                if (!(targetNode instanceof Bone)) {
-                    gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true);
-                }
+                
+                gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true);
             }
         }
     };
@@ -461,39 +449,42 @@
     };
 
     var getParentBone = (gltfRuntime: IGLTFRuntime, jointName: string, newSkeleton: Skeleton): Bone => {
-        
-        for (var nde in gltfRuntime.nodes) {
-            var node: IGLTFNode = gltfRuntime.nodes[nde];
-            if (!node || !node.jointName) {
-                continue;
-            }
-
-            for (var i = 0; i < node.children.length; i++) {
-                var child: IGLTFNode = gltfRuntime.nodes[node.children[i]];
-                if (!child || !node.jointName) {
-                    continue;
-                }
-
-                if (child.jointName === jointName) {
-                    var parent = gltfRuntime.scene.getNodeByID(nde);
-
-                    if (parent instanceof Bone) {
-                        return parent;
-                    }
-
-                    return null;
-                }
-            }
-        }
-
-        return null;
-        
+        // Try to find
         for (var i = 0; i < newSkeleton.bones.length; i++) {
             if (newSkeleton.bones[i].id === jointName) {
                 return newSkeleton.bones[i];
             }
         }
 
+        // Not found
+        for (var nde in gltfRuntime.nodes) {
+            var node: IGLTFNode = gltfRuntime.nodes[nde];
+
+            if (!node || !node.jointName) {
+                continue;
+            }
+
+            for (var i = 0; i < node.children.length; i++) {
+                var childID = node.children[i];
+                var childNode: IGLTFNode = gltfRuntime.nodes[childID];
+
+                if (!childNode || !childNode.jointName) {
+                    continue;
+                }
+
+                if (childID === jointName) {
+                    var mat = configureBoneTransformation(node);
+                    var parentBone = getParentBone(gltfRuntime, node.jointName, newSkeleton);
+
+                    var bone = new Bone(node.name, newSkeleton, parentBone, mat);
+                    bone.id = node.jointName;
+
+                    return bone;
+                }
+            }
+        }
+
+        // Does not exists
         return null;
     };
 
@@ -512,16 +503,11 @@
                 continue;
             }
 
-            // Transform
             var mat = configureBoneTransformation(node);
+            var parentBone = getParentBone(gltfRuntime, skins.jointNames[i], newSkeleton);
 
-            // Parent bone
-            var boneID = skins.jointNames[i];
-            var parentBone: Bone = getParentBone(gltfRuntime, boneID, newSkeleton);
-
-            // Create bone
             var bone = new Bone(node.name, newSkeleton, parentBone, mat);
-            bone.id = boneID;
+            bone.id = skins.jointNames[i];
         }
 
         newSkeleton.prepare();
@@ -539,7 +525,6 @@
         newMesh.subMeshes = [];
 
         var multiMat = new MultiMaterial("multimat" + id, gltfRuntime.scene);
-        multiMat.backFaceCulling = false;
         newMesh.material = multiMat;
 
         var vertexData = new VertexData();
@@ -589,8 +574,11 @@
                     else if (semantic.indexOf("TEXCOORD_") !== -1) {
                         var channel = Number(semantic.split("_")[1]);
                         var uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
-                        normalizeUVs(buffer);
-                        tempVertexData.set(buffer, uvKind);
+                        tempVertexData.uvs = [];
+                        for (var j = 0; j < buffer.length; j++) {
+                            tempVertexData.uvs.push(buffer[j]);
+                        }
+                        normalizeUVs(tempVertexData.uvs);
                     }
                     else if (semantic === "JOINT") {
                         tempVertexData.set(buffer, VertexBuffer.MatricesIndicesKind);
@@ -598,12 +586,19 @@
                     else if (semantic === "WEIGHT") {
                         tempVertexData.set(buffer, VertexBuffer.MatricesWeightsKind);
                     }
+                    else if (semantic === "COLOR") {
+                        tempVertexData.set(buffer, VertexBuffer.ColorKind);
+                    }
                 }
 
                 // Indices
                 accessor = gltfRuntime.accessors[primitive.indices];
                 buffer = getBufferFromAccessor(gltfRuntime, accessor);
-                tempVertexData.indices = buffer;
+
+                tempVertexData.indices = [];
+                for (var j = 0; j < buffer.length; j++) {
+                    tempVertexData.indices.push(buffer[j]);
+                }
                 indexCounts.push(buffer.length);
 
                 vertexData.merge(tempVertexData);
@@ -616,6 +611,22 @@
                 // Update vertices start and index start
                 verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
                 indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
+            }
+        }
+
+        // Apply skin
+        if (skin) {
+            var vector = Vector3.Zero();
+            var mat = Matrix.FromArray(skin.bindShapeMatrix);
+            var positions = vertexData.positions;
+
+            for (var i = 0; i < positions.length / 3; i++) {
+                vector.copyFromFloats(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+                var result = Vector3.TransformCoordinates(vector, mat);
+
+                positions[i * 3] = result.x;
+                positions[i * 3 + 1] = result.y;
+                positions[i * 3 + 2] = result.z;
             }
         }
 
@@ -701,6 +712,7 @@
 
                 if (newMesh.skeleton !== null) {
                     newMesh.useBones = true;
+                    newMesh.computeBonesUsingShaders = true;
                     newMesh.applySkeleton(newMesh.skeleton);
                 }
 
@@ -1008,13 +1020,7 @@
                 }
 
                 newTexture.name = value;
-                textureHasAlpha(newTexture);
-
                 texture.babylonTexture = newTexture;
-
-                if (texture.internalFormat && (texture.internalFormat === ETextureFormat.ALPHA || texture.internalFormat === ETextureFormat.RGBA)) {
-                    newTexture.hasAlpha = true;
-                }
 
                 if (uniform.value) {
                     // Static uniform
@@ -1361,15 +1367,17 @@
             load(gltfRuntime);
 
             // Test on bones
+            /*
             for (var i = 0; i < scene.meshes.length; i++) {
                 var mesh = scene.meshes[i];
 
                 if (mesh.skeleton) {
-                    scene.beginAnimation(mesh.skeleton, 0, 20, true, 0.5, () => {
+                    scene.beginAnimation(mesh.skeleton, 0, 1000, true, 1, () => {
                         console.log("finished");
                     });
                 }
             }
+            */
 
             // Finish
             return true;
