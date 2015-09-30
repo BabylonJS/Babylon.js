@@ -1192,25 +1192,16 @@
 
             return vertexData;
         }
-        public static CreatePlane(options: { width?: number, height?: number, sideOrientation?: number }): VertexData;
-        public static CreatePlane(size: number, sideOrientation?: number): VertexData;
-        public static CreatePlane(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+
+        public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
 
-            var width: number;
-            var height: number;
-
-            if (options.width) {
-                width = options.width || 1;
-                height = options.height || 1;
-                sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
-            } else {
-                width = options || 1;
-                height = options || 1;
-            }
+            var width: number = options.width || options.size || 1;
+            var height: number = options.height || options.size || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // Vertices
             var halfWidth = width / 2.0;
