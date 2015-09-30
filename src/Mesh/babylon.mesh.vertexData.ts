@@ -576,9 +576,8 @@
             return vertexData;
         }
 
-        public static CreateBox(options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData;
-        public static CreateBox(size: number, sideOrientation?: number): VertexData;
-        public static CreateBox(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
+
             var normalsSource = [
                 new Vector3(0, 0, 1),
                 new Vector3(0, 0, -1),
@@ -593,29 +592,19 @@
             var normals = [];
             var uvs = [];
 
-            var width = 1;
-            var height = 1;
-            var depth = 1;
+            var width = options.width || options.size || 1;
+            var height = options.height || options.size || 1;
+            var depth = options.depth || options.size || 1;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
             var faceColors: Color4[];
             var colors = [];
-
             if (options.faceColors) {
                 faceColors = options.faceColors;
             }
 
-            if (options.width !== undefined) {
-                width = options.width || 1;
-                height = options.height || 1;
-                depth = options.depth || 1;
-            } else { // back-compat with size parameter
-                width = options || 1;
-                height = options || 1;
-                depth = options || 1;
-            }
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
-            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
-
+            // default face colors and UV if undefined
             for (var f = 0; f < 6; f++) {
                 if (faceUV[f] === undefined) {
                     faceUV[f] = new Vector4(0, 0, 1, 1);
@@ -697,6 +686,7 @@
 
             return vertexData;
         }
+
         public static CreateSphere(options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number }): VertexData;
         public static CreateSphere(segments: number, diameter?: number, sideOrientation?: number): VertexData;
         public static CreateSphere(options: any, diameter?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
