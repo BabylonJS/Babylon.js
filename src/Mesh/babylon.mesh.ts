@@ -1703,11 +1703,20 @@
 
         // Plane & ground
         public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreatePlane(name: string, options: { width?: number, height?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh;
+        public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh;
         public static CreatePlane(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            if (typeof options === 'number') {
+                var size = options;
+                options = {
+                    size: size,
+                    width: size,
+                    height: size,
+                    sideOrientation: sideOrientation
+                }
+            }
             var plane = new Mesh(name, scene);
 
-            var vertexData = VertexData.CreatePlane(options, sideOrientation);
+            var vertexData = VertexData.CreatePlane(options);
 
             vertexData.applyToMesh(plane, updatable || options.updatable);
 
