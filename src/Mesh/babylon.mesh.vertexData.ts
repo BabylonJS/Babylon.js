@@ -1002,26 +1002,16 @@
             return vertexData;
         }
 
-        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, sideOrientation?: number }): VertexData;
-        public static CreateGround(width: number, height: number, subdivisions?: number): VertexData;
-        public static CreateGround(options: any, height?: number, subdivisions?: number): VertexData {
+        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row: number, col: number;
 
-            var width: number;
-
-            if (options.width) {
-                width = options.width || 1;
-                height = options.height || 1;
-                subdivisions = options.subdivisions || 1;
-            } else {
-                width = options || 1;
-                height = height || 1;
-                subdivisions = subdivisions || 1;
-            }
+            var width: number = options.width || 1;
+            var height: number = options.height || 1;
+            var subdivisions: number = options.subdivisions || 1;
 
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
