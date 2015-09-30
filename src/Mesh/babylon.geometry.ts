@@ -657,7 +657,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation, this.side);
+                return VertexData.CreateTorus({diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
