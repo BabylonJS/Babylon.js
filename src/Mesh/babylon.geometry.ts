@@ -580,7 +580,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateBox(this.size, this.side);
+                return VertexData.CreateBox({size: this.size, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
