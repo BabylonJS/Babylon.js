@@ -121,4 +121,3 @@ var BABYLON;
     })();
     BABYLON.DefaultLoadingScreen = DefaultLoadingScreen;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.loadingScreen.js.map

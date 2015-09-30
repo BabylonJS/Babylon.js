@@ -44,8 +44,7 @@ var BABYLON;
         }
         CollideWorker.prototype.collideWithWorld = function (position, velocity, maximumRetry, excludedMeshUniqueId) {
             //TODO CollisionsEpsilon should be defined here and not in the engine.
-            var closeDistance = 0.01;
-            //is initializing here correct? A quick look - looks like it is fine.
+            var closeDistance = 0.01; //is initializing here correct? A quick look - looks like it is fine.
             if (this.collider.retry >= maximumRetry) {
                 this.finalPosition.copyFrom(position);
                 return;
@@ -91,17 +90,14 @@ var BABYLON;
             //return colTransMat;
         };
         CollideWorker.prototype.processCollisionsForSubMeshes = function (transformMatrix, mesh) {
-            var len;
-            var subMeshes;
-            // No Octrees for now
             //if (this._submeshesOctree && this.useOctreeForCollisions) {
             //    var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
             //    var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
             //    len = intersections.length;
             //    subMeshes = intersections.data;
             //} else {
-            subMeshes = mesh.subMeshes;
-            len = subMeshes.length;
+            var subMeshes = mesh.subMeshes;
+            var len = subMeshes.length;
             //}
             if (!mesh.geometryId) {
                 console.log("no mesh geometry id");
