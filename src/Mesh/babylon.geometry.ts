@@ -580,7 +580,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateBox(this.size, this.side);
+                return VertexData.CreateBox({size: this.size, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
@@ -603,7 +603,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateSphere(this.segments, this.diameter, this.side);
+                return VertexData.CreateSphere({segments: this.segments, diameter: this.diameter, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
@@ -657,7 +657,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation, this.side);
+                return VertexData.CreateTorus({diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
@@ -680,7 +680,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateGround(this.width, this.height, this.subdivisions);
+                return VertexData.CreateGround({width: this.width, height: this.height, subdivisions: this.subdivisions});
             }
 
             public copy(id: string): Geometry {
@@ -730,7 +730,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreatePlane(this.size, this.side);
+                return VertexData.CreatePlane({size: this.size, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
@@ -761,7 +761,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.side);
+                return VertexData.CreateTorusKnot({radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
