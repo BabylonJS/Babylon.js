@@ -1298,18 +1298,19 @@
         }
 
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
-        public static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
 
-            radius = radius || 2;
-            tube = tube || 0.5;
-            radialSegments = radialSegments || 32;
-            tubularSegments = tubularSegments || 32;
-            p = p || 2;
-            q = q || 3;
+            var radius = options.radius || 2;
+            var tube = options.tube || 0.5;
+            var radialSegments = options.radialSegments || 32;
+            var tubularSegments = options.tubularSegments || 32;
+            var p = options.p || 2;
+            var q = options.q || 3;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // Helper
             var getPos = (angle) => {
