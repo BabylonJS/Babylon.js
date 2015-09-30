@@ -282,6 +282,9 @@ var ActionsBuilder;
                 if (this._viewer.root.type === ActionsBuilder.Type.OBJECT && excludedTriggers.indexOf(i) !== -1) {
                     continue;
                 }
+                else if (this._viewer.root.type === ActionsBuilder.Type.SCENE && excludedTriggers.indexOf(i) === -1) {
+                    continue;
+                }
                 var trigger = this._createListElement(this.triggersList, yPosition, element.text, ActionsBuilder.Type.TRIGGER, textColor, true, element);
                 trigger.rect.attr("fill", Raphael.rgb(133, 154, 185));
                 yPosition += List.ELEMENT_HEIGHT;
