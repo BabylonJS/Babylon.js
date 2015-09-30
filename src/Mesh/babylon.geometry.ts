@@ -730,7 +730,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreatePlane(this.size, this.side);
+                return VertexData.CreatePlane({size: this.size, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
