@@ -160,6 +160,12 @@ var BABYLON;
         if (parameter.semantic === "MODEL") {
             mat = source.getWorldMatrix();
         }
+        else if (parameter.semantic === "PROJECTION") {
+            mat = scene.getProjectionMatrix();
+        }
+        else if (parameter.semantic === "VIEW") {
+            mat = scene.getViewMatrix();
+        }
         else if (parameter.semantic === "MODELVIEWINVERSETRANSPOSE") {
             mat = BABYLON.Matrix.Transpose(source.getWorldMatrix().multiply(scene.getViewMatrix()).invert());
         }
@@ -249,6 +255,9 @@ var BABYLON;
         }
     };
     var normalizeUVs = function (buffer) {
+        if (!buffer) {
+            return;
+        }
         for (var i = 0; i < buffer.length / 2; i++) {
             buffer[i * 2 + 1] = 1.0 - buffer[i * 2 + 1];
         }
@@ -272,6 +281,9 @@ var BABYLON;
         else if (attributeParameter.semantic === "WEIGHT") {
             return "matricesWeights";
         }
+        else if (attributeParameter.semantic === "COLOR") {
+            return "color";
+        }
         else if (attributeParameter.semantic.indexOf("TEXCOORD_") !== -1) {
             var channel = Number(attributeParameter.semantic.split("_")[1]);
             return "uv" + (channel === 0 ? "" : channel + 1);
@@ -279,23 +291,6 @@ var BABYLON;
     };
     var isBase64 = function (uri) {
         return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
-    };
-    var textureHasAlpha = function (texture) {
-        var image = new Image();
-        image.onload = function (ev) {
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            context.drawImage(image, 0, 0);
-            var data = context.getImageData(0, 0, image.width, image.height).data;
-            var foundAlpha = false;
-            for (var i = 0; i < data.length; i += 4) {
-                if (data[i + 3] === 0) {
-                    texture.hasAlpha = true;
-                    break;
-                }
-            }
-        };
-        image.src = texture.url;
     };
     /**
     * Load animations
@@ -348,20 +343,23 @@ var BABYLON;
                 // Create animation and key frames
                 var babylonAnimation = new BABYLON.Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
                 var keys = [];
+                var arrayOffset = 0;
                 for (var i = 0; i < bufferInput.length; i++) {
                     var value = null;
                     if (targetPath === "rotationQuaternion") {
-                        value = BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.FromArray([bufferOutput[i * 4], bufferOutput[i * 4 + 1], bufferOutput[i * 4 + 2]]).normalize(), bufferOutput[i * 4 + 3]);
+                        value = BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]).normalize(), bufferOutput[arrayOffset + 3]);
+                        arrayOffset += 4;
                     }
                     else {
-                        value = BABYLON.Vector3.FromArray([bufferOutput[i * 3], bufferOutput[i * 3 + 1], bufferOutput[i * 3 + 2]]);
+                        value = BABYLON.Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
+                        arrayOffset += 3;
                     }
                     if (isBone) {
                         var translation = BABYLON.Vector3.Zero();
                         var rotationQuaternion = new BABYLON.Quaternion();
                         var scaling = BABYLON.Vector3.Zero();
                         var bone = targetNode;
-                        var mat = bone.getLocalMatrix();
+                        var mat = bone.getBaseMatrix();
                         mat.decompose(scaling, rotationQuaternion, translation);
                         if (targetPath === "position") {
                             translation = value;
@@ -371,9 +369,6 @@ var BABYLON;
                         }
                         else {
                             scaling = value;
-                        }
-                        if (targetNode instanceof BABYLON.Mesh) {
-                            targetNode.a;
                         }
                         value = BABYLON.Matrix.Compose(scaling, rotationQuaternion, translation);
                     }
@@ -385,9 +380,7 @@ var BABYLON;
                 // Finish
                 babylonAnimation.setKeys(keys);
                 targetNode.animations.push(babylonAnimation);
-                if (!(targetNode instanceof BABYLON.Bone)) {
-                    gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true);
-                }
+                gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true);
             }
         }
     };
@@ -405,31 +398,34 @@ var BABYLON;
         return mat;
     };
     var getParentBone = function (gltfRuntime, jointName, newSkeleton) {
+        // Try to find
+        for (var i = 0; i < newSkeleton.bones.length; i++) {
+            if (newSkeleton.bones[i].id === jointName) {
+                return newSkeleton.bones[i];
+            }
+        }
+        // Not found
         for (var nde in gltfRuntime.nodes) {
             var node = gltfRuntime.nodes[nde];
             if (!node || !node.jointName) {
                 continue;
             }
             for (var i = 0; i < node.children.length; i++) {
-                var child = gltfRuntime.nodes[node.children[i]];
-                if (!child || !node.jointName) {
+                var childID = node.children[i];
+                var childNode = gltfRuntime.nodes[childID];
+                if (!childNode || !childNode.jointName) {
                     continue;
                 }
-                if (child.jointName === jointName) {
-                    var parent = gltfRuntime.scene.getNodeByID(nde);
-                    if (parent instanceof BABYLON.Bone) {
-                        return parent;
-                    }
-                    return null;
+                if (childID === jointName) {
+                    var mat = configureBoneTransformation(node);
+                    var parentBone = getParentBone(gltfRuntime, node.jointName, newSkeleton);
+                    var bone = new BABYLON.Bone(node.name, newSkeleton, parentBone, mat);
+                    bone.id = node.jointName;
+                    return bone;
                 }
             }
         }
-        return null;
-        for (var i = 0; i < newSkeleton.bones.length; i++) {
-            if (newSkeleton.bones[i].id === jointName) {
-                return newSkeleton.bones[i];
-            }
-        }
+        // Does not exists
         return null;
     };
     var importSkeleton = function (gltfRuntime, skins) {
@@ -444,14 +440,10 @@ var BABYLON;
                 BABYLON.Tools.Warn("Joint named " + skins.jointNames[i] + " does not exist");
                 continue;
             }
-            // Transform
             var mat = configureBoneTransformation(node);
-            // Parent bone
-            var boneID = skins.jointNames[i];
-            var parentBone = getParentBone(gltfRuntime, boneID, newSkeleton);
-            // Create bone
+            var parentBone = getParentBone(gltfRuntime, skins.jointNames[i], newSkeleton);
             var bone = new BABYLON.Bone(node.name, newSkeleton, parentBone, mat);
-            bone.id = boneID;
+            bone.id = skins.jointNames[i];
         }
         newSkeleton.prepare();
         return newSkeleton;
@@ -465,7 +457,6 @@ var BABYLON;
         newMesh.layerMask = 0x0FFFFFFF;
         newMesh.subMeshes = [];
         var multiMat = new BABYLON.MultiMaterial("multimat" + id, gltfRuntime.scene);
-        multiMat.backFaceCulling = false;
         newMesh.material = multiMat;
         var vertexData = new BABYLON.VertexData();
         var geometry = new BABYLON.Geometry(id, gltfRuntime.scene, vertexData, true);
@@ -505,8 +496,11 @@ var BABYLON;
                     else if (semantic.indexOf("TEXCOORD_") !== -1) {
                         var channel = Number(semantic.split("_")[1]);
                         var uvKind = BABYLON.VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
-                        normalizeUVs(buffer);
-                        tempVertexData.set(buffer, uvKind);
+                        tempVertexData.uvs = [];
+                        for (var j = 0; j < buffer.length; j++) {
+                            tempVertexData.uvs.push(buffer[j]);
+                        }
+                        normalizeUVs(tempVertexData.uvs);
                     }
                     else if (semantic === "JOINT") {
                         tempVertexData.set(buffer, BABYLON.VertexBuffer.MatricesIndicesKind);
@@ -514,11 +508,17 @@ var BABYLON;
                     else if (semantic === "WEIGHT") {
                         tempVertexData.set(buffer, BABYLON.VertexBuffer.MatricesWeightsKind);
                     }
+                    else if (semantic === "COLOR") {
+                        tempVertexData.set(buffer, BABYLON.VertexBuffer.ColorKind);
+                    }
                 }
                 // Indices
                 accessor = gltfRuntime.accessors[primitive.indices];
                 buffer = getBufferFromAccessor(gltfRuntime, accessor);
-                tempVertexData.indices = buffer;
+                tempVertexData.indices = [];
+                for (var j = 0; j < buffer.length; j++) {
+                    tempVertexData.indices.push(buffer[j]);
+                }
                 indexCounts.push(buffer.length);
                 vertexData.merge(tempVertexData);
                 tempVertexData = undefined;
@@ -528,6 +528,19 @@ var BABYLON;
                 // Update vertices start and index start
                 verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
                 indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
+            }
+        }
+        // Apply skin
+        if (skin) {
+            var vector = BABYLON.Vector3.Zero();
+            var mat = BABYLON.Matrix.FromArray(skin.bindShapeMatrix);
+            var positions = vertexData.positions;
+            for (var i = 0; i < positions.length / 3; i++) {
+                vector.copyFromFloats(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+                var result = BABYLON.Vector3.TransformCoordinates(vector, mat);
+                positions[i * 3] = result.x;
+                positions[i * 3 + 1] = result.y;
+                positions[i * 3 + 2] = result.z;
             }
         }
         // Apply geometry
@@ -595,6 +608,7 @@ var BABYLON;
                 }
                 if (newMesh.skeleton !== null) {
                     newMesh.useBones = true;
+                    newMesh.computeBonesUsingShaders = true;
                     newMesh.applySkeleton(newMesh.skeleton);
                 }
                 lastNode = newMesh;
@@ -846,11 +860,7 @@ var BABYLON;
                     newTexture = new BABYLON.Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, true);
                 }
                 newTexture.name = value;
-                textureHasAlpha(newTexture);
                 texture.babylonTexture = newTexture;
-                if (texture.internalFormat && (texture.internalFormat === ETextureFormat.ALPHA || texture.internalFormat === ETextureFormat.RGBA)) {
-                    newTexture.hasAlpha = true;
-                }
                 if (uniform.value) {
                     // Static uniform
                     shaderMaterial.setTexture(unif, newTexture);
@@ -1134,14 +1144,17 @@ var BABYLON;
             // Load shaders and buffers
             load(gltfRuntime);
             // Test on bones
+            /*
             for (var i = 0; i < scene.meshes.length; i++) {
                 var mesh = scene.meshes[i];
+
                 if (mesh.skeleton) {
-                    scene.beginAnimation(mesh.skeleton, 0, 20, true, 0.5, function () {
+                    scene.beginAnimation(mesh.skeleton, 0, 1000, true, 1, () => {
                         console.log("finished");
                     });
                 }
             }
+            */
             // Finish
             return true;
         };
