@@ -603,7 +603,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateSphere(this.segments, this.diameter, this.side);
+                return VertexData.CreateSphere({segments: this.segments, diameter: this.diameter, sideOrientation: this.side});
             }
 
             public copy(id: string): Geometry {
