@@ -577,7 +577,6 @@
         }
 
         public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
-
             var normalsSource = [
                 new Vector3(0, 0, 1),
                 new Vector3(0, 0, -1),
@@ -595,14 +594,13 @@
             var width = options.width || options.size || 1;
             var height = options.height || options.size || 1;
             var depth = options.depth || options.size || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
             var faceColors: Color4[];
             var colors = [];
             if (options.faceColors) {
                 faceColors = options.faceColors;
             }
-
-            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // default face colors and UV if undefined
             for (var f = 0; f < 6; f++) {
@@ -687,27 +685,12 @@
             return vertexData;
         }
 
-        public static CreateSphere(options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number }): VertexData;
-        public static CreateSphere(segments: number, diameter?: number, sideOrientation?: number): VertexData;
-        public static CreateSphere(options: any, diameter?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
-            var segments: number;
-            var diameterX: number;
-            var diameterY: number;
-            var diameterZ: number;
-
-            if (options.segments) {
-                segments = options.segments || 32;
-                diameterX = options.diameterX || 1;
-                diameterY = options.diameterY || 1;
-                diameterZ = options.diameterZ || 1;
-            } else { // Back-compat
-                segments = options || 32;
-                diameterX = diameter || 1;
-                diameterY = diameterX;
-                diameterZ = diameterX;
-            }
-
-            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
+        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number }): VertexData {
+            var segments: number = options.segments || 32;
+            var diameterX: number = options.diameterX || options.diameter || 1;
+            var diameterY: number = options.diameterY || options.diameter || 1;
+            var diameterZ: number = options.diameterZ || options.diameter || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
 
@@ -771,7 +754,7 @@
 
         // Cylinder and cone 
         public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
-            var height: number = options.height || 3;
+            var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
             var diameterBottom: number = options.diameterBottom || 1;
             var tessellation:number =  options.tessellation || 24;
