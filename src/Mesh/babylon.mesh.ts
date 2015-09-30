@@ -1442,9 +1442,23 @@
         }
 
         // Torus  (Code from SharpDX.org)
-        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number}, scene: any): Mesh;
+        public static CreateTorus(name: string, options: any, thicknessOrScene: any, tessellation?: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+            if (thicknessOrScene instanceof Scene) {
+                scene = thicknessOrScene;
+                updatable = options.updatable;
+            } else {
+                var diameter = options;
+                options = {
+                    diameter: diameter,
+                    thickness: thicknessOrScene,
+                    tessellation: tessellation,
+                    sideOrientation: sideOrientation
+                }
+            }
             var torus = new Mesh(name, scene);
-            var vertexData = VertexData.CreateTorus(diameter, thickness, tessellation, sideOrientation);
+            var vertexData = VertexData.CreateTorus(options);
 
             vertexData.applyToMesh(torus, updatable);
 
