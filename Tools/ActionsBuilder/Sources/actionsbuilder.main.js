@@ -9,6 +9,7 @@ this.createJSON = function () {
     var structure = viewer.utils.createJSON(viewer.root);
     var asText = JSON.stringify(structure);
     actionsBuilderJsonInput.value = asText;
+    console.log(asText);
 };
 this.loadFromJSON = function () {
     var json = actionsBuilderJsonInput.value;
@@ -96,3 +97,4 @@ this.run = function () {
     list.createListsElements();
     list.onResize();
 };
+//# sourceMappingURL=actionsbuilder.main.js.map
