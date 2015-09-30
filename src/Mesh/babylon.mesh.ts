@@ -1465,9 +1465,26 @@
             return torus;
         }
 
-        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number }, scene: any): Mesh;
+        public static CreateTorusKnot(name: string, options: any, tubeOrScene: any, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+            if (tubeOrScene instanceof Scene) {
+                scene = tubeOrScene;
+                updatable = options.updatable;
+            } else {
+                var radius = options;
+                options = {
+                    radius: radius,
+                    tube: tubeOrScene,
+                    radialSegments: radialSegments,
+                    tubularSegments: tubularSegments,
+                    p: p,
+                    q: q,
+                    sideOrientation: sideOrientation
+                }
+            }
             var torusKnot = new Mesh(name, scene);
-            var vertexData = VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q, sideOrientation);
+            var vertexData = VertexData.CreateTorusKnot(options);
 
             vertexData.applyToMesh(torusKnot, updatable);
 
