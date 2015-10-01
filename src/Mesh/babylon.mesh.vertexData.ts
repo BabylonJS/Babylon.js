@@ -1236,11 +1236,15 @@
             return vertexData;
         }
 
-        public static CreateDisc(radius: number, tessellation: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateDisc(options: { radius?: number, tessellation?: number, sideOrientation?: number }): VertexData {
             var positions = [];
             var indices = [];
             var normals = [];
             var uvs = [];
+
+            var radius = options.radius || 0.5;
+            var tessellation = options.tessellation || 64;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // positions and uvs
             positions.push(0, 0, 0);    // disc center first
