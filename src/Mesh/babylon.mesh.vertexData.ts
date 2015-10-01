@@ -937,10 +937,11 @@
             return vertexData;
         }
 
-        public static CreateLines(points: Vector3[]): VertexData {
+        public static CreateLines(options: { points: Vector3[]}): VertexData {
             var indices = [];
             var positions = [];
-
+            var points = options.points;
+            
             for (var index = 0; index < points.length; index++) {
                 positions.push(points[index].x, points[index].y, points[index].z);
 
