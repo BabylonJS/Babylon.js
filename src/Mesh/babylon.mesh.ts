@@ -1505,8 +1505,22 @@
         }
 
         // Lines
-        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
-            if (linesInstance) { // lines update
+        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
+        public static CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh;
+        public static CreateLines(name: string, options: any, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
+            var points: Vector3[];
+            if (Array.isArray(options)) {
+                points = options;
+                options = {
+                    points: points,
+                    instance: instance
+                }
+            } else {
+                instance = options.instance;
+                points = options.points;
+            }
+
+            if (instance) { // lines update
                 var positionFunction = positions => {
                     var i = 0;
                     for (var p = 0; p < points.length; p++) {
@@ -1516,14 +1530,14 @@
                         i += 3;
                     }
                 };
-                linesInstance.updateMeshPositions(positionFunction, false);
-                return linesInstance;
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
             }
 
             // lines creation
             var lines = new LinesMesh(name, scene);
-            var vertexData = VertexData.CreateLines(points);
-            vertexData.applyToMesh(lines, updatable);
+            var vertexData = VertexData.CreateLines(options);
+            vertexData.applyToMesh(lines, updatable || options.updatable);
             return lines;
         }
 
