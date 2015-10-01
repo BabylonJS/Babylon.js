@@ -14,6 +14,9 @@ var BABYLON;
             this.url = rootUrl;
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
+            if (!rootUrl) {
+                return;
+            }
             this._texture = this._getFromCache(rootUrl, noMipmap);
             if (!extensions) {
                 extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];

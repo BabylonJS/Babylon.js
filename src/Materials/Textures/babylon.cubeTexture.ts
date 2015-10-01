@@ -15,6 +15,10 @@
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
 
+            if (!rootUrl) {
+                return;
+            }
+
             this._texture = this._getFromCache(rootUrl, noMipmap);
 
             if (!extensions) {

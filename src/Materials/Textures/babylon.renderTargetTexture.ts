@@ -19,7 +19,7 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
@@ -28,7 +28,11 @@
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
-            this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
+            if (isCube) {
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size);
+            } else {
+                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
+            }
 
             // Rendering groups
             this._renderingManager = new RenderingManager(scene);
@@ -84,14 +88,17 @@
             this.resize(newSize, this._generateMipMaps);
         }
 
-        public resize(size:any, generateMipMaps?: boolean) {
+        public resize(size: any, generateMipMaps?: boolean) {
             this.releaseInternalTexture();
-            this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
+            if (this.isCube) {
+                this._texture = this.getScene().getEngine().createRenderTargetCubeTexture(size);
+            } else {
+                this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
+            }
         }
 
         public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
             var scene = this.getScene();
-            var engine = scene.getEngine();
 
             if (this._waitingRenderList) {
                 this.renderList = [];
@@ -107,11 +114,7 @@
                 return;
             }
 
-            // Bind
-            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-                engine.bindFramebuffer(this._texture);
-            }
-
+            // Prepare renderingManager
             this._renderingManager.reset();
 
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
@@ -135,7 +138,29 @@
                             this._renderingManager.dispatch(subMesh);
                         }
                     }
-                }                
+                }
+            }
+            
+            if (this.isCube) {
+                for (var face = 0; face < 6; face++) {
+                    this.renderToTarget(this._texture._cubeFaces[face], currentRenderList, useCameraPostProcess, dumpForDebug);
+                }
+            } else {
+                this.renderToTarget(this._texture, currentRenderList, useCameraPostProcess, dumpForDebug);
+            }
+
+            if (this.onAfterUnbind) {
+                this.onAfterUnbind();
+            }
+        }
+
+        renderToTarget(targetTexture: WebGLTexture, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+            var scene = this.getScene();
+            var engine = scene.getEngine();
+
+            // Bind
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(targetTexture)) {
+                engine.bindFramebuffer(targetTexture);
             }
 
             if (this.onBeforeRender) {
@@ -157,7 +182,7 @@
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
             if (useCameraPostProcess) {
-                scene.postProcessManager._finalizeFrame(false, this._texture);
+                scene.postProcessManager._finalizeFrame(false, targetTexture);
             }
 
             if (!this._doNotChangeAspectRatio) {
@@ -169,16 +194,12 @@
             }
 
             // Dump ?
-            if (dumpForDebug) {
+            if (!this.isCube && dumpForDebug) {
                 Tools.DumpFramebuffer(this._size, this._size, engine);
             }
 
             // Unbind
-            engine.unBindFramebuffer(this._texture);
-
-            if (this.onAfterUnbind) {
-                this.onAfterUnbind();
-            }
+            engine.unBindFramebuffer(targetTexture);
         }
 
         public clone(): RenderTargetTexture {

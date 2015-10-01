@@ -1067,6 +1067,7 @@ var BABYLON;
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             if (instance === void 0) { instance = null; }
             var pathArray;
+            var closeArray;
             if (closeArrayOrScene instanceof BABYLON.Scene) {
                 scene = closeArrayOrScene;
                 updatable = options.updatable;
@@ -1074,18 +1075,20 @@ var BABYLON;
                     pathArray = options.pathArray;
                     instance = options.instance;
                     closePath = options.closePath;
-                    var closeArray = options.closeArray;
+                    closeArray = options.closeArray;
                 }
             }
             else {
                 pathArray = options;
-                options = {
-                    pathArray: pathArray,
-                    closeArray: closeArrayOrScene,
-                    closePath: closePath,
-                    offset: offset,
-                    sideOrientation: sideOrientation
-                };
+                if (!instance) {
+                    options = {
+                        pathArray: pathArray,
+                        closeArray: closeArrayOrScene,
+                        closePath: closePath,
+                        offset: offset,
+                        sideOrientation: sideOrientation
+                    };
+                }
             }
             if (instance) {
                 // positionFunction : ribbon case
@@ -1154,15 +1157,27 @@ var BABYLON;
                     ribbon._idx = vertexData._idx;
                 }
                 ribbon._closePath = closePath;
+                ribbon._closeArray = closeArray;
                 vertexData.applyToMesh(ribbon, updatable);
                 return ribbon;
             }
         };
-        Mesh.CreateDisc = function (name, radius, tessellation, scene, updatable, sideOrientation) {
+        Mesh.CreateDisc = function (name, options, tessellationOrScene, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            if (tessellationOrScene instanceof BABYLON.Scene) {
+                scene = tessellationOrScene;
+            }
+            else {
+                var radius = options;
+                options = {
+                    radius: radius,
+                    tessellation: tessellationOrScene,
+                    sideOrientation: sideOrientation
+                };
+            }
             var disc = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateDisc(radius, tessellation, sideOrientation);
-            vertexData.applyToMesh(disc, updatable);
+            var vertexData = BABYLON.VertexData.CreateDisc(options);
+            vertexData.applyToMesh(disc, updatable || options.updatable);
             return disc;
         };
         Mesh.CreateBox = function (name, options, scene, updatable, sideOrientation) {
@@ -1273,10 +1288,21 @@ var BABYLON;
             vertexData.applyToMesh(torusKnot, updatable);
             return torusKnot;
         };
-        // Lines
-        Mesh.CreateLines = function (name, points, scene, updatable, linesInstance) {
-            if (linesInstance === void 0) { linesInstance = null; }
-            if (linesInstance) {
+        Mesh.CreateLines = function (name, options, scene, updatable, instance) {
+            var points;
+            if (Array.isArray(options)) {
+                points = options;
+                if (!instance) {
+                    options = {
+                        points: points
+                    };
+                }
+            }
+            else {
+                instance = options.instance;
+                points = options.points;
+            }
+            if (instance) {
                 var positionFunction = function (positions) {
                     var i = 0;
                     for (var p = 0; p < points.length; p++) {
@@ -1286,19 +1312,39 @@ var BABYLON;
                         i += 3;
                     }
                 };
-                linesInstance.updateMeshPositions(positionFunction, false);
-                return linesInstance;
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
             }
             // lines creation
             var lines = new BABYLON.LinesMesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateLines(points);
-            vertexData.applyToMesh(lines, updatable);
+            var vertexData = BABYLON.VertexData.CreateLines(options);
+            vertexData.applyToMesh(lines, updatable || options.updatable);
             return lines;
         };
-        // Dashed Lines
-        Mesh.CreateDashedLines = function (name, points, dashSize, gapSize, dashNb, scene, updatable, linesInstance) {
-            if (linesInstance === void 0) { linesInstance = null; }
-            if (linesInstance) {
+        Mesh.CreateDashedLines = function (name, options, dashSizeOrScene, gapSize, dashNb, scene, updatable, instance) {
+            var points;
+            var dashSize;
+            if (Array.isArray(options)) {
+                points = options;
+                dashSize = dashSizeOrScene;
+                if (!instance) {
+                    options = {
+                        points: points,
+                        dashSize: dashSize,
+                        gapSize: gapSize,
+                        dashNb: dashNb
+                    };
+                }
+            }
+            else {
+                scene = dashSizeOrScene,
+                    points = options.points;
+                instance = options.instance;
+                gapSize = options.gapSize;
+                dashNb = options.dashNb;
+                dashSize = options.dashSize;
+            }
+            if (instance) {
                 var positionFunction = function (positions) {
                     var curvect = BABYLON.Vector3.Zero();
                     var nbSeg = positions.length / 6;
@@ -1315,7 +1361,7 @@ var BABYLON;
                         lg += curvect.length();
                     }
                     shft = lg / nbSeg;
-                    dashshft = linesInstance.dashSize * shft / (linesInstance.dashSize + linesInstance.gapSize);
+                    dashshft = instance.dashSize * shft / (instance.dashSize + instance.gapSize);
                     for (i = 0; i < points.length - 1; i++) {
                         points[i + 1].subtractToRef(points[i], curvect);
                         nb = Math.floor(curvect.length() / shft);
@@ -1340,13 +1386,13 @@ var BABYLON;
                         p += 3;
                     }
                 };
-                linesInstance.updateMeshPositions(positionFunction, false);
-                return linesInstance;
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
             }
             // dashed lines creation
             var dashedLines = new BABYLON.LinesMesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
-            vertexData.applyToMesh(dashedLines, updatable);
+            var vertexData = BABYLON.VertexData.CreateDashedLines(options);
+            vertexData.applyToMesh(dashedLines, updatable || options.updatable);
             dashedLines.dashSize = dashSize;
             dashedLines.gapSize = gapSize;
             return dashedLines;
