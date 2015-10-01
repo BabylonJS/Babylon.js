@@ -1342,6 +1342,7 @@
                     (<any>ribbon)._idx = (<any>vertexData)._idx;
                 }
                 (<any>ribbon)._closePath = closePath;
+                (<any>ribbon)._closeArray = closeArray;
 
                 vertexData.applyToMesh(ribbon, updatable);
 
@@ -1349,11 +1350,23 @@
             }
         }
 
-        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateDisc(name: string, options: { radius: number, tessellation: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh;
+        public static CreateDisc(name: string, options: any, tessellationOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            if (tessellationOrScene instanceof Scene) {
+                scene = tessellationOrScene;
+            } else {
+                var radius = options;
+                options = {
+                    radius: radius,
+                    tessellation: tessellationOrScene,
+                    sideOrientation: sideOrientation
+                }
+            }
             var disc = new Mesh(name, scene);
-            var vertexData = VertexData.CreateDisc(radius, tessellation, sideOrientation);
+            var vertexData = VertexData.CreateDisc(options);
 
-            vertexData.applyToMesh(disc, updatable);
+            vertexData.applyToMesh(disc, updatable || options.updatable);
 
             return disc;
         }
