@@ -611,6 +611,30 @@
             }
         }
 
+        export class Disc extends _Primitive {
+            // Members
+            public radius: number;
+            public tessellation: number;
+            public side: number;
+
+            constructor(id: string, scene: Scene, radius: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
+                this.radius = radius;
+                this.tessellation = tessellation;
+                this.side = side;
+
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            }
+
+            public _regenerateVertexData(): VertexData {
+                return VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
+            }
+
+            public copy(id: string): Geometry {
+                return new Disc(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
+            }
+        }
+
+
         export class Cylinder extends _Primitive {
             // Members
             public height: number;
