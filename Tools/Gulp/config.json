@@ -147,7 +147,8 @@
       "../../src/Rendering/babylon.edgesRenderer.js",
       "../../src/PostProcess/babylon.tonemapPostProcess.js",
 	    "../../src/Tools/babylon.loadingScreen.js",
-      "../../src/Materials/babylon.pbrMaterial.js"
+      "../../src/Materials/babylon.pbrMaterial.js",
+      "../../src/Probes/babylon.reflectionProbe.js"
     ]
   },
   "shadersDirectories": [

@@ -1556,7 +1556,7 @@ var BABYLON;
                 texture._isDisabled = true;
             }
         };
-        Engine.prototype.createRenderTargetTexture = function (size, options) {
+        Engine.prototype.createRenderTargetTexture = function (size, options, face) {
             // old version had a "generateMipMaps" arg instead of options.
             // if options.generateMipMaps is undefined, consider that options itself if the generateMipmaps value
             // in the same way, generateDepthBuffer is defaulted to true
@@ -1586,11 +1586,14 @@ var BABYLON;
                 type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 BABYLON.Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
+            if (face === undefined) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            }
+            var target = face === undefined ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
+            gl.texImage2D(target, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
             var depthBuffer;
             // Create the depth buffer
             if (generateDepthBuffer) {
@@ -1624,6 +1627,28 @@ var BABYLON;
             texture.samplingMode = samplingMode;
             this._activeTexturesCache = [];
             this._loadedTexturesCache.push(texture);
+            return texture;
+        };
+        Engine.prototype.createRenderTargetCubeTexture = function (size) {
+            var gl = this._gl;
+            var texture = gl.createTexture();
+            texture.isCube = true;
+            texture.references = 1;
+            this._loadedTexturesCache.push(texture);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+            for (var face = 0; face < 6; face++) {
+                texture._cubeFaces[face] = this.createRenderTargetTexture(size, {}, face);
+            }
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            this._activeTexturesCache = [];
+            texture._width = size;
+            texture._height = size;
+            texture.isReady = true;
             return texture;
         };
         Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions, noMipmap) {
@@ -1817,6 +1842,25 @@ var BABYLON;
             var data = new Uint8Array(height * width * 4);
             this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
+        };
+        Engine.prototype.releaseInternalTexture = function (texture) {
+            if (!texture) {
+                return;
+            }
+            var index;
+            if (texture._cubeFaces) {
+                for (index = 0; index < 6; index++) {
+                    this.releaseInternalTexture(texture._cubeFaces[index]);
+                }
+            }
+            var texturesCache = this.getLoadedTexturesCache();
+            texture.references--;
+            // Final reference ?
+            if (texture.references === 0) {
+                index = texturesCache.indexOf(texture);
+                texturesCache.splice(index, 1);
+                this._releaseTexture(texture);
+            }
         };
         // Dispose
         Engine.prototype.dispose = function () {

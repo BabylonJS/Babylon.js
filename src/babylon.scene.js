@@ -95,6 +95,9 @@ var BABYLON;
             this.customRenderTargets = new Array();
             // Imported meshes
             this.importedMeshesFiles = new Array();
+            // Probes
+            this.probesEnabled = true;
+            this.reflectionProbes = new Array();
             this._actionManagers = new Array();
             this._meshesForIntersections = new BABYLON.SmartArray(256);
             // Procedural textures
@@ -509,9 +512,7 @@ var BABYLON;
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
-            if (speedRatio === undefined) {
-                speedRatio = 1.0;
-            }
+            if (speedRatio === void 0) { speedRatio = 1.0; }
             this.stopAnimation(target);
             if (!animatable) {
                 animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);

@@ -354,6 +354,7 @@
             StandardMaterial.BumpTextureEnabled = true;
             StandardMaterial.OpacityTextureEnabled = true;
             StandardMaterial.ReflectionTextureEnabled = true;
+            StandardMaterial.LightmapEnabled = true;
 
             this._scene.shadowsEnabled = true;
             this._scene.particlesEnabled = true;
@@ -364,6 +365,7 @@
             this._scene.lensFlaresEnabled = true;
             this._scene.proceduralTexturesEnabled = true;
             this._scene.renderTargetsEnabled = true;
+            this._scene.probesEnabled = true;
 
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         }
@@ -667,6 +669,7 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Lights", this._scene.lightsEnabled, (element) => { this._scene.lightsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Particles", this._scene.particlesEnabled, (element) => { this._scene.particlesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Post-processes", this._scene.postProcessesEnabled, (element) => { this._scene.postProcessesEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Probes", this._scene.probesEnabled, (element) => { this._scene.probesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Procedural textures", this._scene.proceduralTexturesEnabled, (element) => { this._scene.proceduralTexturesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Render targets", this._scene.renderTargetsEnabled, (element) => { this._scene.renderTargetsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Shadows", this._scene.shadowsEnabled, (element) => { this._scene.shadowsEnabled = element.checked });

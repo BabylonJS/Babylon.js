@@ -341,7 +341,8 @@ var BABYLON;
             }
             var updatable = false;
             var stopChecking = false;
-            for (var kind in this._vertexBuffers) {
+            var kind;
+            for (kind in this._vertexBuffers) {
                 // using slice() to make a copy of the array and not just reference it
                 vertexData.set(this.getVerticesData(kind).slice(0), kind);
                 if (!stopChecking) {
@@ -488,6 +489,24 @@ var BABYLON;
                 return Sphere;
             })(_Primitive);
             Primitives.Sphere = Sphere;
+            var Disc = (function (_super) {
+                __extends(Disc, _super);
+                function Disc(id, scene, radius, tessellation, canBeRegenerated, mesh, side) {
+                    if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    this.radius = radius;
+                    this.tessellation = tessellation;
+                    this.side = side;
+                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+                }
+                Disc.prototype._regenerateVertexData = function () {
+                    return BABYLON.VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
+                };
+                Disc.prototype.copy = function (id) {
+                    return new Disc(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
+                };
+                return Disc;
+            })(_Primitive);
+            Primitives.Disc = Disc;
             var Cylinder = (function (_super) {
                 __extends(Cylinder, _super);
                 function Cylinder(id, scene, height, diameterTop, diameterBottom, tessellation, subdivisions, canBeRegenerated, mesh, side) {
