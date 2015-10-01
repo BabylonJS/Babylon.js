@@ -1261,12 +1261,14 @@
                 }
             } else {
                 pathArray = options;
-                options = {
-                    pathArray: pathArray,
-                    closeArray: closeArrayOrScene,
-                    closePath: closePath,
-                    offset: offset,
-                    sideOrientation: sideOrientation
+                if (!instance) {
+                    options = {
+                        pathArray: pathArray,
+                        closeArray: closeArrayOrScene,
+                        closePath: closePath,
+                        offset: offset,
+                        sideOrientation: sideOrientation
+                    }
                 }
             }
 
@@ -1342,6 +1344,7 @@
                     (<any>ribbon)._idx = (<any>vertexData)._idx;
                 }
                 (<any>ribbon)._closePath = closePath;
+                (<any>ribbon)._closeArray = closeArray;
 
                 vertexData.applyToMesh(ribbon, updatable);
 
@@ -1349,11 +1352,23 @@
             }
         }
 
-        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateDisc(name: string, options: { radius: number, tessellation: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh;
+        public static CreateDisc(name: string, options: any, tessellationOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            if (tessellationOrScene instanceof Scene) {
+                scene = tessellationOrScene;
+            } else {
+                var radius = options;
+                options = {
+                    radius: radius,
+                    tessellation: tessellationOrScene,
+                    sideOrientation: sideOrientation
+                }
+            }
             var disc = new Mesh(name, scene);
-            var vertexData = VertexData.CreateDisc(radius, tessellation, sideOrientation);
+            var vertexData = VertexData.CreateDisc(options);
 
-            vertexData.applyToMesh(disc, updatable);
+            vertexData.applyToMesh(disc, updatable || options.updatable);
 
             return disc;
         }
@@ -1492,8 +1507,23 @@
         }
 
         // Lines
-        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
-            if (linesInstance) { // lines update
+        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
+        public static CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh;
+        public static CreateLines(name: string, options: any, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
+            var points: Vector3[];
+            if (Array.isArray(options)) {
+                points = options;
+                if (!instance) {
+                    options = {
+                        points: points
+                    }
+                }
+            } else {
+                instance = options.instance;
+                points = options.points;
+            }
+
+            if (instance) { // lines update
                 var positionFunction = positions => {
                     var i = 0;
                     for (var p = 0; p < points.length; p++) {
@@ -1503,20 +1533,43 @@
                         i += 3;
                     }
                 };
-                linesInstance.updateMeshPositions(positionFunction, false);
-                return linesInstance;
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
             }
 
             // lines creation
             var lines = new LinesMesh(name, scene);
-            var vertexData = VertexData.CreateLines(points);
-            vertexData.applyToMesh(lines, updatable);
+            var vertexData = VertexData.CreateLines(options);
+            vertexData.applyToMesh(lines, updatable || options.updatable);
             return lines;
         }
 
         // Dashed Lines
-        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
-            if (linesInstance) {  //  dashed lines update
+        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
+        public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh;
+        public static CreateDashedLines(name: string, options: any, dashSizeOrScene: any, gapSize?: number, dashNb?: number, scene?: Scene, updatable?: boolean, instance?: LinesMesh):LinesMesh {
+            var points: Vector3[];
+            var dashSize: number;
+            if (Array.isArray(options)) {
+                points = options;
+                dashSize = dashSizeOrScene;
+                if (!instance) {
+                    options = {
+                        points: points,
+                        dashSize: dashSize,
+                        gapSize: gapSize,
+                        dashNb: dashNb
+                    }    
+                }
+            } else {
+                scene = dashSizeOrScene,
+                points = options.points;
+                instance = options.instance;
+                gapSize = options.gapSize;
+                dashNb = options.dashNb;
+                dashSize = options.dashSize;
+            }
+            if (instance) {  //  dashed lines update
                 var positionFunction = (positions: number[]): void => {
                     var curvect = Vector3.Zero();
                     var nbSeg = positions.length / 6;
@@ -1533,7 +1586,7 @@
                         lg += curvect.length();
                     }
                     shft = lg / nbSeg;
-                    dashshft = (<any>linesInstance).dashSize * shft / ((<any>linesInstance).dashSize + (<any>linesInstance).gapSize);
+                    dashshft = (<any>instance).dashSize * shft / ((<any>instance).dashSize + (<any>instance).gapSize);
                     for (i = 0; i < points.length - 1; i++) {
                         points[i + 1].subtractToRef(points[i], curvect);
                         nb = Math.floor(curvect.length() / shft);
@@ -1558,13 +1611,13 @@
                         p += 3;
                     }
                 };
-                linesInstance.updateMeshPositions(positionFunction, false);
-                return linesInstance;
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
             }
             // dashed lines creation
             var dashedLines = new LinesMesh(name, scene);
-            var vertexData = VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
-            vertexData.applyToMesh(dashedLines, updatable);
+            var vertexData = VertexData.CreateDashedLines(options);
+            vertexData.applyToMesh(dashedLines, updatable || options.updatable);
             (<any>dashedLines).dashSize = dashSize;
             (<any>dashedLines).gapSize = gapSize;
             return dashedLines;

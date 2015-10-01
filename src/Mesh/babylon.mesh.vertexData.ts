@@ -937,9 +937,10 @@
             return vertexData;
         }
 
-        public static CreateLines(points: Vector3[]): VertexData {
+        public static CreateLines(options: { points: Vector3[]}): VertexData {
             var indices = [];
             var positions = [];
+            var points = options.points;
 
             for (var index = 0; index < points.length; index++) {
                 positions.push(points[index].x, points[index].y, points[index].z);
@@ -959,10 +960,11 @@
             return vertexData;
         }
 
-        public static CreateDashedLines(points: Vector3[], dashSize: number, gapSize: number, dashNb: number): VertexData {
-            dashSize = dashSize || 3;
-            gapSize = gapSize || 1;
-            dashNb = dashNb || 200;
+        public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
+            var dashSize = options.dashSize || 3;
+            var gapSize = options.gapSize || 1;
+            var dashNb = options.dashNb || 200;
+            var points = options.points;
 
             var positions = new Array<number>();
             var indices = new Array<number>();
@@ -1236,11 +1238,15 @@
             return vertexData;
         }
 
-        public static CreateDisc(radius: number, tessellation: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateDisc(options: { radius?: number, tessellation?: number, sideOrientation?: number }): VertexData {
             var positions = [];
             var indices = [];
             var normals = [];
             var uvs = [];
+
+            var radius = options.radius || 0.5;
+            var tessellation = options.tessellation || 64;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // positions and uvs
             positions.push(0, 0, 0);    // disc center first
