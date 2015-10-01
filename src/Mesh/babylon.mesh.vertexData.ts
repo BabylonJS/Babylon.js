@@ -941,7 +941,7 @@
             var indices = [];
             var positions = [];
             var points = options.points;
-            
+
             for (var index = 0; index < points.length; index++) {
                 positions.push(points[index].x, points[index].y, points[index].z);
 
@@ -960,10 +960,11 @@
             return vertexData;
         }
 
-        public static CreateDashedLines(points: Vector3[], dashSize: number, gapSize: number, dashNb: number): VertexData {
-            dashSize = dashSize || 3;
-            gapSize = gapSize || 1;
-            dashNb = dashNb || 200;
+        public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
+            var dashSize = options.dashSize || 3;
+            var gapSize = options.gapSize || 1;
+            var dashNb = options.dashNb || 200;
+            var points = options.points;
 
             var positions = new Array<number>();
             var indices = new Array<number>();
