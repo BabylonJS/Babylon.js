@@ -1853,8 +1853,26 @@
             return ground;
         }
 
-        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
-
+        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
+        public static CreateTube(name: string, options: any, radiusOrScene: any, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
+            var path: Vector3[];
+            var radius: number;
+            if (radiusOrScene instanceof Scene) {
+                scene = radiusOrScene;
+                path = options.path;
+                radius = options.radius;
+            } else {
+                path = options;
+                radius = radiusOrScene;
+            }
+            radius = radius || 1
+            tessellation = tessellation || options.tessellation || 60;
+            radiusFunction = radiusFunction || options.radiusFunction ;
+            cap = cap || options.cap || Mesh.NO_CAP;
+            updatable = updatable || options.updatable;
+            instance = instance || options.instance;
+            sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             // tube geometry
             var tubePathArray = (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) => {
                 var tangents = path3D.getTangents();
@@ -1911,12 +1929,12 @@
             };
             var path3D;
             var pathArray;
-            if (tubeInstance) { // tube update
-                path3D = ((<any>tubeInstance).path3D).update(path);
-                pathArray = tubePathArray(path, path3D, (<any>tubeInstance).pathArray, radius, (<any>tubeInstance).tessellation, radiusFunction, (<any>tubeInstance).cap);
-                tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
+            if (instance) { // tube update
+                path3D = ((<any>instance).path3D).update(path);
+                pathArray = tubePathArray(path, path3D, (<any>instance).pathArray, radius, (<any>instance).tessellation, radiusFunction, (<any>instance).cap);
+                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
 
-                return tubeInstance;
+                return instance;
 
             }
             // tube creation
@@ -1924,7 +1942,7 @@
             var newPathArray = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
-            var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
+            var tube = Mesh.CreateRibbon(name, {pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation}, scene);
             (<any>tube).pathArray = pathArray;
             (<any>tube).path3D = path3D;
             (<any>tube).tessellation = tessellation;

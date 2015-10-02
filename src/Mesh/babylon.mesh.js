@@ -1592,9 +1592,25 @@ var BABYLON;
             BABYLON.Tools.LoadImage(url, onload, function () { }, scene.database);
             return ground;
         };
-        Mesh.CreateTube = function (name, path, radius, tessellation, radiusFunction, cap, scene, updatable, sideOrientation, tubeInstance) {
-            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            if (tubeInstance === void 0) { tubeInstance = null; }
+        Mesh.CreateTube = function (name, options, radiusOrScene, tessellation, radiusFunction, cap, scene, updatable, sideOrientation, instance) {
+            var path;
+            var radius;
+            if (radiusOrScene instanceof BABYLON.Scene) {
+                scene = radiusOrScene;
+                path = options.path;
+                radius = options.radius;
+            }
+            else {
+                path = options;
+                radius = radiusOrScene;
+            }
+            radius = radius || 1;
+            tessellation = tessellation || options.tessellation || 60;
+            radiusFunction = radiusFunction || options.radiusFunction;
+            cap = cap || options.cap || Mesh.NO_CAP;
+            updatable = updatable || options.updatable;
+            instance = instance || options.instance;
+            sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             // tube geometry
             var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) {
                 var tangents = path3D.getTangents();
@@ -1650,18 +1666,18 @@ var BABYLON;
             };
             var path3D;
             var pathArray;
-            if (tubeInstance) {
-                path3D = (tubeInstance.path3D).update(path);
-                pathArray = tubePathArray(path, path3D, tubeInstance.pathArray, radius, tubeInstance.tessellation, radiusFunction, tubeInstance.cap);
-                tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
-                return tubeInstance;
+            if (instance) {
+                path3D = (instance.path3D).update(path);
+                pathArray = tubePathArray(path, path3D, instance.pathArray, radius, instance.tessellation, radiusFunction, instance.cap);
+                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+                return instance;
             }
             // tube creation
             path3D = new BABYLON.Path3D(path);
             var newPathArray = new Array();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
-            var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
+            var tube = Mesh.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation }, scene);
             tube.pathArray = pathArray;
             tube.path3D = path3D;
             tube.tessellation = tessellation;
