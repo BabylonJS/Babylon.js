@@ -1247,30 +1247,33 @@
 
         // Statics
         public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        public static CreateRibbon(name: string, options: { pathArray?: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
-        public static CreateRibbon(name: string, options: any, closeArrayOrScene: any, closePath?: boolean, offset?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
+        public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene?: Scene): Mesh;
+        public static CreateRibbon(name: string, options: any, closeArrayOrScene?: any, closePath?: boolean, offset?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
             var pathArray;
             var closeArray;
-            if (closeArrayOrScene instanceof Scene) {
-                scene = closeArrayOrScene;
-                updatable = options.updatable;
-                if (options.instance) { // instance case
-                    pathArray = options.pathArray;
-                    instance = options.instance;
-                    closePath = options.closePath;
-                    closeArray = options.closeArray;
-                }
-            } else {
+            if (Array.isArray(options)) {
                 pathArray = options;
+                closeArray = closeArrayOrScene;
                 if (!instance) {
                     options = {
                         pathArray: pathArray,
-                        closeArray: closeArrayOrScene,
+                        closeArray: closeArray,
                         closePath: closePath,
                         offset: offset,
+                        updatable: updatable,
                         sideOrientation: sideOrientation
                     }
                 }
+
+            } else {
+                scene = closeArrayOrScene;
+                pathArray = options.pathArray;
+                closeArray = options.closeArray;
+                closePath = options.closePath;
+                offset = options.offset;
+                sideOrientation = options.sideOrientation;
+                instance = options.instance;
+                updatable = options.updatable;
             }
 
             if (instance) {   // existing ribbon instance update
@@ -1855,24 +1858,23 @@
 
         public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
         public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
-        public static CreateTube(name: string, options: any, radiusOrScene: any, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
+        public static CreateTube(name: string, options: any, radiusOrScene: any, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
             var path: Vector3[];
             var radius: number;
-            if (radiusOrScene instanceof Scene) {
-                scene = radiusOrScene;
-                path = options.path;
-                radius = options.radius;
-            } else {
-                path = options;
-                radius = radiusOrScene;
-            }
-            radius = radius || 1
-            tessellation = tessellation || options.tessellation || 60;
-            radiusFunction = radiusFunction || options.radiusFunction ;
-            cap = cap || options.cap || Mesh.NO_CAP;
-            updatable = updatable || options.updatable;
-            instance = instance || options.instance;
-            sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            if (Array.isArray(options)) {
+                    path = options;
+                    radius = radiusOrScene;
+                } else {
+                    scene = radiusOrScene;
+                    path = options.path;
+                    radius = options.radius;
+                    tessellation = options.tessellation;
+                    radiusFunction = options.radiusFunction;
+                    cap = options.cap || Mesh.NO_CAP,
+                    updatable = options.updatable;
+                    sideOrientation = options.sideOrientation,
+                    instance = options.instance
+                }
             // tube geometry
             var tubePathArray = (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) => {
                 var tangents = path3D.getTangents();
@@ -1932,7 +1934,9 @@
             if (instance) { // tube update
                 path3D = ((<any>instance).path3D).update(path);
                 pathArray = tubePathArray(path, path3D, (<any>instance).pathArray, radius, (<any>instance).tessellation, radiusFunction, (<any>instance).cap);
-                instance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, instance);
+                instance = Mesh.CreateRibbon(null, { pathArray: pathArray, instance: instance });
+                (<any>instance).path3D = path3D;
+                (<any>instance).pathArray = pathArray;
 
                 return instance;
 
