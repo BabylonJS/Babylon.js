@@ -72,6 +72,7 @@ interface WebGLTexture {
     _cachedWrapU: number;
     _cachedWrapV: number;
     _isDisabled: boolean;
+    _cubeFaces: WebGLTexture[];
 }
 
 interface WebGLBuffer {

@@ -341,7 +341,8 @@ var BABYLON;
             }
             var updatable = false;
             var stopChecking = false;
-            for (var kind in this._vertexBuffers) {
+            var kind;
+            for (kind in this._vertexBuffers) {
                 // using slice() to make a copy of the array and not just reference it
                 vertexData.set(this.getVerticesData(kind).slice(0), kind);
                 if (!stopChecking) {

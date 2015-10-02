@@ -1067,6 +1067,7 @@ var BABYLON;
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             if (instance === void 0) { instance = null; }
             var pathArray;
+            var closeArray;
             if (closeArrayOrScene instanceof BABYLON.Scene) {
                 scene = closeArrayOrScene;
                 updatable = options.updatable;
@@ -1074,7 +1075,7 @@ var BABYLON;
                     pathArray = options.pathArray;
                     instance = options.instance;
                     closePath = options.closePath;
-                    var closeArray = options.closeArray;
+                    closeArray = options.closeArray;
                 }
             }
             else {

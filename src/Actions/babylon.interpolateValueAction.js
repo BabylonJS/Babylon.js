@@ -7,13 +7,14 @@ var BABYLON;
 (function (BABYLON) {
     var InterpolateValueAction = (function (_super) {
         __extends(InterpolateValueAction, _super);
-        function InterpolateValueAction(triggerOptions, target, propertyPath, value, duration, condition, stopOtherAnimations) {
+        function InterpolateValueAction(triggerOptions, target, propertyPath, value, duration, condition, stopOtherAnimations, onInterpolationDone) {
             if (duration === void 0) { duration = 1000; }
             _super.call(this, triggerOptions, condition);
             this.propertyPath = propertyPath;
             this.value = value;
             this.duration = duration;
             this.stopOtherAnimations = stopOtherAnimations;
+            this.onInterpolationDone = onInterpolationDone;
             this._target = target;
         }
         InterpolateValueAction.prototype._prepare = function () {
@@ -56,7 +57,7 @@ var BABYLON;
             if (this.stopOtherAnimations) {
                 scene.stopAnimation(this._target);
             }
-            scene.beginDirectAnimation(this._target, [animation], 0, 100);
+            scene.beginDirectAnimation(this._target, [animation], 0, 100, false, 1, this.onInterpolationDone);
         };
         return InterpolateValueAction;
     })(BABYLON.Action);

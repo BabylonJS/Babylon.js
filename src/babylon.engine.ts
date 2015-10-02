@@ -200,7 +200,7 @@
                 this._blendFunctionParameters[1] === value1 &&
                 this._blendFunctionParameters[2] === value2 &&
                 this._blendFunctionParameters[3] === value3
-                ) {
+            ) {
                 return;
             }
 
@@ -679,7 +679,7 @@
                     document.webkitPointerLockElement === canvas ||
                     document.msPointerLockElement === canvas ||
                     document.pointerLockElement === canvas
-                    );
+                );
             };
 
             document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
@@ -691,8 +691,8 @@
                 Engine.audioEngine = new AudioEngine();
             }
 			
-			//default loading screen
-			this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
+            //default loading screen
+            this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
@@ -962,14 +962,14 @@
         }
 
         public unBindFramebuffer(texture: WebGLTexture): void {
-            this._currentRenderTarget = null;           
+            this._currentRenderTarget = null;
             if (texture.generateMipMaps) {
                 var gl = this._gl;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 gl.bindTexture(gl.TEXTURE_2D, null);
             }
-            
+
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
         }
 
@@ -1843,7 +1843,7 @@
             }
         }
 
-        public createRenderTargetTexture(size: any, options): WebGLTexture {
+        public createRenderTargetTexture(size: any, options, face?: number): WebGLTexture {
             // old version had a "generateMipMaps" arg instead of options.
             // if options.generateMipMaps is undefined, consider that options itself if the generateMipmaps value
             // in the same way, generateDepthBuffer is defaulted to true
@@ -1878,11 +1878,17 @@
                 Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
+
+            if (face === undefined) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            }
+
+            var target = face === undefined ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
+
+            gl.texImage2D(target, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
 
             var depthBuffer: WebGLRenderbuffer;
             // Create the depth buffer
@@ -1921,6 +1927,37 @@
             this._activeTexturesCache = [];
 
             this._loadedTexturesCache.push(texture);
+
+            return texture;
+        }
+
+        public createRenderTargetCubeTexture(size: number): WebGLTexture {
+            var gl = this._gl;
+
+            var texture = gl.createTexture();
+            texture.isCube = true;
+            texture.references = 1;
+            this._loadedTexturesCache.push(texture);
+
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+
+            for (var face = 0; face < 6; face++) {
+                texture._cubeFaces[face] = this.createRenderTargetTexture(size, {}, face);
+            }
+
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+
+            this._activeTexturesCache = [];
+
+            texture._width = size;
+            texture._height = size;
+            texture.isReady = true;
 
             return texture;
         }
@@ -2161,6 +2198,31 @@
             return data;
         }
 
+        public releaseInternalTexture(texture: WebGLTexture): void {
+            if (!texture) {
+                return;
+            }
+
+            var index;
+
+            if (texture._cubeFaces) {
+                for (index = 0; index < 6; index++) {
+                    this.releaseInternalTexture(texture._cubeFaces[index]);
+                }
+            }
+
+            var texturesCache = this.getLoadedTexturesCache();
+            texture.references--;
+
+            // Final reference ?
+            if (texture.references === 0) {
+                index = texturesCache.indexOf(texture);
+                texturesCache.splice(index, 1);
+
+                this._releaseTexture(texture);
+            }
+        }
+
         // Dispose
         public dispose(): void {
             this.hideLoadingUI();
@@ -2212,15 +2274,15 @@
         public hideLoadingUI(): void {
             this._loadingScreen.hideLoadingUI();
         }
-		
-		public get loadingScreen(): ILoadingScreen {
+
+        public get loadingScreen(): ILoadingScreen {
             return this._loadingScreen;
         }
 
         public set loadingScreen(loadingScreen: ILoadingScreen) {
             this._loadingScreen = loadingScreen;
         }
-        
+
         public set loadingUIText(text: string) {
             this._loadingScreen.loadingUIText = text;
         }
