@@ -51,6 +51,7 @@
         public _binaryInfo: any;
         private _LODLevels = new Array<Internals.MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
+        public highlight = false;
 
         // Private
         public _geometry: Geometry;
@@ -728,6 +729,10 @@
                 engine.setDepthWrite(false);
                 scene.getOutlineRenderer().render(subMesh, batch);
                 engine.setDepthWrite(savedDepthWrite);
+            }
+
+            if (this.highlight){
+                scene.getOutlineRenderer().render(subMesh, batch);
             }
 
             effectiveMaterial._preBind();
