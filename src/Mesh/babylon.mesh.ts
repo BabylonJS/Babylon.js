@@ -98,10 +98,10 @@
 
                 // Material
                 this.material = source.material;
-
+                var index: number;
                 if (!doNotCloneChildren) {
                     // Children
-                    for (var index = 0; index < scene.meshes.length; index++) {
+                    for (index = 0; index < scene.meshes.length; index++) {
                         var mesh = scene.meshes[index];
 
                         if (mesh.parent === source) {
@@ -1005,7 +1005,7 @@
 
                 // Create VertexData from map data
                 //Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-                var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
+                var buffer = <Uint8Array>(<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
 
                 this.applyDisplacementMapFromBuffer(buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight);
                 //execute success callback, if set
@@ -1246,14 +1246,43 @@
         }
 
         // Statics
-        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, ribbonInstance: Mesh = null): Mesh {
-            if (ribbonInstance) {   // existing ribbon instance update
+        public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene?: Scene): Mesh;
+        public static CreateRibbon(name: string, options: any, closeArrayOrScene?: any, closePath?: boolean, offset?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
+            var pathArray;
+            var closeArray;
+            if (Array.isArray(options)) {
+                pathArray = options;
+                closeArray = closeArrayOrScene;
+                if (!instance) {
+                    options = {
+                        pathArray: pathArray,
+                        closeArray: closeArray,
+                        closePath: closePath,
+                        offset: offset,
+                        updatable: updatable,
+                        sideOrientation: sideOrientation
+                    }
+                }
+
+            } else {
+                scene = closeArrayOrScene;
+                pathArray = options.pathArray;
+                closeArray = options.closeArray;
+                closePath = options.closePath;
+                offset = options.offset;
+                sideOrientation = options.sideOrientation;
+                instance = options.instance;
+                updatable = options.updatable;
+            }
+
+            if (instance) {   // existing ribbon instance update
                 // positionFunction : ribbon case
                 // only pathArray and sideOrientation parameters are taken into account for positions update
                 var positionFunction = positions => {
                     var minlg = pathArray[0].length;
                     var i = 0;
-                    var ns = (ribbonInstance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
+                    var ns = (instance.sideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
                     for (var si = 1; si <= ns; si++) {
                         for (var p = 0; p < pathArray.length; p++) {
                             var path = pathArray[p];
@@ -1267,7 +1296,7 @@
                                 j++;
                                 i += 3;
                             }
-                            if ((<any>ribbonInstance)._closePath) {
+                            if ((<any>instance)._closePath) {
                                 positions[i] = path[0].x;
                                 positions[i + 1] = path[0].y;
                                 positions[i + 2] = path[0].z;
@@ -1276,21 +1305,21 @@
                         }
                     }
                 };
-                var positions = ribbonInstance.getVerticesData(VertexBuffer.PositionKind);
+                var positions = instance.getVerticesData(VertexBuffer.PositionKind);
                 positionFunction(positions);
-                ribbonInstance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
-                if (!(ribbonInstance.areNormalsFrozen)) {
-                    var indices = ribbonInstance.getIndices();
-                    var normals = ribbonInstance.getVerticesData(VertexBuffer.NormalKind);
+                instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
+                if (!(instance.areNormalsFrozen)) {
+                    var indices = instance.getIndices();
+                    var normals = instance.getVerticesData(VertexBuffer.NormalKind);
                     VertexData.ComputeNormals(positions, indices, normals);
 
-                    if ((<any>ribbonInstance)._closePath) {
+                    if ((<any>instance)._closePath) {
                         var indexFirst: number = 0;
                         var indexLast: number = 0;
                         for (var p = 0; p < pathArray.length; p++) {
-                            indexFirst = (<any>ribbonInstance)._idx[p] * 3;
+                            indexFirst = (<any>instance)._idx[p] * 3;
                             if (p + 1 < pathArray.length) {
-                                indexLast = ((<any>ribbonInstance)._idx[p + 1] - 1) * 3;
+                                indexLast = ((<any>instance)._idx[p + 1] - 1) * 3;
                             }
                             else {
                                 indexLast = normals.length - 3;
@@ -1304,21 +1333,22 @@
                         }
                     }
 
-                    ribbonInstance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
+                    instance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
                 }
 
-                return ribbonInstance;
+                return instance;
             }
             else {  // new ribbon creation
 
                 var ribbon = new Mesh(name, scene);
                 ribbon.sideOrientation = sideOrientation;
 
-                var vertexData = VertexData.CreateRibbon(pathArray, closeArray, closePath, offset, sideOrientation);
+                var vertexData = VertexData.CreateRibbon(options);
                 if (closePath) {
                     (<any>ribbon)._idx = (<any>vertexData)._idx;
                 }
                 (<any>ribbon)._closePath = closePath;
+                (<any>ribbon)._closeArray = closeArray;
 
                 vertexData.applyToMesh(ribbon, updatable);
 
@@ -1326,23 +1356,42 @@
             }
         }
 
-        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateDisc(name: string, options: { radius: number, tessellation: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh;
+        public static CreateDisc(name: string, options: any, tessellationOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            if (tessellationOrScene instanceof Scene) {
+                scene = tessellationOrScene;
+            } else {
+                var radius = options;
+                options = {
+                    radius: radius,
+                    tessellation: tessellationOrScene,
+                    sideOrientation: sideOrientation
+                }
+            }
             var disc = new Mesh(name, scene);
-            var vertexData = VertexData.CreateDisc(radius, tessellation, sideOrientation);
+            var vertexData = VertexData.CreateDisc(options);
 
-            vertexData.applyToMesh(disc, updatable);
+            vertexData.applyToMesh(disc, updatable || options.updatable);
 
             return disc;
         }
 
         public static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateBox(name: string, options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean}, scene: Scene): Mesh;
+        public static CreateBox(name: string, options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh;
         public static CreateBox(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             // Check parameters
             updatable = updatable || options.updatable;
+            if (typeof options === 'number') {
+                var size = options;
+                options = {
+                    size: size,
+                    sideOrientation: sideOrientation
+                };
+            }
 
             var box = new Mesh(name, scene);
-            var vertexData = VertexData.CreateBox(options, sideOrientation);
+            var vertexData = VertexData.CreateBox(options);
 
             vertexData.applyToMesh(box, updatable);
 
@@ -1350,7 +1399,7 @@
         }
 
         public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateSphere(name: string, options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number, updatable?: boolean}, scene: any): Mesh;
+        public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number, updatable?: boolean }, scene: any): Mesh;
         public static CreateSphere(name: string, options: any, diameterOrScene: any, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             if (diameterOrScene instanceof Scene) {
                 scene = diameterOrScene;
@@ -1376,18 +1425,35 @@
         }
 
         // Cylinder and cone
-        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
-            // subdivisions is a new parameter, we need to support old signature
-            if (scene === undefined || !(scene instanceof Scene)) {
-                if (scene !== undefined) {
-                    updatable = scene;
-                }
-                scene = <Scene>subdivisions;
-                subdivisions = 1;
-            }
+        public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh;
+        public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, updatable?: boolean, sideOrientation?: number }, scene: any): Mesh;
+        public static CreateCylinder(name: string, options: any, diameterTopOrScene: any, diameterBottom?: number, tessellation?: number, subdivisions?: any, scene?: Scene, updatable?: any, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
 
+            if (diameterTopOrScene instanceof Scene) {
+                scene = diameterTopOrScene;
+                updatable = options.updatable;
+            } else {
+                if (scene === undefined || !(scene instanceof Scene)) {
+                    if (scene !== undefined) {
+                        sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                        updatable = scene;
+                    }
+                    scene = <Scene>subdivisions;
+                    subdivisions = 1;
+                }
+                var height = options;
+                options = {
+                    height: height,
+                    diameterTop: diameterTopOrScene,
+                    diameterBottom: diameterBottom,
+                    tessellation: tessellation,
+                    subdivisions: subdivisions,
+                    sideOrientation: sideOrientation
+                }
+
+            }
             var cylinder = new Mesh(name, scene);
-            var vertexData = VertexData.CreateCylinder(height, diameterTop, diameterBottom, tessellation, subdivisions, sideOrientation);
+            var vertexData = VertexData.CreateCylinder(options);
 
             vertexData.applyToMesh(cylinder, updatable);
 
@@ -1395,18 +1461,49 @@
         }
 
         // Torus  (Code from SharpDX.org)
-        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateTorus(name: string, options: { diameter?: number, thickness?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number }, scene: any): Mesh;
+        public static CreateTorus(name: string, options: any, thicknessOrScene: any, tessellation?: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+            if (thicknessOrScene instanceof Scene) {
+                scene = thicknessOrScene;
+                updatable = options.updatable;
+            } else {
+                var diameter = options;
+                options = {
+                    diameter: diameter,
+                    thickness: thicknessOrScene,
+                    tessellation: tessellation,
+                    sideOrientation: sideOrientation
+                }
+            }
             var torus = new Mesh(name, scene);
-            var vertexData = VertexData.CreateTorus(diameter, thickness, tessellation, sideOrientation);
+            var vertexData = VertexData.CreateTorus(options);
 
             vertexData.applyToMesh(torus, updatable);
 
             return torus;
         }
 
-        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateTorusKnot(name: string, options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, updatable?: boolean, sideOrientation?: number }, scene: any): Mesh;
+        public static CreateTorusKnot(name: string, options: any, tubeOrScene: any, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+            if (tubeOrScene instanceof Scene) {
+                scene = tubeOrScene;
+                updatable = options.updatable;
+            } else {
+                var radius = options;
+                options = {
+                    radius: radius,
+                    tube: tubeOrScene,
+                    radialSegments: radialSegments,
+                    tubularSegments: tubularSegments,
+                    p: p,
+                    q: q,
+                    sideOrientation: sideOrientation
+                }
+            }
             var torusKnot = new Mesh(name, scene);
-            var vertexData = VertexData.CreateTorusKnot(radius, tube, radialSegments, tubularSegments, p, q, sideOrientation);
+            var vertexData = VertexData.CreateTorusKnot(options);
 
             vertexData.applyToMesh(torusKnot, updatable);
 
@@ -1414,8 +1511,23 @@
         }
 
         // Lines
-        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
-            if (linesInstance) { // lines update
+        public static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
+        public static CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh;
+        public static CreateLines(name: string, options: any, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
+            var points: Vector3[];
+            if (Array.isArray(options)) {
+                points = options;
+                if (!instance) {
+                    options = {
+                        points: points
+                    }
+                }
+            } else {
+                instance = options.instance;
+                points = options.points;
+            }
+
+            if (instance) { // lines update
                 var positionFunction = positions => {
                     var i = 0;
                     for (var p = 0; p < points.length; p++) {
@@ -1425,20 +1537,43 @@
                         i += 3;
                     }
                 };
-                linesInstance.updateMeshPositions(positionFunction, false);
-                return linesInstance;
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
             }
 
             // lines creation
             var lines = new LinesMesh(name, scene);
-            var vertexData = VertexData.CreateLines(points);
-            vertexData.applyToMesh(lines, updatable);
+            var vertexData = VertexData.CreateLines(options);
+            vertexData.applyToMesh(lines, updatable || options.updatable);
             return lines;
         }
 
         // Dashed Lines
-        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, linesInstance: LinesMesh = null): LinesMesh {
-            if (linesInstance) {  //  dashed lines update
+        public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
+        public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh;
+        public static CreateDashedLines(name: string, options: any, dashSizeOrScene: any, gapSize?: number, dashNb?: number, scene?: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
+            var points: Vector3[];
+            var dashSize: number;
+            if (Array.isArray(options)) {
+                points = options;
+                dashSize = dashSizeOrScene;
+                if (!instance) {
+                    options = {
+                        points: points,
+                        dashSize: dashSize,
+                        gapSize: gapSize,
+                        dashNb: dashNb
+                    }
+                }
+            } else {
+                scene = dashSizeOrScene,
+                points = options.points;
+                instance = options.instance;
+                gapSize = options.gapSize;
+                dashNb = options.dashNb;
+                dashSize = options.dashSize;
+            }
+            if (instance) {  //  dashed lines update
                 var positionFunction = (positions: number[]): void => {
                     var curvect = Vector3.Zero();
                     var nbSeg = positions.length / 6;
@@ -1455,7 +1590,7 @@
                         lg += curvect.length();
                     }
                     shft = lg / nbSeg;
-                    dashshft = (<any>linesInstance).dashSize * shft / ((<any>linesInstance).dashSize + (<any>linesInstance).gapSize);
+                    dashshft = (<any>instance).dashSize * shft / ((<any>instance).dashSize + (<any>instance).gapSize);
                     for (i = 0; i < points.length - 1; i++) {
                         points[i + 1].subtractToRef(points[i], curvect);
                         nb = Math.floor(curvect.length() / shft);
@@ -1480,13 +1615,13 @@
                         p += 3;
                     }
                 };
-                linesInstance.updateMeshPositions(positionFunction, false);
-                return linesInstance;
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
             }
             // dashed lines creation
             var dashedLines = new LinesMesh(name, scene);
-            var vertexData = VertexData.CreateDashedLines(points, dashSize, gapSize, dashNb);
-            vertexData.applyToMesh(dashedLines, updatable);
+            var vertexData = VertexData.CreateDashedLines(options);
+            vertexData.applyToMesh(dashedLines, updatable || options.updatable);
             (<any>dashedLines).dashSize = dashSize;
             (<any>dashedLines).gapSize = gapSize;
             return dashedLines;
@@ -1550,20 +1685,20 @@
                     return pointCap;
                 };
                 switch (cap) {
-                case Mesh.NO_CAP:
-                    break;
-                case Mesh.CAP_START:
-                    shapePaths.unshift(capPath(shapePaths[0]));
-                    break;
-                case Mesh.CAP_END:
-                    shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
-                    break;
-                case Mesh.CAP_ALL:
-                    shapePaths.unshift(capPath(shapePaths[0]));
-                    shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
-                    break;
-                default:
-                    break;
+                    case Mesh.NO_CAP:
+                        break;
+                    case Mesh.CAP_START:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        break;
+                    case Mesh.CAP_END:
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    case Mesh.CAP_ALL:
+                        shapePaths.unshift(capPath(shapePaths[0]));
+                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        break;
+                    default:
+                        break;
                 }
                 return shapePaths;
             };
@@ -1625,11 +1760,20 @@
 
         // Plane & ground
         public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreatePlane(name: string, options: { width?: number, height?: number, sideOrientation?: number, updatable?: boolean}, scene: Scene): Mesh;
+        public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh;
         public static CreatePlane(name: string, options: any, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            if (typeof options === 'number') {
+                var size = options;
+                options = {
+                    size: size,
+                    width: size,
+                    height: size,
+                    sideOrientation: sideOrientation
+                }
+            }
             var plane = new Mesh(name, scene);
 
-            var vertexData = VertexData.CreatePlane(options, sideOrientation);
+            var vertexData = VertexData.CreatePlane(options);
 
             vertexData.applyToMesh(plane, updatable || options.updatable);
 
@@ -1637,7 +1781,7 @@
         }
 
         public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh;
-        public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: any): Mesh;
+        public static CreateGround(name: string, options: { width?: number, height?: number, subdivisions?: number, updatable?: boolean }, scene: any): Mesh;
         public static CreateGround(name: string, options: any, heightOrScene: any, subdivisions?: number, scene?: Scene, updatable?: boolean): Mesh {
             if (heightOrScene instanceof Scene) {
                 scene = heightOrScene;
@@ -1694,7 +1838,7 @@
 
                 // Create VertexData from map data
                 // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-                var buffer = <Uint8Array> (<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
+                var buffer = <Uint8Array>(<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
                 var vertexData = VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
 
                 vertexData.applyToMesh(ground, updatable);
@@ -1712,8 +1856,25 @@
             return ground;
         }
 
-        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, tubeInstance: Mesh = null): Mesh {
-
+        public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
+        public static CreateTube(name: string, options: any, radiusOrScene: any, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
+            var path: Vector3[];
+            var radius: number;
+            if (Array.isArray(options)) {
+                    path = options;
+                    radius = radiusOrScene;
+                } else {
+                    scene = radiusOrScene;
+                    path = options.path;
+                    radius = options.radius || 1;
+                    tessellation = options.tessellation || 64;
+                    radiusFunction = options.radiusFunction;
+                    cap = options.cap || Mesh.NO_CAP,
+                    updatable = options.updatable;
+                    sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE,
+                    instance = options.instance
+                }
             // tube geometry
             var tubePathArray = (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) => {
                 var tangents = path3D.getTangents();
@@ -1743,7 +1904,7 @@
                     index++;
                 }
                 // cap
-                var capPath = function (nbPoints, pathIndex) {
+                var capPath = (nbPoints, pathIndex) => {
                     var pointCap = Array<Vector3>();
                     for (var i = 0; i < nbPoints; i++) {
                         pointCap.push(path[pathIndex]);
@@ -1751,31 +1912,33 @@
                     return pointCap;
                 };
                 switch (cap) {
-                case Mesh.NO_CAP:
-                    break;
-                case Mesh.CAP_START:
-                    circlePaths.unshift(capPath(tessellation + 1, 0));
-                    break;
-                case Mesh.CAP_END:
-                    circlePaths.push(capPath(tessellation + 1, path.length - 1));
-                    break;
-                case Mesh.CAP_ALL:
-                    circlePaths.unshift(capPath(tessellation + 1, 0));
-                    circlePaths.push(capPath(tessellation + 1, path.length - 1));
-                    break;
-                default:
-                    break;
+                    case Mesh.NO_CAP:
+                        break;
+                    case Mesh.CAP_START:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        break;
+                    case Mesh.CAP_END:
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    case Mesh.CAP_ALL:
+                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        break;
+                    default:
+                        break;
                 }
                 return circlePaths;
             };
             var path3D;
             var pathArray;
-            if (tubeInstance) { // tube update
-                path3D = ((<any>tubeInstance).path3D).update(path);
-                pathArray = tubePathArray(path, path3D, (<any>tubeInstance).pathArray, radius, (<any>tubeInstance).tessellation, radiusFunction, (<any>tubeInstance).cap);
-                tubeInstance = Mesh.CreateRibbon(null, pathArray, null, null, null, null, null, null, tubeInstance);
+            if (instance) { // tube update
+                path3D = ((<any>instance).path3D).update(path);
+                pathArray = tubePathArray(path, path3D, (<any>instance).pathArray, radius, (<any>instance).tessellation, radiusFunction, (<any>instance).cap);
+                instance = Mesh.CreateRibbon(null, { pathArray: pathArray, instance: instance });
+                (<any>instance).path3D = path3D;
+                (<any>instance).pathArray = pathArray;
 
-                return tubeInstance;
+                return instance;
 
             }
             // tube creation
@@ -1783,7 +1946,7 @@
             var newPathArray = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
-            var tube = Mesh.CreateRibbon(name, pathArray, false, true, 0, scene, updatable, sideOrientation);
+            var tube = Mesh.CreateRibbon(name, {pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation}, scene);
             (<any>tube).pathArray = pathArray;
             (<any>tube).path3D = path3D;
             (<any>tube).tessellation = tessellation;
@@ -1851,7 +2014,7 @@
                     return new PositionNormalVertex(
                         Vector3.Lerp(v0.position, v1.position, clipFactor),
                         Vector3.Lerp(v0.normal, v1.normal, clipFactor)
-                        );
+                    );
                 };
                 var result = new Array<PositionNormalVertex>();
 
@@ -2049,13 +2212,13 @@
                 var matricesWeight1 = matricesWeightsData[index4 + 1];
                 var matricesWeight2 = matricesWeightsData[index4 + 2];
                 var matricesWeight3 = matricesWeightsData[index4 + 3];
-                
+
                 if (matricesWeight0 > 0) {
                     Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4] * 16, matricesWeight0, tempMatrix);
                     finalMatrix.addToSelf(tempMatrix);
                 }
 
-                if (matricesWeight1> 0) {
+                if (matricesWeight1 > 0) {
                     Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 1] * 16, matricesWeight1, tempMatrix);
                     finalMatrix.addToSelf(tempMatrix);
                 }
@@ -2179,5 +2342,8 @@
         }
     }
 }
+
+
+
 
 

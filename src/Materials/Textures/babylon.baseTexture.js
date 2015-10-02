@@ -89,22 +89,14 @@ var BABYLON;
         };
         BaseTexture.prototype.delayLoad = function () {
         };
-        BaseTexture.prototype.releaseInternalTexture = function () {
-            if (!this._texture) {
-                return;
-            }
-            var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
-            this._texture.references--;
-            // Final reference ?
-            if (this._texture.references === 0) {
-                var index = texturesCache.indexOf(this._texture);
-                texturesCache.splice(index, 1);
-                this._scene.getEngine()._releaseTexture(this._texture);
-                delete this._texture;
-            }
-        };
         BaseTexture.prototype.clone = function () {
             return null;
+        };
+        BaseTexture.prototype.releaseInternalTexture = function () {
+            if (this._texture) {
+                this._scene.getEngine().releaseInternalTexture(this._texture);
+                delete this._texture;
+            }
         };
         BaseTexture.prototype.dispose = function () {
             // Remove from scene
@@ -115,7 +107,6 @@ var BABYLON;
             if (this._texture === undefined) {
                 return;
             }
-            this.releaseInternalTexture();
             // Callback
             if (this.onDispose) {
                 this.onDispose();

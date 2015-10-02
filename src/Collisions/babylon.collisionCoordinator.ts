@@ -54,7 +54,7 @@ module BABYLON {
 
     export interface BabylonMessage {
         taskType: WorkerTaskType;
-        payload: InitPayload|CollidePayload|UpdatePayload /*any for TS under 1.4*/;
+        payload: InitPayload | CollidePayload | UpdatePayload /*any for TS under 1.4*/;
     }
 
     export interface SerializedColliderToWorker {
@@ -158,7 +158,7 @@ module BABYLON {
             if (mesh instanceof Mesh) {
                 geometryId = (<Mesh>mesh).geometry ? (<Mesh>mesh).geometry.id : null;
             } else if (mesh instanceof InstancedMesh) {
-                geometryId = (<InstancedMesh>mesh).sourceMesh.geometry ? (<InstancedMesh>mesh).sourceMesh.geometry.id : null;
+                geometryId = ((<InstancedMesh>mesh).sourceMesh && (<InstancedMesh>mesh).sourceMesh.geometry) ? (<InstancedMesh>mesh).sourceMesh.geometry.id : null;
             }
 
             return {
@@ -288,9 +288,9 @@ module BABYLON {
             for (var id in payload.updatedGeometries) {
                 if (payload.updatedGeometries.hasOwnProperty(id)) {
                     //prepare transferables
-                    serializable.push((<UpdatePayload> message.payload).updatedGeometries[id].indices.buffer);
-                    serializable.push((<UpdatePayload> message.payload).updatedGeometries[id].normals.buffer);
-                    serializable.push((<UpdatePayload> message.payload).updatedGeometries[id].positions.buffer);
+                    serializable.push((<UpdatePayload>message.payload).updatedGeometries[id].indices.buffer);
+                    serializable.push((<UpdatePayload>message.payload).updatedGeometries[id].normals.buffer);
+                    serializable.push((<UpdatePayload>message.payload).updatedGeometries[id].positions.buffer);
                 }
             }
 
@@ -302,7 +302,7 @@ module BABYLON {
         }
 
         private _onMessageFromWorker = (e: MessageEvent) => {
-            var returnData = <WorkerReply> e.data;
+            var returnData = <WorkerReply>e.data;
             if (returnData.error != WorkerReplyType.SUCCESS) {
                 //TODO what errors can be returned from the worker?
                 Tools.Warn("error returned from worker!");
@@ -350,7 +350,7 @@ module BABYLON {
         public getNewPosition(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh?: AbstractMesh) => void, collisionIndex: number): void {
             position.divideToRef(collider.radius, this._scaledPosition);
             velocity.divideToRef(collider.radius, this._scaledVelocity);
-			collider.collidedMesh = null;
+            collider.collidedMesh = null;
             collider.retry = 0;
             collider.initialVelocity = this._scaledVelocity;
             collider.initialPosition = this._scaledPosition;
@@ -414,4 +414,5 @@ module BABYLON {
         }
     }
 }
+
 

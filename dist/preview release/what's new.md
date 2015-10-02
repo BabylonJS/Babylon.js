@@ -3,6 +3,22 @@
     - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.lightmapThreshold`. [Demo here](#NEEDDEMO) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New `Material.sideOrientation` property to define clockwise or counter-clockwise faces selection. [Demo here](http://www.babylonjs-playground.com/#1TZJQY) ([deltakosh](https://github.com/deltakosh))
+    - It is now possible to create a custom loading screen [PR](https://github.com/BabylonJS/Babylon.js/pull/700) ([RaananW](https://github.com/RaananW))
   - **Bug fixes**
+    - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
+    - Fixed Sphere texture coordinates generation ([deltakosh](https://github.com/deltakosh))
+    - Fixed bug with `Mesh.attachToBone` when bone's matrix has a negative determinant ([deltakosh](https://github.com/deltakosh))
+    - Fixed a possible but with the active camera while taking a screenshot [PR](https://github.com/BabylonJS/Babylon.js/pull/701) ([RaananW](https://github.com/RaananW))
+    - Fixed a bug with worker-collisions and instances [PR](https://github.com/BabylonJS/Babylon.js/pull/705) ([RaananW](https://github.com/RaananW))
+    - Fixed a bug with removed meshes and geometries from the worker-cache [PR](https://github.com/BabylonJS/Babylon.js/pull/711) ([RaananW](https://github.com/RaananW))
   - **Breaking changes**
-
+    - `VertexData.CreateCylinder()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateRibbon()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateBox()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateSphere)` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateTorus()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateTorusKnot()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreatePlane()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateDisc()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateLines()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
+    - `VertexData.CreateDashedLines()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))

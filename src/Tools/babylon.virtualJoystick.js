@@ -58,6 +58,8 @@ var BABYLON;
                 VirtualJoystick.vjCanvas.style.left = "0px";
                 VirtualJoystick.vjCanvas.style.zIndex = "5";
                 VirtualJoystick.vjCanvas.style.msTouchAction = "none";
+                // Support for jQuery PEP polyfill
+                VirtualJoystick.vjCanvas.setAttribute("touch-action", "none");
                 VirtualJoystick.vjCanvasContext = VirtualJoystick.vjCanvas.getContext('2d');
                 VirtualJoystick.vjCanvasContext.strokeStyle = "#ffffff";
                 VirtualJoystick.vjCanvasContext.lineWidth = 2;

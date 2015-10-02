@@ -19,11 +19,17 @@ var BABYLON;
         CollisionCache.prototype.addMesh = function (mesh) {
             this._meshes[mesh.uniqueId] = mesh;
         };
+        CollisionCache.prototype.removeMesh = function (uniqueId) {
+            delete this._meshes[uniqueId];
+        };
         CollisionCache.prototype.getGeometry = function (id) {
             return this._geometries[id];
         };
         CollisionCache.prototype.addGeometry = function (geometry) {
             this._geometries[geometry.id] = geometry;
+        };
+        CollisionCache.prototype.removeGeometry = function (id) {
+            delete this._geometries[id];
         };
         return CollisionCache;
     })();
@@ -38,8 +44,7 @@ var BABYLON;
         }
         CollideWorker.prototype.collideWithWorld = function (position, velocity, maximumRetry, excludedMeshUniqueId) {
             //TODO CollisionsEpsilon should be defined here and not in the engine.
-            var closeDistance = 0.01;
-            //is initializing here correct? A quick look - looks like it is fine.
+            var closeDistance = 0.01; //is initializing here correct? A quick look - looks like it is fine.
             if (this.collider.retry >= maximumRetry) {
                 this.finalPosition.copyFrom(position);
                 return;
@@ -85,17 +90,14 @@ var BABYLON;
             //return colTransMat;
         };
         CollideWorker.prototype.processCollisionsForSubMeshes = function (transformMatrix, mesh) {
-            var len;
-            var subMeshes;
-            // No Octrees for now
             //if (this._submeshesOctree && this.useOctreeForCollisions) {
             //    var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
             //    var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
             //    len = intersections.length;
             //    subMeshes = intersections.data;
             //} else {
-            subMeshes = mesh.subMeshes;
-            len = subMeshes.length;
+            var subMeshes = mesh.subMeshes;
+            var len = subMeshes.length;
             //}
             if (!mesh.geometryId) {
                 console.log("no mesh geometry id");
@@ -156,20 +158,32 @@ var BABYLON;
             postMessage(reply, undefined);
         };
         CollisionDetectorTransferable.prototype.onUpdate = function (payload) {
-            for (var id in payload.updatedGeometries) {
-                if (payload.updatedGeometries.hasOwnProperty(id)) {
-                    this._collisionCache.addGeometry(payload.updatedGeometries[id]);
-                }
-            }
-            for (var uniqueId in payload.updatedMeshes) {
-                if (payload.updatedMeshes.hasOwnProperty(uniqueId)) {
-                    this._collisionCache.addMesh(payload.updatedMeshes[uniqueId]);
-                }
-            }
+            var _this = this;
             var replay = {
                 error: BABYLON.WorkerReplyType.SUCCESS,
                 taskType: BABYLON.WorkerTaskType.UPDATE
             };
+            try {
+                for (var id in payload.updatedGeometries) {
+                    if (payload.updatedGeometries.hasOwnProperty(id)) {
+                        this._collisionCache.addGeometry(payload.updatedGeometries[id]);
+                    }
+                }
+                for (var uniqueId in payload.updatedMeshes) {
+                    if (payload.updatedMeshes.hasOwnProperty(uniqueId)) {
+                        this._collisionCache.addMesh(payload.updatedMeshes[uniqueId]);
+                    }
+                }
+                payload.removedGeometries.forEach(function (id) {
+                    _this._collisionCache.removeGeometry(id);
+                });
+                payload.removedMeshes.forEach(function (uniqueId) {
+                    _this._collisionCache.removeMesh(uniqueId);
+                });
+            }
+            catch (x) {
+                replay.error = BABYLON.WorkerReplyType.UNKNOWN_ERROR;
+            }
             postMessage(replay, undefined);
         };
         CollisionDetectorTransferable.prototype.onCollision = function (payload) {

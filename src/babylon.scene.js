@@ -95,6 +95,9 @@ var BABYLON;
             this.customRenderTargets = new Array();
             // Imported meshes
             this.importedMeshesFiles = new Array();
+            // Probes
+            this.probesEnabled = true;
+            this.reflectionProbes = new Array();
             this._actionManagers = new Array();
             this._meshesForIntersections = new BABYLON.SmartArray(256);
             // Procedural textures
@@ -509,9 +512,7 @@ var BABYLON;
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
-            if (speedRatio === undefined) {
-                speedRatio = 1.0;
-            }
+            if (speedRatio === void 0) { speedRatio = 1.0; }
             this.stopAnimation(target);
             if (!animatable) {
                 animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
@@ -1285,14 +1286,6 @@ var BABYLON;
             if (!this.simplificationQueue.running) {
                 this.simplificationQueue.executeNext();
             }
-            // Before render
-            if (this.beforeRender) {
-                this.beforeRender();
-            }
-            var callbackIndex;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
-            }
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
@@ -1302,6 +1295,14 @@ var BABYLON;
                 BABYLON.Tools.StartPerformanceCounter("Physics");
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
                 BABYLON.Tools.EndPerformanceCounter("Physics");
+            }
+            // Before render
+            if (this.beforeRender) {
+                this.beforeRender();
+            }
+            var callbackIndex;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+                this._onBeforeRenderCallbacks[callbackIndex]();
             }
             // Customs render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;

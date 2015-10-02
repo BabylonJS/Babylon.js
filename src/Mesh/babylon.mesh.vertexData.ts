@@ -381,12 +381,14 @@
             return result;
         }
 
-        public static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
-            closeArray = closeArray || false;
-            closePath = closePath || false;
-            var defaultOffset = Math.floor(pathArray[0].length / 2);
-            offset = offset || defaultOffset;
+        public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number }): VertexData {
+            var pathArray: Vector3[][] = options.pathArray;
+            var closeArray: boolean = options.closeArray || false;
+            var closePath: boolean = options.closePath || false;
+            var defaultOffset: number = Math.floor(pathArray[0].length / 2);
+            var offset: number = options.offset || defaultOffset;
             offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
+            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var positions: number[] = [];
             var indices: number[] = [];
@@ -574,9 +576,7 @@
             return vertexData;
         }
 
-        public static CreateBox(options: { width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData;
-        public static CreateBox(size: number, sideOrientation?: number): VertexData;
-        public static CreateBox(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
             var normalsSource = [
                 new Vector3(0, 0, 1),
                 new Vector3(0, 0, -1),
@@ -591,29 +591,18 @@
             var normals = [];
             var uvs = [];
 
-            var width = 1;
-            var height = 1;
-            var depth = 1;
+            var width = options.width || options.size || 1;
+            var height = options.height || options.size || 1;
+            var depth = options.depth || options.size || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
             var faceColors: Color4[];
             var colors = [];
-
             if (options.faceColors) {
                 faceColors = options.faceColors;
             }
 
-            if (options.width !== undefined) {
-                width = options.width || 1;
-                height = options.height || 1;
-                depth = options.depth || 1;
-            } else { // back-compat with size parameter
-                width = options || 1;
-                height = options || 1;
-                depth = options || 1;
-            }
-
-            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
-
+            // default face colors and UV if undefined
             for (var f = 0; f < 6; f++) {
                 if (faceUV[f] === undefined) {
                     faceUV[f] = new Vector4(0, 0, 1, 1);
@@ -695,27 +684,13 @@
 
             return vertexData;
         }
-        public static CreateSphere(options: { segments?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number }): VertexData;
-        public static CreateSphere(segments: number, diameter?: number, sideOrientation?: number): VertexData;
-        public static CreateSphere(options: any, diameter?: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
-            var segments: number;
-            var diameterX: number;
-            var diameterY: number;
-            var diameterZ: number;
 
-            if (options.segments) {
-                segments = options.segments || 32;
-                diameterX = options.diameterX || 1;
-                diameterY = options.diameterY || 1;
-                diameterZ = options.diameterZ || 1;
-            } else { // Back-compat
-                segments = options || 32;
-                diameterX = diameter || 1;
-                diameterY = diameterX;
-                diameterZ = diameterX;
-            }
-
-            sideOrientation = sideOrientation || options.sideOrientation || Mesh.DEFAULTSIDE;
+        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number }): VertexData {
+            var segments: number = options.segments || 32;
+            var diameterX: number = options.diameterX || options.diameter || 1;
+            var diameterY: number = options.diameterY || options.diameter || 1;
+            var diameterZ: number = options.diameterZ || options.diameter || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
 
@@ -746,7 +721,7 @@
 
                     positions.push(vertex.x, vertex.y, vertex.z);
                     normals.push(normal.x, normal.y, normal.z);
-                    uvs.push(normalizedZ, normalizedY);
+                    uvs.push(normalizedY, normalizedZ);
                 }
 
                 if (zRotationStep > 0) {
@@ -777,8 +752,14 @@
             return vertexData;
         }
 
-        // Cylinder and cone (made using ribbons)
-        public static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        // Cylinder and cone 
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
+            var height: number = options.height || 2;
+            var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
+            var diameterBottom: number = options.diameterBottom || 1;
+            var tessellation: number = options.tessellation || 24;
+            var subdivisions: number = options.subdivisions || 1;
+            var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var indices = [];
             var positions = [];
@@ -888,15 +869,16 @@
             return vertexData;
         }
 
-        public static CreateTorus(diameter, thickness, tessellation, sideOrientation: number = Mesh.DEFAULTSIDE) {
+        public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number }) {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
 
-            diameter = diameter || 1;
-            thickness = thickness || 0.5;
-            tessellation = tessellation || 16;
+            var diameter = options.diameter || 1;
+            var thickness = options.thickness || 0.5;
+            var tessellation = options.tessellation || 16;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var stride = tessellation + 1;
 
@@ -955,9 +937,10 @@
             return vertexData;
         }
 
-        public static CreateLines(points: Vector3[]): VertexData {
+        public static CreateLines(options: { points: Vector3[] }): VertexData {
             var indices = [];
             var positions = [];
+            var points = options.points;
 
             for (var index = 0; index < points.length; index++) {
                 positions.push(points[index].x, points[index].y, points[index].z);
@@ -977,10 +960,11 @@
             return vertexData;
         }
 
-        public static CreateDashedLines(points: Vector3[], dashSize: number, gapSize: number, dashNb: number): VertexData {
-            dashSize = dashSize || 3;
-            gapSize = gapSize || 1;
-            dashNb = dashNb || 200;
+        public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
+            var dashSize = options.dashSize || 3;
+            var gapSize = options.gapSize || 1;
+            var dashNb = options.dashNb || 200;
+            var points = options.points;
 
             var positions = new Array<number>();
             var indices = new Array<number>();
@@ -1020,26 +1004,16 @@
             return vertexData;
         }
 
-        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, sideOrientation?: number }): VertexData;
-        public static CreateGround(width: number, height: number, subdivisions?: number): VertexData;
-        public static CreateGround(options: any, height?: number, subdivisions?: number): VertexData {
+        public static CreateGround(options: { width?: number, height?: number, subdivisions?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
             var row: number, col: number;
 
-            var width: number;
-
-            if (options.width) {
-                width = options.width || 1;
-                height = options.height || 1;
-                subdivisions = options.subdivisions || 1;
-            } else {
-                width = options || 1;
-                height = height || 1;
-                subdivisions = subdivisions || 1;
-            }
+            var width: number = options.width || 1;
+            var height: number = options.height || 1;
+            var subdivisions: number = options.subdivisions || 1;
 
             for (row = 0; row <= subdivisions; row++) {
                 for (col = 0; col <= subdivisions; col++) {
@@ -1137,7 +1111,7 @@
                         zmin + tileRow * tileSize.h,
                         xmin + (tileCol + 1) * tileSize.w,
                         zmin + (tileRow + 1) * tileSize.h
-                        );
+                    );
                 }
             }
 
@@ -1210,25 +1184,16 @@
 
             return vertexData;
         }
-        public static CreatePlane(options: { width?: number, height?: number, sideOrientation?: number }): VertexData;
-        public static CreatePlane(size: number, sideOrientation?: number): VertexData;
-        public static CreatePlane(options: any, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+
+        public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
 
-            var width: number;
-            var height: number;
-
-            if (options.width) {
-                width = options.width || 1;
-                height = options.height || 1;
-                sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
-            } else {
-                width = options || 1;
-                height = options || 1;
-            }
+            var width: number = options.width || options.size || 1;
+            var height: number = options.height || options.size || 1;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // Vertices
             var halfWidth = width / 2.0;
@@ -1273,11 +1238,15 @@
             return vertexData;
         }
 
-        public static CreateDisc(radius: number, tessellation: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateDisc(options: { radius?: number, tessellation?: number, sideOrientation?: number }): VertexData {
             var positions = [];
             var indices = [];
             var normals = [];
             var uvs = [];
+
+            var radius = options.radius || 0.5;
+            var tessellation = options.tessellation || 64;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // positions and uvs
             positions.push(0, 0, 0);    // disc center first
@@ -1316,18 +1285,19 @@
         }
 
         // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
-        public static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, sideOrientation: number = Mesh.DEFAULTSIDE): VertexData {
+        public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
 
-            radius = radius || 2;
-            tube = tube || 0.5;
-            radialSegments = radialSegments || 32;
-            tubularSegments = tubularSegments || 32;
-            p = p || 2;
-            q = q || 3;
+            var radius = options.radius || 2;
+            var tube = options.tube || 0.5;
+            var radialSegments = options.radialSegments || 32;
+            var tubularSegments = options.tubularSegments || 32;
+            var p = options.p || 2;
+            var q = options.q || 3;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // Helper
             var getPos = (angle) => {
@@ -1520,6 +1490,9 @@
         }
     }
 } 
+
+
+
 
 
 

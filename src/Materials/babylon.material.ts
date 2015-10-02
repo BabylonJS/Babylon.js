@@ -41,6 +41,7 @@
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
         public alphaMode = Engine.ALPHA_COMBINE;
         public disableDepthWrite = false;
+        public fogEnabled = true;
 
         public _effect: Effect;
         public _wasPreviouslyReady = false;
@@ -163,6 +164,23 @@
             if (this.onDispose) {
                 this.onDispose();
             }
+        }
+
+        public copyTo(other: Material): void {
+            other.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
+            other.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
+            other.alpha = this.alpha;
+            other.fillMode = this.fillMode;
+            other.backFaceCulling = this.backFaceCulling;
+            other.wireframe = this.wireframe;
+            other.fogEnabled = this.fogEnabled
+            other.wireframe = this.wireframe;
+            other.zOffset = this.zOffset;
+            other.alphaMode = this.alphaMode;
+            other.sideOrientation = this.sideOrientation;
+            other.disableDepthWrite = this.disableDepthWrite;
+            other.pointSize = this.pointSize;
+            other.pointsCloud = this.pointsCloud;
         }
     }
 } 

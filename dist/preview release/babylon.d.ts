@@ -110,10 +110,7 @@ declare module BABYLON {
         private _caps;
         private _pointerLockRequested;
         private _alphaTest;
-        private _resizeLoadingUI;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        private _loadingDivBackgroundColor;
+        private _loadingScreen;
         private _drawCalls;
         private _glVersion;
         private _glRenderer;
@@ -274,7 +271,8 @@ declare module BABYLON {
         updateTextureSamplingMode(samplingMode: number, texture: WebGLTexture): void;
         updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void;
         updateVideoTexture(texture: WebGLTexture, video: HTMLVideoElement, invertY: boolean): void;
-        createRenderTargetTexture(size: any, options: any): WebGLTexture;
+        createRenderTargetTexture(size: any, options: any, face?: number): WebGLTexture;
+        createRenderTargetCubeTexture(size: number): WebGLTexture;
         createCubeTexture(rootUrl: string, scene: Scene, extensions: string[], noMipmap?: boolean): WebGLTexture;
         _releaseTexture(texture: WebGLTexture): void;
         bindSamplers(effect: Effect): void;
@@ -283,11 +281,13 @@ declare module BABYLON {
         setTexture(channel: number, texture: BaseTexture): void;
         _setAnisotropicLevel(key: number, texture: BaseTexture): void;
         readPixels(x: number, y: number, width: number, height: number): Uint8Array;
+        releaseInternalTexture(texture: WebGLTexture): void;
         dispose(): void;
         displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingScreen: ILoadingScreen;
         loadingUIText: string;
         loadingUIBackgroundColor: string;
-        hideLoadingUI(): void;
         getFps(): number;
         getDeltaTime(): number;
         private _measureFps();
@@ -363,6 +363,7 @@ interface WebGLTexture {
     _cachedWrapU: number;
     _cachedWrapV: number;
     _isDisabled: boolean;
+    _cubeFaces: WebGLTexture[];
 }
 interface WebGLBuffer {
     references: number;
@@ -593,6 +594,8 @@ declare module BABYLON {
         customRenderTargets: RenderTargetTexture[];
         useDelayedTextureLoading: boolean;
         importedMeshesFiles: String[];
+        probesEnabled: boolean;
+        reflectionProbes: ReflectionProbe[];
         database: any;
         /**
          * This scene's action manager
@@ -1155,9 +1158,10 @@ declare module BABYLON {
         value: any;
         duration: number;
         stopOtherAnimations: boolean;
+        onInterpolationDone: () => void;
         private _target;
         private _property;
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean);
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void);
         _prepare(): void;
         execute(): void;
     }
@@ -1204,7 +1208,7 @@ declare module BABYLON {
         targetPropertyPath: string[];
         currentFrame: number;
         allowMatricesInterpolation: boolean;
-        static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animatable;
+        static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
         constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number);
         reset(): void;
         isStopped(): boolean;
@@ -1525,122 +1529,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        private _camera;
-        private _transformationMatrix;
-        private _enabled;
-        private _labelsEnabled;
-        private _displayStatistics;
-        private _displayTree;
-        private _displayLogs;
-        private _globalDiv;
-        private _statsDiv;
-        private _statsSubsetDiv;
-        private _optionsDiv;
-        private _optionsSubsetDiv;
-        private _logDiv;
-        private _logSubsetDiv;
-        private _treeDiv;
-        private _treeSubsetDiv;
-        private _drawingCanvas;
-        private _drawingContext;
-        private _syncPositions;
-        private _syncData;
-        private _syncUI;
-        private _onCanvasClick;
-        private _clickPosition;
-        private _ratio;
-        private _identityMatrix;
-        private _showUI;
-        private _needToRefreshMeshesTree;
-        shouldDisplayLabel: (node: Node) => boolean;
-        shouldDisplayAxis: (mesh: Mesh) => boolean;
-        axisRatio: number;
-        accentColor: string;
-        customStatsFunction: () => string;
-        constructor(scene: Scene);
-        private _refreshMeshesTreeContent();
-        private _renderSingleAxis(zero, unit, unitText, label, color);
-        private _renderAxis(projectedPosition, mesh, globalViewport);
-        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
-        private _isClickInsideRect(x, y, width, height);
-        isVisible(): boolean;
-        hide(): void;
-        show(showUI?: boolean, camera?: Camera): void;
-        private _clearLabels();
-        private _generateheader(root, text);
-        private _generateTexBox(root, title, color);
-        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
-        private _generateCheckBox(root, title, initialState, task, tag?);
-        private _generateButton(root, title, task, tag?);
-        private _generateRadio(root, title, name, initialState, task, tag?);
-        private _generateDOMelements();
-        private _displayStats();
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        extendSize: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingInfo {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
     class Collider {
         radius: Vector3;
         retry: number;
@@ -1826,8 +1714,10 @@ declare module BABYLON {
         };
         getMesh(id: any): SerializedMesh;
         addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
         getGeometry(id: string): SerializedGeometry;
         addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
     }
     class CollideWorker {
         collider: Collider;
@@ -2270,6 +2160,62 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        private _camera;
+        private _transformationMatrix;
+        private _enabled;
+        private _labelsEnabled;
+        private _displayStatistics;
+        private _displayTree;
+        private _displayLogs;
+        private _globalDiv;
+        private _statsDiv;
+        private _statsSubsetDiv;
+        private _optionsDiv;
+        private _optionsSubsetDiv;
+        private _logDiv;
+        private _logSubsetDiv;
+        private _treeDiv;
+        private _treeSubsetDiv;
+        private _drawingCanvas;
+        private _drawingContext;
+        private _syncPositions;
+        private _syncData;
+        private _syncUI;
+        private _onCanvasClick;
+        private _clickPosition;
+        private _ratio;
+        private _identityMatrix;
+        private _showUI;
+        private _needToRefreshMeshesTree;
+        shouldDisplayLabel: (node: Node) => boolean;
+        shouldDisplayAxis: (mesh: Mesh) => boolean;
+        axisRatio: number;
+        accentColor: string;
+        customStatsFunction: () => string;
+        constructor(scene: Scene);
+        private _refreshMeshesTreeContent();
+        private _renderSingleAxis(zero, unit, unitText, label, color);
+        private _renderAxis(projectedPosition, mesh, globalViewport);
+        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
+        private _isClickInsideRect(x, y, width, height);
+        isVisible(): boolean;
+        hide(): void;
+        show(showUI?: boolean, camera?: Camera): void;
+        private _clearLabels();
+        private _generateheader(root, text);
+        private _generateTexBox(root, title, color);
+        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
+        private _generateCheckBox(root, title, initialState, task, tag?);
+        private _generateButton(root, title, task, tag?);
+        private _generateRadio(root, title, name, initialState, task, tag?);
+        private _generateDOMelements();
+        private _displayStats();
+    }
+}
+
+declare module BABYLON {
     class Layer {
         name: string;
         texture: Texture;
@@ -2285,6 +2231,66 @@ declare module BABYLON {
         constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
         render(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBox {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        extendSize: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingInfo {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
     }
 }
 
@@ -2327,38 +2333,6 @@ declare module BABYLON {
         _isVisible(): boolean;
         render(): boolean;
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPlugin {
-        extensions: string;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        private static _registeredPlugins;
-        private static _getPluginForFilename(sceneFilename);
-        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -2561,6 +2535,7 @@ declare module BABYLON {
         getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
         alphaMode: number;
         disableDepthWrite: boolean;
+        fogEnabled: boolean;
         _effect: Effect;
         _wasPreviouslyReady: boolean;
         private _scene;
@@ -2585,6 +2560,7 @@ declare module BABYLON {
         unbind(): void;
         clone(name: string): Material;
         dispose(forceDisposeEffect?: boolean): void;
+        copyTo(other: Material): void;
     }
 }
 
@@ -2595,6 +2571,29 @@ declare module BABYLON {
         getSubMaterial(index: any): Material;
         isReady(mesh?: AbstractMesh): boolean;
         clone(name: string): MultiMaterial;
+    }
+}
+
+declare module BABYLON {
+    class PBRMaterial extends Material {
+        albedoColor: Color3;
+        private _worldViewProjectionMatrix;
+        private _globalAmbientColor;
+        private _scaledDiffuse;
+        private _scaledSpecular;
+        private _renderId;
+        private _defines;
+        private _cachedDefines;
+        constructor(name: string, scene: Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BaseTexture;
+        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        bindOnlyWorldMatrix(world: Matrix): void;
+        bind(world: Matrix, mesh?: Mesh): void;
+        getAnimatables(): IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): PBRMaterial;
     }
 }
 
@@ -2645,6 +2644,7 @@ declare module BABYLON {
         rightColor: Color3;
         bias: number;
         power: number;
+        clone(): FresnelParameters;
     }
     class StandardMaterial extends Material {
         diffuseTexture: BaseTexture;
@@ -2664,7 +2664,6 @@ declare module BABYLON {
         useEmissiveAsIllumination: boolean;
         useReflectionFresnelFromSpecular: boolean;
         useSpecularOverAlpha: boolean;
-        fogEnabled: boolean;
         roughness: number;
         lightmapThreshold: number;
         diffuseFresnelParameters: FresnelParameters;
@@ -2701,6 +2700,38 @@ declare module BABYLON {
         static BumpTextureEnabled: boolean;
         static FresnelEnabled: boolean;
         static LightmapEnabled: boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ISceneLoaderPlugin {
+        extensions: string;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        private static _registeredPlugins;
+        private static _getPluginForFilename(sceneFilename);
+        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -3223,99 +3254,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Particle {
-        position: Vector3;
-        direction: Vector3;
-        color: Color4;
-        colorStep: Color4;
-        lifeTime: number;
-        age: number;
-        size: number;
-        angle: number;
-        angularSpeed: number;
-        copyTo(other: Particle): void;
-    }
-}
-
-declare module BABYLON {
-    class ParticleSystem implements IDisposable {
-        name: string;
-        static BLENDMODE_ONEONE: number;
-        static BLENDMODE_STANDARD: number;
-        id: string;
-        renderingGroupId: number;
-        emitter: any;
-        emitRate: number;
-        manualEmitCount: number;
-        updateSpeed: number;
-        targetStopDuration: number;
-        disposeOnStop: boolean;
-        minEmitPower: number;
-        maxEmitPower: number;
-        minLifeTime: number;
-        maxLifeTime: number;
-        minSize: number;
-        maxSize: number;
-        minAngularSpeed: number;
-        maxAngularSpeed: number;
-        particleTexture: Texture;
-        layerMask: number;
-        onDispose: () => void;
-        updateFunction: (particles: Particle[]) => void;
-        blendMode: number;
-        forceDepthWrite: boolean;
-        gravity: Vector3;
-        direction1: Vector3;
-        direction2: Vector3;
-        minEmitBox: Vector3;
-        maxEmitBox: Vector3;
-        color1: Color4;
-        color2: Color4;
-        colorDead: Color4;
-        textureMask: Color4;
-        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
-        private particles;
-        private _capacity;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _stockParticles;
-        private _newPartsExcess;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _vertices;
-        private _effect;
-        private _customEffect;
-        private _cachedDefines;
-        private _scaledColorStep;
-        private _colorDiff;
-        private _scaledDirection;
-        private _scaledGravity;
-        private _currentRenderId;
-        private _alive;
-        private _started;
-        private _stopped;
-        private _actualFrame;
-        private _scaledUpdateSpeed;
-        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
-        recycleParticle(particle: Particle): void;
-        getCapacity(): number;
-        isAlive(): boolean;
-        isStarted(): boolean;
-        start(): void;
-        stop(): void;
-        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
-        private _update(newParticles);
-        private _getEffect();
-        animate(): void;
-        render(): number;
-        dispose(): void;
-        clone(name: string, newEmitter: any): ParticleSystem;
-    }
-}
-
-declare module BABYLON {
     class AbstractMesh extends Node implements IDisposable {
         private static _BILLBOARDMODE_NONE;
         private static _BILLBOARDMODE_X;
@@ -3357,6 +3295,7 @@ declare module BABYLON {
         useVertexColors: boolean;
         applyFog: boolean;
         computeBonesUsingShaders: boolean;
+        scalingDeterminant: number;
         useOctreeForRenderingSelection: boolean;
         useOctreeForPicking: boolean;
         useOctreeForCollisions: boolean;
@@ -3622,6 +3561,14 @@ declare module BABYLON {
             diameter: number;
             side: number;
             constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class Disc extends _Primitive {
+            radius: number;
+            tessellation: number;
+            side: number;
+            constructor(id: string, scene: Scene, radius: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
         }
@@ -3903,8 +3850,23 @@ declare module BABYLON {
          * @param successCallback an optional success callback to be called after the optimization finished.
          */
         optimizeIndices(successCallback?: (mesh?: Mesh) => void): void;
-        static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, ribbonInstance?: Mesh): Mesh;
+        static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        static CreateRibbon(name: string, options: {
+            pathArray?: Vector3[][];
+            closeArray?: boolean;
+            closePath?: boolean;
+            offset?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+            instance?: Mesh;
+        }, scene: Scene): Mesh;
         static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateDisc(name: string, options: {
+            radius: number;
+            tessellation: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+        }, scene: Scene): Mesh;
         static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreateBox(name: string, options: {
             width?: number;
@@ -3918,6 +3880,7 @@ declare module BABYLON {
         static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreateSphere(name: string, options: {
             segments?: number;
+            diameter?: number;
             diameterX?: number;
             diameterY?: number;
             diameterZ?: number;
@@ -3925,16 +3888,56 @@ declare module BABYLON {
             updatable?: boolean;
         }, scene: any): Mesh;
         static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh;
+        static CreateCylinder(name: string, options: {
+            height?: number;
+            diameterTop?: number;
+            diameterBottom?: number;
+            tessellation?: number;
+            subdivisions?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+        }, scene: any): Mesh;
         static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateTorus(name: string, options: {
+            diameter?: number;
+            thickness?: number;
+            tessellation?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+        }, scene: any): Mesh;
         static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance?: LinesMesh): LinesMesh;
-        static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, linesInstance?: LinesMesh): LinesMesh;
+        static CreateTorusKnot(name: string, options: {
+            radius?: number;
+            tube?: number;
+            radialSegments?: number;
+            tubularSegments?: number;
+            p?: number;
+            q?: number;
+            updatable?: boolean;
+            sideOrientation?: number;
+        }, scene: any): Mesh;
+        static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
+        static CreateLines(name: string, options: {
+            points: Vector3[];
+            updatable?: boolean;
+            instance?: LinesMesh;
+        }, scene: Scene): LinesMesh;
+        static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
+        static CreateDashedLines(name: string, options: {
+            points: Vector3[];
+            dashSize?: number;
+            gapSize?: number;
+            dashNb?: number;
+            updatable?: boolean;
+            instance?: LinesMesh;
+        }, scene: Scene): LinesMesh;
         static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, extrudedInstance?: Mesh): Mesh;
         static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: any, rotationFunction: any, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, extrudedInstance?: Mesh): Mesh;
         private static _ExtrudeShapeGeneric(name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance);
         static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreatePlane(name: string, options: {
+            size?: number;
             width?: number;
             height?: number;
             sideOrientation?: number;
@@ -3945,7 +3948,6 @@ declare module BABYLON {
             width?: number;
             height?: number;
             subdivisions?: number;
-            sideOrientation?: number;
             updatable?: boolean;
         }, scene: any): Mesh;
         static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {
@@ -4015,8 +4017,15 @@ declare module BABYLON {
         static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean): VertexData;
         static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean): VertexData;
         private static _ExtractFrom(meshOrGeometry, copyWhenShared?);
-        static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, sideOrientation?: number): VertexData;
+        static CreateRibbon(options: {
+            pathArray: Vector3[][];
+            closeArray?: boolean;
+            closePath?: boolean;
+            offset?: number;
+            sideOrientation?: number;
+        }): VertexData;
         static CreateBox(options: {
+            size?: number;
             width?: number;
             height?: number;
             depth?: number;
@@ -4024,26 +4033,42 @@ declare module BABYLON {
             faceColors?: Color4[];
             sideOrientation?: number;
         }): VertexData;
-        static CreateBox(size: number, sideOrientation?: number): VertexData;
         static CreateSphere(options: {
             segments?: number;
+            diameter?: number;
             diameterX?: number;
             diameterY?: number;
             diameterZ?: number;
             sideOrientation?: number;
         }): VertexData;
-        static CreateSphere(segments: number, diameter?: number, sideOrientation?: number): VertexData;
-        static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number, sideOrientation?: number): VertexData;
-        static CreateTorus(diameter: any, thickness: any, tessellation: any, sideOrientation?: number): VertexData;
-        static CreateLines(points: Vector3[]): VertexData;
-        static CreateDashedLines(points: Vector3[], dashSize: number, gapSize: number, dashNb: number): VertexData;
+        static CreateCylinder(options: {
+            height?: number;
+            diameterTop?: number;
+            diameterBottom?: number;
+            tessellation?: number;
+            subdivisions?: number;
+            sideOrientation?: number;
+        }): VertexData;
+        static CreateTorus(options: {
+            diameter?: number;
+            thickness?: number;
+            tessellation?: number;
+            sideOrientation?: number;
+        }): VertexData;
+        static CreateLines(options: {
+            points: Vector3[];
+        }): VertexData;
+        static CreateDashedLines(options: {
+            points: Vector3[];
+            dashSize?: number;
+            gapSize?: number;
+            dashNb?: number;
+        }): VertexData;
         static CreateGround(options: {
             width?: number;
             height?: number;
             subdivisions?: number;
-            sideOrientation?: number;
         }): VertexData;
-        static CreateGround(width: number, height: number, subdivisions?: number): VertexData;
         static CreateTiledGround(xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: {
             w: number;
             h: number;
@@ -4053,13 +4078,25 @@ declare module BABYLON {
         }): VertexData;
         static CreateGroundFromHeightMap(width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number): VertexData;
         static CreatePlane(options: {
+            size?: number;
             width?: number;
             height?: number;
             sideOrientation?: number;
         }): VertexData;
-        static CreatePlane(size: number, sideOrientation?: number): VertexData;
-        static CreateDisc(radius: number, tessellation: number, sideOrientation?: number): VertexData;
-        static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, sideOrientation?: number): VertexData;
+        static CreateDisc(options: {
+            radius?: number;
+            tessellation?: number;
+            sideOrientation?: number;
+        }): VertexData;
+        static CreateTorusKnot(options: {
+            radius?: number;
+            tube?: number;
+            radialSegments?: number;
+            tubularSegments?: number;
+            p?: number;
+            q?: number;
+            sideOrientation?: number;
+        }): VertexData;
         /**
          * @param {any} - positions (number[] or Float32Array)
          * @param {any} - indices   (number[] or Uint16Array)
@@ -4305,6 +4342,99 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Particle {
+        position: Vector3;
+        direction: Vector3;
+        color: Color4;
+        colorStep: Color4;
+        lifeTime: number;
+        age: number;
+        size: number;
+        angle: number;
+        angularSpeed: number;
+        copyTo(other: Particle): void;
+    }
+}
+
+declare module BABYLON {
+    class ParticleSystem implements IDisposable {
+        name: string;
+        static BLENDMODE_ONEONE: number;
+        static BLENDMODE_STANDARD: number;
+        id: string;
+        renderingGroupId: number;
+        emitter: any;
+        emitRate: number;
+        manualEmitCount: number;
+        updateSpeed: number;
+        targetStopDuration: number;
+        disposeOnStop: boolean;
+        minEmitPower: number;
+        maxEmitPower: number;
+        minLifeTime: number;
+        maxLifeTime: number;
+        minSize: number;
+        maxSize: number;
+        minAngularSpeed: number;
+        maxAngularSpeed: number;
+        particleTexture: Texture;
+        layerMask: number;
+        onDispose: () => void;
+        updateFunction: (particles: Particle[]) => void;
+        blendMode: number;
+        forceDepthWrite: boolean;
+        gravity: Vector3;
+        direction1: Vector3;
+        direction2: Vector3;
+        minEmitBox: Vector3;
+        maxEmitBox: Vector3;
+        color1: Color4;
+        color2: Color4;
+        colorDead: Color4;
+        textureMask: Color4;
+        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
+        private particles;
+        private _capacity;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _stockParticles;
+        private _newPartsExcess;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _vertices;
+        private _effect;
+        private _customEffect;
+        private _cachedDefines;
+        private _scaledColorStep;
+        private _colorDiff;
+        private _scaledDirection;
+        private _scaledGravity;
+        private _currentRenderId;
+        private _alive;
+        private _started;
+        private _stopped;
+        private _actualFrame;
+        private _scaledUpdateSpeed;
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
+        recycleParticle(particle: Particle): void;
+        getCapacity(): number;
+        isAlive(): boolean;
+        isStarted(): boolean;
+        start(): void;
+        stop(): void;
+        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
+        private _update(newParticles);
+        private _getEffect();
+        animate(): void;
+        render(): number;
+        dispose(): void;
+        clone(name: string, newEmitter: any): ParticleSystem;
+    }
+}
+
+declare module BABYLON {
     interface IPhysicsEnginePlugin {
         initialize(iterations?: number): any;
         setGravity(gravity: Vector3): void;
@@ -4352,6 +4482,15 @@ declare module BABYLON {
         static CylinderImpostor: number;
         static ConvexHullImpostor: number;
         static Epsilon: number;
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        private _scene;
+        constructor(size: number, scene: Scene);
+        getScene(): Scene;
+        dispose(): void;
     }
 }
 
@@ -4454,64 +4593,6 @@ declare module BABYLON {
         render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
         reset(): void;
         dispatch(subMesh: SubMesh): void;
-    }
-}
-
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _frameCount;
-        private _manager;
-        private _time;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        cellSize: number;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        onDispose: () => void;
-        fogEnabled: boolean;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _vertices;
-        private _effectBase;
-        private _effectFog;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        render(): void;
-        dispose(): void;
     }
 }
 
@@ -5068,6 +5149,64 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _frameCount;
+        private _manager;
+        private _time;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        cellSize: number;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        onDispose: () => void;
+        fogEnabled: boolean;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _vertices;
+        private _effectBase;
+        private _effectFog;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        render(): void;
+        dispose(): void;
+    }
+}
+
 declare module BABYLON.Internals {
     class AndOrNotEvaluator {
         static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean;
@@ -5345,6 +5484,28 @@ interface Navigator {
     webkitGetGamepads(func?: any): any;
     msGetGamepads(func?: any): any;
     webkitGamepads(func?: any): any;
+}
+
+declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
 }
 
 declare module BABYLON {
@@ -5708,6 +5869,38 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends FreeCamera {
+        _alpha: number;
+        _beta: number;
+        _gamma: number;
+        private _offsetOrientation;
+        private _deviceOrientationHandler;
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistorsion?: boolean);
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var PositionSensorVRDevice: any;
+declare module BABYLON {
+    class WebVRFreeCamera extends FreeCamera {
+        _hmdDevice: any;
+        _sensorDevice: any;
+        _cacheState: any;
+        _cacheQuaternion: Quaternion;
+        _cacheRotation: Vector3;
+        _vrEnabled: boolean;
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistorsion?: boolean);
+        private _getWebVRDevices(devices);
+        _checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+    }
+}
+
+declare module BABYLON {
     interface IOctreeContainer<T> {
         blocks: Array<OctreeBlock<T>>;
     }
@@ -5752,41 +5945,6 @@ declare module BABYLON {
         intersectsRay(ray: Ray, selection: SmartArray<T>): void;
         createInnerBlocks(): void;
     }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends FreeCamera {
-        _alpha: number;
-        _beta: number;
-        _gamma: number;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistorsion?: boolean);
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var PositionSensorVRDevice: any;
-declare module BABYLON {
-    class WebVRFreeCamera extends FreeCamera {
-        _hmdDevice: any;
-        _sensorDevice: any;
-        _cacheState: any;
-        _cacheQuaternion: Quaternion;
-        _cacheRotation: Vector3;
-        _vrEnabled: boolean;
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistorsion?: boolean);
-        private _getWebVRDevices(devices);
-        _checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-    }
-}
-
-declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
@@ -5874,8 +6032,8 @@ declare module BABYLON {
         _removeFromCache(url: string, noMipmap: boolean): void;
         _getFromCache(url: string, noMipmap: boolean, sampling?: number): WebGLTexture;
         delayLoad(): void;
-        releaseInternalTexture(): void;
         clone(): BaseTexture;
+        releaseInternalTexture(): void;
         dispose(): void;
     }
 }
@@ -5936,6 +6094,7 @@ declare module BABYLON {
 
 declare module BABYLON {
     class RenderTargetTexture extends Texture {
+        isCube: boolean;
         renderList: AbstractMesh[];
         renderParticles: boolean;
         renderSprites: boolean;
@@ -5953,7 +6112,7 @@ declare module BABYLON {
         private _doNotChangeAspectRatio;
         private _currentRefreshId;
         private _refreshRate;
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number);
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number, isCube?: boolean);
         resetRefreshCounter(): void;
         refreshRate: number;
         _shouldRender(): boolean;
@@ -5963,6 +6122,7 @@ declare module BABYLON {
         scale(ratio: number): void;
         resize(size: any, generateMipMaps?: boolean): void;
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
+        renderToTarget(targetTexture: WebGLTexture, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void;
         clone(): RenderTargetTexture;
     }
 }
@@ -6027,6 +6187,9 @@ declare module BABYLON {
         constructor(name: string, urls: string[], scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
         update(): boolean;
     }
+}
+
+declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
