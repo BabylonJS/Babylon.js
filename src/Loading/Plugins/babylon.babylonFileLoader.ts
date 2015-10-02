@@ -123,11 +123,11 @@
         var material;
         material = new BABYLON.StandardMaterial(parsedMaterial.name, scene);
 
-        material.ambientColor = BABYLON.Color3.FromArray(parsedMaterial.ambient);
-        material.diffuseColor = BABYLON.Color3.FromArray(parsedMaterial.diffuse);
-        material.specularColor = BABYLON.Color3.FromArray(parsedMaterial.specular);
+        if(parsedMaterial.ambient) material.ambientColor = BABYLON.Color3.FromArray(parsedMaterial.ambient);
+        if(parsedMaterial.diffuse) material.diffuseColor = BABYLON.Color3.FromArray(parsedMaterial.diffuse);
+        if(parsedMaterial.specular) material.specularColor = BABYLON.Color3.FromArray(parsedMaterial.specular);
         material.specularPower = parsedMaterial.specularPower;
-        material.emissiveColor = BABYLON.Color3.FromArray(parsedMaterial.emissive);
+        if(parsedMaterial.emissive) material.emissiveColor = BABYLON.Color3.FromArray(parsedMaterial.emissive);
         material.useReflectionFresnelFromSpecular = parsedMaterial.useReflectionFresnelFromSpecular;
         material.useEmissiveAsIllumination = parsedMaterial.useEmissiveAsIllumination;
 
