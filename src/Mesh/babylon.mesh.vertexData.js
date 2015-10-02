@@ -768,9 +768,10 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateLines = function (points) {
+        VertexData.CreateLines = function (options) {
             var indices = [];
             var positions = [];
+            var points = options.points;
             for (var index = 0; index < points.length; index++) {
                 positions.push(points[index].x, points[index].y, points[index].z);
                 if (index > 0) {
@@ -784,10 +785,11 @@ var BABYLON;
             vertexData.positions = positions;
             return vertexData;
         };
-        VertexData.CreateDashedLines = function (points, dashSize, gapSize, dashNb) {
-            dashSize = dashSize || 3;
-            gapSize = gapSize || 1;
-            dashNb = dashNb || 200;
+        VertexData.CreateDashedLines = function (options) {
+            var dashSize = options.dashSize || 3;
+            var gapSize = options.gapSize || 1;
+            var dashNb = options.dashNb || 200;
+            var points = options.points;
             var positions = new Array();
             var indices = new Array();
             var curvect = BABYLON.Vector3.Zero();
@@ -1007,12 +1009,14 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateDisc = function (radius, tessellation, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = BABYLON.Mesh.DEFAULTSIDE; }
+        VertexData.CreateDisc = function (options) {
             var positions = [];
             var indices = [];
             var normals = [];
             var uvs = [];
+            var radius = options.radius || 0.5;
+            var tessellation = options.tessellation || 64;
+            var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             // positions and uvs
             positions.push(0, 0, 0); // disc center first
             uvs.push(0.5, 0.5);
