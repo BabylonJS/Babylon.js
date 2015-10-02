@@ -198,6 +198,8 @@
     var serializeMultiMaterial = (material: MultiMaterial): any => {
         var serializationObject: any = {};
 
+        if(!material) return null;
+
         serializationObject.name = material.name;
         serializationObject.id = material.id;
         serializationObject.tags = Tags.GetTags(material);
@@ -222,13 +224,14 @@
 
         serializationObject.name = material.name;
 
-        serializationObject.ambient = material.ambientColor.asArray();
-        serializationObject.diffuse = material.diffuseColor.asArray();
-        serializationObject.specular = material.specularColor.asArray();
+        if(material.ambientColor) serializationObject.ambient = material.ambientColor.asArray();
+        if(material.diffuseColor) serializationObject.diffuse = material.diffuseColor.asArray();
+        if(material.specularColor) serializationObject.specular = material.specularColor.asArray();
+        if(material.emissiveColor) serializationObject.emissive = material.emissiveColor.asArray();
+
         serializationObject.specularPower = material.specularPower;
-        serializationObject.emissive = material.emissiveColor.asArray();
-        serializationObject.useReflectionFresnelFromSpecular = serializationObject.useReflectionFresnelFromSpecular;
-        serializationObject.useEmissiveAsIllumination = serializationObject.useEmissiveAsIllumination;
+        serializationObject.useReflectionFresnelFromSpecular = material.useReflectionFresnelFromSpecular;
+        serializationObject.useEmissiveAsIllumination = material.useEmissiveAsIllumination;
 
         serializationObject.alpha = material.alpha;
 
@@ -835,10 +838,6 @@
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
             var material: Material;
-            for (index = 0; index < scene.materials.length; index++) {
-                material = scene.materials[index];
-                serializationObject.materials.push(serializeMaterial(<StandardMaterial>material));
-            }
 
             // MultiMaterials
             serializationObject.multiMaterials = [];
