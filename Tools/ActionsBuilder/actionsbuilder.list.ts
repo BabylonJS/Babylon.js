@@ -94,6 +94,10 @@
                 if (this._viewer.root.type === Type.OBJECT && excludedTriggers.indexOf(i) !== -1) {
                     continue;
                 }
+                else if (this._viewer.root.type === Type.SCENE && excludedTriggers.indexOf(i) === -1) {
+                    continue;
+                }
+
                 var trigger = this._createListElement(this.triggersList, yPosition, element.text, Type.TRIGGER, textColor, true, element);
 
                 trigger.rect.attr("fill", Raphael.rgb(133, 154, 185));

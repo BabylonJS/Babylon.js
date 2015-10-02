@@ -183,6 +183,10 @@
         // Imported meshes
         public importedMeshesFiles = new Array<String>();
 
+        // Probes
+        public probesEnabled = true;
+        public reflectionProbes = new Array<ReflectionProbe>();
+
         // Database
         public database; //ANY
 
@@ -690,10 +694,7 @@
          * @see BABYLON.Animatable
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
-            if (speedRatio === undefined) {
-                speedRatio = 1.0;
-            }
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
 
             this.stopAnimation(target);
 
@@ -1636,15 +1637,6 @@
                 this.simplificationQueue.executeNext();
             }
 
-            // Before render
-            if (this.beforeRender) {
-                this.beforeRender();
-            }
-            var callbackIndex: number;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
-            }
-
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
@@ -1655,6 +1647,15 @@
                 Tools.StartPerformanceCounter("Physics");
                 this._physicsEngine._runOneStep(deltaTime / 1000.0);
                 Tools.EndPerformanceCounter("Physics");
+            }
+
+            // Before render
+            if (this.beforeRender) {
+                this.beforeRender();
+            }
+            var callbackIndex: number;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+                this._onBeforeRenderCallbacks[callbackIndex]();
             }
 
             // Customs render targets

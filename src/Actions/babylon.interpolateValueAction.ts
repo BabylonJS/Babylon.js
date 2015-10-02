@@ -3,7 +3,7 @@
         private _target: any;
         private _property: string;
 
-        constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition, public stopOtherAnimations?: boolean) {
+        constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition, public stopOtherAnimations?: boolean, public onInterpolationDone?: () => void) {
             super(triggerOptions, condition);
 
             this._target = target;
@@ -51,7 +51,7 @@
                 scene.stopAnimation(this._target);
             }
 
-            scene.beginDirectAnimation(this._target, [animation], 0, 100);
+            scene.beginDirectAnimation(this._target, [animation], 0, 100, false, 1, this.onInterpolationDone);
         }
     }
 } 

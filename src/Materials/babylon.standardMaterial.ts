@@ -7,6 +7,14 @@
         public rightColor = Color3.Black();
         public bias = 0;
         public power = 1;
+
+        public clone(): FresnelParameters {
+            var newFresnelParameters = new FresnelParameters();
+
+            Tools.DeepCopy(this, newFresnelParameters);
+
+            return new FresnelParameters;
+        }
     }
 
     class StandardMaterialDefines {
@@ -151,7 +159,6 @@
         public useEmissiveAsIllumination = false;
         public useReflectionFresnelFromSpecular = false;
         public useSpecularOverAlpha = true;
-        public fogEnabled = true;
 
         public roughness = 0;
 
@@ -916,10 +923,7 @@
             var newStandardMaterial = new StandardMaterial(name, this.getScene());
 
             // Base material
-            newStandardMaterial.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
-            newStandardMaterial.alpha = this.alpha;
-            newStandardMaterial.fillMode = this.fillMode;
-            newStandardMaterial.backFaceCulling = this.backFaceCulling;
+            this.copyTo(newStandardMaterial);
 
             // Standard material
             if (this.diffuseTexture && this.diffuseTexture.clone) {
@@ -943,12 +947,28 @@
             if (this.bumpTexture && this.bumpTexture.clone) {
                 newStandardMaterial.bumpTexture = this.bumpTexture.clone();
             }
+            if (this.lightmapTexture && this.lightmapTexture.clone) {
+                newStandardMaterial.bumpTexture = this.bumpTexture.clone();
+                newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
+                newStandardMaterial.lightmapThreshold = this.lightmapThreshold;
+            }
 
             newStandardMaterial.ambientColor = this.ambientColor.clone();
             newStandardMaterial.diffuseColor = this.diffuseColor.clone();
             newStandardMaterial.specularColor = this.specularColor.clone();
             newStandardMaterial.specularPower = this.specularPower;
             newStandardMaterial.emissiveColor = this.emissiveColor.clone();
+            newStandardMaterial.useAlphaFromDiffuseTexture = this.useAlphaFromDiffuseTexture;
+            newStandardMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
+            newStandardMaterial.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
+            newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
+            newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
+            newStandardMaterial.roughness = this.roughness;
+
+            newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
+            newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
+            newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
+            newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
 
             return newStandardMaterial;
         }

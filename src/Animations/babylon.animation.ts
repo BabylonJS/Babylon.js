@@ -14,7 +14,7 @@
 
         public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string,
             framePerSecond: number, totalFrame: number,
-            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction) {
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
 
             var dataType = undefined;
 
@@ -47,7 +47,7 @@
 
             mesh.animations.push(animation);
 
-            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
+            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
 
         }
 

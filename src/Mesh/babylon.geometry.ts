@@ -380,7 +380,7 @@
                 if (onLoaded) {
                     onLoaded();
                 }
-            },() => { }, scene.database);
+            }, () => { }, scene.database);
         }
 
         public isDisposed(): boolean {
@@ -431,8 +431,8 @@
 
             var updatable = false;
             var stopChecking = false;
-
-            for (var kind in this._vertexBuffers) {
+            var kind;
+            for (kind in this._vertexBuffers) {
                 // using slice() to make a copy of the array and not just reference it
                 vertexData.set(this.getVerticesData(kind).slice(0), kind);
 
@@ -559,7 +559,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateRibbon(this.pathArray, this.closeArray, this.closePath, this.offset, this.side);
+                return VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
             }
 
             public copy(id: string): Geometry {
@@ -580,7 +580,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateBox(this.size, this.side);
+                return VertexData.CreateBox({ size: this.size, sideOrientation: this.side });
             }
 
             public copy(id: string): Geometry {
@@ -603,13 +603,37 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateSphere(this.segments, this.diameter, this.side);
+                return VertexData.CreateSphere({ segments: this.segments, diameter: this.diameter, sideOrientation: this.side });
             }
 
             public copy(id: string): Geometry {
                 return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
             }
         }
+
+        export class Disc extends _Primitive {
+            // Members
+            public radius: number;
+            public tessellation: number;
+            public side: number;
+
+            constructor(id: string, scene: Scene, radius: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
+                this.radius = radius;
+                this.tessellation = tessellation;
+                this.side = side;
+
+                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            }
+
+            public _regenerateVertexData(): VertexData {
+                return VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
+            }
+
+            public copy(id: string): Geometry {
+                return new Disc(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
+            }
+        }
+
 
         export class Cylinder extends _Primitive {
             // Members
@@ -632,7 +656,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateCylinder(this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.side);
+                return VertexData.CreateCylinder({ height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side });
             }
 
             public copy(id: string): Geometry {
@@ -657,7 +681,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorus(this.diameter, this.thickness, this.tessellation, this.side);
+                return VertexData.CreateTorus({ diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side });
             }
 
             public copy(id: string): Geometry {
@@ -680,7 +704,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateGround(this.width, this.height, this.subdivisions);
+                return VertexData.CreateGround({ width: this.width, height: this.height, subdivisions: this.subdivisions });
             }
 
             public copy(id: string): Geometry {
@@ -730,7 +754,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreatePlane(this.size, this.side);
+                return VertexData.CreatePlane({ size: this.size, sideOrientation: this.side });
             }
 
             public copy(id: string): Geometry {
@@ -761,7 +785,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorusKnot(this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.side);
+                return VertexData.CreateTorusKnot({ radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side });
             }
 
             public copy(id: string): Geometry {
@@ -770,3 +794,4 @@
         }
     }
 }
+
