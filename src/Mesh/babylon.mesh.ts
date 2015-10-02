@@ -1867,12 +1867,12 @@
                 } else {
                     scene = radiusOrScene;
                     path = options.path;
-                    radius = options.radius;
-                    tessellation = options.tessellation;
+                    radius = options.radius || 1;
+                    tessellation = options.tessellation || 64;
                     radiusFunction = options.radiusFunction;
                     cap = options.cap || Mesh.NO_CAP,
                     updatable = options.updatable;
-                    sideOrientation = options.sideOrientation,
+                    sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE,
                     instance = options.instance
                 }
             // tube geometry
