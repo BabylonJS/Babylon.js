@@ -183,6 +183,10 @@
         // Imported meshes
         public importedMeshesFiles = new Array<String>();
 
+        // Probes
+        public probesEnabled = true;
+        public reflectionProbes = new Array<ReflectionProbe>();
+
         // Database
         public database; //ANY
 
@@ -690,10 +694,7 @@
          * @see BABYLON.Animatable
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
-            if (speedRatio === undefined) {
-                speedRatio = 1.0;
-            }
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
 
             this.stopAnimation(target);
 

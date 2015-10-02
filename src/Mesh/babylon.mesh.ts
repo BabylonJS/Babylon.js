@@ -1250,6 +1250,7 @@
         public static CreateRibbon(name: string, options: { pathArray?: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
         public static CreateRibbon(name: string, options: any, closeArrayOrScene: any, closePath?: boolean, offset?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
             var pathArray;
+            var closeArray;
             if (closeArrayOrScene instanceof Scene) {
                 scene = closeArrayOrScene;
                 updatable = options.updatable;
@@ -1257,7 +1258,7 @@
                     pathArray = options.pathArray;
                     instance = options.instance;
                     closePath = options.closePath;
-                    var closeArray = options.closeArray;
+                    closeArray = options.closeArray;
                 }
             } else {
                 pathArray = options;
@@ -1547,7 +1548,7 @@
         // Dashed Lines
         public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
         public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh;
-        public static CreateDashedLines(name: string, options: any, dashSizeOrScene: any, gapSize?: number, dashNb?: number, scene?: Scene, updatable?: boolean, instance?: LinesMesh):LinesMesh {
+        public static CreateDashedLines(name: string, options: any, dashSizeOrScene: any, gapSize?: number, dashNb?: number, scene?: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh {
             var points: Vector3[];
             var dashSize: number;
             if (Array.isArray(options)) {
@@ -1559,7 +1560,7 @@
                         dashSize: dashSize,
                         gapSize: gapSize,
                         dashNb: dashNb
-                    }    
+                    }
                 }
             } else {
                 scene = dashSizeOrScene,
@@ -2337,6 +2338,7 @@
         }
     }
 }
+
 
 
 
