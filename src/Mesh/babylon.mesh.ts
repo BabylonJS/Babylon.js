@@ -1654,7 +1654,7 @@
                 var returnRotation: { (i: number, distance: number): number; } = (i, distance) => { return rotation; };
                 var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
                 var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
-                var index = 0;
+                var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 1;
 
                 for (var i = 0; i < curve.length; i++) {
                     var shapePath = new Array<Vector3>();
@@ -1688,14 +1688,14 @@
                     case Mesh.NO_CAP:
                         break;
                     case Mesh.CAP_START:
-                        shapePaths.unshift(capPath(shapePaths[0]));
+                        shapePaths[0] = capPath(shapePaths[1]);
                         break;
                     case Mesh.CAP_END:
-                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        shapePaths[index] = capPath(shapePaths[shapePaths.length - 2]);
                         break;
                     case Mesh.CAP_ALL:
-                        shapePaths.unshift(capPath(shapePaths[0]));
-                        shapePaths.push(capPath(shapePaths[shapePaths.length - 1]));
+                        shapePaths[0] = capPath(shapePaths[1]);
+                        shapePaths[index] = capPath(shapePaths[shapePaths.length - 2]);
                         break;
                     default:
                         break;
