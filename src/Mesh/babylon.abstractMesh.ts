@@ -59,7 +59,8 @@
         public applyFog = true;
         public computeBonesUsingShaders = true;
         public scalingDeterminant = 1;
-
+        public highlight = false;
+        
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
         public useOctreeForCollisions = true;
