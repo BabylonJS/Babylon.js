@@ -1890,7 +1890,7 @@
                 var normal: Vector3;
                 var rotated: Vector3;
                 var rotationMatrix: Matrix;
-                var index = 0;
+                var index = (cap === Mesh._NO_CAP || cap === Mesh.CAP_END) ? 0 : 1;
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array<Vector3>();              // current circle array
@@ -1915,14 +1915,14 @@
                     case Mesh.NO_CAP:
                         break;
                     case Mesh.CAP_START:
-                        circlePaths.unshift(capPath(tessellation + 1, 0));
+                        circlePaths[0] = capPath(tessellation, 0);
                         break;
                     case Mesh.CAP_END:
-                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        circlePaths[index]= capPath(tessellation, path.length - 1);
                         break;
                     case Mesh.CAP_ALL:
-                        circlePaths.unshift(capPath(tessellation + 1, 0));
-                        circlePaths.push(capPath(tessellation + 1, path.length - 1));
+                        circlePaths[0] = capPath(tessellation, 0);
+                        circlePaths[index] = capPath(tessellation, path.length - 1);
                         break;
                     default:
                         break;
