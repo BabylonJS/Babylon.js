@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (3, 0, 5),
+    'version': (3, 0, 6),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -137,7 +137,7 @@ class ExporterSettingsPanel(bpy.types.Panel):
     bpy.types.Scene.export_noVertexOpt = bpy.props.BoolProperty(
         name="No vertex sharing",
         description="Turns off an optimization which reduces vertices",
-        default = True,
+        default = False,
         )        
     bpy.types.Scene.attachedSound = bpy.props.StringProperty(
         name='Sound',
