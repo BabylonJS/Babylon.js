@@ -722,10 +722,10 @@
             var instance = mesh.instances[index];
             var serializationInstance = {
                 name: instance.name,
-                position: instance.position,
-                rotation: instance.rotation,
-                rotationQuaternion: instance.rotationQuaternion,
-                scaling: instance.scaling
+                position: instance.position.asArray(),
+                rotation: instance.rotation.asArray(),
+                rotationQuaternion: instance.rotationQuaternion.asArray(),
+                scaling: instance.scaling.asArray()
             };
             serializationObject.instances.push(serializationInstance);
 
