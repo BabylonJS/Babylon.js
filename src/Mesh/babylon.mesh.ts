@@ -1628,15 +1628,59 @@
         }
 
         // Extrusion
-        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
-            scale = scale || 1;
-            rotation = rotation || 0;
-            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, extrudedInstance);
+        public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        public static ExtrudeShape(name: string, options: {shape: Vector3[], path: Vector3[], scale?: number, rotation?: number, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh}, scene: Scene): Mesh;
+        public static ExtrudeShape(name: string, options: any, pathOrScene?: any, scale?: number, rotation?: number, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
+            var path: Vector3[];
+            var shape: Vector3[];
+            if (Array.isArray(options)) {
+                shape = options;
+                path = pathOrScene;
+                scale = scale || 1;
+                rotation = rotation || 0;
+                cap = (cap === 0) ? 0 : cap || Mesh.NO_CAP;
+            } else {
+                scene = pathOrScene;
+                path = options.path;
+                shape = options.shape;
+                scale = options.scale || 1;
+                rotation = options.rotation || 0;
+                cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
+                updatable = options.updatable;
+                sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+                instance = options.instance
+            }
+
+
+            var extruded = Mesh._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance);
             return extruded;
         }
 
-        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, extrudedInstance: Mesh = null): Mesh {
-            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, extrudedInstance);
+        public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
+        public static ExtrudeShapeCustom(name: string, options: {shape: Vector3[], path: Vector3[], scaleFunction?, rotationFunction?, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh}, scene: Scene): Mesh;
+        public static ExtrudeShapeCustom(name: string, options: any, pathOrScene?: any, scaleFunction?, rotationFunction?, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
+            var path: Vector3[];
+            var shape: Vector3[];
+            if (Array.isArray(options)) {
+                shape = options;
+                path = pathOrScene;
+                ribbonCloseArray = ribbonCloseArray || false;
+                ribbonClosePath = ribbonClosePath || false;
+                cap = (cap === 0) ? 0 : cap || Mesh.NO_CAP;
+            } else {
+                scene = pathOrScene;
+                path = options.path;
+                shape = options.shape;
+                scaleFunction = options.scaleFunction;
+                rotationFunction = options.rotationFunction;
+                ribbonCloseArray = options.ribbonCloseArray || false;
+                ribbonClosePath = options.ribbonClosePath || false;
+                cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
+                updatable = options.updatable;
+                sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+                instance = options.instance;
+            }
+            var extrudedCustom = Mesh._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance);
             return extrudedCustom;
         }
 
@@ -1691,11 +1735,11 @@
                         shapePaths[0] = capPath(shapePaths[1]);
                         break;
                     case Mesh.CAP_END:
-                        shapePaths[index] = capPath(shapePaths[shapePaths.length - 2]);
+                        shapePaths[index] = capPath(shapePaths[index - 1]);
                         break;
                     case Mesh.CAP_ALL:
                         shapePaths[0] = capPath(shapePaths[1]);
-                        shapePaths[index] = capPath(shapePaths[shapePaths.length - 2]);
+                        shapePaths[index] = capPath(shapePaths[index - 1]);
                         break;
                     default:
                         break;
