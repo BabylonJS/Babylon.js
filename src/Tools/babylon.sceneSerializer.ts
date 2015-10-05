@@ -180,14 +180,14 @@
             key.frame = animationKey.frame;
 
             switch (dataType) {
-            case Animation.ANIMATIONTYPE_FLOAT:
-                key.values = [animationKey.value];
-                break;
-            case Animation.ANIMATIONTYPE_QUATERNION:
-            case Animation.ANIMATIONTYPE_MATRIX:
-            case Animation.ANIMATIONTYPE_VECTOR3:
-                key.values = animationKey.value.asArray();
-                break;
+                case Animation.ANIMATIONTYPE_FLOAT:
+                    key.values = [animationKey.value];
+                    break;
+                case Animation.ANIMATIONTYPE_QUATERNION:
+                case Animation.ANIMATIONTYPE_MATRIX:
+                case Animation.ANIMATIONTYPE_VECTOR3:
+                    key.values = animationKey.value.asArray();
+                    break;
             }
 
             serializationObject.keys.push(key);
@@ -952,6 +952,7 @@
         }
     }
 }
+
 
 
 

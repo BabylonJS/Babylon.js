@@ -1629,7 +1629,7 @@
 
         // Extrusion
         public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        public static ExtrudeShape(name: string, options: {shape: Vector3[], path: Vector3[], scale?: number, rotation?: number, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh}, scene: Scene): Mesh;
+        public static ExtrudeShape(name: string, options: { shape: Vector3[], path: Vector3[], scale?: number, rotation?: number, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
         public static ExtrudeShape(name: string, options: any, pathOrScene?: any, scale?: number, rotation?: number, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
             var path: Vector3[];
             var shape: Vector3[];
@@ -1648,7 +1648,7 @@
                 cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
                 updatable = options.updatable;
                 sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
-                instance = options.instance
+                instance = options.instance;
             }
 
 
@@ -1657,7 +1657,7 @@
         }
 
         public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction, rotationFunction, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        public static ExtrudeShapeCustom(name: string, options: {shape: Vector3[], path: Vector3[], scaleFunction?, rotationFunction?, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh}, scene: Scene): Mesh;
+        public static ExtrudeShapeCustom(name: string, options: { shape: Vector3[], path: Vector3[], scaleFunction?, rotationFunction?, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
         public static ExtrudeShapeCustom(name: string, options: any, pathOrScene?: any, scaleFunction?, rotationFunction?, ribbonCloseArray?: boolean, ribbonClosePath?: boolean, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
             var path: Vector3[];
             var shape: Vector3[];
@@ -1906,19 +1906,19 @@
             var path: Vector3[];
             var radius: number;
             if (Array.isArray(options)) {
-                    path = options;
-                    radius = radiusOrScene;
-                } else {
-                    scene = radiusOrScene;
-                    path = options.path;
-                    radius = options.radius || 1;
-                    tessellation = options.tessellation || 64;
-                    radiusFunction = options.radiusFunction;
-                    cap = options.cap || Mesh.NO_CAP,
-                    updatable = options.updatable;
-                    sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE,
-                    instance = options.instance
-                }
+                path = options;
+                radius = radiusOrScene;
+            } else {
+                scene = radiusOrScene;
+                path = options.path;
+                radius = options.radius || 1;
+                tessellation = options.tessellation || 64;
+                radiusFunction = options.radiusFunction;
+                cap = options.cap || Mesh.NO_CAP,
+                updatable = options.updatable;
+                sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE,
+                instance = options.instance;
+            }
             // tube geometry
             var tubePathArray = (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) => {
                 var tangents = path3D.getTangents();
@@ -1962,7 +1962,7 @@
                         circlePaths[0] = capPath(tessellation, 0);
                         break;
                     case Mesh.CAP_END:
-                        circlePaths[index]= capPath(tessellation, path.length - 1);
+                        circlePaths[index] = capPath(tessellation, path.length - 1);
                         break;
                     case Mesh.CAP_ALL:
                         circlePaths[0] = capPath(tessellation, 0);
@@ -1990,7 +1990,7 @@
             var newPathArray = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
-            var tube = Mesh.CreateRibbon(name, {pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation}, scene);
+            var tube = Mesh.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation }, scene);
             (<any>tube).pathArray = pathArray;
             (<any>tube).path3D = path3D;
             (<any>tube).tessellation = tessellation;
@@ -2386,6 +2386,7 @@
         }
     }
 }
+
 
 
 

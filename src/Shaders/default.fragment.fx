@@ -203,6 +203,9 @@ vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
 	{
 		vec3 viewDir = worldPos.xyz - vEyePosition;
 		vec3 coords = reflect(viewDir, worldNormal);
+#ifdef INVERTCUBICMAP
+		coords.y = 1.0 - coords.y;
+#endif
 
 		return vec3(reflectionMatrix * vec4(coords, 0));
 	}

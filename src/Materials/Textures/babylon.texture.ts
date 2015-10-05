@@ -11,6 +11,7 @@
         public static CUBIC_MODE = 3;
         public static PROJECTION_MODE = 4;
         public static SKYBOX_MODE = 5;
+        public static INVCUBIC_MODE = 6;
 
         public static CLAMP_ADDRESSMODE = 0;
         public static WRAP_ADDRESSMODE = 1;

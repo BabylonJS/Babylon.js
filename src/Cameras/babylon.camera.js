@@ -290,9 +290,11 @@ var BABYLON;
                 return this._postProcesses.length - 1;
             }
             var add = 0;
+            var i;
+            var start;
             if (this._postProcesses[insertAt]) {
-                var start = this._postProcesses.length - 1;
-                for (var i = start; i >= insertAt + 1; --i) {
+                start = this._postProcesses.length - 1;
+                for (i = start; i >= insertAt + 1; --i) {
                     this._postProcesses[i + 1] = this._postProcesses[i];
                 }
                 add = 1;
@@ -308,7 +310,7 @@ var BABYLON;
                 this._postProcessesTakenIndices[i] = insertAt;
                 break;
             }
-            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) == -1) {
+            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) === -1) {
                 this._postProcessesTakenIndices.push(insertAt);
             }
             var result = insertAt + add;
@@ -318,14 +320,16 @@ var BABYLON;
         Camera.prototype.detachPostProcess = function (postProcess, atIndices) {
             if (atIndices === void 0) { atIndices = null; }
             var result = [];
+            var i;
+            var index;
             if (!atIndices) {
                 var length = this._postProcesses.length;
-                for (var i = 0; i < length; i++) {
+                for (i = 0; i < length; i++) {
                     if (this._postProcesses[i] !== postProcess) {
                         continue;
                     }
                     delete this._postProcesses[i];
-                    var index = this._postProcessesTakenIndices.indexOf(i);
+                    index = this._postProcessesTakenIndices.indexOf(i);
                     this._postProcessesTakenIndices.splice(index, 1);
                 }
             }

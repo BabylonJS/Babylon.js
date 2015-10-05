@@ -25,7 +25,9 @@ var BABYLON;
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size);
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this.coordinatesMode = BABYLON.Texture.INVCUBIC_MODE;
+                this._textureMatrix = BABYLON.Matrix.Identity();
             }
             else {
                 this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
@@ -33,6 +35,27 @@ var BABYLON;
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
         }
+        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDER_ONCE", {
+            get: function () {
+                return RenderTargetTexture._REFRESHRATE_RENDER_ONCE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDER_ONEVERYFRAME", {
+            get: function () {
+                return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDER_ONEVERYTWOFRAMES", {
+            get: function () {
+                return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+            },
+            enumerable: true,
+            configurable: true
+        });
         RenderTargetTexture.prototype.resetRefreshCounter = function () {
             this._currentRefreshId = -1;
         };
@@ -80,6 +103,12 @@ var BABYLON;
             var newSize = this._size * ratio;
             this.resize(newSize, this._generateMipMaps);
         };
+        RenderTargetTexture.prototype.getReflectionTextureMatrix = function () {
+            if (this.isCube) {
+                return this._textureMatrix;
+            }
+            return _super.prototype.getReflectionTextureMatrix.call(this);
+        };
         RenderTargetTexture.prototype.resize = function (size, generateMipMaps) {
             this.releaseInternalTexture();
             if (this.isCube) {
@@ -125,25 +154,31 @@ var BABYLON;
             }
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
-                    this.renderToTarget(this._texture._cubeFaces[face], currentRenderList, useCameraPostProcess, dumpForDebug);
+                    this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
                 }
             }
             else {
-                this.renderToTarget(this._texture, currentRenderList, useCameraPostProcess, dumpForDebug);
+                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
             }
             if (this.onAfterUnbind) {
                 this.onAfterUnbind();
             }
+            scene.resetCachedMaterial();
         };
-        RenderTargetTexture.prototype.renderToTarget = function (targetTexture, currentRenderList, useCameraPostProcess, dumpForDebug) {
+        RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
             var engine = scene.getEngine();
             // Bind
-            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(targetTexture)) {
-                engine.bindFramebuffer(targetTexture);
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+                if (this.isCube) {
+                    engine.bindFramebuffer(this._texture, faceIndex);
+                }
+                else {
+                    engine.bindFramebuffer(this._texture);
+                }
             }
             if (this.onBeforeRender) {
-                this.onBeforeRender();
+                this.onBeforeRender(faceIndex);
             }
             // Clear
             if (this.onClear) {
@@ -158,20 +193,27 @@ var BABYLON;
             // Render
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
             if (useCameraPostProcess) {
-                scene.postProcessManager._finalizeFrame(false, targetTexture);
+                scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
             }
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
             }
             if (this.onAfterRender) {
-                this.onAfterRender();
+                this.onAfterRender(faceIndex);
             }
             // Dump ?
-            if (!this.isCube && dumpForDebug) {
+            if (dumpForDebug) {
                 BABYLON.Tools.DumpFramebuffer(this._size, this._size, engine);
             }
             // Unbind
-            engine.unBindFramebuffer(targetTexture);
+            if (!this.isCube || faceIndex === 5) {
+                if (this.isCube) {
+                    if (faceIndex === 5) {
+                        engine.generateMipMapsForCubemap(this._texture);
+                    }
+                }
+                engine.unBindFramebuffer(this._texture, true);
+            }
         };
         RenderTargetTexture.prototype.clone = function () {
             var textureSize = this.getSize();
@@ -184,6 +226,9 @@ var BABYLON;
             newTexture.renderList = this.renderList.slice(0);
             return newTexture;
         };
+        RenderTargetTexture._REFRESHRATE_RENDER_ONCE = 0;
+        RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;
+        RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES = 2;
         return RenderTargetTexture;
     })(BABYLON.Texture);
     BABYLON.RenderTargetTexture = RenderTargetTexture;

@@ -87,6 +87,7 @@ var BABYLON;
             this.EMISSIVEASILLUMINATION = false;
             this.REFLECTIONFRESNELFROMSPECULAR = false;
             this.LIGHTMAP = false;
+            this.INVERTCUBICMAP = false;
             this._keys = Object.keys(this);
         }
         StandardMaterialDefines.prototype.isEqual = function (other) {
@@ -234,6 +235,9 @@ var BABYLON;
                         this._defines.REFLECTION = true;
                         if (this.roughness > 0) {
                             this._defines.ROUGHNESS = true;
+                        }
+                        if (this.reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE) {
+                            this._defines.INVERTCUBICMAP = true;
                         }
                     }
                 }
@@ -440,7 +444,7 @@ var BABYLON;
                 if (this._defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-                for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+                for (lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                     if (!this._defines["LIGHT" + lightIndex]) {
                         continue;
                     }
@@ -595,7 +599,7 @@ var BABYLON;
                         this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
                     }
                     this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
-                    this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
+                    this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE ? BABYLON.Texture.CUBIC_MODE : this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
                 }
                 if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                     this._effect.setTexture("emissiveSampler", this.emissiveTexture);
@@ -632,7 +636,7 @@ var BABYLON;
                 this._scaledSpecular.r = this.specularColor.r * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.r);
                 this._scaledSpecular.g = this.specularColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
                 this._scaledSpecular.b = this.specularColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
-                this._effect.setVector3("vEyePosition", scene.activeCamera.position);
+                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
                 if (this._defines.SPECULARTERM) {
                     this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);

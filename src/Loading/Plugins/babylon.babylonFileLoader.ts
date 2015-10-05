@@ -1012,6 +1012,18 @@
 
             // Action or condition(s) and not CombineAction
             var newAction = instanciate(parsedAction.name, parameters);
+
+            if (newAction instanceof BABYLON.Condition && condition !== null) {
+                var nothing = new DoNothingAction(trigger, condition);
+
+                if (action)
+                    action.then(nothing);
+                else
+                    actionManager.registerAction(nothing);
+
+                action = nothing;
+            }
+
             if (combineArray === null) {
                 if (newAction instanceof BABYLON.Condition) {
                     condition = newAction;
