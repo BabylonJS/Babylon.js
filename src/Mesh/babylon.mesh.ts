@@ -1671,8 +1671,8 @@
                 scene = pathOrScene;
                 path = options.path;
                 shape = options.shape;
-                scaleFunction = options.scaleFunction;
-                rotationFunction = options.rotationFunction;
+                scaleFunction = options.scaleFunction || ((i, distance) => { return 1; });
+                rotationFunction = options.rotationFunction || ((i, distance) => { return 0; });
                 ribbonCloseArray = options.ribbonCloseArray || false;
                 ribbonClosePath = options.ribbonClosePath || false;
                 cap = (options.cap === 0) ? 0 : options.cap || Mesh.NO_CAP;
