@@ -1,11 +1,27 @@
 ﻿module BABYLON {
     export class RenderTargetTexture extends Texture {
+        public static _REFRESHRATE_RENDER_ONCE: number = 0;
+        public static _REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
+        public static _REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number = 2;
+
+        public static get REFRESHRATE_RENDER_ONCE(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONCE;
+        }
+
+        public static get REFRESHRATE_RENDER_ONEVERYFRAME(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME;
+        }
+
+        public static get REFRESHRATE_RENDER_ONEVERYTWOFRAMES(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+        }
+
         public renderList = new Array<AbstractMesh>();
         public renderParticles = true;
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
-        public onBeforeRender: () => void;
-        public onAfterRender: () => void;
+        public onBeforeRender: (faceIndex: number) => void;
+        public onAfterRender: (faceIndex: number) => void;
         public onAfterUnbind: () => void;
         public onClear: (engine: Engine) => void;
         public activeCamera: Camera;
@@ -18,6 +34,7 @@
         private _doNotChangeAspectRatio: boolean;
         private _currentRefreshId = -1;
         private _refreshRate = 1;
+        private _textureMatrix: Matrix;
 
         constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false) {
             super(null, scene, !generateMipMaps);
@@ -29,7 +46,9 @@
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
             if (isCube) {
-                this._texture = scene.getEngine().createRenderTargetCubeTexture(size);
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this.coordinatesMode = Texture.INVCUBIC_MODE;
+                this._textureMatrix = Matrix.Identity();
             } else {
                 this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
             }
@@ -88,6 +107,14 @@
             this.resize(newSize, this._generateMipMaps);
         }
 
+        public getReflectionTextureMatrix(): Matrix {
+            if (this.isCube) {
+                return this._textureMatrix;
+            }
+
+            return super.getReflectionTextureMatrix();
+        }
+
         public resize(size: any, generateMipMaps?: boolean) {
             this.releaseInternalTexture();
             if (this.isCube) {
@@ -143,28 +170,34 @@
             
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
-                    this.renderToTarget(this._texture._cubeFaces[face], currentRenderList, useCameraPostProcess, dumpForDebug);
+                    this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
                 }
             } else {
-                this.renderToTarget(this._texture, currentRenderList, useCameraPostProcess, dumpForDebug);
+                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
             }
 
             if (this.onAfterUnbind) {
                 this.onAfterUnbind();
             }
+
+            scene.resetCachedMaterial();
         }
 
-        renderToTarget(targetTexture: WebGLTexture, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+        renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void {
             var scene = this.getScene();
             var engine = scene.getEngine();
 
             // Bind
-            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(targetTexture)) {
-                engine.bindFramebuffer(targetTexture);
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+                if (this.isCube) {
+                    engine.bindFramebuffer(this._texture, faceIndex);
+                } else {
+                    engine.bindFramebuffer(this._texture);
+                }
             }
 
             if (this.onBeforeRender) {
-                this.onBeforeRender();
+                this.onBeforeRender(faceIndex);
             }
 
             // Clear
@@ -182,7 +215,7 @@
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
             if (useCameraPostProcess) {
-                scene.postProcessManager._finalizeFrame(false, targetTexture);
+                scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
             }
 
             if (!this._doNotChangeAspectRatio) {
@@ -190,16 +223,25 @@
             }
 
             if (this.onAfterRender) {
-                this.onAfterRender();
+                this.onAfterRender(faceIndex);
             }
 
             // Dump ?
-            if (!this.isCube && dumpForDebug) {
+            if (dumpForDebug) {
                 Tools.DumpFramebuffer(this._size, this._size, engine);
             }
 
             // Unbind
-            engine.unBindFramebuffer(targetTexture);
+            if (!this.isCube || faceIndex === 5) {
+                if (this.isCube) {
+
+                    if (faceIndex === 5) {
+                        engine.generateMipMapsForCubemap(this._texture);
+                    }
+                }
+
+                engine.unBindFramebuffer(this._texture, true);
+            }
         }
 
         public clone(): RenderTargetTexture {

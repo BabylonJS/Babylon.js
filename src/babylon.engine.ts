@@ -951,19 +951,26 @@
             }
         }
 
-        public bindFramebuffer(texture: WebGLTexture): void {
+        public bindFramebuffer(texture: WebGLTexture, faceIndex?: number): void {
             this._currentRenderTarget = texture;
 
             var gl = this._gl;
             gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
+
+            if (texture.isCube) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
+            } else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            }
+
             this._gl.viewport(0, 0, texture._width, texture._height);
 
             this.wipeCaches();
         }
 
-        public unBindFramebuffer(texture: WebGLTexture): void {
+        public unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps = false): void {
             this._currentRenderTarget = null;
-            if (texture.generateMipMaps) {
+            if (texture.generateMipMaps && !disableGenerateMipMaps) {
                 var gl = this._gl;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
@@ -971,6 +978,15 @@
             }
 
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+        }
+
+        public generateMipMapsForCubemap(texture: WebGLTexture) {
+            if (texture.generateMipMaps) {
+                var gl = this._gl;
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            }
         }
 
         public flushFramebuffer(): void {
@@ -1435,7 +1451,7 @@
             var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
             var cullFace = this.cullBackFaces ? showSide : hideSide;
 
-            if (this._depthCullingState.cull !== culling || force || this._depthCullingState.cullFace != cullFace) {
+            if (this._depthCullingState.cull !== culling || force || this._depthCullingState.cullFace !== cullFace) {
                 if (culling) {
                     this._depthCullingState.cullFace = cullFace;
                     this._depthCullingState.cull = true;
@@ -1465,7 +1481,7 @@
         }
 
         public setAlphaMode(mode: number): void {
-            if (this._alphaMode == mode) {
+            if (this._alphaMode === mode) {
                 return;
             }
 
@@ -1593,9 +1609,9 @@
                     onError();
                 }
             };
-
+            var callback: (arrayBuffer: any) => void;
             if (isTGA) {
-                var callback = (arrayBuffer) => {
+                callback = (arrayBuffer) => {
                     var data = new Uint8Array(arrayBuffer);
 
                     var header = Internals.TGATools.GetTGAHeader(data);
@@ -1608,7 +1624,6 @@
                         }
                     }, samplingMode);
                 };
-
                 if (!(fromData instanceof Array))
                     Tools.LoadFile(url, arrayBuffer => {
                         callback(arrayBuffer);
@@ -1843,7 +1858,7 @@
             }
         }
 
-        public createRenderTargetTexture(size: any, options, face?: number): WebGLTexture {
+        public createRenderTargetTexture(size: any, options): WebGLTexture {
             // old version had a "generateMipMaps" arg instead of options.
             // if options.generateMipMaps is undefined, consider that options itself if the generateMipmaps value
             // in the same way, generateDepthBuffer is defaulted to true
@@ -1852,7 +1867,7 @@
             var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
+                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
@@ -1878,17 +1893,12 @@
                 Tools.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
             }
 
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            if (face === undefined) {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            }
-
-            var target = face === undefined ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face);
-
-            gl.texImage2D(target, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, getWebGLTextureType(gl, type), null);
 
             var depthBuffer: WebGLRenderbuffer;
             // Create the depth buffer
@@ -1900,7 +1910,6 @@
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             if (generateDepthBuffer) {
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
             }
@@ -1931,27 +1940,56 @@
             return texture;
         }
 
-        public createRenderTargetCubeTexture(size: number): WebGLTexture {
+        public createRenderTargetCubeTexture(size: number, options?: any): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
-            texture.isCube = true;
-            texture.references = 1;
-            this._loadedTexturesCache.push(texture);
 
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-
-            for (var face = 0; face < 6; face++) {
-                texture._cubeFaces[face] = this.createRenderTargetTexture(size, {}, face);
+            var generateMipMaps = true;
+            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            if (options !== undefined) {
+                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
+                if (options.samplingMode !== undefined) {
+                    samplingMode = options.samplingMode;
+                }
             }
 
-            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            texture.isCube = true;
+            texture.references = 1;
+            texture.generateMipMaps = generateMipMaps;
+            texture.references = 1;
+            texture.samplingMode = samplingMode;
+
+            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            
+            for (var face = 0; face < 6; face++) {
+                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            }
+
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
+            // Create the depth buffer
+            var depthBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+
+            // Create the framebuffer
+            var framebuffer = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+            // Unbind
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            texture._framebuffer = framebuffer;
+            texture._depthBuffer = depthBuffer;
 
             this._activeTexturesCache = [];
 
@@ -1969,7 +2007,6 @@
             texture.isCube = true;
             texture.url = rootUrl;
             texture.references = 1;
-            this._loadedTexturesCache.push(texture);
 
             var extension = rootUrl.substr(rootUrl.length - 4, 4).toLowerCase();
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
@@ -2203,21 +2240,16 @@
                 return;
             }
 
-            var index;
-
-            if (texture._cubeFaces) {
-                for (index = 0; index < 6; index++) {
-                    this.releaseInternalTexture(texture._cubeFaces[index]);
-                }
-            }
-
-            var texturesCache = this.getLoadedTexturesCache();
             texture.references--;
 
             // Final reference ?
             if (texture.references === 0) {
-                index = texturesCache.indexOf(texture);
-                texturesCache.splice(index, 1);
+                var texturesCache = this.getLoadedTexturesCache();
+                var index = texturesCache.indexOf(texture);
+
+                if (index > -1) {
+                    texturesCache.splice(index, 1);
+                }
 
                 this._releaseTexture(texture);
             }

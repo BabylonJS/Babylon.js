@@ -20,10 +20,12 @@ var BABYLON;
                 scene.setTransformMatrix(_this._transformMatrix, scene.getProjectionMatrix());
                 scene.clipPlane = _this.mirrorPlane;
                 scene.getEngine().cullBackFaces = false;
+                scene._mirroredCameraPosition = BABYLON.Vector3.TransformCoordinates(scene.activeCamera.position, _this._mirrorMatrix);
             };
             this.onAfterRender = function () {
                 scene.setTransformMatrix(_this._savedViewMatrix, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = true;
+                scene._mirroredCameraPosition = null;
                 delete scene.clipPlane;
             };
         }

@@ -298,13 +298,11 @@
             }
 
             var add = 0;
-
+            var i: number;
+            var start: number;
             if (this._postProcesses[insertAt]) {
-
-                var start = this._postProcesses.length - 1;
-
-
-                for (var i = start; i >= insertAt + 1; --i) {
+                start = this._postProcesses.length - 1;
+                for (i = start; i >= insertAt + 1; --i) {
                     this._postProcesses[i + 1] = this._postProcesses[i];
                 }
 
@@ -324,7 +322,7 @@
                 break;
             }
 
-            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) == -1) {
+            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) === -1) {
                 this._postProcessesTakenIndices.push(insertAt);
             }
 
@@ -337,20 +335,20 @@
 
         public detachPostProcess(postProcess: PostProcess, atIndices: any = null): number[] {
             var result = [];
-
+            var i: number;
+            var index: number;
             if (!atIndices) {
 
                 var length = this._postProcesses.length;
 
-                for (var i = 0; i < length; i++) {
+                for (i = 0; i < length; i++) {
 
                     if (this._postProcesses[i] !== postProcess) {
                         continue;
                     }
 
                     delete this._postProcesses[i];
-
-                    var index = this._postProcessesTakenIndices.indexOf(i);
+                    index = this._postProcessesTakenIndices.indexOf(i);
                     this._postProcessesTakenIndices.splice(index, 1);
                 }
 

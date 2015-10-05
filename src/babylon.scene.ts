@@ -71,6 +71,9 @@
         private _pointerY: number;
         private _meshUnderPointer: AbstractMesh;
 
+        // Mirror
+        public _mirroredCameraPosition: Vector3;
+
         // Keyboard
         private _onKeyDown: (evt: Event) => void;
         private _onKeyUp: (evt: Event) => void;

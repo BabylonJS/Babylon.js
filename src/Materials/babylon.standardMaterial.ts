@@ -81,6 +81,7 @@
         public EMISSIVEASILLUMINATION = false;
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
+        public INVERTCUBICMAP = false;
 
         _keys: string[];
 
@@ -278,6 +279,10 @@
 
                         if (this.roughness > 0) {
                             this._defines.ROUGHNESS = true;
+                        }
+
+                        if (this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
+                            this._defines.INVERTCUBICMAP = true;
                         }
                     }
                 }
@@ -481,7 +486,7 @@
                     this._defines.VERTEXCOLOR = true;
 
                     if (mesh.hasVertexAlpha) {
-                        this._defines.VERTEXALPHA = true
+                        this._defines.VERTEXALPHA = true;
                     }
                 }
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
@@ -524,7 +529,7 @@
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+                for (lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                     if (!this._defines["LIGHT" + lightIndex]) {
                         continue;
                     }
@@ -722,7 +727,7 @@
                     }
 
                     this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
-                    this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
+                    this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE ? Texture.CUBIC_MODE : this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
                 }
 
                 if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -772,7 +777,7 @@
                 this._scaledSpecular.g = this.specularColor.g * Tools.Clamp(1.0 - this.emissiveColor.g);
                 this._scaledSpecular.b = this.specularColor.b * Tools.Clamp(1.0 - this.emissiveColor.b);
 
-                this._effect.setVector3("vEyePosition", scene.activeCamera.position);
+                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
 
                 if (this._defines.SPECULARTERM) {

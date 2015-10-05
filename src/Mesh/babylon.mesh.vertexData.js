@@ -393,7 +393,10 @@ var BABYLON;
                 if (closeArray) {
                     path1 = pathArray[p];
                     path2 = pathArray[0];
-                    vectlg = path2[i].subtract(path1[i]).length();
+                    if (i === minlg) {
+                        vertex2 = path2[0];
+                    }
+                    vectlg = vertex2.subtract(vertex1).length();
                     dist = vectlg + vTotalDistance[i];
                     vTotalDistance[i] = dist;
                 }
