@@ -1870,7 +1870,27 @@
             return ground;
         }
 
-        public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh;
+        public static CreateTiledGround(name: string, options: {xmin?: number, zmin?: number, xmax?: number, zmax?: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean}, scene: Scene): Mesh;
+        public static CreateTiledGround(name: string, options: any, zminOrScene: any, xmax?: number, zmax?: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, scene?: Scene, updatable?: boolean): Mesh {
+            var xmin: number;
+            var zmin: number;
+            if (typeof options === 'number') {
+                xmin = options || -1;
+                zmin = zminOrScene || -1;
+                xmax = xmax || 1;
+                zmax = zmax || 1;
+                subdivisions = subdivisions || { w: 6, h: 6 };
+                precision = precision || { w: 2, h: 2};
+            } else {
+                scene = zminOrScene;
+                xmin = options.xmin || -1;
+                zmin = options.zmin || -1;
+                xmax = options.xmax || 1;
+                zmax = options.zmax || 1;
+                subdivisions = options.subdivisions || { w: 6, h: 6 };
+                precision = options.precision || { w: 2, h: 2};
+            }
             var tiledGround = new Mesh(name, scene);
 
             var vertexData = VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
