@@ -1769,7 +1769,24 @@
         }
 
         // Lathe
-        public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateLathe(name: string, options: {shape: Vector3[], radius?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh;
+        public static CreateLathe(name: string, options: any, radiusOrScene: any, tessellation?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var shape: Vector3[];
+            var radius: number;
+            if (Array.isArray(options)) {
+                shape = options;
+                radius = radiusOrScene || 1;
+                tessellation = tessellation || 64;
+
+            } else {
+                scene = radiusOrScene;
+                shape = options.shape;
+                radius = options.radius || 1;
+                tessellation = options.tessellation || 64;
+                updatable = options.updatable;
+                sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            }
             radius = radius || 1;
             tessellation = tessellation || radius * 60;
             var pi2 = Math.PI * 2;
@@ -1853,10 +1870,30 @@
             return ground;
         }
 
-        public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh {
+        public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh;
+        public static CreateTiledGround(name: string, options: {xmin?: number, zmin?: number, xmax?: number, zmax?: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean}, scene: Scene): Mesh;
+        public static CreateTiledGround(name: string, options: any, zminOrScene: any, xmax?: number, zmax?: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, scene?: Scene, updatable?: boolean): Mesh {
+            var xmin: number;
+            var zmin: number;
+            if (typeof options === 'number') {
+                xmin = options || -1;
+                zmin = zminOrScene || -1;
+                xmax = xmax || 1;
+                zmax = zmax || 1;
+                subdivisions = subdivisions || { w: 6, h: 6 };
+                precision = precision || { w: 2, h: 2};
+            } else {
+                scene = zminOrScene;
+                xmin = options.xmin || -1;
+                zmin = options.zmin || -1;
+                xmax = options.xmax || 1;
+                zmax = options.zmax || 1;
+                subdivisions = options.subdivisions || { w: 6, h: 6 };
+                precision = options.precision || { w: 2, h: 2};
+            }
             var tiledGround = new Mesh(name, scene);
 
-            var vertexData = VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
+            var vertexData = VertexData.CreateTiledGround({xmin: xmin, zmin: zmin, xmax: xmax, zmax: zmax, subdivisions: subdivisions, precision: precision});
 
             vertexData.applyToMesh(tiledGround, updatable);
 
