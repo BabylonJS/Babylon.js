@@ -1893,7 +1893,7 @@
             }
             var tiledGround = new Mesh(name, scene);
 
-            var vertexData = VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
+            var vertexData = VertexData.CreateTiledGround({xmin: xmin, zmin: zmin, xmax: xmax, zmax: zmax, subdivisions: subdivisions, precision: precision});
 
             vertexData.applyToMesh(tiledGround, updatable);
 
