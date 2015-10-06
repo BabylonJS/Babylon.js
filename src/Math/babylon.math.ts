@@ -2484,12 +2484,17 @@
         }
 
         public static RotationAxis(axis: Vector3, angle: number): Matrix {
+            var result = new Matrix;
+            Matrix.RotationAxisToRef(axis, angle, result);
+            return result;
+        }
+
+        public static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void {
             var s = Math.sin(-angle);
             var c = Math.cos(-angle);
             var c1 = 1 - c;
 
             axis.normalize();
-            var result = Matrix.Zero();
 
             result.m[0] = (axis.x * axis.x) * c1 + c;
             result.m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
@@ -2507,8 +2512,6 @@
             result.m[11] = 0.0;
 
             result.m[15] = 1.0;
-
-            return result;
         }
 
         public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix {
