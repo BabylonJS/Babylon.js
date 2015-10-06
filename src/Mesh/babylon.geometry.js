@@ -577,7 +577,7 @@ var BABYLON;
                     _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 TiledGround.prototype._regenerateVertexData = function () {
-                    return BABYLON.VertexData.CreateTiledGround(this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision);
+                    return BABYLON.VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
                 };
                 TiledGround.prototype.copy = function (id) {
                     return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);

@@ -1,6 +1,7 @@
 var BABYLON;
 (function (BABYLON) {
     var ReflectionProbe = (function () {
+        //http://localhost:61437/Playground/index%20-%20debug.html#KA93U#7
         function ReflectionProbe(name, size, scene, generateMipMaps) {
             var _this = this;
             if (generateMipMaps === void 0) { generateMipMaps = true; }

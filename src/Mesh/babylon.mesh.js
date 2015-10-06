@@ -1531,9 +1531,23 @@ var BABYLON;
             extrudedGeneric.cap = cap;
             return extrudedGeneric;
         };
-        // Lathe
-        Mesh.CreateLathe = function (name, shape, radius, tessellation, scene, updatable, sideOrientation) {
+        Mesh.CreateLathe = function (name, options, radiusOrScene, tessellation, scene, updatable, sideOrientation) {
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
+            var shape;
+            var radius;
+            if (Array.isArray(options)) {
+                shape = options;
+                radius = radiusOrScene || 1;
+                tessellation = tessellation || 64;
+            }
+            else {
+                scene = radiusOrScene;
+                shape = options.shape;
+                radius = options.radius || 1;
+                tessellation = options.tessellation || 64;
+                updatable = options.updatable;
+                sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            }
             radius = radius || 1;
             tessellation = tessellation || radius * 60;
             var pi2 = Math.PI * 2;
@@ -1600,13 +1614,48 @@ var BABYLON;
             ground._setReady(true);
             return ground;
         };
-        Mesh.CreateTiledGround = function (name, xmin, zmin, xmax, zmax, subdivisions, precision, scene, updatable) {
+        Mesh.CreateTiledGround = function (name, options, zminOrScene, xmax, zmax, subdivisions, precision, scene, updatable) {
+            var xmin;
+            var zmin;
+            if (typeof options === 'number') {
+                xmin = options || -1;
+                zmin = zminOrScene || -1;
+                xmax = xmax || 1;
+                zmax = zmax || 1;
+                subdivisions = subdivisions || { w: 6, h: 6 };
+                precision = precision || { w: 2, h: 2 };
+            }
+            else {
+                scene = zminOrScene;
+                xmin = options.xmin || -1;
+                zmin = options.zmin || -1;
+                xmax = options.xmax || 1;
+                zmax = options.zmax || 1;
+                subdivisions = options.subdivisions || { w: 6, h: 6 };
+                precision = options.precision || { w: 2, h: 2 };
+            }
             var tiledGround = new Mesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateTiledGround(xmin, zmin, xmax, zmax, subdivisions, precision);
+            var vertexData = BABYLON.VertexData.CreateTiledGround({ xmin: xmin, zmin: zmin, xmax: xmax, zmax: zmax, subdivisions: subdivisions, precision: precision });
             vertexData.applyToMesh(tiledGround, updatable);
             return tiledGround;
         };
-        Mesh.CreateGroundFromHeightMap = function (name, url, width, height, subdivisions, minHeight, maxHeight, scene, updatable, onReady) {
+        Mesh.CreateGroundFromHeightMap = function (name, url, widthOrOptions, heightorScene, subdivisions, minHeight, maxHeight, scene, updatable, onReady) {
+            var width;
+            var height;
+            if (typeof widthOrOptions === "number") {
+                width = widthOrOptions;
+                height = heightorScene;
+            }
+            else {
+                width = widthOrOptions.width || 10;
+                height = widthOrOptions.height || 10;
+                subdivisions = widthOrOptions.subdivisions || 1;
+                minHeight = widthOrOptions.minHeight;
+                maxHeight = widthOrOptions.maxHeight || 10;
+                updatable = widthOrOptions.updatable;
+                onReady = widthOrOptions.onReady;
+                scene = heightorScene;
+            }
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
             ground._setReady(false);
@@ -1614,15 +1663,20 @@ var BABYLON;
                 // Getting height map data
                 var canvas = document.createElement("canvas");
                 var context = canvas.getContext("2d");
-                var heightMapWidth = img.width;
-                var heightMapHeight = img.height;
-                canvas.width = heightMapWidth;
-                canvas.height = heightMapHeight;
+                var bufferWidth = img.width;
+                var bufferHeight = img.height;
+                canvas.width = bufferWidth;
+                canvas.height = bufferHeight;
                 context.drawImage(img, 0, 0);
                 // Create VertexData from map data
                 // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-                var buffer = context.getImageData(0, 0, heightMapWidth, heightMapHeight).data;
-                var vertexData = BABYLON.VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
+                var buffer = context.getImageData(0, 0, bufferWidth, bufferHeight).data;
+                var vertexData = BABYLON.VertexData.CreateGroundFromHeightMap({
+                    width: width, height: height,
+                    subdivisions: subdivisions,
+                    minHeight: minHeight, maxHeight: maxHeight,
+                    buffer: buffer, bufferWidth: bufferWidth, bufferHeight: bufferHeight
+                });
                 vertexData.applyToMesh(ground, updatable);
                 ground._setReady(true);
                 //execute ready callback, if set
@@ -1728,12 +1782,21 @@ var BABYLON;
             tube.cap = cap;
             return tube;
         };
-        // Decals
-        Mesh.CreateDecal = function (name, sourceMesh, position, normal, size, angle) {
+        Mesh.CreateDecal = function (name, sourceMesh, positionOrOptions, normal, size, angle) {
             if (angle === void 0) { angle = 0; }
             var indices = sourceMesh.getIndices();
             var positions = sourceMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var normals = sourceMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            var position;
+            if (positionOrOptions instanceof BABYLON.Vector3) {
+                position = positionOrOptions;
+            }
+            else {
+                position = positionOrOptions.position || BABYLON.Vector3.Zero();
+                normal = positionOrOptions.normal || BABYLON.Vector3.Up();
+                size = positionOrOptions.size || new BABYLON.Vector3(1, 1, 1);
+                angle = positionOrOptions.angle;
+            }
             // Getting correct rotation
             if (!normal) {
                 var target = new BABYLON.Vector3(0, 0, 1);

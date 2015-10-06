@@ -1722,7 +1722,7 @@
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);
 
-            axis.normalize(); 
+            axis.normalize();
 
             result.w = Math.cos(angle / 2);
             result.x = axis.x * sin;
@@ -2484,7 +2484,7 @@
         }
 
         public static RotationAxis(axis: Vector3, angle: number): Matrix {
-            var result = new Matrix;
+            var result = Matrix.Zero();
             Matrix.RotationAxisToRef(axis, angle, result);
             return result;
         }
@@ -3331,7 +3331,7 @@
             this.centerPoint = new Vector2(
                 (startToMid * (midPoint.y - endPoint.y) - midToEnd * (startPoint.y - midPoint.y)) / det,
                 ((startPoint.x - midPoint.x) * midToEnd - (midPoint.x - endPoint.x) * startToMid) / det
-                );
+            );
 
             this.radius = this.centerPoint.subtract(this.startPoint).length();
 
@@ -3514,7 +3514,7 @@
                     return new Vector2(
                         a.x + (dir.x * localOffset),
                         a.y + (dir.y * localOffset)
-                        );
+                    );
                 }
                 previousOffset = nextOffset;
             }
@@ -3853,4 +3853,5 @@
         }
     }
 }
+
 
