@@ -1770,7 +1770,7 @@
 
         // Lathe
         public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateLathe(name: string, options: {shape: Vector3[], radius?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh;
+        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh;
         public static CreateLathe(name: string, options: any, radiusOrScene: any, tessellation?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var shape: Vector3[];
             var radius: number;
@@ -1871,7 +1871,7 @@
         }
 
         public static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, scene: Scene, updatable?: boolean): Mesh;
-        public static CreateTiledGround(name: string, options: {xmin?: number, zmin?: number, xmax?: number, zmax?: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean}, scene: Scene): Mesh;
+        public static CreateTiledGround(name: string, options: { xmin?: number, zmin?: number, xmax?: number, zmax?: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean }, scene: Scene): Mesh;
         public static CreateTiledGround(name: string, options: any, zminOrScene: any, xmax?: number, zmax?: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, scene?: Scene, updatable?: boolean): Mesh {
             var xmin: number;
             var zmin: number;
@@ -1881,7 +1881,7 @@
                 xmax = xmax || 1;
                 zmax = zmax || 1;
                 subdivisions = subdivisions || { w: 6, h: 6 };
-                precision = precision || { w: 2, h: 2};
+                precision = precision || { w: 2, h: 2 };
             } else {
                 scene = zminOrScene;
                 xmin = options.xmin || -1;
@@ -1889,18 +1889,37 @@
                 xmax = options.xmax || 1;
                 zmax = options.zmax || 1;
                 subdivisions = options.subdivisions || { w: 6, h: 6 };
-                precision = options.precision || { w: 2, h: 2};
+                precision = options.precision || { w: 2, h: 2 };
             }
             var tiledGround = new Mesh(name, scene);
 
-            var vertexData = VertexData.CreateTiledGround({xmin: xmin, zmin: zmin, xmax: xmax, zmax: zmax, subdivisions: subdivisions, precision: precision});
+            var vertexData = VertexData.CreateTiledGround({ xmin: xmin, zmin: zmin, xmax: xmax, zmax: zmax, subdivisions: subdivisions, precision: precision });
 
             vertexData.applyToMesh(tiledGround, updatable);
 
             return tiledGround;
         }
 
-        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void): GroundMesh {
+        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void}, scene: Scene);
+        public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void);
+        public static CreateGroundFromHeightMap(name: string, url: string, widthOrOptions?: any, heightorScene?: any, subdivisions?: number, minHeight?: number, maxHeight?: number, scene?: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void): GroundMesh {
+            var width: number;
+            var height: number;
+
+            if (typeof widthOrOptions === "number") {
+                width = widthOrOptions;
+                height = heightorScene;
+            } else {
+                width = widthOrOptions.width || 10;
+                height = widthOrOptions.height || 10;
+                subdivisions = widthOrOptions.subdivisions || 1;
+                minHeight = widthOrOptions.minHeight;
+                maxHeight = widthOrOptions.maxHeight || 10;
+                updatable = widthOrOptions.updatable;
+                onReady = widthOrOptions.onReady;
+                scene = heightorScene;
+            }
+
             var ground = new GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
 
@@ -1910,17 +1929,22 @@
                 // Getting height map data
                 var canvas = document.createElement("canvas");
                 var context = canvas.getContext("2d");
-                var heightMapWidth = img.width;
-                var heightMapHeight = img.height;
-                canvas.width = heightMapWidth;
-                canvas.height = heightMapHeight;
+                var bufferWidth = img.width;
+                var bufferHeight = img.height;
+                canvas.width = bufferWidth;
+                canvas.height = bufferHeight;
 
                 context.drawImage(img, 0, 0);
 
                 // Create VertexData from map data
                 // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-                var buffer = <Uint8Array>(<any>context.getImageData(0, 0, heightMapWidth, heightMapHeight).data);
-                var vertexData = VertexData.CreateGroundFromHeightMap(width, height, subdivisions, minHeight, maxHeight, buffer, heightMapWidth, heightMapHeight);
+                var buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
+                var vertexData = VertexData.CreateGroundFromHeightMap({
+                    width, height,
+                    subdivisions,
+                    minHeight, maxHeight,
+                    buffer, bufferWidth, bufferHeight
+                });
 
                 vertexData.applyToMesh(ground, updatable);
 
@@ -2037,10 +2061,22 @@
         }
 
         // Decals
-        public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number = 0) {
+        public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: {position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number});
+        public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number);
+        public static CreateDecal(name: string, sourceMesh: AbstractMesh, positionOrOptions: any, normal?: Vector3, size?: Vector3, angle: number = 0) {
             var indices = sourceMesh.getIndices();
             var positions = sourceMesh.getVerticesData(VertexBuffer.PositionKind);
             var normals = sourceMesh.getVerticesData(VertexBuffer.NormalKind);
+            var position: Vector3;
+
+            if (positionOrOptions instanceof Vector3) {
+                position = <Vector3>positionOrOptions;
+            } else {
+                position = positionOrOptions.position || Vector3.Zero();
+                normal = positionOrOptions.normal || Vector3.Up();
+                size = positionOrOptions.size || new Vector3(1, 1, 1);
+                angle = positionOrOptions.angle;
+            }
 
             // Getting correct rotation
             if (!normal) {
@@ -2423,6 +2459,7 @@
         }
     }
 }
+
 
 
 

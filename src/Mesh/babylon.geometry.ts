@@ -733,7 +733,7 @@
             }
 
             public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTiledGround({xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision});
+                return VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
             }
 
             public copy(id: string): Geometry {
@@ -794,4 +794,5 @@
         }
     }
 }
+
 

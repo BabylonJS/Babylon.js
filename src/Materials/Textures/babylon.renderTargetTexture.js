@@ -35,23 +35,23 @@ var BABYLON;
             // Rendering groups
             this._renderingManager = new BABYLON.RenderingManager(scene);
         }
-        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDER_ONCE", {
+        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDERONCE", {
             get: function () {
-                return RenderTargetTexture._REFRESHRATE_RENDER_ONCE;
+                return RenderTargetTexture._REFRESHRATE_RENDERONCE;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDER_ONEVERYFRAME", {
+        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDERONEVERYFRAME", {
             get: function () {
-                return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME;
+                return RenderTargetTexture._REFRESHRATE_RENDERONEVERYFRAME;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDER_ONEVERYTWOFRAMES", {
+        Object.defineProperty(RenderTargetTexture, "REFRESHRATE_RENDERONEVERYTWOFRAME", {
             get: function () {
-                return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+                return RenderTargetTexture._REFRESHRATE_RENDERONEVERYTWOFRAME;
             },
             enumerable: true,
             configurable: true
@@ -226,9 +226,9 @@ var BABYLON;
             newTexture.renderList = this.renderList.slice(0);
             return newTexture;
         };
-        RenderTargetTexture._REFRESHRATE_RENDER_ONCE = 0;
-        RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;
-        RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES = 2;
+        RenderTargetTexture._REFRESHRATE_RENDERONCE = 0;
+        RenderTargetTexture._REFRESHRATE_RENDERONEVERYFRAME = 1;
+        RenderTargetTexture._REFRESHRATE_RENDERONEVERYTWOFRAME = 2;
         return RenderTargetTexture;
     })(BABYLON.Texture);
     BABYLON.RenderTargetTexture = RenderTargetTexture;

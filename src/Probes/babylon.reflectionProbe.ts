@@ -10,6 +10,7 @@
 
         public position = Vector3.Zero();
           
+        //http://localhost:61437/Playground/index%20-%20debug.html#KA93U#7
         constructor(public name: string, size: number, scene: Scene, generateMipMaps = true) {
             this._scene = scene;
 

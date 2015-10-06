@@ -1979,11 +1979,15 @@ var BABYLON;
             result.m[14] = 0;
         };
         Matrix.RotationAxis = function (axis, angle) {
+            var result = Matrix.Zero();
+            Matrix.RotationAxisToRef(axis, angle, result);
+            return result;
+        };
+        Matrix.RotationAxisToRef = function (axis, angle, result) {
             var s = Math.sin(-angle);
             var c = Math.cos(-angle);
             var c1 = 1 - c;
             axis.normalize();
-            var result = Matrix.Zero();
             result.m[0] = (axis.x * axis.x) * c1 + c;
             result.m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
             result.m[2] = (axis.x * axis.z) * c1 + (axis.y * s);
@@ -1997,7 +2001,6 @@ var BABYLON;
             result.m[10] = (axis.z * axis.z) * c1 + c;
             result.m[11] = 0.0;
             result.m[15] = 1.0;
-            return result;
         };
         Matrix.RotationYawPitchRoll = function (yaw, pitch, roll) {
             var result = new Matrix();

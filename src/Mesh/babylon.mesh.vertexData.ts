@@ -1052,14 +1052,14 @@
             return vertexData;
         }
 
-        public static CreateTiledGround(options: {xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: any, precision: any}): VertexData {
+        public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: any, precision: any }): VertexData {
             var xmin = options.xmin;
             var zmin = options.zmin;
             var xmax = options.xmax;
             var zmax = options.zmax;
-            var subdivisions = options.subdivisions || {w: 1, h: 1};
-            var precision = options.precision || {w: 1, h: 1};
-            
+            var subdivisions = options.subdivisions || { w: 1, h: 1 };
+            var precision = options.precision || { w: 1, h: 1 };
+
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1136,7 +1136,7 @@
             return vertexData;
         }
 
-        public static CreateGroundFromHeightMap(width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number): VertexData {
+        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number}): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1144,40 +1144,40 @@
             var row, col;
 
             // Vertices
-            for (row = 0; row <= subdivisions; row++) {
-                for (col = 0; col <= subdivisions; col++) {
-                    var position = new Vector3((col * width) / subdivisions - (width / 2.0), 0, ((subdivisions - row) * height) / subdivisions - (height / 2.0));
+            for (row = 0; row <= options.subdivisions; row++) {
+                for (col = 0; col <= options.subdivisions; col++) {
+                    var position = new Vector3((col * options.width) / options.subdivisions - (options.width / 2.0), 0, ((options.subdivisions - row) * options.height) / options.subdivisions - (options.height / 2.0));
 
                     // Compute height
-                    var heightMapX = (((position.x + width / 2) / width) * (bufferWidth - 1)) | 0;
-                    var heightMapY = ((1.0 - (position.z + height / 2) / height) * (bufferHeight - 1)) | 0;
+                    var heightMapX = (((position.x + options.width / 2) / options.width) * (options.bufferWidth - 1)) | 0;
+                    var heightMapY = ((1.0 - (position.z + options.height / 2) / options.height) * (options.bufferHeight - 1)) | 0;
 
-                    var pos = (heightMapX + heightMapY * bufferWidth) * 4;
-                    var r = buffer[pos] / 255.0;
-                    var g = buffer[pos + 1] / 255.0;
-                    var b = buffer[pos + 2] / 255.0;
+                    var pos = (heightMapX + heightMapY * options.bufferWidth) * 4;
+                    var r = options.buffer[pos] / 255.0;
+                    var g = options.buffer[pos + 1] / 255.0;
+                    var b = options.buffer[pos + 2] / 255.0;
 
                     var gradient = r * 0.3 + g * 0.59 + b * 0.11;
 
-                    position.y = minHeight + (maxHeight - minHeight) * gradient;
+                    position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
 
                     // Add  vertex
                     positions.push(position.x, position.y, position.z);
                     normals.push(0, 0, 0);
-                    uvs.push(col / subdivisions, 1.0 - row / subdivisions);
+                    uvs.push(col / options.subdivisions, 1.0 - row / options.subdivisions);
                 }
             }
 
             // Indices
-            for (row = 0; row < subdivisions; row++) {
-                for (col = 0; col < subdivisions; col++) {
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + row * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
+            for (row = 0; row < options.subdivisions; row++) {
+                for (col = 0; col < options.subdivisions; col++) {
+                    indices.push(col + 1 + (row + 1) * (options.subdivisions + 1));
+                    indices.push(col + 1 + row * (options.subdivisions + 1));
+                    indices.push(col + row * (options.subdivisions + 1));
 
-                    indices.push(col + (row + 1) * (subdivisions + 1));
-                    indices.push(col + 1 + (row + 1) * (subdivisions + 1));
-                    indices.push(col + row * (subdivisions + 1));
+                    indices.push(col + (row + 1) * (options.subdivisions + 1));
+                    indices.push(col + 1 + (row + 1) * (options.subdivisions + 1));
+                    indices.push(col + row * (options.subdivisions + 1));
                 }
             }
 
@@ -1500,6 +1500,7 @@
         }
     }
 } 
+
 
 
 
