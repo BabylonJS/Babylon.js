@@ -1769,7 +1769,24 @@
         }
 
         // Lathe
-        public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+        public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        public static CreateLathe(name: string, options: {shape: Vector3[], radius?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh;
+        public static CreateLathe(name: string, options: any, radiusOrScene: any, tessellation?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
+            var shape: Vector3[];
+            var radius: number;
+            if (Array.isArray(options)) {
+                shape = options;
+                radius = radiusOrScene || 1;
+                tessellation = tessellation || 64;
+
+            } else {
+                scene = radiusOrScene;
+                shape = options.shape;
+                radius = options.radius || 1;
+                tessellation = options.tessellation || 64;
+                updatable = options.updatable;
+                sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            }
             radius = radius || 1;
             tessellation = tessellation || radius * 60;
             var pi2 = Math.PI * 2;
