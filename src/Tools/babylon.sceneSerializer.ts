@@ -951,6 +951,66 @@
             return serializationObject;
         }
     }
+
+    export class OBJExport {
+
+        //Exports the geometry of a Mesh in .OBJ file format (text)
+        public static OBJ(mesh:Mesh, materials?:boolean):string {
+            var output = [];
+            var g = mesh.geometry;
+            var trunkVerts = g.getVerticesData('position');
+            var trunkNormals = g.getVerticesData('normal');
+            var trunkUV = g.getVerticesData('uv');
+            var trunkFaces = g.getIndices();
+            if (materials) {
+                output.push("mtllib mat.mtl");
+            }
+            for (var i = 0; i < trunkVerts.length; i += 3) {
+                output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+            }
+            for (i = 0; i < trunkNormals.length; i += 3) {
+                output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
+            }
+            for (i = 0; i < trunkUV.length; i += 2) {
+                output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+            }
+            output.push("g gr1");
+            if (materials) {
+                output.push("usemtl mat1");
+            }
+            for (i = 0; i < trunkFaces.length; i += 3) {
+                output.push(
+                    "f " + (trunkFaces[i + 2] + 1) + "/" + (trunkFaces[i + 2] + 1) + "/" + (trunkFaces[i + 2] + 1) +
+                    " " + (trunkFaces[i + 1] + 1) + "/" + (trunkFaces[i + 1] + 1) + "/" + (trunkFaces[i + 1] + 1) +
+                    " " + (trunkFaces[i] + 1) + "/" + (trunkFaces[i] + 1) + "/" + (trunkFaces[i] + 1)
+                );
+            }
+            var text = output.join("\n");
+            return (text);
+        }
+
+        //Exports the material(s) of a mesh in .MTL file format (text)
+        public static MTL(mesh:Mesh):string {
+            var output = [];
+            output.push("newmtl mat1");
+            output.push("  Ns 10.0000");
+            output.push("  Ni 1.5000");
+            output.push("  d 1.0000");
+            output.push("  Tr 0.0000");
+            output.push("  Tf 1.0000 1.0000 1.0000");
+            output.push("  illum 2");
+            output.push("  Ka 0.0000 0.0000 0.0000");
+            output.push("  Kd 1.0000 1.0000 1.0000");
+            output.push("  Ks 1.0000 1.0000 1.0000");
+            output.push("  Ke 0.0000 0.0000 0.0000");
+            //output.push("  map_Ka cube.png");
+            //output.push("  map_Kd cube.png");
+            var text = output.join("\n");
+            return(text);
+        }
+
+    }
+
 }
 
 
