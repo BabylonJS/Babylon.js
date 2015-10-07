@@ -342,10 +342,10 @@
         }
 
         //returns a downloadable url to a file content.
-        public static FileAsURL(content:string): string {
+        public static FileAsURL(content: string): string {
             var fileBlob = new Blob([content]);
             var url = window.URL || window.webkitURL;
-            var link:string = url.createObjectURL(fileBlob);
+            var link: string = url.createObjectURL(fileBlob);
             return link;
         }
 

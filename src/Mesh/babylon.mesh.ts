@@ -1905,7 +1905,7 @@
             return tiledGround;
         }
 
-        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void}, scene: Scene);
+        public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene);
         public static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void);
         public static CreateGroundFromHeightMap(name: string, url: string, widthOrOptions?: any, heightorScene?: any, subdivisions?: number, minHeight?: number, maxHeight?: number, scene?: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void): GroundMesh {
             var width: number;
@@ -2070,7 +2070,7 @@
         }
 
         // Decals
-        public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: {position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number});
+        public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number });
         public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number);
         public static CreateDecal(name: string, sourceMesh: AbstractMesh, positionOrOptions: any, normal?: Vector3, size?: Vector3, angle: number = 0) {
             var indices = sourceMesh.getIndices();
@@ -2468,6 +2468,7 @@
         }
     }
 }
+
 
 
 
