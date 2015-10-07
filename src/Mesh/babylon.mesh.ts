@@ -1699,13 +1699,14 @@
                 var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
                 var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
                 var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 1;
+                var rotationMatrix: Matrix = Matrix.Zero();
 
                 for (var i = 0; i < curve.length; i++) {
                     var shapePath = new Array<Vector3>();
                     var angleStep = rotate(i, distances[i]);
                     var scaleRatio = scl(i, distances[i]);
                     for (var p = 0; p < shape.length; p++) {
-                        var rotationMatrix = Matrix.RotationAxis(tangents[i], angle);
+                        Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
                         var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
                         var rotated = Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
                         shapePath.push(rotated);
@@ -1994,14 +1995,14 @@
                 var rad: number;
                 var normal: Vector3;
                 var rotated: Vector3;
-                var rotationMatrix: Matrix;
+                var rotationMatrix: Matrix = Matrix.Zero();
                 var index = (cap === Mesh._NO_CAP || cap === Mesh.CAP_END) ? 0 : 1;
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array<Vector3>();              // current circle array
                     normal = normals[i];                        // current normal
                     for (var t = 0; t < tessellation; t++) {
-                        rotationMatrix = Matrix.RotationAxis(tangents[i], step * t);
+                        Matrix.RotationAxisToRef(tangents[i], step * t, rotationMatrix);
                         rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                         circlePath.push(rotated);
                     }
