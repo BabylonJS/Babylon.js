@@ -277,6 +277,13 @@ var BABYLON;
                 reader.readAsArrayBuffer(fileToLoad);
             }
         };
+        //returns a downloadable url to a file content.
+        Tools.FileAsURL = function (content) {
+            var fileBlob = new Blob([content]);
+            var url = window.URL || window.webkitURL;
+            var link = url.createObjectURL(fileBlob);
+            return link;
+        };
         // Misc.   
         Tools.Clamp = function (value, min, max) {
             if (min === void 0) { min = 0; }
