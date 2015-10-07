@@ -2,6 +2,7 @@
   - **Major updates**
     - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.lightmapThreshold`. [Demo here](#NEEDDEMO) ([deltakosh](https://github.com/deltakosh))
     - Support for reflection probes. [See documentation here](http://doc.babylonjs.com/tutorials/How_to_use_Reflection_probes) ([deltakosh](https://github.com/deltakosh))
+    - New serializers [folder](https://github.com/BabylonJS/Babylon.js/serializers) to host .babylon converter (like .obj) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New `Material.sideOrientation` property to define clockwise or counter-clockwise faces selection. [Demo here](http://www.babylonjs-playground.com/#1TZJQY) ([deltakosh](https://github.com/deltakosh))
     - It is now possible to create a custom loading screen [PR](https://github.com/BabylonJS/Babylon.js/pull/700) ([RaananW](https://github.com/RaananW))

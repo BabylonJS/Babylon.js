@@ -110,7 +110,10 @@ declare module BABYLON {
         private _caps;
         private _pointerLockRequested;
         private _alphaTest;
-        private _loadingScreen;
+        private _resizeLoadingUI;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        private _loadingDivBackgroundColor;
         private _drawCalls;
         private _glVersion;
         private _glRenderer;
@@ -211,9 +214,8 @@ declare module BABYLON {
          * @param {number} height - the new canvas' height
          */
         setSize(width: number, height: number): void;
-        bindFramebuffer(texture: WebGLTexture, faceIndex?: number): void;
-        unBindFramebuffer(texture: WebGLTexture, disableGenerateMipMaps?: boolean): void;
-        generateMipMapsForCubemap(texture: WebGLTexture): void;
+        bindFramebuffer(texture: WebGLTexture): void;
+        unBindFramebuffer(texture: WebGLTexture): void;
         flushFramebuffer(): void;
         restoreDefaultFramebuffer(): void;
         private _resetVertexBufferBinding();
@@ -254,7 +256,7 @@ declare module BABYLON {
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
         setColor3(uniform: WebGLUniformLocation, color3: Color3): void;
         setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean): void;
         setDepthBuffer(enable: boolean): void;
         getDepthWrite(): boolean;
         setDepthWrite(enable: boolean): void;
@@ -273,7 +275,6 @@ declare module BABYLON {
         updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void;
         updateVideoTexture(texture: WebGLTexture, video: HTMLVideoElement, invertY: boolean): void;
         createRenderTargetTexture(size: any, options: any): WebGLTexture;
-        createRenderTargetCubeTexture(size: number, options?: any): WebGLTexture;
         createCubeTexture(rootUrl: string, scene: Scene, extensions: string[], noMipmap?: boolean): WebGLTexture;
         _releaseTexture(texture: WebGLTexture): void;
         bindSamplers(effect: Effect): void;
@@ -282,13 +283,11 @@ declare module BABYLON {
         setTexture(channel: number, texture: BaseTexture): void;
         _setAnisotropicLevel(key: number, texture: BaseTexture): void;
         readPixels(x: number, y: number, width: number, height: number): Uint8Array;
-        releaseInternalTexture(texture: WebGLTexture): void;
         dispose(): void;
         displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingScreen: ILoadingScreen;
         loadingUIText: string;
         loadingUIBackgroundColor: string;
+        hideLoadingUI(): void;
         getFps(): number;
         getDeltaTime(): number;
         private _measureFps();
@@ -517,7 +516,6 @@ declare module BABYLON {
         private _pointerX;
         private _pointerY;
         private _meshUnderPointer;
-        _mirroredCameraPosition: Vector3;
         private _onKeyDown;
         private _onKeyUp;
         /**
@@ -595,8 +593,6 @@ declare module BABYLON {
         customRenderTargets: RenderTargetTexture[];
         useDelayedTextureLoading: boolean;
         importedMeshesFiles: String[];
-        probesEnabled: boolean;
-        reflectionProbes: ReflectionProbe[];
         database: any;
         /**
          * This scene's action manager
@@ -1159,10 +1155,9 @@ declare module BABYLON {
         value: any;
         duration: number;
         stopOtherAnimations: boolean;
-        onInterpolationDone: () => void;
         private _target;
         private _property;
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void);
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean);
         _prepare(): void;
         execute(): void;
     }
@@ -1209,7 +1204,7 @@ declare module BABYLON {
         targetPropertyPath: string[];
         currentFrame: number;
         allowMatricesInterpolation: boolean;
-        static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
+        static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animatable;
         constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number);
         reset(): void;
         isStopped(): boolean;
@@ -2106,10 +2101,8 @@ declare module BABYLON {
         };
         getMesh(id: any): SerializedMesh;
         addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
         getGeometry(id: string): SerializedGeometry;
         addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
     }
     class CollideWorker {
         collider: Collider;
@@ -2296,6 +2289,48 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Texture;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        private _scene;
+        private _emitter;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class DirectionalLight extends Light implements IShadowLight {
         direction: Vector3;
         position: Vector3;
@@ -2400,44 +2435,34 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
+    interface ISceneLoaderPlugin {
+        extensions: string;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
     }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        private _scene;
-        private _emitter;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        private static _registeredPlugins;
+        private static _getPluginForFilename(sceneFilename);
+        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -2518,17 +2543,12 @@ declare module BABYLON {
         static TriangleFillMode: number;
         static WireFrameFillMode: number;
         static PointFillMode: number;
-        private static _ClockWiseSideOrientation;
-        private static _CounterClockWiseSideOrientation;
-        static ClockWiseSideOrientation: number;
-        static CounterClockWiseSideOrientation: number;
         id: string;
         checkReadyOnEveryCall: boolean;
         checkReadyOnlyOnce: boolean;
         state: string;
         alpha: number;
         backFaceCulling: boolean;
-        sideOrientation: number;
         onCompiled: (effect: Effect) => void;
         onError: (effect: Effect, errors: string) => void;
         onDispose: () => void;
@@ -2536,7 +2556,6 @@ declare module BABYLON {
         getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
         alphaMode: number;
         disableDepthWrite: boolean;
-        fogEnabled: boolean;
         _effect: Effect;
         _wasPreviouslyReady: boolean;
         private _scene;
@@ -2561,7 +2580,6 @@ declare module BABYLON {
         unbind(): void;
         clone(name: string): Material;
         dispose(forceDisposeEffect?: boolean): void;
-        copyTo(other: Material): void;
     }
 }
 
@@ -2572,29 +2590,6 @@ declare module BABYLON {
         getSubMaterial(index: any): Material;
         isReady(mesh?: AbstractMesh): boolean;
         clone(name: string): MultiMaterial;
-    }
-}
-
-declare module BABYLON {
-    class PBRMaterial extends Material {
-        albedoColor: Color3;
-        private _worldViewProjectionMatrix;
-        private _globalAmbientColor;
-        private _scaledDiffuse;
-        private _scaledSpecular;
-        private _renderId;
-        private _defines;
-        private _cachedDefines;
-        constructor(name: string, scene: Scene);
-        needAlphaBlending(): boolean;
-        needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
-        getAnimatables(): IAnimatable[];
-        dispose(forceDisposeEffect?: boolean): void;
-        clone(name: string): PBRMaterial;
     }
 }
 
@@ -2645,7 +2640,6 @@ declare module BABYLON {
         rightColor: Color3;
         bias: number;
         power: number;
-        clone(): FresnelParameters;
     }
     class StandardMaterial extends Material {
         diffuseTexture: BaseTexture;
@@ -2655,7 +2649,6 @@ declare module BABYLON {
         emissiveTexture: BaseTexture;
         specularTexture: BaseTexture;
         bumpTexture: BaseTexture;
-        lightmapTexture: BaseTexture;
         ambientColor: Color3;
         diffuseColor: Color3;
         specularColor: Color3;
@@ -2665,8 +2658,8 @@ declare module BABYLON {
         useEmissiveAsIllumination: boolean;
         useReflectionFresnelFromSpecular: boolean;
         useSpecularOverAlpha: boolean;
+        fogEnabled: boolean;
         roughness: number;
-        lightmapThreshold: number;
         diffuseFresnelParameters: FresnelParameters;
         opacityFresnelParameters: FresnelParameters;
         reflectionFresnelParameters: FresnelParameters;
@@ -2700,1208 +2693,6 @@ declare module BABYLON {
         static SpecularTextureEnabled: boolean;
         static BumpTextureEnabled: boolean;
         static FresnelEnabled: boolean;
-        static LightmapEnabled: boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPlugin {
-        extensions: string;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        private static _registeredPlugins;
-        private static _getPluginForFilename(sceneFilename);
-        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-    }
-}
-
-declare module BABYLON {
-    class AbstractMesh extends Node implements IDisposable {
-        private static _BILLBOARDMODE_NONE;
-        private static _BILLBOARDMODE_X;
-        private static _BILLBOARDMODE_Y;
-        private static _BILLBOARDMODE_Z;
-        private static _BILLBOARDMODE_ALL;
-        static BILLBOARDMODE_NONE: number;
-        static BILLBOARDMODE_X: number;
-        static BILLBOARDMODE_Y: number;
-        static BILLBOARDMODE_Z: number;
-        static BILLBOARDMODE_ALL: number;
-        definedFacingForward: boolean;
-        position: Vector3;
-        rotation: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        billboardMode: number;
-        visibility: number;
-        alphaIndex: number;
-        infiniteDistance: boolean;
-        isVisible: boolean;
-        isPickable: boolean;
-        showBoundingBox: boolean;
-        showSubMeshesBoundingBox: boolean;
-        onDispose: any;
-        isBlocker: boolean;
-        skeleton: Skeleton;
-        renderingGroupId: number;
-        material: Material;
-        receiveShadows: boolean;
-        actionManager: ActionManager;
-        renderOutline: boolean;
-        outlineColor: Color3;
-        outlineWidth: number;
-        renderOverlay: boolean;
-        overlayColor: Color3;
-        overlayAlpha: number;
-        hasVertexAlpha: boolean;
-        useVertexColors: boolean;
-        applyFog: boolean;
-        computeBonesUsingShaders: boolean;
-        scalingDeterminant: number;
-        useOctreeForRenderingSelection: boolean;
-        useOctreeForPicking: boolean;
-        useOctreeForCollisions: boolean;
-        layerMask: number;
-        alwaysSelectAsActiveMesh: boolean;
-        _physicImpostor: number;
-        _physicsMass: number;
-        _physicsFriction: number;
-        _physicRestitution: number;
-        private _checkCollisions;
-        ellipsoid: Vector3;
-        ellipsoidOffset: Vector3;
-        private _collider;
-        private _oldPositionForCollisions;
-        private _diffPositionForCollisions;
-        private _newPositionForCollisions;
-        onCollide: (collidedMesh: AbstractMesh) => void;
-        private _meshToBoneReferal;
-        edgesWidth: number;
-        edgesColor: Color4;
-        _edgesRenderer: EdgesRenderer;
-        private _localScaling;
-        private _localRotation;
-        private _localTranslation;
-        private _localBillboard;
-        private _localPivotScaling;
-        private _localPivotScalingRotation;
-        private _localMeshReferalTransform;
-        private _localWorld;
-        _worldMatrix: Matrix;
-        private _rotateYByPI;
-        private _absolutePosition;
-        private _collisionsTransformMatrix;
-        private _collisionsScalingMatrix;
-        _positions: Vector3[];
-        private _isDirty;
-        _masterMesh: AbstractMesh;
-        _boundingInfo: BoundingInfo;
-        private _pivotMatrix;
-        _isDisposed: boolean;
-        _renderId: number;
-        subMeshes: SubMesh[];
-        _submeshesOctree: Octree<SubMesh>;
-        _intersectionsInProgress: AbstractMesh[];
-        private _onAfterWorldMatrixUpdate;
-        private _isWorldMatrixFrozen;
-        _waitingActions: any;
-        _waitingFreezeWorldMatrix: boolean;
-        constructor(name: string, scene: Scene);
-        disableEdgesRendering(): void;
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): void;
-        isBlocked: boolean;
-        getLOD(camera: Camera): AbstractMesh;
-        getTotalVertices(): number;
-        getIndices(): number[];
-        getVerticesData(kind: string): number[];
-        isVerticesDataPresent(kind: string): boolean;
-        getBoundingInfo(): BoundingInfo;
-        useBones: boolean;
-        _preActivate(): void;
-        _activate(renderId: number): void;
-        getWorldMatrix(): Matrix;
-        worldMatrixFromCache: Matrix;
-        absolutePosition: Vector3;
-        freezeWorldMatrix(): void;
-        unfreezeWorldMatrix(): void;
-        isWorldMatrixFrozen: boolean;
-        rotate(axis: Vector3, amount: number, space: Space): void;
-        translate(axis: Vector3, distance: number, space: Space): void;
-        getAbsolutePosition(): Vector3;
-        setAbsolutePosition(absolutePosition: Vector3): void;
-        /**
-         * Perform relative position change from the point of view of behind the front of the mesh.
-         * This is performed taking into account the meshes current rotation, so you do not have to care.
-         * Supports definition of mesh facing forward or backward.
-         * @param {number} amountRight
-         * @param {number} amountUp
-         * @param {number} amountForward
-         */
-        movePOV(amountRight: number, amountUp: number, amountForward: number): void;
-        /**
-         * Calculate relative position change from the point of view of behind the front of the mesh.
-         * This is performed taking into account the meshes current rotation, so you do not have to care.
-         * Supports definition of mesh facing forward or backward.
-         * @param {number} amountRight
-         * @param {number} amountUp
-         * @param {number} amountForward
-         */
-        calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3;
-        /**
-         * Perform relative rotation change from the point of view of behind the front of the mesh.
-         * Supports definition of mesh facing forward or backward.
-         * @param {number} flipBack
-         * @param {number} twirlClockwise
-         * @param {number} tiltRight
-         */
-        rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): void;
-        /**
-         * Calculate relative rotation change from the point of view of behind the front of the mesh.
-         * Supports definition of mesh facing forward or backward.
-         * @param {number} flipBack
-         * @param {number} twirlClockwise
-         * @param {number} tiltRight
-         */
-        calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3;
-        setPivotMatrix(matrix: Matrix): void;
-        getPivotMatrix(): Matrix;
-        _isSynchronized(): boolean;
-        _initCache(): void;
-        markAsDirty(property: string): void;
-        _updateBoundingInfo(): void;
-        _updateSubMeshesBoundingInfo(matrix: Matrix): void;
-        computeWorldMatrix(force?: boolean): Matrix;
-        /**
-        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
-        * @param func: callback function to add
-        */
-        registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void;
-        unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void;
-        setPositionWithLocalVector(vector3: Vector3): void;
-        getPositionExpressedInLocalSpace(): Vector3;
-        locallyTranslate(vector3: Vector3): void;
-        lookAt(targetPoint: Vector3, yawCor: number, pitchCor: number, rollCor: number): void;
-        attachToBone(bone: Bone, affectedMesh: AbstractMesh): void;
-        detachFromBone(): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(camera?: Camera): boolean;
-        intersectsMesh(mesh: AbstractMesh, precise?: boolean): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): any;
-        getPhysicsImpostor(): number;
-        getPhysicsMass(): number;
-        getPhysicsFriction(): number;
-        getPhysicsRestitution(): number;
-        getPositionInCameraSpace(camera?: Camera): Vector3;
-        getDistanceToCamera(camera?: Camera): number;
-        applyImpulse(force: Vector3, contactPoint: Vector3): void;
-        setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): void;
-        updatePhysicsBodyPosition(): void;
-        checkCollisions: boolean;
-        moveWithCollisions(velocity: Vector3): void;
-        private _onCollisionPositionChange;
-        /**
-        * This function will create an octree to help select the right submeshes for rendering, picking and collisions
-        * Please note that you must have a decent number of submeshes to get performance improvements when using octree
-        */
-        createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
-        _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): void;
-        _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): void;
-        _checkCollision(collider: Collider): void;
-        _generatePointsArray(): boolean;
-        intersects(ray: Ray, fastCheck?: boolean): PickingInfo;
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): AbstractMesh;
-        releaseSubMeshes(): void;
-        dispose(doNotRecurse?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    class CSG {
-        private polygons;
-        matrix: Matrix;
-        position: Vector3;
-        rotation: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        static FromMesh(mesh: Mesh): CSG;
-        private static FromPolygons(polygons);
-        clone(): CSG;
-        private toPolygons();
-        union(csg: CSG): CSG;
-        unionInPlace(csg: CSG): void;
-        subtract(csg: CSG): CSG;
-        subtractInPlace(csg: CSG): void;
-        intersect(csg: CSG): CSG;
-        intersectInPlace(csg: CSG): void;
-        inverse(): CSG;
-        inverseInPlace(): void;
-        copyTransformAttributes(csg: CSG): CSG;
-        buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh;
-        toMesh(name: string, material: Material, scene: Scene, keepSubMeshes: boolean): Mesh;
-    }
-}
-
-declare module BABYLON {
-    class Geometry implements IGetSetVerticesData {
-        id: string;
-        delayLoadState: number;
-        delayLoadingFile: string;
-        onGeometryUpdated: (geometry: Geometry, kind?: string) => void;
-        private _scene;
-        private _engine;
-        private _meshes;
-        private _totalVertices;
-        private _indices;
-        private _vertexBuffers;
-        private _isDisposed;
-        _delayInfo: any;
-        private _indexBuffer;
-        _boundingInfo: BoundingInfo;
-        _delayLoadingFunction: (any: any, geometry: Geometry) => void;
-        constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh);
-        getScene(): Scene;
-        getEngine(): Engine;
-        isReady(): boolean;
-        setAllVerticesData(vertexData: VertexData, updatable?: boolean): void;
-        setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void;
-        updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void;
-        updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void;
-        getTotalVertices(): number;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
-        getVertexBuffer(kind: string): VertexBuffer;
-        getVertexBuffers(): VertexBuffer[];
-        isVerticesDataPresent(kind: string): boolean;
-        getVerticesDataKinds(): string[];
-        setIndices(indices: number[], totalVertices?: number): void;
-        getTotalIndices(): number;
-        getIndices(copyWhenShared?: boolean): number[];
-        getIndexBuffer(): any;
-        releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void;
-        applyToMesh(mesh: Mesh): void;
-        private _applyToMesh(mesh);
-        private notifyUpdate(kind?);
-        load(scene: Scene, onLoaded?: () => void): void;
-        isDisposed(): boolean;
-        dispose(): void;
-        copy(id: string): Geometry;
-        static ExtractFromMesh(mesh: Mesh, id: string): Geometry;
-        static RandomId(): string;
-    }
-    module Geometry.Primitives {
-        class _Primitive extends Geometry {
-            private _beingRegenerated;
-            private _canBeRegenerated;
-            constructor(id: string, scene: Scene, vertexData?: VertexData, canBeRegenerated?: boolean, mesh?: Mesh);
-            canBeRegenerated(): boolean;
-            regenerate(): void;
-            asNewGeometry(id: string): Geometry;
-            setAllVerticesData(vertexData: VertexData, updatable?: boolean): void;
-            setVerticesData(kind: string, data: number[], updatable?: boolean): void;
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class Ribbon extends _Primitive {
-            pathArray: Vector3[][];
-            closeArray: boolean;
-            closePath: boolean;
-            offset: number;
-            side: number;
-            constructor(id: string, scene: Scene, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class Box extends _Primitive {
-            size: number;
-            side: number;
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class Sphere extends _Primitive {
-            segments: number;
-            diameter: number;
-            side: number;
-            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class Disc extends _Primitive {
-            radius: number;
-            tessellation: number;
-            side: number;
-            constructor(id: string, scene: Scene, radius: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class Cylinder extends _Primitive {
-            height: number;
-            diameterTop: number;
-            diameterBottom: number;
-            tessellation: number;
-            subdivisions: number;
-            side: number;
-            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class Torus extends _Primitive {
-            diameter: number;
-            thickness: number;
-            tessellation: number;
-            side: number;
-            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class Ground extends _Primitive {
-            width: number;
-            height: number;
-            subdivisions: number;
-            constructor(id: string, scene: Scene, width: number, height: number, subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class TiledGround extends _Primitive {
-            xmin: number;
-            zmin: number;
-            xmax: number;
-            zmax: number;
-            subdivisions: {
-                w: number;
-                h: number;
-            };
-            precision: {
-                w: number;
-                h: number;
-            };
-            constructor(id: string, scene: Scene, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {
-                w: number;
-                h: number;
-            }, precision: {
-                w: number;
-                h: number;
-            }, canBeRegenerated?: boolean, mesh?: Mesh);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class Plane extends _Primitive {
-            size: number;
-            side: number;
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-        class TorusKnot extends _Primitive {
-            radius: number;
-            tube: number;
-            radialSegments: number;
-            tubularSegments: number;
-            p: number;
-            q: number;
-            side: number;
-            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
-            _regenerateVertexData(): VertexData;
-            copy(id: string): Geometry;
-        }
-    }
-}
-
-declare module BABYLON {
-    class GroundMesh extends Mesh {
-        generateOctree: boolean;
-        private _worldInverse;
-        _subdivisions: number;
-        constructor(name: string, scene: Scene);
-        subdivisions: number;
-        optimize(chunksCount: number, octreeBlocksSize?: number): void;
-        getHeightAtCoordinates(x: number, z: number): number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Creates an instance based on a source mesh.
-     */
-    class InstancedMesh extends AbstractMesh {
-        private _sourceMesh;
-        private _currentLOD;
-        constructor(name: string, source: Mesh);
-        receiveShadows: boolean;
-        material: Material;
-        visibility: number;
-        skeleton: Skeleton;
-        getTotalVertices(): number;
-        sourceMesh: Mesh;
-        getVerticesData(kind: string): number[];
-        isVerticesDataPresent(kind: string): boolean;
-        getIndices(): number[];
-        _positions: Vector3[];
-        refreshBoundingInfo(): void;
-        _preActivate(): void;
-        _activate(renderId: number): void;
-        getLOD(camera: Camera): AbstractMesh;
-        _syncSubMeshes(): void;
-        _generatePointsArray(): boolean;
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh;
-        dispose(doNotRecurse?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    class LinesMesh extends Mesh {
-        color: Color3;
-        alpha: number;
-        private _colorShader;
-        constructor(name: string, scene: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean);
-        material: Material;
-        isPickable: boolean;
-        checkCollisions: boolean;
-        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
-        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
-        intersects(ray: Ray, fastCheck?: boolean): any;
-        dispose(doNotRecurse?: boolean): void;
-        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh;
-    }
-}
-
-declare module BABYLON {
-    class _InstancesBatch {
-        mustReturn: boolean;
-        visibleInstances: InstancedMesh[][];
-        renderSelf: boolean[];
-    }
-    class Mesh extends AbstractMesh implements IGetSetVerticesData {
-        static _FRONTSIDE: number;
-        static _BACKSIDE: number;
-        static _DOUBLESIDE: number;
-        static _DEFAULTSIDE: number;
-        static _NO_CAP: number;
-        static _CAP_START: number;
-        static _CAP_END: number;
-        static _CAP_ALL: number;
-        static FRONTSIDE: number;
-        static BACKSIDE: number;
-        static DOUBLESIDE: number;
-        static DEFAULTSIDE: number;
-        static NO_CAP: number;
-        static CAP_START: number;
-        static CAP_END: number;
-        static CAP_ALL: number;
-        delayLoadState: number;
-        instances: InstancedMesh[];
-        delayLoadingFile: string;
-        _binaryInfo: any;
-        private _LODLevels;
-        onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
-        _geometry: Geometry;
-        private _onBeforeRenderCallbacks;
-        private _onAfterRenderCallbacks;
-        _delayInfo: any;
-        _delayLoadingFunction: (any: any, mesh: Mesh) => void;
-        _visibleInstances: any;
-        private _renderIdForInstances;
-        private _batchCache;
-        private _worldMatricesInstancesBuffer;
-        private _worldMatricesInstancesArray;
-        private _instancesBufferSize;
-        _shouldGenerateFlatShading: boolean;
-        private _preActivateId;
-        private _sideOrientation;
-        private _areNormalsFrozen;
-        private _sourcePositions;
-        private _sourceNormals;
-        /**
-         * @constructor
-         * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
-         * @param {Scene} scene - The scene to add this mesh to.
-         * @param {Node} parent - The parent of this mesh, if it has one
-         * @param {Mesh} source - An optional Mesh from which geometry is shared, cloned.
-         * @param {boolean} doNotCloneChildren - When cloning, skip cloning child meshes of source, default False.
-         *                  When false, achieved by calling a clone(), also passing False.
-         *                  This will make creation of children, recursive.
-         */
-        constructor(name: string, scene: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean);
-        hasLODLevels: boolean;
-        private _sortLODLevels();
-        /**
-         * Add a mesh as LOD level triggered at the given distance.
-         * @param {number} distance - the distance from the center of the object to show this level
-         * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
-         * @return {BABYLON.Mesh} this mesh (for chaining)
-         */
-        addLODLevel(distance: number, mesh: Mesh): Mesh;
-        getLODLevelAtDistance(distance: number): Mesh;
-        /**
-         * Remove a mesh from the LOD array
-         * @param {BABYLON.Mesh} mesh - the mesh to be removed.
-         * @return {BABYLON.Mesh} this mesh (for chaining)
-         */
-        removeLODLevel(mesh: Mesh): Mesh;
-        getLOD(camera: Camera, boundingSphere?: BoundingSphere): AbstractMesh;
-        geometry: Geometry;
-        getTotalVertices(): number;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
-        getVertexBuffer(kind: any): VertexBuffer;
-        isVerticesDataPresent(kind: string): boolean;
-        getVerticesDataKinds(): string[];
-        getTotalIndices(): number;
-        getIndices(copyWhenShared?: boolean): number[];
-        isBlocked: boolean;
-        isReady(): boolean;
-        isDisposed(): boolean;
-        sideOrientation: number;
-        areNormalsFrozen: boolean;
-        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
-        freezeNormals(): void;
-        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
-        unfreezeNormals(): void;
-        _preActivate(): void;
-        _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): void;
-        refreshBoundingInfo(): void;
-        _createGlobalSubMesh(): SubMesh;
-        subdivide(count: number): void;
-        setVerticesData(kind: any, data: any, updatable?: boolean, stride?: number): void;
-        updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
-        updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void;
-        updateMeshPositions(positionFunction: any, computeNormals?: boolean): void;
-        makeGeometryUnique(): void;
-        setIndices(indices: number[], totalVertices?: number): void;
-        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
-        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
-        registerBeforeRender(func: (mesh: AbstractMesh) => void): void;
-        unregisterBeforeRender(func: (mesh: AbstractMesh) => void): void;
-        registerAfterRender(func: (mesh: AbstractMesh) => void): void;
-        unregisterAfterRender(func: (mesh: AbstractMesh) => void): void;
-        _getInstancesRenderList(subMeshId: number): _InstancesBatch;
-        _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): void;
-        _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix) => void): void;
-        render(subMesh: SubMesh, enableAlphaMode: boolean): void;
-        getEmittedParticleSystems(): ParticleSystem[];
-        getHierarchyEmittedParticleSystems(): ParticleSystem[];
-        getChildren(): Node[];
-        _checkDelayState(): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        setMaterialByID(id: string): void;
-        getAnimatables(): IAnimatable[];
-        bakeTransformIntoVertices(transform: Matrix): void;
-        bakeCurrentTransformIntoVertices(): void;
-        _resetPointsArrayCache(): void;
-        _generatePointsArray(): boolean;
-        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): Mesh;
-        dispose(doNotRecurse?: boolean): void;
-        applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void): void;
-        applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void;
-        convertToFlatShadedMesh(): void;
-        flipFaces(flipNormals?: boolean): void;
-        createInstance(name: string): InstancedMesh;
-        synchronizeInstances(): void;
-        /**
-         * Simplify the mesh according to the given array of settings.
-         * Function will return immediately and will simplify async.
-         * @param settings a collection of simplification settings.
-         * @param parallelProcessing should all levels calculate parallel or one after the other.
-         * @param type the type of simplification to run.
-         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
-         */
-        simplify(settings: Array<ISimplificationSettings>, parallelProcessing?: boolean, simplificationType?: SimplificationType, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): void;
-        /**
-         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
-         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
-         * This should be used together with the simplification to avoid disappearing triangles.
-         * @param successCallback an optional success callback to be called after the optimization finished.
-         */
-        optimizeIndices(successCallback?: (mesh?: Mesh) => void): void;
-        static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        static CreateRibbon(name: string, options: {
-            pathArray: Vector3[][];
-            closeArray?: boolean;
-            closePath?: boolean;
-            offset?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-            instance?: Mesh;
-        }, scene?: Scene): Mesh;
-        static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        static CreateDisc(name: string, options: {
-            radius: number;
-            tessellation: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-        }, scene: Scene): Mesh;
-        static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        static CreateBox(name: string, options: {
-            width?: number;
-            height?: number;
-            depth?: number;
-            faceUV?: Vector4[];
-            faceColors?: Color4[];
-            sideOrientation?: number;
-            updatable?: boolean;
-        }, scene: Scene): Mesh;
-        static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        static CreateSphere(name: string, options: {
-            segments?: number;
-            diameter?: number;
-            diameterX?: number;
-            diameterY?: number;
-            diameterZ?: number;
-            sideOrientation?: number;
-            updatable?: boolean;
-        }, scene: any): Mesh;
-        static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh;
-        static CreateCylinder(name: string, options: {
-            height?: number;
-            diameterTop?: number;
-            diameterBottom?: number;
-            tessellation?: number;
-            subdivisions?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-        }, scene: any): Mesh;
-        static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        static CreateTorus(name: string, options: {
-            diameter?: number;
-            thickness?: number;
-            tessellation?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-        }, scene: any): Mesh;
-        static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        static CreateTorusKnot(name: string, options: {
-            radius?: number;
-            tube?: number;
-            radialSegments?: number;
-            tubularSegments?: number;
-            p?: number;
-            q?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-        }, scene: any): Mesh;
-        static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
-        static CreateLines(name: string, options: {
-            points: Vector3[];
-            updatable?: boolean;
-            instance?: LinesMesh;
-        }, scene: Scene): LinesMesh;
-        static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, instance?: LinesMesh): LinesMesh;
-        static CreateDashedLines(name: string, options: {
-            points: Vector3[];
-            dashSize?: number;
-            gapSize?: number;
-            dashNb?: number;
-            updatable?: boolean;
-            instance?: LinesMesh;
-        }, scene: Scene): LinesMesh;
-        static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        static ExtrudeShape(name: string, options: {
-            shape: Vector3[];
-            path: Vector3[];
-            scale?: number;
-            rotation?: number;
-            cap?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-            instance?: Mesh;
-        }, scene: Scene): Mesh;
-        static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: any, rotationFunction: any, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        static ExtrudeShapeCustom(name: string, options: {
-            shape: Vector3[];
-            path: Vector3[];
-            scaleFunction?;
-            rotationFunction?;
-            ribbonCloseArray?: boolean;
-            ribbonClosePath?: boolean;
-            cap?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-            instance?: Mesh;
-        }, scene: Scene): Mesh;
-        private static _ExtrudeShapeGeneric(name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance);
-        static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        static CreateLathe(name: string, options: {
-            shape: Vector3[];
-            radius?: number;
-            tessellation?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-        }, scene: Scene): Mesh;
-        static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        static CreatePlane(name: string, options: {
-            size?: number;
-            width?: number;
-            height?: number;
-            sideOrientation?: number;
-            updatable?: boolean;
-        }, scene: Scene): Mesh;
-        static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh;
-        static CreateGround(name: string, options: {
-            width?: number;
-            height?: number;
-            subdivisions?: number;
-            updatable?: boolean;
-        }, scene: any): Mesh;
-        static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {
-            w: number;
-            h: number;
-        }, precision: {
-            w: number;
-            h: number;
-        }, scene: Scene, updatable?: boolean): Mesh;
-        static CreateTiledGround(name: string, options: {
-            xmin?: number;
-            zmin?: number;
-            xmax?: number;
-            zmax?: number;
-            subdivisions?: {
-                w: number;
-                h: number;
-            };
-            precision?: {
-                w: number;
-                h: number;
-            };
-            updatable?: boolean;
-        }, scene: Scene): Mesh;
-        static CreateGroundFromHeightMap(name: string, url: string, options: {
-            width?: number;
-            height?: number;
-            subdivisions?: number;
-            minHeight?: number;
-            maxHeight?: number;
-            updatable?: boolean;
-            onReady?: (mesh: GroundMesh) => void;
-        }, scene: Scene): any;
-        static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void): any;
-        static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: {
-            (i: number, distance: number): number;
-        }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        static CreateTube(name: string, options: {
-            path: Vector3[];
-            radius?: number;
-            tessellation?: number;
-            radiusFunction?: {
-                (i: number, distance: number): number;
-            };
-            cap?: number;
-            updatable?: boolean;
-            sideOrientation?: number;
-            instance?: Mesh;
-        }, scene: Scene): Mesh;
-        static CreateDecal(name: string, sourceMesh: AbstractMesh, options: {
-            position?: Vector3;
-            normal?: Vector3;
-            size?: Vector3;
-            angle?: number;
-        }): any;
-        static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): any;
-        /**
-         * Update the vertex buffers by applying transformation from the bones
-         * @param {skeleton} skeleton to apply
-         */
-        applySkeleton(skeleton: Skeleton): Mesh;
-        static MinMax(meshes: AbstractMesh[]): {
-            min: Vector3;
-            max: Vector3;
-        };
-        static Center(meshesOrMinMaxVector: any): Vector3;
-        /**
-         * Merge the array of meshes into a single mesh for performance reasons.
-         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
-         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
-         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
-         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
-         */
-        static MergeMeshes(meshes: Array<Mesh>, disposeSource?: boolean, allow32BitsIndices?: boolean, meshSubclass?: Mesh): Mesh;
-    }
-}
-
-declare module BABYLON {
-    interface IGetSetVerticesData {
-        isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
-        getIndices(copyWhenShared?: boolean): number[];
-        setVerticesData(kind: string, data: number[], updatable?: boolean): void;
-        updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: number[]): void;
-    }
-    class VertexData {
-        positions: number[];
-        normals: number[];
-        uvs: number[];
-        uvs2: number[];
-        uvs3: number[];
-        uvs4: number[];
-        uvs5: number[];
-        uvs6: number[];
-        colors: number[];
-        matricesIndices: number[];
-        matricesWeights: number[];
-        indices: number[];
-        set(data: number[], kind: string): void;
-        applyToMesh(mesh: Mesh, updatable?: boolean): void;
-        applyToGeometry(geometry: Geometry, updatable?: boolean): void;
-        updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): void;
-        updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): void;
-        private _applyTo(meshOrGeometry, updatable?);
-        private _update(meshOrGeometry, updateExtends?, makeItUnique?);
-        transform(matrix: Matrix): void;
-        merge(other: VertexData): void;
-        static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean): VertexData;
-        static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean): VertexData;
-        private static _ExtractFrom(meshOrGeometry, copyWhenShared?);
-        static CreateRibbon(options: {
-            pathArray: Vector3[][];
-            closeArray?: boolean;
-            closePath?: boolean;
-            offset?: number;
-            sideOrientation?: number;
-        }): VertexData;
-        static CreateBox(options: {
-            size?: number;
-            width?: number;
-            height?: number;
-            depth?: number;
-            faceUV?: Vector4[];
-            faceColors?: Color4[];
-            sideOrientation?: number;
-        }): VertexData;
-        static CreateSphere(options: {
-            segments?: number;
-            diameter?: number;
-            diameterX?: number;
-            diameterY?: number;
-            diameterZ?: number;
-            sideOrientation?: number;
-        }): VertexData;
-        static CreateCylinder(options: {
-            height?: number;
-            diameterTop?: number;
-            diameterBottom?: number;
-            tessellation?: number;
-            subdivisions?: number;
-            sideOrientation?: number;
-        }): VertexData;
-        static CreateTorus(options: {
-            diameter?: number;
-            thickness?: number;
-            tessellation?: number;
-            sideOrientation?: number;
-        }): VertexData;
-        static CreateLines(options: {
-            points: Vector3[];
-        }): VertexData;
-        static CreateDashedLines(options: {
-            points: Vector3[];
-            dashSize?: number;
-            gapSize?: number;
-            dashNb?: number;
-        }): VertexData;
-        static CreateGround(options: {
-            width?: number;
-            height?: number;
-            subdivisions?: number;
-        }): VertexData;
-        static CreateTiledGround(options: {
-            xmin: number;
-            zmin: number;
-            xmax: number;
-            zmax: number;
-            subdivisions: any;
-            precision: any;
-        }): VertexData;
-        static CreateGroundFromHeightMap(options: {
-            width: number;
-            height: number;
-            subdivisions: number;
-            minHeight: number;
-            maxHeight: number;
-            buffer: Uint8Array;
-            bufferWidth: number;
-            bufferHeight: number;
-        }): VertexData;
-        static CreatePlane(options: {
-            size?: number;
-            width?: number;
-            height?: number;
-            sideOrientation?: number;
-        }): VertexData;
-        static CreateDisc(options: {
-            radius?: number;
-            tessellation?: number;
-            sideOrientation?: number;
-        }): VertexData;
-        static CreateTorusKnot(options: {
-            radius?: number;
-            tube?: number;
-            radialSegments?: number;
-            tubularSegments?: number;
-            p?: number;
-            q?: number;
-            sideOrientation?: number;
-        }): VertexData;
-        /**
-         * @param {any} - positions (number[] or Float32Array)
-         * @param {any} - indices   (number[] or Uint16Array)
-         * @param {any} - normals   (number[] or Float32Array)
-         */
-        static ComputeNormals(positions: any, indices: any, normals: any): void;
-        private static _ComputeSides(sideOrientation, positions, indices, normals, uvs);
-    }
-}
-
-declare module BABYLON.Internals {
-    class MeshLODLevel {
-        distance: number;
-        mesh: Mesh;
-        constructor(distance: number, mesh: Mesh);
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A simplifier interface for future simplification implementations.
-     */
-    interface ISimplifier {
-        /**
-         * Simplification of a given mesh according to the given settings.
-         * Since this requires computation, it is assumed that the function runs async.
-         * @param settings The settings of the simplification, including quality and distance
-         * @param successCallback A callback that will be called after the mesh was simplified.
-         * @param errorCallback in case of an error, this callback will be called. optional.
-         */
-        simplify(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void, errorCallback?: () => void): void;
-    }
-    /**
-     * Expected simplification settings.
-     * Quality should be between 0 and 1 (1 being 100%, 0 being 0%);
-     */
-    interface ISimplificationSettings {
-        quality: number;
-        distance: number;
-        optimizeMesh?: boolean;
-    }
-    class SimplificationSettings implements ISimplificationSettings {
-        quality: number;
-        distance: number;
-        optimizeMesh: boolean;
-        constructor(quality: number, distance: number, optimizeMesh?: boolean);
-    }
-    interface ISimplificationTask {
-        settings: Array<ISimplificationSettings>;
-        simplificationType: SimplificationType;
-        mesh: Mesh;
-        successCallback?: () => void;
-        parallelProcessing: boolean;
-    }
-    class SimplificationQueue {
-        private _simplificationArray;
-        running: any;
-        constructor();
-        addTask(task: ISimplificationTask): void;
-        executeNext(): void;
-        runSimplification(task: ISimplificationTask): void;
-        private getSimplifier(task);
-    }
-    /**
-     * The implemented types of simplification.
-     * At the moment only Quadratic Error Decimation is implemented.
-     */
-    enum SimplificationType {
-        QUADRATIC = 0,
-    }
-    class DecimationTriangle {
-        vertices: Array<DecimationVertex>;
-        normal: Vector3;
-        error: Array<number>;
-        deleted: boolean;
-        isDirty: boolean;
-        borderFactor: number;
-        deletePending: boolean;
-        originalOffset: number;
-        constructor(vertices: Array<DecimationVertex>);
-    }
-    class DecimationVertex {
-        position: Vector3;
-        id: any;
-        q: QuadraticMatrix;
-        isBorder: boolean;
-        triangleStart: number;
-        triangleCount: number;
-        originalOffsets: Array<number>;
-        constructor(position: Vector3, id: any);
-        updatePosition(newPosition: Vector3): void;
-    }
-    class QuadraticMatrix {
-        data: Array<number>;
-        constructor(data?: Array<number>);
-        det(a11: any, a12: any, a13: any, a21: any, a22: any, a23: any, a31: any, a32: any, a33: any): number;
-        addInPlace(matrix: QuadraticMatrix): void;
-        addArrayInPlace(data: Array<number>): void;
-        add(matrix: QuadraticMatrix): QuadraticMatrix;
-        static FromData(a: number, b: number, c: number, d: number): QuadraticMatrix;
-        static DataFromNumbers(a: number, b: number, c: number, d: number): number[];
-    }
-    class Reference {
-        vertexId: number;
-        triangleId: number;
-        constructor(vertexId: number, triangleId: number);
-    }
-    /**
-     * An implementation of the Quadratic Error simplification algorithm.
-     * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
-     * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
-     * @author RaananW
-     */
-    class QuadraticErrorSimplification implements ISimplifier {
-        private _mesh;
-        private triangles;
-        private vertices;
-        private references;
-        private initialized;
-        private _reconstructedMesh;
-        syncIterations: number;
-        aggressiveness: number;
-        decimationIterations: number;
-        boundingBoxEpsilon: number;
-        constructor(_mesh: Mesh);
-        simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void): void;
-        private isTriangleOnBoundingBox(triangle);
-        private runDecimation(settings, submeshIndex, successCallback);
-        private initWithMesh(submeshIndex, callback, optimizeMesh?);
-        private init(callback);
-        private reconstructMesh(submeshIndex);
-        private initDecimatedMesh();
-        private isFlipped(vertex1, vertex2, point, deletedArray, borderFactor, delTr);
-        private updateTriangles(origVertex, vertex, deletedArray, deletedTriangles);
-        private identifyBorder();
-        private updateMesh(identifyBorders?);
-        private vertexError(q, point);
-        private calculateError(vertex1, vertex2, pointResult?, normalResult?, uvResult?, colorResult?);
-    }
-}
-
-declare module BABYLON {
-    class Polygon {
-        static Rectangle(xmin: number, ymin: number, xmax: number, ymax: number): Vector2[];
-        static Circle(radius: number, cx?: number, cy?: number, numberOfSides?: number): Vector2[];
-        static Parse(input: string): Vector2[];
-        static StartingAt(x: number, y: number): Path2;
-    }
-    class PolygonMeshBuilder {
-        private _swctx;
-        private _points;
-        private _outlinepoints;
-        private _holes;
-        private _name;
-        private _scene;
-        constructor(name: string, contours: Path2, scene: Scene);
-        constructor(name: string, contours: Vector2[], scene: Scene);
-        addHole(hole: Vector2[]): PolygonMeshBuilder;
-        build(updatable?: boolean, depth?: number): Mesh;
-        private addSide(positions, normals, uvs, indices, bounds, points, depth, flip);
-    }
-}
-
-declare module BABYLON {
-    class SubMesh {
-        materialIndex: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: any;
-        indexCount: number;
-        linesIndexCount: number;
-        private _mesh;
-        private _renderingMesh;
-        private _boundingInfo;
-        private _linesIndexBuffer;
-        _lastColliderWorldVertices: Vector3[];
-        _trianglePlanes: Plane[];
-        _lastColliderTransformMatrix: Matrix;
-        _renderId: number;
-        _alphaIndex: number;
-        _distanceToCamera: number;
-        _id: number;
-        constructor(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: any, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean);
-        getBoundingInfo(): BoundingInfo;
-        getMesh(): AbstractMesh;
-        getRenderingMesh(): Mesh;
-        getMaterial(): Material;
-        refreshBoundingInfo(): void;
-        _checkCollision(collider: Collider): boolean;
-        updateBoundingInfo(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        render(enableAlphaMode: boolean): void;
-        getLinesIndexBuffer(indices: number[], engine: any): WebGLBuffer;
-        canIntersects(ray: Ray): boolean;
-        intersects(ray: Ray, positions: Vector3[], indices: number[], fastCheck?: boolean): IntersectionInfo;
-        clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh;
-        dispose(): void;
-        static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh): SubMesh;
-    }
-}
-
-declare module BABYLON {
-    class VertexBuffer {
-        private _mesh;
-        private _engine;
-        private _buffer;
-        private _data;
-        private _updatable;
-        private _kind;
-        private _strideSize;
-        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number);
-        isUpdatable(): boolean;
-        getData(): number[];
-        getBuffer(): WebGLBuffer;
-        getStrideSize(): number;
-        create(data?: number[]): void;
-        update(data: number[]): void;
-        updateDirectly(data: Float32Array, offset: number): void;
-        dispose(): void;
-        private static _PositionKind;
-        private static _NormalKind;
-        private static _UVKind;
-        private static _UV2Kind;
-        private static _UV3Kind;
-        private static _UV4Kind;
-        private static _UV5Kind;
-        private static _UV6Kind;
-        private static _ColorKind;
-        private static _MatricesIndicesKind;
-        private static _MatricesWeightsKind;
-        static PositionKind: string;
-        static NormalKind: string;
-        static UVKind: string;
-        static UV2Kind: string;
-        static UV3Kind: string;
-        static UV4Kind: string;
-        static UV5Kind: string;
-        static UV6Kind: string;
-        static ColorKind: string;
-        static MatricesIndicesKind: string;
-        static MatricesWeightsKind: string;
     }
 }
 
@@ -4223,7 +3014,6 @@ declare module BABYLON {
         static RotationZ(angle: number): Matrix;
         static RotationZToRef(angle: number, result: Matrix): void;
         static RotationAxis(axis: Vector3, angle: number): Matrix;
-        static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void;
         static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix;
         static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void;
         static Scaling(x: number, y: number, z: number): Matrix;
@@ -4425,6 +3215,995 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class AbstractMesh extends Node implements IDisposable {
+        private static _BILLBOARDMODE_NONE;
+        private static _BILLBOARDMODE_X;
+        private static _BILLBOARDMODE_Y;
+        private static _BILLBOARDMODE_Z;
+        private static _BILLBOARDMODE_ALL;
+        static BILLBOARDMODE_NONE: number;
+        static BILLBOARDMODE_X: number;
+        static BILLBOARDMODE_Y: number;
+        static BILLBOARDMODE_Z: number;
+        static BILLBOARDMODE_ALL: number;
+        definedFacingForward: boolean;
+        position: Vector3;
+        rotation: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        billboardMode: number;
+        visibility: number;
+        alphaIndex: number;
+        infiniteDistance: boolean;
+        isVisible: boolean;
+        isPickable: boolean;
+        showBoundingBox: boolean;
+        showSubMeshesBoundingBox: boolean;
+        onDispose: any;
+        isBlocker: boolean;
+        skeleton: Skeleton;
+        renderingGroupId: number;
+        material: Material;
+        receiveShadows: boolean;
+        actionManager: ActionManager;
+        renderOutline: boolean;
+        outlineColor: Color3;
+        outlineWidth: number;
+        renderOverlay: boolean;
+        overlayColor: Color3;
+        overlayAlpha: number;
+        hasVertexAlpha: boolean;
+        useVertexColors: boolean;
+        applyFog: boolean;
+        computeBonesUsingShaders: boolean;
+        useOctreeForRenderingSelection: boolean;
+        useOctreeForPicking: boolean;
+        useOctreeForCollisions: boolean;
+        layerMask: number;
+        alwaysSelectAsActiveMesh: boolean;
+        _physicImpostor: number;
+        _physicsMass: number;
+        _physicsFriction: number;
+        _physicRestitution: number;
+        private _checkCollisions;
+        ellipsoid: Vector3;
+        ellipsoidOffset: Vector3;
+        private _collider;
+        private _oldPositionForCollisions;
+        private _diffPositionForCollisions;
+        private _newPositionForCollisions;
+        onCollide: (collidedMesh: AbstractMesh) => void;
+        private _meshToBoneReferal;
+        edgesWidth: number;
+        edgesColor: Color4;
+        _edgesRenderer: EdgesRenderer;
+        private _localScaling;
+        private _localRotation;
+        private _localTranslation;
+        private _localBillboard;
+        private _localPivotScaling;
+        private _localPivotScalingRotation;
+        private _localMeshReferalTransform;
+        private _localWorld;
+        _worldMatrix: Matrix;
+        private _rotateYByPI;
+        private _absolutePosition;
+        private _collisionsTransformMatrix;
+        private _collisionsScalingMatrix;
+        _positions: Vector3[];
+        private _isDirty;
+        _masterMesh: AbstractMesh;
+        _boundingInfo: BoundingInfo;
+        private _pivotMatrix;
+        _isDisposed: boolean;
+        _renderId: number;
+        subMeshes: SubMesh[];
+        _submeshesOctree: Octree<SubMesh>;
+        _intersectionsInProgress: AbstractMesh[];
+        private _onAfterWorldMatrixUpdate;
+        private _isWorldMatrixFrozen;
+        _waitingActions: any;
+        _waitingFreezeWorldMatrix: boolean;
+        constructor(name: string, scene: Scene);
+        disableEdgesRendering(): void;
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): void;
+        isBlocked: boolean;
+        getLOD(camera: Camera): AbstractMesh;
+        getTotalVertices(): number;
+        getIndices(): number[];
+        getVerticesData(kind: string): number[];
+        isVerticesDataPresent(kind: string): boolean;
+        getBoundingInfo(): BoundingInfo;
+        useBones: boolean;
+        _preActivate(): void;
+        _activate(renderId: number): void;
+        getWorldMatrix(): Matrix;
+        worldMatrixFromCache: Matrix;
+        absolutePosition: Vector3;
+        freezeWorldMatrix(): void;
+        unfreezeWorldMatrix(): void;
+        isWorldMatrixFrozen: boolean;
+        rotate(axis: Vector3, amount: number, space: Space): void;
+        translate(axis: Vector3, distance: number, space: Space): void;
+        getAbsolutePosition(): Vector3;
+        setAbsolutePosition(absolutePosition: Vector3): void;
+        /**
+         * Perform relative position change from the point of view of behind the front of the mesh.
+         * This is performed taking into account the meshes current rotation, so you do not have to care.
+         * Supports definition of mesh facing forward or backward.
+         * @param {number} amountRight
+         * @param {number} amountUp
+         * @param {number} amountForward
+         */
+        movePOV(amountRight: number, amountUp: number, amountForward: number): void;
+        /**
+         * Calculate relative position change from the point of view of behind the front of the mesh.
+         * This is performed taking into account the meshes current rotation, so you do not have to care.
+         * Supports definition of mesh facing forward or backward.
+         * @param {number} amountRight
+         * @param {number} amountUp
+         * @param {number} amountForward
+         */
+        calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3;
+        /**
+         * Perform relative rotation change from the point of view of behind the front of the mesh.
+         * Supports definition of mesh facing forward or backward.
+         * @param {number} flipBack
+         * @param {number} twirlClockwise
+         * @param {number} tiltRight
+         */
+        rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): void;
+        /**
+         * Calculate relative rotation change from the point of view of behind the front of the mesh.
+         * Supports definition of mesh facing forward or backward.
+         * @param {number} flipBack
+         * @param {number} twirlClockwise
+         * @param {number} tiltRight
+         */
+        calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3;
+        setPivotMatrix(matrix: Matrix): void;
+        getPivotMatrix(): Matrix;
+        _isSynchronized(): boolean;
+        _initCache(): void;
+        markAsDirty(property: string): void;
+        _updateBoundingInfo(): void;
+        _updateSubMeshesBoundingInfo(matrix: Matrix): void;
+        computeWorldMatrix(force?: boolean): Matrix;
+        /**
+        * If you'd like to be callbacked after the mesh position, rotation or scaling has been updated
+        * @param func: callback function to add
+        */
+        registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void;
+        unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void;
+        setPositionWithLocalVector(vector3: Vector3): void;
+        getPositionExpressedInLocalSpace(): Vector3;
+        locallyTranslate(vector3: Vector3): void;
+        lookAt(targetPoint: Vector3, yawCor: number, pitchCor: number, rollCor: number): void;
+        attachToBone(bone: Bone, affectedMesh: AbstractMesh): void;
+        detachFromBone(): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(camera?: Camera): boolean;
+        intersectsMesh(mesh: AbstractMesh, precise?: boolean): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): any;
+        getPhysicsImpostor(): number;
+        getPhysicsMass(): number;
+        getPhysicsFriction(): number;
+        getPhysicsRestitution(): number;
+        getPositionInCameraSpace(camera?: Camera): Vector3;
+        getDistanceToCamera(camera?: Camera): number;
+        applyImpulse(force: Vector3, contactPoint: Vector3): void;
+        setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): void;
+        updatePhysicsBodyPosition(): void;
+        checkCollisions: boolean;
+        moveWithCollisions(velocity: Vector3): void;
+        private _onCollisionPositionChange;
+        /**
+        * This function will create an octree to help select the right submeshes for rendering, picking and collisions
+        * Please note that you must have a decent number of submeshes to get performance improvements when using octree
+        */
+        createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
+        _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): void;
+        _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): void;
+        _checkCollision(collider: Collider): void;
+        _generatePointsArray(): boolean;
+        intersects(ray: Ray, fastCheck?: boolean): PickingInfo;
+        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): AbstractMesh;
+        releaseSubMeshes(): void;
+        dispose(doNotRecurse?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    class CSG {
+        private polygons;
+        matrix: Matrix;
+        position: Vector3;
+        rotation: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        static FromMesh(mesh: Mesh): CSG;
+        private static FromPolygons(polygons);
+        clone(): CSG;
+        private toPolygons();
+        union(csg: CSG): CSG;
+        unionInPlace(csg: CSG): void;
+        subtract(csg: CSG): CSG;
+        subtractInPlace(csg: CSG): void;
+        intersect(csg: CSG): CSG;
+        intersectInPlace(csg: CSG): void;
+        inverse(): CSG;
+        inverseInPlace(): void;
+        copyTransformAttributes(csg: CSG): CSG;
+        buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh;
+        toMesh(name: string, material: Material, scene: Scene, keepSubMeshes: boolean): Mesh;
+    }
+}
+
+declare module BABYLON {
+    class Geometry implements IGetSetVerticesData {
+        id: string;
+        delayLoadState: number;
+        delayLoadingFile: string;
+        onGeometryUpdated: (geometry: Geometry, kind?: string) => void;
+        private _scene;
+        private _engine;
+        private _meshes;
+        private _totalVertices;
+        private _indices;
+        private _vertexBuffers;
+        private _isDisposed;
+        _delayInfo: any;
+        private _indexBuffer;
+        _boundingInfo: BoundingInfo;
+        _delayLoadingFunction: (any: any, geometry: Geometry) => void;
+        constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh);
+        getScene(): Scene;
+        getEngine(): Engine;
+        isReady(): boolean;
+        setAllVerticesData(vertexData: VertexData, updatable?: boolean): void;
+        setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void;
+        updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void;
+        updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void;
+        getTotalVertices(): number;
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
+        getVertexBuffer(kind: string): VertexBuffer;
+        getVertexBuffers(): VertexBuffer[];
+        isVerticesDataPresent(kind: string): boolean;
+        getVerticesDataKinds(): string[];
+        setIndices(indices: number[], totalVertices?: number): void;
+        getTotalIndices(): number;
+        getIndices(copyWhenShared?: boolean): number[];
+        getIndexBuffer(): any;
+        releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void;
+        applyToMesh(mesh: Mesh): void;
+        private _applyToMesh(mesh);
+        private notifyUpdate(kind?);
+        load(scene: Scene, onLoaded?: () => void): void;
+        isDisposed(): boolean;
+        dispose(): void;
+        copy(id: string): Geometry;
+        static ExtractFromMesh(mesh: Mesh, id: string): Geometry;
+        static RandomId(): string;
+    }
+    module Geometry.Primitives {
+        class _Primitive extends Geometry {
+            private _beingRegenerated;
+            private _canBeRegenerated;
+            constructor(id: string, scene: Scene, vertexData?: VertexData, canBeRegenerated?: boolean, mesh?: Mesh);
+            canBeRegenerated(): boolean;
+            regenerate(): void;
+            asNewGeometry(id: string): Geometry;
+            setAllVerticesData(vertexData: VertexData, updatable?: boolean): void;
+            setVerticesData(kind: string, data: number[], updatable?: boolean): void;
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class Ribbon extends _Primitive {
+            pathArray: Vector3[][];
+            closeArray: boolean;
+            closePath: boolean;
+            offset: number;
+            side: number;
+            constructor(id: string, scene: Scene, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class Box extends _Primitive {
+            size: number;
+            side: number;
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class Sphere extends _Primitive {
+            segments: number;
+            diameter: number;
+            side: number;
+            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class Cylinder extends _Primitive {
+            height: number;
+            diameterTop: number;
+            diameterBottom: number;
+            tessellation: number;
+            subdivisions: number;
+            side: number;
+            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class Torus extends _Primitive {
+            diameter: number;
+            thickness: number;
+            tessellation: number;
+            side: number;
+            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class Ground extends _Primitive {
+            width: number;
+            height: number;
+            subdivisions: number;
+            constructor(id: string, scene: Scene, width: number, height: number, subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class TiledGround extends _Primitive {
+            xmin: number;
+            zmin: number;
+            xmax: number;
+            zmax: number;
+            subdivisions: {
+                w: number;
+                h: number;
+            };
+            precision: {
+                w: number;
+                h: number;
+            };
+            constructor(id: string, scene: Scene, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {
+                w: number;
+                h: number;
+            }, precision: {
+                w: number;
+                h: number;
+            }, canBeRegenerated?: boolean, mesh?: Mesh);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class Plane extends _Primitive {
+            size: number;
+            side: number;
+            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+        class TorusKnot extends _Primitive {
+            radius: number;
+            tube: number;
+            radialSegments: number;
+            tubularSegments: number;
+            p: number;
+            q: number;
+            side: number;
+            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
+            _regenerateVertexData(): VertexData;
+            copy(id: string): Geometry;
+        }
+    }
+}
+
+declare module BABYLON {
+    class GroundMesh extends Mesh {
+        generateOctree: boolean;
+        private _worldInverse;
+        _subdivisions: number;
+        constructor(name: string, scene: Scene);
+        subdivisions: number;
+        optimize(chunksCount: number, octreeBlocksSize?: number): void;
+        getHeightAtCoordinates(x: number, z: number): number;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Creates an instance based on a source mesh.
+     */
+    class InstancedMesh extends AbstractMesh {
+        private _sourceMesh;
+        private _currentLOD;
+        constructor(name: string, source: Mesh);
+        receiveShadows: boolean;
+        material: Material;
+        visibility: number;
+        skeleton: Skeleton;
+        getTotalVertices(): number;
+        sourceMesh: Mesh;
+        getVerticesData(kind: string): number[];
+        isVerticesDataPresent(kind: string): boolean;
+        getIndices(): number[];
+        _positions: Vector3[];
+        refreshBoundingInfo(): void;
+        _preActivate(): void;
+        _activate(renderId: number): void;
+        getLOD(camera: Camera): AbstractMesh;
+        _syncSubMeshes(): void;
+        _generatePointsArray(): boolean;
+        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh;
+        dispose(doNotRecurse?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    class LinesMesh extends Mesh {
+        color: Color3;
+        alpha: number;
+        private _colorShader;
+        constructor(name: string, scene: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean);
+        material: Material;
+        isPickable: boolean;
+        checkCollisions: boolean;
+        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
+        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
+        intersects(ray: Ray, fastCheck?: boolean): any;
+        dispose(doNotRecurse?: boolean): void;
+        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh;
+    }
+}
+
+declare module BABYLON {
+    class _InstancesBatch {
+        mustReturn: boolean;
+        visibleInstances: InstancedMesh[][];
+        renderSelf: boolean[];
+    }
+    class Mesh extends AbstractMesh implements IGetSetVerticesData {
+        static _FRONTSIDE: number;
+        static _BACKSIDE: number;
+        static _DOUBLESIDE: number;
+        static _DEFAULTSIDE: number;
+        static _NO_CAP: number;
+        static _CAP_START: number;
+        static _CAP_END: number;
+        static _CAP_ALL: number;
+        static FRONTSIDE: number;
+        static BACKSIDE: number;
+        static DOUBLESIDE: number;
+        static DEFAULTSIDE: number;
+        static NO_CAP: number;
+        static CAP_START: number;
+        static CAP_END: number;
+        static CAP_ALL: number;
+        delayLoadState: number;
+        instances: InstancedMesh[];
+        delayLoadingFile: string;
+        _binaryInfo: any;
+        private _LODLevels;
+        onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
+        _geometry: Geometry;
+        private _onBeforeRenderCallbacks;
+        private _onAfterRenderCallbacks;
+        _delayInfo: any;
+        _delayLoadingFunction: (any: any, mesh: Mesh) => void;
+        _visibleInstances: any;
+        private _renderIdForInstances;
+        private _batchCache;
+        private _worldMatricesInstancesBuffer;
+        private _worldMatricesInstancesArray;
+        private _instancesBufferSize;
+        _shouldGenerateFlatShading: boolean;
+        private _preActivateId;
+        private _sideOrientation;
+        private _areNormalsFrozen;
+        private _sourcePositions;
+        private _sourceNormals;
+        /**
+         * @constructor
+         * @param {string} name - The value used by scene.getMeshByName() to do a lookup.
+         * @param {Scene} scene - The scene to add this mesh to.
+         * @param {Node} parent - The parent of this mesh, if it has one
+         * @param {Mesh} source - An optional Mesh from which geometry is shared, cloned.
+         * @param {boolean} doNotCloneChildren - When cloning, skip cloning child meshes of source, default False.
+         *                  When false, achieved by calling a clone(), also passing False.
+         *                  This will make creation of children, recursive.
+         */
+        constructor(name: string, scene: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean);
+        hasLODLevels: boolean;
+        private _sortLODLevels();
+        /**
+         * Add a mesh as LOD level triggered at the given distance.
+         * @param {number} distance - the distance from the center of the object to show this level
+         * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
+         * @return {BABYLON.Mesh} this mesh (for chaining)
+         */
+        addLODLevel(distance: number, mesh: Mesh): Mesh;
+        getLODLevelAtDistance(distance: number): Mesh;
+        /**
+         * Remove a mesh from the LOD array
+         * @param {BABYLON.Mesh} mesh - the mesh to be removed.
+         * @return {BABYLON.Mesh} this mesh (for chaining)
+         */
+        removeLODLevel(mesh: Mesh): Mesh;
+        getLOD(camera: Camera, boundingSphere?: BoundingSphere): AbstractMesh;
+        geometry: Geometry;
+        getTotalVertices(): number;
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
+        getVertexBuffer(kind: any): VertexBuffer;
+        isVerticesDataPresent(kind: string): boolean;
+        getVerticesDataKinds(): string[];
+        getTotalIndices(): number;
+        getIndices(copyWhenShared?: boolean): number[];
+        isBlocked: boolean;
+        isReady(): boolean;
+        isDisposed(): boolean;
+        sideOrientation: number;
+        areNormalsFrozen: boolean;
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
+        freezeNormals(): void;
+        /**  This function affects parametric shapes on update only : ribbons, tubes, etc. It has no effect at all on other shapes */
+        unfreezeNormals(): void;
+        _preActivate(): void;
+        _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): void;
+        refreshBoundingInfo(): void;
+        _createGlobalSubMesh(): SubMesh;
+        subdivide(count: number): void;
+        setVerticesData(kind: any, data: any, updatable?: boolean, stride?: number): void;
+        updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
+        updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void;
+        updateMeshPositions(positionFunction: any, computeNormals?: boolean): void;
+        makeGeometryUnique(): void;
+        setIndices(indices: number[], totalVertices?: number): void;
+        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
+        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
+        registerBeforeRender(func: (mesh: AbstractMesh) => void): void;
+        unregisterBeforeRender(func: (mesh: AbstractMesh) => void): void;
+        registerAfterRender(func: (mesh: AbstractMesh) => void): void;
+        unregisterAfterRender(func: (mesh: AbstractMesh) => void): void;
+        _getInstancesRenderList(subMeshId: number): _InstancesBatch;
+        _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): void;
+        _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix) => void): void;
+        render(subMesh: SubMesh, enableAlphaMode: boolean): void;
+        getEmittedParticleSystems(): ParticleSystem[];
+        getHierarchyEmittedParticleSystems(): ParticleSystem[];
+        getChildren(): Node[];
+        _checkDelayState(): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        setMaterialByID(id: string): void;
+        getAnimatables(): IAnimatable[];
+        bakeTransformIntoVertices(transform: Matrix): void;
+        bakeCurrentTransformIntoVertices(): void;
+        _resetPointsArrayCache(): void;
+        _generatePointsArray(): boolean;
+        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): Mesh;
+        dispose(doNotRecurse?: boolean): void;
+        applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void): void;
+        applyDisplacementMapFromBuffer(buffer: Uint8Array, heightMapWidth: number, heightMapHeight: number, minHeight: number, maxHeight: number): void;
+        convertToFlatShadedMesh(): void;
+        flipFaces(flipNormals?: boolean): void;
+        createInstance(name: string): InstancedMesh;
+        synchronizeInstances(): void;
+        /**
+         * Simplify the mesh according to the given array of settings.
+         * Function will return immediately and will simplify async.
+         * @param settings a collection of simplification settings.
+         * @param parallelProcessing should all levels calculate parallel or one after the other.
+         * @param type the type of simplification to run.
+         * @param successCallback optional success callback to be called after the simplification finished processing all settings.
+         */
+        simplify(settings: Array<ISimplificationSettings>, parallelProcessing?: boolean, simplificationType?: SimplificationType, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): void;
+        /**
+         * Optimization of the mesh's indices, in case a mesh has duplicated vertices.
+         * The function will only reorder the indices and will not remove unused vertices to avoid problems with submeshes.
+         * This should be used together with the simplification to avoid disappearing triangles.
+         * @param successCallback an optional success callback to be called after the optimization finished.
+         */
+        optimizeIndices(successCallback?: (mesh?: Mesh) => void): void;
+        static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, ribbonInstance?: Mesh): Mesh;
+        static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateBox(name: string, options: {
+            width?: number;
+            height?: number;
+            depth?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            sideOrientation?: number;
+            updatable?: boolean;
+        }, scene: Scene): Mesh;
+        static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateSphere(name: string, options: {
+            segments?: number;
+            diameterX?: number;
+            diameterY?: number;
+            diameterZ?: number;
+            sideOrientation?: number;
+            updatable?: boolean;
+        }, scene: any): Mesh;
+        static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh;
+        static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreateLines(name: string, points: Vector3[], scene: Scene, updatable?: boolean, linesInstance?: LinesMesh): LinesMesh;
+        static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Scene, updatable?: boolean, linesInstance?: LinesMesh): LinesMesh;
+        static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, extrudedInstance?: Mesh): Mesh;
+        static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: any, rotationFunction: any, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, extrudedInstance?: Mesh): Mesh;
+        private static _ExtrudeShapeGeneric(name, shape, curve, scale, rotation, scaleFunction, rotateFunction, rbCA, rbCP, cap, custom, scene, updtbl, side, instance);
+        static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
+        static CreatePlane(name: string, options: {
+            width?: number;
+            height?: number;
+            sideOrientation?: number;
+            updatable?: boolean;
+        }, scene: Scene): Mesh;
+        static CreateGround(name: string, width: number, height: number, subdivisions: number, scene: Scene, updatable?: boolean): Mesh;
+        static CreateGround(name: string, options: {
+            width?: number;
+            height?: number;
+            subdivisions?: number;
+            sideOrientation?: number;
+            updatable?: boolean;
+        }, scene: any): Mesh;
+        static CreateTiledGround(name: string, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: {
+            w: number;
+            h: number;
+        }, precision: {
+            w: number;
+            h: number;
+        }, scene: Scene, updatable?: boolean): Mesh;
+        static CreateGroundFromHeightMap(name: string, url: string, width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, scene: Scene, updatable?: boolean, onReady?: (mesh: GroundMesh) => void): GroundMesh;
+        static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: {
+            (i: number, distance: number): number;
+        }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, tubeInstance?: Mesh): Mesh;
+        static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle?: number): Mesh;
+        /**
+         * Update the vertex buffers by applying transformation from the bones
+         * @param {skeleton} skeleton to apply
+         */
+        applySkeleton(skeleton: Skeleton): Mesh;
+        static MinMax(meshes: AbstractMesh[]): {
+            min: Vector3;
+            max: Vector3;
+        };
+        static Center(meshesOrMinMaxVector: any): Vector3;
+        /**
+         * Merge the array of meshes into a single mesh for performance reasons.
+         * @param {Array<Mesh>} meshes - The vertices source.  They should all be of the same material.  Entries can empty
+         * @param {boolean} disposeSource - When true (default), dispose of the vertices from the source meshes
+         * @param {boolean} allow32BitsIndices - When the sum of the vertices > 64k, this must be set to true.
+         * @param {Mesh} meshSubclass - When set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         */
+        static MergeMeshes(meshes: Array<Mesh>, disposeSource?: boolean, allow32BitsIndices?: boolean, meshSubclass?: Mesh): Mesh;
+    }
+}
+
+declare module BABYLON {
+    interface IGetSetVerticesData {
+        isVerticesDataPresent(kind: string): boolean;
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
+        getIndices(copyWhenShared?: boolean): number[];
+        setVerticesData(kind: string, data: number[], updatable?: boolean): void;
+        updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
+        setIndices(indices: number[]): void;
+    }
+    class VertexData {
+        positions: number[];
+        normals: number[];
+        uvs: number[];
+        uvs2: number[];
+        uvs3: number[];
+        uvs4: number[];
+        uvs5: number[];
+        uvs6: number[];
+        colors: number[];
+        matricesIndices: number[];
+        matricesWeights: number[];
+        indices: number[];
+        set(data: number[], kind: string): void;
+        applyToMesh(mesh: Mesh, updatable?: boolean): void;
+        applyToGeometry(geometry: Geometry, updatable?: boolean): void;
+        updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): void;
+        updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): void;
+        private _applyTo(meshOrGeometry, updatable?);
+        private _update(meshOrGeometry, updateExtends?, makeItUnique?);
+        transform(matrix: Matrix): void;
+        merge(other: VertexData): void;
+        static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean): VertexData;
+        static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean): VertexData;
+        private static _ExtractFrom(meshOrGeometry, copyWhenShared?);
+        static CreateRibbon(pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, sideOrientation?: number): VertexData;
+        static CreateBox(options: {
+            width?: number;
+            height?: number;
+            depth?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            sideOrientation?: number;
+        }): VertexData;
+        static CreateBox(size: number, sideOrientation?: number): VertexData;
+        static CreateSphere(options: {
+            segments?: number;
+            diameterX?: number;
+            diameterY?: number;
+            diameterZ?: number;
+            sideOrientation?: number;
+        }): VertexData;
+        static CreateSphere(segments: number, diameter?: number, sideOrientation?: number): VertexData;
+        static CreateCylinder(height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number, sideOrientation?: number): VertexData;
+        static CreateTorus(diameter: any, thickness: any, tessellation: any, sideOrientation?: number): VertexData;
+        static CreateLines(points: Vector3[]): VertexData;
+        static CreateDashedLines(points: Vector3[], dashSize: number, gapSize: number, dashNb: number): VertexData;
+        static CreateGround(options: {
+            width?: number;
+            height?: number;
+            subdivisions?: number;
+            sideOrientation?: number;
+        }): VertexData;
+        static CreateGround(width: number, height: number, subdivisions?: number): VertexData;
+        static CreateTiledGround(xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: {
+            w: number;
+            h: number;
+        }, precision?: {
+            w: number;
+            h: number;
+        }): VertexData;
+        static CreateGroundFromHeightMap(width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number): VertexData;
+        static CreatePlane(options: {
+            width?: number;
+            height?: number;
+            sideOrientation?: number;
+        }): VertexData;
+        static CreatePlane(size: number, sideOrientation?: number): VertexData;
+        static CreateDisc(radius: number, tessellation: number, sideOrientation?: number): VertexData;
+        static CreateTorusKnot(radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, sideOrientation?: number): VertexData;
+        /**
+         * @param {any} - positions (number[] or Float32Array)
+         * @param {any} - indices   (number[] or Uint16Array)
+         * @param {any} - normals   (number[] or Float32Array)
+         */
+        static ComputeNormals(positions: any, indices: any, normals: any): void;
+        private static _ComputeSides(sideOrientation, positions, indices, normals, uvs);
+    }
+}
+
+declare module BABYLON.Internals {
+    class MeshLODLevel {
+        distance: number;
+        mesh: Mesh;
+        constructor(distance: number, mesh: Mesh);
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A simplifier interface for future simplification implementations.
+     */
+    interface ISimplifier {
+        /**
+         * Simplification of a given mesh according to the given settings.
+         * Since this requires computation, it is assumed that the function runs async.
+         * @param settings The settings of the simplification, including quality and distance
+         * @param successCallback A callback that will be called after the mesh was simplified.
+         * @param errorCallback in case of an error, this callback will be called. optional.
+         */
+        simplify(settings: ISimplificationSettings, successCallback: (simplifiedMeshes: Mesh) => void, errorCallback?: () => void): void;
+    }
+    /**
+     * Expected simplification settings.
+     * Quality should be between 0 and 1 (1 being 100%, 0 being 0%);
+     */
+    interface ISimplificationSettings {
+        quality: number;
+        distance: number;
+        optimizeMesh?: boolean;
+    }
+    class SimplificationSettings implements ISimplificationSettings {
+        quality: number;
+        distance: number;
+        optimizeMesh: boolean;
+        constructor(quality: number, distance: number, optimizeMesh?: boolean);
+    }
+    interface ISimplificationTask {
+        settings: Array<ISimplificationSettings>;
+        simplificationType: SimplificationType;
+        mesh: Mesh;
+        successCallback?: () => void;
+        parallelProcessing: boolean;
+    }
+    class SimplificationQueue {
+        private _simplificationArray;
+        running: any;
+        constructor();
+        addTask(task: ISimplificationTask): void;
+        executeNext(): void;
+        runSimplification(task: ISimplificationTask): void;
+        private getSimplifier(task);
+    }
+    /**
+     * The implemented types of simplification.
+     * At the moment only Quadratic Error Decimation is implemented.
+     */
+    enum SimplificationType {
+        QUADRATIC = 0,
+    }
+    class DecimationTriangle {
+        vertices: Array<DecimationVertex>;
+        normal: Vector3;
+        error: Array<number>;
+        deleted: boolean;
+        isDirty: boolean;
+        borderFactor: number;
+        deletePending: boolean;
+        originalOffset: number;
+        constructor(vertices: Array<DecimationVertex>);
+    }
+    class DecimationVertex {
+        position: Vector3;
+        id: any;
+        q: QuadraticMatrix;
+        isBorder: boolean;
+        triangleStart: number;
+        triangleCount: number;
+        originalOffsets: Array<number>;
+        constructor(position: Vector3, id: any);
+        updatePosition(newPosition: Vector3): void;
+    }
+    class QuadraticMatrix {
+        data: Array<number>;
+        constructor(data?: Array<number>);
+        det(a11: any, a12: any, a13: any, a21: any, a22: any, a23: any, a31: any, a32: any, a33: any): number;
+        addInPlace(matrix: QuadraticMatrix): void;
+        addArrayInPlace(data: Array<number>): void;
+        add(matrix: QuadraticMatrix): QuadraticMatrix;
+        static FromData(a: number, b: number, c: number, d: number): QuadraticMatrix;
+        static DataFromNumbers(a: number, b: number, c: number, d: number): number[];
+    }
+    class Reference {
+        vertexId: number;
+        triangleId: number;
+        constructor(vertexId: number, triangleId: number);
+    }
+    /**
+     * An implementation of the Quadratic Error simplification algorithm.
+     * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
+     * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
+     * @author RaananW
+     */
+    class QuadraticErrorSimplification implements ISimplifier {
+        private _mesh;
+        private triangles;
+        private vertices;
+        private references;
+        private initialized;
+        private _reconstructedMesh;
+        syncIterations: number;
+        aggressiveness: number;
+        decimationIterations: number;
+        boundingBoxEpsilon: number;
+        constructor(_mesh: Mesh);
+        simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void): void;
+        private isTriangleOnBoundingBox(triangle);
+        private runDecimation(settings, submeshIndex, successCallback);
+        private initWithMesh(submeshIndex, callback, optimizeMesh?);
+        private init(callback);
+        private reconstructMesh(submeshIndex);
+        private initDecimatedMesh();
+        private isFlipped(vertex1, vertex2, point, deletedArray, borderFactor, delTr);
+        private updateTriangles(origVertex, vertex, deletedArray, deletedTriangles);
+        private identifyBorder();
+        private updateMesh(identifyBorders?);
+        private vertexError(q, point);
+        private calculateError(vertex1, vertex2, pointResult?, normalResult?, uvResult?, colorResult?);
+    }
+}
+
+declare module BABYLON {
+    class Polygon {
+        static Rectangle(xmin: number, ymin: number, xmax: number, ymax: number): Vector2[];
+        static Circle(radius: number, cx?: number, cy?: number, numberOfSides?: number): Vector2[];
+        static Parse(input: string): Vector2[];
+        static StartingAt(x: number, y: number): Path2;
+    }
+    class PolygonMeshBuilder {
+        private _swctx;
+        private _points;
+        private _outlinepoints;
+        private _holes;
+        private _name;
+        private _scene;
+        constructor(name: string, contours: Path2, scene: Scene);
+        constructor(name: string, contours: Vector2[], scene: Scene);
+        addHole(hole: Vector2[]): PolygonMeshBuilder;
+        build(updatable?: boolean, depth?: number): Mesh;
+        private addSide(positions, normals, uvs, indices, bounds, points, depth, flip);
+    }
+}
+
+declare module BABYLON {
+    class SubMesh {
+        materialIndex: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: any;
+        indexCount: number;
+        linesIndexCount: number;
+        private _mesh;
+        private _renderingMesh;
+        private _boundingInfo;
+        private _linesIndexBuffer;
+        _lastColliderWorldVertices: Vector3[];
+        _trianglePlanes: Plane[];
+        _lastColliderTransformMatrix: Matrix;
+        _renderId: number;
+        _alphaIndex: number;
+        _distanceToCamera: number;
+        _id: number;
+        constructor(materialIndex: number, verticesStart: number, verticesCount: number, indexStart: any, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean);
+        getBoundingInfo(): BoundingInfo;
+        getMesh(): AbstractMesh;
+        getRenderingMesh(): Mesh;
+        getMaterial(): Material;
+        refreshBoundingInfo(): void;
+        _checkCollision(collider: Collider): boolean;
+        updateBoundingInfo(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        render(enableAlphaMode: boolean): void;
+        getLinesIndexBuffer(indices: number[], engine: any): WebGLBuffer;
+        canIntersects(ray: Ray): boolean;
+        intersects(ray: Ray, positions: Vector3[], indices: number[], fastCheck?: boolean): IntersectionInfo;
+        clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh;
+        dispose(): void;
+        static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh): SubMesh;
+    }
+}
+
+declare module BABYLON {
+    class VertexBuffer {
+        private _mesh;
+        private _engine;
+        private _buffer;
+        private _data;
+        private _updatable;
+        private _kind;
+        private _strideSize;
+        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number);
+        isUpdatable(): boolean;
+        getData(): number[];
+        getBuffer(): WebGLBuffer;
+        getStrideSize(): number;
+        create(data?: number[]): void;
+        update(data: number[]): void;
+        updateDirectly(data: Float32Array, offset: number): void;
+        dispose(): void;
+        private static _PositionKind;
+        private static _NormalKind;
+        private static _UVKind;
+        private static _UV2Kind;
+        private static _UV3Kind;
+        private static _UV4Kind;
+        private static _UV5Kind;
+        private static _UV6Kind;
+        private static _ColorKind;
+        private static _MatricesIndicesKind;
+        private static _MatricesWeightsKind;
+        static PositionKind: string;
+        static NormalKind: string;
+        static UVKind: string;
+        static UV2Kind: string;
+        static UV3Kind: string;
+        static UV4Kind: string;
+        static UV5Kind: string;
+        static UV6Kind: string;
+        static ColorKind: string;
+        static MatricesIndicesKind: string;
+        static MatricesWeightsKind: string;
+    }
+}
+
+declare module BABYLON {
     class Particle {
         position: Vector3;
         direction: Vector3;
@@ -4565,27 +4344,6 @@ declare module BABYLON {
         static CylinderImpostor: number;
         static ConvexHullImpostor: number;
         static Epsilon: number;
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        refreshRate: number;
-        getScene(): Scene;
-        cubeTexture: RenderTargetTexture;
-        renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        dispose(): void;
     }
 }
 
@@ -5007,7 +4765,7 @@ declare module BABYLON {
         private _prepareBuffers();
         _prepareFrame(sourceTexture?: WebGLTexture): boolean;
         directRender(postProcesses: PostProcess[], targetTexture?: WebGLTexture): void;
-        _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture, faceIndex?: number, postProcesses?: PostProcess[]): void;
+        _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture, postProcesses?: PostProcess[]): void;
         dispose(): void;
     }
 }
@@ -5582,28 +5340,6 @@ interface Navigator {
 }
 
 declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
     class SceneOptimization {
         priority: number;
         apply: (scene: Scene) => boolean;
@@ -5798,7 +5534,6 @@ declare module BABYLON {
         static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?: any, useArrayBuffer?: boolean, onError?: () => void): void;
         static ReadFileAsDataURL(fileToLoad: any, callback: any, progressCallback: any): void;
         static ReadFile(fileToLoad: any, callback: any, progressCallBack: any, useArrayBuffer?: boolean): void;
-        static FileAsURL(content: string): string;
         static Clamp(value: number, min?: number, max?: number): number;
         static Sign(value: number): number;
         static Format(value: number, decimals?: number): string;
@@ -6096,6 +5831,9 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Internals {
+}
+
 declare module BABYLON {
     class BaseTexture {
         name: string;
@@ -6128,8 +5866,8 @@ declare module BABYLON {
         _removeFromCache(url: string, noMipmap: boolean): void;
         _getFromCache(url: string, noMipmap: boolean, sampling?: number): WebGLTexture;
         delayLoad(): void;
-        clone(): BaseTexture;
         releaseInternalTexture(): void;
+        clone(): BaseTexture;
         dispose(): void;
     }
 }
@@ -6190,19 +5928,12 @@ declare module BABYLON {
 
 declare module BABYLON {
     class RenderTargetTexture extends Texture {
-        isCube: boolean;
-        static _REFRESHRATE_RENDERONCE: number;
-        static _REFRESHRATE_RENDERONEVERYFRAME: number;
-        static _REFRESHRATE_RENDERONEVERYTWOFRAME: number;
-        static REFRESHRATE_RENDERONCE: number;
-        static REFRESHRATE_RENDERONEVERYFRAME: number;
-        static REFRESHRATE_RENDERONEVERYTWOFRAME: number;
         renderList: AbstractMesh[];
         renderParticles: boolean;
         renderSprites: boolean;
         coordinatesMode: number;
-        onBeforeRender: (faceIndex: number) => void;
-        onAfterRender: (faceIndex: number) => void;
+        onBeforeRender: () => void;
+        onAfterRender: () => void;
         onAfterUnbind: () => void;
         onClear: (engine: Engine) => void;
         activeCamera: Camera;
@@ -6214,8 +5945,7 @@ declare module BABYLON {
         private _doNotChangeAspectRatio;
         private _currentRefreshId;
         private _refreshRate;
-        private _textureMatrix;
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number, isCube?: boolean);
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number);
         resetRefreshCounter(): void;
         refreshRate: number;
         _shouldRender(): boolean;
@@ -6223,10 +5953,8 @@ declare module BABYLON {
         getRenderSize(): number;
         canRescale: boolean;
         scale(ratio: number): void;
-        getReflectionTextureMatrix(): Matrix;
         resize(size: any, generateMipMaps?: boolean): void;
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
-        renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void;
         clone(): RenderTargetTexture;
     }
 }
@@ -6242,7 +5970,6 @@ declare module BABYLON {
         static CUBIC_MODE: number;
         static PROJECTION_MODE: number;
         static SKYBOX_MODE: number;
-        static INVCUBIC_MODE: number;
         static CLAMP_ADDRESSMODE: number;
         static WRAP_ADDRESSMODE: number;
         static MIRROR_ADDRESSMODE: number;
@@ -6292,9 +6019,6 @@ declare module BABYLON {
         constructor(name: string, urls: string[], scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
         update(): boolean;
     }
-}
-
-declare module BABYLON.Internals {
 }
 
 declare module BABYLON {

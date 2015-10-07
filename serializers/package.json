@@ -1,0 +1,24 @@
+{
+  "name": "BabylonJS_Serializers",
+  "description": "Sserialization tools that you can use to generate different formats from .babylon",
+  "main": "",
+  "repository": { "url": "https://github.com/BabylonJS/Babylon.js/" },
+  "readme": "https://github.com/BabylonJS/Babylon.js/edit/master/serializers/readme.md",
+  "license": "(Apache-2.0)",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-uglify": "~1.2.0",
+    "gulp-sourcemaps": "~1.5.2",
+    "typescript": "~1.6.2",
+    "gulp-typescript": "~2.9.0",
+    "through2": "~0.6.5",
+    "gulp-util": "~3.0.4",
+    "gulp-concat": "~2.5.2",
+    "merge2": "~0.3.5",
+    "gulp-rename": "~1.2.2",
+    "gulp-clean-ts-extends": "~0.1.1",
+    "gulp-changed": "~1.2.1",
+    "run-sequence": "~1.1.0",
+    "gulp-replace": "~0.5.3"
+  }
+}

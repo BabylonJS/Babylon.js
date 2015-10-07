@@ -1465,13 +1465,14 @@ var BABYLON;
                 var returnRotation = function (i, distance) { return rotation; };
                 var rotate = custom ? rotateFunction : returnRotation;
                 var scl = custom ? scaleFunction : returnScale;
-                var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 1;
+                var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
+                var rotationMatrix = BABYLON.Matrix.Zero();
                 for (var i = 0; i < curve.length; i++) {
                     var shapePath = new Array();
                     var angleStep = rotate(i, distances[i]);
                     var scaleRatio = scl(i, distances[i]);
                     for (var p = 0; p < shape.length; p++) {
-                        var rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], angle);
+                        BABYLON.Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
                         var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
                         var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
                         shapePath.push(rotated);
@@ -1498,14 +1499,18 @@ var BABYLON;
                     case Mesh.NO_CAP:
                         break;
                     case Mesh.CAP_START:
-                        shapePaths[0] = capPath(shapePaths[1]);
+                        shapePaths[0] = capPath(shapePaths[2]);
+                        shapePaths[1] = shapePaths[2].slice(0);
                         break;
                     case Mesh.CAP_END:
-                        shapePaths[index] = capPath(shapePaths[index - 1]);
+                        shapePaths[index] = shapePaths[index - 1];
+                        shapePaths[index + 1] = capPath(shapePaths[index - 1]);
                         break;
                     case Mesh.CAP_ALL:
-                        shapePaths[0] = capPath(shapePaths[1]);
-                        shapePaths[index] = capPath(shapePaths[index - 1]);
+                        shapePaths[0] = capPath(shapePaths[2]);
+                        shapePaths[1] = shapePaths[2].slice(0);
+                        shapePaths[index] = shapePaths[index - 1];
+                        shapePaths[index + 1] = capPath(shapePaths[index - 1]);
                         break;
                     default:
                         break;
@@ -1720,14 +1725,14 @@ var BABYLON;
                 var rad;
                 var normal;
                 var rotated;
-                var rotationMatrix;
-                var index = (cap === Mesh._NO_CAP || cap === Mesh.CAP_END) ? 0 : 1;
+                var rotationMatrix = BABYLON.Matrix.Zero();
+                var index = (cap === Mesh._NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array(); // current circle array
                     normal = normals[i]; // current normal
                     for (var t = 0; t < tessellation; t++) {
-                        rotationMatrix = BABYLON.Matrix.RotationAxis(tangents[i], step * t);
+                        BABYLON.Matrix.RotationAxisToRef(tangents[i], step * t, rotationMatrix);
                         rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
                         circlePath.push(rotated);
                     }
@@ -1747,13 +1752,17 @@ var BABYLON;
                         break;
                     case Mesh.CAP_START:
                         circlePaths[0] = capPath(tessellation, 0);
+                        circlePaths[1] = circlePaths[2].slice(0);
                         break;
                     case Mesh.CAP_END:
-                        circlePaths[index] = capPath(tessellation, path.length - 1);
+                        circlePaths[index] = circlePaths[index - 1].slice(0);
+                        circlePaths[index + 1] = capPath(tessellation, path.length - 1);
                         break;
                     case Mesh.CAP_ALL:
                         circlePaths[0] = capPath(tessellation, 0);
-                        circlePaths[index] = capPath(tessellation, path.length - 1);
+                        circlePaths[1] = circlePaths[2].slice(0);
+                        circlePaths[index] = circlePaths[index - 1].slice(0);
+                        circlePaths[index + 1] = capPath(tessellation, path.length - 1);
                         break;
                     default:
                         break;
