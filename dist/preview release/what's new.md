@@ -15,6 +15,7 @@
     - Fixed `closePath` and `closeArray` ribbon parameter now working back together ([jerome](https://github.com/jbousquie))
     - Fixed morphing on capped tubes  ([jerome](https://github.com/jbousquie))
     - Fixed morphing on extruded shapes  ([jerome](https://github.com/jbousquie))
+    - Fixed tube and extruded shape cap light artifact  ([jerome](https://github.com/jbousquie))
   - **Breaking changes**
     - `VertexData.CreateCylinder()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
     - `VertexData.CreateRibbon()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
