@@ -341,6 +341,22 @@
             }
         }
 
+        //returns a downloadable url to a file content.
+        public static FileAsURL(content:string): string {
+            var fileBlob;
+            try {
+                fileBlob = new Blob([content]);
+            } catch(e) {
+                var blobBuilder = window.BlobBuilder || window.MozBlobBuilder || window.WebKitBlobBuilder;
+                var bb = new blobBuilder();
+                bb.append([content]);
+                fileBlob = bb.getBlob();
+            }
+            var url = window.URL || window.webkitURL;
+            var link:string = url.createObjectURL(fileBlob);
+            return link;
+        }
+
         // Misc.   
         public static Clamp(value: number, min = 0, max = 1): number {
             return Math.min(max, Math.max(min, value));
