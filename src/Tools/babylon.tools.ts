@@ -341,6 +341,14 @@
             }
         }
 
+        //returns a downloadable url to a file content.
+        public static FileAsURL(content:string): string {
+            var fileBlob = new Blob([content]);
+            var url = window.URL || window.webkitURL;
+            var link:string = url.createObjectURL(fileBlob);
+            return link;
+        }
+
         // Misc.   
         public static Clamp(value: number, min = 0, max = 1): number {
             return Math.min(max, Math.max(min, value));
