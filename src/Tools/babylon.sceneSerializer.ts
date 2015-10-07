@@ -720,7 +720,7 @@
         serializationObject.instances = [];
         for (var index = 0; index < mesh.instances.length; index++) {
             var instance = mesh.instances[index];
-            var serializationInstance = {
+            var serializationInstance : any = {
                 name: instance.name,
                 position: instance.position.asArray(),
                 scaling: instance.scaling.asArray()
