@@ -1698,7 +1698,7 @@
                 var returnRotation: { (i: number, distance: number): number; } = (i, distance) => { return rotation; };
                 var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
                 var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
-                var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 1;
+                var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
                 var rotationMatrix: Matrix = Matrix.Zero();
 
                 for (var i = 0; i < curve.length; i++) {
@@ -1733,14 +1733,18 @@
                     case Mesh.NO_CAP:
                         break;
                     case Mesh.CAP_START:
-                        shapePaths[0] = capPath(shapePaths[1]);
+                        shapePaths[0] = capPath(shapePaths[2]);
+                        shapePaths[1] = shapePaths[2].slice(0);
                         break;
                     case Mesh.CAP_END:
-                        shapePaths[index] = capPath(shapePaths[index - 1]);
+                        shapePaths[index] = shapePaths[index - 1];
+                        shapePaths[index + 1] = capPath(shapePaths[index - 1]);
                         break;
                     case Mesh.CAP_ALL:
-                        shapePaths[0] = capPath(shapePaths[1]);
-                        shapePaths[index] = capPath(shapePaths[index - 1]);
+                        shapePaths[0] = capPath(shapePaths[2]);
+                        shapePaths[1] = shapePaths[2].slice(0);
+                        shapePaths[index] = shapePaths[index - 1];
+                        shapePaths[index + 1] = capPath(shapePaths[index - 1]);
                         break;
                     default:
                         break;
@@ -1996,7 +2000,7 @@
                 var normal: Vector3;
                 var rotated: Vector3;
                 var rotationMatrix: Matrix = Matrix.Zero();
-                var index = (cap === Mesh._NO_CAP || cap === Mesh.CAP_END) ? 0 : 1;
+                var index = (cap === Mesh._NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
                     circlePath = Array<Vector3>();              // current circle array
@@ -2022,13 +2026,17 @@
                         break;
                     case Mesh.CAP_START:
                         circlePaths[0] = capPath(tessellation, 0);
+                        circlePaths[1] = circlePaths[2].slice(0);
                         break;
                     case Mesh.CAP_END:
-                        circlePaths[index] = capPath(tessellation, path.length - 1);
+                        circlePaths[index] = circlePaths[index - 1].slice(0);
+                        circlePaths[index + 1] = capPath(tessellation, path.length - 1);
                         break;
                     case Mesh.CAP_ALL:
                         circlePaths[0] = capPath(tessellation, 0);
-                        circlePaths[index] = capPath(tessellation, path.length - 1);
+                        circlePaths[1] = circlePaths[2].slice(0);
+                        circlePaths[index] = circlePaths[index - 1].slice(0);
+                        circlePaths[index + 1] = capPath(tessellation, path.length - 1);
                         break;
                     default:
                         break;
