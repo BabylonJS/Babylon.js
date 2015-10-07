@@ -18,19 +18,10 @@ interface Window {
     SIMD: any;
     AudioContext: AudioContext;
     webkitAudioContext: AudioContext;
-    BlobBuilder: HTMLBLOBBUILDER;
-    MozBlobBuilder: HTMLBLOBBUILDER;
-    WebKitBlobBuilder: HTMLBLOBBUILDER;
 }
 
 interface HTMLURL {
     createObjectURL(param1: any, param2?: any);
-}
-
-interface HTMLBLOBBUILDER {
-    new(): HTMLBLOBBUILDER;
-    append(param1: any);
-    getBlob();
 }
 
 interface Document {

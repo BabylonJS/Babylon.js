@@ -343,15 +343,7 @@
 
         //returns a downloadable url to a file content.
         public static FileAsURL(content:string): string {
-            var fileBlob;
-            try {
-                fileBlob = new Blob([content]);
-            } catch(e) {
-                var blobBuilder = window.BlobBuilder || window.MozBlobBuilder || window.WebKitBlobBuilder;
-                var bb = new blobBuilder();
-                bb.append([content]);
-                fileBlob = bb.getBlob();
-            }
+            var fileBlob = new Blob([content]);
             var url = window.URL || window.webkitURL;
             var link:string = url.createObjectURL(fileBlob);
             return link;
