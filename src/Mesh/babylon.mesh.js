@@ -1897,6 +1897,48 @@ var BABYLON;
          * Update the vertex buffers by applying transformation from the bones
          * @param {skeleton} skeleton to apply
          */
+
+        Mesh.prototype.exportOBJ = function() {
+            var output=[];
+            var g = this.geometry;
+            trunkVerts = g.getVerticesData('position');
+            trunkNormals = g.getVerticesData('normal');
+            trunkUV = g.getVerticesData('uv');
+            trunkFaces = g.getIndices();
+            output.push("mtllib mat.mtl");
+            for(var i=0;i<trunkVerts.length;i+=3){
+                output.push("v "+trunkVerts[i]+" "+trunkVerts[i+1]+" "+trunkVerts[i+2]);
+            }
+            for(i=0;i<trunkNormals.length;i+=3){
+                output.push("vn "+trunkNormals[i]+" "+trunkNormals[i+1]+" "+trunkNormals[i+2]);
+            }
+            for(i=0;i<trunkUV.length;i+=2){
+                output.push("vt "+trunkUV[i]+" "+trunkUV[i+1]);
+            }
+            output.push("g gr1");
+            output.push("usemtl mat");
+            for(i=0;i<trunkFaces.length;i+=3) {
+                output.push(
+                    "f "+(trunkFaces[i+2]+1)+"/"+(trunkFaces[i+2]+1)+"/"+(trunkFaces[i+2]+1)+
+                    " "+(trunkFaces[i+1]+1)+"/"+(trunkFaces[i+1]+1)+"/"+(trunkFaces[i+1]+1)+
+                    " "+(trunkFaces[i]+1)+"/"+(trunkFaces[i]+1)+"/"+(trunkFaces[i]+1)
+                );
+            }
+            var text = output.join("\n");
+            var fileBlob;
+            try{
+                fileBlob=new Blob([text]);
+            }catch(e){
+                var blobBuilder=window.BlobBuilder || window.MozBlobBuilder || window.WebKitBlobBuilder;
+                var bb=new blobBuilder();
+                bb.append([text]);
+                fileBlob=bb.getBlob();
+            }
+            var URL=window.URL || window.webkitURL;
+            var link=URL.createObjectURL(fileBlob);
+            return link;
+        };
+
         Mesh.prototype.applySkeleton = function (skeleton) {
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
                 return this;
