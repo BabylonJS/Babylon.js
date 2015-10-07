@@ -1000,7 +1000,6 @@
         public static MTL(mesh:Mesh):string {
             var output = [];
             var m = <StandardMaterial>mesh.material;
-            console.log(m);
             output.push("newmtl mat1");
             output.push("  Ns "+m.specularPower.toFixed(4));
             output.push("  Ni 1.5000");
