@@ -137,11 +137,20 @@ var BABYLON;
         Material.prototype.dispose = function (forceDisposeEffect) {
             // Remove from scene
             var index = this._scene.materials.indexOf(this);
-            this._scene.materials.splice(index, 1);
+            if (index >= 0) {
+                this._scene.materials.splice(index, 1);
+            }
             // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
             if (forceDisposeEffect && this._effect) {
                 this._scene.getEngine()._releaseEffect(this._effect);
                 this._effect = null;
+            }
+            // Remove from meshes
+            for (index = 0; index < this._scene.meshes.length; index++) {
+                var mesh = this._scene.meshes[index];
+                if (mesh.material === this) {
+                    mesh.material = null;
+                }
             }
             // Callback
             if (this.onDispose) {
