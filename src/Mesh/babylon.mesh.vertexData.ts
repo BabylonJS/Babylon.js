@@ -599,11 +599,8 @@
             var depth = options.depth || options.size || 1;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
-            var faceColors: Color4[];
+            var faceColors: Color4[] = options.faceColors;
             var colors = [];
-            if (options.faceColors) {
-                faceColors = options.faceColors;
-            }
 
             // default face colors and UV if undefined
             for (var f = 0; f < 6; f++) {
@@ -756,18 +753,30 @@
         }
 
         // Cylinder and cone 
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
             var diameterBottom: number = options.diameterBottom || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
+            var faceColors: Color4[] = options.faceColors;
+            // default face colors and UV if undefined
+            for (var f = 0; f < 3; f++) {
+                if (faceColors && faceColors[f] === undefined) {
+                    faceColors[f] = new Color4(1, 1, 1, 1);
+                }
+                if (faceUV && faceUV[f] === undefined) {
+                    faceUV[f] = new Vector4(0, 0, 1, 1);
+                }
+            }
 
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
+            var colors = [];
 
             var angle_step = Math.PI * 2 / tessellation;
             var angle: number;
@@ -802,7 +811,10 @@
                     }
                     positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                     normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(j / tessellation, 1 - h);
+                    uvs.push(faceUV[0].x + (faceUV[0].z - faceUV[0].x) * j / tessellation, faceUV[0].y + (faceUV[0].w - faceUV[0].y) * h);
+                    if (faceColors) {
+                        colors.push(faceColors[0].r, faceColors[0].g, faceColors[0].b, faceColors[0].a);
+                    }
                 }
             }
 
@@ -831,6 +843,10 @@
                 var angle;
                 var circleVector;
                 var i: number;
+                var u: Vector4 = (isTop) ? faceUV[1] : faceUV[2];
+                if (faceColors) {
+                    var c: Color4 = (isTop) ? faceColors[1] : faceColors[2];
+                }
                 for (i = 0; i < tessellation; i++) {
                     angle = Math.PI * 2 * i / tessellation;
                     circleVector = new Vector3(Math.cos(-angle), 0, Math.sin(-angle));
@@ -838,7 +854,10 @@
                     var textureCoordinate = new Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
                     positions.push(position.x, position.y, position.z);
                     normals.push(0, isTop ? 1 : -1, 0);
-                    uvs.push(textureCoordinate.x, textureCoordinate.y);
+                    uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, u.y + (u.w - u.y) * textureCoordinate.y);
+                    if (faceColors) {
+                        colors.push(c.r, c.g, c.b, c.a);
+                    }
                 }
                 // Cap indices
                 for (i = 0; i < tessellation - 2; i++) {
@@ -868,6 +887,9 @@
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            if (faceColors) {
+                vertexData.colors = colors;
+            }
 
             return vertexData;
         }
