@@ -10868,11 +10868,14 @@ var BABYLON;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
+            //no need for clone, as long as gravity is not on.
+            var actualVelocity = velocity;
             //add gravity to the velocity to prevent the dual-collision checking
             if (this.applyGravity) {
-                velocity.addInPlace(this.getScene().gravity);
+                //this prevents mending with cameraDirection, a global variable of the free camera class.
+                actualVelocity = velocity.add(this.getScene().gravity);
             }
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
@@ -16252,8 +16255,6 @@ var BABYLON;
                 updatable = options.updatable;
                 sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             }
-            radius = radius || 1;
-            tessellation = tessellation || radius * 60;
             var pi2 = Math.PI * 2;
             var shapeLathe = new Array();
             // first rotatable point
@@ -27170,11 +27171,8 @@ var BABYLON;
             var depth = options.depth || options.size || 1;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(6);
-            var faceColors;
+            var faceColors = options.faceColors;
             var colors = [];
-            if (options.faceColors) {
-                faceColors = options.faceColors;
-            }
             // default face colors and UV if undefined
             for (var f = 0; f < 6; f++) {
                 if (faceUV[f] === undefined) {
@@ -27302,10 +27300,22 @@ var BABYLON;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var faceUV = options.faceUV || new Array(3);
+            var faceColors = options.faceColors;
+            // default face colors and UV if undefined
+            for (var f = 0; f < 3; f++) {
+                if (faceColors && faceColors[f] === undefined) {
+                    faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
+                }
+                if (faceUV && faceUV[f] === undefined) {
+                    faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
+                }
+            }
             var indices = [];
             var positions = [];
             var normals = [];
             var uvs = [];
+            var colors = [];
             var angle_step = Math.PI * 2 / tessellation;
             var angle;
             var h;
@@ -27338,7 +27348,10 @@ var BABYLON;
                     }
                     positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                     normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(j / tessellation, 1 - h);
+                    uvs.push(faceUV[0].x + (faceUV[0].z - faceUV[0].x) * j / tessellation, faceUV[0].y + (faceUV[0].w - faceUV[0].y) * h);
+                    if (faceColors) {
+                        colors.push(faceColors[0].r, faceColors[0].g, faceColors[0].b, faceColors[0].a);
+                    }
                 }
             }
             // indices
@@ -27365,6 +27378,11 @@ var BABYLON;
                 var angle;
                 var circleVector;
                 var i;
+                var u = (isTop) ? faceUV[1] : faceUV[2];
+                var c;
+                if (faceColors) {
+                    c = (isTop) ? faceColors[1] : faceColors[2];
+                }
                 for (i = 0; i < tessellation; i++) {
                     angle = Math.PI * 2 * i / tessellation;
                     circleVector = new BABYLON.Vector3(Math.cos(-angle), 0, Math.sin(-angle));
@@ -27372,7 +27390,10 @@ var BABYLON;
                     var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
                     positions.push(position.x, position.y, position.z);
                     normals.push(0, isTop ? 1 : -1, 0);
-                    uvs.push(textureCoordinate.x, textureCoordinate.y);
+                    uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, u.y + (u.w - u.y) * textureCoordinate.y);
+                    if (faceColors) {
+                        colors.push(c.r, c.g, c.b, c.a);
+                    }
                 }
                 // Cap indices
                 for (i = 0; i < tessellation - 2; i++) {
@@ -27398,6 +27419,9 @@ var BABYLON;
             vertexData.positions = positions;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
+            if (faceColors) {
+                vertexData.colors = colors;
+            }
             return vertexData;
         };
         VertexData.CreateTorus = function (options) {

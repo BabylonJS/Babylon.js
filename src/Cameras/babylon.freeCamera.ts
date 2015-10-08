@@ -189,12 +189,12 @@
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
-			//no need for clone, as long as gravity is not on.
-			var actualVelocity = velocity;
+            //no need for clone, as long as gravity is not on.
+            var actualVelocity = velocity;
 			
             //add gravity to the velocity to prevent the dual-collision checking
             if (this.applyGravity) {
-				//this prevents mending with cameraDirection, a global variable of the free camera class.
+                //this prevents mending with cameraDirection, a global variable of the free camera class.
                 actualVelocity = velocity.add(this.getScene().gravity);
             }
 
