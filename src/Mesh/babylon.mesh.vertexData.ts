@@ -844,8 +844,9 @@
                 var circleVector;
                 var i: number;
                 var u: Vector4 = (isTop) ? faceUV[1] : faceUV[2];
+                var c: Color4;
                 if (faceColors) {
-                    var c: Color4 = (isTop) ? faceColors[1] : faceColors[2];
+                    c = (isTop) ? faceColors[1] : faceColors[2];
                 }
                 for (i = 0; i < tessellation; i++) {
                     angle = Math.PI * 2 * i / tessellation;
@@ -1158,7 +1159,7 @@
             return vertexData;
         }
 
-        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number}): VertexData {
+        public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1521,16 +1522,4 @@
             }
         }
     }
-} 
-
-
-
-
-
-
-
-
-
-
-
-
+}

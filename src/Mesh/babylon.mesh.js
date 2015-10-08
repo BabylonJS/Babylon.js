@@ -1553,8 +1553,6 @@ var BABYLON;
                 updatable = options.updatable;
                 sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             }
-            radius = radius || 1;
-            tessellation = tessellation || radius * 60;
             var pi2 = Math.PI * 2;
             var shapeLathe = new Array();
             // first rotatable point
