@@ -685,11 +685,13 @@
             return vertexData;
         }
 
-        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number }): VertexData {
+        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number }): VertexData {
             var segments: number = options.segments || 32;
             var diameterX: number = options.diameterX || options.diameter || 1;
             var diameterY: number = options.diameterY || options.diameter || 1;
             var diameterZ: number = options.diameterZ || options.diameter || 1;
+            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var slice: number = (options.slice <= 0) ? 1.0 : options.slice || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
@@ -704,12 +706,12 @@
 
             for (var zRotationStep = 0; zRotationStep <= totalZRotationSteps; zRotationStep++) {
                 var normalizedZ = zRotationStep / totalZRotationSteps;
-                var angleZ = (normalizedZ * Math.PI);
+                var angleZ = normalizedZ * Math.PI * slice;
 
                 for (var yRotationStep = 0; yRotationStep <= totalYRotationSteps; yRotationStep++) {
                     var normalizedY = yRotationStep / totalYRotationSteps;
 
-                    var angleY = normalizedY * Math.PI * 2;
+                    var angleY = normalizedY * Math.PI * 2 * arc;
 
                     var rotationZ = Matrix.RotationZ(-angleZ);
                     var rotationY = Matrix.RotationY(angleY);
@@ -753,12 +755,13 @@
         }
 
         // Cylinder and cone 
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
             var diameterBottom: number = options.diameterBottom || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
             var faceColors: Color4[] = options.faceColors;
@@ -778,7 +781,7 @@
             var uvs = [];
             var colors = [];
 
-            var angle_step = Math.PI * 2 / tessellation;
+            var angle_step = Math.PI * 2 * arc / tessellation;
             var angle: number;
             var h: number;
             var radius: number;
@@ -811,9 +814,9 @@
                     }
                     positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                     normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(faceUV[0].x + (faceUV[0].z - faceUV[0].x) * j / tessellation, faceUV[0].y + (faceUV[0].w - faceUV[0].y) * h);
+                    uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
                     if (faceColors) {
-                        colors.push(faceColors[0].r, faceColors[0].g, faceColors[0].b, faceColors[0].a);
+                        colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
                     }
                 }
             }
@@ -836,24 +839,35 @@
                 if (radius === 0) {
                     return;
                 }
-                var vbase = positions.length / 3;
-                var offset = new Vector3(0, isTop ? height / 2 : -height / 2, 0);
-                var textureScale = new Vector2(0.5, 0.5);
+
                 // Cap positions, normals & uvs
                 var angle;
                 var circleVector;
                 var i: number;
-                var u: Vector4 = (isTop) ? faceUV[1] : faceUV[2];
+                var u: Vector4 = (isTop) ? faceUV[2] : faceUV[0];
                 var c: Color4;
                 if (faceColors) {
-                    c = (isTop) ? faceColors[1] : faceColors[2];
+                    c = (isTop) ? faceColors[2] : faceColors[0];
                 }
-                for (i = 0; i < tessellation; i++) {
-                    angle = Math.PI * 2 * i / tessellation;
-                    circleVector = new Vector3(Math.cos(-angle), 0, Math.sin(-angle));
-                    var position = circleVector.scale(radius).add(offset);
-                    var textureCoordinate = new Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
-                    positions.push(position.x, position.y, position.z);
+                // cap center
+                var vbase = positions.length / 3;
+                var offset = isTop ? height / 2 : -height / 2;
+                var center = new Vector3(0, offset , 0);
+                positions.push(center.x, center.y, center.z);
+                normals.push(0, isTop ? 1 : -1, 0);
+                uvs.push(u.x + (u.z - u.x) * 0.5, u.y + (u.w - u.y) * 0.5);
+                if (faceColors) {
+                        colors.push(c.r, c.g, c.b, c.a);
+                }
+    
+                var textureScale = new Vector2(0.5, 0.5);
+                for (i = 0; i <= tessellation; i++) {
+                    angle = Math.PI * 2 * i * arc / tessellation;
+                    var cos = Math.cos(-angle);
+                    var sin = Math.sin(-angle);
+                    circleVector = new Vector3(cos * radius, offset, sin * radius);
+                    var textureCoordinate = new Vector2(cos * textureScale.x + 0.5, sin * textureScale.y + 0.5);
+                    positions.push(circleVector.x, circleVector.y, circleVector.z);
                     normals.push(0, isTop ? 1 : -1, 0);
                     uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, u.y + (u.w - u.y) * textureCoordinate.y);
                     if (faceColors) {
@@ -861,23 +875,23 @@
                     }
                 }
                 // Cap indices
-                for (i = 0; i < tessellation - 2; i++) {
+                for (i = 0; i < tessellation; i++) {
                     if (!isTop) {
                         indices.push(vbase);
-                        indices.push(vbase + (i + 1) % tessellation);
-                        indices.push(vbase + (i + 2) % tessellation);
+                        indices.push(vbase + (i + 1));
+                        indices.push(vbase + (i + 2));
                     }
                     else {
                         indices.push(vbase);
-                        indices.push(vbase + (i + 2) % tessellation);
-                        indices.push(vbase + (i + 1) % tessellation);
+                        indices.push(vbase + (i + 2));
+                        indices.push(vbase + (i + 1));
                     }
                 }
             };
             
             // add caps to geometry
-            createCylinderCap(true);
             createCylinderCap(false);
+            createCylinderCap(true);
 
             // Sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
