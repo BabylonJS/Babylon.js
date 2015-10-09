@@ -226,7 +226,8 @@ var ActionsBuilder;
                         alert("Please add a trigger before.");
                         return;
                     }
-                    if (element.type === ActionsBuilder.Type.FLOW_CONTROL && (dragResult.action === _this._viewer.root || (dragResult.action.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    //if (element.type === Type.FLOW_CONTROL && (dragResult.action === this._viewer.root || (dragResult.action.type === Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    if (element.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action === _this._viewer.root) {
                         return;
                     }
                     if (element.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action.combineArray !== null) {
