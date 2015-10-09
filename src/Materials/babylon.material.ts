@@ -149,6 +149,20 @@
             return null;
         }
 
+        public getBindedMeshes(): AbstractMesh[] {
+            var result = new Array<AbstractMesh>();
+
+            for (var index = 0; index < this._scene.meshes.length; index++) {
+                var mesh = this._scene.meshes[index];
+
+                if (mesh.material === this) {
+                    result.push(mesh);
+                }
+            }
+
+            return result;
+        }
+
         public dispose(forceDisposeEffect?: boolean): void {
             // Remove from scene
             var index = this._scene.materials.indexOf(this);

@@ -7,7 +7,7 @@ var BABYLON;
 (function (BABYLON) {
     var VRCameraMetrics = (function () {
         function VRCameraMetrics() {
-            this.compensateDistorsion = true;
+            this.compensateDistortion = true;
         }
         Object.defineProperty(VRCameraMetrics.prototype, "aspectRatio", {
             get: function () {
