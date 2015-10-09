@@ -1965,10 +1965,11 @@
         }
 
         public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
-        public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
+        public static CreateTube(name: string, options: { path: Vector3[], radius?: number, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, arc?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene: Scene): Mesh;
         public static CreateTube(name: string, options: any, radiusOrScene: any, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
             var path: Vector3[];
             var radius: number;
+            var arc: number;
             if (Array.isArray(options)) {
                 path = options;
                 radius = radiusOrScene;
@@ -1984,12 +1985,12 @@
                 instance = options.instance;
             }
             // tube geometry
-            var tubePathArray = (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) => {
+            var tubePathArray = (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) => {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
                 var pi2 = Math.PI * 2;
-                var step = pi2 / tessellation;
+                var step = pi2 / tessellation * arc;
                 var returnRadius: { (i: number, distance: number): number; } = (i, distance) => radius;
                 var radiusFunctionFinal: { (i: number, distance: number): number; } = radiusFunction || returnRadius;
 
@@ -2044,25 +2045,29 @@
             var path3D;
             var pathArray;
             if (instance) { // tube update
+                arc = arc || (<any>instance).arc;
                 path3D = ((<any>instance).path3D).update(path);
-                pathArray = tubePathArray(path, path3D, (<any>instance).pathArray, radius, (<any>instance).tessellation, radiusFunction, (<any>instance).cap);
+                pathArray = tubePathArray(path, path3D, (<any>instance).pathArray, radius, (<any>instance).tessellation, radiusFunction, (<any>instance).cap, arc);
                 instance = Mesh.CreateRibbon(null, { pathArray: pathArray, instance: instance });
                 (<any>instance).path3D = path3D;
                 (<any>instance).pathArray = pathArray;
+                (<any>instance).arc = arc;
 
                 return instance;
 
             }
             // tube creation
+            arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0
             path3D = <any>new Path3D(path);
             var newPathArray = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
-            pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
+            pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, arc);
             var tube = Mesh.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation }, scene);
             (<any>tube).pathArray = pathArray;
             (<any>tube).path3D = path3D;
             (<any>tube).tessellation = tessellation;
             (<any>tube).cap = cap;
+            (<any>tube).arc = arc;
 
             return tube;
         }
