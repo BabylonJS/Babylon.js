@@ -685,11 +685,13 @@
             return vertexData;
         }
 
-        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, sideOrientation?: number }): VertexData {
+        public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number }): VertexData {
             var segments: number = options.segments || 32;
             var diameterX: number = options.diameterX || options.diameter || 1;
             var diameterY: number = options.diameterY || options.diameter || 1;
             var diameterZ: number = options.diameterZ || options.diameter || 1;
+            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var slice: number = (options.slice <= 0) ? 1.0 : options.slice || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
@@ -704,12 +706,12 @@
 
             for (var zRotationStep = 0; zRotationStep <= totalZRotationSteps; zRotationStep++) {
                 var normalizedZ = zRotationStep / totalZRotationSteps;
-                var angleZ = (normalizedZ * Math.PI);
+                var angleZ = normalizedZ * Math.PI * slice;
 
                 for (var yRotationStep = 0; yRotationStep <= totalYRotationSteps; yRotationStep++) {
                     var normalizedY = yRotationStep / totalYRotationSteps;
 
-                    var angleY = normalizedY * Math.PI * 2;
+                    var angleY = normalizedY * Math.PI * 2 * arc;
 
                     var rotationZ = Matrix.RotationZ(-angleZ);
                     var rotationY = Matrix.RotationY(angleY);
