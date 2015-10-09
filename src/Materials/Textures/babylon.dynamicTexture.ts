@@ -65,7 +65,7 @@
             this.getScene().getEngine().updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY);
         }
 
-        public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
+        public drawText(text: string, x: number, y: number, font: string, color: string, clearColor?: string, invertY?: boolean, update = true) {
             var size = this.getSize();
             if (clearColor) {
                 this._context.fillStyle = clearColor;
