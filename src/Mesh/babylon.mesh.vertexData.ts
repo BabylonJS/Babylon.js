@@ -852,14 +852,14 @@
                 // cap center
                 var vbase = positions.length / 3;
                 var offset = isTop ? height / 2 : -height / 2;
-                var center = new Vector3(0, offset , 0);
+                var center = new Vector3(0, offset, 0);
                 positions.push(center.x, center.y, center.z);
                 normals.push(0, isTop ? 1 : -1, 0);
                 uvs.push(u.x + (u.z - u.x) * 0.5, u.y + (u.w - u.y) * 0.5);
                 if (faceColors) {
-                        colors.push(c.r, c.g, c.b, c.a);
+                    colors.push(c.r, c.g, c.b, c.a);
                 }
-    
+
                 var textureScale = new Vector2(0.5, 0.5);
                 for (i = 0; i <= tessellation; i++) {
                     angle = Math.PI * 2 * i * arc / tessellation;

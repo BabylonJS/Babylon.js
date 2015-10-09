@@ -9919,7 +9919,7 @@ var BABYLON;
 (function (BABYLON) {
     var VRCameraMetrics = (function () {
         function VRCameraMetrics() {
-            this.compensateDistorsion = true;
+            this.compensateDistortion = true;
         }
         Object.defineProperty(VRCameraMetrics.prototype, "aspectRatio", {
             get: function () {
@@ -16242,6 +16242,8 @@ var BABYLON;
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var shape;
             var radius;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var closed = (options.closed === undefined) ? true : options.closed;
             if (Array.isArray(options)) {
                 shape = options;
                 radius = radiusOrScene || 1;
@@ -16267,19 +16269,21 @@ var BABYLON;
                 shapeLathe.push(shape[i].subtract(pt));
             }
             // circle path
-            var step = pi2 / tessellation;
+            var step = pi2 / tessellation * arc;
             var rotated;
             var path = new Array();
             ;
-            for (i = 0; i < tessellation; i++) {
+            for (i = 0; i <= tessellation; i++) {
                 rotated = new BABYLON.Vector3(Math.cos(i * step) * radius, 0, Math.sin(i * step) * radius);
                 path.push(rotated);
             }
-            path.push(path[0]);
+            if (closed) {
+                path.push(path[0]);
+            }
             // extrusion
             var scaleFunction = function () { return 1; };
             var rotateFunction = function () { return 0; };
-            var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, true, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
+            var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, closed, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
             return lathe;
         };
         Mesh.CreatePlane = function (name, options, scene, updatable, sideOrientation) {
@@ -16397,6 +16401,8 @@ var BABYLON;
             if (instance === void 0) { instance = null; }
             var path;
             var radius;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            ;
             if (Array.isArray(options)) {
                 path = options;
                 radius = radiusOrScene;
@@ -16413,12 +16419,12 @@ var BABYLON;
                     instance = options.instance;
             }
             // tube geometry
-            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) {
+            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
                 var pi2 = Math.PI * 2;
-                var step = pi2 / tessellation;
+                var step = pi2 / tessellation * arc;
                 var returnRadius = function (i, distance) { return radius; };
                 var radiusFunctionFinal = radiusFunction || returnRadius;
                 var circlePath;
@@ -16472,23 +16478,26 @@ var BABYLON;
             var path3D;
             var pathArray;
             if (instance) {
+                arc = arc || instance.arc;
                 path3D = (instance.path3D).update(path);
-                pathArray = tubePathArray(path, path3D, instance.pathArray, radius, instance.tessellation, radiusFunction, instance.cap);
+                pathArray = tubePathArray(path, path3D, instance.pathArray, radius, instance.tessellation, radiusFunction, instance.cap, arc);
                 instance = Mesh.CreateRibbon(null, { pathArray: pathArray, instance: instance });
                 instance.path3D = path3D;
                 instance.pathArray = pathArray;
+                instance.arc = arc;
                 return instance;
             }
             // tube creation
             path3D = new BABYLON.Path3D(path);
             var newPathArray = new Array();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
-            pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
+            pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, arc);
             var tube = Mesh.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation }, scene);
             tube.pathArray = pathArray;
             tube.path3D = path3D;
             tube.tessellation = tessellation;
             tube.cap = cap;
+            tube.arc = arc;
             return tube;
         };
         Mesh.CreateDecal = function (name, sourceMesh, positionOrOptions, normal, size, angle) {
@@ -19126,6 +19135,16 @@ var BABYLON;
         };
         Material.prototype.clone = function (name) {
             return null;
+        };
+        Material.prototype.getBindedMeshes = function () {
+            var result = new Array();
+            for (var index = 0; index < this._scene.meshes.length; index++) {
+                var mesh = this._scene.meshes[index];
+                if (mesh.material === this) {
+                    result.push(mesh);
+                }
+            }
+            return result;
         };
         Material.prototype.dispose = function (forceDisposeEffect) {
             // Remove from scene
@@ -27255,6 +27274,8 @@ var BABYLON;
             var diameterX = options.diameterX || options.diameter || 1;
             var diameterY = options.diameterY || options.diameter || 1;
             var diameterZ = options.diameterZ || options.diameter || 1;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var slice = (options.slice <= 0) ? 1.0 : options.slice || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var radius = new BABYLON.Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
             var totalZRotationSteps = 2 + segments;
@@ -27265,10 +27286,10 @@ var BABYLON;
             var uvs = [];
             for (var zRotationStep = 0; zRotationStep <= totalZRotationSteps; zRotationStep++) {
                 var normalizedZ = zRotationStep / totalZRotationSteps;
-                var angleZ = (normalizedZ * Math.PI);
+                var angleZ = normalizedZ * Math.PI * slice;
                 for (var yRotationStep = 0; yRotationStep <= totalYRotationSteps; yRotationStep++) {
                     var normalizedY = yRotationStep / totalYRotationSteps;
-                    var angleY = normalizedY * Math.PI * 2;
+                    var angleY = normalizedY * Math.PI * 2 * arc;
                     var rotationZ = BABYLON.Matrix.RotationZ(-angleZ);
                     var rotationY = BABYLON.Matrix.RotationY(angleY);
                     var afterRotZ = BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.Up(), rotationZ);
@@ -27308,6 +27329,7 @@ var BABYLON;
             var diameterBottom = options.diameterBottom || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(3);
             var faceColors = options.faceColors;
@@ -27325,7 +27347,7 @@ var BABYLON;
             var normals = [];
             var uvs = [];
             var colors = [];
-            var angle_step = Math.PI * 2 / tessellation;
+            var angle_step = Math.PI * 2 * arc / tessellation;
             var angle;
             var h;
             var radius;
@@ -27357,9 +27379,9 @@ var BABYLON;
                     }
                     positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                     normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(faceUV[0].x + (faceUV[0].z - faceUV[0].x) * j / tessellation, faceUV[0].y + (faceUV[0].w - faceUV[0].y) * h);
+                    uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
                     if (faceColors) {
-                        colors.push(faceColors[0].r, faceColors[0].g, faceColors[0].b, faceColors[0].a);
+                        colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
                     }
                 }
             }
@@ -27380,24 +27402,33 @@ var BABYLON;
                 if (radius === 0) {
                     return;
                 }
-                var vbase = positions.length / 3;
-                var offset = new BABYLON.Vector3(0, isTop ? height / 2 : -height / 2, 0);
-                var textureScale = new BABYLON.Vector2(0.5, 0.5);
                 // Cap positions, normals & uvs
                 var angle;
                 var circleVector;
                 var i;
-                var u = (isTop) ? faceUV[1] : faceUV[2];
+                var u = (isTop) ? faceUV[2] : faceUV[0];
                 var c;
                 if (faceColors) {
-                    c = (isTop) ? faceColors[1] : faceColors[2];
+                    c = (isTop) ? faceColors[2] : faceColors[0];
                 }
-                for (i = 0; i < tessellation; i++) {
-                    angle = Math.PI * 2 * i / tessellation;
-                    circleVector = new BABYLON.Vector3(Math.cos(-angle), 0, Math.sin(-angle));
-                    var position = circleVector.scale(radius).add(offset);
-                    var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
-                    positions.push(position.x, position.y, position.z);
+                // cap center
+                var vbase = positions.length / 3;
+                var offset = isTop ? height / 2 : -height / 2;
+                var center = new BABYLON.Vector3(0, offset, 0);
+                positions.push(center.x, center.y, center.z);
+                normals.push(0, isTop ? 1 : -1, 0);
+                uvs.push(u.x + (u.z - u.x) * 0.5, u.y + (u.w - u.y) * 0.5);
+                if (faceColors) {
+                    colors.push(c.r, c.g, c.b, c.a);
+                }
+                var textureScale = new BABYLON.Vector2(0.5, 0.5);
+                for (i = 0; i <= tessellation; i++) {
+                    angle = Math.PI * 2 * i * arc / tessellation;
+                    var cos = Math.cos(-angle);
+                    var sin = Math.sin(-angle);
+                    circleVector = new BABYLON.Vector3(cos * radius, offset, sin * radius);
+                    var textureCoordinate = new BABYLON.Vector2(cos * textureScale.x + 0.5, sin * textureScale.y + 0.5);
+                    positions.push(circleVector.x, circleVector.y, circleVector.z);
                     normals.push(0, isTop ? 1 : -1, 0);
                     uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, u.y + (u.w - u.y) * textureCoordinate.y);
                     if (faceColors) {
@@ -27405,22 +27436,22 @@ var BABYLON;
                     }
                 }
                 // Cap indices
-                for (i = 0; i < tessellation - 2; i++) {
+                for (i = 0; i < tessellation; i++) {
                     if (!isTop) {
                         indices.push(vbase);
-                        indices.push(vbase + (i + 1) % tessellation);
-                        indices.push(vbase + (i + 2) % tessellation);
+                        indices.push(vbase + (i + 1));
+                        indices.push(vbase + (i + 2));
                     }
                     else {
                         indices.push(vbase);
-                        indices.push(vbase + (i + 2) % tessellation);
-                        indices.push(vbase + (i + 1) % tessellation);
+                        indices.push(vbase + (i + 2));
+                        indices.push(vbase + (i + 1));
                     }
                 }
             };
             // add caps to geometry
-            createCylinderCap(true);
             createCylinderCap(false);
+            createCylinderCap(true);
             // Sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             var vertexData = new VertexData();
@@ -30412,14 +30443,14 @@ var BABYLON;
 (function (BABYLON) {
     var VRDeviceOrientationFreeCamera = (function (_super) {
         __extends(VRDeviceOrientationFreeCamera, _super);
-        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistorsion) {
-            if (compensateDistorsion === void 0) { compensateDistorsion = true; }
+        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion) {
+            if (compensateDistortion === void 0) { compensateDistortion = true; }
             _super.call(this, name, position, scene);
             this._alpha = 0;
             this._beta = 0;
             this._gamma = 0;
             var metrics = BABYLON.VRCameraMetrics.GetDefault();
-            metrics.compensateDistorsion = compensateDistorsion;
+            metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }
@@ -30461,8 +30492,8 @@ var BABYLON;
 (function (BABYLON) {
     var WebVRFreeCamera = (function (_super) {
         __extends(WebVRFreeCamera, _super);
-        function WebVRFreeCamera(name, position, scene, compensateDistorsion) {
-            if (compensateDistorsion === void 0) { compensateDistorsion = true; }
+        function WebVRFreeCamera(name, position, scene, compensateDistortion) {
+            if (compensateDistortion === void 0) { compensateDistortion = true; }
             _super.call(this, name, position, scene);
             this._hmdDevice = null;
             this._sensorDevice = null;
@@ -30471,7 +30502,7 @@ var BABYLON;
             this._cacheRotation = BABYLON.Vector3.Zero();
             this._vrEnabled = false;
             var metrics = BABYLON.VRCameraMetrics.GetDefault();
-            metrics.compensateDistorsion = compensateDistorsion;
+            metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
         }

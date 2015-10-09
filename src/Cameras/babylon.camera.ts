@@ -13,7 +13,7 @@
         public chromaAbCorrection: number[];
         public postProcessScaleFactor: number;
         public lensCenterOffset: number;
-        public compensateDistorsion = true;
+        public compensateDistortion = true;
 
         public get aspectRatio(): number {
             return this.hResolution / (2 * this.vResolution);

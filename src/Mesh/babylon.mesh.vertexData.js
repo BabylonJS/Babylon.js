@@ -567,6 +567,8 @@ var BABYLON;
             var diameterX = options.diameterX || options.diameter || 1;
             var diameterY = options.diameterY || options.diameter || 1;
             var diameterZ = options.diameterZ || options.diameter || 1;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var slice = (options.slice <= 0) ? 1.0 : options.slice || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var radius = new BABYLON.Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
             var totalZRotationSteps = 2 + segments;
@@ -577,10 +579,10 @@ var BABYLON;
             var uvs = [];
             for (var zRotationStep = 0; zRotationStep <= totalZRotationSteps; zRotationStep++) {
                 var normalizedZ = zRotationStep / totalZRotationSteps;
-                var angleZ = (normalizedZ * Math.PI);
+                var angleZ = normalizedZ * Math.PI * slice;
                 for (var yRotationStep = 0; yRotationStep <= totalYRotationSteps; yRotationStep++) {
                     var normalizedY = yRotationStep / totalYRotationSteps;
-                    var angleY = normalizedY * Math.PI * 2;
+                    var angleY = normalizedY * Math.PI * 2 * arc;
                     var rotationZ = BABYLON.Matrix.RotationZ(-angleZ);
                     var rotationY = BABYLON.Matrix.RotationY(angleY);
                     var afterRotZ = BABYLON.Vector3.TransformCoordinates(BABYLON.Vector3.Up(), rotationZ);
@@ -620,6 +622,7 @@ var BABYLON;
             var diameterBottom = options.diameterBottom || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(3);
             var faceColors = options.faceColors;
@@ -637,7 +640,7 @@ var BABYLON;
             var normals = [];
             var uvs = [];
             var colors = [];
-            var angle_step = Math.PI * 2 / tessellation;
+            var angle_step = Math.PI * 2 * arc / tessellation;
             var angle;
             var h;
             var radius;
@@ -669,9 +672,9 @@ var BABYLON;
                     }
                     positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                     normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(faceUV[0].x + (faceUV[0].z - faceUV[0].x) * j / tessellation, faceUV[0].y + (faceUV[0].w - faceUV[0].y) * h);
+                    uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
                     if (faceColors) {
-                        colors.push(faceColors[0].r, faceColors[0].g, faceColors[0].b, faceColors[0].a);
+                        colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
                     }
                 }
             }
@@ -692,24 +695,33 @@ var BABYLON;
                 if (radius === 0) {
                     return;
                 }
-                var vbase = positions.length / 3;
-                var offset = new BABYLON.Vector3(0, isTop ? height / 2 : -height / 2, 0);
-                var textureScale = new BABYLON.Vector2(0.5, 0.5);
                 // Cap positions, normals & uvs
                 var angle;
                 var circleVector;
                 var i;
-                var u = (isTop) ? faceUV[1] : faceUV[2];
+                var u = (isTop) ? faceUV[2] : faceUV[0];
                 var c;
                 if (faceColors) {
-                    c = (isTop) ? faceColors[1] : faceColors[2];
+                    c = (isTop) ? faceColors[2] : faceColors[0];
                 }
-                for (i = 0; i < tessellation; i++) {
-                    angle = Math.PI * 2 * i / tessellation;
-                    circleVector = new BABYLON.Vector3(Math.cos(-angle), 0, Math.sin(-angle));
-                    var position = circleVector.scale(radius).add(offset);
-                    var textureCoordinate = new BABYLON.Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
-                    positions.push(position.x, position.y, position.z);
+                // cap center
+                var vbase = positions.length / 3;
+                var offset = isTop ? height / 2 : -height / 2;
+                var center = new BABYLON.Vector3(0, offset, 0);
+                positions.push(center.x, center.y, center.z);
+                normals.push(0, isTop ? 1 : -1, 0);
+                uvs.push(u.x + (u.z - u.x) * 0.5, u.y + (u.w - u.y) * 0.5);
+                if (faceColors) {
+                    colors.push(c.r, c.g, c.b, c.a);
+                }
+                var textureScale = new BABYLON.Vector2(0.5, 0.5);
+                for (i = 0; i <= tessellation; i++) {
+                    angle = Math.PI * 2 * i * arc / tessellation;
+                    var cos = Math.cos(-angle);
+                    var sin = Math.sin(-angle);
+                    circleVector = new BABYLON.Vector3(cos * radius, offset, sin * radius);
+                    var textureCoordinate = new BABYLON.Vector2(cos * textureScale.x + 0.5, sin * textureScale.y + 0.5);
+                    positions.push(circleVector.x, circleVector.y, circleVector.z);
                     normals.push(0, isTop ? 1 : -1, 0);
                     uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, u.y + (u.w - u.y) * textureCoordinate.y);
                     if (faceColors) {
@@ -717,22 +729,22 @@ var BABYLON;
                     }
                 }
                 // Cap indices
-                for (i = 0; i < tessellation - 2; i++) {
+                for (i = 0; i < tessellation; i++) {
                     if (!isTop) {
                         indices.push(vbase);
-                        indices.push(vbase + (i + 1) % tessellation);
-                        indices.push(vbase + (i + 2) % tessellation);
+                        indices.push(vbase + (i + 1));
+                        indices.push(vbase + (i + 2));
                     }
                     else {
                         indices.push(vbase);
-                        indices.push(vbase + (i + 2) % tessellation);
-                        indices.push(vbase + (i + 1) % tessellation);
+                        indices.push(vbase + (i + 2));
+                        indices.push(vbase + (i + 1));
                     }
                 }
             };
             // add caps to geometry
-            createCylinderCap(true);
             createCylinderCap(false);
+            createCylinderCap(true);
             // Sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
             var vertexData = new VertexData();

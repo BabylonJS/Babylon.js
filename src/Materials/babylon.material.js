@@ -134,6 +134,16 @@ var BABYLON;
         Material.prototype.clone = function (name) {
             return null;
         };
+        Material.prototype.getBindedMeshes = function () {
+            var result = new Array();
+            for (var index = 0; index < this._scene.meshes.length; index++) {
+                var mesh = this._scene.meshes[index];
+                if (mesh.material === this) {
+                    result.push(mesh);
+                }
+            }
+            return result;
+        };
         Material.prototype.dispose = function (forceDisposeEffect) {
             // Remove from scene
             var index = this._scene.materials.indexOf(this);

@@ -1540,6 +1540,8 @@ var BABYLON;
             if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
             var shape;
             var radius;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var closed = (options.closed === undefined) ? true : options.closed;
             if (Array.isArray(options)) {
                 shape = options;
                 radius = radiusOrScene || 1;
@@ -1565,19 +1567,21 @@ var BABYLON;
                 shapeLathe.push(shape[i].subtract(pt));
             }
             // circle path
-            var step = pi2 / tessellation;
+            var step = pi2 / tessellation * arc;
             var rotated;
             var path = new Array();
             ;
-            for (i = 0; i < tessellation; i++) {
+            for (i = 0; i <= tessellation; i++) {
                 rotated = new BABYLON.Vector3(Math.cos(i * step) * radius, 0, Math.sin(i * step) * radius);
                 path.push(rotated);
             }
-            path.push(path[0]);
+            if (closed) {
+                path.push(path[0]);
+            }
             // extrusion
             var scaleFunction = function () { return 1; };
             var rotateFunction = function () { return 0; };
-            var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, true, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
+            var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, closed, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
             return lathe;
         };
         Mesh.CreatePlane = function (name, options, scene, updatable, sideOrientation) {
@@ -1695,6 +1699,8 @@ var BABYLON;
             if (instance === void 0) { instance = null; }
             var path;
             var radius;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            ;
             if (Array.isArray(options)) {
                 path = options;
                 radius = radiusOrScene;
@@ -1711,12 +1717,12 @@ var BABYLON;
                     instance = options.instance;
             }
             // tube geometry
-            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap) {
+            var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) {
                 var tangents = path3D.getTangents();
                 var normals = path3D.getNormals();
                 var distances = path3D.getDistances();
                 var pi2 = Math.PI * 2;
-                var step = pi2 / tessellation;
+                var step = pi2 / tessellation * arc;
                 var returnRadius = function (i, distance) { return radius; };
                 var radiusFunctionFinal = radiusFunction || returnRadius;
                 var circlePath;
@@ -1770,23 +1776,26 @@ var BABYLON;
             var path3D;
             var pathArray;
             if (instance) {
+                arc = arc || instance.arc;
                 path3D = (instance.path3D).update(path);
-                pathArray = tubePathArray(path, path3D, instance.pathArray, radius, instance.tessellation, radiusFunction, instance.cap);
+                pathArray = tubePathArray(path, path3D, instance.pathArray, radius, instance.tessellation, radiusFunction, instance.cap, arc);
                 instance = Mesh.CreateRibbon(null, { pathArray: pathArray, instance: instance });
                 instance.path3D = path3D;
                 instance.pathArray = pathArray;
+                instance.arc = arc;
                 return instance;
             }
             // tube creation
             path3D = new BABYLON.Path3D(path);
             var newPathArray = new Array();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
-            pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap);
+            pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, arc);
             var tube = Mesh.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation }, scene);
             tube.pathArray = pathArray;
             tube.path3D = path3D;
             tube.tessellation = tessellation;
             tube.cap = cap;
+            tube.arc = arc;
             return tube;
         };
         Mesh.CreateDecal = function (name, sourceMesh, positionOrOptions, normal, size, angle) {

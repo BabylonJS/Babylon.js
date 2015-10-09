@@ -11,6 +11,7 @@
     - _Slice_ feature in `Mesh.CreateSphere()` ([jerome](https://github.com/jbousquie))
     - `closed` parameter in `Mesh.CreateLathe()` ([jerome](https://github.com/jbousquie))
     - `Material.dispose()` now removes disposed material from meshes ([deltakosh](https://github.com/deltakosh))
+    - New `Material.getBindedMeshes()` function ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**
     - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
     - Fixed Sphere texture coordinates generation ([deltakosh](https://github.com/deltakosh))
