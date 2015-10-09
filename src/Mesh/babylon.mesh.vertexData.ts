@@ -755,12 +755,13 @@
         }
 
         // Cylinder and cone 
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
             var diameterBottom: number = options.diameterBottom || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
             var faceColors: Color4[] = options.faceColors;
@@ -780,7 +781,7 @@
             var uvs = [];
             var colors = [];
 
-            var angle_step = Math.PI * 2 / tessellation;
+            var angle_step = Math.PI * 2 * arc / tessellation;
             var angle: number;
             var h: number;
             var radius: number;
@@ -838,9 +839,7 @@
                 if (radius === 0) {
                     return;
                 }
-                var vbase = positions.length / 3;
-                var offset = new Vector3(0, isTop ? height / 2 : -height / 2, 0);
-                var textureScale = new Vector2(0.5, 0.5);
+
                 // Cap positions, normals & uvs
                 var angle;
                 var circleVector;
@@ -850,12 +849,25 @@
                 if (faceColors) {
                     c = (isTop) ? faceColors[2] : faceColors[0];
                 }
-                for (i = 0; i < tessellation; i++) {
-                    angle = Math.PI * 2 * i / tessellation;
-                    circleVector = new Vector3(Math.cos(-angle), 0, Math.sin(-angle));
-                    var position = circleVector.scale(radius).add(offset);
-                    var textureCoordinate = new Vector2(circleVector.x * textureScale.x + 0.5, circleVector.z * textureScale.y + 0.5);
-                    positions.push(position.x, position.y, position.z);
+                // cap center
+                var vbase = positions.length / 3;
+                var offset = isTop ? height / 2 : -height / 2;
+                var center = new Vector3(0, offset , 0);
+                positions.push(center.x, center.y, center.z);
+                normals.push(0, isTop ? 1 : -1, 0);
+                uvs.push(u.x + (u.z - u.x) * 0.5, u.y + (u.w - u.y) * 0.5);
+                if (faceColors) {
+                        colors.push(c.r, c.g, c.b, c.a);
+                }
+    
+                var textureScale = new Vector2(0.5, 0.5);
+                for (i = 0; i <= tessellation; i++) {
+                    angle = Math.PI * 2 * i * arc / tessellation;
+                    var cos = Math.cos(-angle);
+                    var sin = Math.sin(-angle);
+                    circleVector = new Vector3(cos * radius, offset, sin * radius);
+                    var textureCoordinate = new Vector2(cos * textureScale.x + 0.5, sin * textureScale.y + 0.5);
+                    positions.push(circleVector.x, circleVector.y, circleVector.z);
                     normals.push(0, isTop ? 1 : -1, 0);
                     uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, u.y + (u.w - u.y) * textureCoordinate.y);
                     if (faceColors) {
@@ -863,23 +875,23 @@
                     }
                 }
                 // Cap indices
-                for (i = 0; i < tessellation - 2; i++) {
+                for (i = 0; i < tessellation; i++) {
                     if (!isTop) {
                         indices.push(vbase);
-                        indices.push(vbase + (i + 1) % tessellation);
-                        indices.push(vbase + (i + 2) % tessellation);
+                        indices.push(vbase + (i + 1));
+                        indices.push(vbase + (i + 2));
                     }
                     else {
                         indices.push(vbase);
-                        indices.push(vbase + (i + 2) % tessellation);
-                        indices.push(vbase + (i + 1) % tessellation);
+                        indices.push(vbase + (i + 2));
+                        indices.push(vbase + (i + 1));
                     }
                 }
             };
             
             // add caps to geometry
-            createCylinderCap(true);
             createCylinderCap(false);
+            createCylinderCap(true);
 
             // Sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
