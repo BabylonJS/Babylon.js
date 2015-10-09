@@ -813,9 +813,9 @@
                     }
                     positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                     normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(faceUV[0].x + (faceUV[0].z - faceUV[0].x) * j / tessellation, faceUV[0].y + (faceUV[0].w - faceUV[0].y) * h);
+                    uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
                     if (faceColors) {
-                        colors.push(faceColors[0].r, faceColors[0].g, faceColors[0].b, faceColors[0].a);
+                        colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
                     }
                 }
             }
@@ -845,10 +845,10 @@
                 var angle;
                 var circleVector;
                 var i: number;
-                var u: Vector4 = (isTop) ? faceUV[1] : faceUV[2];
+                var u: Vector4 = (isTop) ? faceUV[2] : faceUV[0];
                 var c: Color4;
                 if (faceColors) {
-                    c = (isTop) ? faceColors[1] : faceColors[2];
+                    c = (isTop) ? faceColors[2] : faceColors[0];
                 }
                 for (i = 0; i < tessellation; i++) {
                     angle = Math.PI * 2 * i / tessellation;
