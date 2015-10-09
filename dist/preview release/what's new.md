@@ -7,6 +7,9 @@
     - New `Material.sideOrientation` property to define clockwise or counter-clockwise faces selection. [Demo here](http://www.babylonjs-playground.com/#1TZJQY) ([deltakosh](https://github.com/deltakosh))
     - It is now possible to create a custom loading screen [PR](https://github.com/BabylonJS/Babylon.js/pull/700) ([RaananW](https://github.com/RaananW))
     - Per face color and texture feature in `Mesh.CreateCylinder()` ([jerome](https://github.com/jbousquie))
+    - Arc feature in `CreateCylinder`, `CreateSphere`, `CreateTube` and `CreateLathe` ([jerome](https://github.com/jbousquie))
+    - Slice feature in `Mesh.CreateSphere()` ([jerome](https://github.com/jbousquie))
+    - `closed` parameter in `Mesh.CreateLathe()` ([jerome](https://github.com/jbousquie))
     - `Material.dispose()` now removes disposed material from meshes ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**
     - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
