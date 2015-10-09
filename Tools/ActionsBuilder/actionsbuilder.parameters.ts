@@ -65,7 +65,7 @@
             var booleanSelect: HTMLSelectElement = null;
             var propertyInput: HTMLInputElement = null;
 
-            var propertyPathIndice = 0;
+            var propertyPathIndice = -1;
 
             if (properties.length === 0) {
                 return;
@@ -199,7 +199,7 @@
                     // Configure event
                     propertyInput.onkeyup = this._propertyInputChanged(propertyInput, i);
 
-                    if (properties[i].text === "value") {
+                    if (propertyPathIndice !== -1 && properties[i].text === "value") {
                         propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, booleanSelect, propertyInput, propertyPathIndice);
                     }
 
