@@ -103,4 +103,7 @@ this.run = () => {
 
     list.createListsElements();
     list.onResize();
+
+    // 3ds Max fix
+    viewer.onResize();
 };

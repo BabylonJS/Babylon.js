@@ -430,7 +430,8 @@ var ActionsBuilder;
                         alert("Please add a trigger before.");
                         return;
                     }
-                    if (element.type === ActionsBuilder.Type.FLOW_CONTROL && (dragResult.action === _this._viewer.root || (dragResult.action.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    //if (element.type === Type.FLOW_CONTROL && (dragResult.action === this._viewer.root || (dragResult.action.type === Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    if (element.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action === _this._viewer.root) {
                         return;
                     }
                     if (element.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action.combineArray !== null) {
@@ -554,6 +555,8 @@ this.run = function () {
     list.setColorTheme("rgb(64, 64, 64)");
     list.createListsElements();
     list.onResize();
+    // 3ds Max fix
+    viewer.onResize();
 };
 var ActionsBuilder;
 (function (ActionsBuilder) {
@@ -607,7 +610,7 @@ var ActionsBuilder;
             var propertyPathOptionalSelect = null;
             var booleanSelect = null;
             var propertyInput = null;
-            var propertyPathIndice = 0;
+            var propertyPathIndice = -1;
             if (properties.length === 0) {
                 return;
             }
@@ -718,7 +721,7 @@ var ActionsBuilder;
                     this.parametersContainer.appendChild(propertyInput);
                     // Configure event
                     propertyInput.onkeyup = this._propertyInputChanged(propertyInput, i);
-                    if (properties[i].text === "value") {
+                    if (propertyPathIndice !== -1 && properties[i].text === "value") {
                         propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, booleanSelect, propertyInput, propertyPathIndice);
                     }
                     if (isBoolean) {

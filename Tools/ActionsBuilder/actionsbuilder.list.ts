@@ -273,7 +273,8 @@
                         return;
                     }
 
-                    if (element.type === Type.FLOW_CONTROL && (dragResult.action === this._viewer.root || (dragResult.action.type === Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    //if (element.type === Type.FLOW_CONTROL && (dragResult.action === this._viewer.root || (dragResult.action.type === Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    if (element.type === Type.FLOW_CONTROL && dragResult.action === this._viewer.root) {
                         return;
                     }
 
