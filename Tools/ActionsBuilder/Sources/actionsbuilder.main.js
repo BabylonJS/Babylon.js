@@ -96,5 +96,7 @@ this.run = function () {
     list.setColorTheme("rgb(64, 64, 64)");
     list.createListsElements();
     list.onResize();
+    // 3ds Max fix
+    viewer.onResize();
 };
 //# sourceMappingURL=actionsbuilder.main.js.map

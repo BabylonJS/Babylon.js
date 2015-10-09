@@ -50,7 +50,7 @@ var ActionsBuilder;
             var propertyPathOptionalSelect = null;
             var booleanSelect = null;
             var propertyInput = null;
-            var propertyPathIndice = 0;
+            var propertyPathIndice = -1;
             if (properties.length === 0) {
                 return;
             }
@@ -161,7 +161,7 @@ var ActionsBuilder;
                     this.parametersContainer.appendChild(propertyInput);
                     // Configure event
                     propertyInput.onkeyup = this._propertyInputChanged(propertyInput, i);
-                    if (properties[i].text === "value") {
+                    if (propertyPathIndice !== -1 && properties[i].text === "value") {
                         propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, booleanSelect, propertyInput, propertyPathIndice);
                     }
                     if (isBoolean) {
