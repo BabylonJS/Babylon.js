@@ -1775,10 +1775,13 @@
 
         // Lathe
         public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
-        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh;
+        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, arc?: number, closed: boolean, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh;
         public static CreateLathe(name: string, options: any, radiusOrScene: any, tessellation?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE): Mesh {
             var shape: Vector3[];
             var radius: number;
+            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var closed: boolean = (options.closed === undefined) ? true : options.closed;
+
             if (Array.isArray(options)) {
                 shape = options;
                 radius = radiusOrScene || 1;
@@ -1806,19 +1809,21 @@
             }
 
             // circle path
-            var step = pi2 / tessellation;
+            var step = pi2 / tessellation * arc;
             var rotated;
             var path = new Array<Vector3>();;
-            for (i = 0; i < tessellation; i++) {
+            for (i = 0; i <= tessellation; i++) {
                 rotated = new Vector3(Math.cos(i * step) * radius, 0, Math.sin(i * step) * radius);
                 path.push(rotated);
             }
-            path.push(path[0]);
+            if (closed) {
+                path.push(path[0]);
+            }
 
             // extrusion
             var scaleFunction = () => { return 1; };
             var rotateFunction = () => { return 0; };
-            var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, true, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
+            var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, closed, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
             return lathe;
         }
 
