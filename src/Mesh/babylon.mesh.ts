@@ -1974,7 +1974,7 @@
         public static CreateTube(name: string, options: any, radiusOrScene: any, tessellation?: number, radiusFunction?: { (i: number, distance: number): number; }, cap?: number, scene?: Scene, updatable?: boolean, sideOrientation: number = Mesh.DEFAULTSIDE, instance: Mesh = null): Mesh {
             var path: Vector3[];
             var radius: number;
-            var arc: number;
+            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;;
             if (Array.isArray(options)) {
                 path = options;
                 radius = radiusOrScene;
@@ -2062,7 +2062,6 @@
 
             }
             // tube creation
-            arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0
             path3D = <any>new Path3D(path);
             var newPathArray = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
