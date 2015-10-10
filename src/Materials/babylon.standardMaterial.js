@@ -796,10 +796,18 @@ var BABYLON;
             newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
             newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newStandardMaterial.roughness = this.roughness;
-            newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
-            newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
-            newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
-            newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
+            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.clone) {
+                newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
+            }
+            if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.clone) {
+                newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
+            }
+            if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.clone) {
+                newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
+            }
+            if (this.opacityFresnelParameters && this.opacityFresnelParameters.clone) {
+                newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
+            }
             return newStandardMaterial;
         };
         // Statics
