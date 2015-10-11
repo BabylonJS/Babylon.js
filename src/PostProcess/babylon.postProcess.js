@@ -36,8 +36,8 @@ var BABYLON;
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
             var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
             var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
-            desiredWidth = this._renderRatio.width || BABYLON.Tools.GetExponantOfTwo(desiredWidth, maxSize);
-            desiredHeight = this._renderRatio.height || BABYLON.Tools.GetExponantOfTwo(desiredHeight, maxSize);
+            desiredWidth = this._renderRatio.width || BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
+            desiredHeight = this._renderRatio.height || BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {

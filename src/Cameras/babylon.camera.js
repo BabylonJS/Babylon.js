@@ -466,7 +466,7 @@ var BABYLON;
                     this._rigCameras[0]._cameraRigParams.vrHMatrix = metrics.leftHMatrix;
                     this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
                     this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
-                    if (metrics.compensateDistorsion) {
+                    if (metrics.compensateDistortion) {
                         postProcesses.push(new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics));
                     }
                     this._rigCameras[1]._cameraRigParams.vrMetrics = this._rigCameras[0]._cameraRigParams.vrMetrics;
@@ -475,7 +475,7 @@ var BABYLON;
                     this._rigCameras[1]._cameraRigParams.vrHMatrix = metrics.rightHMatrix;
                     this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
-                    if (metrics.compensateDistorsion) {
+                    if (metrics.compensateDistortion) {
                         postProcesses.push(new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics));
                     }
                     break;

@@ -15,7 +15,7 @@
             this.video.loop = true;
 
             this.video.addEventListener("canplaythrough", () => {
-                if (Tools.IsExponantOfTwo(this.video.videoWidth) && Tools.IsExponantOfTwo(this.video.videoHeight)) {
+                if (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight)) {
                     this.wrapU = Texture.WRAP_ADDRESSMODE;
                     this.wrapV = Texture.WRAP_ADDRESSMODE;
                 } else {

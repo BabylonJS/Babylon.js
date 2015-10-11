@@ -311,7 +311,7 @@
                     } else {
                         needUVs = true;
                         this._defines.SPECULAR = true;
-                        this._defines.GLOSSINESS = this.useGlossinessFromSpecularMapAlpha;    
+                        this._defines.GLOSSINESS = this.useGlossinessFromSpecularMapAlpha;
                     }
                 }
             }
@@ -355,7 +355,7 @@
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
             }
-            
+
             var lightIndex = 0;
             if (scene.lightsEnabled) {
                 for (var index = 0; index < scene.lights.length; index++) {
@@ -410,7 +410,7 @@
 
                     // Specular
                     if (!light.specular.equalsFloats(0, 0, 0)) {
-                        this. _defines.SPECULARTERM = true;
+                        this._defines.SPECULARTERM = true;
                     }
 
                     // Shadows
@@ -574,7 +574,7 @@
                 if (this._defines.FRESNEL) {
                     fallbacks.addFallback(4, "FRESNEL");
                 }
-                
+
                 if (this._defines.BONES4) {
                     fallbacks.addFallback(0, "BONES4");
                 }
@@ -845,7 +845,7 @@
             }
 
             // View
-            if (scene.fogEnabled && mesh.applyFog &&scene.fogMode !== Scene.FOGMODE_NONE || this.reflectionTexture) {
+            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this.reflectionTexture) {
                 this._effect.setMatrix("view", scene.getViewMatrix());
             }
 
@@ -999,3 +999,4 @@
         public static LightmapEnabled = true;
     }
 } 
+

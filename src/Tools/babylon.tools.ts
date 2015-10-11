@@ -48,7 +48,7 @@
             }
         }
 
-        public static IsExponantOfTwo(value: number): boolean {
+        public static IsExponentOfTwo(value: number): boolean {
             var count = 1;
 
             do {
@@ -58,7 +58,7 @@
             return count === value;
         }
 
-        public static GetExponantOfTwo(value: number, max: number): number {
+        public static GetExponentOfTwo(value: number, max: number): number {
             var count = 1;
 
             do {

@@ -294,8 +294,8 @@ var BABYLON;
     var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
         if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
-        var potWidth = BABYLON.Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = BABYLON.Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = BABYLON.Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
         texture._baseWidth = width;
@@ -1496,8 +1496,8 @@ var BABYLON;
             texture._baseWidth = width;
             texture._baseHeight = height;
             if (forceExponantOfTwo) {
-                width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-                height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+                width = BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
+                height = BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
             this._activeTexturesCache = [];
             texture._width = width;
@@ -1718,7 +1718,7 @@ var BABYLON;
             }
             else {
                 cascadeLoad(rootUrl, scene, function (imgs) {
-                    var width = BABYLON.Tools.GetExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
+                    var width = BABYLON.Tools.GetExponentOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
                     var height = width;
                     _this._prepareWorkingCanvas();
                     _this._workingCanvas.width = width;

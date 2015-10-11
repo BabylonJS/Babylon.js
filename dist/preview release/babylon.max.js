@@ -4302,14 +4302,14 @@ var BABYLON;
                 setTimeout(action, 1);
             }
         };
-        Tools.IsExponantOfTwo = function (value) {
+        Tools.IsExponentOfTwo = function (value) {
             var count = 1;
             do {
                 count *= 2;
             } while (count < value);
             return count === value;
         };
-        Tools.GetExponantOfTwo = function (value, max) {
+        Tools.GetExponentOfTwo = function (value, max) {
             var count = 1;
             do {
                 count *= 2;
@@ -5409,8 +5409,8 @@ var BABYLON;
     var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
         if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
-        var potWidth = BABYLON.Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = BABYLON.Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = BABYLON.Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
         texture._baseWidth = width;
@@ -6611,8 +6611,8 @@ var BABYLON;
             texture._baseWidth = width;
             texture._baseHeight = height;
             if (forceExponantOfTwo) {
-                width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-                height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+                width = BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
+                height = BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
             this._activeTexturesCache = [];
             texture._width = width;
@@ -6833,7 +6833,7 @@ var BABYLON;
             }
             else {
                 cascadeLoad(rootUrl, scene, function (imgs) {
-                    var width = BABYLON.Tools.GetExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
+                    var width = BABYLON.Tools.GetExponentOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
                     var height = width;
                     _this._prepareWorkingCanvas();
                     _this._workingCanvas.width = width;
@@ -10378,7 +10378,7 @@ var BABYLON;
                     this._rigCameras[0]._cameraRigParams.vrHMatrix = metrics.leftHMatrix;
                     this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
                     this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
-                    if (metrics.compensateDistorsion) {
+                    if (metrics.compensateDistortion) {
                         postProcesses.push(new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics));
                     }
                     this._rigCameras[1]._cameraRigParams.vrMetrics = this._rigCameras[0]._cameraRigParams.vrMetrics;
@@ -10387,7 +10387,7 @@ var BABYLON;
                     this._rigCameras[1]._cameraRigParams.vrHMatrix = metrics.rightHMatrix;
                     this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
-                    if (metrics.compensateDistorsion) {
+                    if (metrics.compensateDistortion) {
                         postProcesses.push(new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics));
                     }
                     break;
@@ -18041,7 +18041,7 @@ var BABYLON;
             this.video.autoplay = false;
             this.video.loop = true;
             this.video.addEventListener("canplaythrough", function () {
-                if (BABYLON.Tools.IsExponantOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponantOfTwo(_this.video.videoHeight)) {
+                if (BABYLON.Tools.IsExponentOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(_this.video.videoHeight)) {
                     _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
                     _this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
                 }
@@ -19994,10 +19994,18 @@ var BABYLON;
             newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
             newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newStandardMaterial.roughness = this.roughness;
-            newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
-            newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
-            newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
-            newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
+            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.clone) {
+                newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
+            }
+            if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.clone) {
+                newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
+            }
+            if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.clone) {
+                newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
+            }
+            if (this.opacityFresnelParameters && this.opacityFresnelParameters.clone) {
+                newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
+            }
             return newStandardMaterial;
         };
         // Statics
@@ -23508,8 +23516,8 @@ var BABYLON;
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
             var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
             var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
-            desiredWidth = this._renderRatio.width || BABYLON.Tools.GetExponantOfTwo(desiredWidth, maxSize);
-            desiredHeight = this._renderRatio.height || BABYLON.Tools.GetExponantOfTwo(desiredHeight, maxSize);
+            desiredWidth = this._renderRatio.width || BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
+            desiredHeight = this._renderRatio.height || BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
