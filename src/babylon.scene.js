@@ -308,11 +308,15 @@ var BABYLON;
         // Pointers handling
         Scene.prototype.attachControl = function () {
             var _this = this;
+            var spritePredicate = function (sprite) {
+                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPickTriggers;
+            };
             this._onPointerMove = function (evt) {
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
+                // Meshes
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady(); }, false, _this.cameraToUseForPointers);
-                if (pickResult.hit) {
+                if (pickResult.hit && pickResult.pickedMesh) {
                     _this._meshUnderPointer = pickResult.pickedMesh;
                     _this.setPointerOverMesh(pickResult.pickedMesh);
                     if (_this._meshUnderPointer.actionManager && _this._meshUnderPointer.actionManager.hasPointerTriggers) {
@@ -323,21 +327,29 @@ var BABYLON;
                     }
                 }
                 else {
+                    // Sprites
+                    pickResult = _this.pickSprite(_this._pointerX, _this._pointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        canvas.style.cursor = "pointer";
+                        return;
+                    }
+                    // Restore pointer
                     _this.setPointerOverMesh(null);
                     canvas.style.cursor = "";
                     _this._meshUnderPointer = null;
                 }
             };
             this._onPointerDown = function (evt) {
+                _this._updatePointerPosition(evt);
                 var predicate = null;
+                // Meshes
                 if (!_this.onPointerDown) {
                     predicate = function (mesh) {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPickTriggers;
                     };
                 }
-                _this._updatePointerPosition(evt);
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
-                if (pickResult.hit) {
+                if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.button) {
                             case 0:
@@ -356,23 +368,53 @@ var BABYLON;
                 if (_this.onPointerDown) {
                     _this.onPointerDown(evt, pickResult);
                 }
+                // Sprites
+                if (_this.spriteManagers.length > 0) {
+                    pickResult = _this.pickSprite(_this._pointerX, _this._pointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        if (pickResult.pickedSprite.actionManager) {
+                            switch (evt.button) {
+                                case 0:
+                                    pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                                    break;
+                                case 1:
+                                    pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                                    break;
+                                case 2:
+                                    pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                                    break;
+                            }
+                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                        }
+                    }
+                }
             };
             this._onPointerUp = function (evt) {
                 var predicate = null;
+                _this._updatePointerPosition(evt);
                 if (!_this.onPointerUp) {
                     predicate = function (mesh) {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickUpTrigger);
                     };
                 }
-                _this._updatePointerPosition(evt);
+                // Meshes
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
-                if (pickResult.hit) {
+                if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
                 if (_this.onPointerUp) {
                     _this.onPointerUp(evt, pickResult);
+                }
+                // Sprites
+                if (_this.spriteManagers.length > 0) {
+                    pickResult = _this.pickSprite(_this._pointerX, _this._pointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        if (pickResult.pickedSprite.actionManager) {
+                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                        }
+                    }
                 }
             };
             this._onKeyDown = function (evt) {
@@ -1665,6 +1707,28 @@ var BABYLON;
             }
             return pickingInfo || new BABYLON.PickingInfo();
         };
+        Scene.prototype._internalPickSprites = function (rayFunction, predicate, fastCheck) {
+            var pickingInfo = null;
+            if (this.spriteManagers.length > 0) {
+                var ray = rayFunction(BABYLON.Matrix.Identity());
+                for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
+                    var spriteManager = this.spriteManagers[spriteIndex];
+                    if (!spriteManager.isPickable) {
+                        continue;
+                    }
+                    var result = spriteManager.intersects(ray, predicate, fastCheck);
+                    if (!result || !result.hit)
+                        continue;
+                    if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
+                        continue;
+                    pickingInfo = result;
+                    if (fastCheck) {
+                        break;
+                    }
+                }
+            }
+            return pickingInfo || new BABYLON.PickingInfo();
+        };
         Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
             var _this = this;
             /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
@@ -1674,6 +1738,16 @@ var BABYLON;
             /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
             /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate, fastCheck);
+        };
+        Scene.prototype.pickSprite = function (x, y, predicate, fastCheck, camera) {
+            var _this = this;
+            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+            /// <param name="x">X position on screen</param>
+            /// <param name="y">Y position on screen</param>
+            /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
+            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+            return this._internalPickSprites(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate, fastCheck);
         };
         Scene.prototype.pickWithRay = function (ray, predicate, fastCheck) {
             var _this = this;

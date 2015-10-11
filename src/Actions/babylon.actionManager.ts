@@ -6,23 +6,33 @@
     export class ActionEvent {
         /**
          * @constructor
-         * @param source The mesh that triggered the action.
-         * @param pointerX the X mouse cursor position at the time of the event
-         * @param pointerY the Y mouse cursor position at the time of the event
+         * @param source The mesh or sprite that triggered the action.
+         * @param pointerX The X mouse cursor position at the time of the event
+         * @param pointerY The Y mouse cursor position at the time of the event
          * @param meshUnderPointer The mesh that is currently pointed at (can be null)
          * @param sourceEvent the original (browser) event that triggered the ActionEvent
          */
-        constructor(public source: AbstractMesh, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh, public sourceEvent?: any, public additionalData?: any) {
+        constructor(public source: any, public pointerX: number, public pointerY: number, public meshUnderPointer: AbstractMesh, public sourceEvent?: any, public additionalData?: any) {
 
         }
 
         /**
          * Helper function to auto-create an ActionEvent from a source mesh.
-         * @param source the source mesh that triggered the event
+         * @param source The source mesh that triggered the event
          * @param evt {Event} The original (browser) event
          */
         public static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent {
             var scene = source.getScene();
+            return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt, additionalData);
+        }
+
+        /**
+         * Helper function to auto-create an ActionEvent from a source mesh.
+         * @param source The source sprite that triggered the event
+         * @param scene Scene associated with the sprite
+         * @param evt {Event} The original (browser) event
+         */
+        public static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: Event, additionalData?: any): ActionEvent {
             return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt, additionalData);
         }
 
@@ -175,7 +185,7 @@
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
                     return true;
                 }
-                if (action.trigger == ActionManager._OnPickUpTrigger) {
+                if (action.trigger === ActionManager._OnPickUpTrigger) {
                     return true;
                 }
             }
@@ -192,6 +202,9 @@
                 var action = this.actions[index];
 
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
+                    return true;
+                }
+                if (action.trigger === ActionManager._OnPickUpTrigger) {
                     return true;
                 }
             }

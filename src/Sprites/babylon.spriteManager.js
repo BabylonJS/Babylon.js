@@ -9,6 +9,7 @@ var BABYLON;
             this.renderingGroupId = 0;
             this.layerMask = 0x0FFFFFFF;
             this.fogEnabled = true;
+            this.isPickable = false;
             this._vertexDeclaration = [4, 4, 4, 4];
             this._vertexStrideSize = 16 * 4; // 15 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
             this._capacity = capacity;
@@ -65,6 +66,47 @@ var BABYLON;
             this._vertices[arrayOffset + 13] = sprite.color.g;
             this._vertices[arrayOffset + 14] = sprite.color.b;
             this._vertices[arrayOffset + 15] = sprite.color.a;
+        };
+        SpriteManager.prototype.intersects = function (ray, predicate, fastCheck) {
+            var count = Math.min(this._capacity, this.sprites.length);
+            var min = BABYLON.Vector3.Zero();
+            var max = BABYLON.Vector3.Zero();
+            var distance = Number.MAX_VALUE;
+            var currentSprite;
+            for (var index = 0; index < count; index++) {
+                var sprite = this.sprites[index];
+                if (!sprite) {
+                    continue;
+                }
+                if (predicate) {
+                    if (!predicate(sprite)) {
+                        continue;
+                    }
+                }
+                else if (!sprite.isPickable) {
+                    continue;
+                }
+                min.copyFromFloats(sprite.position.x - sprite.width / 2, sprite.position.y - sprite.height / 2, sprite.position.z);
+                max.copyFromFloats(sprite.position.x + sprite.width / 2, sprite.position.y + sprite.height / 2, sprite.position.z);
+                if (ray.intersectsBoxMinMax(min, max)) {
+                    var currentDistance = BABYLON.Vector3.Distance(sprite.position, ray.origin);
+                    if (distance > currentDistance) {
+                        distance = currentDistance;
+                        currentSprite = sprite;
+                        if (fastCheck) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (currentSprite) {
+                var result = new BABYLON.PickingInfo();
+                result.hit = true;
+                result.pickedSprite = currentSprite;
+                result.distance = distance;
+                return result;
+            }
+            return null;
         };
         SpriteManager.prototype.render = function () {
             // Check
