@@ -67,12 +67,14 @@ var BABYLON;
             this._vertices[arrayOffset + 14] = sprite.color.b;
             this._vertices[arrayOffset + 15] = sprite.color.a;
         };
-        SpriteManager.prototype.intersects = function (ray, predicate, fastCheck) {
+        SpriteManager.prototype.intersects = function (ray, camera, predicate, fastCheck) {
             var count = Math.min(this._capacity, this.sprites.length);
             var min = BABYLON.Vector3.Zero();
             var max = BABYLON.Vector3.Zero();
             var distance = Number.MAX_VALUE;
             var currentSprite;
+            var cameraSpacePosition = BABYLON.Vector3.Zero();
+            var cameraView = camera.getViewMatrix();
             for (var index = 0; index < count; index++) {
                 var sprite = this.sprites[index];
                 if (!sprite) {
@@ -86,10 +88,11 @@ var BABYLON;
                 else if (!sprite.isPickable) {
                     continue;
                 }
-                min.copyFromFloats(sprite.position.x - sprite.width / 2, sprite.position.y - sprite.height / 2, sprite.position.z);
-                max.copyFromFloats(sprite.position.x + sprite.width / 2, sprite.position.y + sprite.height / 2, sprite.position.z);
+                BABYLON.Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
+                min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
+                max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
                 if (ray.intersectsBoxMinMax(min, max)) {
-                    var currentDistance = BABYLON.Vector3.Distance(sprite.position, ray.origin);
+                    var currentDistance = BABYLON.Vector3.Distance(cameraSpacePosition, ray.origin);
                     if (distance > currentDistance) {
                         distance = currentDistance;
                         currentSprite = sprite;

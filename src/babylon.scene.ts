@@ -2093,7 +2093,7 @@
         }
 
         // Picking
-        public createPickingRay(x: number, y: number, world: Matrix, camera: Camera): Ray {
+        public createPickingRay(x: number, y: number, world: Matrix, camera: Camera, cameraViewSpace = false): Ray {
             var engine = this._engine;
 
             if (!camera) {
@@ -2109,8 +2109,28 @@
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            return Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : Matrix.Identity(), cameraViewSpace ? Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
             //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+        }
+
+        public createPickingRayInCameraSpace(x: number, y: number, camera: Camera): Ray {
+            var engine = this._engine;
+
+            if (!camera) {
+                if (!this.activeCamera)
+                    throw new Error("Active camera not set");
+
+                camera = this.activeCamera;
+            }
+
+            var cameraViewport = camera.viewport;
+            var viewport = cameraViewport.toGlobal(engine);
+            var identity = Matrix.Identity();
+
+            // Moving coordinates to local viewport world
+            x = x / this._engine.getHardwareScalingLevel() - viewport.x;
+            y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
+            return Ray.CreateNew(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
         }
 
         private _internalPick(rayFunction: (world: Matrix) => Ray, predicate: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): PickingInfo {
@@ -2148,12 +2168,12 @@
         }
 
 
-        private _internalPickSprites(rayFunction: (world: Matrix) => Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo {
+        private _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
             var pickingInfo = null;
 
-            if (this.spriteManagers.length > 0) {
-                var ray = rayFunction(Matrix.Identity());
+            camera = camera || this.activeCamera;
 
+            if (this.spriteManagers.length > 0) {
                 for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
                     var spriteManager = this.spriteManagers[spriteIndex];
 
@@ -2161,7 +2181,7 @@
                         continue;
                     }
 
-                    var result = spriteManager.intersects(ray, predicate, fastCheck);
+                    var result = spriteManager.intersects(ray, camera, predicate, fastCheck);
                     if (!result || !result.hit)
                         continue;
 
@@ -2196,7 +2216,7 @@
             /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
             /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
             /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
-            return this._internalPickSprites(world => this.createPickingRay(x, y, world, camera), predicate, fastCheck);
+            return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
         }
 
         public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean) {

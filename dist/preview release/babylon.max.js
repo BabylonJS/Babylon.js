@@ -14205,7 +14205,8 @@ var BABYLON;
             return this._selectionOctree;
         };
         // Picking
-        Scene.prototype.createPickingRay = function (x, y, world, camera) {
+        Scene.prototype.createPickingRay = function (x, y, world, camera, cameraViewSpace) {
+            if (cameraViewSpace === void 0) { cameraViewSpace = false; }
             var engine = this._engine;
             if (!camera) {
                 if (!this.activeCamera)
@@ -14217,8 +14218,23 @@ var BABYLON;
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), cameraViewSpace ? BABYLON.Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
             //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+        };
+        Scene.prototype.createPickingRayInCameraSpace = function (x, y, camera) {
+            var engine = this._engine;
+            if (!camera) {
+                if (!this.activeCamera)
+                    throw new Error("Active camera not set");
+                camera = this.activeCamera;
+            }
+            var cameraViewport = camera.viewport;
+            var viewport = cameraViewport.toGlobal(engine);
+            var identity = BABYLON.Matrix.Identity();
+            // Moving coordinates to local viewport world
+            x = x / this._engine.getHardwareScalingLevel() - viewport.x;
+            y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
+            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
         };
         Scene.prototype._internalPick = function (rayFunction, predicate, fastCheck) {
             var pickingInfo = null;
@@ -14246,16 +14262,16 @@ var BABYLON;
             }
             return pickingInfo || new BABYLON.PickingInfo();
         };
-        Scene.prototype._internalPickSprites = function (rayFunction, predicate, fastCheck) {
+        Scene.prototype._internalPickSprites = function (ray, predicate, fastCheck, camera) {
             var pickingInfo = null;
+            camera = camera || this.activeCamera;
             if (this.spriteManagers.length > 0) {
-                var ray = rayFunction(BABYLON.Matrix.Identity());
                 for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
                     var spriteManager = this.spriteManagers[spriteIndex];
                     if (!spriteManager.isPickable) {
                         continue;
                     }
-                    var result = spriteManager.intersects(ray, predicate, fastCheck);
+                    var result = spriteManager.intersects(ray, camera, predicate, fastCheck);
                     if (!result || !result.hit)
                         continue;
                     if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
@@ -14279,14 +14295,13 @@ var BABYLON;
             return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate, fastCheck);
         };
         Scene.prototype.pickSprite = function (x, y, predicate, fastCheck, camera) {
-            var _this = this;
             /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
             /// <param name="x">X position on screen</param>
             /// <param name="y">Y position on screen</param>
             /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
             /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
             /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
-            return this._internalPickSprites(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate, fastCheck);
+            return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
         };
         Scene.prototype.pickWithRay = function (ray, predicate, fastCheck) {
             var _this = this;
@@ -21834,12 +21849,14 @@ var BABYLON;
             this._vertices[arrayOffset + 14] = sprite.color.b;
             this._vertices[arrayOffset + 15] = sprite.color.a;
         };
-        SpriteManager.prototype.intersects = function (ray, predicate, fastCheck) {
+        SpriteManager.prototype.intersects = function (ray, camera, predicate, fastCheck) {
             var count = Math.min(this._capacity, this.sprites.length);
             var min = BABYLON.Vector3.Zero();
             var max = BABYLON.Vector3.Zero();
             var distance = Number.MAX_VALUE;
             var currentSprite;
+            var cameraSpacePosition = BABYLON.Vector3.Zero();
+            var cameraView = camera.getViewMatrix();
             for (var index = 0; index < count; index++) {
                 var sprite = this.sprites[index];
                 if (!sprite) {
@@ -21853,10 +21870,11 @@ var BABYLON;
                 else if (!sprite.isPickable) {
                     continue;
                 }
-                min.copyFromFloats(sprite.position.x - sprite.width / 2, sprite.position.y - sprite.height / 2, sprite.position.z);
-                max.copyFromFloats(sprite.position.x + sprite.width / 2, sprite.position.y + sprite.height / 2, sprite.position.z);
+                BABYLON.Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
+                min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
+                max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
                 if (ray.intersectsBoxMinMax(min, max)) {
-                    var currentDistance = BABYLON.Vector3.Distance(sprite.position, ray.origin);
+                    var currentDistance = BABYLON.Vector3.Distance(cameraSpacePosition, ray.origin);
                     if (distance > currentDistance) {
                         distance = currentDistance;
                         currentSprite = sprite;
@@ -21966,7 +21984,7 @@ var BABYLON;
             this.invertU = 0;
             this.invertV = 0;
             this.animations = new Array();
-            this.isPickable = true;
+            this.isPickable = false;
             this._animationStarted = false;
             this._loopAnimation = false;
             this._fromIndex = 0;
@@ -22578,7 +22596,9 @@ var BABYLON;
         };
         Animation.prototype.clone = function () {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
-            clone.setKeys(this._keys);
+            if (this._keys) {
+                clone.setKeys(this._keys);
+            }
             return clone;
         };
         Animation.prototype.setKeys = function (values) {
