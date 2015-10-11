@@ -443,17 +443,22 @@
 
         // Pointers handling
         public attachControl() {
+            var spritePredicate = (sprite: Sprite): boolean => {
+                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPickTriggers;
+            };
+
             this._onPointerMove = (evt: PointerEvent) => {
                 var canvas = this._engine.getRenderingCanvas();
 
                 this._updatePointerPosition(evt);
 
+                // Meshes
                 var pickResult = this.pick(this._pointerX, this._pointerY,
                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady(),
                     false,
                     this.cameraToUseForPointers);
 
-                if (pickResult.hit) {
+                if (pickResult.hit && pickResult.pickedMesh) {
                     this._meshUnderPointer = pickResult.pickedMesh;
 
                     this.setPointerOverMesh(pickResult.pickedMesh);
@@ -464,6 +469,15 @@
                         canvas.style.cursor = "";
                     }
                 } else {
+                    // Sprites
+                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        canvas.style.cursor = "pointer";
+                        return;
+                    }
+
+                    // Restore pointer
                     this.setPointerOverMesh(null);
                     canvas.style.cursor = "";
                     this._meshUnderPointer = null;
@@ -472,19 +486,19 @@
 
             this._onPointerDown = (evt: PointerEvent) => {
 
+                this._updatePointerPosition(evt);
+
                 var predicate = null;
 
+                // Meshes
                 if (!this.onPointerDown) {
                     predicate = (mesh: AbstractMesh): boolean => {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPickTriggers;
                     };
                 }
-
-                this._updatePointerPosition(evt);
-
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
-                if (pickResult.hit) {
+                if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         switch (evt.button) {
                             case 0:
@@ -504,10 +518,34 @@
                 if (this.onPointerDown) {
                     this.onPointerDown(evt, pickResult);
                 }
+
+                // Sprites
+                if (this.spriteManagers.length > 0) {
+                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        if (pickResult.pickedSprite.actionManager) {
+                            switch (evt.button) {
+                                case 0:
+                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                    break;
+                                case 1:
+                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                    break;
+                                case 2:
+                                    pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                                    break;
+                            }
+                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                        }
+                    }
+                }
             };
             this._onPointerUp = (evt: PointerEvent) => {
 
                 var predicate = null;
+
+                this._updatePointerPosition(evt);
 
                 if (!this.onPointerUp) {
                     predicate = (mesh: AbstractMesh): boolean => {
@@ -515,11 +553,10 @@
                     };
                 }
 
-                this._updatePointerPosition(evt);
-
+                // Meshes
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
-                if (pickResult.hit) {
+                if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
@@ -527,6 +564,17 @@
 
                 if (this.onPointerUp) {
                     this.onPointerUp(evt, pickResult);
+                }
+
+                // Sprites
+                if (this.spriteManagers.length > 0) {
+                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        if (pickResult.pickedSprite.actionManager) {
+                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                        }
+                    }
                 }
             };
 
@@ -2099,6 +2147,38 @@
             return pickingInfo || new PickingInfo();
         }
 
+
+        private _internalPickSprites(rayFunction: (world: Matrix) => Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo {
+            var pickingInfo = null;
+
+            if (this.spriteManagers.length > 0) {
+                var ray = rayFunction(Matrix.Identity());
+
+                for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
+                    var spriteManager = this.spriteManagers[spriteIndex];
+
+                    if (!spriteManager.isPickable) {
+                        continue;
+                    }
+
+                    var result = spriteManager.intersects(ray, predicate, fastCheck);
+                    if (!result || !result.hit)
+                        continue;
+
+                    if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
+                        continue;
+
+                    pickingInfo = result;
+
+                    if (fastCheck) {
+                        break;
+                    }
+                }
+            }
+
+            return pickingInfo || new PickingInfo();
+        }
+
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
             /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
             /// <param name="x">X position on screen</param>
@@ -2107,6 +2187,16 @@
             /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
             /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPick(world => this.createPickingRay(x, y, world, camera), predicate, fastCheck);
+        }
+
+        public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): PickingInfo {
+            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+            /// <param name="x">X position on screen</param>
+            /// <param name="y">Y position on screen</param>
+            /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
+            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+            return this._internalPickSprites(world => this.createPickingRay(x, y, world, camera), predicate, fastCheck);
         }
 
         public pickWithRay(ray: Ray, predicate: (mesh: Mesh) => boolean, fastCheck?: boolean) {
