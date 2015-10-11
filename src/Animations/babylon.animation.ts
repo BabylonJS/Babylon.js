@@ -122,6 +122,7 @@
 
         public clone(): Animation {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
+
             if (this._keys) {
                 clone.setKeys(this._keys);
             }

@@ -95,12 +95,14 @@
             this._vertices[arrayOffset + 15] = sprite.color.a;
         }
 
-        public intersects(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo {
+        public intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo {
             var count = Math.min(this._capacity, this.sprites.length);
             var min = Vector3.Zero();
             var max = Vector3.Zero();
             var distance = Number.MAX_VALUE;
             var currentSprite: Sprite;
+            var cameraSpacePosition = Vector3.Zero();
+            var cameraView = camera.getViewMatrix();
 
             for (var index = 0; index < count; index++) {
                 var sprite = this.sprites[index];
@@ -116,11 +118,13 @@
                     continue;
                 }
 
-                min.copyFromFloats(sprite.position.x - sprite.width / 2, sprite.position.y - sprite.height / 2, sprite.position.z);
-                max.copyFromFloats(sprite.position.x + sprite.width / 2, sprite.position.y + sprite.height / 2, sprite.position.z);
+                Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
+
+                min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
+                max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
 
                 if (ray.intersectsBoxMinMax(min, max)) {
-                    var currentDistance = Vector3.Distance(sprite.position, ray.origin);
+                    var currentDistance = Vector3.Distance(cameraSpacePosition, ray.origin);
 
                     if (distance > currentDistance) {
                         distance = currentDistance;
