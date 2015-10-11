@@ -34,14 +34,14 @@ var BABYLON;
                 setTimeout(action, 1);
             }
         };
-        Tools.IsExponantOfTwo = function (value) {
+        Tools.IsExponentOfTwo = function (value) {
             var count = 1;
             do {
                 count *= 2;
             } while (count < value);
             return count === value;
         };
-        Tools.GetExponantOfTwo = function (value, max) {
+        Tools.GetExponentOfTwo = function (value, max) {
             var count = 1;
             do {
                 count *= 2;

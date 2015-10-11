@@ -304,8 +304,8 @@
     var prepareWebGLTexture = (texture: WebGLTexture, gl: WebGLRenderingContext, scene: Scene, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
         processFunction: (width: number, height: number) => void, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) => {
         var engine = scene.getEngine();
-        var potWidth = Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -1766,8 +1766,8 @@
             texture._baseHeight = height;
 
             if (forceExponantOfTwo) {
-                width = Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-                height = Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+                width = Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
+                height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
 
             this._activeTexturesCache = [];
@@ -2041,7 +2041,7 @@
                 }, null, null, true);
             } else {
                 cascadeLoad(rootUrl, scene, imgs => {
-                    var width = Tools.GetExponantOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
+                    var width = Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize);
                     var height = width;
 
                     this._prepareWorkingCanvas();
