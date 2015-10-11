@@ -96,7 +96,9 @@ var BABYLON;
         };
         Animation.prototype.clone = function () {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
-            clone.setKeys(this._keys);
+            if (this._keys) {
+                clone.setKeys(this._keys);
+            }
             return clone;
         };
         Animation.prototype.setKeys = function (values) {
