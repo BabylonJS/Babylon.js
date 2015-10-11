@@ -19,7 +19,7 @@ var loader = new BABYLON.AssetsManager(scene);
 var batman = loader.addMeshTask("batman", "", "assets/", "batman.obj");
 ```
 ```
-BABYLON.SceneLoader.ImportMesh("batmanface", "batman.obj", scene, function (meshes) { 
+BABYLON.SceneLoader.ImportMesh("batmanface", "", "batman.obj", scene, function (meshes) { 
    // ...
 });
 ```
