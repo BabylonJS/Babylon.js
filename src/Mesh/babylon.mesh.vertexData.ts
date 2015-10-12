@@ -755,10 +755,10 @@
         }
 
         // Cylinder and cone 
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
-            var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
-            var diameterBottom: number = options.diameterBottom || 1;
+            var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
+            var diameterBottom: number = options.diameterBottom || options.diameter || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
             var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
