@@ -18,6 +18,7 @@ var BABYLON;
             this.forcePointsCloud = false;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
+            this.constantlyUpdateMeshUnderPointer = false;
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
             // Fog
             /**
@@ -315,7 +316,7 @@ var BABYLON;
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
                 // Meshes
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady(); }, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); }, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     _this._meshUnderPointer = pickResult.pickedMesh;
                     _this.setPointerOverMesh(pickResult.pickedMesh);

@@ -282,7 +282,6 @@
                         return false;
                     } else {
                         needNormals = true;
-                        needUVs = true;
                         this._defines.REFLECTION = true;
 
                         if (this.roughness > 0) {
