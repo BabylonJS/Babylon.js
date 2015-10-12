@@ -115,9 +115,12 @@ uniform vec2 vOpacityInfos;
 
 #ifdef REFLECTION
 varying vec3 vReflectionUVW;
+#ifdef REFLECTIONMAP_3D
 uniform samplerCube reflectionCubeSampler;
+#else
 uniform sampler2D reflection2DSampler;
-uniform vec3 vReflectionInfos;
+#endif
+uniform vec2 vReflectionInfos;
 #endif
 
 #ifdef EMISSIVE
@@ -522,23 +525,19 @@ void main(void) {
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
 #ifdef REFLECTION
-	if (vReflectionInfos.z != 0.0)
-	{
-		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.y;
-	}
-	else
-	{
+#ifdef REFLECTIONMAP_3D
+		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.x;
+#else
 		vec2 coords = vReflectionUVW.xy;
 
-		if (vReflectionInfos.x == MAP_PROJECTION)
-		{
-			coords /= vReflectionUVW.z;
-		}
+#ifdef REFLECTIONMAP_PROJECTION
+		coords /= vReflectionUVW.z;
+#endif
 
 		coords.y = 1.0 - coords.y;
 
-		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y;
-	}
+		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+#endif
 
 #ifdef REFLECTIONFRESNEL
 	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);

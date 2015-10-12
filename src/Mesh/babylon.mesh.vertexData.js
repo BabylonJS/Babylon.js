@@ -618,8 +618,8 @@ var BABYLON;
         // Cylinder and cone 
         VertexData.CreateCylinder = function (options) {
             var height = options.height || 2;
-            var diameterTop = (options.diameterTop === 0) ? 0 : options.diameterTop || 1;
-            var diameterBottom = options.diameterBottom || 1;
+            var diameterTop = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
+            var diameterBottom = options.diameterBottom || options.diameter || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
             var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;

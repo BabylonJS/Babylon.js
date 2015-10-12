@@ -352,8 +352,9 @@ var BABYLON;
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        function Engine(canvas, antialias, options) {
+        function Engine(canvas, antialias, options, adaptToDeviceRatio) {
             var _this = this;
+            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = true; }
             // Public members
             this.isFullscreen = false;
             this.isPointerLock = false;
@@ -405,7 +406,7 @@ var BABYLON;
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
             // Viewport
-            this._hardwareScalingLevel = 1.0 / (window.devicePixelRatio || 1.0);
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / (window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
             // Caps
             this._caps = new EngineCapabilities();
