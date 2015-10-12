@@ -87,6 +87,13 @@ var BABYLON;
             this.EMISSIVEASILLUMINATION = false;
             this.REFLECTIONFRESNELFROMSPECULAR = false;
             this.LIGHTMAP = false;
+            this.REFLECTIONMAP_3D = false;
+            this.REFLECTIONMAP_SPHERICAL = false;
+            this.REFLECTIONMAP_PLANAR = false;
+            this.REFLECTIONMAP_CUBIC = false;
+            this.REFLECTIONMAP_PROJECTION = false;
+            this.REFLECTIONMAP_SKYBOX = false;
+            this.REFLECTIONMAP_EXPLICIT = false;
             this.INVERTCUBICMAP = false;
             this._keys = Object.keys(this);
         }
@@ -238,6 +245,28 @@ var BABYLON;
                         }
                         if (this.reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE) {
                             this._defines.INVERTCUBICMAP = true;
+                        }
+                        this._defines.REFLECTIONMAP_3D = this.reflectionTexture.isCube;
+                        switch (this.reflectionTexture.coordinatesMode) {
+                            case BABYLON.Texture.CUBIC_MODE:
+                            case BABYLON.Texture.INVCUBIC_MODE:
+                                this._defines.REFLECTIONMAP_CUBIC = true;
+                                break;
+                            case BABYLON.Texture.EXPLICIT_MODE:
+                                this._defines.REFLECTIONMAP_EXPLICIT = true;
+                                break;
+                            case BABYLON.Texture.PLANAR_MODE:
+                                this._defines.REFLECTIONMAP_PLANAR = true;
+                                break;
+                            case BABYLON.Texture.PROJECTION_MODE:
+                                this._defines.REFLECTIONMAP_PROJECTION = true;
+                                break;
+                            case BABYLON.Texture.SKYBOX_MODE:
+                                this._defines.REFLECTIONMAP_SKYBOX = true;
+                                break;
+                            case BABYLON.Texture.SPHERICAL_MODE:
+                                this._defines.REFLECTIONMAP_SPHERICAL = true;
+                                break;
                         }
                     }
                 }
@@ -522,8 +551,7 @@ var BABYLON;
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
                     "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
-                    "roughness"
+                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
                 ], ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
                     "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                 ], join, fallbacks, this.onCompiled, this.onError);
@@ -591,15 +619,12 @@ var BABYLON;
                 if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                     if (this.reflectionTexture.isCube) {
                         this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
-                        if (this._defines.ROUGHNESS) {
-                            this._effect.setFloat("roughness", this.roughness);
-                        }
                     }
                     else {
                         this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
                     }
                     this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
-                    this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE ? BABYLON.Texture.CUBIC_MODE : this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
+                    this._effect.setFloat2("vReflectionInfos", this.reflectionTexture.level, this.roughness);
                 }
                 if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                     this._effect.setTexture("emissiveSampler", this.emissiveTexture);

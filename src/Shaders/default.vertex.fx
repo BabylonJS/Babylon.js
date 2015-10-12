@@ -124,15 +124,50 @@ varying vec4 vPositionFromLight3;
 #endif
 
 #ifdef REFLECTION
-varying vec3 vPositionUVW;
+uniform vec3 vEyePosition;
+varying vec3 vReflectionUVW;
+uniform mat4 reflectionMatrix;
+
+vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
+{
+#ifdef REFLECTIONMAP_SPHERICAL
+	vec3 coords = vec3(view * vec4(worldNormal, 0.0));
+
+	return vec3(reflectionMatrix * vec4(coords, 1.0));
+#endif
+
+#ifdef REFLECTIONMAP_PLANAR
+	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 coords = normalize(reflect(viewDir, worldNormal));
+
+	return vec3(reflectionMatrix * vec4(coords, 1));
+#endif
+
+#ifdef REFLECTIONMAP_CUBIC
+	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 coords = reflect(viewDir, worldNormal);
+#ifdef INVERTCUBICMAP
+	coords.y = 1.0 - coords.y;
+#endif
+	return vec3(reflectionMatrix * vec4(coords, 0));
+#endif
+
+#ifdef REFLECTIONMAP_PROJECTION
+	return vec3(reflectionMatrix * (view * worldPos));
+#endif
+
+#ifdef REFLECTIONMAP_SKYBOX
+	return position;
+#endif
+
+#ifdef REFLECTIONMAP_EXPLICIT
+	return vec3(0, 0, 0);
+#endif
+}
 #endif
 
 void main(void) {
 	mat4 finalWorld;
-
-#ifdef REFLECTION
-	vPositionUVW = position;
-#endif 
 
 #ifdef INSTANCES
 	finalWorld = mat4(world0, world1, world2, world3);
@@ -201,6 +236,10 @@ void main(void) {
 	{
 		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
 	}
+#endif
+
+#ifdef REFLECTION
+	vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), vNormalW);
 #endif
 
 #ifdef EMISSIVE

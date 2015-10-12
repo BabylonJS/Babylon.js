@@ -2,13 +2,6 @@
 precision highp float;
 #endif
 
-#define MAP_EXPLICIT	0.
-#define MAP_SPHERICAL	1.
-#define MAP_PLANAR		2.
-#define MAP_CUBIC		3.
-#define MAP_PROJECTION	4.
-#define MAP_SKYBOX		5.
-
 // Attributes
 attribute vec3 position;
 attribute vec3 normal;
@@ -47,13 +40,6 @@ uniform vec2 vAmbientInfos;
 varying vec2 vOpacityUV;
 uniform mat4 opacityMatrix;
 uniform vec2 vOpacityInfos;
-#endif
-
-#ifdef REFLECTION
-uniform vec3 vEyePosition;
-varying vec3 vReflectionUVW;
-uniform vec3 vReflectionInfos;
-uniform mat4 reflectionMatrix;
 #endif
 
 #ifdef EMISSIVE
@@ -115,38 +101,45 @@ varying vec4 vPositionFromLight3;
 #endif
 
 #ifdef REFLECTION
-vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
+uniform vec3 vEyePosition;
+varying vec3 vReflectionUVW;
+uniform mat4 reflectionMatrix;
+
+vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
-	if (mode == MAP_SPHERICAL)
-	{
-		vec3 coords = vec3(view * vec4(worldNormal, 0.0));
+#ifdef REFLECTIONMAP_SPHERICAL
+	vec3 coords = vec3(view * vec4(worldNormal, 0.0));
 
-		return vec3(reflectionMatrix * vec4(coords, 1.0));
-	}
-	else if (mode == MAP_PLANAR)
-	{
-		vec3 viewDir = worldPos.xyz - vEyePosition;
-		vec3 coords = normalize(reflect(viewDir, worldNormal));
+	return vec3(reflectionMatrix * vec4(coords, 1.0));
+#endif
 
-		return vec3(reflectionMatrix * vec4(coords, 1));
-	}
-	else if (mode == MAP_CUBIC)
-	{
-		vec3 viewDir = worldPos.xyz - vEyePosition;
-		vec3 coords = reflect(viewDir, worldNormal);
+#ifdef REFLECTIONMAP_PLANAR
+	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 coords = normalize(reflect(viewDir, worldNormal));
 
-		return vec3(reflectionMatrix * vec4(coords, 0));
-	}
-	else if (mode == MAP_PROJECTION)
-	{
-		return vec3(reflectionMatrix * (view * worldPos));
-	}
-	else if (mode == MAP_SKYBOX)
-	{
-		return position;
-	}
+	return vec3(reflectionMatrix * vec4(coords, 1));
+#endif
 
+#ifdef REFLECTIONMAP_CUBIC
+	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 coords = reflect(viewDir, worldNormal);
+#ifdef INVERTCUBICMAP
+	coords.y = 1.0 - coords.y;
+#endif
+	return vec3(reflectionMatrix * vec4(coords, 0));
+#endif
+
+#ifdef REFLECTIONMAP_PROJECTION
+	return vec3(reflectionMatrix * (view * worldPos));
+#endif
+
+#ifdef REFLECTIONMAP_SKYBOX
+	return position;
+#endif
+
+#ifdef REFLECTIONMAP_EXPLICIT
 	return vec3(0, 0, 0);
+#endif
 }
 #endif
 
@@ -215,9 +208,9 @@ void main(void) {
 		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
-
+	
 #ifdef REFLECTION
-	vReflectionUVW = computeReflectionCoords(vReflectionInfos.x, vec4(vPositionW, 1.0), vNormalW);
+	vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), vNormalW);
 #endif
 
 #ifdef EMISSIVE

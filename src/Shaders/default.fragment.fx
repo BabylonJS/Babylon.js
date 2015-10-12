@@ -2,13 +2,6 @@
 precision highp float;
 #endif
 
-#define MAP_EXPLICIT	0.
-#define MAP_SPHERICAL	1.
-#define MAP_PLANAR		2.
-#define MAP_CUBIC		3.
-#define MAP_PROJECTION	4.
-#define MAP_SKYBOX		5.
-
 // Constants
 uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
@@ -171,55 +164,14 @@ uniform vec4 emissiveLeftColor;
 uniform vec4 emissiveRightColor;
 #endif
 
-// Reflection
 #ifdef REFLECTION
-varying vec3 vPositionUVW;
+varying vec3 vReflectionUVW;
+#ifdef REFLECTIONMAP_3D
 uniform samplerCube reflectionCubeSampler;
+#else
 uniform sampler2D reflection2DSampler;
-uniform vec3 vReflectionInfos;
-uniform mat4 reflectionMatrix;
-uniform mat4 view;
-
-#ifdef ROUGHNESS
-uniform float roughness;
 #endif
-
-vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
-{
-	if (mode == MAP_SPHERICAL)
-	{
-		vec3 coords = vec3(view * vec4(worldNormal, 0.0));
-
-		return vec3(reflectionMatrix * vec4(coords, 1.0));
-	}
-	else if (mode == MAP_PLANAR)
-	{
-		vec3 viewDir = worldPos.xyz - vEyePosition;
-		vec3 coords = normalize(reflect(viewDir, worldNormal));
-
-		return vec3(reflectionMatrix * vec4(coords, 1));
-	}
-	else if (mode == MAP_CUBIC)
-	{
-		vec3 viewDir = worldPos.xyz - vEyePosition;
-		vec3 coords = reflect(viewDir, worldNormal);
-#ifdef INVERTCUBICMAP
-		coords.y = 1.0 - coords.y;
-#endif
-
-		return vec3(reflectionMatrix * vec4(coords, 0));
-	}
-	else if (mode == MAP_PROJECTION)
-	{
-		return vec3(reflectionMatrix * (view * worldPos));
-	}
-	else if (mode == MAP_SKYBOX)
-	{
-		return vPositionUVW;
-	}
-
-	return vec3(0, 0, 0);
-}
+uniform vec2 vReflectionInfos;
 #endif
 
 // Shadows
@@ -706,39 +658,33 @@ void main(void) {
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
 #ifdef REFLECTION
-	vec3 vReflectionUVW = computeReflectionCoords(vReflectionInfos.x, vec4(vPositionW, 1.0), normalW);
+	#ifdef REFLECTIONMAP_3D
+			float bias = 0.;
 
-	if (vReflectionInfos.z != 0.0)
-	{
-		float bias = 0.;
+		#ifdef ROUGHNESS
+				bias = vReflectionInfos.y;
+		#endif
 
-#ifdef ROUGHNESS
-		bias = roughness;
-#endif
+		#ifdef SPECULARTERM
+			#ifdef SPECULAR
+				#ifdef GLOSSINESS
+						bias *= (1.0 - specularMapColor.a);
+				#endif
+			#endif
+		#endif
 
-#ifdef SPECULARTERM
-#ifdef SPECULAR
-#ifdef GLOSSINESS
-		bias *= (1.0 - specularMapColor.a);
-#endif
-#endif
-#endif
-
-		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.y * shadow;
-	}
-	else
-	{
+		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x * shadow;
+	#else
 		vec2 coords = vReflectionUVW.xy;
 
-		if (vReflectionInfos.x == MAP_PROJECTION)
-		{
+		#ifdef REFLECTIONMAP_PROJECTION
 			coords /= vReflectionUVW.z;
-		}
+		#endif
 
 		coords.y = 1.0 - coords.y;
 
-		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.y * shadow;
-	}
+		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x * shadow;
+#endif	
 
 #ifdef REFLECTIONFRESNEL
 	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);

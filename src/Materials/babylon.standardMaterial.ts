@@ -81,6 +81,13 @@
         public EMISSIVEASILLUMINATION = false;
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
+        public REFLECTIONMAP_3D = false;
+        public REFLECTIONMAP_SPHERICAL = false;
+        public REFLECTIONMAP_PLANAR = false;
+        public REFLECTIONMAP_CUBIC = false;
+        public REFLECTIONMAP_PROJECTION = false;
+        public REFLECTIONMAP_SKYBOX = false;
+        public REFLECTIONMAP_EXPLICIT = false;
         public INVERTCUBICMAP = false;
 
         _keys: string[];
@@ -283,6 +290,30 @@
 
                         if (this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                             this._defines.INVERTCUBICMAP = true;
+                        }
+
+                        this._defines.REFLECTIONMAP_3D = this.reflectionTexture.isCube;
+
+                        switch (this.reflectionTexture.coordinatesMode) {
+                            case Texture.CUBIC_MODE:
+                            case Texture.INVCUBIC_MODE:
+                                this._defines.REFLECTIONMAP_CUBIC = true;
+                                break;
+                            case Texture.EXPLICIT_MODE:
+                                this._defines.REFLECTIONMAP_EXPLICIT = true;
+                                break;
+                            case Texture.PLANAR_MODE:
+                                this._defines.REFLECTIONMAP_PLANAR = true;
+                                break;    
+                            case Texture.PROJECTION_MODE:
+                                this._defines.REFLECTIONMAP_PROJECTION = true;
+                                break;  
+                            case Texture.SKYBOX_MODE:
+                                this._defines.REFLECTIONMAP_SKYBOX = true;
+                                break;      
+                            case Texture.SPHERICAL_MODE:
+                                this._defines.REFLECTIONMAP_SPHERICAL = true;
+                                break;  
                         }
                     }
                 }
@@ -628,8 +659,7 @@
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
-                        "roughness"
+                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
                     ],
                     ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -719,15 +749,12 @@
                 if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                     if (this.reflectionTexture.isCube) {
                         this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
-                        if (this._defines.ROUGHNESS) {
-                            this._effect.setFloat("roughness", this.roughness);
-                        }
                     } else {
                         this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
                     }
 
                     this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
-                    this._effect.setFloat3("vReflectionInfos", this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE ? Texture.CUBIC_MODE : this.reflectionTexture.coordinatesMode, this.reflectionTexture.level, this.reflectionTexture.isCube ? 1 : 0);
+                    this._effect.setFloat2("vReflectionInfos", this.reflectionTexture.level, this.roughness);
                 }
 
                 if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
