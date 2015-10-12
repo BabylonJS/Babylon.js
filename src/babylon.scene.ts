@@ -59,6 +59,7 @@
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
         public animationsEnabled = true;
+        public constantlyUpdateMeshUnderPointer = false;
 
         // Pointers
         private _onPointerMove: (evt: PointerEvent) => void;
@@ -454,7 +455,7 @@
 
                 // Meshes
                 var pickResult = this.pick(this._pointerX, this._pointerY,
-                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady(),
+                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined),
                     false,
                     this.cameraToUseForPointers);
 

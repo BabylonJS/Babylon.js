@@ -6,6 +6,7 @@
       - New .obj serializer ([BitOfGold](https://github.com/BitOfGold))
     - Sprites now can be [picked](http://www.babylonjs-playground.com/#1XMVZW#3) and can use [actions](http://www.babylonjs-playground.com/#9RUHH#3) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+    - Added `Scene.constantlyUpdateMeshUnderPointer` to improve performance when moving mouse ([deltakosh](https://github.com/deltakosh))
     - Added `StandardMaterial.disableLighting` ([deltakosh](https://github.com/deltakosh))
     - Improved reflection shader performance ([deltakosh](https://github.com/deltakosh))
     - New `Material.sideOrientation` property to define clockwise or counter-clockwise faces selection. [Demo here](http://www.babylonjs-playground.com/#1TZJQY) ([deltakosh](https://github.com/deltakosh))
