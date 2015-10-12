@@ -12,6 +12,7 @@
     - _Arc_ feature in `CreateCylinder`, `CreateSphere`, `CreateTube` and `CreateLathe` ([jerome](https://github.com/jbousquie))
     - _Slice_ feature in `Mesh.CreateSphere()` ([jerome](https://github.com/jbousquie))
     - `closed` parameter in `Mesh.CreateLathe()` ([jerome](https://github.com/jbousquie))
+    - `diameter` parameter in `Mesh.CreateCreateCylinder()` ([jerome](https://github.com/jbousquie))
     - `Material.dispose()` now removes disposed material from meshes ([deltakosh](https://github.com/deltakosh))
     - New `Material.getBindedMeshes()` function ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**
