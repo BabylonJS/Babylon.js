@@ -167,6 +167,7 @@
         public useEmissiveAsIllumination = false;
         public useReflectionFresnelFromSpecular = false;
         public useSpecularOverAlpha = true;
+        public disableLighting = false;
 
         public roughness = 0;
 
@@ -388,7 +389,7 @@
             }
 
             var lightIndex = 0;
-            if (scene.lightsEnabled) {
+            if (scene.lightsEnabled && !this.disableLighting) {
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];
 
@@ -820,7 +821,7 @@
 
             this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
 
-            if (scene.lightsEnabled) {
+            if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];

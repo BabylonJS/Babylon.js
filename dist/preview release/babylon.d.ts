@@ -1543,62 +1543,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        private _camera;
-        private _transformationMatrix;
-        private _enabled;
-        private _labelsEnabled;
-        private _displayStatistics;
-        private _displayTree;
-        private _displayLogs;
-        private _globalDiv;
-        private _statsDiv;
-        private _statsSubsetDiv;
-        private _optionsDiv;
-        private _optionsSubsetDiv;
-        private _logDiv;
-        private _logSubsetDiv;
-        private _treeDiv;
-        private _treeSubsetDiv;
-        private _drawingCanvas;
-        private _drawingContext;
-        private _syncPositions;
-        private _syncData;
-        private _syncUI;
-        private _onCanvasClick;
-        private _clickPosition;
-        private _ratio;
-        private _identityMatrix;
-        private _showUI;
-        private _needToRefreshMeshesTree;
-        shouldDisplayLabel: (node: Node) => boolean;
-        shouldDisplayAxis: (mesh: Mesh) => boolean;
-        axisRatio: number;
-        accentColor: string;
-        customStatsFunction: () => string;
-        constructor(scene: Scene);
-        private _refreshMeshesTreeContent();
-        private _renderSingleAxis(zero, unit, unitText, label, color);
-        private _renderAxis(projectedPosition, mesh, globalViewport);
-        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
-        private _isClickInsideRect(x, y, width, height);
-        isVisible(): boolean;
-        hide(): void;
-        show(showUI?: boolean, camera?: Camera): void;
-        private _clearLabels();
-        private _generateheader(root, text);
-        private _generateTexBox(root, title, color);
-        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
-        private _generateCheckBox(root, title, initialState, task, tag?);
-        private _generateButton(root, title, task, tag?);
-        private _generateRadio(root, title, name, initialState, task, tag?);
-        private _generateDOMelements();
-        private _displayStats();
-    }
-}
-
-declare module BABYLON {
     class Collider {
         radius: Vector3;
         retry: number;
@@ -2231,6 +2175,62 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        private _camera;
+        private _transformationMatrix;
+        private _enabled;
+        private _labelsEnabled;
+        private _displayStatistics;
+        private _displayTree;
+        private _displayLogs;
+        private _globalDiv;
+        private _statsDiv;
+        private _statsSubsetDiv;
+        private _optionsDiv;
+        private _optionsSubsetDiv;
+        private _logDiv;
+        private _logSubsetDiv;
+        private _treeDiv;
+        private _treeSubsetDiv;
+        private _drawingCanvas;
+        private _drawingContext;
+        private _syncPositions;
+        private _syncData;
+        private _syncUI;
+        private _onCanvasClick;
+        private _clickPosition;
+        private _ratio;
+        private _identityMatrix;
+        private _showUI;
+        private _needToRefreshMeshesTree;
+        shouldDisplayLabel: (node: Node) => boolean;
+        shouldDisplayAxis: (mesh: Mesh) => boolean;
+        axisRatio: number;
+        accentColor: string;
+        customStatsFunction: () => string;
+        constructor(scene: Scene);
+        private _refreshMeshesTreeContent();
+        private _renderSingleAxis(zero, unit, unitText, label, color);
+        private _renderAxis(projectedPosition, mesh, globalViewport);
+        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
+        private _isClickInsideRect(x, y, width, height);
+        isVisible(): boolean;
+        hide(): void;
+        show(showUI?: boolean, camera?: Camera): void;
+        private _clearLabels();
+        private _generateheader(root, text);
+        private _generateTexBox(root, title, color);
+        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
+        private _generateCheckBox(root, title, initialState, task, tag?);
+        private _generateButton(root, title, task, tag?);
+        private _generateRadio(root, title, name, initialState, task, tag?);
+        private _generateDOMelements();
+        private _displayStats();
+    }
+}
+
+declare module BABYLON {
     class BoundingBox {
         minimum: Vector3;
         maximum: Vector3;
@@ -2291,6 +2291,25 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Layer {
+        name: string;
+        texture: Texture;
+        isBackground: boolean;
+        color: Color4;
+        onDispose: () => void;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class LensFlare {
         size: number;
         position: number;
@@ -2328,25 +2347,6 @@ declare module BABYLON {
         computeEffectivePosition(globalViewport: Viewport): boolean;
         _isVisible(): boolean;
         render(): boolean;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class Layer {
-        name: string;
-        texture: Texture;
-        isBackground: boolean;
-        color: Color4;
-        onDispose: () => void;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
-        render(): void;
         dispose(): void;
     }
 }
@@ -2680,6 +2680,7 @@ declare module BABYLON {
         useEmissiveAsIllumination: boolean;
         useReflectionFresnelFromSpecular: boolean;
         useSpecularOverAlpha: boolean;
+        disableLighting: boolean;
         roughness: number;
         lightmapThreshold: number;
         diffuseFresnelParameters: FresnelParameters;
@@ -2748,6 +2749,99 @@ declare module BABYLON {
         * @param scene is the instance of BABYLON.Scene to append to
         */
         static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+    }
+}
+
+declare module BABYLON {
+    class Particle {
+        position: Vector3;
+        direction: Vector3;
+        color: Color4;
+        colorStep: Color4;
+        lifeTime: number;
+        age: number;
+        size: number;
+        angle: number;
+        angularSpeed: number;
+        copyTo(other: Particle): void;
+    }
+}
+
+declare module BABYLON {
+    class ParticleSystem implements IDisposable {
+        name: string;
+        static BLENDMODE_ONEONE: number;
+        static BLENDMODE_STANDARD: number;
+        id: string;
+        renderingGroupId: number;
+        emitter: any;
+        emitRate: number;
+        manualEmitCount: number;
+        updateSpeed: number;
+        targetStopDuration: number;
+        disposeOnStop: boolean;
+        minEmitPower: number;
+        maxEmitPower: number;
+        minLifeTime: number;
+        maxLifeTime: number;
+        minSize: number;
+        maxSize: number;
+        minAngularSpeed: number;
+        maxAngularSpeed: number;
+        particleTexture: Texture;
+        layerMask: number;
+        onDispose: () => void;
+        updateFunction: (particles: Particle[]) => void;
+        blendMode: number;
+        forceDepthWrite: boolean;
+        gravity: Vector3;
+        direction1: Vector3;
+        direction2: Vector3;
+        minEmitBox: Vector3;
+        maxEmitBox: Vector3;
+        color1: Color4;
+        color2: Color4;
+        colorDead: Color4;
+        textureMask: Color4;
+        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
+        private particles;
+        private _capacity;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _stockParticles;
+        private _newPartsExcess;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _vertices;
+        private _effect;
+        private _customEffect;
+        private _cachedDefines;
+        private _scaledColorStep;
+        private _colorDiff;
+        private _scaledDirection;
+        private _scaledGravity;
+        private _currentRenderId;
+        private _alive;
+        private _started;
+        private _stopped;
+        private _actualFrame;
+        private _scaledUpdateSpeed;
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
+        recycleParticle(particle: Particle): void;
+        getCapacity(): number;
+        isAlive(): boolean;
+        isStarted(): boolean;
+        start(): void;
+        stop(): void;
+        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
+        private _update(newParticles);
+        private _getEffect();
+        animate(): void;
+        render(): number;
+        dispose(): void;
+        clone(name: string, newEmitter: any): ParticleSystem;
     }
 }
 
@@ -4506,99 +4600,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Particle {
-        position: Vector3;
-        direction: Vector3;
-        color: Color4;
-        colorStep: Color4;
-        lifeTime: number;
-        age: number;
-        size: number;
-        angle: number;
-        angularSpeed: number;
-        copyTo(other: Particle): void;
-    }
-}
-
-declare module BABYLON {
-    class ParticleSystem implements IDisposable {
-        name: string;
-        static BLENDMODE_ONEONE: number;
-        static BLENDMODE_STANDARD: number;
-        id: string;
-        renderingGroupId: number;
-        emitter: any;
-        emitRate: number;
-        manualEmitCount: number;
-        updateSpeed: number;
-        targetStopDuration: number;
-        disposeOnStop: boolean;
-        minEmitPower: number;
-        maxEmitPower: number;
-        minLifeTime: number;
-        maxLifeTime: number;
-        minSize: number;
-        maxSize: number;
-        minAngularSpeed: number;
-        maxAngularSpeed: number;
-        particleTexture: Texture;
-        layerMask: number;
-        onDispose: () => void;
-        updateFunction: (particles: Particle[]) => void;
-        blendMode: number;
-        forceDepthWrite: boolean;
-        gravity: Vector3;
-        direction1: Vector3;
-        direction2: Vector3;
-        minEmitBox: Vector3;
-        maxEmitBox: Vector3;
-        color1: Color4;
-        color2: Color4;
-        colorDead: Color4;
-        textureMask: Color4;
-        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
-        private particles;
-        private _capacity;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _stockParticles;
-        private _newPartsExcess;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _vertices;
-        private _effect;
-        private _customEffect;
-        private _cachedDefines;
-        private _scaledColorStep;
-        private _colorDiff;
-        private _scaledDirection;
-        private _scaledGravity;
-        private _currentRenderId;
-        private _alive;
-        private _started;
-        private _stopped;
-        private _actualFrame;
-        private _scaledUpdateSpeed;
-        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
-        recycleParticle(particle: Particle): void;
-        getCapacity(): number;
-        isAlive(): boolean;
-        isStarted(): boolean;
-        start(): void;
-        stop(): void;
-        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
-        private _update(newParticles);
-        private _getEffect();
-        animate(): void;
-        render(): number;
-        dispose(): void;
-        clone(name: string, newEmitter: any): ParticleSystem;
-    }
-}
-
-declare module BABYLON {
     class ReflectionProbe {
         name: string;
         private _scene;
@@ -4718,68 +4719,6 @@ declare module BABYLON {
         render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
         reset(): void;
         dispatch(subMesh: SubMesh): void;
-    }
-}
-
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _frameCount;
-        private _manager;
-        private _time;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        cellSize: number;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        onDispose: () => void;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _vertices;
-        private _effectBase;
-        private _effectFog;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
-        render(): void;
-        dispose(): void;
     }
 }
 
@@ -5333,6 +5272,68 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _frameCount;
+        private _manager;
+        private _time;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        cellSize: number;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        onDispose: () => void;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _vertices;
+        private _effectBase;
+        private _effectFog;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -6130,6 +6131,9 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Internals {
+}
+
 declare module BABYLON {
     class BaseTexture {
         name: string;
@@ -6326,9 +6330,6 @@ declare module BABYLON {
         constructor(name: string, urls: string[], scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
         update(): boolean;
     }
-}
-
-declare module BABYLON.Internals {
 }
 
 declare module BABYLON {

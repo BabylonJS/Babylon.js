@@ -152,6 +152,7 @@ var BABYLON;
             this.useEmissiveAsIllumination = false;
             this.useReflectionFresnelFromSpecular = false;
             this.useSpecularOverAlpha = true;
+            this.disableLighting = false;
             this.roughness = 0;
             this.lightmapThreshold = 0;
             this.useGlossinessFromSpecularMapAlpha = false;
@@ -333,7 +334,7 @@ var BABYLON;
                 this._defines.FOG = true;
             }
             var lightIndex = 0;
-            if (scene.lightsEnabled) {
+            if (scene.lightsEnabled && !this.disableLighting) {
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];
                     if (!light.isEnabled()) {
@@ -673,7 +674,7 @@ var BABYLON;
             this._scaledDiffuse.g = this.diffuseColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
             this._scaledDiffuse.b = this.diffuseColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
             this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
-            if (scene.lightsEnabled) {
+            if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];
