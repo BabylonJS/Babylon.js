@@ -2076,7 +2076,7 @@
             return tube;
         }
 
-        public static CreatePolyhedron(name: string, options: {type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh {
+        public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
             var polyhedron = new Mesh(name, scene);
 
             var vertexData = VertexData.CreatePolyhedron(options);
@@ -2485,4 +2485,5 @@
         }
     }
 }
+
 
