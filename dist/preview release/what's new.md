@@ -5,6 +5,7 @@
     - New serializers [folder](https://github.com/BabylonJS/Babylon.js/serializers) to host .babylon serializers ([deltakosh](https://github.com/deltakosh))
       - New .obj serializer ([BitOfGold](https://github.com/BitOfGold))
     - Sprites now can be [picked](http://www.babylonjs-playground.com/#1XMVZW#3) and can use [actions](http://www.babylonjs-playground.com/#9RUHH#3) ([deltakosh](https://github.com/deltakosh))
+    - New `Mesh.CreatePolygon()` method ([jerome](https://github.com/jbousquie))
   - **Updates**
     - Added `Scene.constantlyUpdateMeshUnderPointer` to improve performance when moving mouse ([deltakosh](https://github.com/deltakosh))
     - Added `StandardMaterial.disableLighting` ([deltakosh](https://github.com/deltakosh))
