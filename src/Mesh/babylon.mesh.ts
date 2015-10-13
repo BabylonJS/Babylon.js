@@ -2076,6 +2076,16 @@
             return tube;
         }
 
+        public static CreatePolyhedron(name: string, options: {type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number}, scene: Scene): Mesh {
+            var polyhedron = new Mesh(name, scene);
+
+            var vertexData = VertexData.CreatePolyhedron(options);
+
+            vertexData.applyToMesh(polyhedron, options.updatable);
+
+            return polyhedron;
+        }
+
         // Decals
         public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number });
         public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number);
