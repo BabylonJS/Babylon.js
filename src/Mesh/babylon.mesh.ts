@@ -249,7 +249,7 @@
             return this._geometry.getTotalVertices();
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean): any {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
             if (!this._geometry) {
                 return null;
             }
@@ -293,7 +293,7 @@
             return this._geometry.getTotalIndices();
         }
 
-        public getIndices(copyWhenShared?: boolean): any {
+        public getIndices(copyWhenShared?: boolean): number[]{
             if (!this._geometry) {
                 return [];
             }
@@ -418,15 +418,7 @@
             this.synchronizeInstances();
         }
 
-        public setVerticesData(kind: any, data: any, updatable?: boolean, stride?: number): void {
-            if (kind instanceof Array) {
-                var temp = data;
-                data = kind;
-                kind = temp;
-
-                Tools.Warn("Deprecated usage of setVerticesData detected (since v1.12). Current signature is setVerticesData(kind, data, updatable).");
-            }
-
+        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): void {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.set(data, kind);
@@ -440,7 +432,7 @@
             }
         }
 
-        public updateVerticesData(kind: string, data: any, updateExtends?: boolean, makeItUnique?: boolean): void {
+        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void {
             if (!this._geometry) {
                 return;
             }
@@ -453,13 +445,9 @@
             }
         }
 
-        private _warned = false;
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
-            if (!this._warned){
-                Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
-                this._warned = true;
-            }
-            
+            Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
+
             if (!this._geometry) {
                 return;
             }
@@ -2288,8 +2276,8 @@
                     vertexData.indices.push(currentVertexDataIndex);
                     vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
-                    vertexData.uvs.push(0.5 + vertex.position.x / size.x);
-                    vertexData.uvs.push(0.5 + vertex.position.y / size.y);
+                    (<number []>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
+                    (<number[]>vertexData.uvs).push(0.5 + vertex.position.y / size.y);
 
                     currentVertexDataIndex++;
                 }
@@ -2324,10 +2312,11 @@
             if (!this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 return this;
             }
-            var source: number[];
+            var source: number[] | Float32Array;
             if (!this._sourcePositions) {
                 source = this.getVerticesData(VertexBuffer.PositionKind);
-                this._sourcePositions = new Float32Array(source);
+
+                this._sourcePositions = new Float32Array(<any>source); 
 
                 if (!this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable()) {
                     this.setVerticesData(VertexBuffer.PositionKind, source, true);
@@ -2336,7 +2325,7 @@
 
             if (!this._sourceNormals) {
                 source = this.getVerticesData(VertexBuffer.NormalKind);
-                this._sourceNormals = new Float32Array(source);
+                this._sourceNormals = new Float32Array(<any>source);
 
                 if (!this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable()) {
                     this.setVerticesData(VertexBuffer.NormalKind, source, true);
@@ -2491,5 +2480,6 @@
         }
     }
 }
+
 
 

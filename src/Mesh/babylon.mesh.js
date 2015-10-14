@@ -387,12 +387,6 @@ var BABYLON;
             this.synchronizeInstances();
         };
         Mesh.prototype.setVerticesData = function (kind, data, updatable, stride) {
-            if (kind instanceof Array) {
-                var temp = data;
-                data = kind;
-                kind = temp;
-                BABYLON.Tools.Warn("Deprecated usage of setVerticesData detected (since v1.12). Current signature is setVerticesData(kind, data, updatable).");
-            }
             if (!this._geometry) {
                 var vertexData = new BABYLON.VertexData();
                 vertexData.set(data, kind);
@@ -416,6 +410,7 @@ var BABYLON;
             }
         };
         Mesh.prototype.updateVerticesDataDirectly = function (kind, data, offset, makeItUnique) {
+            BABYLON.Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
             if (!this._geometry) {
                 return;
             }

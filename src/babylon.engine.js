@@ -884,7 +884,12 @@ var BABYLON;
         Engine.prototype.createVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.STATIC_DRAW);
+            }
+            else {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+            }
             this._resetVertexBufferBinding();
             vbo.references = 1;
             return vbo;

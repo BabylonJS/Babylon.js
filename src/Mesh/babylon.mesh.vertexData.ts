@@ -1,28 +1,28 @@
 ﻿module BABYLON {
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[];
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array;
         getIndices(copyWhenShared?: boolean): number[];
-        setVerticesData(kind: string, data: any, updatable?: boolean): void;
-        updateVerticesData(kind: string, data: any, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: number[]): void;
+        setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
+        updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
+        setIndices(indices: number[] | Float32Array): void;
     }
 
     export class VertexData {
-        public positions: any;
-        public normals: any;
-        public uvs: any;
-        public uvs2: any;
-        public uvs3: any;
-        public uvs4: any;
-        public uvs5: any;
-        public uvs6: any;
-        public colors: any;
-        public matricesIndices: any;
-        public matricesWeights: any;
+        public positions: number[] | Float32Array;
+        public normals: number[] | Float32Array;
+        public uvs: number[] | Float32Array;
+        public uvs2: number[] | Float32Array;
+        public uvs3: number[] | Float32Array;
+        public uvs4: number[] | Float32Array;
+        public uvs5: number[] | Float32Array;
+        public uvs6: number[] | Float32Array;
+        public colors: number[] | Float32Array;
+        public matricesIndices: number[] | Float32Array;
+        public matricesWeights: number[] | Float32Array;
         public indices: number[];
 
-        public set(data: any, kind: string) {
+        public set(data: number[] | Float32Array, kind: string) {
             switch (kind) {
                 case VertexBuffer.PositionKind:
                     this.positions = data;
@@ -225,7 +225,7 @@
                 }
 
                 for (index = 0; index < other.positions.length; index++) {
-                    this.positions.push(other.positions[index]);
+                    (<number[]>this.positions).push(other.positions[index]);
                 }
             }
 
@@ -234,7 +234,7 @@
                     this.normals = [];
                 }
                 for (index = 0; index < other.normals.length; index++) {
-                    this.normals.push(other.normals[index]);
+                    (<number[]>this.normals).push(other.normals[index]);
                 }
             }
 
@@ -243,7 +243,7 @@
                     this.uvs = [];
                 }
                 for (index = 0; index < other.uvs.length; index++) {
-                    this.uvs.push(other.uvs[index]);
+                    (<number[]>this.uvs).push(other.uvs[index]);
                 }
             }
 
@@ -252,7 +252,7 @@
                     this.uvs2 = [];
                 }
                 for (index = 0; index < other.uvs2.length; index++) {
-                    this.uvs2.push(other.uvs2[index]);
+                    (<number[]>this.uvs2).push(other.uvs2[index]);
                 }
             }
 
@@ -261,7 +261,7 @@
                     this.uvs3 = [];
                 }
                 for (index = 0; index < other.uvs3.length; index++) {
-                    this.uvs3.push(other.uvs3[index]);
+                    (<number[]>this.uvs3).push(other.uvs3[index]);
                 }
             }
 
@@ -270,7 +270,7 @@
                     this.uvs4 = [];
                 }
                 for (index = 0; index < other.uvs4.length; index++) {
-                    this.uvs4.push(other.uvs4[index]);
+                    (<number[]>this.uvs4).push(other.uvs4[index]);
                 }
             }
 
@@ -279,7 +279,7 @@
                     this.uvs5 = [];
                 }
                 for (index = 0; index < other.uvs5.length; index++) {
-                    this.uvs5.push(other.uvs5[index]);
+                    (<number[]>this.uvs5).push(other.uvs5[index]);
                 }
             }
 
@@ -288,7 +288,7 @@
                     this.uvs6 = [];
                 }
                 for (index = 0; index < other.uvs6.length; index++) {
-                    this.uvs6.push(other.uvs6[index]);
+                    (<number[]>this.uvs6).push(other.uvs6[index]);
                 }
             }
 
@@ -297,7 +297,7 @@
                     this.matricesIndices = [];
                 }
                 for (index = 0; index < other.matricesIndices.length; index++) {
-                    this.matricesIndices.push(other.matricesIndices[index]);
+                    (<number[]>this.matricesIndices).push(other.matricesIndices[index]);
                 }
             }
 
@@ -306,7 +306,7 @@
                     this.matricesWeights = [];
                 }
                 for (index = 0; index < other.matricesWeights.length; index++) {
-                    this.matricesWeights.push(other.matricesWeights[index]);
+                    (<number[]>this.matricesWeights).push(other.matricesWeights[index]);
                 }
             }
 
@@ -315,7 +315,7 @@
                     this.colors = [];
                 }
                 for (index = 0; index < other.colors.length; index++) {
-                    this.colors.push(other.colors[index]);
+                    (<number[]>this.colors).push(other.colors[index]);
                 }
             }
         }
@@ -1391,10 +1391,10 @@
             // default face colors and UV if undefined
             for (f = 0; f < nbfaces; f++) {
                 if (faceColors && faceColors[f] === undefined) {
-                    faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
+                    faceColors[f] = new Color4(1, 1, 1, 1);
                 }
                 if (faceUV && faceUV[f] === undefined) {
-                    faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
+                    faceUV[f] = new Vector4(0, 0, 1, 1);
                 }
             }
 
@@ -1595,7 +1595,7 @@
             }
         }
 
-        private static _ComputeSides(sideOrientation: number, positions: any, indices: any, normals: any, uvs: any) {
+        private static _ComputeSides(sideOrientation: number, positions: number[] | Float32Array, indices: number[] | Float32Array, normals: number[] | Float32Array, uvs: number[] | Float32Array) {
             var li: number = indices.length;
             var ln: number = normals.length;
             var i: number;

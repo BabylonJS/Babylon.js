@@ -101,7 +101,7 @@
             return angle * Math.PI / 180;
         }
 
-        public static ExtractMinAndMaxIndexed(positions: number[], indices: number[], indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[], indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -118,7 +118,7 @@
             };
         }
 
-        public static ExtractMinAndMax(positions: number[], start: number, count: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -847,15 +847,6 @@
 
             return new Date().getTime();
         }
-
-        // Deprecated
-
-        public static GetFps(): number {
-            Tools.Warn("Tools.GetFps() is deprecated. Please use engine.getFps() instead");
-            return 0;
-        }
-
-
     }
 
     /**

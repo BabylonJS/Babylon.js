@@ -733,11 +733,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        // Deprecated
-        Tools.GetFps = function () {
-            Tools.Warn("Tools.GetFps() is deprecated. Please use engine.getFps() instead");
-            return 0;
-        };
         Tools.BaseUrl = "";
         // Logs
         Tools._NoneLogLevel = 0;
