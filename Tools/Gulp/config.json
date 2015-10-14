@@ -75,6 +75,8 @@
       "../../src/Layer/babylon.layer.js",
       "../../src/Particles/babylon.particle.js",
       "../../src/Particles/babylon.particleSystem.js",
+      "../../src/Particles/babylon.solidParticle.js",
+      "../../src/Particles/babylon.solidParticleSystem.js",
       "../../src/Animations/babylon.animation.js",
       "../../src/Animations/babylon.animatable.js",
       "../../src/Animations/babylon.easing.js",
