@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    declare var CANNON;
+    //declare var CANNON;
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
         public checkWithEpsilon: (value: number) => number;
@@ -160,17 +160,13 @@
                 }
             }
 
-            var currentMat = new CANNON.Material();
-            currentMat.friction = friction;
-            currentMat.restitution = restitution;
+            var currentMat = new CANNON.Material("mat");
             this._physicsMaterials.push(currentMat);
 
             for (index = 0; index < this._physicsMaterials.length; index++) {
                 mat = this._physicsMaterials[index];
 
-                var contactMaterial = new CANNON.ContactMaterial(mat, currentMat, mat.friction * currentMat.friction, mat.restitution * currentMat.restitution);
-                contactMaterial.contactEquationStiffness = 1e10;
-                contactMaterial.contactEquationRegularizationTime = 10;
+                var contactMaterial = new CANNON.ContactMaterial(mat, currentMat, { friction: friction, restitution: restitution });
 
                 this._world.addContactMaterial(contactMaterial);
             }
@@ -178,7 +174,7 @@
             return currentMat;
         }
 
-        private _createRigidBodyFromShape(shape: any, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
+        private _createRigidBodyFromShape(shape: CANNON.Shape, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
             var initialRotation: Quaternion = null;
 
             if (mesh.rotationQuaternion) {
@@ -191,16 +187,19 @@
             var deltaPosition = mesh.position.subtract(bbox.center);
 
             var material = this._addMaterial(friction, restitution);
-            var body = new CANNON.RigidBody(mass, shape, material);
+            var body = new CANNON.Body({
+                mass: mass,
+                material: material,
+                position: new CANNON.Vec3(bbox.center.x, bbox.center.z, bbox.center.y)
+            });
 
             if (initialRotation) {
-                body.quaternion.x = initialRotation.x;
-                body.quaternion.z = initialRotation.y;
-                body.quaternion.y = initialRotation.z;
-                body.quaternion.w = -initialRotation.w;
+                body.quaternion = new CANNON.Quaternion(initialRotation.x, initialRotation.y, initialRotation.z, initialRotation.w);
             }
+            
+            //add the shape
+            body.addShape(shape);
 
-            body.position.set(bbox.center.x, bbox.center.z, bbox.center.y);
             this._world.add(body);
 
             this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition });
