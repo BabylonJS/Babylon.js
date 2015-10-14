@@ -293,7 +293,7 @@
             return this._geometry.getTotalIndices();
         }
 
-        public getIndices(copyWhenShared?: boolean): number[]{
+        public getIndices(copyWhenShared?: boolean): number[] {
             if (!this._geometry) {
                 return [];
             }
@@ -2276,7 +2276,7 @@
                     vertexData.indices.push(currentVertexDataIndex);
                     vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
-                    (<number []>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
+                    (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
                     (<number[]>vertexData.uvs).push(0.5 + vertex.position.y / size.y);
 
                     currentVertexDataIndex++;
@@ -2297,12 +2297,12 @@
         /**
          * @returns original positions used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
          */
-        public setPositionsForCPUSkinning() : Float32Array {
+        public setPositionsForCPUSkinning(): Float32Array {
             var source: number[] | Float32Array;
             if (!this._sourcePositions) {
                 source = this.getVerticesData(VertexBuffer.PositionKind);
 
-                this._sourcePositions = new Float32Array(<any>source); 
+                this._sourcePositions = new Float32Array(<any>source);
 
                 if (!this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable()) {
                     this.setVerticesData(VertexBuffer.PositionKind, source, true);
@@ -2314,12 +2314,12 @@
         /**
          * @returns original normals used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
          */
-        public setNormalsForCPUSkinning() : Float32Array {
+        public setNormalsForCPUSkinning(): Float32Array {
             var source: number[] | Float32Array;
             if (!this._sourceNormals) {
                 source = this.getVerticesData(VertexBuffer.NormalKind);
 
-                this._sourceNormals = new Float32Array(<any>source); 
+                this._sourceNormals = new Float32Array(<any>source);
 
                 if (!this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable()) {
                     this.setVerticesData(VertexBuffer.NormalKind, source, true);
@@ -2345,7 +2345,7 @@
             if (!this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 return this;
             }
-            
+
             if (!this._sourcePositions) {
                 this.setPositionsForCPUSkinning();
             }
@@ -2356,13 +2356,13 @@
 
             // positionsData checks for not being Float32Array will only pass at most once
             var positionsData = this.getVerticesData(VertexBuffer.PositionKind);
-            if (!(positionsData instanceof Float32Array)){
+            if (!(positionsData instanceof Float32Array)) {
                 positionsData = new Float32Array(positionsData);
             }
             
             // normalsData checks for not being Float32Array will only pass at most once
             var normalsData = this.getVerticesData(VertexBuffer.NormalKind);
-            if (!(normalsData instanceof Float32Array)){
+            if (!(normalsData instanceof Float32Array)) {
                 normalsData = new Float32Array(normalsData);
             }
 
@@ -2511,6 +2511,7 @@
         }
     }
 }
+
 
 
 
