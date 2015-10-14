@@ -318,37 +318,40 @@ module BABYLON {
             this.mesh.dispose();
         }
 
-        // Optimizers
-        public enableParticleRotation(): void {
-            this._useParticleRotation = true;
+        // Optimizer setters
+        public set useParticleRotation(val: boolean) {
+            this._useParticleRotation = val;
         }
 
-        public disableParticleRotation(): void {
-            this._useParticleRotation = false;
+        public set useParticleColor(val: boolean) {
+            this._useParticleColor = val;
         }
 
-        public enableParticleColor(): void {
-            this._useParticleColor = true;
-        }
-        public disableParticleColor(): void {
-            this._useParticleColor = false;
-        }
-
-        public enableParticleTexture(): void {
-            this._useParticleTexture = true;
+        public set useParticleTexture(val: boolean) {
+            this._useParticleTexture = val;
         } 
 
-        public disableParticleTexture(): void {
-            this._useParticleTexture = false;
+        public set useParticleVertex(val: boolean) {
+            this._useParticleVertex = val;
         } 
 
-        public enableParticleVertex(): void {
-            this._useParticleVertex = true;
-        } 
-
-        public disableParticleVertex(): void {
-            this._useParticleVertex = false;
+        // getters
+         public get useParticleRotation() {
+            return this._useParticleRotation;
         }
+
+        public get useParticleColor() {
+            return this._useParticleColor;
+        }
+
+        public get useParticleTexture() {
+            return this._useParticleTexture;
+        } 
+
+        public get useParticleVertex() {
+            return this._useParticleVertex;
+        } 
+       
 
         // =======================================================================
         // Particle behavior logic
