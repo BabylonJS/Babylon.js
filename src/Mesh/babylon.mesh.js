@@ -1798,6 +1798,12 @@ var BABYLON;
             tube.arc = arc;
             return tube;
         };
+        Mesh.CreatePolyhedron = function (name, options, scene) {
+            var polyhedron = new Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreatePolyhedron(options);
+            vertexData.applyToMesh(polyhedron, options.updatable);
+            return polyhedron;
+        };
         Mesh.CreateDecal = function (name, sourceMesh, positionOrOptions, normal, size, angle) {
             if (angle === void 0) { angle = 0; }
             var indices = sourceMesh.getIndices();
