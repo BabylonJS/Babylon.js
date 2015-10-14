@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    //declare var CANNON;
+    declare var CANNON;
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
         public checkWithEpsilon: (value: number) => number;
@@ -65,6 +65,12 @@
 
             mesh.computeWorldMatrix(true);
 
+            var shape = this._createShape(mesh, impostor, options);
+
+            return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
+        }
+
+        private _createShape(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions) {
             switch (impostor) {
                 case PhysicsEngine.SphereImpostor:
                     var bbox = mesh.getBoundingInfo().boundingBox;
@@ -72,53 +78,21 @@
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
 
-                    return this._createSphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2, mesh, options);
+                    return new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
                 case PhysicsEngine.BoxImpostor:
                     bbox = mesh.getBoundingInfo().boundingBox;
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min).scale(0.5);
-                    return this._createBox(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z), mesh, options);
+                    return new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
                 case PhysicsEngine.PlaneImpostor:
-                    return this._createPlane(mesh, options);
+                    return new CANNON.Plane();
                 case PhysicsEngine.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
 
                     return this._createConvexPolyhedron(rawVerts, rawFaces, mesh, options);
             }
-
-            return null;
-        }
-
-        private _createSphere(radius: number, mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
-            var shape = new CANNON.Sphere(radius);
-
-            if (!options) {
-                return shape;
-            }
-
-            return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
-        }
-
-        private _createBox(x: number, y: number, z: number, mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
-            var shape = new CANNON.Box(new CANNON.Vec3(x, z, y));
-
-            if (!options) {
-                return shape;
-            }
-
-            return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
-        }
-
-        private _createPlane(mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
-            var shape = new CANNON.Plane();
-
-            if (!options) {
-                return shape;
-            }
-
-            return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
         }
 
         private _createConvexPolyhedron(rawVerts: number[], rawFaces: number[], mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
@@ -141,11 +115,7 @@
 
             var shape = new CANNON.ConvexPolyhedron(verts, faces);
 
-            if (!options) {
-                return shape;
-            }
-
-            return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
+            return shape;            
         }
 
         private _addMaterial(friction: number, restitution: number) {
@@ -179,7 +149,8 @@
 
             if (mesh.rotationQuaternion) {
                 initialRotation = mesh.rotationQuaternion.clone();
-                mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
+                //Why is that needed?
+                //mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
             }
 
             // The delta between the mesh position and the mesh bounding box center
@@ -208,24 +179,21 @@
         }
 
         public registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
-            var compoundShape = new CANNON.Compound();
 
-            for (var index = 0; index < parts.length; index++) {
+            var initialMesh = parts[0].mesh;
+            var initialShape = this._createShape(initialMesh, parts[0].impostor);
+            var body = this._createRigidBodyFromShape(initialShape, initialMesh, options.mass, options.friction, options.restitution);
+
+            for (var index = 1; index < parts.length; index++) {
                 var mesh = parts[index].mesh;
 
-                var shape = this.registerMesh(mesh, parts[index].impostor);
-
-                if (index == 0) { // Parent
-                    compoundShape.addChild(shape, new CANNON.Vec3(0, 0, 0));
-                } else {
-                    compoundShape.addChild(shape, new CANNON.Vec3(mesh.position.x, mesh.position.z, mesh.position.y));
-                }
+                var shape = this._createShape(mesh, parts[index].impostor);
+                var localPosition = initialMesh.position.subtract(mesh.position);
+                
+                body.addShape(shape, new CANNON.Vec3(localPosition.x, localPosition.z, localPosition.y));
             }
 
             var initialMesh = parts[0].mesh;
-            var body = this._createRigidBodyFromShape(compoundShape, initialMesh, options.mass, options.friction, options.restitution);
-
-            body.parts = parts;
 
             return body;
         }
