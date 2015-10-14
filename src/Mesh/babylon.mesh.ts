@@ -249,7 +249,7 @@
             return this._geometry.getTotalVertices();
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): any {
             if (!this._geometry) {
                 return null;
             }
@@ -293,7 +293,7 @@
             return this._geometry.getTotalIndices();
         }
 
-        public getIndices(copyWhenShared?: boolean): number[] {
+        public getIndices(copyWhenShared?: boolean): any {
             if (!this._geometry) {
                 return [];
             }
@@ -440,7 +440,7 @@
             }
         }
 
-        public updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void {
+        public updateVerticesData(kind: string, data: any, updateExtends?: boolean, makeItUnique?: boolean): void {
             if (!this._geometry) {
                 return;
             }
@@ -453,7 +453,13 @@
             }
         }
 
+        private _warned = false;
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
+            if (!this._warned){
+                Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
+                this._warned = true;
+            }
+            
             if (!this._geometry) {
                 return;
             }

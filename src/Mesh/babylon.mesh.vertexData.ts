@@ -3,26 +3,26 @@
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string, copyWhenShared?: boolean): number[];
         getIndices(copyWhenShared?: boolean): number[];
-        setVerticesData(kind: string, data: number[], updatable?: boolean): void;
-        updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void;
+        setVerticesData(kind: string, data: any, updatable?: boolean): void;
+        updateVerticesData(kind: string, data: any, updateExtends?: boolean, makeItUnique?: boolean): void;
         setIndices(indices: number[]): void;
     }
 
     export class VertexData {
-        public positions: number[];
-        public normals: number[];
-        public uvs: number[];
-        public uvs2: number[];
-        public uvs3: number[];
-        public uvs4: number[];
-        public uvs5: number[];
-        public uvs6: number[];
-        public colors: number[];
-        public matricesIndices: number[];
-        public matricesWeights: number[];
+        public positions: any;
+        public normals: any;
+        public uvs: any;
+        public uvs2: any;
+        public uvs3: any;
+        public uvs4: any;
+        public uvs5: any;
+        public uvs6: any;
+        public colors: any;
+        public matricesIndices: any;
+        public matricesWeights: any;
         public indices: number[];
 
-        public set(data: number[], kind: string) {
+        public set(data: any, kind: string) {
             switch (kind) {
                 case VertexBuffer.PositionKind:
                     this.positions = data;
@@ -1595,7 +1595,7 @@
             }
         }
 
-        private static _ComputeSides(sideOrientation: number, positions: number[], indices: number[], normals: number[], uvs: number[]) {
+        private static _ComputeSides(sideOrientation: number, positions: any, indices: any, normals: any, uvs: any) {
             var li: number = indices.length;
             var ln: number = normals.length;
             var i: number;

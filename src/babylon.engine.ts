@@ -1008,10 +1008,15 @@
             this._cachedVertexBuffers = null;
         }
 
-        public createVertexBuffer(vertices: number[]): WebGLBuffer {
+        public createVertexBuffer(vertices: any): WebGLBuffer {
             var vbo = this._gl.createBuffer();
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.STATIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+            }
+
             this._resetVertexBufferBinding();
             vbo.references = 1;
             return vbo;
