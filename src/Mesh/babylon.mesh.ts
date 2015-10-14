@@ -2294,6 +2294,39 @@
         }
 
         // Skeletons
+        /**
+         * @returns original positions used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
+         */
+        public setPositionsForCPUSkinning() : Float32Array {
+            var source: number[] | Float32Array;
+            if (!this._sourcePositions) {
+                source = this.getVerticesData(VertexBuffer.PositionKind);
+
+                this._sourcePositions = new Float32Array(<any>source); 
+
+                if (!this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable()) {
+                    this.setVerticesData(VertexBuffer.PositionKind, source, true);
+                }
+            }
+            return this._sourcePositions;
+        }
+
+        /**
+         * @returns original normals used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
+         */
+        public setNormalsForCPUSkinning() : Float32Array {
+            var source: number[] | Float32Array;
+            if (!this._sourceNormals) {
+                source = this.getVerticesData(VertexBuffer.NormalKind);
+
+                this._sourceNormals = new Float32Array(<any>source); 
+
+                if (!this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable()) {
+                    this.setVerticesData(VertexBuffer.NormalKind, source, true);
+                }
+            }
+            return this._sourceNormals;
+        }
 
         /**
          * Update the vertex buffers by applying transformation from the bones
@@ -2312,28 +2345,26 @@
             if (!this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 return this;
             }
-            var source: number[] | Float32Array;
+            
             if (!this._sourcePositions) {
-                source = this.getVerticesData(VertexBuffer.PositionKind);
-
-                this._sourcePositions = new Float32Array(<any>source); 
-
-                if (!this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable()) {
-                    this.setVerticesData(VertexBuffer.PositionKind, source, true);
-                }
+                this.setPositionsForCPUSkinning();
             }
 
             if (!this._sourceNormals) {
-                source = this.getVerticesData(VertexBuffer.NormalKind);
-                this._sourceNormals = new Float32Array(<any>source);
-
-                if (!this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable()) {
-                    this.setVerticesData(VertexBuffer.NormalKind, source, true);
-                }
+                this.setNormalsForCPUSkinning();
             }
 
+            // positionsData checks for not being Float32Array will only pass at most once
             var positionsData = this.getVerticesData(VertexBuffer.PositionKind);
+            if (!(positionsData instanceof Float32Array)){
+                positionsData = new Float32Array(positionsData);
+            }
+            
+            // normalsData checks for not being Float32Array will only pass at most once
             var normalsData = this.getVerticesData(VertexBuffer.NormalKind);
+            if (!(normalsData instanceof Float32Array)){
+                normalsData = new Float32Array(normalsData);
+            }
 
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
@@ -2385,7 +2416,7 @@
 
             return this;
         }
-
+        
         // Tools
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector: Vector3 = null;
