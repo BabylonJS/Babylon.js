@@ -3,12 +3,12 @@
         private _mesh: Mesh;
         private _engine: Engine;
         private _buffer: WebGLBuffer;
-        private _data: number[];
+        private _data: any;
         private _updatable: boolean;
         private _kind: string;
         private _strideSize: number;
 
-        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number) {
+        constructor(engine: any, data: any, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
             }
@@ -64,7 +64,7 @@
             return this._updatable;
         }
 
-        public getData(): number[] {
+        public getData(): any {
             return this._data;
         }
 
@@ -77,7 +77,7 @@
         }
 
         // Methods
-        public create(data?: number[]): void {
+        public create(data?: any): void {
             if (!data && this._buffer) {
                 return; // nothing to do
             }
@@ -98,11 +98,11 @@
             }
         }
 
-        public update(data: number[]): void {
+        public update(data: any): void {
             this.create(data);
         }
 
-        public updateDirectly(data: Float32Array, offset: number): void {
+        public updateDirectly(data: Float32Array, offset: number): void {            
             if (!this._buffer) {
                 return;
             }
