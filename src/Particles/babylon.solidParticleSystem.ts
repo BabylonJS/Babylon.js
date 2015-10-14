@@ -248,8 +248,8 @@ module BABYLON {
                     }
 
                     if (this._useParticleTexture) {
-                        this._uvs[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs[2] - this._particle.uvs[0]) + this._particle.uvs[0];
-                        this._uvs[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs[3] - this._particle.uvs[1]) + this._particle.uvs[1];
+                        this._uvs[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
+                        this._uvs[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                     }
                 }
                 index = idx + 3;
