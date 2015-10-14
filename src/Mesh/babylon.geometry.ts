@@ -58,7 +58,7 @@
             this.notifyUpdate();
         }
 
-        public setVerticesData(kind: string, data: number[], updatable?: boolean, stride?: number): void {
+        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): void {
             this._vertexBuffers = this._vertexBuffers || {};
 
             if (this._vertexBuffers[kind]) {
@@ -99,7 +99,7 @@
             this.notifyUpdate(kind);
         }
 
-        public updateVerticesData(kind: string, data: number[], updateExtends?: boolean): void {
+        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
@@ -147,7 +147,7 @@
             return this._totalVertices;
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
@@ -191,8 +191,9 @@
 
         public getVerticesDataKinds(): string[] {
             var result = [];
+            var kind;
             if (!this._vertexBuffers && this._delayInfo) {
-                for (var kind in this._delayInfo) {
+                for (kind in this._delayInfo) {
                     result.push(kind);
                 }
             } else {
@@ -434,8 +435,13 @@
             var kind;
             for (kind in this._vertexBuffers) {
                 // using slice() to make a copy of the array and not just reference it
-                vertexData.set(this.getVerticesData(kind).slice(0), kind);
+                var data = this.getVerticesData(kind);
 
+                if (data instanceof Float32Array) {
+                    vertexData.set(new Float32Array(<Float32Array>data), kind);
+                } else {
+                    vertexData.set((<number[]>data).slice(0), kind);
+                }
                 if (!stopChecking) {
                     updatable = this.getVertexBuffer(kind).isUpdatable();
                     stopChecking = !updatable;

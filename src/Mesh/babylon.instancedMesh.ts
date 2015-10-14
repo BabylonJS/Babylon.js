@@ -55,7 +55,7 @@
             return this._sourceMesh;
         }
 
-        public getVerticesData(kind: string): number[] {
+        public getVerticesData(kind: string): number[] | Float32Array {
             return this._sourceMesh.getVerticesData(kind);
         }
 

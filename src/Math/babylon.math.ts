@@ -438,11 +438,11 @@
             return new Vector2(0, 0);
         }
 
-        public static FromArray(array: number[], offset: number = 0): Vector2 {
+        public static FromArray(array: number[] | Float32Array, offset: number = 0): Vector2 {
             return new Vector2(array[offset], array[offset + 1]);
         }
 
-        public static FromArrayToRef(array: number[], offset: number, result: Vector2): void {
+        public static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector2): void {
             result.x = array[offset];
             result.y = array[offset + 1];
         }
@@ -557,7 +557,7 @@
             return result;
         }
 
-        public toArray(array: number[], index: number = 0): Vector3 {
+        public toArray(array: number[] | Float32Array, index: number = 0): Vector3 {
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
@@ -775,7 +775,7 @@
             return s;
         }
 
-        public static FromArray(array: number[], offset?: number): Vector3 {
+        public static FromArray(array: number[] | Float32Array, offset?: number): Vector3 {
             if (!offset) {
                 offset = 0;
             }
@@ -791,7 +791,7 @@
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
-        public static FromArrayToRef(array: number[], offset: number, result: Vector3): void {
+        public static FromArrayToRef(array: number[] | Float32Array, offset: number, result: Vector3): void {
             result.x = array[offset];
             result.y = array[offset + 1];
             result.z = array[offset + 2];

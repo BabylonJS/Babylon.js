@@ -121,7 +121,7 @@
             return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
         }
 
-        private _createConvexPolyhedron(rawVerts: number[], rawFaces: number[], mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
+        private _createConvexPolyhedron(rawVerts: number[] | Float32Array, rawFaces: number[], mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
             var verts = [], faces = [];
 
             mesh.computeWorldMatrix(true);
