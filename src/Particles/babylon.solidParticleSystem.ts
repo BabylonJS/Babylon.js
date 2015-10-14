@@ -77,6 +77,46 @@ module BABYLON {
             return mesh;
         }
 
+        // _meshBuilder : inserts the shape model in the global SPS mesh
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors): void  { 
+            var i;
+            var u = 0;
+            var c = 0;
+            for (i = 0; i < shape.length; i++) {
+                positions.push(shape[i].x, shape[i].y, shape[i].z);
+                if (meshUV) {
+                    uvs.push(meshUV[u], meshUV[u + 1]);
+                    u += 2;
+                }
+                if (meshCol) {
+                    colors.push(meshCol[c], meshCol[c + 1], meshCol[c + 2], meshCol[c + 3]);
+                    c += 4;
+                } else {
+                    colors.push(1,1,1,1);
+                }
+            }
+            for (i = 0; i < meshInd.length; i++) {
+                indices.push(p + meshInd[i]);
+            }
+        }
+
+        // returns a shape array from positions array
+        private _posToShape(positions): Vector3[] {
+            var shape = [];
+            for (var i = 0; i < positions.length; i += 3) {
+                shape.push(new BABYLON.Vector3(positions[i], positions[i + 1], positions[i + 2]));
+            }
+            return shape;
+        }
+
+        // returns a shapeUV array from a Vector4 uvs
+        private _uvsToShapeUV(uvs): number[] {
+            var shapeUV = [];
+            if (uvs) {
+                    shapeUV.push(uvs.x, uvs.y, uvs.z, uvs.w);
+            }
+            return shapeUV;
+        }
 
         // adds a new particle object in the particles array
         private _addParticle(p: number, idxpos: number, shape: Vector3[], shapeUV: number[], shapeId: number): void {
@@ -89,48 +129,13 @@ module BABYLON {
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
             var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
-            // shape and shapeUV
-            var posToShape = (positions) => {
-                var shape = [];
-                for (var i = 0; i < positions.length; i += 3) {
-                    shape.push(new BABYLON.Vector3(positions[i], positions[i + 1], positions[i + 2]));
-                }
-                return shape;
-            };
-            var uvsToShapeUV = (uvs) => {
-                var shapeUV = [];
-                if (uvs) {
-                        shapeUV.push(uvs.x, uvs.y, uvs.z, uvs.w);
-                }
-                return shapeUV;
-            };
-            var shape = posToShape(meshPos);
-            var shapeUV = uvsToShapeUV(meshUV);
-            // builder
-            var meshBuilder = (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors) => { 
-                var i;
-                var u = 0;
-                var c = 0;
-                for (i = 0; i < shape.length; i++) {
-                    positions.push(shape[i].x, shape[i].y, shape[i].z);
-                    if (meshUV) {
-                        uvs.push(meshUV[u], meshUV[u + 1]);
-                        u += 2;
-                    }
-                    if (meshCol) {
-                        colors.push(meshCol[c], meshCol[c + 1], meshCol[c + 2], meshCol[c + 3]);
-                        c += 4;
-                    } else {
-                        colors.push(1,1,1,1);
-                    }
-                }
-                for (i = 0; i < meshInd.length; i++) {
-                    indices.push(p + meshInd[i]);
-                }
-            };
+
+            var shape = this._posToShape(meshPos);
+            var shapeUV = this._uvsToShapeUV(meshUV);
+
             // particles
             for (var i = 0; i < nb; i++) {
-                meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors);
                 this._addParticle(this.nbParticles + i, this._positions.length, shape, shapeUV, this._shapeCounter);
                 this._index += shape.length;
             }
@@ -311,48 +316,6 @@ module BABYLON {
         // dispose the SPS
         public dispose(): void {
             this.mesh.dispose();
-            this.mesh = null;
-            this.particles.length = 0;
-            this.nbParticles = null;
-            this.billboard = null;
-            this.counter = null;
-            this._scene = null;
-            this._positions.length = 0;
-            this._indices.length = 0;
-            this._normals.length = 0;
-            this._colors.length = 0;
-            this._uvs.length = 0;
-            this._index = null;
-            this._shapeCounter = null;
-            this._useParticleColor = null;
-            this._useParticleTexture = null;
-            this._useParticleRotation = null;
-            this._useParticleVertex = null;
-            this._cam_axisZ = null;
-            this._cam_axisY = null;
-            this._cam_axisX = null;
-            this._axisX = null;
-            this._axisY = null;
-            this._axisZ = null;
-            this._camera = null;
-            this._fakeCamPos = null;
-            this._rotMatrix = null;
-            this._invertedMatrix = null;
-            this._rotated = null;
-            this._quaternion = null;
-            this._vertex = null;
-            this._yaw = null;
-            this._pitch = null;
-            this._roll = null;
-            this._halfroll = null;
-            this._halfpitch = null;
-            this._halfyaw = null;
-            this._sinRoll = null;
-            this._cosRoll = null;
-            this._sinPitch = null;
-            this._cosPitch = null;
-            this._sinYaw = null;
-            this._cosYaw = null;   
         }
 
         // Optimizers
