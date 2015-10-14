@@ -11,9 +11,9 @@ module BABYLON {
         public uvs: Vector4 = new Vector4(0,0, 1,1);
         public velocity: Vector3 = Vector3.Zero();
         public alive: boolean = true;
-        private _pos: number;
-        private _shape: Vector3[]; 
-        private _shapeUV : number[];   
+        public _pos: number;
+        public _shape: Vector3[]; 
+        public _shapeUV : number[];   
 
         constructor(particleIndex: number, positionIndex: number, shape: Vector3[], shapeUV: number[], shapeID: number) {
             this.idx = particleIndex;
