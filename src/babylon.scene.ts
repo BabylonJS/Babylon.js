@@ -292,15 +292,21 @@
             this.postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
 
             this._boundingBoxRenderer = new BoundingBoxRenderer(this);
-            this._outlineRenderer = new OutlineRenderer(this);
+
+            if (OutlineRenderer) {
+                this._outlineRenderer = new OutlineRenderer(this);
+            }
 
             this.attachControl();
 
             this._debugLayer = new DebugLayer(this);
+
             this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
 
             //simplification queue
-            this.simplificationQueue = new SimplificationQueue();
+            if (SimplificationQueue) {
+                this.simplificationQueue = new SimplificationQueue();
+            }
 
             //collision coordinator initialization. For now legacy per default.
             this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
@@ -1685,7 +1691,7 @@
             }
 
             //Simplification Queue
-            if (!this.simplificationQueue.running) {
+            if (this.simplificationQueue && !this.simplificationQueue.running) {
                 this.simplificationQueue.executeNext();
             }
 

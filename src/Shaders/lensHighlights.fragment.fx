@@ -1,6 +1,4 @@
-#ifdef GL_ES
 precision highp float;
-#endif
 
 // samplers
 uniform sampler2D textureSampler;	// original color
