@@ -301,7 +301,9 @@
 
             this._debugLayer = new DebugLayer(this);
 
-            this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+            if (SoundTrack) {
+                this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
+            }
 
             //simplification queue
             if (SimplificationQueue) {
@@ -1264,16 +1266,18 @@
 
         public getSoundByName(name: string): Sound {
             var index: number;
-            for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
-                if (this.mainSoundTrack.soundCollection[index].name === name) {
-                    return this.mainSoundTrack.soundCollection[index];
+            if (AudioEngine) {
+                for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+                    if (this.mainSoundTrack.soundCollection[index].name === name) {
+                        return this.mainSoundTrack.soundCollection[index];
+                    }
                 }
-            }
 
-            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
-                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
-                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
-                        return this.soundTracks[sdIndex].soundCollection[index];
+                for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+                    for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
+                        if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
+                            return this.soundTracks[sdIndex].soundCollection[index];
+                        }
                     }
                 }
             }
@@ -1806,7 +1810,9 @@
             this._checkIntersections();
 
             // Update the audio listener attached to the camera
-            this._updateAudioParameters();
+            if (AudioEngine) {
+                this._updateAudioParameters();
+            }
 
             // After render
             if (this.afterRender) {
@@ -1834,7 +1840,7 @@
         }
 
         private _updateAudioParameters() {
-            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0)) {
+            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
                 return;
             }
 
@@ -1878,11 +1884,13 @@
 
         public set audioEnabled(value: boolean) {
             this._audioEnabled = value;
-            if (this._audioEnabled) {
-                this._enableAudio();
-            }
-            else {
-                this._disableAudio();
+            if (AudioEngine) {
+                if (this._audioEnabled) {
+                    this._enableAudio();
+                }
+                else {
+                    this._disableAudio();
+                }
             }
         }
 
@@ -1920,11 +1928,13 @@
 
         public set headphone(value: boolean) {
             this._headphone = value;
-            if (this._headphone) {
-                this._switchAudioModeForHeadphones();
-            }
-            else {
-                this._switchAudioModeForNormalSpeakers();
+            if (AudioEngine) {
+                if (this._headphone) {
+                    this._switchAudioModeForHeadphones();
+                }
+                else {
+                    this._switchAudioModeForNormalSpeakers();
+                }
             }
         }
 
@@ -1989,7 +1999,9 @@
             this.detachControl();
 
             // Release sounds & sounds tracks
-            this.disposeSounds();
+            if (AudioEngine) {
+                this.disposeSounds();
+            }
 
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
