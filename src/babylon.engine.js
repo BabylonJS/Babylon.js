@@ -484,7 +484,7 @@ var BABYLON;
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-            if (!Engine.audioEngine) {
+            if (BABYLON.AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new BABYLON.AudioEngine();
             }
             //default loading screen
@@ -2031,4 +2031,3 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.engine.js.map

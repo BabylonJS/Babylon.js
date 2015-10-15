@@ -531,7 +531,7 @@ var BABYLON;
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, function (element) { _this._scene.skeletonsEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, function (element) { _this._scene.spritesEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, function (element) { _this._scene.texturesEnabled = element.checked; });
-                if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                if (BABYLON.AudioEngine && BABYLON.Engine.audioEngine.canUseWebAudio) {
                     this._optionsSubsetDiv.appendChild(document.createElement("br"));
                     this._generateTexBox(this._optionsSubsetDiv, "<b>Audio:</b>", this.accentColor);
                     this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", this._scene.headphone, function (element) {
@@ -606,4 +606,3 @@ var BABYLON;
     })();
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.debugLayer.js.map

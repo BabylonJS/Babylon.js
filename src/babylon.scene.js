@@ -146,7 +146,9 @@ var BABYLON;
             }
             this.attachControl();
             this._debugLayer = new BABYLON.DebugLayer(this);
-            this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
+            if (BABYLON.SoundTrack) {
+                this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
+            }
             //simplification queue
             if (BABYLON.SimplificationQueue) {
                 this.simplificationQueue = new BABYLON.SimplificationQueue();
@@ -983,15 +985,17 @@ var BABYLON;
         };
         Scene.prototype.getSoundByName = function (name) {
             var index;
-            for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
-                if (this.mainSoundTrack.soundCollection[index].name === name) {
-                    return this.mainSoundTrack.soundCollection[index];
+            if (BABYLON.AudioEngine) {
+                for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+                    if (this.mainSoundTrack.soundCollection[index].name === name) {
+                        return this.mainSoundTrack.soundCollection[index];
+                    }
                 }
-            }
-            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
-                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
-                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
-                        return this.soundTracks[sdIndex].soundCollection[index];
+                for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+                    for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
+                        if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
+                            return this.soundTracks[sdIndex].soundCollection[index];
+                        }
                     }
                 }
             }
@@ -1425,7 +1429,9 @@ var BABYLON;
             // Intersection checks
             this._checkIntersections();
             // Update the audio listener attached to the camera
-            this._updateAudioParameters();
+            if (BABYLON.AudioEngine) {
+                this._updateAudioParameters();
+            }
             // After render
             if (this.afterRender) {
                 this.afterRender();
@@ -1446,7 +1452,7 @@ var BABYLON;
             this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
         Scene.prototype._updateAudioParameters = function () {
-            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0)) {
+            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
                 return;
             }
             var listeningCamera;
@@ -1487,11 +1493,13 @@ var BABYLON;
             },
             set: function (value) {
                 this._audioEnabled = value;
-                if (this._audioEnabled) {
-                    this._enableAudio();
-                }
-                else {
-                    this._disableAudio();
+                if (BABYLON.AudioEngine) {
+                    if (this._audioEnabled) {
+                        this._enableAudio();
+                    }
+                    else {
+                        this._disableAudio();
+                    }
                 }
             },
             enumerable: true,
@@ -1529,11 +1537,13 @@ var BABYLON;
             },
             set: function (value) {
                 this._headphone = value;
-                if (this._headphone) {
-                    this._switchAudioModeForHeadphones();
-                }
-                else {
-                    this._switchAudioModeForNormalSpeakers();
+                if (BABYLON.AudioEngine) {
+                    if (this._headphone) {
+                        this._switchAudioModeForHeadphones();
+                    }
+                    else {
+                        this._switchAudioModeForNormalSpeakers();
+                    }
                 }
             },
             enumerable: true,
@@ -1583,7 +1593,9 @@ var BABYLON;
             this._onAfterRenderCallbacks = [];
             this.detachControl();
             // Release sounds & sounds tracks
-            this.disposeSounds();
+            if (BABYLON.AudioEngine) {
+                this.disposeSounds();
+            }
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
             var index;
@@ -1907,4 +1919,3 @@ var BABYLON;
     })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.scene.js.map

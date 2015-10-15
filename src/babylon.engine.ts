@@ -687,7 +687,7 @@
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
-            if (!Engine.audioEngine) {
+            if (AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
             }
 			
