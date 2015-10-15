@@ -1,6 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
+﻿precision highp float;
 
 const vec3 TWO = vec3(2.0, 2.0, 2.0);
 

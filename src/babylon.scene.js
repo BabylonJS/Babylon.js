@@ -141,12 +141,16 @@ var BABYLON;
             this.postProcessManager = new BABYLON.PostProcessManager(this);
             this.postProcessRenderPipelineManager = new BABYLON.PostProcessRenderPipelineManager();
             this._boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(this);
-            this._outlineRenderer = new BABYLON.OutlineRenderer(this);
+            if (BABYLON.OutlineRenderer) {
+                this._outlineRenderer = new BABYLON.OutlineRenderer(this);
+            }
             this.attachControl();
             this._debugLayer = new BABYLON.DebugLayer(this);
             this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
             //simplification queue
-            this.simplificationQueue = new BABYLON.SimplificationQueue();
+            if (BABYLON.SimplificationQueue) {
+                this.simplificationQueue = new BABYLON.SimplificationQueue();
+            }
             //collision coordinator initialization. For now legacy per default.
             this.workerCollisions = false; //(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
         }
@@ -1326,7 +1330,7 @@ var BABYLON;
                 this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger, null);
             }
             //Simplification Queue
-            if (!this.simplificationQueue.running) {
+            if (this.simplificationQueue && !this.simplificationQueue.running) {
                 this.simplificationQueue.executeNext();
             }
             // Animations
@@ -1903,3 +1907,4 @@ var BABYLON;
     })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.scene.js.map

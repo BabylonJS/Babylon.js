@@ -1,6 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
+﻿precision highp float;
 
 varying vec2 vUV;                    
 uniform vec3 roadColor;

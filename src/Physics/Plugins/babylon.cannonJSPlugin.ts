@@ -37,7 +37,7 @@
                 registeredMesh.mesh.position.x = bodyX + deltaPos.x;
                 registeredMesh.mesh.position.y = bodyY + deltaPos.y;
                 registeredMesh.mesh.position.z = bodyZ + deltaPos.z;
-                
+
                 registeredMesh.mesh.rotationQuaternion.x = registeredMesh.body.quaternion.x;
                 registeredMesh.mesh.rotationQuaternion.y = registeredMesh.body.quaternion.y;
                 registeredMesh.mesh.rotationQuaternion.z = registeredMesh.body.quaternion.z;
@@ -108,7 +108,7 @@
 
             var shape = new CANNON.ConvexPolyhedron(verts, faces);
 
-            return shape;            
+            return shape;
         }
 
         private _addMaterial(friction: number, restitution: number) {
@@ -157,7 +157,7 @@
 
             body.quaternion = new CANNON.Quaternion(mesh.rotationQuaternion.x, mesh.rotationQuaternion.y, mesh.rotationQuaternion.z, mesh.rotationQuaternion.w);
             //is shape is a plane, it must be rotated 90 degs in the X axis.
-            if (shape.type == CANNON.Shape.types.PLANE) {
+            if (shape.type === CANNON.Shape.types.PLANE) {
                 var tmpQ = new CANNON.Quaternion();
                 tmpQ.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
                 body.quaternion = body.quaternion.mult(tmpQ);
@@ -189,10 +189,10 @@
                 mesh.computeWorldMatrix(true);
                 var shape = this._createShape(mesh, parts[index].impostor);
                 var localPosition = mesh.position;
-                
+
                 body.addShape(shape, new CANNON.Vec3(localPosition.x, localPosition.y, localPosition.z));
             }
-            
+
             return body;
         }
 
@@ -289,3 +289,4 @@
         }
     }
 }
+

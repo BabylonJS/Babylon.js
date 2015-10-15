@@ -127,3 +127,4 @@ var BABYLON;
     })();
     BABYLON.PostProcessManager = PostProcessManager;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.postProcessManager.js.map

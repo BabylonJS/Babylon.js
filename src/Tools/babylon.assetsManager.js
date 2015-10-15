@@ -218,3 +218,4 @@ var BABYLON;
     })();
     BABYLON.AssetsManager = AssetsManager;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.assetsManager.js.map

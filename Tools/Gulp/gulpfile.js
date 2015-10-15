@@ -10,14 +10,14 @@ var rename = require("gulp-rename");
 var cleants = require('gulp-clean-ts-extends');
 var changed = require('gulp-changed');
 var runSequence = require('run-sequence');
-var replace = require("gulp-replace")
+var replace = require("gulp-replace");
 
 var config = require("./config.json");
 
 var shadersStream;
 var workersStream;
 
-var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g
+var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
 
 //function to convert the shaders' filenames to variable names.
 function shadersName(filename) {
@@ -50,10 +50,7 @@ gulp.task('typescript-compile', function() {
                     target: 'ES5', 
                     declarationFiles: true,
                     typescript: require('typescript')
-                })).on('error', function(error) {
-                    console.log('Typescript compile failed');
-                    process.exit(1);
-                });
+                }));
     return merge2([
         tsResult.dts
             .pipe(concat(config.build.declarationFilename))
@@ -77,33 +74,48 @@ gulp.task('typescript-sourcemaps', function() {
             .pipe(gulp.dest(config.build.srcOutputDirectory));
 });
 
+gulp.task("buildCore", ["shaders"], function () {
+    return merge2(
+            gulp.src(config.core.files),
+            shadersStream
+        )
+        .pipe(concat(config.build.minCoreFilename))
+        .pipe(cleants())
+        .pipe(replace(extendsSearchRegex, ""))
+        .pipe(addModuleExports("BABYLON"))
+        .pipe(uglify())
+        .pipe(gulp.dest(config.build.outputDirectory));
+});
+
 gulp.task("buildNoWorker", ["shaders"], function () {
     return merge2(
-        gulp.src(config.core.files, config.extras.files),
-        shadersStream
-    )
-    .pipe(concat(config.build.minNoWorkerFilename))
-    .pipe(cleants())
-    .pipe(replace(extendsSearchRegex, ""))
-    .pipe(addModuleExports("BABYLON"))
-    .pipe(uglify())
-    .pipe(gulp.dest(config.build.outputDirectory))
+            gulp.src(config.core.files),
+            gulp.src(config.extras.files),
+            shadersStream
+        )
+        .pipe(concat(config.build.minNoWorkerFilename))
+        .pipe(cleants())
+        .pipe(replace(extendsSearchRegex, ""))
+        .pipe(addModuleExports("BABYLON"))
+        .pipe(uglify())
+        .pipe(gulp.dest(config.build.outputDirectory));
 });
 
 gulp.task("build", ["workers", "shaders"], function () {
     return merge2(
-        gulp.src(config.core.files, config.extras.files),    
-        shadersStream,
-        workersStream
-    )
-    .pipe(concat(config.build.filename))
-    .pipe(cleants())
-    .pipe(replace(extendsSearchRegex, ""))
-    .pipe(addModuleExports("BABYLON"))
-    .pipe(gulp.dest(config.build.outputDirectory))
-    .pipe(rename(config.build.minFilename))
-    .pipe(uglify())
-    .pipe(gulp.dest(config.build.outputDirectory))
+            gulp.src(config.core.files),
+            gulp.src(config.extras.files),
+            shadersStream,
+            workersStream
+        )
+        .pipe(concat(config.build.filename))
+        .pipe(cleants())
+        .pipe(replace(extendsSearchRegex, ""))
+        .pipe(addModuleExports("BABYLON"))
+        .pipe(gulp.dest(config.build.outputDirectory))
+        .pipe(rename(config.build.minFilename))
+        .pipe(uglify())
+        .pipe(gulp.dest(config.build.outputDirectory));
 });
 
 gulp.task("typescript", function(cb) {
@@ -114,7 +126,7 @@ gulp.task("typescript", function(cb) {
  * The default task, call the tasks: build
  */
 gulp.task('default', function() {
-    return runSequence("buildNoWorker", "build");
+    return runSequence("buildNoWorker", "build", "buildCore");
 });
 
 /**

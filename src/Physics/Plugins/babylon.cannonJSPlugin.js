@@ -133,7 +133,7 @@ var BABYLON;
             });
             body.quaternion = new CANNON.Quaternion(mesh.rotationQuaternion.x, mesh.rotationQuaternion.y, mesh.rotationQuaternion.z, mesh.rotationQuaternion.w);
             //is shape is a plane, it must be rotated 90 degs in the X axis.
-            if (shape.type == CANNON.Shape.types.PLANE) {
+            if (shape.type === CANNON.Shape.types.PLANE) {
                 var tmpQ = new CANNON.Quaternion();
                 tmpQ.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
                 body.quaternion = body.quaternion.mult(tmpQ);
@@ -223,3 +223,4 @@ var BABYLON;
     })();
     BABYLON.CannonJSPlugin = CannonJSPlugin;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.cannonJSPlugin.js.map

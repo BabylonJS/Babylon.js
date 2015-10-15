@@ -259,3 +259,4 @@ var BABYLON;
     })(BABYLON.Material);
     BABYLON.PBRMaterial = PBRMaterial;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.pbrMaterial.js.map
