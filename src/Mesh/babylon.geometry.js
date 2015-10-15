@@ -148,8 +148,9 @@ var BABYLON;
         };
         Geometry.prototype.getVerticesDataKinds = function () {
             var result = [];
+            var kind;
             if (!this._vertexBuffers && this._delayInfo) {
-                for (var kind in this._delayInfo) {
+                for (kind in this._delayInfo) {
                     result.push(kind);
                 }
             }
@@ -344,7 +345,13 @@ var BABYLON;
             var kind;
             for (kind in this._vertexBuffers) {
                 // using slice() to make a copy of the array and not just reference it
-                vertexData.set(this.getVerticesData(kind).slice(0), kind);
+                var data = this.getVerticesData(kind);
+                if (data instanceof Float32Array) {
+                    vertexData.set(new Float32Array(data), kind);
+                }
+                else {
+                    vertexData.set(data.slice(0), kind);
+                }
                 if (!stopChecking) {
                     updatable = this.getVertexBuffer(kind).isUpdatable();
                     stopChecking = !updatable;

@@ -387,12 +387,6 @@ var BABYLON;
             this.synchronizeInstances();
         };
         Mesh.prototype.setVerticesData = function (kind, data, updatable, stride) {
-            if (kind instanceof Array) {
-                var temp = data;
-                data = kind;
-                kind = temp;
-                BABYLON.Tools.Warn("Deprecated usage of setVerticesData detected (since v1.12). Current signature is setVerticesData(kind, data, updatable).");
-            }
             if (!this._geometry) {
                 var vertexData = new BABYLON.VertexData();
                 vertexData.set(data, kind);
@@ -416,6 +410,7 @@ var BABYLON;
             }
         };
         Mesh.prototype.updateVerticesDataDirectly = function (kind, data, offset, makeItUnique) {
+            BABYLON.Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
             if (!this._geometry) {
                 return;
             }
@@ -1979,6 +1974,34 @@ var BABYLON;
         };
         // Skeletons
         /**
+         * @returns original positions used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
+         */
+        Mesh.prototype.setPositionsForCPUSkinning = function () {
+            var source;
+            if (!this._sourcePositions) {
+                source = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                this._sourcePositions = new Float32Array(source);
+                if (!this.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).isUpdatable()) {
+                    this.setVerticesData(BABYLON.VertexBuffer.PositionKind, source, true);
+                }
+            }
+            return this._sourcePositions;
+        };
+        /**
+         * @returns original normals used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
+         */
+        Mesh.prototype.setNormalsForCPUSkinning = function () {
+            var source;
+            if (!this._sourceNormals) {
+                source = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                this._sourceNormals = new Float32Array(source);
+                if (!this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable()) {
+                    this.setVerticesData(BABYLON.VertexBuffer.NormalKind, source, true);
+                }
+            }
+            return this._sourceNormals;
+        };
+        /**
          * Update the vertex buffers by applying transformation from the bones
          * @param {skeleton} skeleton to apply
          */
@@ -1995,23 +2018,22 @@ var BABYLON;
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 return this;
             }
-            var source;
             if (!this._sourcePositions) {
-                source = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-                this._sourcePositions = new Float32Array(source);
-                if (!this.getVertexBuffer(BABYLON.VertexBuffer.PositionKind).isUpdatable()) {
-                    this.setVerticesData(BABYLON.VertexBuffer.PositionKind, source, true);
-                }
+                this.setPositionsForCPUSkinning();
             }
             if (!this._sourceNormals) {
-                source = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-                this._sourceNormals = new Float32Array(source);
-                if (!this.getVertexBuffer(BABYLON.VertexBuffer.NormalKind).isUpdatable()) {
-                    this.setVerticesData(BABYLON.VertexBuffer.NormalKind, source, true);
-                }
+                this.setNormalsForCPUSkinning();
             }
+            // positionsData checks for not being Float32Array will only pass at most once
             var positionsData = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            if (!(positionsData instanceof Float32Array)) {
+                positionsData = new Float32Array(positionsData);
+            }
+            // normalsData checks for not being Float32Array will only pass at most once
             var normalsData = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            if (!(normalsData instanceof Float32Array)) {
+                normalsData = new Float32Array(normalsData);
+            }
             var matricesIndicesData = this.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
             var skeletonMatrices = skeleton.getTransformMatrices();
