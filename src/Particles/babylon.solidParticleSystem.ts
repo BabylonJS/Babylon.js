@@ -2,32 +2,32 @@ module BABYLON {
 
     export class SolidParticleSystem implements IDisposable {
         // public members  
-        public particles: SolidParticle[] = [];
-        public nbParticles:number = 0;
-        public billboard: boolean = false;
-        public counter: number = 0;
+        public particles = new Array<SolidParticle>();
+        public nbParticles = 0;
+        public billboard = false;
+        public counter = 0;
         public name: string;
         public mesh: Mesh;
         
         // private members
         private _scene: Scene;
-        private _positions: number[] = [];
-        private _indices: number[] = [];
-        private _normals: number[] = [];
-        private _colors: number[] = [];
-        private _uvs: number[] = [];
-        private _index: number = 0;  // indices index
-        private _shapeCounter: number = 0;
-        private _useParticleColor: boolean = true;
-        private _useParticleTexture: boolean = true;
-        private _useParticleRotation: boolean = true;
-        private _useParticleVertex: boolean = false;
-        private _cam_axisZ: Vector3 = Vector3.Zero();
-        private _cam_axisY: Vector3 = Vector3.Zero();
-        private _cam_axisX: Vector3 = Vector3.Zero();
-        private _axisX: Vector3 = Axis.X;
-        private _axisY: Vector3 = Axis.Y;
-        private _axisZ: Vector3 = Axis.Z;
+        private _positions = new Array<number>();
+        private _indices = new Array<number>();
+        private _normals = new Array<number>();
+        private _colors = new Array<number>();
+        private _uvs = new Array<number>();
+        private _index = 0;  // indices index
+        private _shapeCounter = 0;
+        private _useParticleColor = true;
+        private _useParticleTexture = true;
+        private _useParticleRotation = true;
+        private _useParticleVertex = false;
+        private _cam_axisZ = Vector3.Zero();
+        private _cam_axisY = Vector3.Zero();
+        private _cam_axisX = Vector3.Zero();
+        private _axisX = Axis.X;
+        private _axisY = Axis.Y;
+        private _axisZ = Axis.Z;
         private _camera: Camera;
         private _particle: SolidParticle;
         private _previousParticle: SolidParticle;
@@ -50,6 +50,7 @@ module BABYLON {
         private _sinYaw: number = 0.0;
         private _cosYaw: number = 0.0;
 
+
         constructor(name: string, scene: Scene) {
             this.name = name;
             this._scene = scene;
@@ -58,8 +59,8 @@ module BABYLON {
 
         // build the SPS mesh : returns the mesh
         public buildMesh(): Mesh {
-            if (this.nbParticles == 0) {
-                //this.addTriangles(1, 1);
+            if (this.nbParticles === 0) {
+                return null;
             }
             VertexData.ComputeNormals(this._positions, this._indices, this._normals);
             var vertexData = new VertexData();
@@ -79,7 +80,7 @@ module BABYLON {
         }
 
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors): void  { 
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors): void {
             var i;
             var u = 0;
             var c = 0;
@@ -93,7 +94,7 @@ module BABYLON {
                     colors.push(meshCol[c], meshCol[c + 1], meshCol[c + 2], meshCol[c + 3]);
                     c += 4;
                 } else {
-                    colors.push(1,1,1,1);
+                    colors.push(1, 1, 1, 1);
                 }
             }
             for (i = 0; i < meshInd.length; i++) {
@@ -105,7 +106,7 @@ module BABYLON {
         private _posToShape(positions): Vector3[] {
             var shape = [];
             for (var i = 0; i < positions.length; i += 3) {
-                shape.push(new BABYLON.Vector3(positions[i], positions[i + 1], positions[i + 2]));
+                shape.push(new Vector3(positions[i], positions[i + 1], positions[i + 2]));
             }
             return shape;
         }
@@ -148,14 +149,14 @@ module BABYLON {
                 this._index += shape.length;
             }
             this.nbParticles += nb;
-            this._shapeCounter ++;
+            this._shapeCounter++;
             return this._shapeCounter;
         }
 
         // resets a particle back to its just built status
         public resetParticle(particle: SolidParticle): void {
             for (var pt = 0; pt < particle._shape.length; pt++) {
-                this._positions[particle._pos + pt * 3] = particle._shape[pt].x;      
+                this._positions[particle._pos + pt * 3] = particle._shape[pt].x;
                 this._positions[particle._pos + pt * 3 + 1] = particle._shape[pt].y;
                 this._positions[particle._pos + pt * 3 + 2] = particle._shape[pt].z;
             }
@@ -179,13 +180,13 @@ module BABYLON {
             this._cam_axisZ.z = 1;
 
             // if the particles will always face the camera
-            if (this.billboard)  {    
+            if (this.billboard) {    
                 // compute a fake camera position : un-rotate the camera position by the current mesh rotation
                 this._yaw = this.mesh.rotation.y;
                 this._pitch = this.mesh.rotation.x;
                 this._roll = this.mesh.rotation.z;
                 this._quaternionRotationYPR();
-                this._quaternionToRotationMatrix();    
+                this._quaternionToRotationMatrix();
                 this._rotMatrix.invertToRef(this._invertedMatrix);
                 Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertedMatrix, this._fakeCamPos);
 
@@ -197,7 +198,6 @@ module BABYLON {
                 this._cam_axisX.normalize();
                 this._cam_axisZ.normalize();
             }
-          
 
             Matrix.IdentityToRef(this._rotMatrix);
             var idx = 0;
@@ -231,7 +231,7 @@ module BABYLON {
                         this._roll = this._particle.rotation.z;
                         this._quaternionRotationYPR();
                     }
-                this._quaternionToRotationMatrix();
+                    this._quaternionToRotationMatrix();
                 }
 
                 for (var pt = 0; pt < this._particle._shape.length; pt++) {
@@ -249,9 +249,9 @@ module BABYLON {
 
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
 
-                    this._positions[idx]     = this._particle.position.x + this._cam_axisX.x * this._rotated.x * this._particle.scale.x + this._cam_axisY.x * this._rotated.y * this._particle.scale.y + this._cam_axisZ.x * this._rotated.z * this._particle.scale.z;      
-                    this._positions[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x * this._particle.scale.x + this._cam_axisY.y * this._rotated.y * this._particle.scale.y + this._cam_axisZ.y * this._rotated.z * this._particle.scale.z; 
-                    this._positions[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x * this._particle.scale.x + this._cam_axisY.z * this._rotated.y * this._particle.scale.y + this._cam_axisZ.z * this._rotated.z * this._particle.scale.z; 
+                    this._positions[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x * this._particle.scale.x + this._cam_axisY.x * this._rotated.y * this._particle.scale.y + this._cam_axisZ.x * this._rotated.z * this._particle.scale.z;
+                    this._positions[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x * this._particle.scale.x + this._cam_axisY.y * this._rotated.y * this._particle.scale.y + this._cam_axisZ.y * this._rotated.z * this._particle.scale.z;
+                    this._positions[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x * this._particle.scale.x + this._cam_axisY.z * this._rotated.y * this._particle.scale.y + this._cam_axisZ.z * this._rotated.z * this._particle.scale.z;
 
                     if (this._useParticleColor) {
                         this._colors[colidx] = this._particle.color.r;
@@ -285,7 +285,7 @@ module BABYLON {
             }
             this.afterUpdateParticles(start, end, update);
         }
-        // internal implementation of BJS Quaternion.RotationYawPitchRollToRef() with memory reuse
+        
         private _quaternionRotationYPR(): void {
             this._halfroll = this._roll * 0.5;
             this._halfpitch = this._pitch * 0.5;
@@ -301,8 +301,7 @@ module BABYLON {
             this._quaternion.z = (this._cosYaw * this._cosPitch * this._sinRoll) - (this._sinYaw * this._sinPitch * this._cosRoll);
             this._quaternion.w = (this._cosYaw * this._cosPitch * this._cosRoll) + (this._sinYaw * this._sinPitch * this._sinRoll);
         }
-
-        // internal implemenation of BJS toRotationMatric() with memory reuse
+        
         private _quaternionToRotationMatrix(): void {
             this._rotMatrix.m[0] = 1.0 - (2.0 * (this._quaternion.y * this._quaternion.y + this._quaternion.z * this._quaternion.z));
             this._rotMatrix.m[1] = 2.0 * (this._quaternion.x * this._quaternion.y + this._quaternion.z * this._quaternion.w);
@@ -319,7 +318,7 @@ module BABYLON {
             this._rotMatrix.m[12] = 0;
             this._rotMatrix.m[13] = 0;
             this._rotMatrix.m[14] = 0;
-            this._rotMatrix.m[15] = 1.0
+            this._rotMatrix.m[15] = 1.0;
         }
 
         // dispose the SPS
@@ -338,26 +337,26 @@ module BABYLON {
 
         public set useParticleTexture(val: boolean) {
             this._useParticleTexture = val;
-        } 
+        }
 
         public set useParticleVertex(val: boolean) {
             this._useParticleVertex = val;
         } 
 
         // getters
-         public get useParticleRotation() {
+        public get useParticleRotation(): boolean {
             return this._useParticleRotation;
         }
 
-        public get useParticleColor() {
+        public get useParticleColor(): boolean {
             return this._useParticleColor;
         }
 
-        public get useParticleTexture() {
+        public get useParticleTexture(): boolean {
             return this._useParticleTexture;
-        } 
+        }
 
-        public get useParticleVertex() {
+        public get useParticleVertex(): boolean {
             return this._useParticleVertex;
         } 
        
@@ -369,7 +368,7 @@ module BABYLON {
 
         // init : sets all particles first values and calls updateParticle to set them in space
         // can be overwritten by the user
-        public initParticles(): void {    
+        public initParticles(): void {
         }
 
         // recycles a particle : can by overwritten by the user
@@ -380,7 +379,7 @@ module BABYLON {
         // updates a particle : can be overwritten by the user
         // will be called on each particle by setParticles() :
         // ex : just set a particle position or velocity and recycle conditions
-        public updateParticle (particle: SolidParticle): SolidParticle {
+        public updateParticle(particle: SolidParticle): SolidParticle {
             return particle;
         }
 

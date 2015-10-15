@@ -162,7 +162,7 @@
             return null;
         }
 
-        public getVerticesData(kind: string): number[] {
+        public getVerticesData(kind: string): number[] | Float32Array {
             return null;
         }
 

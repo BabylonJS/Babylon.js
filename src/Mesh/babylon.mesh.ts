@@ -249,7 +249,7 @@
             return this._geometry.getTotalVertices();
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
             if (!this._geometry) {
                 return null;
             }
@@ -418,15 +418,7 @@
             this.synchronizeInstances();
         }
 
-        public setVerticesData(kind: any, data: any, updatable?: boolean, stride?: number): void {
-            if (kind instanceof Array) {
-                var temp = data;
-                data = kind;
-                kind = temp;
-
-                Tools.Warn("Deprecated usage of setVerticesData detected (since v1.12). Current signature is setVerticesData(kind, data, updatable).");
-            }
-
+        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): void {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.set(data, kind);
@@ -440,7 +432,7 @@
             }
         }
 
-        public updateVerticesData(kind: string, data: number[], updateExtends?: boolean, makeItUnique?: boolean): void {
+        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void {
             if (!this._geometry) {
                 return;
             }
@@ -454,6 +446,8 @@
         }
 
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
+            Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
+
             if (!this._geometry) {
                 return;
             }
@@ -2282,8 +2276,8 @@
                     vertexData.indices.push(currentVertexDataIndex);
                     vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
-                    vertexData.uvs.push(0.5 + vertex.position.x / size.x);
-                    vertexData.uvs.push(0.5 + vertex.position.y / size.y);
+                    (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
+                    (<number[]>vertexData.uvs).push(0.5 + vertex.position.y / size.y);
 
                     currentVertexDataIndex++;
                 }
@@ -2300,6 +2294,39 @@
         }
 
         // Skeletons
+        /**
+         * @returns original positions used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
+         */
+        public setPositionsForCPUSkinning(): Float32Array {
+            var source: number[] | Float32Array;
+            if (!this._sourcePositions) {
+                source = this.getVerticesData(VertexBuffer.PositionKind);
+
+                this._sourcePositions = new Float32Array(<any>source);
+
+                if (!this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable()) {
+                    this.setVerticesData(VertexBuffer.PositionKind, source, true);
+                }
+            }
+            return this._sourcePositions;
+        }
+
+        /**
+         * @returns original normals used for CPU skinning.  Useful for integrating Morphing with skeletons in same mesh.
+         */
+        public setNormalsForCPUSkinning(): Float32Array {
+            var source: number[] | Float32Array;
+            if (!this._sourceNormals) {
+                source = this.getVerticesData(VertexBuffer.NormalKind);
+
+                this._sourceNormals = new Float32Array(<any>source);
+
+                if (!this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable()) {
+                    this.setVerticesData(VertexBuffer.NormalKind, source, true);
+                }
+            }
+            return this._sourceNormals;
+        }
 
         /**
          * Update the vertex buffers by applying transformation from the bones
@@ -2318,27 +2345,26 @@
             if (!this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 return this;
             }
-            var source: number[];
-            if (!this._sourcePositions) {
-                source = this.getVerticesData(VertexBuffer.PositionKind);
-                this._sourcePositions = new Float32Array(source);
 
-                if (!this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable()) {
-                    this.setVerticesData(VertexBuffer.PositionKind, source, true);
-                }
+            if (!this._sourcePositions) {
+                this.setPositionsForCPUSkinning();
             }
 
             if (!this._sourceNormals) {
-                source = this.getVerticesData(VertexBuffer.NormalKind);
-                this._sourceNormals = new Float32Array(source);
-
-                if (!this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable()) {
-                    this.setVerticesData(VertexBuffer.NormalKind, source, true);
-                }
+                this.setNormalsForCPUSkinning();
             }
 
+            // positionsData checks for not being Float32Array will only pass at most once
             var positionsData = this.getVerticesData(VertexBuffer.PositionKind);
+            if (!(positionsData instanceof Float32Array)) {
+                positionsData = new Float32Array(positionsData);
+            }
+            
+            // normalsData checks for not being Float32Array will only pass at most once
             var normalsData = this.getVerticesData(VertexBuffer.NormalKind);
+            if (!(normalsData instanceof Float32Array)) {
+                normalsData = new Float32Array(normalsData);
+            }
 
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
@@ -2390,7 +2416,7 @@
 
             return this;
         }
-
+        
         // Tools
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector: Vector3 = null;
@@ -2485,5 +2511,7 @@
         }
     }
 }
+
+
 
 

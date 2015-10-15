@@ -562,7 +562,7 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean}, adaptToDeviceRatio = true) {
+        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean }, adaptToDeviceRatio = true) {
             this._renderingCanvas = canvas;
 
             options = options || {};
@@ -1008,10 +1008,16 @@
             this._cachedVertexBuffers = null;
         }
 
-        public createVertexBuffer(vertices: number[]): WebGLBuffer {
+        public createVertexBuffer(vertices: number[] | Float32Array): WebGLBuffer {
             var vbo = this._gl.createBuffer();
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.STATIC_DRAW);
+            } else {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+            }
+
             this._resetVertexBufferBinding();
             vbo.references = 1;
             return vbo;
@@ -1026,7 +1032,7 @@
             return vbo;
         }
 
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: any, offset?: number): void {
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: number[] | Float32Array, offset?: number): void {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vertexBuffer);
 
             if (offset === undefined) {
@@ -1963,7 +1969,7 @@
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
 
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-            
+
             for (var face = 0; face < 6; face++) {
                 gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
             }
