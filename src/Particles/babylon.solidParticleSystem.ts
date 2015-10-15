@@ -114,7 +114,8 @@ module BABYLON {
         private _uvsToShapeUV(uvs): number[] {
             var shapeUV = [];
             if (uvs) {
-                    shapeUV.push(uvs.x, uvs.y, uvs.z, uvs.w);
+                for (var i = 0; i < uvs.length; i++)
+                    shapeUV.push(uvs[i]);
             }
             return shapeUV;
         }
