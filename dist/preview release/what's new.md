@@ -21,6 +21,7 @@
     - `diameter` parameter in `Mesh.CreateCreateCylinder()` ([jerome](https://github.com/jbousquie))
     - `Material.dispose()` now removes disposed material from meshes ([deltakosh](https://github.com/deltakosh))
     - New `Material.getBindedMeshes()` function ([deltakosh](https://github.com/deltakosh))
+    - Updated Cannon.js plugin to the newest version (0.6.2) [PR](https://github.com/BabylonJS/Babylon.js/pull/755) ([RaananW](https://github.com/RaananW))
   - **Bug fixes**
     - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
     - Fixed Sphere texture coordinates generation ([deltakosh](https://github.com/deltakosh))
@@ -32,6 +33,8 @@
     - Fixed morphing on capped tubes  ([jerome](https://github.com/jbousquie))
     - Fixed morphing on extruded shapes  ([jerome](https://github.com/jbousquie))
     - Fixed tube and extruded shape cap light artifact  ([jerome](https://github.com/jbousquie))
+    - Fixed a bug calculating velocity during collision with gravity enabled [PR](https://github.com/BabylonJS/Babylon.js/pull/738) ([RaananW](https://github.com/RaananW))
+    - Fixed a bug in instance serialization [PR](https://github.com/BabylonJS/Babylon.js/pull/726) ([RaananW](https://github.com/RaananW))
   - **Breaking changes**
     - `VertexData.CreateCylinder()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
     - `VertexData.CreateRibbon()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
