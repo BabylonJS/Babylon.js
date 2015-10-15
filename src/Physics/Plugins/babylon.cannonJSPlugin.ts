@@ -2,7 +2,6 @@
     declare var CANNON;
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
-        public checkWithEpsilon: (value: number) => number;
 
         private _world: any;
         private _registeredMeshes = [];
@@ -33,31 +32,21 @@
                     bodyY = registeredMesh.body.position.y,
                     bodyZ = registeredMesh.body.position.z;
 
-                var deltaPos = registeredMesh.delta;
-                if (deltaPos) {
-                    registeredMesh.mesh.position.x = bodyX + deltaPos.x;
-                    registeredMesh.mesh.position.y = bodyZ + deltaPos.y;
-                    registeredMesh.mesh.position.z = bodyY + deltaPos.z;
-                } else {
-                    registeredMesh.mesh.position.x = bodyX;
-                    registeredMesh.mesh.position.y = bodyZ;
-                    registeredMesh.mesh.position.z = bodyY;
-                }
+                var deltaPos = registeredMesh.delta || Vector3.Zero();
 
-
-                if (!registeredMesh.mesh.rotationQuaternion) {
-                    registeredMesh.mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
-                }
-
+                registeredMesh.mesh.position.x = bodyX + deltaPos.x;
+                registeredMesh.mesh.position.y = bodyY + deltaPos.y;
+                registeredMesh.mesh.position.z = bodyZ + deltaPos.z;
+                
                 registeredMesh.mesh.rotationQuaternion.x = registeredMesh.body.quaternion.x;
-                registeredMesh.mesh.rotationQuaternion.y = registeredMesh.body.quaternion.z;
-                registeredMesh.mesh.rotationQuaternion.z = registeredMesh.body.quaternion.y;
-                registeredMesh.mesh.rotationQuaternion.w = -registeredMesh.body.quaternion.w;
+                registeredMesh.mesh.rotationQuaternion.y = registeredMesh.body.quaternion.y;
+                registeredMesh.mesh.rotationQuaternion.z = registeredMesh.body.quaternion.z;
+                registeredMesh.mesh.rotationQuaternion.w = registeredMesh.body.quaternion.w;
             }
         }
 
         public setGravity(gravity: Vector3): void {
-            this._world.gravity.set(gravity.x, gravity.z, gravity.y);
+            this._world.gravity.set(gravity.x, gravity.y, gravity.z);
         }
 
         public registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any {
@@ -79,6 +68,9 @@
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
 
                     return new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
+                //TMP also for cylinder - TODO Cannon supports cylinder natively.
+                case PhysicsEngine.CylinderImpostor:
+                    Tools.Warn("CylinderImposter not yet implemented, using BoxImposter instead");
                 case PhysicsEngine.BoxImpostor:
                     bbox = mesh.getBoundingInfo().boundingBox;
                     var min = bbox.minimumWorld;
@@ -86,6 +78,7 @@
                     var box = max.subtract(min).scale(0.5);
                     return new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
                 case PhysicsEngine.PlaneImpostor:
+                    Tools.Warn("Attention, Cannon.js PlaneImposter might not behave as you wish. Consider using BoxImposter instead");
                     return new CANNON.Plane();
                 case PhysicsEngine.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -105,7 +98,7 @@
                 var transformed = Vector3.Zero();
 
                 Vector3.TransformNormalFromFloatsToRef(rawVerts[i], rawVerts[i + 1], rawVerts[i + 2], mesh.getWorldMatrix(), transformed);
-                verts.push(new CANNON.Vec3(transformed.x, transformed.z, transformed.y));
+                verts.push(new CANNON.Vec3(transformed.x, transformed.y, transformed.z));
             }
 
             // Get faces
@@ -147,12 +140,10 @@
         private _createRigidBodyFromShape(shape: CANNON.Shape, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
             var initialRotation: Quaternion = null;
 
-            if (mesh.rotationQuaternion) {
-                initialRotation = mesh.rotationQuaternion.clone();
-                //Why is that needed?
-                //mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
+            if (!mesh.rotationQuaternion) {
+                mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
             }
-
+            
             // The delta between the mesh position and the mesh bounding box center
             var bbox = mesh.getBoundingInfo().boundingBox;
             var deltaPosition = mesh.position.subtract(bbox.center);
@@ -161,11 +152,15 @@
             var body = new CANNON.Body({
                 mass: mass,
                 material: material,
-                position: new CANNON.Vec3(bbox.center.x, bbox.center.z, bbox.center.y)
+                position: new CANNON.Vec3(bbox.center.x, bbox.center.y, bbox.center.z)
             });
 
-            if (initialRotation) {
-                body.quaternion = new CANNON.Quaternion(initialRotation.x, initialRotation.y, initialRotation.z, initialRotation.w);
+            body.quaternion = new CANNON.Quaternion(mesh.rotationQuaternion.x, mesh.rotationQuaternion.y, mesh.rotationQuaternion.z, mesh.rotationQuaternion.w);
+            //is shape is a plane, it must be rotated 90 degs in the X axis.
+            if (shape.type == CANNON.Shape.types.PLANE) {
+                var tmpQ = new CANNON.Quaternion();
+                tmpQ.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+                body.quaternion = body.quaternion.mult(tmpQ);
             }
             
             //add the shape
@@ -181,20 +176,23 @@
         public registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
 
             var initialMesh = parts[0].mesh;
+
+            this.unregisterMesh(initialMesh);
+
+            initialMesh.computeWorldMatrix(true);
+
             var initialShape = this._createShape(initialMesh, parts[0].impostor);
             var body = this._createRigidBodyFromShape(initialShape, initialMesh, options.mass, options.friction, options.restitution);
 
             for (var index = 1; index < parts.length; index++) {
                 var mesh = parts[index].mesh;
-
+                mesh.computeWorldMatrix(true);
                 var shape = this._createShape(mesh, parts[index].impostor);
-                var localPosition = initialMesh.position.subtract(mesh.position);
+                var localPosition = mesh.position;
                 
-                body.addShape(shape, new CANNON.Vec3(localPosition.x, localPosition.z, localPosition.y));
+                body.addShape(shape, new CANNON.Vec3(localPosition.x, localPosition.y, localPosition.z));
             }
-
-            var initialMesh = parts[0].mesh;
-
+            
             return body;
         }
 
@@ -203,8 +201,9 @@
                 var registeredMesh = this._registeredMeshes[index];
 
                 if (registeredMesh.body === body) {
+                    this._world.remove(registeredMesh.body);
                     registeredMesh.body = null;
-                    registeredMesh.delta = 0;
+                    registeredMesh.delta = null;
                 }
             }
         }
@@ -216,8 +215,6 @@
                 if (registeredMesh.mesh === mesh) {
                     // Remove body
                     if (registeredMesh.body) {
-                        this._world.remove(registeredMesh.body);
-
                         this._unbindBody(registeredMesh.body);
                     }
 
@@ -228,8 +225,8 @@
         }
 
         public applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void {
-            var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.z, contactPoint.y);
-            var impulse = new CANNON.Vec3(force.x, force.z, force.y);
+            var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
+            var impulse = new CANNON.Vec3(force.x, force.y, force.z);
 
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
@@ -248,12 +245,12 @@
                     var body = registeredMesh.body;
 
                     var center = mesh.getBoundingInfo().boundingBox.center;
-                    body.position.set(center.x, center.z, center.y);
+                    body.position.set(center.x, center.y, center.z);
 
                     body.quaternion.x = mesh.rotationQuaternion.x;
-                    body.quaternion.z = mesh.rotationQuaternion.y;
-                    body.quaternion.y = mesh.rotationQuaternion.z;
-                    body.quaternion.w = -mesh.rotationQuaternion.w;
+                    body.quaternion.z = mesh.rotationQuaternion.z;
+                    body.quaternion.y = mesh.rotationQuaternion.y;
+                    body.quaternion.w = mesh.rotationQuaternion.w;
                     return;
                 }
             }
@@ -275,7 +272,7 @@
                 return false;
             }
 
-            var constraint = new CANNON.PointToPointConstraint(body1, new CANNON.Vec3(pivot1.x, pivot1.z, pivot1.y), body2, new CANNON.Vec3(pivot2.x, pivot2.z, pivot2.y));
+            var constraint = new CANNON.PointToPointConstraint(body1, new CANNON.Vec3(pivot1.x, pivot1.y, pivot1.z), body2, new CANNON.Vec3(pivot2.x, pivot2.y, pivot2.z));
             this._world.addConstraint(constraint);
 
             return true;
