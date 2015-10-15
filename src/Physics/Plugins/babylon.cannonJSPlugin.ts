@@ -137,7 +137,7 @@
             return currentMat;
         }
 
-        private _createRigidBodyFromShape(shape: CANNON.Shape, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
+        private _createRigidBodyFromShape(shape: any, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
             var initialRotation: Quaternion = null;
 
             if (!mesh.rotationQuaternion) {
