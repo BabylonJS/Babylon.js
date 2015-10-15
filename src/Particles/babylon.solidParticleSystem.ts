@@ -154,9 +154,9 @@ module BABYLON {
         }
 
         // sets all the particles
-        public setParticles(): void {
+        public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): void {
             // custom beforeUpdate
-            this.beforeUpdateParticles();
+            this.beforeUpdateParticles(start, end, update);
 
             this._cam_axisX.x = 1;
             this._cam_axisX.y = 0;
@@ -200,7 +200,7 @@ module BABYLON {
             var uvIndex = 0;
 
             // particle loop
-            for (var p = 0; p < this.nbParticles; p++) { 
+            for (var p = start; p <= end; p++) { 
                 this._particle = this.particles[p];
 
                 // call to custom user function to update the particle properties
@@ -262,19 +262,20 @@ module BABYLON {
                 uvIndex = uvidx + 2;
             }
 
-            if (this._useParticleColor) {
-                this.mesh.updateVerticesData(VertexBuffer.ColorKind, this._colors, false, false);
+            if (update) {
+                if (this._useParticleColor) {
+                    this.mesh.updateVerticesData(VertexBuffer.ColorKind, this._colors, false, false);
+                }
+                if (this._useParticleTexture) {
+                    this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs, false, false);
+                }
+                this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions, false, false);
+                if (!this.mesh.areNormalsFrozen) {
+                    VertexData.ComputeNormals(this._positions, this._indices, this._normals);
+                    this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals, false, false);
+                }
             }
-            if (this._useParticleTexture) {
-                this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs, false, false);
-            }
-            this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions, false, false);
-            if (!this.mesh.areNormalsFrozen) {
-                var indices = this.mesh.getIndices();
-                VertexData.ComputeNormals(this._positions, this._indices, this._normals);
-                this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals, false, false);
-            }
-            this.afterUpdateParticles();
+            this.afterUpdateParticles(start, end, update);
         }
         // internal implementation of BJS Quaternion.RotationYawPitchRollToRef() with memory reuse
         private _quaternionRotationYPR(): void {
@@ -383,11 +384,11 @@ module BABYLON {
         }
 
         // will be called before any other treatment by setParticles()
-        public beforeUpdateParticles(): void {
+        public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {
         }
 
         // will be called after all setParticles() treatments
-        public afterUpdateParticles(): void {
+        public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {
         }
     }
 }
