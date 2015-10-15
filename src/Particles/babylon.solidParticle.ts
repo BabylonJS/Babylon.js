@@ -14,6 +14,8 @@ module BABYLON {
         public _pos: number;
         public _shape: Vector3[]; 
         public _shapeUV : number[];   
+        public previous: SolidParticle;
+        public next: SolidParticle;
 
         constructor(particleIndex: number, positionIndex: number, shape: Vector3[], shapeUV: number[], shapeID: number) {
             this.idx = particleIndex;
