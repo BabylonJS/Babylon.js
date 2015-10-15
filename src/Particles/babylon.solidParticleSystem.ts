@@ -30,24 +30,26 @@ module BABYLON {
         private _axisZ = Axis.Z;
         private _camera: Camera;
         private _particle: SolidParticle;
-        private _fakeCamPos = Vector3.Zero();
-        private _rotMatrix = new Matrix();
-        private _invertedMatrix = new Matrix();
-        private _rotated = Vector3.Zero();
-        private _quaternion = new Quaternion();
-        private _vertex = Vector3.Zero();
-        private _yaw = 0.0;
-        private _pitch = 0.0;
-        private _roll = 0.0;
-        private _halfroll = 0.0;
-        private _halfpitch = 0.0;
-        private _halfyaw = 0.0;
-        private _sinRoll = 0.0;
-        private _cosRoll = 0.0;
-        private _sinPitch = 0.0;
-        private _cosPitch = 0.0;
-        private _sinYaw = 0.0;
-        private _cosYaw = 0.0;
+        private _previousParticle: SolidParticle;
+        private _fakeCamPos: Vector3 = Vector3.Zero();
+        private _rotMatrix: Matrix = new Matrix();
+        private _invertedMatrix: Matrix = new Matrix();
+        private _rotated: Vector3 = Vector3.Zero();
+        private _quaternion: Quaternion = new Quaternion();
+        private _vertex: Vector3 = Vector3.Zero();
+        private _yaw: number = 0.0;
+        private _pitch: number = 0.0;
+        private _roll: number = 0.0;
+        private _halfroll: number = 0.0;
+        private _halfpitch: number = 0.0;
+        private _halfyaw: number = 0.0;
+        private _sinRoll: number = 0.0;
+        private _cosRoll: number = 0.0;
+        private _sinPitch: number = 0.0;
+        private _cosPitch: number = 0.0;
+        private _sinYaw: number = 0.0;
+        private _cosYaw: number = 0.0;
+
 
         constructor(name: string, scene: Scene) {
             this.name = name;
@@ -58,7 +60,9 @@ module BABYLON {
         // build the SPS mesh : returns the mesh
         public buildMesh(): Mesh {
             if (this.nbParticles === 0) {
-                return null;
+                var triangle = Mesh.CreateDisc("", {radius: 1, tessellation: 3}, this._scene);
+                this.addShape(triangle, 1);
+                triangle.dispose();
             }
             VertexData.ComputeNormals(this._positions, this._indices, this._normals);
             var vertexData = new VertexData();
@@ -113,14 +117,21 @@ module BABYLON {
         private _uvsToShapeUV(uvs): number[] {
             var shapeUV = [];
             if (uvs) {
-                shapeUV.push(uvs.x, uvs.y, uvs.z, uvs.w);
+                for (var i = 0; i < uvs.length; i++)
+                    shapeUV.push(uvs[i]);
             }
             return shapeUV;
         }
 
-        // adds a new particle object in the particles array
+        // adds a new particle object in the particles array and double links the particle (next/previous)
         private _addParticle(p: number, idxpos: number, shape: Vector3[], shapeUV: number[], shapeId: number): void {
-            this.particles.push(new SolidParticle(p, idxpos, shape, shapeUV, shapeId));
+            this._particle = new SolidParticle(p, idxpos, shape, shapeUV, shapeId);
+            this.particles.push(this._particle);
+            this._particle.previous = this._previousParticle;
+            if (this._previousParticle) {
+                this._previousParticle.next = this._particle;
+            }
+            this._previousParticle = this._particle;
         }
 
         // add solid particles from a shape model in the particles array
@@ -154,9 +165,9 @@ module BABYLON {
         }
 
         // sets all the particles
-        public setParticles(): void {
+        public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): void {
             // custom beforeUpdate
-            this.beforeUpdateParticles();
+            this.beforeUpdateParticles(start, end, update);
 
             this._cam_axisX.x = 1;
             this._cam_axisX.y = 0;
@@ -199,7 +210,7 @@ module BABYLON {
             var uvIndex = 0;
 
             // particle loop
-            for (var p = 0; p < this.nbParticles; p++) {
+            for (var p = start; p <= end; p++) { 
                 this._particle = this.particles[p];
 
                 // call to custom user function to update the particle properties
@@ -261,19 +272,20 @@ module BABYLON {
                 uvIndex = uvidx + 2;
             }
 
-            if (this._useParticleColor) {
-                this.mesh.updateVerticesData(VertexBuffer.ColorKind, this._colors, false, false);
+            if (update) {
+                if (this._useParticleColor) {
+                    this.mesh.updateVerticesData(VertexBuffer.ColorKind, this._colors, false, false);
+                }
+                if (this._useParticleTexture) {
+                    this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs, false, false);
+                }
+                this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions, false, false);
+                if (!this.mesh.areNormalsFrozen) {
+                    VertexData.ComputeNormals(this._positions, this._indices, this._normals);
+                    this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals, false, false);
+                }
             }
-            if (this._useParticleTexture) {
-                this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs, false, false);
-            }
-            this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions, false, false);
-            if (!this.mesh.areNormalsFrozen) {
-             //   var indices = this.mesh.getIndices();
-                VertexData.ComputeNormals(this._positions, this._indices, this._normals);
-                this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals, false, false);
-            }
-            this.afterUpdateParticles();
+            this.afterUpdateParticles(start, end, update);
         }
         
         private _quaternionRotationYPR(): void {
@@ -381,11 +393,11 @@ module BABYLON {
         }
 
         // will be called before any other treatment by setParticles()
-        public beforeUpdateParticles(): void {
+        public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {
         }
 
         // will be called after all setParticles() treatments
-        public afterUpdateParticles(): void {
+        public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {
         }
     }
 }
