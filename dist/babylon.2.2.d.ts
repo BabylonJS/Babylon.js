@@ -5849,6 +5849,8 @@ declare module BABYLON {
         coordinatesMode: number;
         wrapU: number;
         wrapV: number;
+        uScale: number;
+        vScale: number;
         anisotropicFilteringLevel: number;
         _cachedAnisotropicFilteringLevel: number;
         private _scene;
