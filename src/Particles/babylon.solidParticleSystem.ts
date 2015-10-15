@@ -30,6 +30,7 @@ module BABYLON {
         private _axisZ: Vector3 = Axis.Z;
         private _camera: Camera;
         private _particle: SolidParticle;
+        private _previousParticle: SolidParticle;
         private _fakeCamPos: Vector3 = Vector3.Zero();
         private _rotMatrix: Matrix = new Matrix();
         private _invertedMatrix: Matrix = new Matrix();
@@ -118,9 +119,15 @@ module BABYLON {
             return shapeUV;
         }
 
-        // adds a new particle object in the particles array
+        // adds a new particle object in the particles array and double links the particle (next/previous)
         private _addParticle(p: number, idxpos: number, shape: Vector3[], shapeUV: number[], shapeId: number): void {
-            this.particles.push(new SolidParticle(p, idxpos, shape, shapeUV, shapeId));
+            this._particle = new SolidParticle(p, idxpos, shape, shapeUV, shapeId);
+            this.particles.push(this._particle);
+            this._particle.previous = this._previousParticle;
+            if (this._previousParticle) {
+                this._previousParticle.next = this._particle;
+            }
+            this._previousParticle = this._particle;
         }
 
         // add solid particles from a shape model in the particles array
