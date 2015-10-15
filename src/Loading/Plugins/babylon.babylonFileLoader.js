@@ -1377,7 +1377,7 @@ var BABYLON;
                     }
                 }
                 // Sounds
-                if (parsedData.sounds) {
+                if (BABYLON.AudioEngine && parsedData.sounds) {
                     for (index = 0; index < parsedData.sounds.length; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
@@ -1439,4 +1439,3 @@ var BABYLON;
         });
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.babylonFileLoader.js.map

@@ -1674,7 +1674,7 @@
             }
 
             // Sounds
-            if (parsedData.sounds) {
+            if (AudioEngine && parsedData.sounds) {
                 for (index = 0; index < parsedData.sounds.length; index++) {
                     var parsedSound = parsedData.sounds[index];
                     if (Engine.audioEngine.canUseWebAudio) {
