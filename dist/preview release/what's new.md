@@ -21,7 +21,6 @@
     - `diameter` parameter in `Mesh.CreateCreateCylinder()` ([jerome](https://github.com/jbousquie))
     - `Material.dispose()` now removes disposed material from meshes ([deltakosh](https://github.com/deltakosh))
     - New `Material.getBindedMeshes()` function ([deltakosh](https://github.com/deltakosh))
-    - Updated Cannon.js plugin to the newest version (0.6.2). [PR](https://github.com/BabylonJS/Babylon.js/pull/755) ([RaananW](https://github.com/RaananW))
   - **Bug fixes**
     - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
     - Fixed Sphere texture coordinates generation ([deltakosh](https://github.com/deltakosh))
@@ -51,3 +50,4 @@
     - `VertexData.CreateGroundFromHeightMap()` now supports only the single _options_ parameter ([deltakosh](https://github.com/deltakosh))
     - `Tools.IsExponantOfTwo()` renamed to `Tools.IsExponentOfTwo()` ([deltakosh](https://github.com/deltakosh))
     - `Tools.GetExponantOfTwo()` renamed to `Tools.GetExponentOfTwo()` ([deltakosh](https://github.com/deltakosh))
+    - Updated Cannon.js plugin to the newest version (0.6.2). New cannon.js must be used. [PR](https://github.com/BabylonJS/Babylon.js/pull/755) ([RaananW](https://github.com/RaananW))
