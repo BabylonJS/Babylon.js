@@ -9,6 +9,7 @@
     - New `Mesh.CreatePolygon()` method ([jerome](https://github.com/jbousquie))
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+    - New `MeshBuilder` class used to create all kind of mesh shapes ([deltakosh](https://github.com/deltakosh))
     - Added `Scene.constantlyUpdateMeshUnderPointer` to improve performance when moving mouse ([deltakosh](https://github.com/deltakosh))
     - Added `StandardMaterial.disableLighting` ([deltakosh](https://github.com/deltakosh))
     - Improved reflection shader performance ([deltakosh](https://github.com/deltakosh))

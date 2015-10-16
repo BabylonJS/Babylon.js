@@ -1089,7 +1089,7 @@
             return vertexData;
         }
 
-        public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: any, precision: any }): VertexData {
+        public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
             var xmin = options.xmin;
             var zmin = options.zmin;
             var xmax = options.xmax;
