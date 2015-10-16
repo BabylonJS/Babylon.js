@@ -1894,7 +1894,7 @@
                 arc = arc || (<any>instance).arc;
                 path3D = ((<any>instance).path3D).update(path);
                 pathArray = tubePathArray(path, path3D, (<any>instance).pathArray, radius, (<any>instance).tessellation, radiusFunction, (<any>instance).cap, arc);
-                instance = Mesh.CreateRibbon(null, { pathArray: pathArray, instance: instance });
+                instance = MeshBuilder.CreateRibbon(null, { pathArray: pathArray, instance: instance });
                 (<any>instance).path3D = path3D;
                 (<any>instance).pathArray = pathArray;
                 (<any>instance).arc = arc;
@@ -1907,7 +1907,7 @@
             var newPathArray = new Array<Array<Vector3>>();
             cap = (cap < 0 || cap > 3) ? 0 : cap;
             pathArray = tubePathArray(path, path3D, newPathArray, radius, tessellation, radiusFunction, cap, arc);
-            var tube = Mesh.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation }, scene);
+            var tube = MeshBuilder.CreateRibbon(name, { pathArray: pathArray, closePath: true, closeArray: false, updatable: updatable, sideOrientation: sideOrientation }, scene);
             (<any>tube).pathArray = pathArray;
             (<any>tube).path3D = path3D;
             (<any>tube).tessellation = tessellation;
