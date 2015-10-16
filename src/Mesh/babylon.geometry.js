@@ -9,12 +9,14 @@ var BABYLON;
         function Geometry(id, scene, vertexData, updatable, mesh) {
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._totalVertices = 0;
-            this._indices = [];
             this._isDisposed = false;
             this.id = id;
             this._engine = scene.getEngine();
             this._meshes = [];
             this._scene = scene;
+            //Init vertex buffer cache
+            this._vertexBuffers = {};
+            this._indices = [];
             // vertexData
             if (vertexData) {
                 this.setAllVerticesData(vertexData, updatable);
@@ -43,7 +45,6 @@ var BABYLON;
             this.notifyUpdate();
         };
         Geometry.prototype.setVerticesData = function (kind, data, updatable, stride) {
-            this._vertexBuffers = this._vertexBuffers || {};
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
             }
@@ -634,4 +635,3 @@ var BABYLON;
         })(Primitives = Geometry.Primitives || (Geometry.Primitives = {}));
     })(Geometry = BABYLON.Geometry || (BABYLON.Geometry = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.geometry.js.map
