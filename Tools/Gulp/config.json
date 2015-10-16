@@ -125,6 +125,7 @@
   ],
   "extras": {
     "files": [      
+      "../../src/Math/babylon.math.SIMD.js",
       "../../src/Materials/babylon.shaderMaterial.js",
       "../../src/Tools/babylon.tools.dds.js",
       "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
