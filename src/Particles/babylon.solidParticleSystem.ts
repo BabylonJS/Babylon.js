@@ -60,7 +60,7 @@ module BABYLON {
         // build the SPS mesh : returns the mesh
         public buildMesh(): Mesh {
             if (this.nbParticles === 0) {
-                var triangle = Mesh.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
+                var triangle = MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
                 triangle.dispose();
             }
