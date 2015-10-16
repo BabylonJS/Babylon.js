@@ -8,6 +8,8 @@
         private _animatables: IAnimatable[];
         private _identity = Matrix.Identity();
 
+        private _ranges = new Array<AnimationRange>();
+
         constructor(public name: string, public id: string, scene: Scene) {
             this.bones = [];
 
@@ -30,6 +32,39 @@
         }
 
         // Methods
+        public createAnimationRange(name: string, from: number, to: number): void {
+            this._ranges.push(new AnimationRange(name, from, to));
+        }
+
+        public deleteAnimationRange(name: string): void {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    this._ranges.splice(index, 1);
+                    return;
+                }
+            }
+        }
+
+        public getAnimationRange(name: string): AnimationRange {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    return this._ranges[index];
+                }
+            }
+
+            return null;
+        }
+
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+            var range = this.getAnimationRange(name);
+
+            if (!range) {
+                return null;
+            }
+
+            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        }
+
         public _markAsDirty(): void {
             this._isDirty = true;
         }

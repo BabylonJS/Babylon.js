@@ -69,4 +69,3 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.deviceOrientationCamera.js.map

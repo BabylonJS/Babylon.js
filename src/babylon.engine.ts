@@ -329,7 +329,7 @@
 
         gl.bindTexture(gl.TEXTURE_2D, null);
 
-        engine._activeTexturesCache = [];
+        engine.resetTextureCache();
         scene._removePendingData(texture);
     };
 
@@ -542,7 +542,8 @@
 
         // Cache
         private _loadedTexturesCache = new Array<WebGLTexture>();
-        public _activeTexturesCache = new Array<BaseTexture>();
+        private _maxTextureChannels = 16;
+        private _activeTexturesCache = new Array<BaseTexture>(this._maxTextureChannels);
         private _currentEffect: Effect;
         private _compiledEffects = {};
         private _vertexAttribArrays: boolean[];
@@ -706,6 +707,12 @@
             this._workingContext = this._workingCanvas.getContext("2d");
         }
 
+        public resetTextureCache() {
+            for (var index = 0; index < this._maxTextureChannels; index++) {
+                this._activeTexturesCache[index] = null;
+            }
+        }
+
         public getGlInfo() {
             return {
                 vendor: this._glVendor,
@@ -824,9 +831,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                Tools.QueueNewFrame(() => {
-                    this._renderLoop();
-                });
+                Tools.QueueNewFrame(this._renderLoop.bind(this));
             } else {
                 this._renderingQueueLaunched = false;
             }
@@ -1545,7 +1550,7 @@
 
         // Textures
         public wipeCaches(): void {
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             this._currentEffect = null;
 
             this._depthCullingState.reset();
@@ -1737,7 +1742,7 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             texture.isReady = true;
         }
 
@@ -1776,7 +1781,7 @@
                 height = Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
 
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             texture._width = width;
             texture._height = height;
             texture.isReady = false;
@@ -1809,7 +1814,7 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             texture.isReady = true;
         }
 
@@ -1854,7 +1859,7 @@
                 }
 
                 this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._activeTexturesCache = [];
+                this.resetTextureCache();
                 texture.isReady = true;
 
             } catch (ex) {
@@ -1939,7 +1944,7 @@
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
             texture.samplingMode = samplingMode;
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
 
             this._loadedTexturesCache.push(texture);
 
@@ -1997,7 +2002,7 @@
             texture._framebuffer = framebuffer;
             texture._depthBuffer = depthBuffer;
 
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
 
             texture._width = size;
             texture._height = size;
@@ -2039,7 +2044,7 @@
 
                     gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 
-                    this._activeTexturesCache = [];
+                    this.resetTextureCache();
 
                     texture._width = info.width;
                     texture._height = info.height;
@@ -2078,7 +2083,7 @@
 
                     gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 
-                    this._activeTexturesCache = [];
+                    this.resetTextureCache();
 
                     texture._width = width;
                     texture._height = height;

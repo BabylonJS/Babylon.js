@@ -99,7 +99,7 @@
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
-            this._cache.targetScreenOffset = undefined;
+            this._cache.targetScreenOffset = Vector2.Zero();
         }
 
         public _updateCache(ignoreParentClass?: boolean): void {
@@ -111,7 +111,7 @@
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
-            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
+            this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
         }
 
         // Synchronized

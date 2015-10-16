@@ -330,7 +330,7 @@ var BABYLON;
             this.delayLoadingFile = null;
             this._delayLoadingFunction = null;
             this._delayInfo = [];
-            this._boundingInfo = null; // todo: .dispose()
+            this._boundingInfo = null;
             this._scene.removeGeometry(this);
             this._isDisposed = true;
         };

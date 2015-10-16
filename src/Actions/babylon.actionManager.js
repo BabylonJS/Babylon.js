@@ -299,4 +299,3 @@ var BABYLON;
     })();
     BABYLON.ActionManager = ActionManager;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.actionManager.js.map

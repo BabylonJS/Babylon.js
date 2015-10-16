@@ -1,4 +1,9 @@
 ﻿module BABYLON {
+    export class AnimationRange {
+        constructor(public name: string, public from: number, public to: number) {            
+        }
+    }
+
     export class Animation {
         private _keys: Array<any>;
         private _offsetsCache = {};
@@ -11,6 +16,8 @@
         public currentFrame: number;
 
         public allowMatricesInterpolation = false;
+
+        private _ranges = new Array<AnimationRange>();
 
         public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string,
             framePerSecond: number, totalFrame: number,
@@ -58,6 +65,29 @@
         }
 
         // Methods   
+        public createRange(name: string, from: number, to: number): void {
+            this._ranges.push(new AnimationRange(name, from, to));
+        }
+
+        public deleteRange(name: string): void {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    this._ranges.splice(index, 1);
+                    return;
+                }
+            }
+        }
+
+        public getRange(name: string): AnimationRange {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {                    
+                    return this._ranges[index];
+                }
+            }
+
+            return null;
+        }
+
         public reset(): void {
             this._offsetsCache = {};
             this._highLimitsCache = {};

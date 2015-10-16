@@ -111,7 +111,7 @@ var BABYLON;
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
-            this._cache.targetScreenOffset = undefined;
+            this._cache.targetScreenOffset = BABYLON.Vector2.Zero();
         };
         ArcRotateCamera.prototype._updateCache = function (ignoreParentClass) {
             if (!ignoreParentClass) {
@@ -121,7 +121,7 @@ var BABYLON;
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
-            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
+            this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
         };
         // Synchronized
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
@@ -553,4 +553,3 @@ var BABYLON;
     })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.arcRotateCamera.js.map

@@ -11,7 +11,7 @@
         private _engine: Engine;
         private _meshes: Mesh[];
         private _totalVertices = 0;
-        private _indices;
+        private _indices: number[];
         private _vertexBuffers;
         private _isDisposed = false;
         public _delayInfo; //ANY
@@ -24,9 +24,9 @@
             this._engine = scene.getEngine();
             this._meshes = [];
             this._scene = scene;
-			//Init vertex buffer cache
-			this._vertexBuffers = {};
-			this._indices = [];
+            //Init vertex buffer cache
+            this._vertexBuffers = {};
+            this._indices = [];
 
             // vertexData
             if (vertexData) {
@@ -415,7 +415,7 @@
             this._delayLoadingFunction = null;
             this._delayInfo = [];
 
-            this._boundingInfo = null; // todo: .dispose()
+            this._boundingInfo = null; 
 
             this._scene.removeGeometry(this);
             this._isDisposed = true;
@@ -801,5 +801,4 @@
         }
     }
 }
-
 
