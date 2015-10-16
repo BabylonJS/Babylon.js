@@ -11,7 +11,7 @@
         private _engine: Engine;
         private _meshes: Mesh[];
         private _totalVertices = 0;
-        private _indices = [];
+        private _indices;
         private _vertexBuffers;
         private _isDisposed = false;
         public _delayInfo; //ANY
@@ -24,6 +24,9 @@
             this._engine = scene.getEngine();
             this._meshes = [];
             this._scene = scene;
+			//Init vertex buffer cache
+			this._vertexBuffers = {};
+			this._indices = [];
 
             // vertexData
             if (vertexData) {
@@ -59,8 +62,6 @@
         }
 
         public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): void {
-            this._vertexBuffers = this._vertexBuffers || {};
-
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
             }
