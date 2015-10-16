@@ -107,6 +107,99 @@ var BABYLON;
             vertexData.applyToMesh(cylinder, options.updatable);
             return cylinder;
         };
+        MeshBuilder.CreateTorus = function (name, options, scene) {
+            var torus = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateTorus(options);
+            vertexData.applyToMesh(torus, options.updatable);
+            return torus;
+        };
+        MeshBuilder.CreateTorusKnot = function (name, options, scene) {
+            var torusKnot = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateTorusKnot(options);
+            vertexData.applyToMesh(torusKnot, options.updatable);
+            return torusKnot;
+        };
+        MeshBuilder.CreateLines = function (name, options, scene) {
+            var instance = options.instance;
+            var points = options.points;
+            if (instance) {
+                var positionFunction = function (positions) {
+                    var i = 0;
+                    for (var p = 0; p < points.length; p++) {
+                        positions[i] = points[p].x;
+                        positions[i + 1] = points[p].y;
+                        positions[i + 2] = points[p].z;
+                        i += 3;
+                    }
+                };
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
+            }
+            // lines creation
+            var lines = new BABYLON.LinesMesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateLines(options);
+            vertexData.applyToMesh(lines, options.updatable);
+            return lines;
+        };
+        MeshBuilder.CreateDashedLines = function (name, options, scene) {
+            var points = options.points;
+            var instance = options.instance;
+            var gapSize = options.gapSize;
+            var dashNb = options.dashNb;
+            var dashSize = options.dashSize;
+            if (instance) {
+                var positionFunction = function (positions) {
+                    var curvect = BABYLON.Vector3.Zero();
+                    var nbSeg = positions.length / 6;
+                    var lg = 0;
+                    var nb = 0;
+                    var shft = 0;
+                    var dashshft = 0;
+                    var curshft = 0;
+                    var p = 0;
+                    var i = 0;
+                    var j = 0;
+                    for (i = 0; i < points.length - 1; i++) {
+                        points[i + 1].subtractToRef(points[i], curvect);
+                        lg += curvect.length();
+                    }
+                    shft = lg / nbSeg;
+                    dashshft = instance.dashSize * shft / (instance.dashSize + instance.gapSize);
+                    for (i = 0; i < points.length - 1; i++) {
+                        points[i + 1].subtractToRef(points[i], curvect);
+                        nb = Math.floor(curvect.length() / shft);
+                        curvect.normalize();
+                        j = 0;
+                        while (j < nb && p < positions.length) {
+                            curshft = shft * j;
+                            positions[p] = points[i].x + curshft * curvect.x;
+                            positions[p + 1] = points[i].y + curshft * curvect.y;
+                            positions[p + 2] = points[i].z + curshft * curvect.z;
+                            positions[p + 3] = points[i].x + (curshft + dashshft) * curvect.x;
+                            positions[p + 4] = points[i].y + (curshft + dashshft) * curvect.y;
+                            positions[p + 5] = points[i].z + (curshft + dashshft) * curvect.z;
+                            p += 6;
+                            j++;
+                        }
+                    }
+                    while (p < positions.length) {
+                        positions[p] = points[i].x;
+                        positions[p + 1] = points[i].y;
+                        positions[p + 2] = points[i].z;
+                        p += 3;
+                    }
+                };
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
+            }
+            // dashed lines creation
+            var dashedLines = new BABYLON.LinesMesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateDashedLines(options);
+            vertexData.applyToMesh(dashedLines, options.updatable);
+            dashedLines.dashSize = dashSize;
+            dashedLines.gapSize = gapSize;
+            return dashedLines;
+        };
         return MeshBuilder;
     })();
     BABYLON.MeshBuilder = MeshBuilder;
