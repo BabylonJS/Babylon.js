@@ -93,7 +93,7 @@ module BABYLON {
                     u += 2;
                 }
                 if (meshCol) {
-                    colors.push(meshCol[c], meshCol[c + 1], meshCol[c + 2], meshCol[c + 3]);
+                    colors.push(meshCol[c] || 1, meshCol[c + 1] || 1, meshCol[c + 2] || 1, meshCol[c + 3] || 1);
                     c += 4;
                 } else {
                     colors.push(1, 1, 1, 1);
