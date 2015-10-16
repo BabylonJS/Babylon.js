@@ -243,4 +243,3 @@ var BABYLON;
     })();
     BABYLON.PolygonMeshBuilder = PolygonMeshBuilder;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.polygonMesh.js.map

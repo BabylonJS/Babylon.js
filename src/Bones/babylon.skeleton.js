@@ -7,6 +7,7 @@ var BABYLON;
             this.bones = new Array();
             this._isDirty = true;
             this._identity = BABYLON.Matrix.Identity();
+            this._ranges = new Array();
             this.bones = [];
             this._scene = scene;
             scene.skeletons.push(this);
@@ -22,6 +23,32 @@ var BABYLON;
             return this._scene;
         };
         // Methods
+        Skeleton.prototype.createAnimationRange = function (name, from, to) {
+            this._ranges.push(new BABYLON.AnimationRange(name, from, to));
+        };
+        Skeleton.prototype.deleteAnimationRange = function (name) {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    this._ranges.splice(index, 1);
+                    return;
+                }
+            }
+        };
+        Skeleton.prototype.getAnimationRange = function (name) {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    return this._ranges[index];
+                }
+            }
+            return null;
+        };
+        Skeleton.prototype.beginAnimation = function (name, loop, speedRatio, onAnimationEnd) {
+            var range = this.getAnimationRange(name);
+            if (!range) {
+                return null;
+            }
+            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        };
         Skeleton.prototype._markAsDirty = function () {
             this._isDirty = true;
         };
@@ -74,4 +101,3 @@ var BABYLON;
     })();
     BABYLON.Skeleton = Skeleton;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.skeleton.js.map

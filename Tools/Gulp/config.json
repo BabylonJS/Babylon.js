@@ -50,6 +50,7 @@
       "../../src/Mesh/babylon.instancedMesh.js",
       "../../src/Mesh/babylon.mesh.js",
       "../../src/Mesh/babylon.subMesh.js",
+      "../../src/Mesh/babylon.meshBuilder.js",
       "../../src/Materials/Textures/babylon.baseTexture.js",
       "../../src/Materials/Textures/babylon.texture.js",
       "../../src/Materials/Textures/babylon.cubeTexture.js",

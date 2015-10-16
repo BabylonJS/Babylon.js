@@ -1177,17 +1177,11 @@ var BABYLON;
             vertexData.applyToMesh(disc, updatable || options.updatable);
             return disc;
         };
-        Mesh.CreateBox = function (name, options, scene, updatable, sideOrientation) {
-            if (sideOrientation === void 0) { sideOrientation = Mesh.DEFAULTSIDE; }
-            // Check parameters
-            updatable = updatable || options.updatable;
-            if (typeof options === 'number') {
-                var size = options;
-                options = {
-                    size: size,
-                    sideOrientation: sideOrientation
-                };
-            }
+        Mesh.CreateBox = function (name, size, scene, updatable, sideOrientation) {
+            var options = {
+                size: size,
+                sideOrientation: sideOrientation
+            };
             var box = new Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateBox(options);
             vertexData.applyToMesh(box, updatable);
@@ -2167,4 +2161,3 @@ var BABYLON;
     })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mesh.js.map

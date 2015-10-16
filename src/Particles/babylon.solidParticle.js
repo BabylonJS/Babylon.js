@@ -19,4 +19,3 @@ var BABYLON;
     })();
     BABYLON.SolidParticle = SolidParticle;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.solidParticle.js.map

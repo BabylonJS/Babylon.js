@@ -1,5 +1,14 @@
 var BABYLON;
 (function (BABYLON) {
+    var AnimationRange = (function () {
+        function AnimationRange(name, from, to) {
+            this.name = name;
+            this.from = from;
+            this.to = to;
+        }
+        return AnimationRange;
+    })();
+    BABYLON.AnimationRange = AnimationRange;
     var Animation = (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode) {
             this.name = name;
@@ -11,6 +20,7 @@ var BABYLON;
             this._highLimitsCache = {};
             this._stopped = false;
             this.allowMatricesInterpolation = false;
+            this._ranges = new Array();
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
@@ -47,6 +57,25 @@ var BABYLON;
             return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
         // Methods   
+        Animation.prototype.createRange = function (name, from, to) {
+            this._ranges.push(new AnimationRange(name, from, to));
+        };
+        Animation.prototype.deleteRange = function (name) {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    this._ranges.splice(index, 1);
+                    return;
+                }
+            }
+        };
+        Animation.prototype.getRange = function (name) {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    return this._ranges[index];
+                }
+            }
+            return null;
+        };
         Animation.prototype.reset = function () {
             this._offsetsCache = {};
             this._highLimitsCache = {};
@@ -389,4 +418,3 @@ var BABYLON;
     })();
     BABYLON.Animation = Animation;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.animation.js.map
