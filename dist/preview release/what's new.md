@@ -9,6 +9,7 @@
     - New `Mesh.CreatePolygon()` method ([jerome](https://github.com/jbousquie))
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+    - Added a new parameter to `debugLayer.show()` to define root element to use ([deltakosh](https://github.com/deltakosh))
     - New `MeshBuilder` class used to create all kind of mesh shapes ([deltakosh](https://github.com/deltakosh))
     - Added `Scene.constantlyUpdateMeshUnderPointer` to improve performance when moving mouse ([deltakosh](https://github.com/deltakosh))
     - Added `StandardMaterial.disableLighting` ([deltakosh](https://github.com/deltakosh))
@@ -23,9 +24,10 @@
     - `Material.dispose()` now removes disposed material from meshes ([deltakosh](https://github.com/deltakosh))
     - New `Material.getBindedMeshes()` function ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**
-    - Fixed bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
+    - Fixed a bug with CSG when submeshes are kept ([deltakosh](https://github.com/deltakosh)) 
+    - Fixed a bug with texture coordinates matrices ([deltakosh](https://github.com/deltakosh))
     - Fixed Sphere texture coordinates generation ([deltakosh](https://github.com/deltakosh))
-    - Fixed bug with `Mesh.attachToBone` when bone's matrix has a negative determinant ([deltakosh](https://github.com/deltakosh))
+    - Fixed a bug with `Mesh.attachToBone` when bone's matrix has a negative determinant ([deltakosh](https://github.com/deltakosh))
     - Fixed a possible but with the active camera while taking a screenshot. [PR](https://github.com/BabylonJS/Babylon.js/pull/701) ([RaananW](https://github.com/RaananW))
     - Fixed a bug with worker-collisions and instances. [PR](https://github.com/BabylonJS/Babylon.js/pull/705) ([RaananW](https://github.com/RaananW))
     - Fixed a bug with removed meshes and geometries from the worker-cache. [PR](https://github.com/BabylonJS/Babylon.js/pull/711) ([RaananW](https://github.com/RaananW))

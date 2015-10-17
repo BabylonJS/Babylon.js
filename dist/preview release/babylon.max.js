@@ -26475,7 +26475,7 @@ var BABYLON;
             var engine = this._scene.getEngine();
             this._scene.unregisterBeforeRender(this._syncData);
             this._scene.unregisterAfterRender(this._syncUI);
-            document.body.removeChild(this._globalDiv);
+            this._rootElement.removeChild(this._globalDiv);
             window.removeEventListener("resize", this._syncPositions);
             this._scene.forceShowBoundingBoxes = false;
             this._scene.forceWireframe = false;
@@ -26499,9 +26499,10 @@ var BABYLON;
             this._scene.probesEnabled = true;
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         };
-        DebugLayer.prototype.show = function (showUI, camera) {
+        DebugLayer.prototype.show = function (showUI, camera, rootElement) {
             if (showUI === void 0) { showUI = true; }
             if (camera === void 0) { camera = null; }
+            if (rootElement === void 0) { rootElement = null; }
             if (this._enabled) {
                 return;
             }
@@ -26515,7 +26516,8 @@ var BABYLON;
             this._showUI = showUI;
             var engine = this._scene.getEngine();
             this._globalDiv = document.createElement("div");
-            document.body.appendChild(this._globalDiv);
+            this._rootElement = rootElement || document.body;
+            this._rootElement.appendChild(this._globalDiv);
             this._generateDOMelements();
             window.addEventListener("resize", this._syncPositions);
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
@@ -29756,8 +29758,10 @@ var BABYLON;
             // four classes.
             var polygonType = 0;
             var types = [];
-            for (var i = 0; i < polygon.vertices.length; i++) {
-                var t = BABYLON.Vector3.Dot(this.normal, polygon.vertices[i].pos) - this.w;
+            var i;
+            var t;
+            for (i = 0; i < polygon.vertices.length; i++) {
+                t = BABYLON.Vector3.Dot(this.normal, polygon.vertices[i].pos) - this.w;
                 var type = (t < -Plane.EPSILON) ? BACK : (t > Plane.EPSILON) ? FRONT : COPLANAR;
                 polygonType |= type;
                 types.push(type);
@@ -29779,19 +29783,20 @@ var BABYLON;
                         var j = (i + 1) % polygon.vertices.length;
                         var ti = types[i], tj = types[j];
                         var vi = polygon.vertices[i], vj = polygon.vertices[j];
-                        if (ti != BACK)
+                        if (ti !== BACK)
                             f.push(vi);
-                        if (ti != FRONT)
-                            b.push(ti != BACK ? vi.clone() : vi);
-                        if ((ti | tj) == SPANNING) {
+                        if (ti !== FRONT)
+                            b.push(ti !== BACK ? vi.clone() : vi);
+                        if ((ti | tj) === SPANNING) {
                             t = (this.w - BABYLON.Vector3.Dot(this.normal, vi.pos)) / BABYLON.Vector3.Dot(this.normal, vj.pos.subtract(vi.pos));
                             var v = vi.interpolate(vj, t);
                             f.push(v);
                             b.push(v.clone());
                         }
                     }
+                    var poly;
                     if (f.length >= 3) {
-                        var poly = new Polygon(f, polygon.shared);
+                        poly = new Polygon(f, polygon.shared);
                         if (poly.plane)
                             front.push(poly);
                     }
@@ -30164,7 +30169,7 @@ var BABYLON;
             if (keepSubMeshes) {
                 // We offset the materialIndex by the previous number of materials in the CSG mixed meshes
                 var materialIndexOffset = 0, materialMaxIndex;
-                mesh.subMeshes.length = 0;
+                mesh.subMeshes = new Array();
                 for (var m in subMesh_dict) {
                     materialMaxIndex = -1;
                     for (var sm in subMesh_dict[m]) {

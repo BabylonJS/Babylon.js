@@ -19,6 +19,7 @@
         private _treeSubsetDiv: HTMLDivElement;
         private _drawingCanvas: HTMLCanvasElement;
         private _drawingContext: CanvasRenderingContext2D;
+        private _rootElement: HTMLElement;
 
         private _syncPositions: () => void;
         private _syncData: () => void;
@@ -340,7 +341,7 @@
 
             this._scene.unregisterBeforeRender(this._syncData);
             this._scene.unregisterAfterRender(this._syncUI);
-            document.body.removeChild(this._globalDiv);
+            this._rootElement.removeChild(this._globalDiv);
 
             window.removeEventListener("resize", this._syncPositions);
 
@@ -370,7 +371,7 @@
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         }
 
-        public show(showUI: boolean = true, camera: Camera = null) {
+        public show(showUI: boolean = true, camera: Camera = null, rootElement: HTMLElement = null) {
             if (this._enabled) {
                 return;
             }
@@ -389,7 +390,9 @@
 
             this._globalDiv = document.createElement("div");
 
-            document.body.appendChild(this._globalDiv);
+            this._rootElement = rootElement || document.body;
+
+            this._rootElement.appendChild(this._globalDiv);
 
             this._generateDOMelements();
 
