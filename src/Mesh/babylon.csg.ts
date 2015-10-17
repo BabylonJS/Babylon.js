@@ -84,8 +84,10 @@
             // four classes.
             var polygonType = 0;
             var types = [];
-            for (var i = 0; i < polygon.vertices.length; i++) {
-                var t = Vector3.Dot(this.normal, polygon.vertices[i].pos) - this.w;
+            var i: number;
+            var t: number;
+            for (i = 0; i < polygon.vertices.length; i++) {
+                t = Vector3.Dot(this.normal, polygon.vertices[i].pos) - this.w;
                 var type = (t < -Plane.EPSILON) ? BACK : (t > Plane.EPSILON) ? FRONT : COPLANAR;
                 polygonType |= type;
                 types.push(type);
@@ -108,18 +110,18 @@
                         var j = (i + 1) % polygon.vertices.length;
                         var ti = types[i], tj = types[j];
                         var vi = polygon.vertices[i], vj = polygon.vertices[j];
-                        if (ti != BACK) f.push(vi);
-                        if (ti != FRONT) b.push(ti != BACK ? vi.clone() : vi);
-                        if ((ti | tj) == SPANNING) {
+                        if (ti !== BACK) f.push(vi);
+                        if (ti !== FRONT) b.push(ti !== BACK ? vi.clone() : vi);
+                        if ((ti | tj) === SPANNING) {
                             t = (this.w - Vector3.Dot(this.normal, vi.pos)) / Vector3.Dot(this.normal, vj.pos.subtract(vi.pos));
                             var v = vi.interpolate(vj, t);
                             f.push(v);
                             b.push(v.clone());
                         }
                     }
+                    var poly: Polygon;
                     if (f.length >= 3) {
-                        var poly = new Polygon(f, polygon.shared);
-
+                        poly = new Polygon(f, polygon.shared);
                         if (poly.plane)
                             front.push(poly);
                     }
@@ -572,7 +574,7 @@
                 var materialIndexOffset = 0,
                     materialMaxIndex;
 
-                mesh.subMeshes.length = 0;
+                mesh.subMeshes = new Array<SubMesh>();
 
                 for (var m in subMesh_dict) {
                     materialMaxIndex = -1;

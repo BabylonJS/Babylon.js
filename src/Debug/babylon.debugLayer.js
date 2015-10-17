@@ -237,7 +237,7 @@ var BABYLON;
             var engine = this._scene.getEngine();
             this._scene.unregisterBeforeRender(this._syncData);
             this._scene.unregisterAfterRender(this._syncUI);
-            document.body.removeChild(this._globalDiv);
+            this._rootElement.removeChild(this._globalDiv);
             window.removeEventListener("resize", this._syncPositions);
             this._scene.forceShowBoundingBoxes = false;
             this._scene.forceWireframe = false;
@@ -261,9 +261,10 @@ var BABYLON;
             this._scene.probesEnabled = true;
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         };
-        DebugLayer.prototype.show = function (showUI, camera) {
+        DebugLayer.prototype.show = function (showUI, camera, rootElement) {
             if (showUI === void 0) { showUI = true; }
             if (camera === void 0) { camera = null; }
+            if (rootElement === void 0) { rootElement = null; }
             if (this._enabled) {
                 return;
             }
@@ -277,7 +278,8 @@ var BABYLON;
             this._showUI = showUI;
             var engine = this._scene.getEngine();
             this._globalDiv = document.createElement("div");
-            document.body.appendChild(this._globalDiv);
+            this._rootElement = rootElement || document.body;
+            this._rootElement.appendChild(this._globalDiv);
             this._generateDOMelements();
             window.addEventListener("resize", this._syncPositions);
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
