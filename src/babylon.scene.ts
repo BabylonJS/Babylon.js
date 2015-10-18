@@ -2272,7 +2272,13 @@
             return this._physicsEngine;
         }
 
-        public enablePhysics(gravity: Vector3, plugin?: IPhysicsEnginePlugin): boolean {
+        /**
+         * Enables physics to the current scene
+         * @param {BABYLON.Vector3} [gravity] - the scene's gravity for the physics engine
+         * @param {BABYLON.IPhysicsEnginePlugin} [plugin] - The physics engine to be used. defaults to OimoJS.
+         * @return {boolean} was the physics engine initialized
+         */
+        public enablePhysics(gravity?: Vector3, plugin?: IPhysicsEnginePlugin): boolean {
             if (this._physicsEngine) {
                 return true;
             }
