@@ -35,7 +35,7 @@ module BABYLON {
             //calculate rotation to fit Oimo's needs (Euler...)
             var rot = OIMO.MatrixToEuler(mesh.getWorldMatrix().asArray());
 
-            var bodyConfig = {
+            var bodyConfig : any = {
                 pos: [bbox.center.x, bbox.center.y, bbox.center.z],
                 rot: rot,
                 move: options.mass != 0,
@@ -46,8 +46,6 @@ module BABYLON {
             // register mesh
             switch (impostor) {
                 case PhysicsEngine.SphereImpostor:
-
-
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
@@ -141,7 +139,7 @@ module BABYLON {
 
             var rot = OIMO.MatrixToEuler(mesh.getWorldMatrix().asArray());
             
-            var bodyParameters = {
+            var bodyParameters : any = {
                 pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                 rot: rot
             };

@@ -38,10 +38,12 @@ var BABYLON;
                 }
                 // Body position
                 var bodyX = registeredMesh.body.position.x, bodyY = registeredMesh.body.position.y, bodyZ = registeredMesh.body.position.z;
-                var deltaPos = registeredMesh.delta || BABYLON.Vector3.Zero();
-                registeredMesh.mesh.position.x = bodyX + deltaPos.x;
-                registeredMesh.mesh.position.y = bodyY + deltaPos.y;
-                registeredMesh.mesh.position.z = bodyZ + deltaPos.z;
+                if (!registeredMesh.delta) {
+                    registeredMesh.delta = BABYLON.Vector3.Zero();
+                }
+                registeredMesh.mesh.position.x = bodyX + registeredMesh.delta.x;
+                registeredMesh.mesh.position.y = bodyY + registeredMesh.delta.y;
+                registeredMesh.mesh.position.z = bodyZ + registeredMesh.delta.z;
                 registeredMesh.mesh.rotationQuaternion.x = registeredMesh.body.quaternion.x;
                 registeredMesh.mesh.rotationQuaternion.y = registeredMesh.body.quaternion.y;
                 registeredMesh.mesh.rotationQuaternion.z = registeredMesh.body.quaternion.z;
@@ -118,7 +120,6 @@ var BABYLON;
             return currentMat;
         };
         CannonJSPlugin.prototype._createRigidBodyFromShape = function (shape, mesh, mass, friction, restitution) {
-            var initialRotation = null;
             if (!mesh.rotationQuaternion) {
                 mesh.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
             }
@@ -218,6 +219,9 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.isSupported = function () {
             return window.CANNON !== undefined;
+        };
+        CannonJSPlugin.prototype.getWorldObject = function () {
+            return this._world;
         };
         return CannonJSPlugin;
     })();
