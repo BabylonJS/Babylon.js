@@ -10,7 +10,7 @@ module BABYLON {
         }
 
         public initialize(iterations?: number): void {
-            this._world = new OIMO.World();
+            this._world = new OIMO.World(null, null, iterations);
             this._world.clear();
         }
 
