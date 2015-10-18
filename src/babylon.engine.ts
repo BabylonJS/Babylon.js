@@ -557,6 +557,8 @@
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
 
+        private _bindedRenderFunction: any;
+
         /**
          * @constructor
          * @param {HTMLCanvasElement} canvas - the canvas to be used for rendering
@@ -831,7 +833,7 @@
 
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                Tools.QueueNewFrame(this._renderLoop.bind(this));
+                Tools.QueueNewFrame(this._bindedRenderFunction);
             } else {
                 this._renderingQueueLaunched = false;
             }
@@ -854,9 +856,8 @@
 
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
-                Tools.QueueNewFrame(() => {
-                    this._renderLoop();
-                });
+                this._bindedRenderFunction = this._renderLoop.bind(this);
+                Tools.QueueNewFrame(this._bindedRenderFunction);
             }
         }
 

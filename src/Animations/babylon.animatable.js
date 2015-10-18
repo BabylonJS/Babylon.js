@@ -22,6 +22,9 @@ var BABYLON;
             scene._activeAnimatables.push(this);
         }
         // Methods
+        Animatable.prototype.getAnimations = function () {
+            return this._animations;
+        };
         Animatable.prototype.appendAnimations = function (target, animations) {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];

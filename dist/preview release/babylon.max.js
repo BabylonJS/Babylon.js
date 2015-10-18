@@ -5403,7 +5403,7 @@ var BABYLON;
             }
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                BABYLON.Tools.QueueNewFrame(this._renderLoop.bind(this));
+                BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction);
             }
             else {
                 this._renderingQueueLaunched = false;
@@ -5418,16 +5418,14 @@ var BABYLON;
          * })
          */
         Engine.prototype.runRenderLoop = function (renderFunction) {
-            var _this = this;
             if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
                 return;
             }
             this._activeRenderLoops.push(renderFunction);
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
-                BABYLON.Tools.QueueNewFrame(function () {
-                    _this._renderLoop();
-                });
+                this._bindedRenderFunction = this._renderLoop.bind(this);
+                BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction);
             }
         };
         /**
@@ -14953,6 +14951,7 @@ var BABYLON;
                 radius: radius,
                 tessellation: tessellation,
                 radiusFunction: radiusFunction,
+                arc: 1,
                 cap: cap,
                 updatable: updatable,
                 sideOrientation: sideOrientation,
@@ -21880,6 +21879,9 @@ var BABYLON;
             scene._activeAnimatables.push(this);
         }
         // Methods
+        Animatable.prototype.getAnimations = function () {
+            return this._animations;
+        };
         Animatable.prototype.appendAnimations = function (target, animations) {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
@@ -26630,6 +26632,7 @@ var BABYLON;
             this._drawingCanvas.id = "DebugLayerDrawingCanvas";
             this._drawingCanvas.style.position = "absolute";
             this._drawingCanvas.style.pointerEvents = "none";
+            this._drawingCanvas.style.backgroundColor = "transparent";
             this._drawingContext = this._drawingCanvas.getContext("2d");
             this._globalDiv.appendChild(this._drawingCanvas);
             if (this._showUI) {
