@@ -53,7 +53,7 @@ var BABYLON;
             // The delta between the mesh position and the mesh bounding box center
             var deltaPosition = mesh.position.subtract(bbox.center);
             //calculate rotation to fit Oimo's needs (Euler...)
-            var rot = OIMO.MatrixToEuler(mesh.getWorldMatrix().asArray());
+            var rot = OIMO.MatrixToEuler({ elements: mesh.getWorldMatrix().asArray() });
             var bodyConfig = {
                 pos: [bbox.center.x, bbox.center.y, bbox.center.z],
                 rot: rot,
@@ -103,13 +103,15 @@ var BABYLON;
         OimoJSPlugin.prototype.registerMeshesAsCompound = function (parts, options) {
             var types = [], sizes = [], positions = [], rotations = [];
             var initialMesh = parts[0].mesh;
+            if (!initialMesh.rotationQuaternion) {
+                initialMesh.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(initialMesh.rotation.y, initialMesh.rotation.x, initialMesh.rotation.z);
+            }
             for (var index = 0; index < parts.length; index++) {
                 var part = parts[index];
                 var bodyParameters = this._createBodyAsCompound(part, options, initialMesh);
                 types.push(bodyParameters.type);
                 sizes.push.apply(sizes, bodyParameters.size);
                 positions.push.apply(positions, bodyParameters.pos);
-                //Hack for Oimo's rotation. Quaternion will be used later.
                 rotations.push.apply(rotations, bodyParameters.rot);
             }
             var body = new OIMO.Body({
@@ -121,6 +123,9 @@ var BABYLON;
                 config: [options.mass, options.friction, options.restitution],
                 world: this._world
             });
+            //Reset the body's rotation to be of the initial mesh's.
+            var rot = OIMO.MatrixToEuler({ elements: initialMesh.getWorldMatrix().asArray() });
+            body.resetRotation(rot.x, rot.y, rot.z);
             this._registeredMeshes.push({
                 mesh: initialMesh,
                 body: body
@@ -131,10 +136,12 @@ var BABYLON;
             var mesh = part.mesh;
             // We need the bounding box/sphere info to compute the physics body
             mesh.computeWorldMatrix();
-            var rot = OIMO.MatrixToEuler(mesh.getWorldMatrix().asArray());
+            var rot = OIMO.MatrixToEuler({ elements: mesh.getWorldMatrix().asArray() });
             var bodyParameters = {
                 pos: [mesh.position.x, mesh.position.y, mesh.position.z],
-                rot: rot
+                //A bug in Oimo (Body class) prevents us from using rot directly.
+                rot: [0, 0, 0],
+                realRot: rot
             };
             switch (part.impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
@@ -156,7 +163,7 @@ var BABYLON;
                     var sizeX = this._checkWithEpsilon(box.x);
                     var sizeY = this._checkWithEpsilon(box.y);
                     var sizeZ = this._checkWithEpsilon(box.z);
-                    bodyParameters.type = 'sphere';
+                    bodyParameters.type = 'box';
                     bodyParameters.size = [sizeX, sizeY, sizeZ];
                     break;
             }
