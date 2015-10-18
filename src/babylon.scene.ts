@@ -2308,6 +2308,10 @@
             return this._physicsEngine !== undefined;
         }
 
+        /**
+         * Sets the gravity of the physics engine (and NOT of the scene)
+         * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
+         */
         public setGravity(gravity: Vector3): void {
             if (!this._physicsEngine) {
                 return;

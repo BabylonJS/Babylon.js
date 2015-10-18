@@ -11,6 +11,7 @@
         dispose(): void;
         isSupported(): boolean;
         updateBodyPosition(mesh: AbstractMesh): void;
+        getWorldObject() : any; //Will return the physics world object of the engine used.
     }
 
     export interface PhysicsBodyCreationOptions {

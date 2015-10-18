@@ -19,29 +19,29 @@ module BABYLON {
         }
 
         public registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any {
-            var body = null;
             this.unregisterMesh(mesh);
-            mesh.computeWorldMatrix(true);
-
-
-            var initialRotation = null;
-            if (mesh.rotationQuaternion) {
-                initialRotation = mesh.rotationQuaternion.clone();
-                mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
-                mesh.computeWorldMatrix(true);
+            
+            if (!mesh.rotationQuaternion) {
+                mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
             }
+            
+            mesh.computeWorldMatrix(true);
 
             var bbox = mesh.getBoundingInfo().boundingBox;
 
             // The delta between the mesh position and the mesh bounding box center
             var deltaPosition = mesh.position.subtract(bbox.center);
+            
+            //calculate rotation to fit Oimo's needs (Euler...)
+            var rot = OIMO.MatrixToEuler(mesh.getWorldMatrix().asArray());
 
-            // Transform delta position with the rotation
-            if (initialRotation) {
-                var m = new Matrix();
-                initialRotation.toRotationMatrix(m);
-                deltaPosition = Vector3.TransformCoordinates(deltaPosition, m);
-            }
+            var bodyConfig = {
+                pos: [bbox.center.x, bbox.center.y, bbox.center.z],
+                rot: rot,
+                move: options.mass != 0,
+                config: [options.mass, options.friction, options.restitution],
+                world: this._world
+            };
 
             // register mesh
             switch (impostor) {
@@ -57,16 +57,8 @@ module BABYLON {
                         this._checkWithEpsilon(radiusY),
                         this._checkWithEpsilon(radiusZ)) / 2;
 
-                    body = new OIMO.Body({
-                        type: 'sphere',
-                        size: [size],
-                        pos: [bbox.center.x, bbox.center.y, bbox.center.z],
-                        rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
-                        move: options.mass != 0,
-                        config: [options.mass, options.friction, options.restitution],
-                        world: this._world
-                    });
-
+                    bodyConfig.type = 'sphere';
+                    bodyConfig.size = [size];
                     break;
 
                 case PhysicsEngine.PlaneImpostor:
@@ -81,28 +73,21 @@ module BABYLON {
                     var sizeY = this._checkWithEpsilon(box.y);
                     var sizeZ = this._checkWithEpsilon(box.z);
 
-                    body = new OIMO.Body({
-                        type: 'box',
-                        size: [sizeX, sizeY, sizeZ],
-                        pos: [bbox.center.x, bbox.center.y, bbox.center.z],
-                        rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
-                        move: options.mass != 0,
-                        config: [options.mass, options.friction, options.restitution],
-                        world: this._world
-                    });
-
+                    bodyConfig.type = 'box';
+                    bodyConfig.size = [sizeX, sizeY, sizeZ];
                     break;
             }
+            
+            var body = new OIMO.Body(bodyConfig);
 
-            //If quaternion was set as the rotation of the object
-            if (initialRotation) {
-                //We have to access the rigid body's properties to set the quaternion. 
-                //The setQuaternion function of Oimo only sets the newOrientation that is only set after an impulse is given or a collision.
-                body.body.orientation = new OIMO.Quat(initialRotation.w, initialRotation.x, initialRotation.y, initialRotation.z);
-                //update the internal rotation matrix
-                body.body.syncShapes();
-            }
-
+            //We have to access the rigid body's properties to set the quaternion. 
+            //The setQuaternion function of Oimo only sets the newOrientation that is only set after an impulse is given or a collision.
+            //body.body.orientation = new OIMO.Quat(mesh.rotationQuaternion.w, mesh.rotationQuaternion.x, mesh.rotationQuaternion.y, mesh.rotationQuaternion.z);
+            //TEST
+            //body.body.resetQuaternion(new OIMO.Quat(mesh.rotationQuaternion.w, mesh.rotationQuaternion.x, mesh.rotationQuaternion.y, mesh.rotationQuaternion.z));
+            //update the internal rotation matrix
+            //body.body.syncShapes();
+            
             this._registeredMeshes.push({
                 mesh: mesh,
                 body: body,
@@ -126,6 +111,7 @@ module BABYLON {
                 types.push(bodyParameters.type);
                 sizes.push.apply(sizes, bodyParameters.size);
                 positions.push.apply(positions, bodyParameters.pos);
+                //Hack for Oimo's rotation. Quaternion will be used later.
                 rotations.push.apply(rotations, bodyParameters.rot);
             }
 
@@ -138,7 +124,8 @@ module BABYLON {
                 config: [options.mass, options.friction, options.restitution],
                 world: this._world
             });
-
+            
+            
             this._registeredMeshes.push({
                 mesh: initialMesh,
                 body: body
@@ -148,11 +135,17 @@ module BABYLON {
         }
 
         private _createBodyAsCompound(part: PhysicsCompoundBodyPart, options: PhysicsBodyCreationOptions, initialMesh: AbstractMesh): any {
-            var bodyParameters = null;
             var mesh = part.mesh;
             // We need the bounding box/sphere info to compute the physics body
             mesh.computeWorldMatrix();
 
+            var rot = OIMO.MatrixToEuler(mesh.getWorldMatrix().asArray());
+            
+            var bodyParameters = {
+                pos: [mesh.position.x, mesh.position.y, mesh.position.z],
+                rot: rot
+            };
+            
             switch (part.impostor) {
                 case PhysicsEngine.SphereImpostor:
                     var bbox = mesh.getBoundingInfo().boundingBox;
@@ -164,16 +157,14 @@ module BABYLON {
                         this._checkWithEpsilon(radiusX),
                         this._checkWithEpsilon(radiusY),
                         this._checkWithEpsilon(radiusZ)) / 2;
-                    bodyParameters = {
-                        type: 'sphere',
-                        /* bug with oimo : sphere needs 3 sizes in this case */
-                        size: [size, -1, -1],
-                        pos: [mesh.position.x, mesh.position.y, mesh.position.z],
-                        rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD]
-                    };
+                    
+                    bodyParameters.type = 'sphere';
+                    bodyParameters.size = [size, size, size];
+                    
                     break;
 
                 case PhysicsEngine.PlaneImpostor:
+                case PhysicsEngine.CylinderImpostor:
                 case PhysicsEngine.BoxImpostor:
                     bbox = mesh.getBoundingInfo().boundingBox;
                     var min = bbox.minimumWorld;
@@ -182,13 +173,10 @@ module BABYLON {
                     var sizeX = this._checkWithEpsilon(box.x);
                     var sizeY = this._checkWithEpsilon(box.y);
                     var sizeZ = this._checkWithEpsilon(box.z);
-                    var relativePosition = mesh.position;
-                    bodyParameters = {
-                        type: 'box',
-                        size: [sizeX, sizeY, sizeZ],
-                        pos: [relativePosition.x, relativePosition.y, relativePosition.z],
-                        rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD]
-                    };
+                    
+                    bodyParameters.type = 'sphere';
+                    bodyParameters.size = [sizeX, sizeY, sizeZ];
+                    
                     break;
             }
 
@@ -232,7 +220,7 @@ module BABYLON {
 
                     var center = mesh.getBoundingInfo().boundingBox.center;
                     body.setPosition(new OIMO.Vec3(center.x, center.y, center.z));
-                    body.setRotation(new OIMO.Vec3(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z));
+                    body.setQuaternion(mesh.rotationQuaternion);
                     body.sleeping = false;
                     return;
                 }
@@ -242,11 +230,10 @@ module BABYLON {
                     registeredMesh.mesh.computeWorldMatrix(true);
 
                     var absolutePosition = registeredMesh.mesh.getAbsolutePosition();
-                    var absoluteRotation = mesh.rotation;
 
                     body = registeredMesh.body.body;
                     body.setPosition(new OIMO.Vec3(absolutePosition.x, absolutePosition.y, absolutePosition.z));
-                    body.setRotation(new OIMO.Vec3(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z));
+                    body.setQuaternion(mesh.rotationQuaternion);
                     body.sleeping = false;
                     return;
                 }
@@ -313,6 +300,10 @@ module BABYLON {
         public isSupported(): boolean {
             return OIMO !== undefined;
         }
+        
+        public getWorldObject() : any {
+            return this._world;
+        }
 
         private _getLastShape(body: any): any {
             var lastShape = body.shapes;
@@ -332,48 +323,24 @@ module BABYLON {
 
                 var body = this._registeredMeshes[i].body.body;
                 var mesh = this._registeredMeshes[i].mesh;
-                var delta = this._registeredMeshes[i].delta;
+                
+                if(!this._registeredMeshes[i].delta) {
+                    this._registeredMeshes[i].delta = Vector3.Zero();
+                }
 
                 if (!body.sleeping) {
-
+                    //TODO check that
                     if (body.shapes.next) {
                         var parentShape = this._getLastShape(body);
                         mesh.position.x = parentShape.position.x * OIMO.WORLD_SCALE;
                         mesh.position.y = parentShape.position.y * OIMO.WORLD_SCALE;
                         mesh.position.z = parentShape.position.z * OIMO.WORLD_SCALE;
-                        var mtx = Matrix.FromArray(body.getMatrix());
-
-                        if (!mesh.rotationQuaternion) {
-                            mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
-                        }
-                        mesh.rotationQuaternion.fromRotationMatrix(mtx);
-                        mesh.computeWorldMatrix();
-
                     } else {
-                        m = body.getMatrix();
-                        mtx = Matrix.FromArray(m);
-
-                        // Body position
-                        var bodyX = mtx.m[12],
-                            bodyY = mtx.m[13],
-                            bodyZ = mtx.m[14];
-
-                        if (!delta) {
-                            mesh.position.x = bodyX;
-                            mesh.position.y = bodyY;
-                            mesh.position.z = bodyZ;
-                        } else {
-                            mesh.position.x = bodyX + delta.x;
-                            mesh.position.y = bodyY + delta.y;
-                            mesh.position.z = bodyZ + delta.z;
-                        }
-
-                        if (!mesh.rotationQuaternion) {
-                            mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
-                        }
-                        Quaternion.FromRotationMatrixToRef(mtx, mesh.rotationQuaternion);
-                        mesh.computeWorldMatrix();
+                        mesh.position.copyFrom(body.getPosition()).addInPlace(this._registeredMeshes[i].delta);
+                        
                     }
+                    mesh.rotationQuaternion.copyFrom(body.getQuaternion());
+                    mesh.computeWorldMatrix();
                 }
             }
         }
