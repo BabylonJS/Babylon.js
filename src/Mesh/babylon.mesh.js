@@ -1245,6 +1245,7 @@ var BABYLON;
                 radius: radius,
                 tessellation: tessellation,
                 radiusFunction: radiusFunction,
+                arc: 1,
                 cap: cap,
                 updatable: updatable,
                 sideOrientation: sideOrientation,

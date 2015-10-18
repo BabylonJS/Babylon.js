@@ -733,7 +733,7 @@ var BABYLON;
             }
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                BABYLON.Tools.QueueNewFrame(this._renderLoop.bind(this));
+                BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction);
             }
             else {
                 this._renderingQueueLaunched = false;
@@ -748,16 +748,14 @@ var BABYLON;
          * })
          */
         Engine.prototype.runRenderLoop = function (renderFunction) {
-            var _this = this;
             if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
                 return;
             }
             this._activeRenderLoops.push(renderFunction);
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
-                BABYLON.Tools.QueueNewFrame(function () {
-                    _this._renderLoop();
-                });
+                this._bindedRenderFunction = this._renderLoop.bind(this);
+                BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction);
             }
         };
         /**

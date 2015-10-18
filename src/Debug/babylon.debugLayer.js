@@ -392,6 +392,7 @@ var BABYLON;
             this._drawingCanvas.id = "DebugLayerDrawingCanvas";
             this._drawingCanvas.style.position = "absolute";
             this._drawingCanvas.style.pointerEvents = "none";
+            this._drawingCanvas.style.backgroundColor = "transparent";
             this._drawingContext = this._drawingCanvas.getContext("2d");
             this._globalDiv.appendChild(this._drawingCanvas);
             if (this._showUI) {

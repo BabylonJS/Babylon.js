@@ -18,6 +18,10 @@
         }
 
         // Methods
+        public getAnimations(): Animation[] {
+            return this._animations;
+        }
+
         public appendAnimations(target: any, animations: Animation[]): void {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
