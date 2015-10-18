@@ -45,6 +45,9 @@ var BABYLON;
         PhysicsEngine.prototype.isSupported = function () {
             return this._currentPlugin.isSupported();
         };
+        PhysicsEngine.prototype.getPhysicsBodyOfMesh = function (mesh) {
+            return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
+        };
         // Statics
         PhysicsEngine.NoImpostor = 0;
         PhysicsEngine.SphereImpostor = 1;

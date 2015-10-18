@@ -223,6 +223,15 @@ var BABYLON;
         CannonJSPlugin.prototype.getWorldObject = function () {
             return this._world;
         };
+        CannonJSPlugin.prototype.getPhysicsBodyOfMesh = function (mesh) {
+            for (var index = 0; index < this._registeredMeshes.length; index++) {
+                var registeredMesh = this._registeredMeshes[index];
+                if (registeredMesh.mesh === mesh) {
+                    return registeredMesh.body;
+                }
+            }
+            return null;
+        };
         return CannonJSPlugin;
     })();
     BABYLON.CannonJSPlugin = CannonJSPlugin;

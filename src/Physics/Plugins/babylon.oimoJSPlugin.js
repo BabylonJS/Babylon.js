@@ -37,7 +37,7 @@ var BABYLON;
             return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
         };
         OimoJSPlugin.prototype.initialize = function (iterations) {
-            this._world = new OIMO.World();
+            this._world = new OIMO.World(null, null, iterations);
             this._world.clear();
         };
         OimoJSPlugin.prototype.setGravity = function (gravity) {
@@ -246,6 +246,15 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.getWorldObject = function () {
             return this._world;
+        };
+        OimoJSPlugin.prototype.getPhysicsBodyOfMesh = function (mesh) {
+            for (var index = 0; index < this._registeredMeshes.length; index++) {
+                var registeredMesh = this._registeredMeshes[index];
+                if (registeredMesh.mesh === mesh) {
+                    return registeredMesh.body;
+                }
+            }
+            return null;
         };
         OimoJSPlugin.prototype._getLastShape = function (body) {
             var lastShape = body.shapes;

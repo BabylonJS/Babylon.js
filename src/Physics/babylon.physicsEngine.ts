@@ -12,6 +12,7 @@
         isSupported(): boolean;
         updateBodyPosition(mesh: AbstractMesh): void;
         getWorldObject() : any; //Will return the physics world object of the engine used.
+        getPhysicsBodyOfMesh(mesh: AbstractMesh) : any;
     }
 
     export interface PhysicsBodyCreationOptions {
@@ -84,6 +85,10 @@
 
         public isSupported(): boolean {
             return this._currentPlugin.isSupported();
+        }
+        
+        public getPhysicsBodyOfMesh(mesh: AbstractMesh) {
+            return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
         }
 
         // Statics
