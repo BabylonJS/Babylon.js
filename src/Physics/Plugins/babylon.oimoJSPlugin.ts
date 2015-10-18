@@ -311,6 +311,16 @@ module BABYLON {
         public getWorldObject() : any {
             return this._world;
         }
+        
+        public getPhysicsBodyOfMesh(mesh: AbstractMesh) {
+            for (var index = 0; index < this._registeredMeshes.length; index++) {
+                var registeredMesh = this._registeredMeshes[index];
+                if (registeredMesh.mesh === mesh) {
+                    return registeredMesh.body;
+                }
+            }
+            return null;
+        }
 
         private _getLastShape(body: any): any {
             var lastShape = body.shapes;
