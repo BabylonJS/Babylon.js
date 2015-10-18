@@ -32,11 +32,13 @@
                     bodyY = registeredMesh.body.position.y,
                     bodyZ = registeredMesh.body.position.z;
 
-                var deltaPos = registeredMesh.delta || Vector3.Zero();
+                if(!registeredMesh.delta) {
+                    registeredMesh.delta = Vector3.Zero();
+                }
 
-                registeredMesh.mesh.position.x = bodyX + deltaPos.x;
-                registeredMesh.mesh.position.y = bodyY + deltaPos.y;
-                registeredMesh.mesh.position.z = bodyZ + deltaPos.z;
+                registeredMesh.mesh.position.x = bodyX + registeredMesh.delta.x;
+                registeredMesh.mesh.position.y = bodyY + registeredMesh.delta.y;
+                registeredMesh.mesh.position.z = bodyZ + registeredMesh.delta.z;
 
                 registeredMesh.mesh.rotationQuaternion.x = registeredMesh.body.quaternion.x;
                 registeredMesh.mesh.rotationQuaternion.y = registeredMesh.body.quaternion.y;
@@ -138,8 +140,6 @@
         }
 
         private _createRigidBodyFromShape(shape: any, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
-            var initialRotation: Quaternion = null;
-
             if (!mesh.rotationQuaternion) {
                 mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
             }
@@ -286,6 +286,10 @@
 
         public isSupported(): boolean {
             return window.CANNON !== undefined;
+        }
+        
+        public getWorldObject() : any {
+            return this._world;
         }
     }
 }
