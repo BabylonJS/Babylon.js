@@ -241,9 +241,9 @@ module BABYLON {
                     colidx = colorIndex + pt * 4;
                     uvidx = uvIndex + pt * 2;
 
-                    this._vertex.x = this._particle._shape[pt].x;
-                    this._vertex.y = this._particle._shape[pt].y;
-                    this._vertex.z = this._particle._shape[pt].z;
+                    this._vertex.x = this._particle._shape[pt].x * this._particle.scale.x;
+                    this._vertex.y = this._particle._shape[pt].y * this._particle.scale.y;
+                    this._vertex.z = this._particle._shape[pt].z * this._particle.scale.z;
 
                     if (this._computeParticleVertex) {
                         this.updateParticleVertex(this._particle, this._vertex, pt);
@@ -251,7 +251,7 @@ module BABYLON {
 
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
 
-                    this._positions[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x * this._particle.scale.x + this._cam_axisY.x * this._rotated.y * this._particle.scale.y + this._cam_axisZ.x * this._rotated.z * this._particle.scale.z;
+                    this._positions[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                     this._positions[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x * this._particle.scale.x + this._cam_axisY.y * this._rotated.y * this._particle.scale.y + this._cam_axisZ.y * this._rotated.z * this._particle.scale.z;
                     this._positions[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x * this._particle.scale.x + this._cam_axisY.z * this._rotated.y * this._particle.scale.y + this._cam_axisZ.z * this._rotated.z * this._particle.scale.z;
 
