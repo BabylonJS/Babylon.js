@@ -18,10 +18,10 @@ module BABYLON {
         private _uvs: number[] = new Array<number>();
         private _index: number = 0;  // indices index
         private _shapeCounter: number = 0;
-        private _setParticleColor: boolean = true;
-        private _setParticleTexture: boolean = true;
-        private _setParticleRotation: boolean = true;
-        private _setParticleVertex: boolean = false;
+        private _computeParticleColor: boolean = true;
+        private _computeParticleTexture: boolean = true;
+        private _computeParticleRotation: boolean = true;
+        private _computeParticleVertex: boolean = false;
         private _cam_axisZ: Vector3 = Vector3.Zero();
         private _cam_axisY: Vector3 = Vector3.Zero();
         private _cam_axisX: Vector3 = Vector3.Zero();
@@ -221,7 +221,7 @@ module BABYLON {
                     this._particle.rotation.x = 0.0;
                     this._particle.rotation.y = 0.0;
                 }
-                if (this._setParticleRotation) {
+                if (this._computeParticleRotation) {
                     if (this._particle.quaternion) {
                         this._quaternion.x = this._particle.quaternion.x;
                         this._quaternion.y = this._particle.quaternion.y;
@@ -245,7 +245,7 @@ module BABYLON {
                     this._vertex.y = this._particle._shape[pt].y;
                     this._vertex.z = this._particle._shape[pt].z;
 
-                    if (this._setParticleVertex) {
+                    if (this._computeParticleVertex) {
                         this.updateParticleVertex(this._particle, this._vertex, pt);
                     }
 
@@ -255,14 +255,14 @@ module BABYLON {
                     this._positions[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x * this._particle.scale.x + this._cam_axisY.y * this._rotated.y * this._particle.scale.y + this._cam_axisZ.y * this._rotated.z * this._particle.scale.z;
                     this._positions[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x * this._particle.scale.x + this._cam_axisY.z * this._rotated.y * this._particle.scale.y + this._cam_axisZ.z * this._rotated.z * this._particle.scale.z;
 
-                    if (this._setParticleColor) {
+                    if (this._computeParticleColor) {
                         this._colors[colidx] = this._particle.color.r;
                         this._colors[colidx + 1] = this._particle.color.g;
                         this._colors[colidx + 2] = this._particle.color.b;
                         this._colors[colidx + 3] = this._particle.color.a;
                     }
 
-                    if (this._setParticleTexture) {
+                    if (this._computeParticleTexture) {
                         this._uvs[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
                         this._uvs[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                     }
@@ -273,10 +273,10 @@ module BABYLON {
             }
 
             if (update) {
-                if (this._setParticleColor) {
+                if (this._computeParticleColor) {
                     this.mesh.updateVerticesData(VertexBuffer.ColorKind, this._colors, false, false);
                 }
-                if (this._setParticleTexture) {
+                if (this._computeParticleTexture) {
                     this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs, false, false);
                 }
                 this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions, false, false);
@@ -329,37 +329,37 @@ module BABYLON {
         }
 
         // Optimizer setters
-        public set setParticleRotation(val: boolean) {
-            this._setParticleRotation = val;
+        public set computeParticleRotation(val: boolean) {
+            this._computeParticleRotation = val;
         }
 
-        public set setParticleColor(val: boolean) {
-            this._setParticleColor = val;
+        public set computeParticleColor(val: boolean) {
+            this._computeParticleColor = val;
         }
 
-        public set setParticleTexture(val: boolean) {
-            this._setParticleTexture = val;
+        public set computeParticleTexture(val: boolean) {
+            this._computeParticleTexture = val;
         }
 
-        public set setParticleVertex(val: boolean) {
-            this._setParticleVertex = val;
+        public set computeParticleVertex(val: boolean) {
+            this._computeParticleVertex = val;
         } 
 
         // getters
-        public get setParticleRotation(): boolean {
-            return this._setParticleRotation;
+        public get computeParticleRotation(): boolean {
+            return this._computeParticleRotation;
         }
 
-        public get setParticleColor(): boolean {
-            return this._setParticleColor;
+        public get computeParticleColor(): boolean {
+            return this._computeParticleColor;
         }
 
-        public get setParticleTexture(): boolean {
-            return this._setParticleTexture;
+        public get computeParticleTexture(): boolean {
+            return this._computeParticleTexture;
         }
 
-        public get setParticleVertex(): boolean {
-            return this._setParticleVertex;
+        public get computeParticleVertex(): boolean {
+            return this._computeParticleVertex;
         } 
        
 
