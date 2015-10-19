@@ -2,53 +2,53 @@ module BABYLON {
 
     export class SolidParticleSystem implements IDisposable {
         // public members  
-        public particles = new Array<SolidParticle>();
-        public nbParticles = 0;
-        public billboard = false;
-        public counter = 0;
+        public particles: SolidParticle[] = new Array<SolidParticle>();
+        public nbParticles: number = 0;
+        public billboard: boolean = false;
+        public counter: number = 0;
         public name: string;
         public mesh: Mesh;
         
         // private members
         private _scene: Scene;
-        private _positions = new Array<number>();
-        private _indices = new Array<number>();
-        private _normals = new Array<number>();
-        private _colors = new Array<number>();
-        private _uvs = new Array<number>();
-        private _index = 0;  // indices index
-        private _shapeCounter = 0;
-        private _setParticleColor = true;
-        private _setParticleTexture = true;
-        private _setParticleRotation = true;
-        private _setParticleVertex = false;
-        private _cam_axisZ = Vector3.Zero();
-        private _cam_axisY = Vector3.Zero();
-        private _cam_axisX = Vector3.Zero();
-        private _axisX = Axis.X;
-        private _axisY = Axis.Y;
-        private _axisZ = Axis.Z;
+        private _positions: number[] = new Array<number>();
+        private _indices: number[] = new Array<number>();
+        private _normals: number[] = new Array<number>();
+        private _colors: number[] = new Array<number>();
+        private _uvs: number[] = new Array<number>();
+        private _index: number = 0;  // indices index
+        private _shapeCounter: number = 0;
+        private _setParticleColor: boolean = true;
+        private _setParticleTexture: boolean = true;
+        private _setParticleRotation: boolean = true;
+        private _setParticleVertex: boolean = false;
+        private _cam_axisZ: Vector3 = Vector3.Zero();
+        private _cam_axisY: Vector3 = Vector3.Zero();
+        private _cam_axisX: Vector3 = Vector3.Zero();
+        private _axisX: Vector3 = Axis.X;
+        private _axisY: Vector3 = Axis.Y;
+        private _axisZ: Vector3 = Axis.Z;
         private _camera: Camera;
         private _particle: SolidParticle;
         private _previousParticle: SolidParticle;
-        private _fakeCamPos = Vector3.Zero();
-        private _rotMatrix = new Matrix();
-        private _invertedMatrix = new Matrix();
-        private _rotated = Vector3.Zero();
-        private _quaternion = new Quaternion();
-        private _vertex = Vector3.Zero();
-        private _yaw = 0.0;
-        private _pitch = 0.0;
-        private _roll = 0.0;
-        private _halfroll = 0.0;
-        private _halfpitch = 0.0;
-        private _halfyaw = 0.0;
-        private _sinRoll = 0.0;
-        private _cosRoll = 0.0;
-        private _sinPitch = 0.0;
-        private _cosPitch = 0.0;
-        private _sinYaw = 0.0;
-        private _cosYaw = 0.0;
+        private _fakeCamPos: Vector3 = Vector3.Zero();
+        private _rotMatrix: Matrix = new Matrix();
+        private _invertedMatrix: Matrix = new Matrix();
+        private _rotated: Vector3 = Vector3.Zero();
+        private _quaternion: Quaternion = new Quaternion();
+        private _vertex: Vector3 = Vector3.Zero();
+        private _yaw: number = 0.0;
+        private _pitch: number = 0.0;
+        private _roll: number = 0.0;
+        private _halfroll: number = 0.0;
+        private _halfpitch: number = 0.0;
+        private _halfyaw: number = 0.0;
+        private _sinRoll: number = 0.0;
+        private _cosRoll: number = 0.0;
+        private _sinPitch: number = 0.0;
+        private _cosPitch: number = 0.0;
+        private _sinYaw: number = 0.0;
+        private _cosYaw: number = 0.0;
 
 
         constructor(name: string, scene: Scene) {
