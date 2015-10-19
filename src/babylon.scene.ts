@@ -320,7 +320,7 @@
         }
 
         public set workerCollisions(enabled: boolean) {
-        
+
             enabled = (enabled && !!Worker);
 
             this._workerCollisions = enabled;
