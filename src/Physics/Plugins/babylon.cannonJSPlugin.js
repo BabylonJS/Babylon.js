@@ -55,18 +55,27 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.registerMesh = function (mesh, impostor, options) {
             this.unregisterMesh(mesh);
+            if (!mesh.rotationQuaternion) {
+                mesh.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
+            }
             mesh.computeWorldMatrix(true);
             var shape = this._createShape(mesh, impostor, options);
             return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
         };
         CannonJSPlugin.prototype._createShape = function (mesh, impostor, options) {
+            //get the correct bounding box
+            var oldQuaternion = mesh.rotationQuaternion;
+            mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
+            mesh.computeWorldMatrix(true);
+            var returnValue;
             switch (impostor) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
                     var bbox = mesh.getBoundingInfo().boundingBox;
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
-                    return new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
+                    returnValue = new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
+                    break;
                 //TMP also for cylinder - TODO Cannon supports cylinder natively.
                 case BABYLON.PhysicsEngine.CylinderImpostor:
                     BABYLON.Tools.Warn("CylinderImposter not yet implemented, using BoxImposter instead");
@@ -75,15 +84,20 @@ var BABYLON;
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min).scale(0.5);
-                    return new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
+                    returnValue = new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
+                    break;
                 case BABYLON.PhysicsEngine.PlaneImpostor:
                     BABYLON.Tools.Warn("Attention, Cannon.js PlaneImposter might not behave as you wish. Consider using BoxImposter instead");
-                    return new CANNON.Plane();
+                    returnValue = new CANNON.Plane();
+                    break;
                 case BABYLON.PhysicsEngine.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
-                    return this._createConvexPolyhedron(rawVerts, rawFaces, mesh, options);
+                    returnValue = this._createConvexPolyhedron(rawVerts, rawFaces, mesh, options);
+                    break;
             }
+            mesh.rotationQuaternion = oldQuaternion;
+            return returnValue;
         };
         CannonJSPlugin.prototype._createConvexPolyhedron = function (rawVerts, rawFaces, mesh, options) {
             var verts = [], faces = [];
