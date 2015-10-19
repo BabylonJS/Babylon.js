@@ -152,24 +152,72 @@ uniform vec4 diffuseRightColor;
 uniform vec4 opacityParts;
 #endif
 
-#ifdef REFLECTIONFRESNEL
-uniform vec4 reflectionLeftColor;
-uniform vec4 reflectionRightColor;
-#endif
-
 #ifdef EMISSIVEFRESNEL
 uniform vec4 emissiveLeftColor;
 uniform vec4 emissiveRightColor;
 #endif
 
+// Reflection
 #ifdef REFLECTION
-varying vec3 vReflectionUVW;
+uniform vec2 vReflectionInfos;
+
 #ifdef REFLECTIONMAP_3D
 uniform samplerCube reflectionCubeSampler;
 #else
 uniform sampler2D reflection2DSampler;
 #endif
-uniform vec2 vReflectionInfos;
+
+#ifdef REFLECTIONMAP_SKYBOX
+	varying vec3 vPositionUVW;
+#else
+	uniform mat4 reflectionMatrix;
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
+	uniform mat4 view;
+#endif
+#endif
+
+vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
+{
+#ifdef REFLECTIONMAP_SPHERICAL
+	vec3 coords = vec3(view * vec4(worldNormal, 0.0));
+
+	return vec3(reflectionMatrix * vec4(coords, 1.0));
+#endif
+
+#ifdef REFLECTIONMAP_PLANAR
+	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 coords = normalize(reflect(viewDir, worldNormal));
+
+	return vec3(reflectionMatrix * vec4(coords, 1));
+#endif
+
+#ifdef REFLECTIONMAP_CUBIC
+	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 coords = reflect(viewDir, worldNormal);
+#ifdef INVERTCUBICMAP
+	coords.y = 1.0 - coords.y;
+#endif
+	return vec3(reflectionMatrix * vec4(coords, 0));
+#endif
+
+#ifdef REFLECTIONMAP_PROJECTION
+	return vec3(reflectionMatrix * (view * worldPos));
+#endif
+
+#ifdef REFLECTIONMAP_SKYBOX
+	return vPositionUVW;
+#endif
+
+#ifdef REFLECTIONMAP_EXPLICIT
+	return vec3(0, 0, 0);
+#endif
+}
+
+#ifdef REFLECTIONFRESNEL
+uniform vec4 reflectionLeftColor;
+uniform vec4 reflectionRightColor;
+#endif
+
 #endif
 
 // Shadows
@@ -506,13 +554,13 @@ void main(void) {
 	float glossiness = vSpecularColor.a;
 	vec3 specularColor = vSpecularColor.rgb;
 
-	#ifdef SPECULAR
-		vec4 specularMapColor = texture2D(specularSampler, vSpecularUV);
-		specularColor = specularMapColor.rgb;
-		#ifdef GLOSSINESS
-			glossiness = glossiness * specularMapColor.a;
-		#endif
-	#endif
+#ifdef SPECULAR
+	vec4 specularMapColor = texture2D(specularSampler, vSpecularUV);
+	specularColor = specularMapColor.rgb;
+#ifdef GLOSSINESS
+	glossiness = glossiness * specularMapColor.a;
+#endif
+#endif
 #else
 	float glossiness = 0.;
 #endif
@@ -541,11 +589,11 @@ void main(void) {
 #ifdef SHADOWVSM0
 	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x);
 #else
-	#ifdef SHADOWPCF0
-		shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
-	#else
-		shadow = computeShadow(vPositionFromLight0, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
-	#endif
+#ifdef SHADOWPCF0
+	shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
+#else
+	shadow = computeShadow(vPositionFromLight0, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
+#endif
 #endif
 #else
 	shadow = 1.;
@@ -573,11 +621,11 @@ void main(void) {
 #ifdef SHADOWVSM1
 	shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1, shadowsInfo1.z, shadowsInfo1.x);
 #else
-	#ifdef SHADOWPCF1
-		shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
-	#else
-		shadow = computeShadow(vPositionFromLight1, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
-	#endif
+#ifdef SHADOWPCF1
+	shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
+#else
+	shadow = computeShadow(vPositionFromLight1, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
+#endif
 #endif
 #else
 	shadow = 1.;
@@ -605,11 +653,11 @@ void main(void) {
 #ifdef SHADOWVSM2
 	shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2, shadowsInfo2.z, shadowsInfo2.x);
 #else
-	#ifdef SHADOWPCF2
-		shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
-	#else
-		shadow = computeShadow(vPositionFromLight2, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
-	#endif	
+#ifdef SHADOWPCF2
+	shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
+#else
+	shadow = computeShadow(vPositionFromLight2, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
+#endif	
 #endif	
 #else
 	shadow = 1.;
@@ -637,11 +685,11 @@ void main(void) {
 #ifdef SHADOWVSM3
 	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
 #else
-	#ifdef SHADOWPCF3
-		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
-	#else
-		shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
-	#endif	
+#ifdef SHADOWPCF3
+	shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
+#else
+	shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
+#endif	
 #endif	
 #else
 	shadow = 1.;
@@ -655,34 +703,37 @@ void main(void) {
 	// Reflection
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
+
 #ifdef REFLECTION
-	#ifdef REFLECTIONMAP_3D
-			float bias = 0.;
+	vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
-		#ifdef ROUGHNESS
-				bias = vReflectionInfos.y;
-		#endif
+#ifdef REFLECTIONMAP_3D
+	float bias = 0.;
 
-		#ifdef SPECULARTERM
-			#ifdef SPECULAR
-				#ifdef GLOSSINESS
-						bias *= (1.0 - specularMapColor.a);
-				#endif
-			#endif
-		#endif
+#ifdef ROUGHNESS
+	bias = vReflectionInfos.y;
+#endif
 
-		reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x * shadow;
-	#else
-		vec2 coords = vReflectionUVW.xy;
+#ifdef SPECULARTERM
+#ifdef SPECULAR
+#ifdef GLOSSINESS
+	bias *= (1.0 - specularMapColor.a);
+#endif
+#endif
+#endif
 
-		#ifdef REFLECTIONMAP_PROJECTION
-			coords /= vReflectionUVW.z;
-		#endif
+	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x * shadow;
+#else
+	vec2 coords = vReflectionUVW.xy;
 
-		coords.y = 1.0 - coords.y;
+#ifdef REFLECTIONMAP_PROJECTION
+	coords /= vReflectionUVW.z;
+#endif
 
-		reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x * shadow;
-#endif	
+	coords.y = 1.0 - coords.y;
+
+	reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x * shadow;
+#endif
 
 #ifdef REFLECTIONFRESNEL
 	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);
@@ -725,7 +776,7 @@ void main(void) {
 	// Emissive
 	vec3 emissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
-    emissiveColor += texture2D(emissiveSampler, vEmissiveUV).rgb * vEmissiveInfos.y;
+	emissiveColor += texture2D(emissiveSampler, vEmissiveUV).rgb * vEmissiveInfos.y;
 #endif
 
 #ifdef EMISSIVEFRESNEL
@@ -745,7 +796,7 @@ void main(void) {
 #ifdef EMISSIVEASILLUMINATION
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
-    vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #endif
 
 #ifdef SPECULARTERM
@@ -758,11 +809,11 @@ void main(void) {
 	alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);
 #endif
 
-// Composition
+	// Composition
 #ifdef EMISSIVEASILLUMINATION
-    vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor, 0.0, 1.0), alpha);
+	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor, 0.0, 1.0), alpha);
 #else
-    vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
+	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
 #endif
 
 #ifdef LIGHTMAP

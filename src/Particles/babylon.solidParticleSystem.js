@@ -14,10 +14,10 @@ var BABYLON;
             this._uvs = new Array();
             this._index = 0; // indices index
             this._shapeCounter = 0;
-            this._setParticleColor = true;
-            this._setParticleTexture = true;
-            this._setParticleRotation = true;
-            this._setParticleVertex = false;
+            this._computeParticleColor = true;
+            this._computeParticleTexture = true;
+            this._computeParticleRotation = true;
+            this._computeParticleVertex = false;
             this._cam_axisZ = BABYLON.Vector3.Zero();
             this._cam_axisY = BABYLON.Vector3.Zero();
             this._cam_axisX = BABYLON.Vector3.Zero();
@@ -196,7 +196,7 @@ var BABYLON;
                     this._particle.rotation.x = 0.0;
                     this._particle.rotation.y = 0.0;
                 }
-                if (this._setParticleRotation) {
+                if (this._computeParticleRotation) {
                     if (this._particle.quaternion) {
                         this._quaternion.x = this._particle.quaternion.x;
                         this._quaternion.y = this._particle.quaternion.y;
@@ -215,23 +215,23 @@ var BABYLON;
                     idx = index + pt * 3;
                     colidx = colorIndex + pt * 4;
                     uvidx = uvIndex + pt * 2;
-                    this._vertex.x = this._particle._shape[pt].x;
-                    this._vertex.y = this._particle._shape[pt].y;
-                    this._vertex.z = this._particle._shape[pt].z;
-                    if (this._setParticleVertex) {
+                    this._vertex.x = this._particle._shape[pt].x * this._particle.scale.x;
+                    this._vertex.y = this._particle._shape[pt].y * this._particle.scale.y;
+                    this._vertex.z = this._particle._shape[pt].z * this._particle.scale.z;
+                    if (this._computeParticleVertex) {
                         this.updateParticleVertex(this._particle, this._vertex, pt);
                     }
                     BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
-                    this._positions[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x * this._particle.scale.x + this._cam_axisY.x * this._rotated.y * this._particle.scale.y + this._cam_axisZ.x * this._rotated.z * this._particle.scale.z;
-                    this._positions[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x * this._particle.scale.x + this._cam_axisY.y * this._rotated.y * this._particle.scale.y + this._cam_axisZ.y * this._rotated.z * this._particle.scale.z;
-                    this._positions[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x * this._particle.scale.x + this._cam_axisY.z * this._rotated.y * this._particle.scale.y + this._cam_axisZ.z * this._rotated.z * this._particle.scale.z;
-                    if (this._setParticleColor) {
+                    this._positions[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                    this._positions[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                    this._positions[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                    if (this._computeParticleColor) {
                         this._colors[colidx] = this._particle.color.r;
                         this._colors[colidx + 1] = this._particle.color.g;
                         this._colors[colidx + 2] = this._particle.color.b;
                         this._colors[colidx + 3] = this._particle.color.a;
                     }
-                    if (this._setParticleTexture) {
+                    if (this._computeParticleTexture) {
                         this._uvs[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
                         this._uvs[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                     }
@@ -241,10 +241,10 @@ var BABYLON;
                 uvIndex = uvidx + 2;
             }
             if (update) {
-                if (this._setParticleColor) {
+                if (this._computeParticleColor) {
                     this.mesh.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this._colors, false, false);
                 }
-                if (this._setParticleTexture) {
+                if (this._computeParticleTexture) {
                     this.mesh.updateVerticesData(BABYLON.VertexBuffer.UVKind, this._uvs, false, false);
                 }
                 this.mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this._positions, false, false);
@@ -292,44 +292,44 @@ var BABYLON;
         SolidParticleSystem.prototype.dispose = function () {
             this.mesh.dispose();
         };
-        Object.defineProperty(SolidParticleSystem.prototype, "setParticleRotation", {
+        Object.defineProperty(SolidParticleSystem.prototype, "computeParticleRotation", {
             // getters
             get: function () {
-                return this._setParticleRotation;
+                return this._computeParticleRotation;
             },
             // Optimizer setters
             set: function (val) {
-                this._setParticleRotation = val;
+                this._computeParticleRotation = val;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SolidParticleSystem.prototype, "setParticleColor", {
+        Object.defineProperty(SolidParticleSystem.prototype, "computeParticleColor", {
             get: function () {
-                return this._setParticleColor;
+                return this._computeParticleColor;
             },
             set: function (val) {
-                this._setParticleColor = val;
+                this._computeParticleColor = val;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SolidParticleSystem.prototype, "setParticleTexture", {
+        Object.defineProperty(SolidParticleSystem.prototype, "computeParticleTexture", {
             get: function () {
-                return this._setParticleTexture;
+                return this._computeParticleTexture;
             },
             set: function (val) {
-                this._setParticleTexture = val;
+                this._computeParticleTexture = val;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(SolidParticleSystem.prototype, "setParticleVertex", {
+        Object.defineProperty(SolidParticleSystem.prototype, "computeParticleVertex", {
             get: function () {
-                return this._setParticleVertex;
+                return this._computeParticleVertex;
             },
             set: function (val) {
-                this._setParticleVertex = val;
+                this._computeParticleVertex = val;
             },
             enumerable: true,
             configurable: true
