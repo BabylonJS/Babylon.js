@@ -32,11 +32,13 @@
                     bodyY = registeredMesh.body.position.y,
                     bodyZ = registeredMesh.body.position.z;
 
-                var deltaPos = registeredMesh.delta || Vector3.Zero();
+                if(!registeredMesh.delta) {
+                    registeredMesh.delta = Vector3.Zero();
+                }
 
-                registeredMesh.mesh.position.x = bodyX + deltaPos.x;
-                registeredMesh.mesh.position.y = bodyY + deltaPos.y;
-                registeredMesh.mesh.position.z = bodyZ + deltaPos.z;
+                registeredMesh.mesh.position.x = bodyX + registeredMesh.delta.x;
+                registeredMesh.mesh.position.y = bodyY + registeredMesh.delta.y;
+                registeredMesh.mesh.position.z = bodyZ + registeredMesh.delta.z;
 
                 registeredMesh.mesh.rotationQuaternion.x = registeredMesh.body.quaternion.x;
                 registeredMesh.mesh.rotationQuaternion.y = registeredMesh.body.quaternion.y;
@@ -52,6 +54,10 @@
         public registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any {
             this.unregisterMesh(mesh);
 
+			if (!mesh.rotationQuaternion) {
+                mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
+            }
+			
             mesh.computeWorldMatrix(true);
 
             var shape = this._createShape(mesh, impostor, options);
@@ -60,6 +66,14 @@
         }
 
         private _createShape(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions) {
+		
+			//get the correct bounding box
+			var oldQuaternion = mesh.rotationQuaternion;
+			mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
+            mesh.computeWorldMatrix(true);
+			
+			var returnValue;
+		
             switch (impostor) {
                 case PhysicsEngine.SphereImpostor:
                     var bbox = mesh.getBoundingInfo().boundingBox;
@@ -67,7 +81,9 @@
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
 
-                    return new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
+                    returnValue = new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
+					
+					break;
                 //TMP also for cylinder - TODO Cannon supports cylinder natively.
                 case PhysicsEngine.CylinderImpostor:
                     Tools.Warn("CylinderImposter not yet implemented, using BoxImposter instead");
@@ -76,16 +92,23 @@
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min).scale(0.5);
-                    return new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
+                    returnValue =  new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
+					break;
                 case PhysicsEngine.PlaneImpostor:
                     Tools.Warn("Attention, Cannon.js PlaneImposter might not behave as you wish. Consider using BoxImposter instead");
-                    return new CANNON.Plane();
+                    returnValue = new CANNON.Plane();
+					break;
                 case PhysicsEngine.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
 
-                    return this._createConvexPolyhedron(rawVerts, rawFaces, mesh, options);
+                    returnValue = this._createConvexPolyhedron(rawVerts, rawFaces, mesh, options);
+					break;
             }
+			
+			mesh.rotationQuaternion = oldQuaternion;
+			
+			return returnValue;
         }
 
         private _createConvexPolyhedron(rawVerts: number[] | Float32Array, rawFaces: number[], mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
@@ -138,8 +161,6 @@
         }
 
         private _createRigidBodyFromShape(shape: any, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
-            var initialRotation: Quaternion = null;
-
             if (!mesh.rotationQuaternion) {
                 mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
             }
@@ -286,6 +307,20 @@
 
         public isSupported(): boolean {
             return window.CANNON !== undefined;
+        }
+        
+        public getWorldObject() : any {
+            return this._world;
+        }
+        
+        public getPhysicsBodyOfMesh(mesh: AbstractMesh) {
+            for (var index = 0; index < this._registeredMeshes.length; index++) {
+                var registeredMesh = this._registeredMeshes[index];
+                if (registeredMesh.mesh === mesh) {
+                    return registeredMesh.body;
+                }
+            }
+            return null;
         }
     }
 }
