@@ -390,7 +390,6 @@
             var updatable = options.updatable;
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var instance = options.instance;
-            options.arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
 
             // tube geometry
             var tubePathArray = (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) => {

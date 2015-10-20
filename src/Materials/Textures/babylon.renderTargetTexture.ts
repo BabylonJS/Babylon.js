@@ -1,19 +1,19 @@
 ﻿module BABYLON {
     export class RenderTargetTexture extends Texture {
-        public static _REFRESHRATE_RENDERONCE: number = 0;
-        public static _REFRESHRATE_RENDERONEVERYFRAME: number = 1;
-        public static _REFRESHRATE_RENDERONEVERYTWOFRAME: number = 2;
+        public static _REFRESHRATE_RENDER_ONCE: number = 0;
+        public static _REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
+        public static _REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number = 2;
 
-        public static get REFRESHRATE_RENDERONCE(): number {
-            return RenderTargetTexture._REFRESHRATE_RENDERONCE;
+        public static get REFRESHRATE_RENDER_ONCE(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONCE;
         }
 
-        public static get REFRESHRATE_RENDERONEVERYFRAME(): number {
-            return RenderTargetTexture._REFRESHRATE_RENDERONEVERYFRAME;
+        public static get REFRESHRATE_RENDER_ONEVERYFRAME(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME;
         }
 
-        public static get REFRESHRATE_RENDERONEVERYTWOFRAME(): number {
-            return RenderTargetTexture._REFRESHRATE_RENDERONEVERYTWOFRAME;
+        public static get REFRESHRATE_RENDER_ONEVERYTWOFRAMES(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
         }
 
         public renderList = new Array<AbstractMesh>();
