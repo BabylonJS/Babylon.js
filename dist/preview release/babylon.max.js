@@ -13643,11 +13643,8 @@ var BABYLON;
             configurable: true
         });
         InstancedMesh.prototype.refreshBoundingInfo = function () {
-            var data = this._sourceMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            if (data) {
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._sourceMesh.getTotalVertices());
-                this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
-            }
+            var meshBB = this._sourceMesh.getBoundingInfo();
+            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum, meshBB.maximum);
             this._updateBoundingInfo();
         };
         InstancedMesh.prototype._preActivate = function () {
@@ -25530,6 +25527,13 @@ var BABYLON;
                 mesh.computeWorldMatrix(true);
             }
         }
+        Object.defineProperty(Geometry.prototype, "extend", {
+            get: function () {
+                return this._extend;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Geometry.prototype.getScene = function () {
             return this._scene;
         };
@@ -25551,13 +25555,13 @@ var BABYLON;
             if (kind === BABYLON.VertexBuffer.PositionKind) {
                 stride = this._vertexBuffers[kind].getStrideSize();
                 this._totalVertices = data.length / stride;
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                this._extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
                     mesh._resetPointsArrayCache();
-                    mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                    mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
                     mesh._createGlobalSubMesh();
                     mesh.computeWorldMatrix(true);
                 }
@@ -25579,11 +25583,10 @@ var BABYLON;
             }
             vertexBuffer.update(data);
             if (kind === BABYLON.VertexBuffer.PositionKind) {
-                var extend;
                 var stride = vertexBuffer.getStrideSize();
                 this._totalVertices = data.length / stride;
                 if (updateExtends) {
-                    extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                    this._extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._totalVertices);
                 }
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
@@ -25591,7 +25594,7 @@ var BABYLON;
                     var mesh = meshes[index];
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
-                        mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                        mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
                             subMesh.refreshBoundingInfo();
@@ -25756,8 +25759,10 @@ var BABYLON;
                 this._vertexBuffers[kind]._buffer.references = numOfMeshes;
                 if (kind === BABYLON.VertexBuffer.PositionKind) {
                     mesh._resetPointsArrayCache();
-                    var extend = BABYLON.Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
-                    mesh._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+                    if (!this._extend) {
+                        this._extend = BABYLON.Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
+                    }
+                    mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
                     mesh._createGlobalSubMesh();
                     //bounding info was just created again, world matrix should be applied again.
                     mesh._updateBoundingInfo();
@@ -25866,8 +25871,7 @@ var BABYLON;
                 geometry._delayInfo.push(kind);
             }
             // Bounding info
-            var extend = BABYLON.Tools.ExtractMinAndMax(this.getVerticesData(BABYLON.VertexBuffer.PositionKind), 0, this.getTotalVertices());
-            geometry._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
+            geometry._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
             return geometry;
         };
         // Statics

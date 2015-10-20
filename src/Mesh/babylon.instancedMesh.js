@@ -81,11 +81,8 @@ var BABYLON;
             configurable: true
         });
         InstancedMesh.prototype.refreshBoundingInfo = function () {
-            var data = this._sourceMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            if (data) {
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._sourceMesh.getTotalVertices());
-                this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
-            }
+            var meshBB = this._sourceMesh.getBoundingInfo();
+            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum, meshBB.maximum);
             this._updateBoundingInfo();
         };
         InstancedMesh.prototype._preActivate = function () {
