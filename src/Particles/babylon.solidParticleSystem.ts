@@ -17,7 +17,6 @@ module BABYLON {
         private _colors: number[] = new Array<number>();
         private _uvs: number[] = new Array<number>();
         private _positions32: Float32Array;
-        private _indices32: Float32Array;
         private _normals32: Float32Array;
         private _colors32: Float32Array;
         private _uvs32: Float32Array;
@@ -72,10 +71,9 @@ module BABYLON {
                 triangle.dispose();
             }
             this._positions32 = new Float32Array(this._positions);
-            this._indices32 = new Float32Array(this._indices);
             this._uvs32 = new Float32Array(this._uvs);
             this._colors32 = new Float32Array(this._colors);
-            VertexData.ComputeNormals(this._positions32, this._indices32, this._normals);
+            VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
             this._normals32 = new Float32Array(this._normals);
             var vertexData = new VertexData();
             vertexData.set(this._positions32, VertexBuffer.PositionKind);
@@ -355,7 +353,7 @@ module BABYLON {
                 }
                 this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
                 if (!this.mesh.areNormalsFrozen) {
-                    VertexData.ComputeNormals(this._positions32, this._indices32, this._normals32);
+                    VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
                     this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
                 }
             }
