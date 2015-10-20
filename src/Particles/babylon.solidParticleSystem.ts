@@ -23,6 +23,8 @@ module BABYLON {
         private _uvs32: Float32Array;
         private _index: number = 0;  // indices index
         private _shapeCounter: number = 0;
+        private _copy: any = {position: Vector3.Zero(), rotation: Vector3.Zero(), scale: new Vector3(1,1,1), quaternion: null, uvs: new Vector4(0,0,1,1), colors: null};
+        private _color: Color4 = new Color4(0,0,0,0);
         private _computeParticleColor: boolean = true;
         private _computeParticleTexture: boolean = true;
         private _computeParticleRotation: boolean = true;
@@ -99,23 +101,77 @@ module BABYLON {
             return mesh;
         }
 
+
+        //reset copy
+        private _resetCopy() {
+            this._copy.position.x = 0;
+            this._copy.position.y = 0;
+            this._copy.position.z = 0;
+            this._copy.rotation.x = 0;
+            this._copy.rotation.y = 0;
+            this._copy.rotation.z = 0;
+            this._copy.quaternion = null;
+            this._copy.scale.x = 1;
+            this._copy.scale.y = 1;
+            this._copy.scale.z = 1;
+            this._copy.uvs.x = 0;
+            this._copy.uvs.y = 0;
+            this._copy.uvs.z = 1;
+            this._copy.uvs.w = 1;
+            this._copy.colors = null;
+        }
+
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors): void {
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, customBuilder): void {
             var i;
             var u = 0;
             var c = 0;
+
+            if (customBuilder) {        // call to customBuilder
+                this._resetCopy();
+                customBuilder(this._copy, p);
+            }
+
+            if (this._copy.quaternion) {
+                this._quaternion.x = this._copy.quaternion.x;
+                this._quaternion.y = this._copy.quaternion.y;
+                this._quaternion.z = this._copy.quaternion.z;
+                this._quaternion.w = this._copy.quaternion.w;
+            } else {
+                this._yaw = this._copy.rotation.y;
+                this._pitch = this._copy.rotation.x;
+                this._roll = this._copy.rotation.z;
+                this._quaternionRotationYPR();
+            }
+            this._quaternionToRotationMatrix();
+
             for (i = 0; i < shape.length; i++) {
-                positions.push(shape[i].x, shape[i].y, shape[i].z);
+                this._vertex.x = shape[i].x * this._copy.scale.x;
+                this._vertex.y = shape[i].y * this._copy.scale.y;
+                this._vertex.z = shape[i].z * this._copy.scale.z;
+                Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
+                positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
                 if (meshUV) {
-                    uvs.push(meshUV[u], meshUV[u + 1]);
+                    uvs.push((this._copy.uvs.z - this._copy.uvs.x) * meshUV[u] + this._copy.uvs.x, (this._copy.uvs.w - this._copy.uvs.y) * meshUV[u + 1] + this._copy.uvs.y);
                     u += 2;
                 }
-                if (meshCol) {
-                    colors.push(meshCol[c] || 1, meshCol[c + 1] || 1, meshCol[c + 2] || 1, meshCol[c + 3] || 1);
-                    c += 4;
+
+                if (this._copy.colors) {
+                    this._color = this._copy.colors;
+                } else if (meshCol && meshCol[c]) {
+                    this._color.r = meshCol[c];
+                    this._color.g = meshCol[c + 1];
+                    this._color.b = meshCol[c + 2];
+                    this._color.a = meshCol[c + 3];
                 } else {
-                    colors.push(1, 1, 1, 1);
+                    this._color.r = 1;
+                    this._color.g = 1;
+                    this._color.b = 1;
+                    this._color.a = 1;
                 }
+                colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
+                c += 4;
+
             }
             for (i = 0; i < meshInd.length; i++) {
                 indices.push(p + meshInd[i]);
@@ -153,7 +209,7 @@ module BABYLON {
         }
 
         // add solid particles from a shape model in the particles array
-        public addShape(mesh: Mesh, nb: number): number {
+        public addShape(mesh: Mesh, nb: number, customBuilder?): number {
             var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
@@ -164,7 +220,7 @@ module BABYLON {
 
             // particles
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, customBuilder);
                 this._addParticle(this.nbParticles + i, this._positions.length, shape, shapeUV, this._shapeCounter);
                 this._index += shape.length;
             }
