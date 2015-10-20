@@ -14,6 +14,7 @@
         private _indices: number[];
         private _vertexBuffers;
         private _isDisposed = false;
+        private _extend: { minimum: Vector3, maximum: Vector3 };
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
@@ -42,6 +43,10 @@
                 this.applyToMesh(mesh);
                 mesh.computeWorldMatrix(true);
             }
+        }
+
+        public get extend(): { minimum: Vector3, maximum: Vector3 } {
+            return this._extend;
         }
 
         public getScene(): Scene {
@@ -73,7 +78,7 @@
 
                 this._totalVertices = data.length / stride;
 
-                var extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
 
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
@@ -81,7 +86,7 @@
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
                     mesh._resetPointsArrayCache();
-                    mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                     mesh._createGlobalSubMesh();
                     mesh.computeWorldMatrix(true);
                 }
@@ -111,13 +116,11 @@
 
             if (kind === VertexBuffer.PositionKind) {
 
-                var extend;
-
                 var stride = vertexBuffer.getStrideSize();
                 this._totalVertices = data.length / stride;
 
                 if (updateExtends) {
-                    extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                    this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
                 }
 
                 var meshes = this._meshes;
@@ -127,7 +130,7 @@
                     var mesh = meshes[index];
                     mesh._resetPointsArrayCache();
                     if (updateExtends) {
-                        mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+                        mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
@@ -325,8 +328,10 @@
                 if (kind === VertexBuffer.PositionKind) {
                     mesh._resetPointsArrayCache();
 
-                    var extend = Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
-                    mesh._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+                    if (!this._extend) {
+                        this._extend = Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
+                    }
+                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
                     mesh._createGlobalSubMesh();
 
@@ -461,8 +466,7 @@
             }
 
             // Bounding info
-            var extend = Tools.ExtractMinAndMax(this.getVerticesData(VertexBuffer.PositionKind), 0, this.getTotalVertices());
-            geometry._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+            geometry._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
             return geometry;
         }

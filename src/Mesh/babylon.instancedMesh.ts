@@ -72,12 +72,9 @@
         }
 
         public refreshBoundingInfo(): void {
-            var data = this._sourceMesh.getVerticesData(VertexBuffer.PositionKind);
+            var meshBB = this._sourceMesh.getBoundingInfo();
 
-            if (data) {
-                var extend = Tools.ExtractMinAndMax(data, 0, this._sourceMesh.getTotalVertices());
-                this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
-            }
+            this._boundingInfo = new BoundingInfo(meshBB.minimum, meshBB.maximum);
 
             this._updateBoundingInfo();
         }
