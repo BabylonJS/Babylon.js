@@ -91,7 +91,6 @@ module BABYLON {
 
             // free memory
             this._positions = null;
-            this._indices = null;
             this._normals = null;
             this._uvs = null;
             this._colors = null;
