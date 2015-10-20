@@ -16,6 +16,11 @@ module BABYLON {
         private _normals: number[] = new Array<number>();
         private _colors: number[] = new Array<number>();
         private _uvs: number[] = new Array<number>();
+        private _positions32: Float32Array;
+        private _indices32: Float32Array;
+        private _normals32: Float32Array;
+        private _colors32: Float32Array;
+        private _uvs32: Float32Array;
         private _index: number = 0;  // indices index
         private _shapeCounter: number = 0;
         private _computeParticleColor: boolean = true;
@@ -58,26 +63,39 @@ module BABYLON {
         }
 
         // build the SPS mesh : returns the mesh
-        public buildMesh(): Mesh {
+        public buildMesh(upgradable: boolean = true): Mesh {
             if (this.nbParticles === 0) {
                 var triangle = MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
                 triangle.dispose();
             }
-            VertexData.ComputeNormals(this._positions, this._indices, this._normals);
+            this._positions32 = new Float32Array(this._positions);
+            this._indices32 = new Float32Array(this._indices);
+            this._uvs32 = new Float32Array(this._uvs);
+            this._colors32 = new Float32Array(this._colors);
+            VertexData.ComputeNormals(this._positions32, this._indices32, this._normals);
+            this._normals32 = new Float32Array(this._normals);
             var vertexData = new VertexData();
-            vertexData.positions = this._positions;
+            vertexData.set(this._positions32, VertexBuffer.PositionKind);
             vertexData.indices = this._indices;
-            vertexData.normals = this._normals;
-            if (this._uvs) {
-                vertexData.uvs = this._uvs;
+            vertexData.set(this._normals32, VertexBuffer.NormalKind);
+            if (this._uvs32) {
+                vertexData.set(this._uvs32, VertexBuffer.UVKind);;
             }
-            if (this._colors) {
-                vertexData.colors = this._colors;
+            if (this._colors32) {
+                vertexData.set(this._colors32, VertexBuffer.ColorKind);
             }
             var mesh = new Mesh(name, this._scene);
-            vertexData.applyToMesh(mesh, true);
+            vertexData.applyToMesh(mesh, upgradable);
             this.mesh = mesh;
+
+            // free memory
+            this._positions = null;
+            this._indices = null;
+            this._normals = null;
+            this._uvs = null;
+            this._colors = null;
+
             return mesh;
         }
 
@@ -251,20 +269,20 @@ module BABYLON {
 
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
 
-                    this._positions[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                    this._positions[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                    this._positions[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                    this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                    this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                    this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
 
                     if (this._computeParticleColor) {
-                        this._colors[colidx] = this._particle.color.r;
-                        this._colors[colidx + 1] = this._particle.color.g;
-                        this._colors[colidx + 2] = this._particle.color.b;
-                        this._colors[colidx + 3] = this._particle.color.a;
+                        this._colors32[colidx] = this._particle.color.r;
+                        this._colors32[colidx + 1] = this._particle.color.g;
+                        this._colors32[colidx + 2] = this._particle.color.b;
+                        this._colors32[colidx + 3] = this._particle.color.a;
                     }
 
                     if (this._computeParticleTexture) {
-                        this._uvs[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
-                        this._uvs[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
+                        this._uvs32[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
+                        this._uvs32[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                     }
                 }
                 index = idx + 3;
@@ -274,15 +292,15 @@ module BABYLON {
 
             if (update) {
                 if (this._computeParticleColor) {
-                    this.mesh.updateVerticesData(VertexBuffer.ColorKind, this._colors, false, false);
+                    this.mesh.updateVerticesData(VertexBuffer.ColorKind, this._colors32, false, false);
                 }
                 if (this._computeParticleTexture) {
-                    this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs, false, false);
+                    this.mesh.updateVerticesData(VertexBuffer.UVKind, this._uvs32, false, false);
                 }
-                this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions, false, false);
+                this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
                 if (!this.mesh.areNormalsFrozen) {
-                    VertexData.ComputeNormals(this._positions, this._indices, this._normals);
-                    this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals, false, false);
+                    VertexData.ComputeNormals(this._positions32, this._indices32, this._normals32);
+                    this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
                 }
             }
             this.afterUpdateParticles(start, end, update);
