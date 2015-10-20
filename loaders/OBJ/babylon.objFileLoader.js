@@ -1,5 +1,3 @@
-/// <reference path="../References/babylon.2.1.d.ts"/>
-/// <reference path="../References/waa.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -28,6 +26,7 @@ var BABYLON;
                 var color;
                 //New material
                 var material;
+                //Look at each line
                 for (var i = 0; i < lines.length; i++) {
                     var line = lines[i];
                     line = line.trim();
@@ -238,6 +237,7 @@ var BABYLON;
             var wrappedUvsForBabylon = []; //Array with all value of uvs to match with the indices
             var wrappedNormalsForBabylon = []; //Array with all value of normals to match with the indices
             var tuplePosNorm = []; //Create a tuple with indice of Position, Normal, UV  [pos, norm, uvs]
+            var curPositionInIndices = 0;
             var hasMeshes = false; //Meshes are defined in the file
             var unwrappedPositionsForBabylon = []; //Value of positionForBabylon w/o Vector3() [x,y,z]
             var unwrappedNormalsForBabylon = []; //Value of normalsForBabylon w/o Vector3()  [x,y,z]
@@ -254,22 +254,15 @@ var BABYLON;
              * This function is called to check if a couple of data already exists in an array.
              *
              * If found, returns the index of the founded tuple index. Returns -1 if not found
-             * @param arr Array<BABYLON.Vector2>
-             * @param obj BABYLON.Vector2
-             * @returns {number}
+             * @param arr Array<{ normals: Array<number>, idx: Array<number> }>
+             * @param obj Array<number>
+             * @returns {boolean}
              */
             var isInArray = function (arr, obj) {
-                //Default value : not found
-                var res = -1;
-                for (var i = 0; i < arr.length; i++) {
-                    var element = arr[i];
-                    //Comparison of each element of the tuple
-                    if (element.x === obj.x && element.y === obj.y) {
-                        res = i;
-                    }
-                }
-                //Return the indice of the founded element
-                return res;
+                if (!arr[obj[0]])
+                    arr[obj[0]] = { normals: [], idx: [] };
+                var idx = arr[obj[0]].normals.indexOf(obj[1]);
+                return idx === -1 ? idx : arr[obj[0]].idx[idx];
             };
             /**
              * This function set the data for each triangle.
@@ -283,11 +276,13 @@ var BABYLON;
              * @param textureVectorFromOBJ Vector3 The value of uvs
              * @param normalsVectorFromOBJ Vector3 The value of normals at index objNormale
              */
+            var _tuple = [];
             var setData = function (indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ) {
                 //Create a new tuple composed with the indice of position and normal
-                var tuple = new BABYLON.Vector2(indicePositionFromObj, indiceNormalFromObj);
+                _tuple[0] = indicePositionFromObj;
+                _tuple[1] = indiceNormalFromObj;
                 //Check if this tuple already exists in the list of tuples
-                var _index = isInArray(tuplePosNorm, tuple);
+                var _index = isInArray(tuplePosNorm, _tuple);
                 //If it not exists
                 if (_index == -1) {
                     //Add an new indice.
@@ -304,7 +299,8 @@ var BABYLON;
                     //Each element is a BABYLON.Vector3(x,y,z)
                     wrappedNormalsForBabylon.push(normalsVectorFromOBJ);
                     //Add the tuple in the comparison list
-                    tuplePosNorm.push(tuple);
+                    tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
+                    tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
                 }
                 else {
                     //The tuple already exists
@@ -317,6 +313,7 @@ var BABYLON;
              * Transform BABYLON.Vector() object onto 3 digits in an array
              */
             var unwrapData = function () {
+                //Every array has the same length
                 for (var l = 0; l < wrappedPositionForBabylon.length; l++) {
                     //Push the x, y, z values of each element in the unwrapped array
                     unwrappedPositionsForBabylon.push(wrappedPositionForBabylon[l].x, wrappedPositionForBabylon[l].y, wrappedPositionForBabylon[l].z);
@@ -362,6 +359,8 @@ var BABYLON;
             var setDataForCurrentFaceWithPattern1 = function (face, v) {
                 //Get the indices of triangles for each polygon
                 getTriangles(face, v);
+                //For each element in the triangles array.
+                //This var could contains 1 to an infinity of triangles
                 for (var k = 0; k < triangles.length; k++) {
                     // Set position indice
                     var indicePositionFromObj = parseInt(triangles[k]) - 1;
@@ -381,7 +380,7 @@ var BABYLON;
             };
             /**
              * Create triangles and push the data for each polygon for the pattern 2
-             * In this pattern we get vertice positions and uvs
+             * In this pattern we get vertice positions and uvsu
              * @param face
              * @param v
              */
@@ -488,6 +487,7 @@ var BABYLON;
             //Main function
             //Split the file into lines
             var lines = data.split('\n');
+            //Look at each line
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
                 line = line.trim();
@@ -556,7 +556,9 @@ var BABYLON;
                     //Create a new mesh corresponding to the name of the group.
                     //Definition of the mesh
                     var objMeshName = line.substring(2).trim();
-                    var objMesh = {
+                    var objMesh = 
+                    //Set the name of the current obj mesh
+                    {
                         name: objMeshName,
                         indices: undefined,
                         positions: undefined,
@@ -580,7 +582,9 @@ var BABYLON;
                         //Set the data for the previous mesh
                         addPreviousObjMesh();
                         //Create a new mesh
-                        var objMesh = {
+                        var objMesh = 
+                        //Set the name of the current obj mesh
+                        {
                             name: objMeshName + "_mm" + increment.toString(),
                             indices: undefined,
                             positions: undefined,
@@ -647,6 +651,7 @@ var BABYLON;
             var vertexData = new BABYLON.VertexData(); //The container for the values
             var babylonMeshesArray = []; //The mesh for babylon
             var materialToUse = [];
+            //Set data for each mesh
             for (var j = 0; j < meshesFromObj.length; j++) {
                 //check meshesNames (stlFileLoader)
                 if (meshesNames && meshesFromObj[j].name) {
@@ -686,11 +691,15 @@ var BABYLON;
                 this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
                     //Create materials thanks MTLLoader function
                     materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
+                    //Look at each material loaded in the mtl file
                     for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
                         //Three variables to get all meshes with the same material
                         var startIndex = 0;
                         var _indices = [];
                         var _index;
+                        //The material from MTL file is used in the meshes loaded
+                        //Push the indice in an array
+                        //Check if the material is not used for another mesh
                         while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
                             _indices.push(_index);
                             startIndex = _index + 1;
