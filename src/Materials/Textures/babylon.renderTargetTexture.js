@@ -212,7 +212,7 @@ var BABYLON;
                         engine.generateMipMapsForCubemap(this._texture);
                     }
                 }
-                engine.unBindFramebuffer(this._texture, true);
+                engine.unBindFramebuffer(this._texture, this.isCube);
             }
         };
         RenderTargetTexture.prototype.clone = function () {

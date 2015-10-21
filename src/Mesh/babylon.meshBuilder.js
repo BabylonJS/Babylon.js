@@ -330,7 +330,6 @@ var BABYLON;
             var updatable = options.updatable;
             var sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var instance = options.instance;
-            options.arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             // tube geometry
             var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) {
                 var tangents = path3D.getTangents();
@@ -426,7 +425,7 @@ var BABYLON;
             var position = options.position || BABYLON.Vector3.Zero();
             var normal = options.normal || BABYLON.Vector3.Up();
             var size = options.size || new BABYLON.Vector3(1, 1, 1);
-            var angle = options.angle;
+            var angle = options.angle || 0;
             // Getting correct rotation
             if (!normal) {
                 var target = new BABYLON.Vector3(0, 0, 1);

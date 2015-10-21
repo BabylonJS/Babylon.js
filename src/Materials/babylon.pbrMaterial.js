@@ -6,8 +6,10 @@ var __extends = (this && this.__extends) || function (d, b) {
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
-    var PBRMaterialDefines = (function () {
+    var PBRMaterialDefines = (function (_super) {
+        __extends(PBRMaterialDefines, _super);
         function PBRMaterialDefines() {
+            _super.call(this);
             this.ALBEDO = false;
             this.CLIPPLANE = false;
             this.ALPHATEST = false;
@@ -24,47 +26,8 @@ var BABYLON;
             this.POINTSIZE = false;
             this._keys = Object.keys(this);
         }
-        PBRMaterialDefines.prototype.isEqual = function (other) {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-                if (this[prop] !== other[prop]) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        PBRMaterialDefines.prototype.cloneTo = function (other) {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-                other[prop] = this[prop];
-            }
-        };
-        PBRMaterialDefines.prototype.reset = function () {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-                if (prop === "BonesPerMesh") {
-                    this[prop] = 0;
-                    continue;
-                }
-                this[prop] = false;
-            }
-        };
-        PBRMaterialDefines.prototype.toString = function () {
-            var result = "";
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-                if (prop === "BonesPerMesh" && this[prop] > 0) {
-                    result += "#define BonesPerMesh " + this[prop] + "\n";
-                    continue;
-                }
-                if (this[prop]) {
-                    result += "#define " + prop + "\n";
-                }
-            }
-            return result;
-        };
         return PBRMaterialDefines;
-    })();
+    })(BABYLON.MaterialDefines);
     var PBRMaterial = (function (_super) {
         __extends(PBRMaterial, _super);
         function PBRMaterial(name, scene) {

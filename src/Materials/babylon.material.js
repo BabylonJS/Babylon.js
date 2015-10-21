@@ -1,9 +1,54 @@
 var BABYLON;
 (function (BABYLON) {
+    var MaterialDefines = (function () {
+        function MaterialDefines() {
+        }
+        MaterialDefines.prototype.isEqual = function (other) {
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
+                if (this[prop] !== other[prop]) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        MaterialDefines.prototype.cloneTo = function (other) {
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
+                other[prop] = this[prop];
+            }
+        };
+        MaterialDefines.prototype.reset = function () {
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
+                if (prop === "BonesPerMesh") {
+                    this[prop] = 0;
+                    continue;
+                }
+                this[prop] = false;
+            }
+        };
+        MaterialDefines.prototype.toString = function () {
+            var result = "";
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
+                if (prop === "BonesPerMesh" && this[prop] > 0) {
+                    result += "#define BonesPerMesh " + this[prop] + "\n";
+                    continue;
+                }
+                if (this[prop]) {
+                    result += "#define " + prop + "\n";
+                }
+            }
+            return result;
+        };
+        return MaterialDefines;
+    })();
+    BABYLON.MaterialDefines = MaterialDefines;
     var Material = (function () {
         function Material(name, scene, doNotAdd) {
             this.name = name;
-            this.checkReadyOnEveryCall = true;
+            this.checkReadyOnEveryCall = false;
             this.checkReadyOnlyOnce = false;
             this.state = "";
             this.alpha = 1.0;

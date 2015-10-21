@@ -22,8 +22,10 @@ var BABYLON;
         return FresnelParameters;
     })();
     BABYLON.FresnelParameters = FresnelParameters;
-    var StandardMaterialDefines = (function () {
+    var StandardMaterialDefines = (function (_super) {
+        __extends(StandardMaterialDefines, _super);
         function StandardMaterialDefines() {
+            _super.call(this);
             this.DIFFUSE = false;
             this.AMBIENT = false;
             this.OPACITY = false;
@@ -97,47 +99,8 @@ var BABYLON;
             this.INVERTCUBICMAP = false;
             this._keys = Object.keys(this);
         }
-        StandardMaterialDefines.prototype.isEqual = function (other) {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-                if (this[prop] !== other[prop]) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        StandardMaterialDefines.prototype.cloneTo = function (other) {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-                other[prop] = this[prop];
-            }
-        };
-        StandardMaterialDefines.prototype.reset = function () {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-                if (prop === "BonesPerMesh") {
-                    this[prop] = 0;
-                    continue;
-                }
-                this[prop] = false;
-            }
-        };
-        StandardMaterialDefines.prototype.toString = function () {
-            var result = "";
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-                if (prop === "BonesPerMesh" && this[prop] > 0) {
-                    result += "#define BonesPerMesh " + this[prop] + "\n";
-                    continue;
-                }
-                if (this[prop]) {
-                    result += "#define " + prop + "\n";
-                }
-            }
-            return result;
-        };
         return StandardMaterialDefines;
-    })();
+    })(BABYLON.MaterialDefines);
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         function StandardMaterial(name, scene) {
@@ -194,7 +157,12 @@ var BABYLON;
             var scene = this.getScene();
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    return true;
+                    if (!mesh) {
+                        return true;
+                    }
+                    if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
+                        return true;
+                    }
                 }
             }
             var engine = scene.getEngine();
@@ -561,6 +529,12 @@ var BABYLON;
             }
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
+            if (mesh) {
+                if (!mesh._materialDefines) {
+                    mesh._materialDefines = new StandardMaterialDefines();
+                }
+                this._defines.cloneTo(mesh._materialDefines);
+            }
             return true;
         };
         StandardMaterial.prototype.unbind = function () {

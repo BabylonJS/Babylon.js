@@ -495,7 +495,7 @@
             var position = options.position || Vector3.Zero();
             var normal = options.normal || Vector3.Up();
             var size = options.size || new Vector3(1, 1, 1);
-            var angle = options.angle;
+            var angle = options.angle || 0;
             
             // Getting correct rotation
             if (!normal) {
