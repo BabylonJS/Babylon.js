@@ -67,10 +67,12 @@
             }
 
             var indices = this._renderingMesh.getIndices();
-            var extend;
+            var extend: { minimum: Vector3, maximum: Vector3 };
 
+            //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
-                extend = Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+                //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
+                extend = { minimum: this._renderingMesh.getBoundingInfo().minimum.clone(), maximum: this._renderingMesh.getBoundingInfo().maximum.clone() };
             } else {
                 extend = Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
             }
