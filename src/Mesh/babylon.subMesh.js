@@ -48,8 +48,10 @@ var BABYLON;
             }
             var indices = this._renderingMesh.getIndices();
             var extend;
+            //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
-                extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+                //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
+                extend = { minimum: this._renderingMesh.getBoundingInfo().minimum.clone(), maximum: this._renderingMesh.getBoundingInfo().maximum.clone() };
             }
             else {
                 extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);

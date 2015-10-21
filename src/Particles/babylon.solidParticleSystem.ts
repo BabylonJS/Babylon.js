@@ -215,7 +215,7 @@ module BABYLON {
         }
 
         // add solid particles from a shape model in the particles array
-        public addShape(mesh: Mesh, nb: number, options? : {positionFunction?: any, vertexFunction?: any}): number {
+        public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any, vertexFunction?: any }): number {
             var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
@@ -444,7 +444,6 @@ module BABYLON {
         public get computeParticleVertex(): boolean {
             return this._computeParticleVertex;
         } 
-       
 
         // =======================================================================
         // Particle behavior logic
@@ -487,4 +486,5 @@ module BABYLON {
         }
     }
 }
+
 

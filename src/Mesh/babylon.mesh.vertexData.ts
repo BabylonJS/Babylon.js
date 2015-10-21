@@ -1302,7 +1302,7 @@
 
             var theta = Math.PI * 2 * arc;
             var step = theta / tessellation;
-            for (var a = 0; a < theta ; a += step) {
+            for (var a = 0; a < theta; a += step) {
                 var x = Math.cos(a);
                 var y = Math.sin(a);
                 var u = (x + 1) / 2;
@@ -1310,7 +1310,7 @@
                 positions.push(radius * x, radius * y, 0);
                 uvs.push(u, v);
             }
-            if (arc == 1) {
+            if (arc === 1) {
                 positions.push(positions[3], positions[4], positions[5]); // close the circle
                 uvs.push(uvs[2], uvs[3]);
             }
@@ -1391,7 +1391,7 @@
             var indexes = [];
             var i = 0;
             var f = 0;
-            var u, v, ang, x, y, tmp;
+            var u: number, v: number, ang: number, x: number, y: number, tmp: number;
 
 
             // default face colors and UV if undefined
@@ -1404,7 +1404,7 @@
                         faceUV[f] = new Vector4(0, 0, 1, 1);
                     }
                 }
-            }   
+            }
 
             if (singleFace) {
 
@@ -1412,38 +1412,38 @@
                     positions.push(data.vertex[i][0] * sizeX, data.vertex[i][1] * sizeY, data.vertex[i][2] * sizeZ);
                     uvs.push(0, 0);
                 }
-                for (var f = 0; f < nbfaces; f++) {
+                for (f = 0; f < nbfaces; f++) {
                     for (i = 0; i < data.face[f].length - 2; i++) {
                         indices.push(data.face[f][0], data.face[f][i + 2], data.face[f][i + 1]);
                     }
                 }
-                
+
             } else {
 
                 for (f = 0; f < nbfaces; f++) {
-                        var fl = data.face[f].length;  // number of vertices of the current face
-                        ang = 2 * Math.PI / fl;
-                        x = 0.5 * Math.tan(ang / 2);
-                        y = 0.5;
+                    var fl = data.face[f].length;  // number of vertices of the current face
+                    ang = 2 * Math.PI / fl;
+                    x = 0.5 * Math.tan(ang / 2);
+                    y = 0.5;
 
-                        // positions, uvs, colors
-                        for (i = 0; i < fl; i++) {
-                            // positions
-                            positions.push(data.vertex[data.face[f][i]][0] * sizeX, data.vertex[data.face[f][i]][1] * sizeY, data.vertex[data.face[f][i]][2] * sizeZ);
-                            indexes.push(index);
-                            index++;
-                            // uvs
-                            u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
-                            v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
-                            uvs.push(u, v);
-                            tmp = x * Math.cos(ang) - y * Math.sin(ang);
-                            y = x * Math.sin(ang) + y * Math.cos(ang);
-                            x = tmp;
-                            // colors
-                            if (faceColors) {
-                                colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
-                            }
+                    // positions, uvs, colors
+                    for (i = 0; i < fl; i++) {
+                        // positions
+                        positions.push(data.vertex[data.face[f][i]][0] * sizeX, data.vertex[data.face[f][i]][1] * sizeY, data.vertex[data.face[f][i]][2] * sizeZ);
+                        indexes.push(index);
+                        index++;
+                        // uvs
+                        u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
+                        v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
+                        uvs.push(u, v);
+                        tmp = x * Math.cos(ang) - y * Math.sin(ang);
+                        y = x * Math.sin(ang) + y * Math.cos(ang);
+                        x = tmp;
+                        // colors
+                        if (faceColors) {
+                            colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
                         }
+                    }
 
                     // indices from indexes
                     for (i = 0; i < fl - 2; i++) {
@@ -1673,5 +1673,6 @@
         }
     }
 }
+
 
 

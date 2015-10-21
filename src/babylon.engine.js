@@ -439,7 +439,7 @@ var BABYLON;
             this._caps.highPrecisionShaderSupported = true;
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
-                this._caps.highPrecisionShaderSupported = highp.precision != 0;
+                this._caps.highPrecisionShaderSupported = highp.precision !== 0;
             }
             // Depth buffer
             this.setDepthBuffer(true);

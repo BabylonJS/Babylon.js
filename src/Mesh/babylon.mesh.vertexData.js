@@ -1058,12 +1058,14 @@ var BABYLON;
             var uvs = [];
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             // positions and uvs
             positions.push(0, 0, 0); // disc center first
             uvs.push(0.5, 0.5);
-            var step = Math.PI * 2 / tessellation;
-            for (var a = 0; a < Math.PI * 2; a += step) {
+            var theta = Math.PI * 2 * arc;
+            var step = theta / tessellation;
+            for (var a = 0; a < theta; a += step) {
                 var x = Math.cos(a);
                 var y = Math.sin(a);
                 var u = (x + 1) / 2;
@@ -1071,8 +1073,10 @@ var BABYLON;
                 positions.push(radius * x, radius * y, 0);
                 uvs.push(u, v);
             }
-            positions.push(positions[3], positions[4], positions[5]); // close the circle
-            uvs.push(uvs[2], uvs[3]);
+            if (arc === 1) {
+                positions.push(positions[3], positions[4], positions[5]); // close the circle
+                uvs.push(uvs[2], uvs[3]);
+            }
             //indices
             var vertexNb = positions.length / 3;
             for (var i = 1; i < vertexNb - 1; i++) {
@@ -1130,6 +1134,7 @@ var BABYLON;
             var nbfaces = data.face.length;
             var faceUV = options.faceUV || new Array(nbfaces);
             var faceColors = options.faceColors;
+            var singleFace = options.singleFace;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var positions = [];
             var indices = [];
@@ -1143,42 +1148,57 @@ var BABYLON;
             var f = 0;
             var u, v, ang, x, y, tmp;
             // default face colors and UV if undefined
-            for (f = 0; f < nbfaces; f++) {
-                if (faceColors && faceColors[f] === undefined) {
-                    faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
-                }
-                if (faceUV && faceUV[f] === undefined) {
-                    faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
-                }
-            }
-            for (f = 0; f < nbfaces; f++) {
-                var fl = data.face[f].length; // number of vertices of the current face
-                ang = 2 * Math.PI / fl;
-                x = 0.5 * Math.tan(ang / 2);
-                y = 0.5;
-                // positions, uvs, colors
-                for (i = 0; i < fl; i++) {
-                    // positions
-                    positions.push(data.vertex[data.face[f][i]][0] * sizeX, data.vertex[data.face[f][i]][1] * sizeY, data.vertex[data.face[f][i]][2] * sizeZ);
-                    indexes.push(index);
-                    index++;
-                    // uvs
-                    u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
-                    v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
-                    uvs.push(u, v);
-                    tmp = x * Math.cos(ang) - y * Math.sin(ang);
-                    y = x * Math.sin(ang) + y * Math.cos(ang);
-                    x = tmp;
-                    // colors
-                    if (faceColors) {
-                        colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
+            if (!singleFace) {
+                for (f = 0; f < nbfaces; f++) {
+                    if (faceColors && faceColors[f] === undefined) {
+                        faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
+                    }
+                    if (faceUV && faceUV[f] === undefined) {
+                        faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
                     }
                 }
-                // indices from indexes
-                for (i = 0; i < fl - 2; i++) {
-                    indices.push(indexes[0 + faceIdx], indexes[i + 2 + faceIdx], indexes[i + 1 + faceIdx]);
+            }
+            if (singleFace) {
+                for (i = 0; i < data.vertex.length; i++) {
+                    positions.push(data.vertex[i][0] * sizeX, data.vertex[i][1] * sizeY, data.vertex[i][2] * sizeZ);
+                    uvs.push(0, 0);
                 }
-                faceIdx += fl;
+                for (f = 0; f < nbfaces; f++) {
+                    for (i = 0; i < data.face[f].length - 2; i++) {
+                        indices.push(data.face[f][0], data.face[f][i + 2], data.face[f][i + 1]);
+                    }
+                }
+            }
+            else {
+                for (f = 0; f < nbfaces; f++) {
+                    var fl = data.face[f].length; // number of vertices of the current face
+                    ang = 2 * Math.PI / fl;
+                    x = 0.5 * Math.tan(ang / 2);
+                    y = 0.5;
+                    // positions, uvs, colors
+                    for (i = 0; i < fl; i++) {
+                        // positions
+                        positions.push(data.vertex[data.face[f][i]][0] * sizeX, data.vertex[data.face[f][i]][1] * sizeY, data.vertex[data.face[f][i]][2] * sizeZ);
+                        indexes.push(index);
+                        index++;
+                        // uvs
+                        u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
+                        v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
+                        uvs.push(u, v);
+                        tmp = x * Math.cos(ang) - y * Math.sin(ang);
+                        y = x * Math.sin(ang) + y * Math.cos(ang);
+                        x = tmp;
+                        // colors
+                        if (faceColors) {
+                            colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
+                        }
+                    }
+                    // indices from indexes
+                    for (i = 0; i < fl - 2; i++) {
+                        indices.push(indexes[0 + faceIdx], indexes[i + 2 + faceIdx], indexes[i + 1 + faceIdx]);
+                    }
+                    faceIdx += fl;
+                }
             }
             VertexData.ComputeNormals(positions, indices, normals);
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
@@ -1187,7 +1207,7 @@ var BABYLON;
             vertexData.indices = indices;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
-            if (faceColors) {
+            if (faceColors && !singleFace) {
                 vertexData.colors = colors;
             }
             return vertexData;

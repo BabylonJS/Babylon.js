@@ -14,7 +14,7 @@ var BABYLON;
             this._uvs = new Array();
             this._index = 0; // indices index
             this._shapeCounter = 0;
-            this._copy = { position: BABYLON.Vector3.Zero(), rotation: BABYLON.Vector3.Zero(), scale: new BABYLON.Vector3(1, 1, 1), quaternion: null, uvs: new BABYLON.Vector4(0, 0, 1, 1), colors: null };
+            this._copy = new BABYLON.SolidParticle(null, null, null, null, null, null);
             this._color = new BABYLON.Color4(0, 0, 0, 0);
             this._computeParticleColor = true;
             this._computeParticleTexture = true;
@@ -98,16 +98,16 @@ var BABYLON;
             this._copy.uvs.y = 0;
             this._copy.uvs.z = 1;
             this._copy.uvs.w = 1;
-            this._copy.colors = null;
+            this._copy.color = null;
         };
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        SolidParticleSystem.prototype._meshBuilder = function (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, customBuilder) {
+        SolidParticleSystem.prototype._meshBuilder = function (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idxInShape, options) {
             var i;
             var u = 0;
             var c = 0;
-            if (customBuilder) {
-                this._resetCopy();
-                customBuilder(this._copy, p);
+            this._resetCopy();
+            if (options && options.positionFunction) {
+                options.positionFunction(this._copy, p, idxInShape);
             }
             if (this._copy.quaternion) {
                 this._quaternion.x = this._copy.quaternion.x;
@@ -123,17 +123,23 @@ var BABYLON;
             }
             this._quaternionToRotationMatrix();
             for (i = 0; i < shape.length; i++) {
-                this._vertex.x = shape[i].x * this._copy.scale.x;
-                this._vertex.y = shape[i].y * this._copy.scale.y;
-                this._vertex.z = shape[i].z * this._copy.scale.z;
+                this._vertex.x = shape[i].x;
+                this._vertex.y = shape[i].y;
+                this._vertex.z = shape[i].z;
+                if (options && options.vertexFunction) {
+                    options.vertexFunction(this._copy, this._vertex, i);
+                }
+                this._vertex.x *= this._copy.scale.x;
+                this._vertex.y *= this._copy.scale.y;
+                this._vertex.z *= this._copy.scale.z;
                 BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                 positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
                 if (meshUV) {
                     uvs.push((this._copy.uvs.z - this._copy.uvs.x) * meshUV[u] + this._copy.uvs.x, (this._copy.uvs.w - this._copy.uvs.y) * meshUV[u + 1] + this._copy.uvs.y);
                     u += 2;
                 }
-                if (this._copy.colors) {
-                    this._color = this._copy.colors;
+                if (this._copy.color) {
+                    this._color = this._copy.color;
                 }
                 else if (meshCol && meshCol[c]) {
                     this._color.r = meshCol[c];
@@ -172,8 +178,8 @@ var BABYLON;
             return shapeUV;
         };
         // adds a new particle object in the particles array and double links the particle (next/previous)
-        SolidParticleSystem.prototype._addParticle = function (p, idxpos, shape, shapeUV, shapeId) {
-            this._particle = new BABYLON.SolidParticle(p, idxpos, shape, shapeUV, shapeId);
+        SolidParticleSystem.prototype._addParticle = function (p, idxpos, shape, shapeUV, shapeId, idxInShape) {
+            this._particle = new BABYLON.SolidParticle(p, idxpos, shape, shapeUV, shapeId, idxInShape);
             this.particles.push(this._particle);
             this._particle.previous = this._previousParticle;
             if (this._previousParticle) {
@@ -182,7 +188,7 @@ var BABYLON;
             this._previousParticle = this._particle;
         };
         // add solid particles from a shape model in the particles array
-        SolidParticleSystem.prototype.addShape = function (mesh, nb, customBuilder) {
+        SolidParticleSystem.prototype.addShape = function (mesh, nb, options) {
             var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
@@ -191,8 +197,8 @@ var BABYLON;
             var shapeUV = this._uvsToShapeUV(meshUV);
             // particles
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, customBuilder);
-                this._addParticle(this.nbParticles + i, this._positions.length, shape, shapeUV, this._shapeCounter);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, i, options);
+                this._addParticle(this.nbParticles + i, this._positions.length, shape, shapeUV, this._shapeCounter, i);
                 this._index += shape.length;
             }
             this.nbParticles += nb;
@@ -277,12 +283,15 @@ var BABYLON;
                     idx = index + pt * 3;
                     colidx = colorIndex + pt * 4;
                     uvidx = uvIndex + pt * 2;
-                    this._vertex.x = this._particle._shape[pt].x * this._particle.scale.x;
-                    this._vertex.y = this._particle._shape[pt].y * this._particle.scale.y;
-                    this._vertex.z = this._particle._shape[pt].z * this._particle.scale.z;
+                    this._vertex.x = this._particle._shape[pt].x;
+                    this._vertex.y = this._particle._shape[pt].y;
+                    this._vertex.z = this._particle._shape[pt].z;
                     if (this._computeParticleVertex) {
                         this.updateParticleVertex(this._particle, this._vertex, pt);
                     }
+                    this._vertex.x *= this._particle.scale.x;
+                    this._vertex.y *= this._particle.scale.y;
+                    this._vertex.z *= this._particle.scale.z;
                     BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                     this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                     this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
@@ -415,8 +424,11 @@ var BABYLON;
         };
         // updates a vertex of a particle : can be overwritten by the user
         // will be called on each vertex particle by setParticles() :
+        // particle : the current particle
+        // vertex : the current index of the current particle
+        // pt : the index of the current vertex in the particle shape
         // ex : just set a vertex particle position
-        SolidParticleSystem.prototype.updateParticleVertex = function (particle, vertex, i) {
+        SolidParticleSystem.prototype.updateParticleVertex = function (particle, vertex, pt) {
             return vertex;
         };
         // will be called before any other treatment by setParticles()

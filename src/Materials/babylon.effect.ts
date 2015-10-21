@@ -278,15 +278,15 @@
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 
-        //public _cacheMatrix(uniformName, matrix) {
-        //    if (!this._valueCache[uniformName]) {
-        //        this._valueCache[uniformName] = new BABYLON.Matrix();
-        //    }
+        public _cacheMatrix(uniformName, matrix) {
+            if (!this._valueCache[uniformName]) {
+                this._valueCache[uniformName] = new Matrix();
+            }
 
-        //    for (var index = 0; index < 16; index++) {
-        //        this._valueCache[uniformName].m[index] = matrix.m[index];
-        //    }
-        //};
+            for (var index = 0; index < 16; index++) {
+                this._valueCache[uniformName].m[index] = matrix.m[index];
+            }
+        };
 
         public _cacheFloat2(uniformName: string, x: number, y: number): void {
             if (!this._valueCache[uniformName]) {
@@ -352,10 +352,10 @@
         }
 
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
-            //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-            //    return;
+            if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
+                return this;
 
-            //this._cacheMatrix(uniformName, matrix);
+            this._cacheMatrix(uniformName, matrix);
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
 
             return this;
