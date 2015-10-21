@@ -761,7 +761,7 @@
             var diameterBottom: number = options.diameterBottom || options.diameter || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
             var faceColors: Color4[] = options.faceColors;
@@ -1285,7 +1285,7 @@
             return vertexData;
         }
 
-        public static CreateDisc(options: { radius?: number, tessellation?: number, sideOrientation?: number }): VertexData {
+        public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number }): VertexData {
             var positions = [];
             var indices = [];
             var normals = [];
@@ -1293,14 +1293,16 @@
 
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
+            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // positions and uvs
             positions.push(0, 0, 0);    // disc center first
             uvs.push(0.5, 0.5);
 
-            var step = Math.PI * 2 / tessellation;
-            for (var a = 0; a < Math.PI * 2; a += step) {
+            var theta = Math.PI * 2 * arc;
+            var step = theta / tessellation;
+            for (var a = 0; a < theta ; a += step) {
                 var x = Math.cos(a);
                 var y = Math.sin(a);
                 var u = (x + 1) / 2;
@@ -1308,8 +1310,10 @@
                 positions.push(radius * x, radius * y, 0);
                 uvs.push(u, v);
             }
-            positions.push(positions[3], positions[4], positions[5]); // close the circle
-            uvs.push(uvs[2], uvs[3]);
+            if (arc == 1) {
+                positions.push(positions[3], positions[4], positions[5]); // close the circle
+                uvs.push(uvs[2], uvs[3]);
+            }
 
             //indices
             var vertexNb = positions.length / 3;
