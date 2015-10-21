@@ -171,6 +171,18 @@
         }
 
         // Methods   
+        private _checkCache(scene: Scene, mesh?: AbstractMesh): boolean {
+            if (!mesh) {
+                return true;
+            }
+
+            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
+                return true;
+            }
+
+            return false;
+        }
+
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
@@ -182,12 +194,7 @@
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-
-                    if (!mesh) {
-                        return true;
-                    }
-
-                    if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
+                    if (this._checkCache(scene, mesh)) {
                         return true;
                     }
                 }
@@ -259,16 +266,16 @@
                                 break;
                             case Texture.PLANAR_MODE:
                                 this._defines.REFLECTIONMAP_PLANAR = true;
-                                break;    
+                                break;
                             case Texture.PROJECTION_MODE:
                                 this._defines.REFLECTIONMAP_PROJECTION = true;
-                                break;  
+                                break;
                             case Texture.SKYBOX_MODE:
                                 this._defines.REFLECTIONMAP_SKYBOX = true;
-                                break;      
+                                break;
                             case Texture.SPHERICAL_MODE:
                                 this._defines.REFLECTIONMAP_SPHERICAL = true;
-                                break;  
+                                break;
                         }
                     }
                 }

@@ -5109,7 +5109,7 @@ var BABYLON;
             this._caps.highPrecisionShaderSupported = true;
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
-                this._caps.highPrecisionShaderSupported = highp.precision != 0;
+                this._caps.highPrecisionShaderSupported = highp.precision !== 0;
             }
             // Depth buffer
             this.setDepthBuffer(true);
@@ -11307,23 +11307,36 @@ var BABYLON;
             this._scene.getEngine().clear(0, false, true);
             this._depthBufferAlreadyCleaned = true;
         };
+        RenderingManager.prototype._renderSpritesAndParticles = function () {
+            if (this._currentRenderSprites) {
+                this._renderSprites(this._currentIndex);
+            }
+            if (this._currentRenderParticles) {
+                this._renderParticles(this._currentIndex, this._currentActiveMeshes);
+            }
+        };
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
+            this._currentActiveMeshes = activeMeshes;
+            this._currentRenderParticles = renderParticles;
+            this._currentRenderSprites = renderSprites;
             for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 this._depthBufferAlreadyCleaned = false;
                 var renderingGroup = this._renderingGroups[index];
                 var needToStepBack = false;
+                this._currentIndex = index;
                 if (renderingGroup) {
                     this._clearDepthBuffer();
+                    if (!renderingGroup.onBeforeTransparentRendering) {
+                        renderingGroup.onBeforeTransparentRendering = this._renderSpritesAndParticles.bind(this);
+                    }
                     if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
                         needToStepBack = true;
+                        this._renderSpritesAndParticles();
                     }
                 }
-                if (renderSprites) {
-                    this._renderSprites(index);
-                }
-                if (renderParticles) {
-                    this._renderParticles(index, activeMeshes);
+                else {
+                    this._renderSpritesAndParticles();
                 }
                 if (needToStepBack) {
                     index--;
@@ -11367,6 +11380,9 @@ var BABYLON;
                 return true;
             }
             if (this._opaqueSubMeshes.length === 0 && this._alphaTestSubMeshes.length === 0 && this._transparentSubMeshes.length === 0) {
+                if (this.onBeforeTransparentRendering) {
+                    this.onBeforeTransparentRendering();
+                }
                 return false;
             }
             var engine = this._scene.getEngine();
@@ -11384,6 +11400,9 @@ var BABYLON;
                 submesh.render(false);
             }
             engine.setAlphaTesting(false);
+            if (this.onBeforeTransparentRendering) {
+                this.onBeforeTransparentRendering();
+            }
             // Transparent
             if (this._transparentSubMeshes.length) {
                 // Sorting
@@ -15233,8 +15252,10 @@ var BABYLON;
             }
             var indices = this._renderingMesh.getIndices();
             var extend;
+            //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
-                extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+                //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
+                extend = { minimum: this._renderingMesh.getBoundingInfo().minimum.clone(), maximum: this._renderingMesh.getBoundingInfo().maximum.clone() };
             }
             else {
                 extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
@@ -17869,14 +17890,15 @@ var BABYLON;
         Effect.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         };
-        //public _cacheMatrix(uniformName, matrix) {
-        //    if (!this._valueCache[uniformName]) {
-        //        this._valueCache[uniformName] = new BABYLON.Matrix();
-        //    }
-        //    for (var index = 0; index < 16; index++) {
-        //        this._valueCache[uniformName].m[index] = matrix.m[index];
-        //    }
-        //};
+        Effect.prototype._cacheMatrix = function (uniformName, matrix) {
+            if (!this._valueCache[uniformName]) {
+                this._valueCache[uniformName] = new BABYLON.Matrix();
+            }
+            for (var index = 0; index < 16; index++) {
+                this._valueCache[uniformName].m[index] = matrix.m[index];
+            }
+        };
+        ;
         Effect.prototype._cacheFloat2 = function (uniformName, x, y) {
             if (!this._valueCache[uniformName]) {
                 this._valueCache[uniformName] = [x, y];
@@ -17925,9 +17947,9 @@ var BABYLON;
             return this;
         };
         Effect.prototype.setMatrix = function (uniformName, matrix) {
-            //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-            //    return;
-            //this._cacheMatrix(uniformName, matrix);
+            if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
+                return this;
+            this._cacheMatrix(uniformName, matrix);
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
             return this;
         };
@@ -18407,6 +18429,15 @@ var BABYLON;
             return this.diffuseTexture;
         };
         // Methods   
+        StandardMaterial.prototype._checkCache = function (scene, mesh) {
+            if (!mesh) {
+                return true;
+            }
+            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
+                return true;
+            }
+            return false;
+        };
         StandardMaterial.prototype.isReady = function (mesh, useInstances) {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
@@ -18416,10 +18447,7 @@ var BABYLON;
             var scene = this.getScene();
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (!mesh) {
-                        return true;
-                    }
-                    if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
+                    if (this._checkCache(scene, mesh)) {
                         return true;
                     }
                 }
@@ -23819,12 +23847,14 @@ var BABYLON;
             var uvs = [];
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
+            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             // positions and uvs
             positions.push(0, 0, 0); // disc center first
             uvs.push(0.5, 0.5);
-            var step = Math.PI * 2 / tessellation;
-            for (var a = 0; a < Math.PI * 2; a += step) {
+            var theta = Math.PI * 2 * arc;
+            var step = theta / tessellation;
+            for (var a = 0; a < theta; a += step) {
                 var x = Math.cos(a);
                 var y = Math.sin(a);
                 var u = (x + 1) / 2;
@@ -23832,8 +23862,10 @@ var BABYLON;
                 positions.push(radius * x, radius * y, 0);
                 uvs.push(u, v);
             }
-            positions.push(positions[3], positions[4], positions[5]); // close the circle
-            uvs.push(uvs[2], uvs[3]);
+            if (arc === 1) {
+                positions.push(positions[3], positions[4], positions[5]); // close the circle
+                uvs.push(uvs[2], uvs[3]);
+            }
             //indices
             var vertexNb = positions.length / 3;
             for (var i = 1; i < vertexNb - 1; i++) {
@@ -23891,6 +23923,7 @@ var BABYLON;
             var nbfaces = data.face.length;
             var faceUV = options.faceUV || new Array(nbfaces);
             var faceColors = options.faceColors;
+            var singleFace = options.singleFace;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var positions = [];
             var indices = [];
@@ -23904,42 +23937,57 @@ var BABYLON;
             var f = 0;
             var u, v, ang, x, y, tmp;
             // default face colors and UV if undefined
-            for (f = 0; f < nbfaces; f++) {
-                if (faceColors && faceColors[f] === undefined) {
-                    faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
-                }
-                if (faceUV && faceUV[f] === undefined) {
-                    faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
-                }
-            }
-            for (f = 0; f < nbfaces; f++) {
-                var fl = data.face[f].length; // number of vertices of the current face
-                ang = 2 * Math.PI / fl;
-                x = 0.5 * Math.tan(ang / 2);
-                y = 0.5;
-                // positions, uvs, colors
-                for (i = 0; i < fl; i++) {
-                    // positions
-                    positions.push(data.vertex[data.face[f][i]][0] * sizeX, data.vertex[data.face[f][i]][1] * sizeY, data.vertex[data.face[f][i]][2] * sizeZ);
-                    indexes.push(index);
-                    index++;
-                    // uvs
-                    u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
-                    v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
-                    uvs.push(u, v);
-                    tmp = x * Math.cos(ang) - y * Math.sin(ang);
-                    y = x * Math.sin(ang) + y * Math.cos(ang);
-                    x = tmp;
-                    // colors
-                    if (faceColors) {
-                        colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
+            if (!singleFace) {
+                for (f = 0; f < nbfaces; f++) {
+                    if (faceColors && faceColors[f] === undefined) {
+                        faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
+                    }
+                    if (faceUV && faceUV[f] === undefined) {
+                        faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
                     }
                 }
-                // indices from indexes
-                for (i = 0; i < fl - 2; i++) {
-                    indices.push(indexes[0 + faceIdx], indexes[i + 2 + faceIdx], indexes[i + 1 + faceIdx]);
+            }
+            if (singleFace) {
+                for (i = 0; i < data.vertex.length; i++) {
+                    positions.push(data.vertex[i][0] * sizeX, data.vertex[i][1] * sizeY, data.vertex[i][2] * sizeZ);
+                    uvs.push(0, 0);
                 }
-                faceIdx += fl;
+                for (f = 0; f < nbfaces; f++) {
+                    for (i = 0; i < data.face[f].length - 2; i++) {
+                        indices.push(data.face[f][0], data.face[f][i + 2], data.face[f][i + 1]);
+                    }
+                }
+            }
+            else {
+                for (f = 0; f < nbfaces; f++) {
+                    var fl = data.face[f].length; // number of vertices of the current face
+                    ang = 2 * Math.PI / fl;
+                    x = 0.5 * Math.tan(ang / 2);
+                    y = 0.5;
+                    // positions, uvs, colors
+                    for (i = 0; i < fl; i++) {
+                        // positions
+                        positions.push(data.vertex[data.face[f][i]][0] * sizeX, data.vertex[data.face[f][i]][1] * sizeY, data.vertex[data.face[f][i]][2] * sizeZ);
+                        indexes.push(index);
+                        index++;
+                        // uvs
+                        u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
+                        v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
+                        uvs.push(u, v);
+                        tmp = x * Math.cos(ang) - y * Math.sin(ang);
+                        y = x * Math.sin(ang) + y * Math.cos(ang);
+                        x = tmp;
+                        // colors
+                        if (faceColors) {
+                            colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
+                        }
+                    }
+                    // indices from indexes
+                    for (i = 0; i < fl - 2; i++) {
+                        indices.push(indexes[0 + faceIdx], indexes[i + 2 + faceIdx], indexes[i + 1 + faceIdx]);
+                    }
+                    faceIdx += fl;
+                }
             }
             VertexData.ComputeNormals(positions, indices, normals);
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
@@ -23948,7 +23996,7 @@ var BABYLON;
             vertexData.indices = indices;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
-            if (faceColors) {
+            if (faceColors && !singleFace) {
                 vertexData.colors = colors;
             }
             return vertexData;
@@ -35647,19 +35695,20 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var SolidParticle = (function () {
-        function SolidParticle(particleIndex, positionIndex, shape, shapeUV, shapeId) {
-            this.shapeId = shapeId;
-            this.color = new BABYLON.Color4(1, 1, 1, 1);
-            this.position = BABYLON.Vector3.Zero();
-            this.rotation = BABYLON.Vector3.Zero();
-            this.scale = new BABYLON.Vector3(1, 1, 1);
-            this.uvs = new BABYLON.Vector4(0, 0, 1, 1);
-            this.velocity = BABYLON.Vector3.Zero();
-            this.alive = true;
+        function SolidParticle(particleIndex, positionIndex, shape, shapeUV, shapeId, idxInShape) {
+            this.color = new BABYLON.Color4(1, 1, 1, 1); // color
+            this.position = BABYLON.Vector3.Zero(); // position
+            this.rotation = BABYLON.Vector3.Zero(); // rotation
+            this.scale = new BABYLON.Vector3(1, 1, 1); // scale
+            this.uvs = new BABYLON.Vector4(0, 0, 1, 1); // uvs
+            this.velocity = BABYLON.Vector3.Zero(); // velocity
+            this.alive = true; // alive
             this.idx = particleIndex;
             this._pos = positionIndex;
             this._shape = shape;
             this._shapeUV = shapeUV;
+            this.shapeId = shapeId;
+            this.idxInShape = idxInShape;
         }
         return SolidParticle;
     })();
@@ -35682,7 +35731,7 @@ var BABYLON;
             this._uvs = new Array();
             this._index = 0; // indices index
             this._shapeCounter = 0;
-            this._copy = { position: BABYLON.Vector3.Zero(), rotation: BABYLON.Vector3.Zero(), scale: new BABYLON.Vector3(1, 1, 1), quaternion: null, uvs: new BABYLON.Vector4(0, 0, 1, 1), colors: null };
+            this._copy = new BABYLON.SolidParticle(null, null, null, null, null, null);
             this._color = new BABYLON.Color4(0, 0, 0, 0);
             this._computeParticleColor = true;
             this._computeParticleTexture = true;
@@ -35766,16 +35815,16 @@ var BABYLON;
             this._copy.uvs.y = 0;
             this._copy.uvs.z = 1;
             this._copy.uvs.w = 1;
-            this._copy.colors = null;
+            this._copy.color = null;
         };
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        SolidParticleSystem.prototype._meshBuilder = function (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, customBuilder) {
+        SolidParticleSystem.prototype._meshBuilder = function (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idxInShape, options) {
             var i;
             var u = 0;
             var c = 0;
-            if (customBuilder) {
-                this._resetCopy();
-                customBuilder(this._copy, p);
+            this._resetCopy();
+            if (options && options.positionFunction) {
+                options.positionFunction(this._copy, p, idxInShape);
             }
             if (this._copy.quaternion) {
                 this._quaternion.x = this._copy.quaternion.x;
@@ -35791,17 +35840,23 @@ var BABYLON;
             }
             this._quaternionToRotationMatrix();
             for (i = 0; i < shape.length; i++) {
-                this._vertex.x = shape[i].x * this._copy.scale.x;
-                this._vertex.y = shape[i].y * this._copy.scale.y;
-                this._vertex.z = shape[i].z * this._copy.scale.z;
+                this._vertex.x = shape[i].x;
+                this._vertex.y = shape[i].y;
+                this._vertex.z = shape[i].z;
+                if (options && options.vertexFunction) {
+                    options.vertexFunction(this._copy, this._vertex, i);
+                }
+                this._vertex.x *= this._copy.scale.x;
+                this._vertex.y *= this._copy.scale.y;
+                this._vertex.z *= this._copy.scale.z;
                 BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                 positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
                 if (meshUV) {
                     uvs.push((this._copy.uvs.z - this._copy.uvs.x) * meshUV[u] + this._copy.uvs.x, (this._copy.uvs.w - this._copy.uvs.y) * meshUV[u + 1] + this._copy.uvs.y);
                     u += 2;
                 }
-                if (this._copy.colors) {
-                    this._color = this._copy.colors;
+                if (this._copy.color) {
+                    this._color = this._copy.color;
                 }
                 else if (meshCol && meshCol[c]) {
                     this._color.r = meshCol[c];
@@ -35840,8 +35895,8 @@ var BABYLON;
             return shapeUV;
         };
         // adds a new particle object in the particles array and double links the particle (next/previous)
-        SolidParticleSystem.prototype._addParticle = function (p, idxpos, shape, shapeUV, shapeId) {
-            this._particle = new BABYLON.SolidParticle(p, idxpos, shape, shapeUV, shapeId);
+        SolidParticleSystem.prototype._addParticle = function (p, idxpos, shape, shapeUV, shapeId, idxInShape) {
+            this._particle = new BABYLON.SolidParticle(p, idxpos, shape, shapeUV, shapeId, idxInShape);
             this.particles.push(this._particle);
             this._particle.previous = this._previousParticle;
             if (this._previousParticle) {
@@ -35850,7 +35905,7 @@ var BABYLON;
             this._previousParticle = this._particle;
         };
         // add solid particles from a shape model in the particles array
-        SolidParticleSystem.prototype.addShape = function (mesh, nb, customBuilder) {
+        SolidParticleSystem.prototype.addShape = function (mesh, nb, options) {
             var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
@@ -35859,8 +35914,8 @@ var BABYLON;
             var shapeUV = this._uvsToShapeUV(meshUV);
             // particles
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, customBuilder);
-                this._addParticle(this.nbParticles + i, this._positions.length, shape, shapeUV, this._shapeCounter);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, i, options);
+                this._addParticle(this.nbParticles + i, this._positions.length, shape, shapeUV, this._shapeCounter, i);
                 this._index += shape.length;
             }
             this.nbParticles += nb;
@@ -35945,12 +36000,15 @@ var BABYLON;
                     idx = index + pt * 3;
                     colidx = colorIndex + pt * 4;
                     uvidx = uvIndex + pt * 2;
-                    this._vertex.x = this._particle._shape[pt].x * this._particle.scale.x;
-                    this._vertex.y = this._particle._shape[pt].y * this._particle.scale.y;
-                    this._vertex.z = this._particle._shape[pt].z * this._particle.scale.z;
+                    this._vertex.x = this._particle._shape[pt].x;
+                    this._vertex.y = this._particle._shape[pt].y;
+                    this._vertex.z = this._particle._shape[pt].z;
                     if (this._computeParticleVertex) {
                         this.updateParticleVertex(this._particle, this._vertex, pt);
                     }
+                    this._vertex.x *= this._particle.scale.x;
+                    this._vertex.y *= this._particle.scale.y;
+                    this._vertex.z *= this._particle.scale.z;
                     BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                     this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                     this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
@@ -36083,8 +36141,11 @@ var BABYLON;
         };
         // updates a vertex of a particle : can be overwritten by the user
         // will be called on each vertex particle by setParticles() :
+        // particle : the current particle
+        // vertex : the current index of the current particle
+        // pt : the index of the current vertex in the particle shape
         // ex : just set a vertex particle position
-        SolidParticleSystem.prototype.updateParticleVertex = function (particle, vertex, i) {
+        SolidParticleSystem.prototype.updateParticleVertex = function (particle, vertex, pt) {
             return vertex;
         };
         // will be called before any other treatment by setParticles()

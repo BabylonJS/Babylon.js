@@ -377,7 +377,6 @@
     var serializeParticleSystem = (particleSystem: ParticleSystem): any => {
         var serializationObject: any = {};
 
-        serializationObject.name = particleSystem.name;
         serializationObject.emitterId = particleSystem.emitter.id;
         serializationObject.capacity = particleSystem.getCapacity();
 

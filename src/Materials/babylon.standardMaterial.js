@@ -148,6 +148,15 @@ var BABYLON;
             return this.diffuseTexture;
         };
         // Methods   
+        StandardMaterial.prototype._checkCache = function (scene, mesh) {
+            if (!mesh) {
+                return true;
+            }
+            if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
+                return true;
+            }
+            return false;
+        };
         StandardMaterial.prototype.isReady = function (mesh, useInstances) {
             if (this.checkReadyOnlyOnce) {
                 if (this._wasPreviouslyReady) {
@@ -157,10 +166,7 @@ var BABYLON;
             var scene = this.getScene();
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (!mesh) {
-                        return true;
-                    }
-                    if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
+                    if (this._checkCache(scene, mesh)) {
                         return true;
                     }
                 }

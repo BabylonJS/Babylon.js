@@ -1,19 +1,20 @@
 var BABYLON;
 (function (BABYLON) {
     var SolidParticle = (function () {
-        function SolidParticle(particleIndex, positionIndex, shape, shapeUV, shapeId) {
-            this.shapeId = shapeId;
-            this.color = new BABYLON.Color4(1, 1, 1, 1);
-            this.position = BABYLON.Vector3.Zero();
-            this.rotation = BABYLON.Vector3.Zero();
-            this.scale = new BABYLON.Vector3(1, 1, 1);
-            this.uvs = new BABYLON.Vector4(0, 0, 1, 1);
-            this.velocity = BABYLON.Vector3.Zero();
-            this.alive = true;
+        function SolidParticle(particleIndex, positionIndex, shape, shapeUV, shapeId, idxInShape) {
+            this.color = new BABYLON.Color4(1, 1, 1, 1); // color
+            this.position = BABYLON.Vector3.Zero(); // position
+            this.rotation = BABYLON.Vector3.Zero(); // rotation
+            this.scale = new BABYLON.Vector3(1, 1, 1); // scale
+            this.uvs = new BABYLON.Vector4(0, 0, 1, 1); // uvs
+            this.velocity = BABYLON.Vector3.Zero(); // velocity
+            this.alive = true; // alive
             this.idx = particleIndex;
             this._pos = positionIndex;
             this._shape = shape;
             this._shapeUV = shapeUV;
+            this.shapeId = shapeId;
+            this.idxInShape = idxInShape;
         }
         return SolidParticle;
     })();

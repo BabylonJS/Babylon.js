@@ -6,6 +6,8 @@
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
         private _activeVertices: number;
 
+        public onBeforeTransparentRendering: () => void;
+
         constructor(public index: number, scene: Scene) {
             this._scene = scene;
         }
@@ -17,6 +19,9 @@
             }
 
             if (this._opaqueSubMeshes.length === 0 && this._alphaTestSubMeshes.length === 0 && this._transparentSubMeshes.length === 0) {
+                if (this.onBeforeTransparentRendering) {
+                    this.onBeforeTransparentRendering();
+                }
                 return false;
             }
             var engine = this._scene.getEngine();
@@ -38,6 +43,10 @@
                 submesh.render(false);
             }
             engine.setAlphaTesting(false);
+
+            if (this.onBeforeTransparentRendering) {
+                this.onBeforeTransparentRendering();
+            }
 
             // Transparent
             if (this._transparentSubMeshes.length) {
