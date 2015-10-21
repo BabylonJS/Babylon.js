@@ -1332,7 +1332,7 @@
         }
 
         // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
-        public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
+        public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], singleFace?: boolean, sideOrientation?: number }): VertexData {
             // provided polyhedron types :
             // 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
             // 9 : Pentagonal Pyramid (J2), 10 : Triangular Dipyramid (J12), 11 : Pentagonal Dipyramid (J13), 12 : Elongated Square Dipyramid (J15), 13 : Elongated Pentagonal Dipyramid (J16), 14 : Elongated Pentagonal Cupola (J20)
@@ -1374,6 +1374,7 @@
             var nbfaces = data.face.length;
             var faceUV = options.faceUV || new Array(nbfaces);
             var faceColors = options.faceColors;
+            var singleFace = options.singleFace;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var positions = [];
@@ -1388,46 +1389,64 @@
             var f = 0;
             var u, v, ang, x, y, tmp;
 
+
             // default face colors and UV if undefined
-            for (f = 0; f < nbfaces; f++) {
-                if (faceColors && faceColors[f] === undefined) {
-                    faceColors[f] = new Color4(1, 1, 1, 1);
-                }
-                if (faceUV && faceUV[f] === undefined) {
-                    faceUV[f] = new Vector4(0, 0, 1, 1);
-                }
-            }
-
-            for (f = 0; f < nbfaces; f++) {
-                var fl = data.face[f].length;  // number of vertices of the current face
-                ang = 2 * Math.PI / fl;
-                x = 0.5 * Math.tan(ang / 2);
-                y = 0.5;
-
-                // positions, uvs, colors
-                for (i = 0; i < fl; i++) {
-                    // positions
-                    positions.push(data.vertex[data.face[f][i]][0] * sizeX, data.vertex[data.face[f][i]][1] * sizeY, data.vertex[data.face[f][i]][2] * sizeZ);
-                    indexes.push(index);
-                    index++;
-                    // uvs
-                    u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
-                    v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
-                    uvs.push(u, v);
-                    tmp = x * Math.cos(ang) - y * Math.sin(ang);
-                    y = x * Math.sin(ang) + y * Math.cos(ang);
-                    x = tmp;
-                    // colors
-                    if (faceColors) {
-                        colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
+            if (!singleFace) {
+                for (f = 0; f < nbfaces; f++) {
+                    if (faceColors && faceColors[f] === undefined) {
+                        faceColors[f] = new Color4(1, 1, 1, 1);
+                    }
+                    if (faceUV && faceUV[f] === undefined) {
+                        faceUV[f] = new Vector4(0, 0, 1, 1);
                     }
                 }
+            }   
 
-                // indices from indexes
-                for (i = 0; i < fl - 2; i++) {
-                    indices.push(indexes[0 + faceIdx], indexes[i + 2 + faceIdx], indexes[i + 1 + faceIdx]);
+            if (singleFace) {
+
+                for (i = 0; i < data.vertex.length; i++) {
+                    positions.push(data.vertex[i][0] * sizeX, data.vertex[i][1] * sizeY, data.vertex[i][2] * sizeZ);
+                    uvs.push(0, 0);
                 }
-                faceIdx += fl;
+                for (var f = 0; f < nbfaces; f++) {
+                    for (i = 0; i < data.face[f].length - 2; i++) {
+                        indices.push(data.face[f][0], data.face[f][i + 2], data.face[f][i + 1]);
+                    }
+                }
+                
+            } else {
+
+                for (f = 0; f < nbfaces; f++) {
+                        var fl = data.face[f].length;  // number of vertices of the current face
+                        ang = 2 * Math.PI / fl;
+                        x = 0.5 * Math.tan(ang / 2);
+                        y = 0.5;
+
+                        // positions, uvs, colors
+                        for (i = 0; i < fl; i++) {
+                            // positions
+                            positions.push(data.vertex[data.face[f][i]][0] * sizeX, data.vertex[data.face[f][i]][1] * sizeY, data.vertex[data.face[f][i]][2] * sizeZ);
+                            indexes.push(index);
+                            index++;
+                            // uvs
+                            u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
+                            v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
+                            uvs.push(u, v);
+                            tmp = x * Math.cos(ang) - y * Math.sin(ang);
+                            y = x * Math.sin(ang) + y * Math.cos(ang);
+                            x = tmp;
+                            // colors
+                            if (faceColors) {
+                                colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
+                            }
+                        }
+
+                    // indices from indexes
+                    for (i = 0; i < fl - 2; i++) {
+                        indices.push(indexes[0 + faceIdx], indexes[i + 2 + faceIdx], indexes[i + 1 + faceIdx]);
+                    }
+                    faceIdx += fl;
+                }
             }
 
             VertexData.ComputeNormals(positions, indices, normals);
@@ -1438,7 +1457,7 @@
             vertexData.indices = indices;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
-            if (faceColors) {
+            if (faceColors && !singleFace) {
                 vertexData.colors = colors;
             }
             return vertexData;
