@@ -14,6 +14,8 @@ var BABYLON;
             this._uvs = new Array();
             this._index = 0; // indices index
             this._shapeCounter = 0;
+            this._copy = { position: BABYLON.Vector3.Zero(), rotation: BABYLON.Vector3.Zero(), scale: new BABYLON.Vector3(1, 1, 1), quaternion: null, uvs: new BABYLON.Vector4(0, 0, 1, 1), colors: null };
+            this._color = new BABYLON.Color4(0, 0, 0, 0);
             this._computeParticleColor = true;
             this._computeParticleTexture = true;
             this._computeParticleRotation = true;
@@ -47,46 +49,106 @@ var BABYLON;
             this._camera = scene.activeCamera;
         }
         // build the SPS mesh : returns the mesh
-        SolidParticleSystem.prototype.buildMesh = function () {
+        SolidParticleSystem.prototype.buildMesh = function (upgradable) {
+            if (upgradable === void 0) { upgradable = true; }
             if (this.nbParticles === 0) {
                 var triangle = BABYLON.MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
                 triangle.dispose();
             }
-            BABYLON.VertexData.ComputeNormals(this._positions, this._indices, this._normals);
+            this._positions32 = new Float32Array(this._positions);
+            this._uvs32 = new Float32Array(this._uvs);
+            this._colors32 = new Float32Array(this._colors);
+            BABYLON.VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+            this._normals32 = new Float32Array(this._normals);
             var vertexData = new BABYLON.VertexData();
-            vertexData.positions = this._positions;
+            vertexData.set(this._positions32, BABYLON.VertexBuffer.PositionKind);
             vertexData.indices = this._indices;
-            vertexData.normals = this._normals;
-            if (this._uvs) {
-                vertexData.uvs = this._uvs;
+            vertexData.set(this._normals32, BABYLON.VertexBuffer.NormalKind);
+            if (this._uvs32) {
+                vertexData.set(this._uvs32, BABYLON.VertexBuffer.UVKind);
+                ;
             }
-            if (this._colors) {
-                vertexData.colors = this._colors;
+            if (this._colors32) {
+                vertexData.set(this._colors32, BABYLON.VertexBuffer.ColorKind);
             }
             var mesh = new BABYLON.Mesh(name, this._scene);
-            vertexData.applyToMesh(mesh, true);
+            vertexData.applyToMesh(mesh, upgradable);
             this.mesh = mesh;
+            // free memory
+            this._positions = null;
+            this._normals = null;
+            this._uvs = null;
+            this._colors = null;
             return mesh;
         };
+        //reset copy
+        SolidParticleSystem.prototype._resetCopy = function () {
+            this._copy.position.x = 0;
+            this._copy.position.y = 0;
+            this._copy.position.z = 0;
+            this._copy.rotation.x = 0;
+            this._copy.rotation.y = 0;
+            this._copy.rotation.z = 0;
+            this._copy.quaternion = null;
+            this._copy.scale.x = 1;
+            this._copy.scale.y = 1;
+            this._copy.scale.z = 1;
+            this._copy.uvs.x = 0;
+            this._copy.uvs.y = 0;
+            this._copy.uvs.z = 1;
+            this._copy.uvs.w = 1;
+            this._copy.colors = null;
+        };
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        SolidParticleSystem.prototype._meshBuilder = function (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors) {
+        SolidParticleSystem.prototype._meshBuilder = function (p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, customBuilder) {
             var i;
             var u = 0;
             var c = 0;
+            if (customBuilder) {
+                this._resetCopy();
+                customBuilder(this._copy, p);
+            }
+            if (this._copy.quaternion) {
+                this._quaternion.x = this._copy.quaternion.x;
+                this._quaternion.y = this._copy.quaternion.y;
+                this._quaternion.z = this._copy.quaternion.z;
+                this._quaternion.w = this._copy.quaternion.w;
+            }
+            else {
+                this._yaw = this._copy.rotation.y;
+                this._pitch = this._copy.rotation.x;
+                this._roll = this._copy.rotation.z;
+                this._quaternionRotationYPR();
+            }
+            this._quaternionToRotationMatrix();
             for (i = 0; i < shape.length; i++) {
-                positions.push(shape[i].x, shape[i].y, shape[i].z);
+                this._vertex.x = shape[i].x * this._copy.scale.x;
+                this._vertex.y = shape[i].y * this._copy.scale.y;
+                this._vertex.z = shape[i].z * this._copy.scale.z;
+                BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
+                positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
                 if (meshUV) {
-                    uvs.push(meshUV[u], meshUV[u + 1]);
+                    uvs.push((this._copy.uvs.z - this._copy.uvs.x) * meshUV[u] + this._copy.uvs.x, (this._copy.uvs.w - this._copy.uvs.y) * meshUV[u + 1] + this._copy.uvs.y);
                     u += 2;
                 }
-                if (meshCol) {
-                    colors.push(meshCol[c] || 1, meshCol[c + 1] || 1, meshCol[c + 2] || 1, meshCol[c + 3] || 1);
-                    c += 4;
+                if (this._copy.colors) {
+                    this._color = this._copy.colors;
+                }
+                else if (meshCol && meshCol[c]) {
+                    this._color.r = meshCol[c];
+                    this._color.g = meshCol[c + 1];
+                    this._color.b = meshCol[c + 2];
+                    this._color.a = meshCol[c + 3];
                 }
                 else {
-                    colors.push(1, 1, 1, 1);
+                    this._color.r = 1;
+                    this._color.g = 1;
+                    this._color.b = 1;
+                    this._color.a = 1;
                 }
+                colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
+                c += 4;
             }
             for (i = 0; i < meshInd.length; i++) {
                 indices.push(p + meshInd[i]);
@@ -120,7 +182,7 @@ var BABYLON;
             this._previousParticle = this._particle;
         };
         // add solid particles from a shape model in the particles array
-        SolidParticleSystem.prototype.addShape = function (mesh, nb) {
+        SolidParticleSystem.prototype.addShape = function (mesh, nb, customBuilder) {
             var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
@@ -129,7 +191,7 @@ var BABYLON;
             var shapeUV = this._uvsToShapeUV(meshUV);
             // particles
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, customBuilder);
                 this._addParticle(this.nbParticles + i, this._positions.length, shape, shapeUV, this._shapeCounter);
                 this._index += shape.length;
             }
@@ -222,18 +284,18 @@ var BABYLON;
                         this.updateParticleVertex(this._particle, this._vertex, pt);
                     }
                     BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
-                    this._positions[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                    this._positions[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                    this._positions[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                    this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                    this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                    this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
                     if (this._computeParticleColor) {
-                        this._colors[colidx] = this._particle.color.r;
-                        this._colors[colidx + 1] = this._particle.color.g;
-                        this._colors[colidx + 2] = this._particle.color.b;
-                        this._colors[colidx + 3] = this._particle.color.a;
+                        this._colors32[colidx] = this._particle.color.r;
+                        this._colors32[colidx + 1] = this._particle.color.g;
+                        this._colors32[colidx + 2] = this._particle.color.b;
+                        this._colors32[colidx + 3] = this._particle.color.a;
                     }
                     if (this._computeParticleTexture) {
-                        this._uvs[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
-                        this._uvs[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
+                        this._uvs32[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
+                        this._uvs32[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                     }
                 }
                 index = idx + 3;
@@ -242,15 +304,15 @@ var BABYLON;
             }
             if (update) {
                 if (this._computeParticleColor) {
-                    this.mesh.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this._colors, false, false);
+                    this.mesh.updateVerticesData(BABYLON.VertexBuffer.ColorKind, this._colors32, false, false);
                 }
                 if (this._computeParticleTexture) {
-                    this.mesh.updateVerticesData(BABYLON.VertexBuffer.UVKind, this._uvs, false, false);
+                    this.mesh.updateVerticesData(BABYLON.VertexBuffer.UVKind, this._uvs32, false, false);
                 }
-                this.mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this._positions, false, false);
+                this.mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this._positions32, false, false);
                 if (!this.mesh.areNormalsFrozen) {
-                    BABYLON.VertexData.ComputeNormals(this._positions, this._indices, this._normals);
-                    this.mesh.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this._normals, false, false);
+                    BABYLON.VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
+                    this.mesh.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this._normals32, false, false);
                 }
             }
             this.afterUpdateParticles(start, end, update);

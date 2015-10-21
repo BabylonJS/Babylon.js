@@ -240,7 +240,7 @@
                     }
                 }
 
-                engine.unBindFramebuffer(this._texture, true);
+                engine.unBindFramebuffer(this._texture, this.isCube);
             }
         }
 

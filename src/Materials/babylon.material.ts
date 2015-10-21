@@ -1,4 +1,59 @@
 ﻿module BABYLON {
+    export class MaterialDefines {
+        _keys: string[];
+
+        public isEqual(other: MaterialDefines): boolean {
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
+
+                if (this[prop] !== other[prop]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public cloneTo(other: MaterialDefines): void {
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
+
+                other[prop] = this[prop];
+            }
+        }
+
+        public reset(): void {
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
+
+                if (prop === "BonesPerMesh") {
+                    this[prop] = 0;
+                    continue;
+                }
+
+                this[prop] = false;
+            }
+        }
+
+        public toString(): string {
+            var result = "";
+            for (var index = 0; index < this._keys.length; index++) {
+                var prop = this._keys[index];
+
+                if (prop === "BonesPerMesh" && this[prop] > 0) {
+                    result += "#define BonesPerMesh " + this[prop] + "\n";
+                    continue;
+                }
+
+                if (this[prop]) {
+                    result += "#define " + prop + "\n";
+                }
+            }
+
+            return result;
+        }
+    }
+
     export class Material {
         private static _TriangleFillMode = 0;
         private static _WireFrameFillMode = 1;
@@ -28,7 +83,7 @@
         }
 
         public id: string;
-        public checkReadyOnEveryCall = true;
+        public checkReadyOnEveryCall = false;
         public checkReadyOnlyOnce = false;
         public state = "";
         public alpha = 1.0;

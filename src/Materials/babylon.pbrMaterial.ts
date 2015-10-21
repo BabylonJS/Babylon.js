@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     var maxSimultaneousLights = 4;
 
-    class PBRMaterialDefines {
+    class PBRMaterialDefines extends MaterialDefines {
         public ALBEDO = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
@@ -17,61 +17,9 @@
         public INSTANCES = false;
         public POINTSIZE = false;
 
-        _keys: string[];
-
         constructor() {
+            super();
             this._keys = Object.keys(this);
-        }
-
-        public isEqual(other: PBRMaterialDefines): boolean {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-
-                if (this[prop] !== other[prop]) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public cloneTo(other: PBRMaterialDefines): void {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-
-                other[prop] = this[prop];
-            }
-        }
-
-        public reset(): void {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-
-                if (prop === "BonesPerMesh") {
-                    this[prop] = 0;
-                    continue;
-                }
-
-                this[prop] = false;
-            }
-        }
-
-        public toString(): string {
-            var result = "";
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-
-                if (prop === "BonesPerMesh" && this[prop] > 0) {
-                    result += "#define BonesPerMesh " + this[prop] + "\n";
-                    continue;
-                }
-
-                if (this[prop]) {
-                    result += "#define " + prop + "\n";
-                }
-            }
-
-            return result;
         }
     }
 

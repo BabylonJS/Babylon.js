@@ -17,7 +17,7 @@
         }
     }
 
-    class StandardMaterialDefines {
+    class StandardMaterialDefines extends MaterialDefines {
         public DIFFUSE = false;
         public AMBIENT = false;
         public OPACITY = false;
@@ -90,61 +90,9 @@
         public REFLECTIONMAP_EXPLICIT = false;
         public INVERTCUBICMAP = false;
 
-        _keys: string[];
-
         constructor() {
+            super();
             this._keys = Object.keys(this);
-        }
-
-        public isEqual(other: StandardMaterialDefines): boolean {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-
-                if (this[prop] !== other[prop]) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public cloneTo(other: StandardMaterialDefines): void {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-
-                other[prop] = this[prop];
-            }
-        }
-
-        public reset(): void {
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-
-                if (prop === "BonesPerMesh") {
-                    this[prop] = 0;
-                    continue;
-                }
-
-                this[prop] = false;
-            }
-        }
-
-        public toString(): string {
-            var result = "";
-            for (var index = 0; index < this._keys.length; index++) {
-                var prop = this._keys[index];
-
-                if (prop === "BonesPerMesh" && this[prop] > 0) {
-                    result += "#define BonesPerMesh " + this[prop] + "\n";
-                    continue;
-                }
-
-                if (this[prop]) {
-                    result += "#define " + prop + "\n";
-                }
-            }
-
-            return result;
         }
     }
 
@@ -234,7 +182,14 @@
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    return true;
+
+                    if (!mesh) {
+                        return true;
+                    }
+
+                    if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
+                        return true;
+                    }
                 }
             }
 
@@ -672,6 +627,15 @@
 
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
+
+            if (mesh) {
+                if (!mesh._materialDefines) {
+                    mesh._materialDefines = new StandardMaterialDefines();
+                }
+
+                this._defines.cloneTo(mesh._materialDefines);
+            }
+
             return true;
         }
 

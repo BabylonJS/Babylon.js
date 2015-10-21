@@ -22,8 +22,8 @@ module BABYLON {
         private _uvs32: Float32Array;
         private _index: number = 0;  // indices index
         private _shapeCounter: number = 0;
-        private _copy: any = {position: Vector3.Zero(), rotation: Vector3.Zero(), scale: new Vector3(1,1,1), quaternion: null, uvs: new Vector4(0,0,1,1), colors: null};
-        private _color: Color4 = new Color4(0,0,0,0);
+        private _copy: any = { position: Vector3.Zero(), rotation: Vector3.Zero(), scale: new Vector3(1, 1, 1), quaternion: null, uvs: new Vector4(0, 0, 1, 1), colors: null };
+        private _color: Color4 = new Color4(0, 0, 0, 0);
         private _computeParticleColor: boolean = true;
         private _computeParticleTexture: boolean = true;
         private _computeParticleRotation: boolean = true;
@@ -472,3 +472,4 @@ module BABYLON {
         }
     }
 }
+
