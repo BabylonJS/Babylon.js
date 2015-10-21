@@ -18,7 +18,7 @@
             return sphere;
         }
 
-        public static CreateDisc(name: string, options: { radius: number, tessellation: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
+        public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
 
             var disc = new Mesh(name, scene);
             var vertexData = VertexData.CreateDisc(options);
