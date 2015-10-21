@@ -23,7 +23,7 @@ module BABYLON {
             this._pos = positionIndex;
             this._shape = shape;
             this._shapeUV = shapeUV;
-            this._shapeId = shapeId;
+            this.shapeId = shapeId;
             this.idxInShape = idxInShape;
         }
     }
