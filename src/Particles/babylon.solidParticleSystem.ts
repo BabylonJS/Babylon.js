@@ -224,8 +224,11 @@ module BABYLON {
 
             var shape = this._posToShape(meshPos);
             var shapeUV = this._uvsToShapeUV(meshUV);
+
+            var posfunc = options ? options.positionFunction : null;
+            var vtxfunc = options ? options.vertexFunction : null;
  
-            var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, options.positionFunction, options.vertexFunction);
+            var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, posfunc, vtxfunc);
 
             // particles
             for (var i = 0; i < nb; i++) {
@@ -265,7 +268,7 @@ module BABYLON {
                 this._vertex.z = this._shape[pt].z;
 
                 if (particle._model._vertexFunction) {
-                    particle._model._vertexFunction(this._copy, this._vertex, pt);
+                    particle._model._vertexFunction(this._copy, this._vertex, pt); // recall to stored vertexFunction
                 }
 
                 this._vertex.x *= this._copy.scale.x;
