@@ -286,7 +286,7 @@
             for (var index = 0; index < 16; index++) {
                 this._valueCache[uniformName].m[index] = matrix.m[index];
             }
-        };
+        }
 
         public _cacheFloat2(uniformName: string, x: number, y: number): void {
             if (!this._valueCache[uniformName]) {
