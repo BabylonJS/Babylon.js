@@ -239,8 +239,8 @@ module BABYLON {
             return this._shapeCounter;
         }
 
-        // resets a particle back to its just built status : if needed, recomputes the custom positions and vertices
-        public resetParticle(particle: SolidParticle): void {
+        // rebuilds a particle back to its just built status : if needed, recomputes the custom positions and vertices
+        public rebuildParticle(particle: SolidParticle): void {
             this._resetCopy();
             if (particle._model._positionFunction) {        // recall to stored custom positionFunction
                 particle._model._positionFunction(this._copy, particle.idx, particle.idxInShape);
