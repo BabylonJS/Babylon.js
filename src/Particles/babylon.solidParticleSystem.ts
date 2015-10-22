@@ -22,7 +22,9 @@ module BABYLON {
         private _uvs32: Float32Array;
         private _index: number = 0;  // indices index
         private _shapeCounter: number = 0;
-        private _copy: SolidParticle = new SolidParticle(null, null, null, null, null, null);
+        private _copy: SolidParticle = new SolidParticle(null, null, null, null, null);
+        private _shape: Vector3[];
+        private _shapeUV: number[];
         private _color: Color4 = new Color4(0, 0, 0, 0);
         private _computeParticleColor: boolean = true;
         private _computeParticleTexture: boolean = true;
@@ -119,14 +121,14 @@ module BABYLON {
         }
 
         // _meshBuilder : inserts the shape model in the global SPS mesh
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idxInShape, options): void {
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idx, idxInShape, options): void {
             var i;
             var u = 0;
             var c = 0;
 
             this._resetCopy();
             if (options && options.positionFunction) {        // call to custom positionFunction
-                options.positionFunction(this._copy, p, idxInShape);
+                options.positionFunction(this._copy, idx, idxInShape);
             }
 
             if (this._copy.quaternion) {
@@ -204,8 +206,8 @@ module BABYLON {
         }
 
         // adds a new particle object in the particles array and double links the particle (next/previous)
-        private _addParticle(p: number, idxpos: number, shape: Vector3[], shapeUV: number[], shapeId: number, idxInShape: number): void {
-            this._particle = new SolidParticle(p, idxpos, shape, shapeUV, shapeId, idxInShape);
+        private _addParticle(p: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number): void {
+            this._particle = new SolidParticle(p, idxpos, model, shapeId, idxInShape);
             this.particles.push(this._particle);
             this._particle.previous = this._previousParticle;
             if (this._previousParticle) {
@@ -223,11 +225,13 @@ module BABYLON {
 
             var shape = this._posToShape(meshPos);
             var shapeUV = this._uvsToShapeUV(meshUV);
+ 
+            var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, options.positionFunction, options.vertexFunction);
 
             // particles
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, i, options);
-                this._addParticle(this.nbParticles + i, this._positions.length, shape, shapeUV, this._shapeCounter, i);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, this.nbParticles + i, i, options);
+                this._addParticle(this.nbParticles + i, this._positions.length, modelShape, this._shapeCounter, i);
                 this._index += shape.length;
             }
             this.nbParticles += nb;
@@ -235,13 +239,56 @@ module BABYLON {
             return this._shapeCounter;
         }
 
-        // resets a particle back to its just built status
+        // resets a particle back to its just built status : if needed, recomputes the custom positions and vertices
         public resetParticle(particle: SolidParticle): void {
-            for (var pt = 0; pt < particle._shape.length; pt++) {
-                this._positions[particle._pos + pt * 3] = particle._shape[pt].x;
-                this._positions[particle._pos + pt * 3 + 1] = particle._shape[pt].y;
-                this._positions[particle._pos + pt * 3 + 2] = particle._shape[pt].z;
+            this._resetCopy();
+            if (particle._model._positionFunction) {        // recall to stored custom positionFunction
+                particle._model._positionFunction(this._copy, particle.idx, particle.idxInShape);
             }
+
+            if (this._copy.quaternion) {
+                this._quaternion.x = this._copy.quaternion.x;
+                this._quaternion.y = this._copy.quaternion.y;
+                this._quaternion.z = this._copy.quaternion.z;
+                this._quaternion.w = this._copy.quaternion.w;
+            } else {
+                this._yaw = this._copy.rotation.y;
+                this._pitch = this._copy.rotation.x;
+                this._roll = this._copy.rotation.z;
+                this._quaternionRotationYPR();
+            }
+            this._quaternionToRotationMatrix(); 
+
+            this._shape = particle._model._shape;
+            for (var pt = 0; pt < this._shape.length; pt++) {
+                this._vertex.x = this._shape[pt].x;
+                this._vertex.y = this._shape[pt].y;
+                this._vertex.z = this._shape[pt].z;
+
+                if (particle._model._vertexFunction) {
+                    particle._model._vertexFunction(this._copy, this._vertex, pt);
+                }
+
+                this._vertex.x *= this._copy.scale.x;
+                this._vertex.y *= this._copy.scale.y;
+                this._vertex.z *= this._copy.scale.z;
+
+                Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
+
+                this._positions32[particle._pos + pt * 3] = this._copy.position.x + this._rotated.x;
+                this._positions32[particle._pos + pt * 3 + 1] = this._copy.position.y + this._rotated.y;
+                this._positions32[particle._pos + pt * 3 + 2] = this._copy.position.z + this._rotated.z;
+            }
+            particle.position.x = 0;
+            particle.position.y = 0;
+            particle.position.z = 0;
+            particle.rotation.x = 0;
+            particle.rotation.y = 0;
+            particle.rotation.z = 0;
+            particle.quaternion = null;
+            particle.scale.x = 1;
+            particle.scale.y = 1;
+            particle.scale.z = 1;
         }
 
         // sets all the particles
@@ -292,6 +339,8 @@ module BABYLON {
             // particle loop
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
+                this._shape = this._particle._model._shape;
+                this._shapeUV = this._particle._model._shapeUV;
 
                 // call to custom user function to update the particle properties
                 this.updateParticle(this._particle); 
@@ -316,14 +365,14 @@ module BABYLON {
                     this._quaternionToRotationMatrix();
                 }
 
-                for (var pt = 0; pt < this._particle._shape.length; pt++) {
+                for (var pt = 0; pt < this._shape.length; pt++) {
                     idx = index + pt * 3;
                     colidx = colorIndex + pt * 4;
                     uvidx = uvIndex + pt * 2;
 
-                    this._vertex.x = this._particle._shape[pt].x;
-                    this._vertex.y = this._particle._shape[pt].y;
-                    this._vertex.z = this._particle._shape[pt].z;
+                    this._vertex.x = this._shape[pt].x;
+                    this._vertex.y = this._shape[pt].y;
+                    this._vertex.z = this._shape[pt].z;
 
                     if (this._computeParticleVertex) {
                         this.updateParticleVertex(this._particle, this._vertex, pt);
@@ -346,8 +395,8 @@ module BABYLON {
                     }
 
                     if (this._computeParticleTexture) {
-                        this._uvs32[uvidx] = this._particle._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
-                        this._uvs32[uvidx + 1] = this._particle._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
+                        this._uvs32[uvidx] = this._shapeUV[pt * 2] * (this._particle.uvs.z - this._particle.uvs.x) + this._particle.uvs.x;
+                        this._uvs32[uvidx + 1] = this._shapeUV[pt * 2 + 1] * (this._particle.uvs.w - this._particle.uvs.y) + this._particle.uvs.y;
                     }
                 }
                 index = idx + 3;
