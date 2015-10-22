@@ -240,7 +240,7 @@ module BABYLON {
         }
 
         // rebuilds a particle back to its just built status : if needed, recomputes the custom positions and vertices
-        public rebuildParticle(particle: SolidParticle): void {
+        private _rebuildParticle(particle: SolidParticle): void {
             this._resetCopy();
             if (particle._model._positionFunction) {        // recall to stored custom positionFunction
                 particle._model._positionFunction(this._copy, particle.idx, particle.idxInShape);
@@ -290,6 +290,14 @@ module BABYLON {
             particle.scale.y = 1;
             particle.scale.z = 1;
         }
+
+        // rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed
+        public rebuildMesh(): void {
+            for (var p = 0; p < this.particles.length; p++) {
+                this._rebuildParticle(this.particles[p]);
+            }
+            this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
+        } 
 
         // sets all the particles
         public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): void {
