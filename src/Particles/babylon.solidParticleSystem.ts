@@ -100,7 +100,6 @@ module BABYLON {
             return mesh;
         }
 
-
         //reset copy
         private _resetCopy() {
             this._copy.position.x = 0;
@@ -299,7 +298,8 @@ module BABYLON {
             this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
         } 
 
-        // sets all the particles
+
+        // sets all the particles : updates the VBO
         public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): void {
             // custom beforeUpdate
             this.beforeUpdateParticles(start, end, update);
