@@ -90,6 +90,10 @@
         public getPhysicsBodyOfMesh(mesh: AbstractMesh) {
             return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
         }
+        
+        public getWorldObject() {
+            return this._currentPlugin.getWorldObject();
+        }
 
         // Statics
         public static NoImpostor = 0;
