@@ -237,28 +237,32 @@ module BABYLON {
 
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
+                var body = registeredMesh.body.body;
+                var updated : boolean = false;
+                var newPosition : Vector3;
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                    var body = registeredMesh.body.body;
                     mesh.computeWorldMatrix(true);
-
-                    var center = mesh.getBoundingInfo().boundingBox.center;
-                    body.setPosition(new OIMO.Vec3(center.x, center.y, center.z));
-                    body.setQuaternion(mesh.rotationQuaternion);
-                    body.sleeping = false;
-                    return;
+                    
+                    newPosition = mesh.getBoundingInfo().boundingBox.center;
+                    
+                    updated = true;
                 }
                 // Case where the parent has been updated
-                if (registeredMesh.mesh.parent === mesh) {
+                else if (registeredMesh.mesh.parent === mesh) {
                     mesh.computeWorldMatrix(true);
                     registeredMesh.mesh.computeWorldMatrix(true);
 
-                    var absolutePosition = registeredMesh.mesh.getAbsolutePosition();
-
-                    body = registeredMesh.body.body;
-                    body.setPosition(new OIMO.Vec3(absolutePosition.x, absolutePosition.y, absolutePosition.z));
-                    body.setQuaternion(mesh.rotationQuaternion);
-                    body.sleeping = false;
-                    return;
+                    newPosition = registeredMesh.mesh.getAbsolutePosition();
+                    
+                    updated = true;
+                }
+                
+                if(updated) {
+                	body.setPosition(new OIMO.Vec3(newPosition.x, newPosition.y, newPosition.z));
+                    	body.setQuaternion(mesh.rotationQuaternion);
+                    	body.sleeping = false;
+                    	//force Oimo to update the body's position
+                    	body.updatePosition(1);
                 }
             }
         }
