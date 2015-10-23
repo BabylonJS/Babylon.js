@@ -59,7 +59,7 @@ uniform mat4 emissiveMatrix;
 
 #ifdef LIGHTMAP
 varying vec2 vLightmapUV;
-uniform vec3 vLightmapInfos;
+uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 

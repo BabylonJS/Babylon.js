@@ -2,7 +2,7 @@
   - **Major updates**
     - New cache mecanism for StandardMaterial ([deltakosh](https://github.com/deltakosh))
     - New Solid Particle System ([jerome](https://github.com/jbousquie))
-    - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.lightmapThreshold`. [Demo here](#NEEDDEMO) ([deltakosh](https://github.com/deltakosh))
+    - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.useLightmapAsShadowMap`. [Demo here](#NEEDDEMO) ([deltakosh](https://github.com/deltakosh))
     - Support for reflection probes. [See documentation here](http://doc.babylonjs.com/tutorials/How_to_use_Reflection_probes) ([deltakosh](https://github.com/deltakosh))
     - New serializers [folder](https://github.com/BabylonJS/Babylon.js/serializers) to host .babylon serializers ([deltakosh](https://github.com/deltakosh))
       - New .obj serializer ([BitOfGold](https://github.com/BitOfGold))

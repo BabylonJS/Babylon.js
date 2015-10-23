@@ -89,6 +89,7 @@ var BABYLON;
             this.EMISSIVEASILLUMINATION = false;
             this.REFLECTIONFRESNELFROMSPECULAR = false;
             this.LIGHTMAP = false;
+            this.USELIGHTMAPASSHADOWMAP = false;
             this.REFLECTIONMAP_3D = false;
             this.REFLECTIONMAP_SPHERICAL = false;
             this.REFLECTIONMAP_PLANAR = false;
@@ -117,7 +118,7 @@ var BABYLON;
             this.useSpecularOverAlpha = true;
             this.disableLighting = false;
             this.roughness = 0;
-            this.lightmapThreshold = 0;
+            this.useLightmapAsShadowmap = false;
             this.useGlossinessFromSpecularMapAlpha = false;
             this._renderTargets = new BABYLON.SmartArray(16);
             this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
@@ -263,6 +264,7 @@ var BABYLON;
                     else {
                         needUVs = true;
                         this._defines.LIGHTMAP = true;
+                        this._defines.USELIGHTMAPASSHADOWMAP = this.useLightmapAsShadowmap;
                     }
                 }
                 if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
@@ -616,7 +618,7 @@ var BABYLON;
                 }
                 if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
                     this._effect.setTexture("lightmapSampler", this.lightmapTexture);
-                    this._effect.setFloat3("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level, this.lightmapThreshold);
+                    this._effect.setFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
                     this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
                 }
                 if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
@@ -791,7 +793,7 @@ var BABYLON;
             if (this.lightmapTexture && this.lightmapTexture.clone) {
                 newStandardMaterial.bumpTexture = this.bumpTexture.clone();
                 newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
-                newStandardMaterial.lightmapThreshold = this.lightmapThreshold;
+                newStandardMaterial.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
             }
             newStandardMaterial.ambientColor = this.ambientColor.clone();
             newStandardMaterial.diffuseColor = this.diffuseColor.clone();
