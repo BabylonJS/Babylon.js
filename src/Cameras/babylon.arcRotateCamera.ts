@@ -179,7 +179,7 @@
                     switch (pointers.count) {
 
                         case 1: //normal camera rotation
-                            if ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick)) {
+                            if (this.panningSensibility !== 0 && ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick))) {
                                 this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
                                 this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
                             } else {
