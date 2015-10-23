@@ -1,3 +1,4 @@
+/// <reference path="../../dist/babylon.2.2.d.ts" />
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -26,10 +27,8 @@ var BABYLON;
                 var color;
                 //New material
                 var material;
-                //Look at each line
                 for (var i = 0; i < lines.length; i++) {
-                    var line = lines[i];
-                    line = line.trim();
+                    var line = lines[i].trim();
                     // Blank line or comment
                     if (line.length === 0 || line.charAt(0) === '#') {
                         continue;
@@ -39,8 +38,7 @@ var BABYLON;
                     var key = (pos >= 0) ? line.substring(0, pos) : line;
                     key = key.toLowerCase();
                     //Get the data following the key
-                    var value = (pos >= 0) ? line.substring(pos + 1) : "";
-                    value = value.trim();
+                    var value = (pos >= 0) ? line.substring(pos + 1).trim() : "";
                     //This mtl keyword will create the new material
                     if (key === "newmtl") {
                         //Check if it is the first material.
@@ -202,11 +200,9 @@ var BABYLON;
         OBJFileLoader.prototype.importMesh = function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
             //get the meshes from OBJ file
             var loadedMeshes = this._parseSolid(meshesNames, scene, data, rootUrl);
-            //Push each mesh from OBJ file into the variable mesh of this function
+            //Push meshes from OBJ file into the variable mesh of this function
             if (meshes) {
-                loadedMeshes.forEach(function (mesh) {
-                    meshes.push(mesh);
-                });
+                loadedMeshes = loadedMeshes.concat(meshes);
             }
             return true;
         };
@@ -262,7 +258,16 @@ var BABYLON;
                 if (!arr[obj[0]])
                     arr[obj[0]] = { normals: [], idx: [] };
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
-                return idx === -1 ? idx : arr[obj[0]].idx[idx];
+                return idx === -1 ? -1 : arr[obj[0]].idx[idx];
+            };
+            var isInArrayUV = function (arr, obj) {
+                if (!arr[obj[0]])
+                    arr[obj[0]] = { normals: [], idx: [], uv: [] };
+                var idx = arr[obj[0]].normals.indexOf(obj[1]);
+                if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
+                    return arr[obj[0]].idx[idx];
+                }
+                return -1;
             };
             /**
              * This function set the data for each triangle.
@@ -271,18 +276,28 @@ var BABYLON;
              * If the tuple already exist, add only their indice
              *
              * @param indicePositionFromObj Integer The index in positions array
+             * @param indiceUvsFromObj Integer The index in uvs array
              * @param indiceNormalFromObj Integer The index in normals array
              * @param positionVectorFromOBJ Vector3 The value of position at index objIndice
              * @param textureVectorFromOBJ Vector3 The value of uvs
              * @param normalsVectorFromOBJ Vector3 The value of normals at index objNormale
              */
-            var _tuple = [];
-            var setData = function (indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ) {
-                //Create a new tuple composed with the indice of position and normal
-                _tuple[0] = indicePositionFromObj;
-                _tuple[1] = indiceNormalFromObj;
+            var setData = function (indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ) {
                 //Check if this tuple already exists in the list of tuples
-                var _index = isInArray(tuplePosNorm, _tuple);
+                var _index;
+                if (OBJFileLoader.OPTIMIZE_WITH_UV) {
+                    _index = isInArrayUV(tuplePosNorm, [
+                        indicePositionFromObj,
+                        indiceNormalFromObj,
+                        indiceUvsFromObj
+                    ]);
+                }
+                else {
+                    _index = isInArray(tuplePosNorm, [
+                        indicePositionFromObj,
+                        indiceNormalFromObj
+                    ]);
+                }
                 //If it not exists
                 if (_index == -1) {
                     //Add an new indice.
@@ -301,6 +316,8 @@ var BABYLON;
                     //Add the tuple in the comparison list
                     tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                     tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
+                    if (OBJFileLoader.OPTIMIZE_WITH_UV)
+                        tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj);
                 }
                 else {
                     //The tuple already exists
@@ -313,7 +330,6 @@ var BABYLON;
              * Transform BABYLON.Vector() object onto 3 digits in an array
              */
             var unwrapData = function () {
-                //Every array has the same length
                 for (var l = 0; l < wrappedPositionForBabylon.length; l++) {
                     //Push the x, y, z values of each element in the unwrapped array
                     unwrappedPositionsForBabylon.push(wrappedPositionForBabylon[l].x, wrappedPositionForBabylon[l].y, wrappedPositionForBabylon[l].z);
@@ -359,21 +375,10 @@ var BABYLON;
             var setDataForCurrentFaceWithPattern1 = function (face, v) {
                 //Get the indices of triangles for each polygon
                 getTriangles(face, v);
-                //For each element in the triangles array.
-                //This var could contains 1 to an infinity of triangles
                 for (var k = 0; k < triangles.length; k++) {
                     // Set position indice
                     var indicePositionFromObj = parseInt(triangles[k]) - 1;
-                    //In the pattern 1, normals and uvs are not defined
-                    //Default values are set
-                    var indiceUvsFromObj = 0;
-                    var indiceNormalFromObj = 0;
-                    //Get the vectors data
-                    var positionVectorFromOBJ = positions[indicePositionFromObj];
-                    //Create default vectors
-                    var textureVectorFromOBJ = new BABYLON.Vector2(0, 0);
-                    var normalsVectorFromOBJ = new BABYLON.Vector3(0, 1, 0);
-                    setData(indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ);
+                    setData(indicePositionFromObj, 0, 0, positions[indicePositionFromObj], BABYLON.Vector2.Zero(), BABYLON.Vector3.Up());
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -395,14 +400,7 @@ var BABYLON;
                     var indicePositionFromObj = parseInt(point[0]) - 1;
                     //Set uv indice
                     var indiceUvsFromObj = parseInt(point[1]) - 1;
-                    //Default value for normals
-                    var indiceNormalFromObj = 0;
-                    //Get the values for each element
-                    var positionVectorFromOBJ = positions[indicePositionFromObj];
-                    var textureVectorFromOBJ = uvs[indiceUvsFromObj];
-                    //Default value for normals
-                    var normalsVectorFromOBJ = new BABYLON.Vector3(0, 1, 0);
-                    setData(indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ);
+                    setData(indicePositionFromObj, indiceUvsFromObj, 0, positions[indicePositionFromObj], uvs[indiceUvsFromObj], BABYLON.Vector3.Up());
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -426,11 +424,7 @@ var BABYLON;
                     var indiceUvsFromObj = parseInt(point[1]) - 1;
                     // Set normal indice
                     var indiceNormalFromObj = parseInt(point[2]) - 1;
-                    //Set the vector for each component
-                    var positionVectorFromOBJ = positions[indicePositionFromObj];
-                    var textureVectorFromOBJ = uvs[indiceUvsFromObj];
-                    var normalsVectorFromOBJ = normals[indiceNormalFromObj];
-                    setData(indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ);
+                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj]);
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -450,13 +444,7 @@ var BABYLON;
                     // We check indices, and normals
                     var indicePositionFromObj = parseInt(point[0]) - 1;
                     var indiceNormalFromObj = parseInt(point[1]) - 1;
-                    //Default value for uv
-                    var indiceUvsFromObj = 1;
-                    //Get each vector of data
-                    var positionVectorFromOBJ = positions[indicePositionFromObj];
-                    var textureVectorFromOBJ = new BABYLON.Vector2(0, 0);
-                    var normalsVectorFromOBJ = normals[indiceNormalFromObj];
-                    setData(indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ);
+                    setData(indicePositionFromObj, 1, indiceNormalFromObj, positions[indicePositionFromObj], BABYLON.Vector2.Zero(), normals[indiceNormalFromObj]);
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -487,10 +475,8 @@ var BABYLON;
             //Main function
             //Split the file into lines
             var lines = data.split('\n');
-            //Look at each line
             for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                line = line.trim();
+                var line = lines[i].trim();
                 var result;
                 //Comment or newLine
                 if (line.length === 0 || line.charAt(0) === '#') {
@@ -500,66 +486,52 @@ var BABYLON;
                     //Create a Vector3 with the position x, y, z
                     //Value of result:
                     // ["v 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
-                    var vectVertex = new BABYLON.Vector3(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
                     //Add the Vector in the list of positions
-                    positions.push(vectVertex);
+                    positions.push(new BABYLON.Vector3(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])));
                 }
                 else if ((result = this.normalPattern.exec(line)) !== null) {
                     //Create a Vector3 with the normals x, y, z
                     //Value of result
                     // ["vn 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
-                    var vectNormals = new BABYLON.Vector3(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
                     //Add the Vector in the list of normals
-                    normals.push(vectNormals);
+                    normals.push(new BABYLON.Vector3(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])));
                 }
                 else if ((result = this.uvPattern.exec(line)) !== null) {
                     //Create a Vector2 with the normals u, v
                     //Value of result
                     // ["vt 0.1 0.2 0.3", "0.1", "0.2"]
-                    var vectUV = new BABYLON.Vector2(parseFloat(result[1]), parseFloat(result[2]));
                     //Add the Vector in the list of uvs
-                    uvs.push(vectUV);
+                    uvs.push(new BABYLON.Vector2(parseFloat(result[1]), parseFloat(result[2])));
                 }
                 else if ((result = this.facePattern3.exec(line)) !== null) {
                     //Value of result:
                     //["f 1/1/1 2/2/2 3/3/3", "1/1/1 2/2/2 3/3/3"...]
-                    result = result[1].trim();
-                    var face = result.split(" "); // ["1/1/1", "2/2/2", "3/3/3"]
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern3(face, 1);
+                    setDataForCurrentFaceWithPattern3(result[1].trim().split(" "), 1);
                 }
                 else if ((result = this.facePattern4.exec(line)) !== null) {
                     //Value of result:
                     //["f 1//1 2//2 3//3", "1//1 2//2 3//3"...]
-                    result = result[1].trim();
-                    var face = result.split(" "); // ["1//1", "2//2", "3//3"]
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern4(face, 1);
+                    setDataForCurrentFaceWithPattern4(result[1].trim().split(" "), 1);
                 }
                 else if ((result = this.facePattern2.exec(line)) !== null) {
                     //Value of result:
                     //["f 1/1 2/2 3/3", "1/1 2/2 3/3"...]
-                    result = result[1].trim();
-                    var face = result.split(" "); // ["1/1", "2/2", "3/3"]
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern2(face, 1);
+                    setDataForCurrentFaceWithPattern2(result[1].trim().split(" "), 1);
                 }
                 else if ((result = this.facePattern1.exec(line)) !== null) {
                     //Value of result
                     //["f 1 2 3", "1 2 3"...]
-                    result = result[1].trim();
-                    var face = result.split(" "); // ["1", "2", "3"]
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern1(face, 1);
+                    setDataForCurrentFaceWithPattern1(result[1].trim().split(" "), 1);
                 }
                 else if (this.group.test(line) || this.obj.test(line)) {
                     //Create a new mesh corresponding to the name of the group.
                     //Definition of the mesh
-                    var objMeshName = line.substring(2).trim();
-                    var objMesh = 
-                    //Set the name of the current obj mesh
-                    {
-                        name: objMeshName,
+                    var objMesh = {
+                        name: line.substring(2).trim(),
                         indices: undefined,
                         positions: undefined,
                         normals: undefined,
@@ -582,9 +554,7 @@ var BABYLON;
                         //Set the data for the previous mesh
                         addPreviousObjMesh();
                         //Create a new mesh
-                        var objMesh = 
-                        //Set the name of the current obj mesh
-                        {
+                        var objMesh = {
                             name: objMeshName + "_mm" + increment.toString(),
                             indices: undefined,
                             positions: undefined,
@@ -592,15 +562,14 @@ var BABYLON;
                             uvs: undefined,
                             materialName: materialNameFromObj
                         };
-                        increment += 1;
+                        increment++;
                         //If meshes are already defined
                         meshesFromObj.push(objMesh);
                     }
                     //Set the material name if the previous line define a mesh
                     if (hasMeshes && isFirstMaterial) {
-                        var m = meshesFromObj.length;
                         //Set the material name to the previous mesh (1 material per mesh)
-                        meshesFromObj[m - 1].materialName = materialNameFromObj;
+                        meshesFromObj[meshesFromObj.length - 1].materialName = materialNameFromObj;
                         isFirstMaterial = false;
                     }
                 }
@@ -631,15 +600,13 @@ var BABYLON;
             }
             //If any o or g keyword found, create a mesj with a random id
             if (!hasMeshes) {
-                //If there is no object name or no mesh name
-                var myname = BABYLON.Geometry.RandomId();
                 // reverse tab of indices
                 indicesForBabylon.reverse();
                 //Get positions normals uvs
                 unwrapData();
                 //Set data for one mesh
                 meshesFromObj.push({
-                    name: myname,
+                    name: BABYLON.Geometry.RandomId(),
                     indices: indicesForBabylon,
                     positions: unwrappedPositionsForBabylon,
                     normals: unwrappedNormalsForBabylon,
@@ -651,7 +618,6 @@ var BABYLON;
             var vertexData = new BABYLON.VertexData(); //The container for the values
             var babylonMeshesArray = []; //The mesh for babylon
             var materialToUse = [];
-            //Set data for each mesh
             for (var j = 0; j < meshesFromObj.length; j++) {
                 //check meshesNames (stlFileLoader)
                 if (meshesNames && meshesFromObj[j].name) {
@@ -691,15 +657,11 @@ var BABYLON;
                 this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
                     //Create materials thanks MTLLoader function
                     materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
-                    //Look at each material loaded in the mtl file
                     for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
                         //Three variables to get all meshes with the same material
                         var startIndex = 0;
                         var _indices = [];
                         var _index;
-                        //The material from MTL file is used in the meshes loaded
-                        //Push the indice in an array
-                        //Check if the material is not used for another mesh
                         while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
                             _indices.push(_index);
                             startIndex = _index + 1;
@@ -721,9 +683,11 @@ var BABYLON;
             //Return an array with all BABYLON.Mesh
             return babylonMeshesArray;
         };
+        OBJFileLoader.OPTIMIZE_WITH_UV = false;
         return OBJFileLoader;
     })();
     BABYLON.OBJFileLoader = OBJFileLoader;
     //Add this loader into the register plugin
     BABYLON.SceneLoader.RegisterPlugin(new OBJFileLoader());
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.objFileLoader.js.map

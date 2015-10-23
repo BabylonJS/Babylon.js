@@ -32,8 +32,7 @@ module BABYLON {
 
             //Look at each line
             for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                line = line.trim();
+                var line = lines[i].trim();
 
                 // Blank line or comment
                 if (line.length === 0 || line.charAt(0) === '#') {
@@ -46,8 +45,7 @@ module BABYLON {
                 key = key.toLowerCase();
 
                 //Get the data following the key
-                var value: any = (pos >= 0) ? line.substring(pos + 1) : "";
-                value = value.trim();
+                var value: any = (pos >= 0) ? line.substring(pos + 1).trim() : "";
 
                 //This mtl keyword will create the new material
                 if (key === "newmtl") {
@@ -158,6 +156,8 @@ module BABYLON {
 
     export class OBJFileLoader implements ISceneLoaderPlugin {
 
+        public static OPTIMIZE_WITH_UV = false;
+
         public extensions = ".obj";
         public obj = /^o/;
         public group = /^g/;
@@ -216,11 +216,9 @@ module BABYLON {
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
             //get the meshes from OBJ file
             var loadedMeshes = this._parseSolid(meshesNames, scene, data, rootUrl);
-            //Push each mesh from OBJ file into the variable mesh of this function
+            //Push meshes from OBJ file into the variable mesh of this function
             if (meshes) {
-                loadedMeshes.forEach((mesh) => {
-                    meshes.push(mesh);
-                });
+                loadedMeshes = loadedMeshes.concat(meshes);
             }
             return true;
         }
@@ -253,7 +251,7 @@ module BABYLON {
             var wrappedPositionForBabylon: Array<BABYLON.Vector3> = [];      //The list of position in vectors
             var wrappedUvsForBabylon: Array<BABYLON.Vector2> = [];      //Array with all value of uvs to match with the indices
             var wrappedNormalsForBabylon: Array<BABYLON.Vector3> = [];      //Array with all value of normals to match with the indices
-            var tuplePosNorm: Array<{ normals: Array<number>, idx: Array<number> }> = [];      //Create a tuple with indice of Position, Normal, UV  [pos, norm, uvs]
+            var tuplePosNorm: Array<{ normals: Array<number>; idx: Array<number>; uv: Array<number> }> = [];      //Create a tuple with indice of Position, Normal, UV  [pos, norm, uvs]
             var curPositionInIndices = 0;
             var hasMeshes: Boolean = false;   //Meshes are defined in the file
             var unwrappedPositionsForBabylon: Array<number> = [];      //Value of positionForBabylon w/o Vector3() [x,y,z]
@@ -276,10 +274,20 @@ module BABYLON {
              * @param obj Array<number>
              * @returns {boolean}
              */
-            var isInArray = (arr: Array<{ normals: Array<number>, idx: Array<number> }>, obj: Array<number>) => {
-                if (!arr[obj[0]]) arr[obj[0]] = { normals: [], idx: [] };
+            var isInArray = (arr: Array<{ normals: Array<number>; idx: Array<number>}>, obj: Array<number>) => {
+                if (!arr[obj[0]]) arr[obj[0]] = { normals: [], idx: []};
                 var idx = arr[obj[0]].normals.indexOf(obj[1]);
-                return idx === -1 ? idx : arr[obj[0]].idx[idx];
+
+                return idx === -1 ? -1 : arr[obj[0]].idx[idx];
+            };
+            var isInArrayUV = (arr: Array<{ normals: Array<number>; idx: Array<number>; uv: Array<number> }>, obj: Array<number>) => {
+                if (!arr[obj[0]]) arr[obj[0]] = { normals: [], idx: [], uv: [] };
+                var idx = arr[obj[0]].normals.indexOf(obj[1]);
+
+                if(idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
+                    return arr[obj[0]].idx[idx];
+                }
+                return -1;
             };
 
             /**
@@ -289,18 +297,34 @@ module BABYLON {
              * If the tuple already exist, add only their indice
              *
              * @param indicePositionFromObj Integer The index in positions array
+             * @param indiceUvsFromObj Integer The index in uvs array
              * @param indiceNormalFromObj Integer The index in normals array
              * @param positionVectorFromOBJ Vector3 The value of position at index objIndice
              * @param textureVectorFromOBJ Vector3 The value of uvs
              * @param normalsVectorFromOBJ Vector3 The value of normals at index objNormale
              */
-            var _tuple = []
-            var setData = (indicePositionFromObj: number, indiceNormalFromObj: number, positionVectorFromOBJ: BABYLON.Vector3, textureVectorFromOBJ: BABYLON.Vector2, normalsVectorFromOBJ: BABYLON.Vector3) => {
-                //Create a new tuple composed with the indice of position and normal
-                _tuple[0] = indicePositionFromObj;
-                _tuple[1] = indiceNormalFromObj;
+            var setData = (indicePositionFromObj: number, indiceUvsFromObj: number, indiceNormalFromObj: number, positionVectorFromOBJ: BABYLON.Vector3, textureVectorFromOBJ: BABYLON.Vector2, normalsVectorFromOBJ: BABYLON.Vector3) => {
                 //Check if this tuple already exists in the list of tuples
-                var _index = isInArray(tuplePosNorm, _tuple);
+                var _index : number;
+                if(OBJFileLoader.OPTIMIZE_WITH_UV) {
+                    _index = isInArrayUV(
+                        tuplePosNorm,
+                        [
+                            indicePositionFromObj,
+                            indiceNormalFromObj,
+                            indiceUvsFromObj
+                        ]
+                    );
+                }
+                else {
+                    _index = isInArray(
+                        tuplePosNorm,
+                        [
+                            indicePositionFromObj,
+                            indiceNormalFromObj
+                        ]
+                    );
+                }
 
                 //If it not exists
                 if (_index == -1) {
@@ -320,6 +344,7 @@ module BABYLON {
                     //Add the tuple in the comparison list
                     tuplePosNorm[indicePositionFromObj].normals.push(indiceNormalFromObj);
                     tuplePosNorm[indicePositionFromObj].idx.push(curPositionInIndices++);
+                    if(OBJFileLoader.OPTIMIZE_WITH_UV) tuplePosNorm[indicePositionFromObj].uv.push(indiceUvsFromObj);
                 } else {
                     //The tuple already exists
                     //Add the index of the already existing tuple
@@ -386,18 +411,13 @@ module BABYLON {
                 for (var k = 0; k < triangles.length; k++) {
                     // Set position indice
                     var indicePositionFromObj = parseInt(triangles[k]) - 1;
-                    //In the pattern 1, normals and uvs are not defined
-                    //Default values are set
-                    var indiceUvsFromObj = 0;
-                    var indiceNormalFromObj = 0;
 
-                    //Get the vectors data
-                    var positionVectorFromOBJ = positions[indicePositionFromObj];
-                    //Create default vectors
-                    var textureVectorFromOBJ = new BABYLON.Vector2(0, 0);
-                    var normalsVectorFromOBJ = new BABYLON.Vector3(0, 1, 0);
-
-                    setData(indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ);
+                    setData(
+                        indicePositionFromObj,
+                        0, 0,                                           //In the pattern 1, normals and uvs are not defined
+                        positions[indicePositionFromObj],               //Get the vectors data
+                        BABYLON.Vector2.Zero(), BABYLON.Vector3.Up()    //Create default vectors
+                    );
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -421,16 +441,15 @@ module BABYLON {
                     var indicePositionFromObj = parseInt(point[0]) - 1;
                     //Set uv indice
                     var indiceUvsFromObj = parseInt(point[1]) - 1;
-                    //Default value for normals
-                    var indiceNormalFromObj = 0;
 
-                    //Get the values for each element
-                    var positionVectorFromOBJ = positions[indicePositionFromObj];
-                    var textureVectorFromOBJ = uvs[indiceUvsFromObj];
-                    //Default value for normals
-                    var normalsVectorFromOBJ = new BABYLON.Vector3(0, 1, 0);
-
-                    setData(indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ);
+                    setData(
+                        indicePositionFromObj,
+                        indiceUvsFromObj,
+                        0,                                  //Default value for normals
+                        positions[indicePositionFromObj],   //Get the values for each element
+                        uvs[indiceUvsFromObj],
+                        BABYLON.Vector3.Up()                //Default value for normals
+                    );
                 }
 
                 //Reset variable for the next line
@@ -458,12 +477,10 @@ module BABYLON {
                     // Set normal indice
                     var indiceNormalFromObj = parseInt(point[2]) - 1;
 
-                    //Set the vector for each component
-                    var positionVectorFromOBJ = positions[indicePositionFromObj];
-                    var textureVectorFromOBJ = uvs[indiceUvsFromObj];
-                    var normalsVectorFromOBJ = normals[indiceNormalFromObj];
-
-                    setData(indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ);
+                    setData(
+                        indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj,
+                        positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj] //Set the vector for each component
+                    );
 
                 }
                 //Reset variable for the next line
@@ -487,15 +504,15 @@ module BABYLON {
                     // We check indices, and normals
                     var indicePositionFromObj = parseInt(point[0]) - 1;
                     var indiceNormalFromObj = parseInt(point[1]) - 1;
-                    //Default value for uv
-                    var indiceUvsFromObj = 1;
 
-                    //Get each vector of data
-                    var positionVectorFromOBJ = positions[indicePositionFromObj];
-                    var textureVectorFromOBJ = new BABYLON.Vector2(0, 0);
-                    var normalsVectorFromOBJ = normals[indiceNormalFromObj];
-
-                    setData(indicePositionFromObj, indiceNormalFromObj, positionVectorFromOBJ, textureVectorFromOBJ, normalsVectorFromOBJ);
+                    setData(
+                        indicePositionFromObj,
+                        1, //Default value for uv
+                        indiceNormalFromObj,
+                        positions[indicePositionFromObj], //Get each vector of data
+                        BABYLON.Vector2.Zero(),
+                        normals[indiceNormalFromObj]
+                    );
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -534,8 +551,7 @@ module BABYLON {
             var lines = data.split('\n');
             //Look at each line
             for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                line = line.trim();
+                var line = lines[i].trim();
                 var result;
 
                 //Comment or newLine
@@ -547,36 +563,33 @@ module BABYLON {
                     //Create a Vector3 with the position x, y, z
                     //Value of result:
                     // ["v 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
-                    var vectVertex = new BABYLON.Vector3(
+                    //Add the Vector in the list of positions
+                    positions.push(new BABYLON.Vector3(
                         parseFloat(result[1]),
                         parseFloat(result[2]),
                         parseFloat(result[3])
-                    );
-                    //Add the Vector in the list of positions
-                    positions.push(vectVertex);
+                    ));
 
                 } else if ((result = this.normalPattern.exec(line)) !== null) {
                     //Create a Vector3 with the normals x, y, z
                     //Value of result
                     // ["vn 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
-                    var vectNormals = new BABYLON.Vector3(
+                    //Add the Vector in the list of normals
+                    normals.push(new BABYLON.Vector3(
                         parseFloat(result[1]),
                         parseFloat(result[2]),
                         parseFloat(result[3])
-                    );
-                    //Add the Vector in the list of normals
-                    normals.push(vectNormals);
+                    ));
 
                 } else if ((result = this.uvPattern.exec(line)) !== null) {
                     //Create a Vector2 with the normals u, v
                     //Value of result
                     // ["vt 0.1 0.2 0.3", "0.1", "0.2"]
-                    var vectUV = new BABYLON.Vector2(
+                    //Add the Vector in the list of uvs
+                    uvs.push(new BABYLON.Vector2(
                         parseFloat(result[1]),
                         parseFloat(result[2])
-                    );
-                    //Add the Vector in the list of uvs
-                    uvs.push(vectUV);
+                    ));
 
 
                     //Identify patterns of faces
@@ -584,46 +597,49 @@ module BABYLON {
                 } else if ((result = this.facePattern3.exec(line)) !== null) {
                     //Value of result:
                     //["f 1/1/1 2/2/2 3/3/3", "1/1/1 2/2/2 3/3/3"...]
-                    result = result[1].trim();
-                    var face = result.split(" "); // ["1/1/1", "2/2/2", "3/3/3"]
 
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern3(face, 1);
+                    setDataForCurrentFaceWithPattern3(
+                        result[1].trim().split(" "), // ["1/1/1", "2/2/2", "3/3/3"]
+                        1
+                    );
 
 
                 } else if ((result = this.facePattern4.exec(line)) !== null) {
                     //Value of result:
                     //["f 1//1 2//2 3//3", "1//1 2//2 3//3"...]
-                    result = result[1].trim();
-                    var face = result.split(" "); // ["1//1", "2//2", "3//3"]
 
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern4(face, 1);
+                    setDataForCurrentFaceWithPattern4(
+                        result[1].trim().split(" "), // ["1//1", "2//2", "3//3"]
+                        1
+                    );
 
                 } else if ((result = this.facePattern2.exec(line)) !== null) {
                     //Value of result:
                     //["f 1/1 2/2 3/3", "1/1 2/2 3/3"...]
-                    result = result[1].trim();
-                    var face = result.split(" "); // ["1/1", "2/2", "3/3"]
 
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern2(face, 1)
+                    setDataForCurrentFaceWithPattern2(
+                        result[1].trim().split(" "), // ["1/1", "2/2", "3/3"]
+                        1
+                    );
 
                 } else if ((result = this.facePattern1.exec(line)) !== null) {
                     //Value of result
                     //["f 1 2 3", "1 2 3"...]
-                    result = result[1].trim();
-                    var face = result.split(" "); // ["1", "2", "3"]
 
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern1(face, 1);
+                    setDataForCurrentFaceWithPattern1(
+                        result[1].trim().split(" "), // ["1", "2", "3"]
+                        1
+                    );
 
                     //Define a mesh or an object
                     //Each time this keyword is analysed, create a new Object with all data for creating a babylonMesh
                 } else if (this.group.test(line) || this.obj.test(line)) {
                     //Create a new mesh corresponding to the name of the group.
                     //Definition of the mesh
-                    var objMeshName = line.substring(2).trim();
                     var objMesh: {
                         name: string;
                         indices: Array<number>;
@@ -634,7 +650,7 @@ module BABYLON {
                     } =
                         //Set the name of the current obj mesh
                         {
-                            name: objMeshName,
+                            name: line.substring(2).trim(),
                             indices: undefined,
                             positions: undefined,
                             normals: undefined,
@@ -678,16 +694,15 @@ module BABYLON {
                                 uvs: undefined,
                                 materialName: materialNameFromObj
                             };
-                        increment += 1;
+                        increment ++;
                         //If meshes are already defined
                         meshesFromObj.push(objMesh);
                     }
                     //Set the material name if the previous line define a mesh
 
                     if (hasMeshes && isFirstMaterial) {
-                        var m = meshesFromObj.length;
                         //Set the material name to the previous mesh (1 material per mesh)
-                        meshesFromObj[m - 1].materialName = materialNameFromObj;
+                        meshesFromObj[meshesFromObj.length - 1].materialName = materialNameFromObj;
                         isFirstMaterial = false;
                     }
                     //Keyword for loading the mtl file
@@ -724,16 +739,13 @@ module BABYLON {
 
             //If any o or g keyword found, create a mesj with a random id
             if (!hasMeshes) {
-                //If there is no object name or no mesh name
-                var myname = BABYLON.Geometry.RandomId();
-
                 // reverse tab of indices
                 indicesForBabylon.reverse();
                 //Get positions normals uvs
                 unwrapData();
                 //Set data for one mesh
                 meshesFromObj.push({
-                    name: myname,
+                    name: BABYLON.Geometry.RandomId(),
                     indices: indicesForBabylon,
                     positions: unwrappedPositionsForBabylon,
                     normals: unwrappedNormalsForBabylon,
@@ -741,7 +753,6 @@ module BABYLON {
                     materialName: materialNameFromObj
                 });
             }
-
 
             //Create a BABYLON.Mesh list
             var vertexData: VertexData = new BABYLON.VertexData(); //The container for the values
