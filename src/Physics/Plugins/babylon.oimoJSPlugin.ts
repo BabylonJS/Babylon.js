@@ -33,7 +33,7 @@ module BABYLON {
             var deltaPosition = mesh.position.subtract(bbox.center);
             
             //calculate rotation to fit Oimo's needs (Euler...)
-            var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w }, "YZX");
+            var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w });
 
             //get the correct bounding box
             var oldQuaternion = mesh.rotationQuaternion;
@@ -131,7 +131,7 @@ module BABYLON {
             });
             
             //Reset the body's rotation to be of the initial mesh's.
-            var rot = new OIMO.Euler().setFromQuaternion({ x: initialMesh.rotationQuaternion.x, y: initialMesh.rotationQuaternion.y, z: initialMesh.rotationQuaternion.z, s: initialMesh.rotationQuaternion.w }, "YZX");
+            var rot = new OIMO.Euler().setFromQuaternion({ x: initialMesh.rotationQuaternion.x, y: initialMesh.rotationQuaternion.y, z: initialMesh.rotationQuaternion.z, s: initialMesh.rotationQuaternion.w });
 
             body.resetRotation(rot.x / OIMO.TO_RAD, rot.y / OIMO.TO_RAD, rot.z / OIMO.TO_RAD);
 
@@ -153,7 +153,7 @@ module BABYLON {
             // We need the bounding box/sphere info to compute the physics body
             mesh.computeWorldMatrix(true);
 
-            var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w }, "YZX");
+            var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w });
 
             var bodyParameters: any = {
                 pos: [mesh.position.x, mesh.position.y, mesh.position.z],
@@ -238,13 +238,13 @@ module BABYLON {
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 var body = registeredMesh.body.body;
-                var updated : boolean = false;
-                var newPosition : Vector3;
+                var updated: boolean = false;
+                var newPosition: Vector3;
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                     mesh.computeWorldMatrix(true);
-                    
+
                     newPosition = mesh.getBoundingInfo().boundingBox.center;
-                    
+
                     updated = true;
                 }
                 // Case where the parent has been updated
@@ -253,16 +253,16 @@ module BABYLON {
                     registeredMesh.mesh.computeWorldMatrix(true);
 
                     newPosition = registeredMesh.mesh.getAbsolutePosition();
-                    
+
                     updated = true;
                 }
-                
-                if(updated) {
-                	body.setPosition(new OIMO.Vec3(newPosition.x, newPosition.y, newPosition.z));
-                    	body.setQuaternion(mesh.rotationQuaternion);
-                    	body.sleeping = false;
-                    	//force Oimo to update the body's position
-                    	body.updatePosition(1);
+
+                if (updated) {
+                    body.setPosition(new OIMO.Vec3(newPosition.x, newPosition.y, newPosition.z));
+                    body.setQuaternion(mesh.rotationQuaternion);
+                    body.sleeping = false;
+                    //force Oimo to update the body's position
+                    body.updatePosition(1);
                 }
             }
         }
@@ -383,4 +383,5 @@ module BABYLON {
         }
     }
 }
+
 

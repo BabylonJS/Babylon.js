@@ -227,7 +227,7 @@ module BABYLON {
 
             var posfunc = options ? options.positionFunction : null;
             var vtxfunc = options ? options.vertexFunction : null;
- 
+
             var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, posfunc, vtxfunc);
 
             // particles
@@ -259,7 +259,7 @@ module BABYLON {
                 this._roll = this._copy.rotation.z;
                 this._quaternionRotationYPR();
             }
-            this._quaternionToRotationMatrix(); 
+            this._quaternionToRotationMatrix();
 
             this._shape = particle._model._shape;
             for (var pt = 0; pt < this._shape.length; pt++) {
@@ -546,5 +546,6 @@ module BABYLON {
         }
     }
 }
+
 
 

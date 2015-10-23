@@ -171,9 +171,13 @@
         }
 
         // Methods   
-        private _checkCache(scene: Scene, mesh?: AbstractMesh): boolean {
+        private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (!mesh) {
                 return true;
+            }
+
+            if (this._defines.INSTANCES !== useInstances) {
+                return false;
             }
 
             if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
@@ -194,7 +198,7 @@
 
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh)) {
+                    if (this._checkCache(scene, mesh, useInstances)) {
                         return true;
                     }
                 }

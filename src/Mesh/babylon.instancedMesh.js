@@ -82,7 +82,7 @@ var BABYLON;
         });
         InstancedMesh.prototype.refreshBoundingInfo = function () {
             var meshBB = this._sourceMesh.getBoundingInfo();
-            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum, meshBB.maximum);
+            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
             this._updateBoundingInfo();
         };
         InstancedMesh.prototype._preActivate = function () {

@@ -330,6 +330,7 @@ var BABYLON;
             var updatable = options.updatable;
             var sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var instance = options.instance;
+            options.arc = (options.arc < 0) ? 1 : options.arc || 1;
             // tube geometry
             var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) {
                 var tangents = path3D.getTangents();

@@ -233,7 +233,6 @@ var BABYLON;
                 this._valueCache[uniformName].m[index] = matrix.m[index];
             }
         };
-        ;
         Effect.prototype._cacheFloat2 = function (uniformName, x, y) {
             if (!this._valueCache[uniformName]) {
                 this._valueCache[uniformName] = [x, y];
