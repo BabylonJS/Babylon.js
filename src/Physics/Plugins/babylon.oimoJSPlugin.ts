@@ -33,7 +33,7 @@ module BABYLON {
             var deltaPosition = mesh.position.subtract(bbox.center);
             
             //calculate rotation to fit Oimo's needs (Euler...)
-            var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w });
+            var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w }, "YZX");
 
             //get the correct bounding box
             var oldQuaternion = mesh.rotationQuaternion;
@@ -131,7 +131,7 @@ module BABYLON {
             });
             
             //Reset the body's rotation to be of the initial mesh's.
-            var rot = new OIMO.Euler().setFromQuaternion({ x: initialMesh.rotationQuaternion.x, y: initialMesh.rotationQuaternion.y, z: initialMesh.rotationQuaternion.z, s: initialMesh.rotationQuaternion.w });
+            var rot = new OIMO.Euler().setFromQuaternion({ x: initialMesh.rotationQuaternion.x, y: initialMesh.rotationQuaternion.y, z: initialMesh.rotationQuaternion.z, s: initialMesh.rotationQuaternion.w }, "YZX");
 
             body.resetRotation(rot.x / OIMO.TO_RAD, rot.y / OIMO.TO_RAD, rot.z / OIMO.TO_RAD);
 
@@ -153,7 +153,7 @@ module BABYLON {
             // We need the bounding box/sphere info to compute the physics body
             mesh.computeWorldMatrix(true);
 
-            var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w });
+            var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w }, "YZX");
 
             var bodyParameters: any = {
                 pos: [mesh.position.x, mesh.position.y, mesh.position.z],
