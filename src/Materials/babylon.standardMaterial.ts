@@ -81,6 +81,7 @@
         public EMISSIVEASILLUMINATION = false;
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
+        public USELIGHTMAPASSHADOWMAP = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
         public REFLECTIONMAP_PLANAR = false;
@@ -119,7 +120,7 @@
 
         public roughness = 0;
 
-        public lightmapThreshold = 0;
+        public useLightmapAsShadowmap = false;
 
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
@@ -299,6 +300,7 @@
                     } else {
                         needUVs = true;
                         this._defines.LIGHTMAP = true;
+                        this._defines.USELIGHTMAPASSHADOWMAP = this.useLightmapAsShadowmap;
                     }
                 }
 
@@ -742,7 +744,7 @@
                 if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
                     this._effect.setTexture("lightmapSampler", this.lightmapTexture);
 
-                    this._effect.setFloat3("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level, this.lightmapThreshold);
+                    this._effect.setFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
                     this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
                 }
 
@@ -957,7 +959,7 @@
             if (this.lightmapTexture && this.lightmapTexture.clone) {
                 newStandardMaterial.bumpTexture = this.bumpTexture.clone();
                 newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
-                newStandardMaterial.lightmapThreshold = this.lightmapThreshold;
+                newStandardMaterial.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
             }
 
             newStandardMaterial.ambientColor = this.ambientColor.clone();

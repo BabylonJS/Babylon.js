@@ -124,7 +124,7 @@ uniform sampler2D emissiveSampler;
 
 #ifdef LIGHTMAP
 varying vec2 vLightmapUV;
-uniform vec3 vLightmapInfos;
+uniform vec2 vLightmapInfos;
 uniform sampler2D lightmapSampler;
 #endif
 
@@ -818,16 +818,12 @@ void main(void) {
 
 #ifdef LIGHTMAP
 	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
-	float lightmapIllum = clamp(dot(lightmapColor, vec3(0.3, 0.59, 0.11)), 0., 1.);
 
-	if (lightmapIllum > vLightmapInfos.z)
-	{
-		color.rgb += lightmapColor;
-	}
-	else
-	{
+	#ifdef USELIGHTMAPASSHADOWMAP
 		color.rgb *= lightmapColor;
-	}
+	#else
+		color.rgb += lightmapColor;
+	#endif
 #endif
 
 #ifdef FOG
