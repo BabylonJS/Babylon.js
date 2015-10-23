@@ -791,7 +791,6 @@ var BABYLON;
                 newStandardMaterial.bumpTexture = this.bumpTexture.clone();
             }
             if (this.lightmapTexture && this.lightmapTexture.clone) {
-                newStandardMaterial.bumpTexture = this.bumpTexture.clone();
                 newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
                 newStandardMaterial.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
             }
