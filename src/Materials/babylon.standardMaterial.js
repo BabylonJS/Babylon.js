@@ -148,9 +148,12 @@ var BABYLON;
             return this.diffuseTexture;
         };
         // Methods   
-        StandardMaterial.prototype._checkCache = function (scene, mesh) {
+        StandardMaterial.prototype._checkCache = function (scene, mesh, useInstances) {
             if (!mesh) {
                 return true;
+            }
+            if (this._defines.INSTANCES !== useInstances) {
+                return false;
             }
             if (mesh._materialDefines && mesh._materialDefines.isEqual(this._defines)) {
                 return true;
@@ -166,7 +169,7 @@ var BABYLON;
             var scene = this.getScene();
             if (!this.checkReadyOnEveryCall) {
                 if (this._renderId === scene.getRenderId()) {
-                    if (this._checkCache(scene, mesh)) {
+                    if (this._checkCache(scene, mesh, useInstances)) {
                         return true;
                     }
                 }

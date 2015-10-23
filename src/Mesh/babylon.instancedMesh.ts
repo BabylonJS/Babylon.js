@@ -74,7 +74,7 @@
         public refreshBoundingInfo(): void {
             var meshBB = this._sourceMesh.getBoundingInfo();
 
-            this._boundingInfo = new BoundingInfo(meshBB.minimum, meshBB.maximum);
+            this._boundingInfo = new BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
 
             this._updateBoundingInfo();
         }
