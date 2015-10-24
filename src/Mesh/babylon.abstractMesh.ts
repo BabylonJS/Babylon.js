@@ -227,7 +227,7 @@
             return this._isWorldMatrixFrozen;
         }
 
-        public rotate(axis: Vector3, amount: number, space: Space): void {
+        public rotate(axis: Vector3, amount: number, space?: Space): void {
             axis.normalize();
 
             if (!this.rotationQuaternion) {
@@ -251,7 +251,7 @@
             }
         }
 
-        public translate(axis: Vector3, distance: number, space: Space): void {
+        public translate(axis: Vector3, distance: number, space?: Space): void {
             var displacementVector = axis.scale(distance);
 
             if (!space || space === Space.LOCAL) {
