@@ -147,11 +147,12 @@ var BABYLON;
                 }
                 matrix[x][z] = pos[i + 1];
             }
-            return CANNON.Heightfield(matrix, {
-                elementSize: elementSize,
-                //Babylon options, NOT cannon
-                dim: dim
+            var shape = new CANNON.Heightfield(matrix, {
+                elementSize: elementSize
             });
+            //For future reference, needed for body transformation
+            shape.dim = dim;
+            return shape;
         };
         CannonJSPlugin.prototype._addMaterial = function (friction, restitution) {
             var index;
@@ -196,10 +197,10 @@ var BABYLON;
             }
             //If it is a heightfield, if should be centered.
             if (shape.type === CANNON.Shape.types.HEIGHTFIELD) {
-                body.position = body.position.vadd(new CANNON.Vec3(-shape.options.dim, 0, shape.options.dim));
+                body.position = body.position.vadd(new CANNON.Vec3(-shape.dim, 0, shape.dim));
                 //add it inverted to the delta 
-                deltaPosition.x += shape.options.dim;
-                deltaPosition.z -= shape.options.dim;
+                deltaPosition.x += shape.dim;
+                deltaPosition.z -= shape.dim;
             }
             //add the shape
             body.addShape(shape);
