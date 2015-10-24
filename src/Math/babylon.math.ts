@@ -1543,7 +1543,7 @@
         public multiplyInPlace(q1: Quaternion): Quaternion {
             this.multiplyToRef(q1, this);
 
-            return result;
+            return this;
         }
 
         public length(): number {
