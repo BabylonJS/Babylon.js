@@ -1244,6 +1244,10 @@ var BABYLON;
             result.copyFromFloats(x, y, z, w);
             return this;
         };
+        Quaternion.prototype.multiplyInPlace = function (q1) {
+            this.multiplyToRef(q1, this);
+            return this;
+        };
         Quaternion.prototype.length = function () {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
         };
