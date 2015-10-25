@@ -89,6 +89,7 @@
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
+        public REFLECTIONMAP_EQUIRECTANGULAR = false;
         public INVERTCUBICMAP = false;
 
         constructor() {
@@ -280,6 +281,9 @@
                                 break;
                             case Texture.SPHERICAL_MODE:
                                 this._defines.REFLECTIONMAP_SPHERICAL = true;
+                                break;
+                            case Texture.EQUIRECTANGULAR_MODE:
+                                this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
                                 break;
                         }
                     }
