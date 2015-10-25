@@ -495,18 +495,18 @@ module BABYLON {
         }
 
         public clone(name: string): SimpleMaterial {
-            var newStandardMaterial = new SimpleMaterial(name, this.getScene());
+            var newMaterial = new SimpleMaterial(name, this.getScene());
 
             // Base material
-            this.copyTo(newStandardMaterial);
+            this.copyTo(newMaterial);
 
             // Simple material
             if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newStandardMaterial.diffuseTexture = this.diffuseTexture.clone();
+                newMaterial.diffuseTexture = this.diffuseTexture.clone();
             }
 
-            newStandardMaterial.diffuseColor = this.diffuseColor.clone();
-            return newStandardMaterial;
+            newMaterial.diffuseColor = this.diffuseColor.clone();
+            return newMaterial;
         }
     }
 } 
