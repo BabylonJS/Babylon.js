@@ -3,7 +3,7 @@
 <head>
 	<title>Shaders Library</title>
 	<script src="dat.gui.min.js"></script>
-	<script src="../../babylon.max.js"></script>
+	<script src="babylon.max.js"></script>
 	<script src="../dist/babylon.simpleMaterial.js"></script>
 
 	<style>
@@ -125,7 +125,7 @@
 				//UI
 				var gui = new dat.GUI();
 				var options = {
-					shader: "standard",
+					material: "standard",
 					mesh: "sphere",
 					hemisphericLight: true,
 					pointLight: false,
@@ -135,8 +135,8 @@
 					fog: false
 				}
 
-				gui.add(options, 'shader', ['standard', 'simple']).onFinishChange(function () {
-					switch (options.shader) {
+				gui.add(options, 'material', ['standard', 'simple']).onFinishChange(function () {
+					switch (options.material) {
 						case "simple":
 							currentMaterial = simple;
 							break;
