@@ -235,10 +235,9 @@
             
             //If it is a heightfield, if should be centered.
             if (shape.type === CANNON.Shape.types.HEIGHTFIELD) {
-                body.position = body.position.vadd(new CANNON.Vec3(-shape.dim, 0, shape.dim));
+                body.position = new CANNON.Vec3(-shape.dim, 0, shape.dim).vadd(mesh.position);
                 //add it inverted to the delta 
-                deltaPosition.x += shape.dim;
-                deltaPosition.z -= shape.dim;
+                deltaPosition = mesh.position.add(new BABYLON.Vector3(shape.dim, 0, -shape.dim));
             }
             
             //add the shape
