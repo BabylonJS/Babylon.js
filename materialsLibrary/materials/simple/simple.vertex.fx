@@ -39,12 +39,6 @@ uniform mat4 diffuseMatrix;
 uniform vec2 vDiffuseInfos;
 #endif
 
-#ifdef BUMP
-varying vec2 vBumpUV;
-uniform vec2 vBumpInfos;
-uniform mat4 bumpMatrix;
-#endif
-
 #ifdef BONES
 uniform mat4 mBones[BonesPerMesh];
 #endif
