@@ -58,6 +58,7 @@ var BABYLON;
         PhysicsEngine.ConeImpostor = 6;
         PhysicsEngine.CylinderImpostor = 7;
         PhysicsEngine.ConvexHullImpostor = 8;
+        PhysicsEngine.HeightmapImpostor = 9;
         PhysicsEngine.Epsilon = 0.001;
         return PhysicsEngine;
     })();

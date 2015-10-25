@@ -1539,6 +1539,12 @@
 
             return this;
         }
+        
+        public multiplyInPlace(q1: Quaternion): Quaternion {
+            this.multiplyToRef(q1, this);
+
+            return this;
+        }
 
         public length(): number {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));

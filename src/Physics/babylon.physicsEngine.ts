@@ -101,6 +101,7 @@
         public static ConeImpostor = 6;
         public static CylinderImpostor = 7;
         public static ConvexHullImpostor = 8;
+        public static HeightmapImpostor = 9;
         public static Epsilon = 0.001;
     }
 }

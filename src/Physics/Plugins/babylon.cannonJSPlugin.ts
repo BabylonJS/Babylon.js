@@ -32,18 +32,14 @@
                     bodyY = registeredMesh.body.position.y,
                     bodyZ = registeredMesh.body.position.z;
 
-                if (!registeredMesh.delta) {
-                    registeredMesh.delta = Vector3.Zero();
-                }
-
                 registeredMesh.mesh.position.x = bodyX + registeredMesh.delta.x;
                 registeredMesh.mesh.position.y = bodyY + registeredMesh.delta.y;
                 registeredMesh.mesh.position.z = bodyZ + registeredMesh.delta.z;
 
-                registeredMesh.mesh.rotationQuaternion.x = registeredMesh.body.quaternion.x;
-                registeredMesh.mesh.rotationQuaternion.y = registeredMesh.body.quaternion.y;
-                registeredMesh.mesh.rotationQuaternion.z = registeredMesh.body.quaternion.z;
-                registeredMesh.mesh.rotationQuaternion.w = registeredMesh.body.quaternion.w;
+                registeredMesh.mesh.rotationQuaternion.copyFrom(registeredMesh.body.quaternion);
+                if(registeredMesh.deltaRotation) {
+                    registeredMesh.mesh.rotationQuaternion.multiplyInPlace(registeredMesh.deltaRotation);
+                }
             }
         }
 
@@ -60,12 +56,12 @@
 
             mesh.computeWorldMatrix(true);
 
-            var shape = this._createShape(mesh, impostor, options);
+            var shape = this._createShape(mesh, impostor);
 
-            return this._createRigidBodyFromShape(shape, mesh, options.mass, options.friction, options.restitution);
+            return this._createRigidBodyFromShape(shape, mesh, options);
         }
 
-        private _createShape(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions) {
+        private _createShape(mesh: AbstractMesh, impostor: number) {
 		
             //get the correct bounding box
             var oldQuaternion = mesh.rotationQuaternion;
@@ -102,8 +98,12 @@
                     var rawVerts = mesh.getVerticesData(VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
 
-                    returnValue = this._createConvexPolyhedron(rawVerts, rawFaces, mesh, options);
+                    returnValue = this._createConvexPolyhedron(rawVerts, rawFaces, mesh);
                     break;
+                case PhysicsEngine.HeightmapImpostor:
+                    returnValue = this._createHeightmap(mesh);
+                    break;
+                    
             }
 
             mesh.rotationQuaternion = oldQuaternion;
@@ -111,7 +111,7 @@
             return returnValue;
         }
 
-        private _createConvexPolyhedron(rawVerts: number[] | Float32Array, rawFaces: number[], mesh: AbstractMesh, options?: PhysicsBodyCreationOptions): any {
+        private _createConvexPolyhedron(rawVerts: number[] | Float32Array, rawFaces: number[], mesh: AbstractMesh): any {
             var verts = [], faces = [];
 
             mesh.computeWorldMatrix(true);
@@ -131,6 +131,52 @@
 
             var shape = new CANNON.ConvexPolyhedron(verts, faces);
 
+            return shape;
+        }
+        
+        private _createHeightmap(mesh: AbstractMesh) {
+            var pos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+
+            if (pos[0] !== pos[pos.length - 1]) {
+                console.log("ERROR");
+                return;
+            }
+
+            var matrix = [];
+            
+            //dimension
+            var dim = -pos[0];
+
+            //array size
+            var arraySize = -1;
+            for (var i = 0; i < pos.length; i = i + 3) {
+                if (pos[i+2] === pos[2]) {
+                    arraySize++;
+                } else {
+                    break;
+                }
+            }
+
+            //calculate element size
+            var elementSize = dim * 2/ arraySize;
+            
+            //calculate the matrix for cannon's heightfield
+            for (var i = 0; i < pos.length; i = i + 3) {
+                var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2 ) ;
+                var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1 ) ;
+                if(!matrix[x]) {
+                    matrix[x] = [];
+                }
+                matrix[x][z] = pos[i + 1];
+            }
+
+            var shape = new CANNON.Heightfield(matrix, {
+                elementSize: elementSize
+            });
+            
+            //For future reference, needed for body transformation
+            shape.dim = dim;
+            
             return shape;
         }
 
@@ -160,7 +206,7 @@
             return currentMat;
         }
 
-        private _createRigidBodyFromShape(shape: any, mesh: AbstractMesh, mass: number, friction: number, restitution: number): any {
+        private _createRigidBodyFromShape(shape: any, mesh: AbstractMesh, options: PhysicsBodyCreationOptions): any {
             if (!mesh.rotationQuaternion) {
                 mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(mesh.rotation.y, mesh.rotation.x, mesh.rotation.z);
             }
@@ -168,20 +214,31 @@
             // The delta between the mesh position and the mesh bounding box center
             var bbox = mesh.getBoundingInfo().boundingBox;
             var deltaPosition = mesh.position.subtract(bbox.center);
+            var deltaRotation;
 
-            var material = this._addMaterial(friction, restitution);
+            var material = this._addMaterial(options.friction, options.restitution);
             var body = new CANNON.Body({
-                mass: mass,
+                mass: options.mass,
                 material: material,
                 position: new CANNON.Vec3(bbox.center.x, bbox.center.y, bbox.center.z)
             });
 
             body.quaternion = new CANNON.Quaternion(mesh.rotationQuaternion.x, mesh.rotationQuaternion.y, mesh.rotationQuaternion.z, mesh.rotationQuaternion.w);
-            //is shape is a plane, it must be rotated 90 degs in the X axis.
-            if (shape.type === CANNON.Shape.types.PLANE) {
-                var tmpQ = new CANNON.Quaternion();
-                tmpQ.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+            //is shape is a plane or a heightmap, it must be rotated 90 degs in the X axis.
+            if (shape.type === CANNON.Shape.types.PLANE || shape.type === CANNON.Shape.types.HEIGHTFIELD) {
+                //-90 DEG in X, precalculated
+                var tmpQ = new CANNON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
                 body.quaternion = body.quaternion.mult(tmpQ);
+                //Invert!
+                deltaRotation = new Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
+            }
+            
+            //If it is a heightfield, if should be centered.
+            if (shape.type === CANNON.Shape.types.HEIGHTFIELD) {
+                body.position = body.position.vadd(new CANNON.Vec3(-shape.dim, 0, shape.dim));
+                //add it inverted to the delta 
+                deltaPosition.x += shape.dim;
+                deltaPosition.z -= shape.dim;
             }
             
             //add the shape
@@ -189,7 +246,7 @@
 
             this._world.add(body);
 
-            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition });
+            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition, deltaRotation: deltaRotation });
 
             return body;
         }
@@ -203,7 +260,7 @@
             initialMesh.computeWorldMatrix(true);
 
             var initialShape = this._createShape(initialMesh, parts[0].impostor);
-            var body = this._createRigidBodyFromShape(initialShape, initialMesh, options.mass, options.friction, options.restitution);
+            var body = this._createRigidBodyFromShape(initialShape, initialMesh, options);
 
             for (var index = 1; index < parts.length; index++) {
                 var mesh = parts[index].mesh;
@@ -225,6 +282,7 @@
                     this._world.remove(registeredMesh.body);
                     registeredMesh.body = null;
                     registeredMesh.delta = null;
+                    registeredMesh.deltaRotation = null;
                 }
             }
         }
@@ -268,10 +326,15 @@
                     var center = mesh.getBoundingInfo().boundingBox.center;
                     body.position.set(center.x, center.y, center.z);
 
-                    body.quaternion.x = mesh.rotationQuaternion.x;
-                    body.quaternion.z = mesh.rotationQuaternion.z;
-                    body.quaternion.y = mesh.rotationQuaternion.y;
-                    body.quaternion.w = mesh.rotationQuaternion.w;
+                    body.quaternion.copy(mesh.rotationQuaternion);
+                    
+                    if(registeredMesh.deltaRotation) {
+                        var tmpQ = new CANNON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
+                        body.quaternion = body.quaternion.mult(tmpQ);
+                    }
+                    
+                    //TODO - If the body is heightmap-based, this won't work correctly. find a good fix.
+                    
                     return;
                 }
             }
