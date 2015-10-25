@@ -37,7 +37,7 @@
                 registeredMesh.mesh.position.z = bodyZ + registeredMesh.delta.z;
 
                 registeredMesh.mesh.rotationQuaternion.copyFrom(registeredMesh.body.quaternion);
-                if(registeredMesh.deltaRotation) {
+                if (registeredMesh.deltaRotation) {
                     registeredMesh.mesh.rotationQuaternion.multiplyInPlace(registeredMesh.deltaRotation);
                 }
             }
@@ -103,7 +103,7 @@
                 case PhysicsEngine.HeightmapImpostor:
                     returnValue = this._createHeightmap(mesh);
                     break;
-                    
+
             }
 
             mesh.rotationQuaternion = oldQuaternion;
@@ -133,7 +133,7 @@
 
             return shape;
         }
-        
+
         private _createHeightmap(mesh: AbstractMesh) {
             var pos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
@@ -150,7 +150,7 @@
             //array size
             var arraySize = -1;
             for (var i = 0; i < pos.length; i = i + 3) {
-                if (pos[i+2] === pos[2]) {
+                if (pos[i + 2] === pos[2]) {
                     arraySize++;
                 } else {
                     break;
@@ -158,13 +158,13 @@
             }
 
             //calculate element size
-            var elementSize = dim * 2/ arraySize;
+            var elementSize = dim * 2 / arraySize;
             
             //calculate the matrix for cannon's heightfield
             for (var i = 0; i < pos.length; i = i + 3) {
-                var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2 ) ;
-                var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1 ) ;
-                if(!matrix[x]) {
+                var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
+                var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1);
+                if (!matrix[x]) {
                     matrix[x] = [];
                 }
                 matrix[x][z] = pos[i + 1];
@@ -176,7 +176,7 @@
             
             //For future reference, needed for body transformation
             shape.dim = dim;
-            
+
             return shape;
         }
 
@@ -327,8 +327,8 @@
                     body.position.set(center.x, center.y, center.z);
 
                     body.quaternion.copy(mesh.rotationQuaternion);
-                    
-                    if(registeredMesh.deltaRotation) {
+
+                    if (registeredMesh.deltaRotation) {
                         var tmpQ = new CANNON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
                         body.quaternion = body.quaternion.mult(tmpQ);
                     }
@@ -387,5 +387,6 @@
         }
     }
 }
+
 
 

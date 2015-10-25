@@ -303,13 +303,13 @@
             var vertexData = VertexData.CreatePlane(options);
 
             vertexData.applyToMesh(plane, options.updatable);
-            
-            if(options.sourcePlane) {
+
+            if (options.sourcePlane) {
                 plane.translate(options.sourcePlane.normal, options.sourcePlane.d);
-                
+
                 var product = Math.acos(Vector3.Dot(options.sourcePlane.normal, Axis.Z));
                 var vectorProduct = Vector3.Cross(Axis.Z, options.sourcePlane.normal);
-                
+
                 plane.rotate(vectorProduct, product);
             }
 
@@ -792,4 +792,5 @@
         }
     }
 }
+
 

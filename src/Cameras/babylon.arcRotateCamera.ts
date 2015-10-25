@@ -634,8 +634,8 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    var camLeft = <ArcRotateCamera> this._rigCameras[0];
-                    var camRight = <ArcRotateCamera> this._rigCameras[1];
+                    var camLeft = <ArcRotateCamera>this._rigCameras[0];
+                    var camRight = <ArcRotateCamera>this._rigCameras[1];
                     camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                     camLeft.beta = camRight.beta = this.beta;
@@ -646,4 +646,5 @@
         }
     }
 } 
+
 

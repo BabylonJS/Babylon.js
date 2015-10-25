@@ -1,0 +1,15 @@
+{
+  "materials": [
+    {
+      "file": "shaders/simple/babylon.simpleMaterial.ts",
+      "shaderFiles": [
+        "shaders/simple/simple.vertex.fx",
+        "shaders/simple/simple.fragment.fx"
+      ],
+      "output": "babylon.simpleMaterial.js"
+    }
+  ],
+  "build": {
+    "distOutputDirectory": "dist/"
+  }
+}

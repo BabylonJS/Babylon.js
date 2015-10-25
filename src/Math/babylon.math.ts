@@ -1539,7 +1539,7 @@
 
             return this;
         }
-        
+
         public multiplyInPlace(q1: Quaternion): Quaternion {
             this.multiplyToRef(q1, this);
 
@@ -3546,5 +3546,6 @@
         }
     }
 }
+
 
 
