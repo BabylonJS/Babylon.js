@@ -1,6 +1,8 @@
 ﻿precision highp float;
 
 // Constants
+#define RECIPROCAL_PI2 0.15915494
+
 uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec4 vDiffuseColor;
@@ -170,16 +172,25 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 	varying vec3 vPositionUVW;
 #else
-#ifndef REFLECTIONMAP_SPHERICAL
-	uniform mat4 reflectionMatrix;
-#endif
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
-	uniform mat4 view;
-#endif
+	#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
+		uniform mat4 reflectionMatrix;
+	#endif
+	#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
+		uniform mat4 view;
+	#endif
 #endif
 
 vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+	vec3 direction = normalize(worldPos.xyz);
+
+	float t = clamp(direction.y * -0.5 + 0.5, 0., 1.0);
+	float s = atan(direction.z, direction.x) * RECIPROCAL_PI2 + 0.5;
+
+	return vec3(s, t, 0);
+#endif
+
 #ifdef REFLECTIONMAP_SPHERICAL
 	vec3 viewDir = normalize(vec3(view * worldPos));
 	vec3 viewNormal = normalize(vec3(view * vec4(worldNormal, 0.0)));

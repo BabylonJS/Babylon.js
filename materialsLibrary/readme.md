@@ -1,5 +1,7 @@
 ﻿# Materials library
 
+To get a detailled tutorial, please read the [documentation](http://doc.babylonjs.com/tutorials/How_to_create_a_material_for_materialsLibrary)
+
 ## Using a material from the library
 
 You can find multiple materials that just works with Babylon.js in *dist* folder. To use then, you only need to reference the associated .js file and use the new provided material:

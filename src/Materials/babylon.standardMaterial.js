@@ -97,6 +97,7 @@ var BABYLON;
             this.REFLECTIONMAP_PROJECTION = false;
             this.REFLECTIONMAP_SKYBOX = false;
             this.REFLECTIONMAP_EXPLICIT = false;
+            this.REFLECTIONMAP_EQUIRECTANGULAR = false;
             this.INVERTCUBICMAP = false;
             this._keys = Object.keys(this);
         }
@@ -244,6 +245,9 @@ var BABYLON;
                                 break;
                             case BABYLON.Texture.SPHERICAL_MODE:
                                 this._defines.REFLECTIONMAP_SPHERICAL = true;
+                                break;
+                            case BABYLON.Texture.EQUIRECTANGULAR_MODE:
+                                this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
                                 break;
                         }
                     }
