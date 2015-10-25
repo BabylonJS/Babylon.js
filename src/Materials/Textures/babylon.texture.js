@@ -137,13 +137,6 @@ var BABYLON;
             }
             this._cachedCoordinatesMode = this.coordinatesMode;
             switch (this.coordinatesMode) {
-                case Texture.SPHERICAL_MODE:
-                    BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
-                    this._cachedTextureMatrix[0] = -0.5 * this.uScale;
-                    this._cachedTextureMatrix[5] = -0.5 * this.vScale;
-                    this._cachedTextureMatrix[12] = 0.5 + this.uOffset;
-                    this._cachedTextureMatrix[13] = 0.5 + this.vOffset;
-                    break;
                 case Texture.PLANAR_MODE:
                     BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
                     this._cachedTextureMatrix[0] = this.uScale;

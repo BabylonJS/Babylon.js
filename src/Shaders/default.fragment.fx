@@ -170,7 +170,9 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 	varying vec3 vPositionUVW;
 #else
+#ifndef REFLECTIONMAP_SPHERICAL
 	uniform mat4 reflectionMatrix;
+#endif
 #if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
 	uniform mat4 view;
 #endif
@@ -179,9 +181,15 @@ uniform sampler2D reflection2DSampler;
 vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
 #ifdef REFLECTIONMAP_SPHERICAL
-	vec3 coords = vec3(view * vec4(worldNormal, 0.0));
+	vec3 viewDir = normalize(vec3(view * worldPos));
+	vec3 viewNormal = normalize(vec3(view * vec4(worldNormal, 0.0)));
 
-	return vec3(reflectionMatrix * vec4(coords, 1.0));
+	vec3 r = reflect(viewDir, viewNormal);
+	r.z = r.z - 1.0;
+
+	float m = 2.0 * length(r);
+
+	return vec3(r.x / m + 0.5, 1.0 - r.y / m - 0.5, 0);
 #endif
 
 #ifdef REFLECTIONMAP_PLANAR
