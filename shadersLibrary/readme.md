@@ -29,6 +29,12 @@ But you can also start from scratch as you are not forced to support all these f
 
 ## Integrating the shader in the build process
 
+To build all shaders and generate the *dist* folder, just run:
+
+```
+gulp
+```
+
 To integrate your new material to the build process, you have to edit the config.sjon file and add an entry in the "materials" section of the file:
 
 ```
