@@ -1,6 +1,6 @@
 ﻿# Shaders library
 
-## Using a shader form the library
+## Using a shader from the library
 
 You can find multiple shaders that just works with Babylon.js in *dist* folder. To use then, you only need to reference the associated .js file and use the new provided material:
 
