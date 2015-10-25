@@ -177,7 +177,7 @@ var BABYLON;
                     }
                     switch (pointers.count) {
                         case 1:
-                            if (this.panningSensibility !== 0 && ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick))) {
+                            if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick))) {
                                 _this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
                                 _this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
                             }

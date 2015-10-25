@@ -3071,6 +3071,7 @@ declare module BABYLON {
         scale(value: number): Quaternion;
         multiply(q1: Quaternion): Quaternion;
         multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
+        multiplyInPlace(q1: Quaternion): Quaternion;
         length(): number;
         normalize(): Quaternion;
         toEulerAngles(): Vector3;
@@ -3436,8 +3437,8 @@ declare module BABYLON {
         freezeWorldMatrix(): void;
         unfreezeWorldMatrix(): void;
         isWorldMatrixFrozen: boolean;
-        rotate(axis: Vector3, amount: number, space: Space): void;
-        translate(axis: Vector3, distance: number, space: Space): void;
+        rotate(axis: Vector3, amount: number, space?: Space): void;
+        translate(axis: Vector3, distance: number, space?: Space): void;
         getAbsolutePosition(): Vector3;
         setAbsolutePosition(absolutePosition: Vector3): void;
         /**
@@ -4272,6 +4273,7 @@ declare module BABYLON {
             height?: number;
             sideOrientation?: number;
             updatable?: boolean;
+            sourcePlane?: Plane;
         }, scene: Scene): Mesh;
         static CreateGround(name: string, options: {
             width?: number;
@@ -4830,6 +4832,7 @@ declare module BABYLON {
         static ConeImpostor: number;
         static CylinderImpostor: number;
         static ConvexHullImpostor: number;
+        static HeightmapImpostor: number;
         static Epsilon: number;
     }
 }
@@ -6582,10 +6585,11 @@ declare module BABYLON {
         runOneStep(delta: number): void;
         setGravity(gravity: Vector3): void;
         registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any;
-        private _createShape(mesh, impostor, options?);
-        private _createConvexPolyhedron(rawVerts, rawFaces, mesh, options?);
+        private _createShape(mesh, impostor);
+        private _createConvexPolyhedron(rawVerts, rawFaces, mesh);
+        private _createHeightmap(mesh);
         private _addMaterial(friction, restitution);
-        private _createRigidBodyFromShape(shape, mesh, mass, friction, restitution);
+        private _createRigidBodyFromShape(shape, mesh, options);
         registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
         private _unbindBody(body);
         unregisterMesh(mesh: AbstractMesh): void;
