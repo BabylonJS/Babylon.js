@@ -2267,25 +2267,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Layer {
-        name: string;
-        texture: Texture;
-        isBackground: boolean;
-        color: Color4;
-        onDispose: () => void;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class DebugLayer {
         private _scene;
         private _camera;
@@ -2343,6 +2324,25 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Layer {
+        name: string;
+        texture: Texture;
+        isBackground: boolean;
+        color: Color4;
+        onDispose: () => void;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class LensFlare {
         size: number;
         position: number;
@@ -2381,6 +2381,147 @@ declare module BABYLON {
         _isVisible(): boolean;
         render(): boolean;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DirectionalLight extends Light implements IShadowLight {
+        direction: Vector3;
+        position: Vector3;
+        private _transformedDirection;
+        transformedPosition: Vector3;
+        private _worldMatrix;
+        shadowOrthoScale: number;
+        autoUpdateExtends: boolean;
+        private _orthoLeft;
+        private _orthoRight;
+        private _orthoTop;
+        private _orthoBottom;
+        constructor(name: string, direction: Vector3, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        setDirectionToTarget(target: Vector3): Vector3;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        computeTransformedPosition(): boolean;
+        transferToEffect(effect: Effect, directionUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+    }
+}
+
+declare module BABYLON {
+    class HemisphericLight extends Light {
+        direction: Vector3;
+        groundColor: Color3;
+        private _worldMatrix;
+        constructor(name: string, direction: Vector3, scene: Scene);
+        setDirectionToTarget(target: Vector3): Vector3;
+        getShadowGenerator(): ShadowGenerator;
+        transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+    }
+}
+
+declare module BABYLON {
+    interface IShadowLight {
+        position: Vector3;
+        direction: Vector3;
+        transformedPosition: Vector3;
+        name: string;
+        computeTransformedPosition(): boolean;
+        getScene(): Scene;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        _shadowGenerator: ShadowGenerator;
+    }
+    class Light extends Node {
+        diffuse: Color3;
+        specular: Color3;
+        intensity: number;
+        range: number;
+        includeOnlyWithLayerMask: number;
+        includedOnlyMeshes: AbstractMesh[];
+        excludedMeshes: AbstractMesh[];
+        excludeWithLayerMask: number;
+        _shadowGenerator: ShadowGenerator;
+        private _parentedWorldMatrix;
+        _excludedMeshesIds: string[];
+        _includedOnlyMeshesIds: string[];
+        constructor(name: string, scene: Scene);
+        getShadowGenerator(): ShadowGenerator;
+        getAbsolutePosition(): Vector3;
+        transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void;
+        _getWorldMatrix(): Matrix;
+        canAffectMesh(mesh: AbstractMesh): boolean;
+        getWorldMatrix(): Matrix;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class PointLight extends Light {
+        position: Vector3;
+        private _worldMatrix;
+        private _transformedPosition;
+        constructor(name: string, position: Vector3, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        transferToEffect(effect: Effect, positionUniformName: string): void;
+        getShadowGenerator(): ShadowGenerator;
+        _getWorldMatrix(): Matrix;
+    }
+}
+
+declare module BABYLON {
+    class SpotLight extends Light implements IShadowLight {
+        position: Vector3;
+        direction: Vector3;
+        angle: number;
+        exponent: number;
+        transformedPosition: Vector3;
+        private _transformedDirection;
+        private _worldMatrix;
+        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        setDirectionToTarget(target: Vector3): Vector3;
+        computeTransformedPosition(): boolean;
+        transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+    }
+}
+
+declare module BABYLON {
+    interface ISceneLoaderPlugin {
+        extensions: string;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        private static _registeredPlugins;
+        private static _getPluginForFilename(sceneFilename);
+        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -2655,147 +2796,6 @@ declare module BABYLON {
         static BumpTextureEnabled: boolean;
         static FresnelEnabled: boolean;
         static LightmapEnabled: boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPlugin {
-        extensions: string;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        private static _registeredPlugins;
-        private static _getPluginForFilename(sceneFilename);
-        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, e: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-    }
-}
-
-declare module BABYLON {
-    class DirectionalLight extends Light implements IShadowLight {
-        direction: Vector3;
-        position: Vector3;
-        private _transformedDirection;
-        transformedPosition: Vector3;
-        private _worldMatrix;
-        shadowOrthoScale: number;
-        autoUpdateExtends: boolean;
-        private _orthoLeft;
-        private _orthoRight;
-        private _orthoTop;
-        private _orthoBottom;
-        constructor(name: string, direction: Vector3, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        setDirectionToTarget(target: Vector3): Vector3;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        computeTransformedPosition(): boolean;
-        transferToEffect(effect: Effect, directionUniformName: string): void;
-        _getWorldMatrix(): Matrix;
-    }
-}
-
-declare module BABYLON {
-    class HemisphericLight extends Light {
-        direction: Vector3;
-        groundColor: Color3;
-        private _worldMatrix;
-        constructor(name: string, direction: Vector3, scene: Scene);
-        setDirectionToTarget(target: Vector3): Vector3;
-        getShadowGenerator(): ShadowGenerator;
-        transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void;
-        _getWorldMatrix(): Matrix;
-    }
-}
-
-declare module BABYLON {
-    interface IShadowLight {
-        position: Vector3;
-        direction: Vector3;
-        transformedPosition: Vector3;
-        name: string;
-        computeTransformedPosition(): boolean;
-        getScene(): Scene;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        _shadowGenerator: ShadowGenerator;
-    }
-    class Light extends Node {
-        diffuse: Color3;
-        specular: Color3;
-        intensity: number;
-        range: number;
-        includeOnlyWithLayerMask: number;
-        includedOnlyMeshes: AbstractMesh[];
-        excludedMeshes: AbstractMesh[];
-        excludeWithLayerMask: number;
-        _shadowGenerator: ShadowGenerator;
-        private _parentedWorldMatrix;
-        _excludedMeshesIds: string[];
-        _includedOnlyMeshesIds: string[];
-        constructor(name: string, scene: Scene);
-        getShadowGenerator(): ShadowGenerator;
-        getAbsolutePosition(): Vector3;
-        transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void;
-        _getWorldMatrix(): Matrix;
-        canAffectMesh(mesh: AbstractMesh): boolean;
-        getWorldMatrix(): Matrix;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class PointLight extends Light {
-        position: Vector3;
-        private _worldMatrix;
-        private _transformedPosition;
-        constructor(name: string, position: Vector3, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        transferToEffect(effect: Effect, positionUniformName: string): void;
-        getShadowGenerator(): ShadowGenerator;
-        _getWorldMatrix(): Matrix;
-    }
-}
-
-declare module BABYLON {
-    class SpotLight extends Light implements IShadowLight {
-        position: Vector3;
-        direction: Vector3;
-        angle: number;
-        exponent: number;
-        transformedPosition: Vector3;
-        private _transformedDirection;
-        private _worldMatrix;
-        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        setDirectionToTarget(target: Vector3): Vector3;
-        computeTransformedPosition(): boolean;
-        transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
-        _getWorldMatrix(): Matrix;
     }
 }
 
@@ -6322,6 +6322,62 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ShadowGenerator {
+        private static _FILTER_NONE;
+        private static _FILTER_VARIANCESHADOWMAP;
+        private static _FILTER_POISSONSAMPLING;
+        private static _FILTER_BLURVARIANCESHADOWMAP;
+        static FILTER_NONE: number;
+        static FILTER_VARIANCESHADOWMAP: number;
+        static FILTER_POISSONSAMPLING: number;
+        static FILTER_BLURVARIANCESHADOWMAP: number;
+        private _filter;
+        blurScale: number;
+        private _blurBoxOffset;
+        private _bias;
+        private _lightDirection;
+        bias: number;
+        blurBoxOffset: number;
+        filter: number;
+        useVarianceShadowMap: boolean;
+        usePoissonSampling: boolean;
+        useBlurVarianceShadowMap: boolean;
+        private _light;
+        private _scene;
+        private _shadowMap;
+        private _shadowMap2;
+        private _darkness;
+        private _transparencyShadow;
+        private _effect;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedPosition;
+        private _cachedDirection;
+        private _cachedDefines;
+        private _currentRenderID;
+        private _downSamplePostprocess;
+        private _boxBlurPostprocess;
+        private _mapSize;
+        constructor(mapSize: number, light: IShadowLight);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getShadowMap(): RenderTargetTexture;
+        getShadowMapForRendering(): RenderTargetTexture;
+        getLight(): IShadowLight;
+        getTransformMatrix(): Matrix;
+        getDarkness(): number;
+        setDarkness(darkness: number): void;
+        setTransparencyShadow(hasShadow: boolean): void;
+        private _packHalf(depth);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON.Internals {
+}
+
+declare module BABYLON {
     class BaseTexture {
         name: string;
         delayLoadState: number;
@@ -6517,62 +6573,6 @@ declare module BABYLON {
         private _lastUpdate;
         constructor(name: string, urls: string[], scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number);
         update(): boolean;
-    }
-}
-
-declare module BABYLON.Internals {
-}
-
-declare module BABYLON {
-    class ShadowGenerator {
-        private static _FILTER_NONE;
-        private static _FILTER_VARIANCESHADOWMAP;
-        private static _FILTER_POISSONSAMPLING;
-        private static _FILTER_BLURVARIANCESHADOWMAP;
-        static FILTER_NONE: number;
-        static FILTER_VARIANCESHADOWMAP: number;
-        static FILTER_POISSONSAMPLING: number;
-        static FILTER_BLURVARIANCESHADOWMAP: number;
-        private _filter;
-        blurScale: number;
-        private _blurBoxOffset;
-        private _bias;
-        private _lightDirection;
-        bias: number;
-        blurBoxOffset: number;
-        filter: number;
-        useVarianceShadowMap: boolean;
-        usePoissonSampling: boolean;
-        useBlurVarianceShadowMap: boolean;
-        private _light;
-        private _scene;
-        private _shadowMap;
-        private _shadowMap2;
-        private _darkness;
-        private _transparencyShadow;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedPosition;
-        private _cachedDirection;
-        private _cachedDefines;
-        private _currentRenderID;
-        private _downSamplePostprocess;
-        private _boxBlurPostprocess;
-        private _mapSize;
-        constructor(mapSize: number, light: IShadowLight);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getShadowMap(): RenderTargetTexture;
-        getShadowMapForRendering(): RenderTargetTexture;
-        getLight(): IShadowLight;
-        getTransformMatrix(): Matrix;
-        getDarkness(): number;
-        setDarkness(darkness: number): void;
-        setTransparencyShadow(hasShadow: boolean): void;
-        private _packHalf(depth);
-        dispose(): void;
     }
 }
 
