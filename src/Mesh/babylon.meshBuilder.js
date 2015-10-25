@@ -265,6 +265,12 @@ var BABYLON;
             var plane = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreatePlane(options);
             vertexData.applyToMesh(plane, options.updatable);
+            if (options.sourcePlane) {
+                plane.translate(options.sourcePlane.normal, options.sourcePlane.d);
+                var product = Math.acos(BABYLON.Vector3.Dot(options.sourcePlane.normal, BABYLON.Axis.Z));
+                var vectorProduct = BABYLON.Vector3.Cross(BABYLON.Axis.Z, options.sourcePlane.normal);
+                plane.rotate(vectorProduct, product);
+            }
             return plane;
         };
         MeshBuilder.CreateGround = function (name, options, scene) {

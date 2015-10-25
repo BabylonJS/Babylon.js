@@ -297,12 +297,21 @@
             return lathe;
         }
 
-        public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
+        public static CreatePlane(name: string, options: { size?: number, width?: number, height?: number, sideOrientation?: number, updatable?: boolean, sourcePlane?: Plane }, scene: Scene): Mesh {
             var plane = new Mesh(name, scene);
 
             var vertexData = VertexData.CreatePlane(options);
 
             vertexData.applyToMesh(plane, options.updatable);
+            
+            if(options.sourcePlane) {
+                plane.translate(options.sourcePlane.normal, options.sourcePlane.d);
+                
+                var product = Math.acos(Vector3.Dot(options.sourcePlane.normal, Axis.Z));
+                var vectorProduct = Vector3.Cross(Axis.Z, options.sourcePlane.normal);
+                
+                plane.rotate(vectorProduct, product);
+            }
 
             return plane;
         }
