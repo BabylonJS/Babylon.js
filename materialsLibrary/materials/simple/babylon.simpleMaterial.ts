@@ -1,4 +1,4 @@
-﻿/// <reference path="../../../babylon.d.ts"/>
+﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
     var maxSimultaneousLights = 4;

@@ -1,10 +1,10 @@
 {
   "materials": [
     {
-      "file": "shaders/simple/babylon.simpleMaterial.ts",
+      "file": "materials/simple/babylon.simpleMaterial.ts",
       "shaderFiles": [
-        "shaders/simple/simple.vertex.fx",
-        "shaders/simple/simple.fragment.fx"
+        "materials/simple/simple.vertex.fx",
+        "materials/simple/simple.fragment.fx"
       ],
       "output": "babylon.simpleMaterial.js"
     }

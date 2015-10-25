@@ -7,6 +7,7 @@ var concat = require("gulp-concat");
 var rename = require("gulp-rename");
 var cleants = require('gulp-clean-ts-extends');
 var replace = require("gulp-replace");
+var webserver = require('gulp-webserver');
 
 var config = require("./config.json");
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
@@ -18,10 +19,14 @@ function shadersName(filename) {
       .replace('.fx', 'Shader');
 }
 
+gulp.task('copyReference', function () {
+    return gulp.src("../dist/preview release/babylon.max.js").pipe(gulp.dest("test"));
+});
+
 /*
 Compiles all typescript files and creating a declaration file.
 */
-gulp.task('default', function () {
+gulp.task('default', ["copyReference"], function () {
     var tasks = config.materials.map(function (material) {
         var js = gulp.src(material.file)
             .pipe(typescript({
@@ -42,3 +47,17 @@ gulp.task('default', function () {
 
     return tasks;
 });
+
+/**
+ * Web server task to serve a local test page
+ */
+gulp.task('webserver', function() {
+  gulp.src('.')
+    .pipe(webserver({
+      livereload: false,
+      open: 'http://localhost:1338/test/index.html',
+      port: 1338,
+      fallback: 'index.html'
+    }));
+});
+
