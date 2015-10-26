@@ -204,15 +204,9 @@ module BABYLON {
             return shapeUV;
         }
 
-        // adds a new particle object in the particles array and double links the particle (next/previous)
+        // adds a new particle object in the particles array
         private _addParticle(p: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number): void {
-            this._particle = new SolidParticle(p, idxpos, model, shapeId, idxInShape);
-            this.particles.push(this._particle);
-            this._particle.previous = this._previousParticle;
-            if (this._previousParticle) {
-                this._previousParticle.next = this._particle;
-            }
-            this._previousParticle = this._particle;
+            this.particles.push(new SolidParticle(p, idxpos, model, shapeId, idxInShape));
         }
 
         // add solid particles from a shape model in the particles array
