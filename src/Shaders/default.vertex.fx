@@ -125,6 +125,10 @@ varying vec4 vPositionFromLight3;
 varying vec3 vPositionUVW;
 #endif
 
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+varying vec3 vDirectionW;
+#endif
+
 void main(void) {
 	mat4 finalWorld;
 
@@ -158,6 +162,10 @@ void main(void) {
 
 #ifdef NORMAL
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
+#endif
+
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+	vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
 #endif
 
 	// Texture coordinates

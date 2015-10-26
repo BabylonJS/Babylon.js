@@ -172,6 +172,10 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 	varying vec3 vPositionUVW;
 #else
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+	varying vec3 vDirectionW;
+#endif
+
 	#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
 		uniform mat4 reflectionMatrix;
 	#endif
@@ -183,7 +187,7 @@ uniform sampler2D reflection2DSampler;
 vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR
-	vec3 direction = normalize(worldPos.xyz);
+	vec3 direction = normalize(vDirectionW);
 
 	float t = clamp(direction.y * -0.5 + 0.5, 0., 1.0);
 	float s = atan(direction.z, direction.x) * RECIPROCAL_PI2 + 0.5;

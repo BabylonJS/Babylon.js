@@ -6243,38 +6243,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends FreeCamera {
-        _alpha: number;
-        _beta: number;
-        _gamma: number;
-        private _offsetOrientation;
-        private _deviceOrientationHandler;
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var PositionSensorVRDevice: any;
-declare module BABYLON {
-    class WebVRFreeCamera extends FreeCamera {
-        _hmdDevice: any;
-        _sensorDevice: any;
-        _cacheState: any;
-        _cacheQuaternion: Quaternion;
-        _cacheRotation: Vector3;
-        _vrEnabled: boolean;
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
-        private _getWebVRDevices(devices);
-        _checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-    }
-}
-
-declare module BABYLON {
     interface IOctreeContainer<T> {
         blocks: Array<OctreeBlock<T>>;
     }
@@ -6318,6 +6286,38 @@ declare module BABYLON {
         intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void;
         intersectsRay(ray: Ray, selection: SmartArray<T>): void;
         createInnerBlocks(): void;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends FreeCamera {
+        _alpha: number;
+        _beta: number;
+        _gamma: number;
+        private _offsetOrientation;
+        private _deviceOrientationHandler;
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var PositionSensorVRDevice: any;
+declare module BABYLON {
+    class WebVRFreeCamera extends FreeCamera {
+        _hmdDevice: any;
+        _sensorDevice: any;
+        _cacheState: any;
+        _cacheQuaternion: Quaternion;
+        _cacheRotation: Vector3;
+        _vrEnabled: boolean;
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
+        private _getWebVRDevices(devices);
+        _checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
     }
 }
 
@@ -6577,62 +6577,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class CannonJSPlugin implements IPhysicsEnginePlugin {
-        private _world;
-        private _registeredMeshes;
-        private _physicsMaterials;
-        initialize(iterations?: number): void;
-        private _checkWithEpsilon(value);
-        runOneStep(delta: number): void;
-        setGravity(gravity: Vector3): void;
-        registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any;
-        private _createShape(mesh, impostor);
-        private _createConvexPolyhedron(rawVerts, rawFaces, mesh);
-        private _createHeightmap(mesh);
-        private _addMaterial(friction, restitution);
-        private _createRigidBodyFromShape(shape, mesh, options);
-        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        private _unbindBody(body);
-        unregisterMesh(mesh: AbstractMesh): void;
-        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        updateBodyPosition: (mesh: AbstractMesh) => void;
-        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean;
-        dispose(): void;
-        isSupported(): boolean;
-        getWorldObject(): any;
-        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
-    }
-}
-
-declare module BABYLON {
-    class OimoJSPlugin implements IPhysicsEnginePlugin {
-        private _world;
-        private _registeredMeshes;
-        private _checkWithEpsilon(value);
-        initialize(iterations?: number): void;
-        setGravity(gravity: Vector3): void;
-        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
-        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        private _createBodyAsCompound(part, options, initialMesh);
-        unregisterMesh(mesh: AbstractMesh): void;
-        private _unbindBody(body);
-        /**
-         * Update the body position according to the mesh position
-         * @param mesh
-         */
-        updateBodyPosition: (mesh: AbstractMesh) => void;
-        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
-        dispose(): void;
-        isSupported(): boolean;
-        getWorldObject(): any;
-        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
-        private _getLastShape(body);
-        runOneStep(time: number): void;
-    }
-}
-
-declare module BABYLON {
     class PostProcessRenderEffect {
         private _engine;
         private _postProcesses;
@@ -6727,6 +6671,62 @@ declare module BABYLON {
         disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera): any;
         disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera[]): any;
         update(): void;
+    }
+}
+
+declare module BABYLON {
+    class CannonJSPlugin implements IPhysicsEnginePlugin {
+        private _world;
+        private _registeredMeshes;
+        private _physicsMaterials;
+        initialize(iterations?: number): void;
+        private _checkWithEpsilon(value);
+        runOneStep(delta: number): void;
+        setGravity(gravity: Vector3): void;
+        registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any;
+        private _createShape(mesh, impostor);
+        private _createConvexPolyhedron(rawVerts, rawFaces, mesh);
+        private _createHeightmap(mesh);
+        private _addMaterial(friction, restitution);
+        private _createRigidBodyFromShape(shape, mesh, options);
+        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
+        private _unbindBody(body);
+        unregisterMesh(mesh: AbstractMesh): void;
+        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        updateBodyPosition: (mesh: AbstractMesh) => void;
+        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean;
+        dispose(): void;
+        isSupported(): boolean;
+        getWorldObject(): any;
+        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
+    }
+}
+
+declare module BABYLON {
+    class OimoJSPlugin implements IPhysicsEnginePlugin {
+        private _world;
+        private _registeredMeshes;
+        private _checkWithEpsilon(value);
+        initialize(iterations?: number): void;
+        setGravity(gravity: Vector3): void;
+        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
+        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
+        private _createBodyAsCompound(part, options, initialMesh);
+        unregisterMesh(mesh: AbstractMesh): void;
+        private _unbindBody(body);
+        /**
+         * Update the body position according to the mesh position
+         * @param mesh
+         */
+        updateBodyPosition: (mesh: AbstractMesh) => void;
+        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
+        dispose(): void;
+        isSupported(): boolean;
+        getWorldObject(): any;
+        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
+        private _getLastShape(body);
+        runOneStep(time: number): void;
     }
 }
 
