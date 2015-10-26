@@ -53,7 +53,7 @@
 			var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 			var pointLight = new BABYLON.PointLight("point", new BABYLON.Vector3(100, 100, 10), scene);
 			pointLight.setEnabled(false);
-			var directionalLight = new BABYLON.DirectionalLight("directional", new BABYLON.Vector3(1, 0.2, 0), scene);
+			var directionalLight = new BABYLON.DirectionalLight("directional", new BABYLON.Vector3(0,-1, 0), scene);
 			directionalLight.setEnabled(false);
 			var spotLight = new BABYLON.SpotLight("spot", new BABYLON.Vector3(0, -30, 0), new BABYLON.Vector3(0, 1, 0), 1.1, 1, scene);
 			spotLight.setEnabled(false);
@@ -62,6 +62,8 @@
 			var sphere = BABYLON.Mesh.CreateSphere("sphere", 32, 30.0, scene);
 			var plane = BABYLON.MeshBuilder.CreateBox("plane", { width: 30, height: 1, depth:30 }, scene);
 			plane.setEnabled(false);
+			var knot = BABYLON.Mesh.CreateTorusKnot("knot", 10, 3, 128, 64, 2, 3, scene);
+			knot.setEnabled(false);
 
 			var currentMesh = sphere;
 
@@ -70,32 +72,36 @@
 			BABYLON.SceneLoader.ImportMesh("Rabbit", "meshes/", "Rabbit.babylon", scene, function (newMeshes, particleSystems, skeletons) {
 				rabbit = newMeshes[1];
 				rabbit.setEnabled(false);
-				rabbit.scaling = new BABYLON.Vector3(0.4, 0.4, 0.4);
+				rabbit.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
 				scene.beginAnimation(skeletons[0], 0, 100, true, 0.8);
 
 				// Shadow caster
 				var shadowCaster = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
 				shadowCaster.setEnabled(false);
-				shadowCaster.position = new BABYLON.Vector3(-20, -10, 0);
+				shadowCaster.position = new BABYLON.Vector3(0, 30, 0);
+				
+				var shadowCaster2 = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+				shadowCaster2.setEnabled(false);
+				shadowCaster2.position = new BABYLON.Vector3(0, -30, 0);
 
 				var shadowGenerator = new BABYLON.ShadowGenerator(1024, directionalLight);
 				shadowGenerator.getShadowMap().renderList.push(shadowCaster);
 				shadowGenerator.usePoissonSampling = true;
+				
+				var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, spotLight);
+				shadowGenerator2.getShadowMap().renderList.push(shadowCaster2);
+				shadowGenerator2.usePoissonSampling = true;
 
 				// Register a render loop to repeatedly render the scene
-				var angle = 0;
 				engine.runRenderLoop(function () {
 					scene.render();
 					divFps.innerHTML = engine.getFps().toFixed() + " fps";
 
-					shadowCaster.position.x = 20 * Math.sin(angle);
-					shadowCaster.position.y = 20 * Math.cos(angle);
-					shadowCaster.position.z = 20 * Math.cos(angle);
-
 					shadowCaster.rotation.x += 0.01;
 					shadowCaster.rotation.y += 0.01;
 
-					angle += 0.01;
+					shadowCaster2.rotation.x += 0.01;
+					shadowCaster2.rotation.y += 0.01;
 				});
 
 				// Resize
@@ -120,7 +126,8 @@
 
 				// Default to std
 				var currentMaterial = std;
-				sphere.material = std;
+				sphere.material = std;				
+				sphere.receiveShadows = true;
 
 				//UI
 				var gui = new dat.GUI();
@@ -148,11 +155,14 @@
 					currentMesh.material = currentMaterial;
 				});
 
-				gui.add(options, 'mesh', ['sphere', 'plane', 'rabbit']).onFinishChange(function () {
+				gui.add(options, 'mesh', ['sphere', 'knot', 'plane', 'rabbit']).onFinishChange(function () {
 					currentMesh.setEnabled(false);
 					switch (options.mesh) {
 						case "sphere":
 							currentMesh = sphere;
+							break;
+						case "knot":
+							currentMesh = knot;
 							break;
 						case "plane":
 							currentMesh = plane;
@@ -162,22 +172,24 @@
 							break;
 					}
 					currentMesh.setEnabled(true);
+					currentMesh.receiveShadows = true;
 					currentMesh.material = currentMaterial;
 				});
 
-				gui.add(options, 'hemisphericLight').onChange(function () {
+				var f1 = gui.addFolder('lights');
+				f1.add(options, 'hemisphericLight').onChange(function () {
 					hemisphericLight.setEnabled(options.hemisphericLight);
 				});
 
-				gui.add(options, 'pointLight').onChange(function () {
+				f1.add(options, 'pointLight').onChange(function () {
 					pointLight.setEnabled(options.pointLight);
 				});
-
-				gui.add(options, 'spotLight').onChange(function () {
+				
+				f1.add(options, 'spotLight').onChange(function () {
 					spotLight.setEnabled(options.spotLight);
+					shadowCaster2.setEnabled(options.spotLight && options.castShadows);
 				});
 
-				var f1 = gui.addFolder('directionalLight');
 				f1.add(options, 'directionalLight').onChange(function () {
 					directionalLight.setEnabled(options.directionalLight);
 					shadowCaster.setEnabled(options.directionalLight && options.castShadows);
@@ -185,7 +197,7 @@
 
 				f1.add(options, 'castShadows').onChange(function () {
 					shadowCaster.setEnabled(options.directionalLight && options.castShadows);
-					currentMesh.receiveShadows = true;
+					shadowCaster2.setEnabled(options.spotLight && options.castShadows);					
 				});
 
 				gui.add(options, 'fog').onChange(function () {
