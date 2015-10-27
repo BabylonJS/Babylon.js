@@ -396,8 +396,8 @@
                         
                         body.position = new CANNON.Vec3(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
                         //add it inverted to the delta 
-                        registeredMesh.deltaPosition = mesh.getBoundingInfo().boundingBox.center.subtract(center);
-                        registeredMesh.deltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
+                        registeredMesh.delta = mesh.getBoundingInfo().boundingBox.center.subtract(center);
+                        registeredMesh.delta.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
                         
                         mesh.setPivotMatrix(oldPivot);
                         mesh.computeWorldMatrix(true);
