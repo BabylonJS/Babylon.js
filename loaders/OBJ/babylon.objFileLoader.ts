@@ -218,7 +218,9 @@ module BABYLON {
             var loadedMeshes = this._parseSolid(meshesNames, scene, data, rootUrl);
             //Push meshes from OBJ file into the variable mesh of this function
             if (meshes) {
-                loadedMeshes = loadedMeshes.concat(meshes);
+                loadedMeshes.forEach(function (mesh) {
+                    meshes.push(mesh);
+                });
             }
             return true;
         }
