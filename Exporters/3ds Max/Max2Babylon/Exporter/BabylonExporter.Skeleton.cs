@@ -59,6 +59,8 @@ namespace Max2Babylon
             }
 
             // fix hierarchy an generate animation keys
+            var exportNonOptimizedAnimations = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportnonoptimizedanimations");
+
             for (var index = 0; index < skin.TotalSkinBoneCount; index++)
             {
                 var gameBone = gameBones[index];
@@ -108,7 +110,7 @@ namespace Max2Babylon
                     }
 
                     var current = mat.ToArray();
-                    if (key == start || key == end || !(previous.IsEqualTo(current)))
+                    if (key == start || key == end || exportNonOptimizedAnimations || !(previous.IsEqualTo(current)))
                     {
                         keys.Add(new BabylonAnimationKey
                         {
