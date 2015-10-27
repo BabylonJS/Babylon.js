@@ -8203,6 +8203,8 @@ var BABYLON;
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
             var index;
+            // Animations
+            this.getScene().stopAnimation(this);
             // Physics
             if (this.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
@@ -8337,6 +8339,8 @@ var BABYLON;
                 this._shadowGenerator.dispose();
                 this._shadowGenerator = null;
             }
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeLight(this);
         };
@@ -9895,6 +9899,8 @@ var BABYLON;
             return this._projectionMatrix;
         };
         Camera.prototype.dispose = function () {
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeCamera(this);
             while (this._rigCameras.length > 0) {
@@ -12121,6 +12127,14 @@ var BABYLON;
             this.collisionCoordinator.onMeshRemoved(toRemove);
             if (this.onMeshRemoved) {
                 this.onMeshRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeSkeleton = function (toRemove) {
+            var index = this.skeletons.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.skeletons.splice(index, 1);
             }
             return index;
         };
@@ -15581,7 +15595,7 @@ var BABYLON;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance);
         };
         MeshBuilder.CreateLathe = function (name, options, scene) {
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var closed = (options.closed === undefined) ? true : options.closed;
             var shape = options.shape;
             var radius = options.radius || 1;
@@ -15692,7 +15706,7 @@ var BABYLON;
             var updatable = options.updatable;
             var sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var instance = options.instance;
-            options.arc = (options.arc < 0) ? 1 : options.arc || 1;
+            options.arc = (options.arc <= 0 || options.arc > 1) ? 1 : options.arc || 1;
             // tube geometry
             var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) {
                 var tangents = path3D.getTangents();
@@ -16137,6 +16151,8 @@ var BABYLON;
             }
         };
         BaseTexture.prototype.dispose = function () {
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             var index = this._scene.textures.indexOf(this);
             if (index >= 0) {
@@ -18234,6 +18250,8 @@ var BABYLON;
             return result;
         };
         Material.prototype.dispose = function (forceDisposeEffect) {
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             var index = this._scene.materials.indexOf(this);
             if (index >= 0) {
@@ -22468,6 +22486,12 @@ var BABYLON;
             }
             return result;
         };
+        Skeleton.prototype.dispose = function () {
+            // Animations
+            this.getScene().stopAnimation(this);
+            // Remove from scene
+            this.getScene().removeSkeleton(this);
+        };
         return Skeleton;
     })();
     BABYLON.Skeleton = Skeleton;
@@ -23369,7 +23393,7 @@ var BABYLON;
             var diameterX = options.diameterX || options.diameter || 1;
             var diameterY = options.diameterY || options.diameter || 1;
             var diameterZ = options.diameterZ || options.diameter || 1;
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var slice = (options.slice <= 0) ? 1.0 : options.slice || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var radius = new BABYLON.Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
@@ -23424,7 +23448,7 @@ var BABYLON;
             var diameterBottom = options.diameterBottom || options.diameter || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(3);
             var faceColors = options.faceColors;
@@ -23860,7 +23884,7 @@ var BABYLON;
             var uvs = [];
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             // positions and uvs
             positions.push(0, 0, 0); // disc center first
@@ -24237,6 +24261,9 @@ var BABYLON;
         // it cannot contain whitespaces
         Tags.AddTagsTo = function (obj, tagsString) {
             if (!tagsString) {
+                return;
+            }
+            if (typeof tagsString !== "string") {
                 return;
             }
             var tags = tagsString.split(" ");
@@ -35839,8 +35866,8 @@ var BABYLON;
             this._camera = scene.activeCamera;
         }
         // build the SPS mesh : returns the mesh
-        SolidParticleSystem.prototype.buildMesh = function (upgradable) {
-            if (upgradable === void 0) { upgradable = true; }
+        SolidParticleSystem.prototype.buildMesh = function (updatable) {
+            if (updatable === void 0) { updatable = true; }
             if (this.nbParticles === 0) {
                 var triangle = BABYLON.MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
@@ -35863,13 +35890,16 @@ var BABYLON;
                 vertexData.set(this._colors32, BABYLON.VertexBuffer.ColorKind);
             }
             var mesh = new BABYLON.Mesh(name, this._scene);
-            vertexData.applyToMesh(mesh, upgradable);
+            vertexData.applyToMesh(mesh, updatable);
             this.mesh = mesh;
             // free memory
             this._positions = null;
             this._normals = null;
             this._uvs = null;
             this._colors = null;
+            if (!updatable) {
+                this.particles.length = 0;
+            }
             return mesh;
         };
         //reset copy
@@ -35967,15 +35997,9 @@ var BABYLON;
             }
             return shapeUV;
         };
-        // adds a new particle object in the particles array and double links the particle (next/previous)
+        // adds a new particle object in the particles array
         SolidParticleSystem.prototype._addParticle = function (p, idxpos, model, shapeId, idxInShape) {
-            this._particle = new BABYLON.SolidParticle(p, idxpos, model, shapeId, idxInShape);
-            this.particles.push(this._particle);
-            this._particle.previous = this._previousParticle;
-            if (this._previousParticle) {
-                this._previousParticle.next = this._particle;
-            }
-            this._previousParticle = this._particle;
+            this.particles.push(new BABYLON.SolidParticle(p, idxpos, model, shapeId, idxInShape));
         };
         // add solid particles from a shape model in the particles array
         SolidParticleSystem.prototype.addShape = function (mesh, nb, options) {
@@ -36093,6 +36117,7 @@ var BABYLON;
             var uvidx = 0;
             var uvIndex = 0;
             // particle loop
+            end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;

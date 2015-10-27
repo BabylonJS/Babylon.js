@@ -190,6 +190,8 @@ var BABYLON;
             return result;
         };
         Material.prototype.dispose = function (forceDisposeEffect) {
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             var index = this._scene.materials.indexOf(this);
             if (index >= 0) {

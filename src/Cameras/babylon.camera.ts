@@ -450,6 +450,9 @@
         }
 
         public dispose(): void {
+            // Animations
+            this.getScene().stopAnimation(this);
+
             // Remove from scene
             this.getScene().removeCamera(this);
             while (this._rigCameras.length > 0) {

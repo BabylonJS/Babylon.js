@@ -219,6 +219,9 @@
         }
 
         public dispose(forceDisposeEffect?: boolean): void {
+            // Animations
+            this.getScene().stopAnimation(this);
+
             // Remove from scene
             var index = this._scene.materials.indexOf(this);
             if (index >= 0) {
