@@ -104,9 +104,10 @@ var BABYLON;
         CannonJSPlugin.prototype._createConvexPolyhedron = function (rawVerts, rawFaces, mesh) {
             var verts = [], faces = [];
             mesh.computeWorldMatrix(true);
+            //reuse this variable
+            var transformed = BABYLON.Vector3.Zero();
             // Get vertices
             for (var i = 0; i < rawVerts.length; i += 3) {
-                var transformed = BABYLON.Vector3.Zero();
                 BABYLON.Vector3.TransformNormalFromFloatsToRef(rawVerts[i], rawVerts[i + 1], rawVerts[i + 2], mesh.getWorldMatrix(), transformed);
                 verts.push(new CANNON.Vec3(transformed.x, transformed.y, transformed.z));
             }
@@ -117,41 +118,52 @@ var BABYLON;
             var shape = new CANNON.ConvexPolyhedron(verts, faces);
             return shape;
         };
-        CannonJSPlugin.prototype._createHeightmap = function (mesh) {
+        CannonJSPlugin.prototype._createHeightmap = function (mesh, pointDepth) {
             var pos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            if (pos[0] !== pos[pos.length - 1]) {
-                console.log("ERROR");
-                return;
-            }
             var matrix = [];
-            //dimension
-            var dim = -pos[0];
-            //array size
-            var arraySize = -1;
-            for (var i = 0; i < pos.length; i = i + 3) {
-                if (pos[i + 2] === pos[2]) {
-                    arraySize++;
-                }
-                else {
-                    break;
-                }
-            }
-            //calculate element size
+            //For now pointDepth will not be used and will be automatically calculated.
+            //Future reference - try and find the best place to add a reference to the pointDepth variable.
+            var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
+            var dim = Math.min(mesh.getBoundingInfo().boundingBox.extendSize.x, mesh.getBoundingInfo().boundingBox.extendSize.z);
             var elementSize = dim * 2 / arraySize;
-            //calculate the matrix for cannon's heightfield
+            var minY = mesh.getBoundingInfo().boundingBox.extendSize.y;
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
                 var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1);
+                var y = pos[i + 1] + minY;
                 if (!matrix[x]) {
                     matrix[x] = [];
                 }
-                matrix[x][z] = pos[i + 1];
+                if (!matrix[x][z]) {
+                    matrix[x][z] = y;
+                }
+                matrix[x][z] = Math.max(y, matrix[x][z]);
+            }
+            for (var x = 0; x <= arraySize; ++x) {
+                if (!matrix[x]) {
+                    var loc = 1;
+                    while (!matrix[(x + loc) % arraySize]) {
+                        loc++;
+                    }
+                    matrix[x] = matrix[(x + loc) % arraySize].slice();
+                    console.log("missing x", x);
+                }
+                for (var z = 0; z <= arraySize; ++z) {
+                    if (!matrix[x][z]) {
+                        var loc = 1;
+                        var newValue;
+                        while (newValue === undefined) {
+                            newValue = matrix[x][(z + loc++) % arraySize];
+                        }
+                        matrix[x][z] = newValue;
+                    }
+                }
             }
             var shape = new CANNON.Heightfield(matrix, {
                 elementSize: elementSize
             });
             //For future reference, needed for body transformation
-            shape.dim = dim;
+            shape.minY = minY;
             return shape;
         };
         CannonJSPlugin.prototype._addMaterial = function (friction, restitution) {
@@ -192,14 +204,30 @@ var BABYLON;
                 //-90 DEG in X, precalculated
                 var tmpQ = new CANNON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
                 body.quaternion = body.quaternion.mult(tmpQ);
-                //Invert!
+                //Invert! (Precalculated, 90 deg in X)
                 deltaRotation = new BABYLON.Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
             }
             //If it is a heightfield, if should be centered.
             if (shape.type === CANNON.Shape.types.HEIGHTFIELD) {
-                body.position = new CANNON.Vec3(-shape.dim, 0, shape.dim).vadd(mesh.position);
+                //calculate the correct body position:
+                var rotationQuaternion = mesh.rotationQuaternion;
+                mesh.rotationQuaternion = new BABYLON.Quaternion();
+                mesh.computeWorldMatrix(true);
+                //get original center with no rotation
+                var center = ground.getBoundingInfo().boundingBox.center.clone();
+                var oldPivot = mesh.getPivotMatrix() || BABYLON.Matrix.Translation(0, 0, 0);
+                //rotation is back
+                mesh.rotationQuaternion = rotationQuaternion;
+                //calculate the new center using a pivot (since Cannon.js doesn't center height maps)
+                var p = BABYLON.Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSize.x, 0, -mesh.getBoundingInfo().boundingBox.extendSize.z);
+                mesh.setPivotMatrix(p);
+                mesh.computeWorldMatrix(true);
+                //calculate the translation
+                var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
+                body.position = new CANNON.Vec3(translation.x, translation.y - shape.minY, translation.z);
                 //add it inverted to the delta 
-                deltaPosition = mesh.position.add(new BABYLON.Vector3(shape.dim, 0, -shape.dim));
+                deltaPosition = mesh.getBoundingInfo().boundingBox.center.subtract(center);
+                deltaPosition.y += shape.minY;
             }
             //add the shape
             body.addShape(shape);
