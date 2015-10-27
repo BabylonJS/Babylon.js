@@ -980,6 +980,9 @@
         public dispose(doNotRecurse?: boolean): void {
             var index: number;
 
+            // Animations
+            this.getScene().stopAnimation(this);
+
             // Physics
             if (this.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(PhysicsEngine.NoImpostor);
