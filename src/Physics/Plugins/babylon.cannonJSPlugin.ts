@@ -169,7 +169,7 @@
                         loc++;
                     }
                     matrix[x] = matrix[(x + loc) % arraySize].slice();
-                    console.log("missing x", x);
+                    //console.log("missing x", x);
                 }
                 for (var z = 0; z <= arraySize; ++z) {
                     if (!matrix[x][z]) {
@@ -258,23 +258,23 @@
                 //get original center with no rotation
                 var center = mesh.getBoundingInfo().boundingBox.center.clone();
         
-                var oldPivot = mesh.getPivotMatrix() || BABYLON.Matrix.Translation(0, 0, 0);
+                var oldPivot = mesh.getPivotMatrix() || Matrix.Translation(0, 0, 0);
                 
                 //rotation is back
                 mesh.rotationQuaternion = rotationQuaternion;
         
                 //calculate the new center using a pivot (since Cannon.js doesn't center height maps)
-                var p = BABYLON.Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSize.x, 0, -mesh.getBoundingInfo().boundingBox.extendSize.z);
+                var p = Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSize.x, 0, -mesh.getBoundingInfo().boundingBox.extendSize.z);
                 mesh.setPivotMatrix(p);
                 mesh.computeWorldMatrix(true);
         
                 //calculate the translation
                 var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
                 
-                body.position = new CANNON.Vec3(translation.x, translation.y -shape.minY, translation.z);
+                body.position = new CANNON.Vec3(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
                 //add it inverted to the delta 
                 deltaPosition = mesh.getBoundingInfo().boundingBox.center.subtract(center);
-                deltaPosition.y += shape.minY;
+                deltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
                 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
@@ -285,7 +285,7 @@
 
             this._world.add(body);
 
-            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition, deltaRotation: deltaRotation });
+            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition, deltaRotation: deltaRotation, heightmap: shape.type === CANNON.Shape.types.HEIGHTFIELD });
 
             return body;
         }
@@ -372,8 +372,36 @@
                         body.quaternion = body.quaternion.mult(tmpQ);
                     }
                     
-                    //TODO - If the body is heightmap-based, this won't work correctly. find a good fix.
-                    
+                    if(registeredMesh.heightmap) {
+                        //calculate the correct body position:
+                        var rotationQuaternion = mesh.rotationQuaternion;
+                        mesh.rotationQuaternion = new BABYLON.Quaternion();
+                        mesh.computeWorldMatrix(true);
+                        
+                        //get original center with no rotation
+                        var center = mesh.getBoundingInfo().boundingBox.center.clone();
+                
+                        var oldPivot = mesh.getPivotMatrix() || Matrix.Translation(0, 0, 0);
+                        
+                        //rotation is back
+                        mesh.rotationQuaternion = rotationQuaternion;
+                
+                        //calculate the new center using a pivot (since Cannon.js doesn't center height maps)
+                        var p = Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSize.x, 0, -mesh.getBoundingInfo().boundingBox.extendSize.z);
+                        mesh.setPivotMatrix(p);
+                        mesh.computeWorldMatrix(true);
+                
+                        //calculate the translation
+                        var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
+                        
+                        body.position = new CANNON.Vec3(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
+                        //add it inverted to the delta 
+                        registeredMesh.deltaPosition = mesh.getBoundingInfo().boundingBox.center.subtract(center);
+                        registeredMesh.deltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
+                        
+                        mesh.setPivotMatrix(oldPivot);
+                        mesh.computeWorldMatrix(true);
+                    }
                     return;
                 }
             }
