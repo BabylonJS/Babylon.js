@@ -59,7 +59,7 @@ module BABYLON {
         private _cosYaw: number = 0.0;
 
 
-        constructor(name: string, scene: Scene, options?: {updatable?: boolean}) {
+        constructor(name: string, scene: Scene, options?: { updatable?: boolean }) {
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -562,6 +562,7 @@ module BABYLON {
         }
     }
 }
+
 
 
 
