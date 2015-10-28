@@ -81,7 +81,7 @@ uniform vec3 vLightGround3;
 #endif
 
 // Samplers
-#ifdef DIFFUSE
+#ifdef BUMP
 varying vec2 vNormalUV;
 uniform sampler2D normalSampler;
 uniform vec2 vNormalInfos;
@@ -326,7 +326,7 @@ void main(void) {
 	// Alpha
 	float alpha = vDiffuseColor.a;
 
-#ifdef DIFFUSE
+#ifdef BUMP
 	baseColor = texture2D(normalSampler, vNormalUV);
 
 #ifdef ALPHATEST
@@ -341,6 +341,7 @@ void main(void) {
 	baseColor.rgb *= vColor.rgb;
 #endif
 
+#ifdef REFLECTION
 	// Water
 	vec2 perturbation = vWaveHeight * (baseColor.rg - 0.5);
 	
@@ -358,6 +359,7 @@ void main(void) {
 	vec4 combinedColor = refractiveColor * fresnelTerm + reflectiveColor * (1.0 - fresnelTerm);
 	
 	baseColor = colorBlendFactor * waterColor + (1.0 - colorBlendFactor) * combinedColor;
+#endif
 
 	// Bump
 #ifdef NORMAL

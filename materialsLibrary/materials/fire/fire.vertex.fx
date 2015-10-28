@@ -35,8 +35,6 @@ uniform mat4 viewProjection;
 
 #ifdef DIFFUSE
 varying vec2 vDiffuseUV;
-uniform mat4 diffuseMatrix;
-uniform vec2 vDiffuseInfos;
 #endif
 
 #ifdef BONES
@@ -66,27 +64,9 @@ varying float fClipDistance;
 varying float fFogDistance;
 #endif
 
-#ifdef SHADOWS
-#ifdef LIGHT0
-uniform mat4 lightMatrix0;
-varying vec4 vPositionFromLight0;
-#endif
-#ifdef LIGHT1
-uniform mat4 lightMatrix1;
-varying vec4 vPositionFromLight1;
-#endif
-#ifdef LIGHT2
-uniform mat4 lightMatrix2;
-varying vec4 vPositionFromLight2;
-#endif
-#ifdef LIGHT3
-uniform mat4 lightMatrix3;
-varying vec4 vPositionFromLight3;
-#endif
-#endif
-
 // Fire
 uniform float time;
+uniform float speed;
 
 varying vec2 vDistortionCoords1;
 varying vec2 vDistortionCoords2;
@@ -124,22 +104,9 @@ void main(void) {
 #endif
 
 	// Texture coordinates
-#ifndef UV1
-	vec2 uv = vec2(0., 0.);
-#endif
-#ifndef UV2
-	vec2 uv2 = vec2(0., 0.);
-#endif
-
 #ifdef DIFFUSE
-	if (vDiffuseInfos.x == 0.)
-	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
-	}
-	else
-	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
-	}
+	vDiffuseUV = uv;
+	vDiffuseUV.y -= 0.2;
 #endif
 
 	// Clip plane
@@ -150,22 +117,6 @@ void main(void) {
 	// Fog
 #ifdef FOG
 	fFogDistance = (view * worldPos).z;
-#endif
-
-	// Shadows
-#ifdef SHADOWS
-#ifdef LIGHT0
-	vPositionFromLight0 = lightMatrix0 * worldPos;
-#endif
-#ifdef LIGHT1
-	vPositionFromLight1 = lightMatrix1 * worldPos;
-#endif
-#ifdef LIGHT2
-	vPositionFromLight2 = lightMatrix2 * worldPos;
-#endif
-#ifdef LIGHT3
-	vPositionFromLight3 = lightMatrix3 * worldPos;
-#endif
 #endif
 
 	// Vertex color
@@ -179,7 +130,7 @@ void main(void) {
 #endif
 
 	// Fire
-	vec3 layerSpeed = vec3(0.2, 0.52, 0.1);
+	vec3 layerSpeed = vec3(-0.2, -0.52, -0.1) * speed;
 	
 	vDistortionCoords1.x = uv.x;
 	vDistortionCoords1.y = uv.y + layerSpeed.x * time / 1000.0;
