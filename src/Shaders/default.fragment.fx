@@ -819,7 +819,11 @@ void main(void) {
 #ifdef EMISSIVEASILLUMINATION
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
+	#ifdef LINKEMISSIVEWITHDIFFUSE
+	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	#else
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+#endif
 #endif
 
 #ifdef SPECULARTERM

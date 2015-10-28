@@ -79,6 +79,7 @@
         public GLOSSINESS = false;
         public ROUGHNESS = false;
         public EMISSIVEASILLUMINATION = false;
+        public LINKEMISSIVEWITHDIFFUSE = false;
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
         public USELIGHTMAPASSHADOWMAP = false;
@@ -115,6 +116,7 @@
         public emissiveColor = new Color3(0, 0, 0);
         public useAlphaFromDiffuseTexture = false;
         public useEmissiveAsIllumination = false;
+        public linkEmissiveWithDiffuse = false;
         public useReflectionFresnelFromSpecular = false;
         public useSpecularOverAlpha = true;
         public disableLighting = false;
@@ -343,6 +345,10 @@
 
             if (this.useEmissiveAsIllumination) {
                 this._defines.EMISSIVEASILLUMINATION = true;
+            }
+
+            if (this.linkEmissiveWithDiffuse) {
+                this._defines.LINKEMISSIVEWITHDIFFUSE = true;
             }
 
             if (this.useReflectionFresnelFromSpecular) {
@@ -780,27 +786,19 @@
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                // Scaling down color according to emissive
-                this._scaledSpecular.r = this.specularColor.r * Tools.Clamp(1.0 - this.emissiveColor.r);
-                this._scaledSpecular.g = this.specularColor.g * Tools.Clamp(1.0 - this.emissiveColor.g);
-                this._scaledSpecular.b = this.specularColor.b * Tools.Clamp(1.0 - this.emissiveColor.b);
-
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
 
                 if (this._defines.SPECULARTERM) {
-                    this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);
+                    this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
                 this._effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
+            
+            // Diffuse
+            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
-            // Scaling down color according to emissive
-            this._scaledDiffuse.r = this.diffuseColor.r * Tools.Clamp(1.0 - this.emissiveColor.r);
-            this._scaledDiffuse.g = this.diffuseColor.g * Tools.Clamp(1.0 - this.emissiveColor.g);
-            this._scaledDiffuse.b = this.diffuseColor.b * Tools.Clamp(1.0 - this.emissiveColor.b);
-
-            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
-
+            // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
                 for (var index = 0; index < scene.lights.length; index++) {
