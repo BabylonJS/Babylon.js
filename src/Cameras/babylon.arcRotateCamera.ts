@@ -487,6 +487,9 @@
         }
 
         public setPosition(position: Vector3): void {
+            if (this.position.equals(position)) {
+                return;
+            }
             var radiusv3 = position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
 

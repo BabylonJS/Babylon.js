@@ -11157,6 +11157,9 @@ var BABYLON;
             }
         };
         ArcRotateCamera.prototype.setPosition = function (position) {
+            if (this.position.equals(position)) {
+                return;
+            }
             var radiusv3 = position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
             // Alpha
@@ -33431,6 +33434,7 @@ var BABYLON;
             this.distanceModel = "linear";
             this._panningModel = "equalpower";
             this._playbackRate = 1;
+            this._streaming = false;
             this._startTime = 0;
             this._startOffset = 0;
             this._position = BABYLON.Vector3.Zero();
@@ -33473,6 +33477,7 @@ var BABYLON;
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
                 this._playbackRate = options.playbackRate || 1;
+                this._streaming = options.streaming || false;
             }
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 this._soundGain = BABYLON.Engine.audioEngine.audioContext.createGain();
@@ -33487,7 +33492,22 @@ var BABYLON;
                 if (urlOrArrayBuffer) {
                     // If it's an URL
                     if (typeof (urlOrArrayBuffer) === "string") {
-                        BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) { _this._soundLoaded(data); }, null, null, true);
+                        // Loading sound using XHR2
+                        if (!this._streaming) {
+                            BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) { _this._soundLoaded(data); }, null, null, true);
+                        }
+                        else {
+                            this._htmlAudioElement = new Audio();
+                            this._htmlAudioElement.src = urlOrArrayBuffer;
+                            ;
+                            this._htmlAudioElement.controls = false;
+                            this._htmlAudioElement.loop = this.loop;
+                            this._isReadyToPlay = true;
+                            document.body.appendChild(this._htmlAudioElement);
+                            if (this.autoplay) {
+                                this.play();
+                            }
+                        }
                     }
                     else {
                         if (urlOrArrayBuffer instanceof ArrayBuffer) {
@@ -33576,7 +33596,12 @@ var BABYLON;
                 this._playbackRate = options.playbackRate || this._playbackRate;
                 this._updateSpatialParameters();
                 if (this.isPlaying) {
-                    this._soundSource.playbackRate.value = this._playbackRate;
+                    if (this._streaming) {
+                        this._htmlAudioElement.playbackRate = this._playbackRate;
+                    }
+                    else {
+                        this._soundSource.playbackRate.value = this._playbackRate;
+                    }
                 }
             }
         };
@@ -33688,7 +33713,7 @@ var BABYLON;
             if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
                     var startTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
-                    if (!this._soundSource) {
+                    if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound) {
                             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
                             if (this._isDirectional) {
@@ -33704,14 +33729,25 @@ var BABYLON;
                             }
                         }
                     }
-                    this._soundSource = BABYLON.Engine.audioEngine.audioContext.createBufferSource();
-                    this._soundSource.buffer = this._audioBuffer;
-                    this._soundSource.connect(this._inputAudioNode);
-                    this._soundSource.loop = this.loop;
-                    this._soundSource.playbackRate.value = this._playbackRate;
+                    if (this._streaming) {
+                        if (!this.isPaused) {
+                            this._streamingSource = BABYLON.Engine.audioEngine.audioContext.createMediaElementSource(this._htmlAudioElement);
+                            this._streamingSource.connect(this._inputAudioNode);
+                            this._htmlAudioElement.onended = function () { _this._onended(); };
+                            this._htmlAudioElement.playbackRate = this._playbackRate;
+                        }
+                        this._htmlAudioElement.play();
+                    }
+                    else {
+                        this._soundSource = BABYLON.Engine.audioEngine.audioContext.createBufferSource();
+                        this._soundSource.buffer = this._audioBuffer;
+                        this._soundSource.connect(this._inputAudioNode);
+                        this._soundSource.loop = this.loop;
+                        this._soundSource.playbackRate.value = this._playbackRate;
+                        this._soundSource.onended = function () { _this._onended(); };
+                        this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
+                    }
                     this._startTime = startTime;
-                    this._soundSource.onended = function () { _this._onended(); };
-                    this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
                     this.isPlaying = true;
                     this.isPaused = false;
                 }
@@ -33732,15 +33768,26 @@ var BABYLON;
         */
         Sound.prototype.stop = function (time) {
             if (this.isPlaying) {
-                var stopTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
-                this._soundSource.stop(stopTime);
+                if (this._streaming) {
+                    this._htmlAudioElement.pause();
+                    this._htmlAudioElement.currentTime = 0;
+                }
+                else {
+                    var stopTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
+                    this._soundSource.stop(stopTime);
+                }
                 this.isPlaying = false;
             }
         };
         Sound.prototype.pause = function () {
             if (this.isPlaying) {
-                this.stop(0);
-                this._startOffset += BABYLON.Engine.audioEngine.audioContext.currentTime - this._startTime;
+                if (this._streaming) {
+                    this._htmlAudioElement.pause();
+                }
+                else {
+                    this.stop(0);
+                    this._startOffset += BABYLON.Engine.audioEngine.audioContext.currentTime - this._startTime;
+                }
                 this.isPaused = true;
             }
         };
@@ -33759,7 +33806,12 @@ var BABYLON;
         Sound.prototype.setPlaybackRate = function (newPlaybackRate) {
             this._playbackRate = newPlaybackRate;
             if (this.isPlaying) {
-                this._soundSource.playbackRate.value = this._playbackRate;
+                if (this._streaming) {
+                    this._htmlAudioElement.playbackRate = this._playbackRate;
+                }
+                else {
+                    this._soundSource.playbackRate.value = this._playbackRate;
+                }
             }
         };
         Sound.prototype.getVolume = function () {
