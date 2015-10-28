@@ -38,7 +38,6 @@ module BABYLON {
         private _axisZ: Vector3 = Axis.Z;
         private _camera: Camera;
         private _particle: SolidParticle;
-        private _previousParticle: SolidParticle;
         private _fakeCamPos: Vector3 = Vector3.Zero();
         private _rotMatrix: Matrix = new Matrix();
         private _invertedMatrix: Matrix = new Matrix();
@@ -66,7 +65,7 @@ module BABYLON {
         }
 
         // build the SPS mesh : returns the mesh
-        public buildMesh(upgradable: boolean = true): Mesh {
+        public buildMesh(updatable: boolean = true): Mesh {
             if (this.nbParticles === 0) {
                 var triangle = MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
@@ -88,7 +87,7 @@ module BABYLON {
                 vertexData.set(this._colors32, VertexBuffer.ColorKind);
             }
             var mesh = new Mesh(name, this._scene);
-            vertexData.applyToMesh(mesh, upgradable);
+            vertexData.applyToMesh(mesh, updatable);
             this.mesh = mesh;
 
             // free memory
@@ -96,6 +95,10 @@ module BABYLON {
             this._normals = null;
             this._uvs = null;
             this._colors = null;
+
+            if (!updatable) {
+                this.particles.length = 0;
+            }
 
             return mesh;
         }
@@ -342,6 +345,7 @@ module BABYLON {
             var uvIndex = 0;
 
             // particle loop
+            end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;
@@ -540,6 +544,7 @@ module BABYLON {
         }
     }
 }
+
 
 
 

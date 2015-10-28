@@ -97,6 +97,12 @@ var BABYLON;
             }
             return result;
         };
+        Skeleton.prototype.dispose = function () {
+            // Animations
+            this.getScene().stopAnimation(this);
+            // Remove from scene
+            this.getScene().removeSkeleton(this);
+        };
         return Skeleton;
     })();
     BABYLON.Skeleton = Skeleton;

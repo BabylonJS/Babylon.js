@@ -125,6 +125,9 @@
         }
 
         public dispose(): void {
+            // Animations
+            this.getScene().stopAnimation(this);
+
             // Remove from scene
             var index = this._scene.textures.indexOf(this);
 

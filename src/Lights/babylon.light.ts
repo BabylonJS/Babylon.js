@@ -104,6 +104,9 @@
                 this._shadowGenerator = null;
             }
 
+            // Animations
+            this.getScene().stopAnimation(this);
+
             // Remove from scene
             this.getScene().removeLight(this);
         }
