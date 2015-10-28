@@ -63,8 +63,12 @@
 			// Create meshes
 			var sphere = BABYLON.Mesh.CreateSphere("sphere", 32, 30.0, scene);
 			
-			var plane = BABYLON.MeshBuilder.CreateBox("plane", { width: 30, height: 0.1, depth:30 }, scene);
+			var plane = BABYLON.MeshBuilder.CreateBox("plane", { width: 30, height: 1, depth:30 }, scene);
 			plane.setEnabled(false);
+			
+			var ground = BABYLON.Mesh.CreateGround("ground", 512, 512, 32, scene, false);
+			ground.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+			ground.setEnabled(false);
 			
 			var knot = BABYLON.Mesh.CreateTorusKnot("knot", 10, 3, 128, 64, 2, 3, scene);
 			knot.setEnabled(false);
@@ -141,8 +145,14 @@
 				simple.diffuseTexture.vScale = 5;
 				
 				var water = new BABYLON.WaterMaterial("water", scene, currentMesh);
+				water.backFaceCulling = false;
 				water.enableRenderTargets(false);
 				water.bumpTexture = new BABYLON.Texture("textures/waterbump.png", scene);
+				water.windForce = -45;
+				water.waveHeight = 1.3;
+				water.addToRenderList(skybox);
+				water.addToRenderList(shadowCaster);
+				water.addToRenderList(shadowCaster2);
 				
 				var fire = new BABYLON.FireMaterial("fire", scene);
 				fire.diffuseTexture = new BABYLON.Texture("textures/fire/diffuse.png", scene);
@@ -178,6 +188,7 @@
 						case "water":
 							currentMaterial = water;
 							water.enableRenderTargets(true);
+							skybox.setEnabled(true);
 							break;
 						case "fire":
 							currentMaterial = fire;
@@ -190,7 +201,7 @@
 					currentMesh.material = currentMaterial;
 				});
 
-				gui.add(options, 'mesh', ['sphere', 'knot', 'plane', 'rabbit']).onFinishChange(function () {
+				gui.add(options, 'mesh', ['sphere', 'knot', 'plane', 'ground', 'rabbit']).onFinishChange(function () {
 					currentMesh.setEnabled(false);
 					switch (options.mesh) {
 						case "sphere":
@@ -201,6 +212,9 @@
 							break;
 						case "plane":
 							currentMesh = plane;
+							break;
+						case "ground":
+							currentMesh = ground;
 							break;
 						case "rabbit":
 							currentMesh = rabbit;

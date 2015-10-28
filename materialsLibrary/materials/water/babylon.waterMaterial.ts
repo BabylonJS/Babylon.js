@@ -5,7 +5,8 @@ module BABYLON {
 	var maxSimultaneousLights = 4;
 
     class WaterMaterialDefines extends MaterialDefines {
-        public DIFFUSE = false;
+        public BUMP = false;
+        public REFLECTION = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
         public POINTSIZE = false;
@@ -72,9 +73,13 @@ module BABYLON {
         */
 		public windDirection: Vector2 = new Vector2(0, 1);
         /**
-        * @param {number}: Wave height, represents the bump height related to the bump map
+        * @param {number}: Wave height, represents the height of the waves
         */
-		public waveHeight: number = 0.3;
+		public waveHeight: number = 0.4;
+        /**
+        * @param {number}: Bump height, represents the bump height related to the bump map
+        */
+		public bumpHeight: number = 0.4;
         /**
         * @param {number}: The water color blended with the reflection and refraction samplers
         */
@@ -138,6 +143,11 @@ module BABYLON {
         }
 		
         // Methods
+        public addToRenderList(node: any): void {
+            this._refractionRTT.renderList.push(node);
+            this._reflectionRTT.renderList.push(node);
+        }
+        
         public enableRenderTargets(enable: boolean): void {
             var refreshRate = enable ? 1 : 0;
             
@@ -198,13 +208,17 @@ module BABYLON {
 
             // Textures
             if (scene.texturesEnabled) {
-                if (this.bumpTexture && StandardMaterial.DiffuseTextureEnabled) {
+                if (this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
                     if (!this.bumpTexture.isReady()) {
                         return false;
                     } else {
                         needUVs = true;
-                        this._defines.DIFFUSE = true;
+                        this._defines.BUMP = true;
                     }
+                }
+                
+                if (StandardMaterial.ReflectionTextureEnabled) {
+                    this._defines.REFLECTION = true;
                 }
             }
 
@@ -422,7 +436,7 @@ module BABYLON {
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
 						// Water
 						"worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
-						"cameraPosition", "waveHeight", "waterColor", "colorBlendFactor"
+						"cameraPosition", "bumpHeight", "waveHeight", "waterColor", "colorBlendFactor"
                     ],
                     ["normalSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
@@ -549,8 +563,8 @@ module BABYLON {
             
             // Water
             if (StandardMaterial.ReflectionTextureEnabled) {
-			 this._effect.setTexture("refractionSampler", this._refractionRTT);
-			 this._effect.setTexture("reflectionSampler", this._reflectionRTT);
+                this._effect.setTexture("refractionSampler", this._refractionRTT);
+                this._effect.setTexture("reflectionSampler", this._reflectionRTT);
             }
             
 			var wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
@@ -562,6 +576,7 @@ module BABYLON {
 			this._effect.setFloat("time", this._lastTime / 100000);
 			this._effect.setFloat("windForce", this.windForce);
 			this._effect.setFloat("waveHeight", this.waveHeight);
+            this._effect.setFloat("bumpHeight", this.bumpHeight);
 			this._effect.setColor4("waterColor", this.waterColor, 1.0);
 			this._effect.setFloat("colorBlendFactor", this.colorBlendFactor);
 
@@ -576,9 +591,6 @@ module BABYLON {
 			scene.customRenderTargets.push(this._refractionRTT);
 			scene.customRenderTargets.push(this._reflectionRTT);
 			
-			this._refractionRTT.renderList = scene.meshes;
-			this._reflectionRTT.renderList = scene.meshes;
-			
 			var isVisible: boolean;
 			var clipPlane = null;
 			var savedViewMatrix;
@@ -590,7 +602,7 @@ module BABYLON {
 				
 				// Clip plane
 				clipPlane = scene.clipPlane;
-				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, this._mesh.position.y, 0), new Vector3(0, 1, 0));
+				//scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, this._mesh.position.y, 0), new Vector3(0, 1, 0));
 			};
 			
 			this._refractionRTT.onAfterRender = () => {
