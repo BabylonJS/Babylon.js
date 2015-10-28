@@ -225,7 +225,7 @@ var BABYLON;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance);
         };
         MeshBuilder.CreateLathe = function (name, options, scene) {
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var closed = (options.closed === undefined) ? true : options.closed;
             var shape = options.shape;
             var radius = options.radius || 1;
@@ -336,7 +336,7 @@ var BABYLON;
             var updatable = options.updatable;
             var sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var instance = options.instance;
-            options.arc = (options.arc < 0) ? 1 : options.arc || 1;
+            options.arc = (options.arc <= 0 || options.arc > 1) ? 1 : options.arc || 1;
             // tube geometry
             var tubePathArray = function (path, path3D, circlePaths, radius, tessellation, radiusFunction, cap, arc) {
                 var tangents = path3D.getTangents();

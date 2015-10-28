@@ -49,8 +49,8 @@ var BABYLON;
             this._camera = scene.activeCamera;
         }
         // build the SPS mesh : returns the mesh
-        SolidParticleSystem.prototype.buildMesh = function (upgradable) {
-            if (upgradable === void 0) { upgradable = true; }
+        SolidParticleSystem.prototype.buildMesh = function (updatable) {
+            if (updatable === void 0) { updatable = true; }
             if (this.nbParticles === 0) {
                 var triangle = BABYLON.MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
@@ -73,13 +73,16 @@ var BABYLON;
                 vertexData.set(this._colors32, BABYLON.VertexBuffer.ColorKind);
             }
             var mesh = new BABYLON.Mesh(name, this._scene);
-            vertexData.applyToMesh(mesh, upgradable);
+            vertexData.applyToMesh(mesh, updatable);
             this.mesh = mesh;
             // free memory
             this._positions = null;
             this._normals = null;
             this._uvs = null;
             this._colors = null;
+            if (!updatable) {
+                this.particles.length = 0;
+            }
             return mesh;
         };
         //reset copy
@@ -177,15 +180,9 @@ var BABYLON;
             }
             return shapeUV;
         };
-        // adds a new particle object in the particles array and double links the particle (next/previous)
+        // adds a new particle object in the particles array
         SolidParticleSystem.prototype._addParticle = function (p, idxpos, model, shapeId, idxInShape) {
-            this._particle = new BABYLON.SolidParticle(p, idxpos, model, shapeId, idxInShape);
-            this.particles.push(this._particle);
-            this._particle.previous = this._previousParticle;
-            if (this._previousParticle) {
-                this._previousParticle.next = this._particle;
-            }
-            this._previousParticle = this._particle;
+            this.particles.push(new BABYLON.SolidParticle(p, idxpos, model, shapeId, idxInShape));
         };
         // add solid particles from a shape model in the particles array
         SolidParticleSystem.prototype.addShape = function (mesh, nb, options) {
@@ -303,6 +300,7 @@ var BABYLON;
             var uvidx = 0;
             var uvIndex = 0;
             // particle loop
+            end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;
