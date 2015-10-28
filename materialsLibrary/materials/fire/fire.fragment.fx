@@ -1,4 +1,4 @@
-﻿precision highp float;
+precision highp float;
 
 // Constants
 uniform vec3 vEyePosition;
@@ -86,6 +86,14 @@ varying vec2 vDiffuseUV;
 uniform sampler2D diffuseSampler;
 uniform vec2 vDiffuseInfos;
 #endif
+
+// Fire
+uniform sampler2D distortionSampler;
+uniform sampler2D opacitySampler;
+
+varying vec2 vDistortionCoords1;
+varying vec2 vDistortionCoords2;
+varying vec2 vDistortionCoords3;
 
 // Shadows
 #ifdef SHADOWS
@@ -310,7 +318,23 @@ void main(void) {
 	float alpha = vDiffuseColor.a;
 
 #ifdef DIFFUSE
-	baseColor = texture2D(diffuseSampler, vDiffuseUV);
+	// Fire
+	const float distortionAmount0  = 0.092;
+	const float distortionAmount1  = 0.092;
+	const float distortionAmount2  = 0.092;
+	
+	vec2 heightAttenuation = vec2(0.3, 0.39);
+	
+	vec4 noise0 = texture2D(distortionSampler, vDistortionCoords1);
+	vec4 noise1 = texture2D(distortionSampler, vDistortionCoords2);
+	vec4 noise2 = texture2D(distortionSampler, vDistortionCoords3);
+	
+	vec4 noiseSum = (noise0 * 2.0 - 1.0) * distortionAmount0 + (noise1 * 2.0 - 1.0) * distortionAmount1 + (noise2 * 2.0 - 1.0) * distortionAmount2;
+	
+	vec4 perturbedBaseCoords = noiseSum + vec4(vDiffuseUV, 0.0, 1.0) * (vDiffuseUV.y * heightAttenuation.x + heightAttenuation.y);
+	
+	baseColor = texture2D(diffuseSampler, perturbedBaseCoords.xy) * 2.0;
+	baseColor *= texture2D(opacitySampler, perturbedBaseCoords.xy);
 
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
