@@ -21,6 +21,7 @@ module BABYLON {
         private _colors32: Float32Array;
         private _uvs32: Float32Array;
         private _index: number = 0;  // indices index
+        private _updatable: boolean = true;
         private _shapeCounter: number = 0;
         private _copy: SolidParticle = new SolidParticle(null, null, null, null, null);
         private _shape: Vector3[];
@@ -58,14 +59,19 @@ module BABYLON {
         private _cosYaw: number = 0.0;
 
 
-        constructor(name: string, scene: Scene) {
+        constructor(name: string, scene: Scene, options?: {updatable?: boolean}) {
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
+            if (options && options.updatable) {
+                this._updatable = options.updatable;
+            } else {
+                this._updatable = true;
+            }
         }
 
         // build the SPS mesh : returns the mesh
-        public buildMesh(updatable: boolean = true): Mesh {
+        public buildMesh(): Mesh {
             if (this.nbParticles === 0) {
                 var triangle = MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
@@ -87,7 +93,7 @@ module BABYLON {
                 vertexData.set(this._colors32, VertexBuffer.ColorKind);
             }
             var mesh = new Mesh(name, this._scene);
-            vertexData.applyToMesh(mesh, updatable);
+            vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
 
             // free memory
@@ -96,7 +102,7 @@ module BABYLON {
             this._uvs = null;
             this._colors = null;
 
-            if (!updatable) {
+            if (!this._updatable) {
                 this.particles.length = 0;
             }
 
@@ -230,7 +236,9 @@ module BABYLON {
             // particles
             for (var i = 0; i < nb; i++) {
                 this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, this.nbParticles + i, i, options);
-                this._addParticle(this.nbParticles + i, this._positions.length, modelShape, this._shapeCounter, i);
+                if (this._updatable) {
+                    this._addParticle(this.nbParticles + i, this._positions.length, modelShape, this._shapeCounter, i);
+                }
                 this._index += shape.length;
             }
             this.nbParticles += nb;
@@ -467,6 +475,16 @@ module BABYLON {
         // dispose the SPS
         public dispose(): void {
             this.mesh.dispose();
+            // drop references to internal big arrays for the GC
+            this._positions = null;
+            this._indices = null;
+            this._normals = null;
+            this._uvs = null;
+            this._colors = null;
+            this._positions32 = null;
+            this._normals32 = null;
+            this._uvs32 = null;
+            this._colors32 = null;
         }
 
         // Optimizer setters
