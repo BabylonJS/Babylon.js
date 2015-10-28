@@ -33,7 +33,7 @@ uniform mat4 world;
 uniform mat4 view;
 uniform mat4 viewProjection;
 
-#ifdef DIFFUSE
+#ifdef BUMP
 varying vec2 vNormalUV;
 uniform mat4 normalMatrix;
 uniform vec2 vNormalInfos;
@@ -91,6 +91,7 @@ uniform vec2 windDirection;
 uniform float waveLength;
 uniform float time;
 uniform float windForce;
+uniform float bumpHeight;
 uniform float waveHeight;
 
 // Water varyings
@@ -137,7 +138,7 @@ void main(void) {
 	vec2 uv2 = vec2(0., 0.);
 #endif
 
-#ifdef DIFFUSE
+#ifdef BUMP
 	if (vNormalInfos.x == 0.)
 	{
 		vNormalUV = vec2(normalMatrix * vec4((uv * 1.0) / waveLength + time * windForce * windDirection, 1.0, 0.0));
@@ -184,11 +185,15 @@ void main(void) {
 	gl_PointSize = pointSize;
 #endif
 
+	vec3 p = position;
+	p.y += (sin(((p.x / 0.05) + time * 100.0)) * waveHeight * 5.0) + (cos(((p.z / 0.05) + time * 100.0)) * waveHeight * 5.0);
+	
+	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);;
+
 	worldPos = viewProjection * finalWorld * vec4(position, 1.0);
-	gl_Position = worldPos;
 
 	// Water
-	vWaveHeight = waveHeight;
+	vWaveHeight = bumpHeight;
 	vPosition = position;
 	
 	vRefractionMapTexCoord.x = 0.5 * (worldPos.w + worldPos.x);
