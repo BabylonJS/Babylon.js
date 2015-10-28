@@ -141,13 +141,13 @@
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
-    
+
             var dim = Math.min(mesh.getBoundingInfo().boundingBox.extendSize.x, mesh.getBoundingInfo().boundingBox.extendSize.z);
-    
+
             var elementSize = dim * 2 / arraySize;
-    
+
             var minY = mesh.getBoundingInfo().boundingBox.extendSize.y;
-    
+
             for (var i = 0; i < pos.length; i = i + 3) {
                 var x = Math.round((pos[i + 0]) / elementSize + arraySize / 2);
                 var z = Math.round(((pos[i + 2]) / elementSize - arraySize / 2) * -1);
@@ -160,8 +160,8 @@
                 }
                 matrix[x][z] = Math.max(y, matrix[x][z]);
             }
-    
-    
+
+
             for (var x = 0; x <= arraySize; ++x) {
                 if (!matrix[x]) {
                     var loc = 1;
@@ -179,7 +179,7 @@
                             newValue = matrix[x][(z + loc++) % arraySize];
                         }
                         matrix[x][z] = newValue;
-    
+
                     }
                 }
             }
@@ -257,7 +257,7 @@
                 
                 //get original center with no rotation
                 var center = mesh.getBoundingInfo().boundingBox.center.clone();
-        
+
                 var oldPivot = mesh.getPivotMatrix() || Matrix.Translation(0, 0, 0);
                 
                 //rotation is back
@@ -270,12 +270,12 @@
         
                 //calculate the translation
                 var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
-                
+
                 body.position = new CANNON.Vec3(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
                 //add it inverted to the delta 
                 deltaPosition = mesh.getBoundingInfo().boundingBox.center.subtract(center);
                 deltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
-                
+
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             }
@@ -371,8 +371,8 @@
                         var tmpQ = new CANNON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
                         body.quaternion = body.quaternion.mult(tmpQ);
                     }
-                    
-                    if(registeredMesh.heightmap) {
+
+                    if (registeredMesh.heightmap) {
                         //calculate the correct body position:
                         var rotationQuaternion = mesh.rotationQuaternion;
                         mesh.rotationQuaternion = new BABYLON.Quaternion();
@@ -380,7 +380,7 @@
                         
                         //get original center with no rotation
                         var center = mesh.getBoundingInfo().boundingBox.center.clone();
-                
+
                         var oldPivot = mesh.getPivotMatrix() || Matrix.Translation(0, 0, 0);
                         
                         //rotation is back
@@ -393,12 +393,12 @@
                 
                         //calculate the translation
                         var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
-                        
+
                         body.position = new CANNON.Vec3(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
                         //add it inverted to the delta 
                         registeredMesh.delta = mesh.getBoundingInfo().boundingBox.center.subtract(center);
                         registeredMesh.delta.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
-                        
+
                         mesh.setPivotMatrix(oldPivot);
                         mesh.computeWorldMatrix(true);
                     }
@@ -454,6 +454,7 @@
         }
     }
 }
+
 
 
 

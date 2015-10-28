@@ -65,6 +65,12 @@ namespace Max2Babylon
 
             var texMap = stdMat.GetSubTexmap(index);
 
+            if (texMap == null)
+            {
+                RaiseWarning("Texture channel " + index + " activated but no texture found.");
+                return null;
+            }
+
             // Fallout
             if (texMap.ClassName == "Falloff") // This is the only way I found to detect it. This is crappy but it works
             {
