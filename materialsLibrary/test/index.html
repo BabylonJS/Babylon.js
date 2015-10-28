@@ -5,6 +5,8 @@
 	<script src="dat.gui.min.js"></script>
 	<script src="babylon.max.js"></script>
 	<script src="../dist/babylon.simpleMaterial.js"></script>
+	<script src="../dist/babylon.waterMaterial.js"></script>
+	<script src="../dist/babylon.fireMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -60,8 +62,21 @@
 
 			// Create meshes
 			var sphere = BABYLON.Mesh.CreateSphere("sphere", 32, 30.0, scene);
-			var plane = BABYLON.MeshBuilder.CreateBox("plane", { width: 30, height: 1, depth:30 }, scene);
+			
+			var plane = BABYLON.MeshBuilder.CreateBox("plane", { width: 30, height: 0.1, depth:30 }, scene);
 			plane.setEnabled(false);
+			
+			// Skybox
+			var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
+			var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+			skyboxMaterial.backFaceCulling = false;
+			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/TropicalSunnyDay", scene);
+			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+			skyboxMaterial.disableLighting = true;
+			skybox.material = skyboxMaterial;
+			skybox.setEnabled(false);
 
 			var currentMesh = sphere;
 
@@ -117,7 +132,16 @@
 				simple.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
 				simple.diffuseTexture.uScale = 5;
 				simple.diffuseTexture.vScale = 5;
-
+				
+				var water = new BABYLON.WaterMaterial("water", scene, currentMesh);
+				water.enableRenderTargets(false);
+				water.bumpTexture = new BABYLON.Texture("textures/waterbump.png", scene);
+				
+				var fire = new BABYLON.FireMaterial("fire", scene);
+				fire.diffuseTexture = new BABYLON.Texture("textures/fire/diffuse.png", scene);
+				fire.distortionTexture = new BABYLON.Texture("textures/fire/distortion.png", scene);
+				fire.opacityTexture = new BABYLON.Texture("textures/fire/opacity.png", scene);
+				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;
@@ -132,13 +156,23 @@
 					directionalLight: false,
 					castShadows: false,
 					spotLight: false,
-					fog: false
+					fog: false,
+					skybox: false
 				}
 
-				gui.add(options, 'material', ['standard', 'simple']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire']).onFinishChange(function () {
+					water.enableRenderTargets(false);
+					
 					switch (options.material) {
 						case "simple":
 							currentMaterial = simple;
+							break;
+						case "water":
+							currentMaterial = water;
+							water.enableRenderTargets(true);
+							break;
+						case "fire":
+							currentMaterial = fire;
 							break;
 						default:
 							currentMaterial = std;
@@ -163,6 +197,8 @@
 					}
 					currentMesh.setEnabled(true);
 					currentMesh.material = currentMaterial;
+					
+					water.mesh = currentMesh;
 				});
 
 				gui.add(options, 'hemisphericLight').onChange(function () {
@@ -190,6 +226,10 @@
 
 				gui.add(options, 'fog').onChange(function () {
 					scene.fogMode = options.fog ? BABYLON.Scene.FOGMODE_EXP : BABYLON.Scene.FOGMODE_NONE;
+				});
+				
+				gui.add(options, 'skybox').onChange(function() {
+					skybox.setEnabled(options.skybox);
 				});
 			});
 		}
