@@ -7,6 +7,22 @@
         "materials/simple/simple.fragment.fx"
       ],
       "output": "babylon.simpleMaterial.js"
+    },
+    {
+      "file": "materials/water/babylon.waterMaterial.ts",
+      "shaderFiles": [
+        "materials/water/water.vertex.fx",
+        "materials/water/water.fragment.fx"
+      ],
+      "output": "babylon.waterMaterial.js"
+    },
+    {
+      "file": "materials/fire/babylon.fireMaterial.ts",
+      "shaderFiles": [
+        "materials/fire/fire.vertex.fx",
+        "materials/fire/fire.fragment.fx"
+      ],
+      "output": "babylon.fireMaterial.js"
     }
   ],
   "build": {
