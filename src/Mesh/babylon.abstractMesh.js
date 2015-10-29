@@ -38,6 +38,7 @@ var BABYLON;
             this.applyFog = true;
             this.computeBonesUsingShaders = true;
             this.scalingDeterminant = 1;
+            this.numBoneInfluencers = 4;
             this.useOctreeForRenderingSelection = true;
             this.useOctreeForPicking = true;
             this.useOctreeForCollisions = true;

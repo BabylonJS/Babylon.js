@@ -1334,28 +1334,18 @@ var BABYLON;
             var tempVector3 = BABYLON.Vector3.Zero();
             var finalMatrix = new BABYLON.Matrix();
             var tempMatrix = new BABYLON.Matrix();
+            var matWeightIdx = 0;
             for (var index = 0; index < positionsData.length; index += 3) {
-                var index4 = (index / 3) * 4;
-                var matricesWeight0 = matricesWeightsData[index4];
-                var matricesWeight1 = matricesWeightsData[index4 + 1];
-                var matricesWeight2 = matricesWeightsData[index4 + 2];
-                var matricesWeight3 = matricesWeightsData[index4 + 3];
-                if (matricesWeight0 > 0) {
-                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4] * 16, matricesWeight0, tempMatrix);
-                    finalMatrix.addToSelf(tempMatrix);
+                for (var inf = 0; inf < this.numBoneInfluencers; inf++) {
+                    var weight = matricesWeightsData[matWeightIdx + inf];
+                    if (weight > 0) {
+                        BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                        finalMatrix.addToSelf(tempMatrix);
+                    }
+                    else
+                        break;
                 }
-                if (matricesWeight1 > 0) {
-                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 1] * 16, matricesWeight1, tempMatrix);
-                    finalMatrix.addToSelf(tempMatrix);
-                }
-                if (matricesWeight2 > 0) {
-                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 2] * 16, matricesWeight2, tempMatrix);
-                    finalMatrix.addToSelf(tempMatrix);
-                }
-                if (matricesWeight3 > 0) {
-                    BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[index4 + 3] * 16, matricesWeight3, tempMatrix);
-                    finalMatrix.addToSelf(tempMatrix);
-                }
+                matWeightIdx += this.numBoneInfluencers;
                 BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(this._sourcePositions[index], this._sourcePositions[index + 1], this._sourcePositions[index + 2], finalMatrix, tempVector3);
                 tempVector3.toArray(positionsData, index);
                 BABYLON.Vector3.TransformNormalFromFloatsToRef(this._sourceNormals[index], this._sourceNormals[index + 1], this._sourceNormals[index + 2], finalMatrix, tempVector3);

@@ -657,6 +657,9 @@ var BABYLON;
             // Skeleton
             if (parsedMesh.skeletonId > -1) {
                 mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
+                if (parsedMesh.numBoneInfluencers) {
+                    mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
+                }
             }
             // Physics
             if (parsedMesh.physicsImpostor) {
