@@ -109,7 +109,7 @@ module BABYLON {
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, () => { return this._highlightsPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, () => { return this._depthOfFieldPostProcess; }, true));
 
-            if (this._highlightsGain == -1) {
+            if (this._highlightsGain === -1) {
                 this._disableEffect(this.HighlightsEnhancingEffect, null);
             }
 
@@ -142,7 +142,7 @@ module BABYLON {
             this._highlightsGain = amount;
         }
         public setHighlightsThreshold(amount: number) {
-            if (this._highlightsGain == -1) {
+            if (this._highlightsGain === -1) {
                 this._highlightsGain = 1.0;
             }
             this._highlightsThreshold = amount;
@@ -226,14 +226,14 @@ module BABYLON {
 
                 effect.setFloat('distortion', this._distortion);
 
-                effect.setBool('dof_enabled', (this._dofDistance != -1));
+                effect.setBool('dof_enabled', (this._dofDistance !== -1));
                 effect.setFloat('screen_distance', 1.0 / (0.1 - 1.0 / this._dofDistance));
                 effect.setFloat('aperture', this._dofAperture);
                 effect.setFloat('darken', this._dofDarken);
 
                 effect.setFloat('edge_blur', this._edgeBlur);
 
-                effect.setBool('highlights', (this._highlightsGain != -1));
+                effect.setBool('highlights', (this._highlightsGain !== -1));
 
                 effect.setFloat('near', this._scene.activeCamera.minZ);
                 effect.setFloat('far', this._scene.activeCamera.maxZ);

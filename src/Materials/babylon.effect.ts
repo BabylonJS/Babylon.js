@@ -266,6 +266,10 @@
             }
         }
 
+        public get isSupported(): boolean {
+            return this._compilationError === "";
+        }
+
         public _bindTexture(channel: string, texture: WebGLTexture): void {
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         }

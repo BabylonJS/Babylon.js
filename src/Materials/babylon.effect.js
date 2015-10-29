@@ -216,6 +216,13 @@ var BABYLON;
                 }
             }
         };
+        Object.defineProperty(Effect.prototype, "isSupported", {
+            get: function () {
+                return this._compilationError === "";
+            },
+            enumerable: true,
+            configurable: true
+        });
         Effect.prototype._bindTexture = function (channel, texture) {
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         };

@@ -34,6 +34,15 @@ module BABYLON {
             this._renderEffectAsPasses = {};
         }
 
+        public get isSupported(): boolean {
+            for (var index in this._postProcesses) {
+                if (!this._postProcesses[index].isSupported) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public _update(): void {
             for (var renderPassName in this._renderPasses) {
                 this._renderPasses[renderPassName]._update();

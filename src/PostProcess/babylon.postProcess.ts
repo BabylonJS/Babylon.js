@@ -99,6 +99,10 @@
             }
         }
 
+        public get isSupported(): boolean {
+            return this._effect.isSupported;
+        }
+
         public apply(): Effect {
             // Check
             if (!this._effect.isReady())

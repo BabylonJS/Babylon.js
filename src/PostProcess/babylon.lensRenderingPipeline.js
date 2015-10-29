@@ -91,7 +91,7 @@ var BABYLON;
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, function () { return _this._chromaticAberrationPostProcess; }, true));
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, function () { return _this._highlightsPostProcess; }, true));
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, function () { return _this._depthOfFieldPostProcess; }, true));
-            if (this._highlightsGain == -1) {
+            if (this._highlightsGain === -1) {
                 this._disableEffect(this.HighlightsEnhancingEffect, null);
             }
             // Finish
@@ -121,7 +121,7 @@ var BABYLON;
             this._highlightsGain = amount;
         };
         LensRenderingPipeline.prototype.setHighlightsThreshold = function (amount) {
-            if (this._highlightsGain == -1) {
+            if (this._highlightsGain === -1) {
                 this._highlightsGain = 1.0;
             }
             this._highlightsThreshold = amount;
@@ -186,12 +186,12 @@ var BABYLON;
                 effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
                 effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
                 effect.setFloat('distortion', _this._distortion);
-                effect.setBool('dof_enabled', (_this._dofDistance != -1));
+                effect.setBool('dof_enabled', (_this._dofDistance !== -1));
                 effect.setFloat('screen_distance', 1.0 / (0.1 - 1.0 / _this._dofDistance));
                 effect.setFloat('aperture', _this._dofAperture);
                 effect.setFloat('darken', _this._dofDarken);
                 effect.setFloat('edge_blur', _this._edgeBlur);
-                effect.setBool('highlights', (_this._highlightsGain != -1));
+                effect.setBool('highlights', (_this._highlightsGain !== -1));
                 effect.setFloat('near', _this._scene.activeCamera.minZ);
                 effect.setFloat('far', _this._scene.activeCamera.maxZ);
             };
