@@ -51,7 +51,14 @@ var BABYLON;
         };
         PostProcessRenderPipelineManager.prototype.update = function () {
             for (var renderPipelineName in this._renderPipelines) {
-                this._renderPipelines[renderPipelineName]._update();
+                var pipeline = this._renderPipelines[renderPipelineName];
+                if (!pipeline.isSupported) {
+                    pipeline.dispose();
+                    delete this._renderPipelines[renderPipelineName];
+                }
+                else {
+                    pipeline._update();
+                }
             }
         };
         return PostProcessRenderPipelineManager;

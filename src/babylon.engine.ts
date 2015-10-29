@@ -1272,6 +1272,7 @@
             this._gl.attachShader(shaderProgram, fragmentShader);
 
             this._gl.linkProgram(shaderProgram);
+
             var linked = this._gl.getProgramParameter(shaderProgram, this._gl.LINK_STATUS);
 
             if (!linked) {

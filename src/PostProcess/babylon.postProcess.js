@@ -70,6 +70,13 @@ var BABYLON;
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
             }
         };
+        Object.defineProperty(PostProcess.prototype, "isSupported", {
+            get: function () {
+                return this._effect.isSupported;
+            },
+            enumerable: true,
+            configurable: true
+        });
         PostProcess.prototype.apply = function () {
             // Check
             if (!this._effect.isReady())
