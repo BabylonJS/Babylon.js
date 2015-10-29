@@ -13,6 +13,7 @@
         private _panningModel: string = "equalpower";
         public onended: () => any;
         private _playbackRate: number = 1;
+        private _streaming: boolean = false;
         private _startTime: number = 0;
         private _startOffset: number = 0;
         private _position: Vector3 = Vector3.Zero();
@@ -26,6 +27,7 @@
         private _readyToPlayCallback: () => any;
         private _audioBuffer: AudioBuffer;
         private _soundSource: AudioBufferSourceNode;
+        private _streamingSource: MediaElementAudioSourceNode
         private _soundPanner: PannerNode;
         private _soundGain: GainNode;
         private _inputAudioNode: AudioNode;
@@ -40,6 +42,7 @@
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
         private _registerFunc: (connectedMesh: AbstractMesh) => any;
         private _isOutputConnected = false;
+        private _htmlAudioElement: HTMLAudioElement;
 
         /**
         * Create a sound and attach it to a scene
@@ -75,6 +78,7 @@
                 this.refDistance = options.refDistance || 1;
                 this.distanceModel = options.distanceModel || "linear";
                 this._playbackRate = options.playbackRate || 1;
+                this._streaming = options.streaming || false;
             }
 
             if (Engine.audioEngine.canUseWebAudio) {
@@ -90,7 +94,20 @@
                 if (urlOrArrayBuffer) {
                     // If it's an URL
                     if (typeof (urlOrArrayBuffer) === "string") {
-                        Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
+                        // Loading sound using XHR2
+                        if (!this._streaming) {
+                            Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
+                        }
+                        // Streaming sound using HTML5 Audio tag
+                        else {
+                            this._htmlAudioElement = new Audio();
+                            this._htmlAudioElement.src = urlOrArrayBuffer;;
+                            this._htmlAudioElement.controls = false;
+                            this._htmlAudioElement.loop = this.loop;
+                            this._isReadyToPlay = true;
+                            document.body.appendChild(this._htmlAudioElement);
+                            if (this.autoplay) { this.play(); }
+                        }
                     }
                     else {
                         if (urlOrArrayBuffer instanceof ArrayBuffer) {
@@ -179,7 +196,12 @@
                 this._playbackRate = options.playbackRate || this._playbackRate;
                 this._updateSpatialParameters();
                 if (this.isPlaying) {
-                    this._soundSource.playbackRate.value = this._playbackRate;
+                    if (this._streaming) {
+                        this._htmlAudioElement.playbackRate = this._playbackRate;
+                    }
+                    else {
+                        this._soundSource.playbackRate.value = this._playbackRate;
+                    }
                 }
             }
         }
@@ -306,7 +328,7 @@
             if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
                     var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
-                    if (!this._soundSource) {
+                    if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound) {
                             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
                             if (this._isDirectional) {
@@ -322,14 +344,25 @@
                             }
                         }
                     }
-                    this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
-                    this._soundSource.buffer = this._audioBuffer;
-                    this._soundSource.connect(this._inputAudioNode);
-                    this._soundSource.loop = this.loop;
-                    this._soundSource.playbackRate.value = this._playbackRate;
+                    if (this._streaming) {
+                        if (!this.isPaused) {
+                            this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(this._htmlAudioElement);
+                            this._streamingSource.connect(this._inputAudioNode);
+                            this._htmlAudioElement.onended = () => { this._onended(); };
+                            this._htmlAudioElement.playbackRate = this._playbackRate;
+                        }
+                        this._htmlAudioElement.play();
+                    }
+                    else {
+                        this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
+                        this._soundSource.buffer = this._audioBuffer;
+                        this._soundSource.connect(this._inputAudioNode);
+                        this._soundSource.loop = this.loop;
+                        this._soundSource.playbackRate.value = this._playbackRate;
+                        this._soundSource.onended = () => { this._onended(); };
+                        this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
+                    }
                     this._startTime = startTime;
-                    this._soundSource.onended = () => { this._onended(); };
-                    this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
                     this.isPlaying = true;
                     this.isPaused = false;
                 }
@@ -352,17 +385,28 @@
         */
         public stop(time?: number) {
             if (this.isPlaying) {
-                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
-                this._soundSource.stop(stopTime);
+                if (this._streaming) {
+                    this._htmlAudioElement.pause();
+                    this._htmlAudioElement.currentTime = 0;
+                }
+                else {
+                    var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
+                    this._soundSource.stop(stopTime);
+                }
                 this.isPlaying = false;
             }
         }
 
         public pause() {
             if (this.isPlaying) {
-                this.stop(0);
-                this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
-                this.isPaused = true;
+                if (this._streaming) {
+                    this._htmlAudioElement.pause();
+                }
+                else {
+                    this.stop(0);
+                    this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
+                }
+                this.isPaused = true;  
             }
         }
 
@@ -382,7 +426,12 @@
         public setPlaybackRate(newPlaybackRate: number) {
             this._playbackRate = newPlaybackRate;
             if (this.isPlaying) {
-                this._soundSource.playbackRate.value = this._playbackRate;
+                if (this._streaming) {
+                    this._htmlAudioElement.playbackRate = this._playbackRate;
+                }
+                else {
+                    this._soundSource.playbackRate.value = this._playbackRate;
+                }
             }
         }
 

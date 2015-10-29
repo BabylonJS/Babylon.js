@@ -1,7 +1,7 @@
 var BABYLON;
 (function (BABYLON) {
     var SolidParticleSystem = (function () {
-        function SolidParticleSystem(name, scene) {
+        function SolidParticleSystem(name, scene, options) {
             // public members  
             this.particles = new Array();
             this.nbParticles = 0;
@@ -13,6 +13,7 @@ var BABYLON;
             this._colors = new Array();
             this._uvs = new Array();
             this._index = 0; // indices index
+            this._updatable = true;
             this._shapeCounter = 0;
             this._copy = new BABYLON.SolidParticle(null, null, null, null, null);
             this._color = new BABYLON.Color4(0, 0, 0, 0);
@@ -47,10 +48,15 @@ var BABYLON;
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
+            if (options && options.updatable) {
+                this._updatable = options.updatable;
+            }
+            else {
+                this._updatable = true;
+            }
         }
         // build the SPS mesh : returns the mesh
-        SolidParticleSystem.prototype.buildMesh = function (upgradable) {
-            if (upgradable === void 0) { upgradable = true; }
+        SolidParticleSystem.prototype.buildMesh = function () {
             if (this.nbParticles === 0) {
                 var triangle = BABYLON.MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
@@ -73,13 +79,16 @@ var BABYLON;
                 vertexData.set(this._colors32, BABYLON.VertexBuffer.ColorKind);
             }
             var mesh = new BABYLON.Mesh(name, this._scene);
-            vertexData.applyToMesh(mesh, upgradable);
+            vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
             // free memory
             this._positions = null;
             this._normals = null;
             this._uvs = null;
             this._colors = null;
+            if (!this._updatable) {
+                this.particles.length = 0;
+            }
             return mesh;
         };
         //reset copy
@@ -177,15 +186,9 @@ var BABYLON;
             }
             return shapeUV;
         };
-        // adds a new particle object in the particles array and double links the particle (next/previous)
+        // adds a new particle object in the particles array
         SolidParticleSystem.prototype._addParticle = function (p, idxpos, model, shapeId, idxInShape) {
-            this._particle = new BABYLON.SolidParticle(p, idxpos, model, shapeId, idxInShape);
-            this.particles.push(this._particle);
-            this._particle.previous = this._previousParticle;
-            if (this._previousParticle) {
-                this._previousParticle.next = this._particle;
-            }
-            this._previousParticle = this._particle;
+            this.particles.push(new BABYLON.SolidParticle(p, idxpos, model, shapeId, idxInShape));
         };
         // add solid particles from a shape model in the particles array
         SolidParticleSystem.prototype.addShape = function (mesh, nb, options) {
@@ -201,7 +204,9 @@ var BABYLON;
             // particles
             for (var i = 0; i < nb; i++) {
                 this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, this.nbParticles + i, i, options);
-                this._addParticle(this.nbParticles + i, this._positions.length, modelShape, this._shapeCounter, i);
+                if (this._updatable) {
+                    this._addParticle(this.nbParticles + i, this._positions.length, modelShape, this._shapeCounter, i);
+                }
                 this._index += shape.length;
             }
             this.nbParticles += nb;
@@ -303,6 +308,7 @@ var BABYLON;
             var uvidx = 0;
             var uvIndex = 0;
             // particle loop
+            end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;
@@ -412,6 +418,16 @@ var BABYLON;
         // dispose the SPS
         SolidParticleSystem.prototype.dispose = function () {
             this.mesh.dispose();
+            // drop references to internal big arrays for the GC
+            this._positions = null;
+            this._indices = null;
+            this._normals = null;
+            this._uvs = null;
+            this._colors = null;
+            this._positions32 = null;
+            this._normals32 = null;
+            this._uvs32 = null;
+            this._colors32 = null;
         };
         Object.defineProperty(SolidParticleSystem.prototype, "computeParticleRotation", {
             // getters

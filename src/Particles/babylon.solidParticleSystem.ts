@@ -21,6 +21,7 @@ module BABYLON {
         private _colors32: Float32Array;
         private _uvs32: Float32Array;
         private _index: number = 0;  // indices index
+        private _updatable: boolean = true;
         private _shapeCounter: number = 0;
         private _copy: SolidParticle = new SolidParticle(null, null, null, null, null);
         private _shape: Vector3[];
@@ -38,7 +39,6 @@ module BABYLON {
         private _axisZ: Vector3 = Axis.Z;
         private _camera: Camera;
         private _particle: SolidParticle;
-        private _previousParticle: SolidParticle;
         private _fakeCamPos: Vector3 = Vector3.Zero();
         private _rotMatrix: Matrix = new Matrix();
         private _invertedMatrix: Matrix = new Matrix();
@@ -59,14 +59,19 @@ module BABYLON {
         private _cosYaw: number = 0.0;
 
 
-        constructor(name: string, scene: Scene) {
+        constructor(name: string, scene: Scene, options?: { updatable?: boolean }) {
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
+            if (options && options.updatable) {
+                this._updatable = options.updatable;
+            } else {
+                this._updatable = true;
+            }
         }
 
         // build the SPS mesh : returns the mesh
-        public buildMesh(upgradable: boolean = true): Mesh {
+        public buildMesh(): Mesh {
             if (this.nbParticles === 0) {
                 var triangle = MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
                 this.addShape(triangle, 1);
@@ -88,7 +93,7 @@ module BABYLON {
                 vertexData.set(this._colors32, VertexBuffer.ColorKind);
             }
             var mesh = new Mesh(name, this._scene);
-            vertexData.applyToMesh(mesh, upgradable);
+            vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
 
             // free memory
@@ -96,6 +101,10 @@ module BABYLON {
             this._normals = null;
             this._uvs = null;
             this._colors = null;
+
+            if (!this._updatable) {
+                this.particles.length = 0;
+            }
 
             return mesh;
         }
@@ -204,15 +213,9 @@ module BABYLON {
             return shapeUV;
         }
 
-        // adds a new particle object in the particles array and double links the particle (next/previous)
+        // adds a new particle object in the particles array
         private _addParticle(p: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number): void {
-            this._particle = new SolidParticle(p, idxpos, model, shapeId, idxInShape);
-            this.particles.push(this._particle);
-            this._particle.previous = this._previousParticle;
-            if (this._previousParticle) {
-                this._previousParticle.next = this._particle;
-            }
-            this._previousParticle = this._particle;
+            this.particles.push(new SolidParticle(p, idxpos, model, shapeId, idxInShape));
         }
 
         // add solid particles from a shape model in the particles array
@@ -233,7 +236,9 @@ module BABYLON {
             // particles
             for (var i = 0; i < nb; i++) {
                 this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, this.nbParticles + i, i, options);
-                this._addParticle(this.nbParticles + i, this._positions.length, modelShape, this._shapeCounter, i);
+                if (this._updatable) {
+                    this._addParticle(this.nbParticles + i, this._positions.length, modelShape, this._shapeCounter, i);
+                }
                 this._index += shape.length;
             }
             this.nbParticles += nb;
@@ -348,6 +353,7 @@ module BABYLON {
             var uvIndex = 0;
 
             // particle loop
+            end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
             for (var p = start; p <= end; p++) {
                 this._particle = this.particles[p];
                 this._shape = this._particle._model._shape;
@@ -469,6 +475,16 @@ module BABYLON {
         // dispose the SPS
         public dispose(): void {
             this.mesh.dispose();
+            // drop references to internal big arrays for the GC
+            this._positions = null;
+            this._indices = null;
+            this._normals = null;
+            this._uvs = null;
+            this._colors = null;
+            this._positions32 = null;
+            this._normals32 = null;
+            this._uvs32 = null;
+            this._colors32 = null;
         }
 
         // Optimizer setters
@@ -546,6 +562,8 @@ module BABYLON {
         }
     }
 }
+
+
 
 
 

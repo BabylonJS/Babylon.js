@@ -44,6 +44,9 @@ var BABYLON;
             if (!tagsString) {
                 return;
             }
+            if (typeof tagsString !== "string") {
+                return;
+            }
             var tags = tagsString.split(" ");
             for (var t in tags) {
                 Tags._AddTagTo(obj, tags[t]);

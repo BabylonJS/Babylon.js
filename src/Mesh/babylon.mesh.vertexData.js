@@ -567,7 +567,7 @@ var BABYLON;
             var diameterX = options.diameterX || options.diameter || 1;
             var diameterY = options.diameterY || options.diameter || 1;
             var diameterZ = options.diameterZ || options.diameter || 1;
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var slice = (options.slice <= 0) ? 1.0 : options.slice || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var radius = new BABYLON.Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
@@ -622,7 +622,7 @@ var BABYLON;
             var diameterBottom = options.diameterBottom || options.diameter || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(3);
             var faceColors = options.faceColors;
@@ -1058,7 +1058,7 @@ var BABYLON;
             var uvs = [];
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
-            var arc = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             // positions and uvs
             positions.push(0, 0, 0); // disc center first

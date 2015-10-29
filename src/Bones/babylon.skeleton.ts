@@ -128,5 +128,13 @@
 
             return result;
         }
+
+        public dispose() {
+            // Animations
+            this.getScene().stopAnimation(this);
+
+            // Remove from scene
+            this.getScene().removeSkeleton(this);
+        }
     }
 }

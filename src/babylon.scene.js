@@ -657,6 +657,14 @@ var BABYLON;
             }
             return index;
         };
+        Scene.prototype.removeSkeleton = function (toRemove) {
+            var index = this.skeletons.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.skeletons.splice(index, 1);
+            }
+            return index;
+        };
         Scene.prototype.removeLight = function (toRemove) {
             var index = this.lights.indexOf(toRemove);
             if (index !== -1) {
