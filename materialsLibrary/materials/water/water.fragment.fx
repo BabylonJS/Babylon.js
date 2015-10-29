@@ -1,4 +1,4 @@
-﻿precision highp float;
+precision highp float;
 
 // Constants
 uniform vec3 vEyePosition;
@@ -81,11 +81,28 @@ uniform vec3 vLightGround3;
 #endif
 
 // Samplers
-#ifdef DIFFUSE
-varying vec2 vDiffuseUV;
-uniform sampler2D diffuseSampler;
-uniform vec2 vDiffuseInfos;
+#ifdef BUMP
+varying vec2 vNormalUV;
+uniform sampler2D normalSampler;
+uniform vec2 vNormalInfos;
 #endif
+
+uniform sampler2D refractionSampler;
+uniform sampler2D reflectionSampler;
+
+// Water uniforms
+const float LOG2 = 1.442695;
+
+uniform vec3 cameraPosition;
+
+uniform vec4 waterColor;
+uniform float colorBlendFactor;
+
+// Water varyings
+varying vec3 vRefractionMapTexCoord;
+varying vec3 vReflectionMapTexCoord;
+varying vec3 vPosition;
+varying float vWaveHeight;
 
 // Shadows
 #ifdef SHADOWS
@@ -309,19 +326,39 @@ void main(void) {
 	// Alpha
 	float alpha = vDiffuseColor.a;
 
-#ifdef DIFFUSE
-	baseColor = texture2D(diffuseSampler, vDiffuseUV);
+#ifdef BUMP
+	baseColor = texture2D(normalSampler, vNormalUV);
 
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
 		discard;
 #endif
 
-	baseColor.rgb *= vDiffuseInfos.y;
+	baseColor.rgb *= vNormalInfos.y;
 #endif
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
+#endif
+
+#ifdef REFLECTION
+	// Water
+	vec2 perturbation = vWaveHeight * (baseColor.rg - 0.5);
+	
+	vec2 projectedRefractionTexCoords = clamp(vRefractionMapTexCoord.xy / vRefractionMapTexCoord.z + perturbation, 0.0, 1.0);
+	vec4 refractiveColor = texture2D(refractionSampler, projectedRefractionTexCoords);
+	
+	vec2 projectedReflectionTexCoords = clamp(vReflectionMapTexCoord.xy / vReflectionMapTexCoord.z + perturbation, 0.0, 1.0);
+	vec4 reflectiveColor = texture2D(reflectionSampler, projectedReflectionTexCoords);
+	
+	vec3 eyeVector = normalize(vEyePosition - vPosition);
+	vec3 upVector = vec3(0.0, 1.0, 0.0);
+	
+	float fresnelTerm = max(dot(eyeVector, upVector), 0.0);
+	
+	vec4 combinedColor = refractiveColor * fresnelTerm + reflectiveColor * (1.0 - fresnelTerm);
+	
+	baseColor = colorBlendFactor * waterColor + (1.0 - colorBlendFactor) * combinedColor;
 #endif
 
 	// Bump
@@ -456,6 +493,6 @@ void main(void) {
 	float fog = CalcFogFactor();
 	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
 #endif
-
+	
 	gl_FragColor = color;
 }

@@ -1,5 +1,4 @@
 var gulp = require("gulp");
-var uglify = require("gulp-uglify");
 var typescript = require("gulp-typescript");
 var srcToVariable = require("./gulp-srcToVariable");
 var merge2 = require("merge2");

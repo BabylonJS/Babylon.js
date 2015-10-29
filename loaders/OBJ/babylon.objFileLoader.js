@@ -1,4 +1,3 @@
-/// <reference path="../../dist/babylon.2.2.d.ts" />
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -27,6 +26,7 @@ var BABYLON;
                 var color;
                 //New material
                 var material;
+                //Look at each line
                 for (var i = 0; i < lines.length; i++) {
                     var line = lines[i].trim();
                     // Blank line or comment
@@ -202,7 +202,9 @@ var BABYLON;
             var loadedMeshes = this._parseSolid(meshesNames, scene, data, rootUrl);
             //Push meshes from OBJ file into the variable mesh of this function
             if (meshes) {
-                loadedMeshes = loadedMeshes.concat(meshes);
+                loadedMeshes.forEach(function (mesh) {
+                    meshes.push(mesh);
+                });
             }
             return true;
         };
@@ -330,6 +332,7 @@ var BABYLON;
              * Transform BABYLON.Vector() object onto 3 digits in an array
              */
             var unwrapData = function () {
+                //Every array has the same length
                 for (var l = 0; l < wrappedPositionForBabylon.length; l++) {
                     //Push the x, y, z values of each element in the unwrapped array
                     unwrappedPositionsForBabylon.push(wrappedPositionForBabylon[l].x, wrappedPositionForBabylon[l].y, wrappedPositionForBabylon[l].z);
@@ -375,10 +378,15 @@ var BABYLON;
             var setDataForCurrentFaceWithPattern1 = function (face, v) {
                 //Get the indices of triangles for each polygon
                 getTriangles(face, v);
+                //For each element in the triangles array.
+                //This var could contains 1 to an infinity of triangles
                 for (var k = 0; k < triangles.length; k++) {
                     // Set position indice
                     var indicePositionFromObj = parseInt(triangles[k]) - 1;
-                    setData(indicePositionFromObj, 0, 0, positions[indicePositionFromObj], BABYLON.Vector2.Zero(), BABYLON.Vector3.Up());
+                    setData(indicePositionFromObj, 0, 0, //In the pattern 1, normals and uvs are not defined
+                    positions[indicePositionFromObj], //Get the vectors data
+                    BABYLON.Vector2.Zero(), BABYLON.Vector3.Up() //Create default vectors
+                    );
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -400,7 +408,10 @@ var BABYLON;
                     var indicePositionFromObj = parseInt(point[0]) - 1;
                     //Set uv indice
                     var indiceUvsFromObj = parseInt(point[1]) - 1;
-                    setData(indicePositionFromObj, indiceUvsFromObj, 0, positions[indicePositionFromObj], uvs[indiceUvsFromObj], BABYLON.Vector3.Up());
+                    setData(indicePositionFromObj, indiceUvsFromObj, 0, //Default value for normals
+                    positions[indicePositionFromObj], //Get the values for each element
+                    uvs[indiceUvsFromObj], BABYLON.Vector3.Up() //Default value for normals
+                    );
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -424,7 +435,8 @@ var BABYLON;
                     var indiceUvsFromObj = parseInt(point[1]) - 1;
                     // Set normal indice
                     var indiceNormalFromObj = parseInt(point[2]) - 1;
-                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj]);
+                    setData(indicePositionFromObj, indiceUvsFromObj, indiceNormalFromObj, positions[indicePositionFromObj], uvs[indiceUvsFromObj], normals[indiceNormalFromObj] //Set the vector for each component
+                    );
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -444,7 +456,9 @@ var BABYLON;
                     // We check indices, and normals
                     var indicePositionFromObj = parseInt(point[0]) - 1;
                     var indiceNormalFromObj = parseInt(point[1]) - 1;
-                    setData(indicePositionFromObj, 1, indiceNormalFromObj, positions[indicePositionFromObj], BABYLON.Vector2.Zero(), normals[indiceNormalFromObj]);
+                    setData(indicePositionFromObj, 1, //Default value for uv
+                    indiceNormalFromObj, positions[indicePositionFromObj], //Get each vector of data
+                    BABYLON.Vector2.Zero(), normals[indiceNormalFromObj]);
                 }
                 //Reset variable for the next line
                 triangles = [];
@@ -475,6 +489,7 @@ var BABYLON;
             //Main function
             //Split the file into lines
             var lines = data.split('\n');
+            //Look at each line
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i].trim();
                 var result;
@@ -507,30 +522,36 @@ var BABYLON;
                     //Value of result:
                     //["f 1/1/1 2/2/2 3/3/3", "1/1/1 2/2/2 3/3/3"...]
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern3(result[1].trim().split(" "), 1);
+                    setDataForCurrentFaceWithPattern3(result[1].trim().split(" "), // ["1/1/1", "2/2/2", "3/3/3"]
+                    1);
                 }
                 else if ((result = this.facePattern4.exec(line)) !== null) {
                     //Value of result:
                     //["f 1//1 2//2 3//3", "1//1 2//2 3//3"...]
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern4(result[1].trim().split(" "), 1);
+                    setDataForCurrentFaceWithPattern4(result[1].trim().split(" "), // ["1//1", "2//2", "3//3"]
+                    1);
                 }
                 else if ((result = this.facePattern2.exec(line)) !== null) {
                     //Value of result:
                     //["f 1/1 2/2 3/3", "1/1 2/2 3/3"...]
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern2(result[1].trim().split(" "), 1);
+                    setDataForCurrentFaceWithPattern2(result[1].trim().split(" "), // ["1/1", "2/2", "3/3"]
+                    1);
                 }
                 else if ((result = this.facePattern1.exec(line)) !== null) {
                     //Value of result
                     //["f 1 2 3", "1 2 3"...]
                     //Set the data for this face
-                    setDataForCurrentFaceWithPattern1(result[1].trim().split(" "), 1);
+                    setDataForCurrentFaceWithPattern1(result[1].trim().split(" "), // ["1", "2", "3"]
+                    1);
                 }
                 else if (this.group.test(line) || this.obj.test(line)) {
                     //Create a new mesh corresponding to the name of the group.
                     //Definition of the mesh
-                    var objMesh = {
+                    var objMesh = 
+                    //Set the name of the current obj mesh
+                    {
                         name: line.substring(2).trim(),
                         indices: undefined,
                         positions: undefined,
@@ -554,7 +575,9 @@ var BABYLON;
                         //Set the data for the previous mesh
                         addPreviousObjMesh();
                         //Create a new mesh
-                        var objMesh = {
+                        var objMesh = 
+                        //Set the name of the current obj mesh
+                        {
                             name: objMeshName + "_mm" + increment.toString(),
                             indices: undefined,
                             positions: undefined,
@@ -618,6 +641,7 @@ var BABYLON;
             var vertexData = new BABYLON.VertexData(); //The container for the values
             var babylonMeshesArray = []; //The mesh for babylon
             var materialToUse = [];
+            //Set data for each mesh
             for (var j = 0; j < meshesFromObj.length; j++) {
                 //check meshesNames (stlFileLoader)
                 if (meshesNames && meshesFromObj[j].name) {
@@ -657,11 +681,15 @@ var BABYLON;
                 this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
                     //Create materials thanks MTLLoader function
                     materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
+                    //Look at each material loaded in the mtl file
                     for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
                         //Three variables to get all meshes with the same material
                         var startIndex = 0;
                         var _indices = [];
                         var _index;
+                        //The material from MTL file is used in the meshes loaded
+                        //Push the indice in an array
+                        //Check if the material is not used for another mesh
                         while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
                             _indices.push(_index);
                             startIndex = _index + 1;
@@ -690,4 +718,3 @@ var BABYLON;
     //Add this loader into the register plugin
     BABYLON.SceneLoader.RegisterPlugin(new OBJFileLoader());
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.objFileLoader.js.map

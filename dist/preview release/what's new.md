@@ -10,7 +10,8 @@
     - Sprites now can be [picked](http://www.babylonjs-playground.com/#1XMVZW#3) and can use [actions](http://www.babylonjs-playground.com/#9RUHH#3) ([deltakosh](https://github.com/deltakosh))
     - New `Mesh.CreatePolygon()` method ([jerome](https://github.com/jbousquie))
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
-  - **Updates**    
+  - **Updates**
+    - Adding `StandardMaterial.linkEmissiveWithDiffuse` to, well, link emissive with diffuse value. (With)[http://www.babylonjs-playground.com/#2FPUCS#2] and (without)[http://www.babylonjs-playground.com/#2FPUCS#1] ([deltakosh](https://github.com/deltakosh))
     - Adding support for equi-rectangular mapping. See [demo here](http://www.babylonjs-playground.com/#27FN5R#8) ([deltakosh](https://github.com/deltakosh))
     - Sprites and particles scheduler updated to be resolved before transparent objects ([deltakosh](https://github.com/deltakosh))
     - Added `DirectionalLight.autoUpdateExtends` to prevent directional lights to adapt to scene extends ([deltakosh](https://github.com/deltakosh))
@@ -30,7 +31,7 @@
     - New `Material.getBindedMeshes()` function ([deltakosh](https://github.com/deltakosh))
     - OimoJS Plugin now uses Quaternions exclusively and calculates body rotations correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/761) ([RaananW](https://github.com/RaananW))
     - It is now possible to get the physics engine's body and wolrd objects using the physics engine. [PR](https://github.com/BabylonJS/Babylon.js/pull/761) ([RaananW](https://github.com/RaananW))
-    - new Heightmap Impostor for Cannon.js physics engine. [PR](https://github.com/BabylonJS/Babylon.js/pull/78), [Demo] (http://www.babylonjs-playground.com/#EXL6K#1) ([RaananW](https://github.com/RaananW))
+    - new Heightmap Impostor for Cannon.js physics engine. [PR](https://github.com/BabylonJS/Babylon.js/pull/78), [Demo] (http://www.babylonjs-playground.com/#D3LQD#3) ([RaananW](https://github.com/RaananW))
     - A plane mesh can be created with a source plane (math). [PR](https://github.com/BabylonJS/Babylon.js/pull/779) ([RaananW](https://github.com/RaananW))
   - **Bug fixes**
     - Fixed a bug with spherical mapping ([deltakosh](https://github.com/deltakosh)) 
