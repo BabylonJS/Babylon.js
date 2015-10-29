@@ -14,6 +14,7 @@
     - Adding `StandardMaterial.linkEmissiveWithDiffuse` to, well, link emissive with diffuse value. (With)[http://www.babylonjs-playground.com/#2FPUCS#2] and (without)[http://www.babylonjs-playground.com/#2FPUCS#1] ([deltakosh](https://github.com/deltakosh))
     - Adding support for equi-rectangular mapping. See [demo here](http://www.babylonjs-playground.com/#27FN5R#8) ([deltakosh](https://github.com/deltakosh))
     - Sprites and particles scheduler updated to be resolved before transparent objects ([deltakosh](https://github.com/deltakosh))
+    - Added ability to deactivate ArcRotateCamera panning mechanism (by setting panningSensibility to 0) ([vouskprod](http://www.github.com/vousk))    
     - Added `DirectionalLight.autoUpdateExtends` to prevent directional lights to adapt to scene extends ([deltakosh](https://github.com/deltakosh))
     - Added a new parameter to `debugLayer.show()` to define root element to use ([deltakosh](https://github.com/deltakosh))
     - New `MeshBuilder` class used to create all kind of mesh shapes ([deltakosh](https://github.com/deltakosh))
