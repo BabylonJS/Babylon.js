@@ -188,7 +188,7 @@ void main(void) {
 	vec3 p = position;
 	p.y += (sin(((p.x / 0.05) + time * 100.0)) * waveHeight * 5.0) + (cos(((p.z / 0.05) + time * 100.0)) * waveHeight * 5.0);
 	
-	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);;
+	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);
 
 	worldPos = viewProjection * finalWorld * vec4(position, 1.0);
 

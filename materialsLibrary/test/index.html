@@ -144,7 +144,7 @@
 				simple.diffuseTexture.uScale = 5;
 				simple.diffuseTexture.vScale = 5;
 				
-				var water = new BABYLON.WaterMaterial("water", scene, currentMesh);
+				var water = new BABYLON.WaterMaterial("water", scene);
 				water.backFaceCulling = false;
 				water.enableRenderTargets(false);
 				water.bumpTexture = new BABYLON.Texture("textures/waterbump.png", scene);
