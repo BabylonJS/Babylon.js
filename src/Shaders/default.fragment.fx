@@ -706,12 +706,12 @@ void main(void) {
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
-	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
+		shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
 #else
 #ifdef SHADOWPCF3
-	shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
+		shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 #else
-	shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
+		shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
 #endif	
 #endif	
 #else
@@ -745,7 +745,7 @@ void main(void) {
 #endif
 #endif
 
-	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x * shadow;
+	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x ;
 #else
 	vec2 coords = vReflectionUVW.xy;
 
@@ -755,7 +755,7 @@ void main(void) {
 
 	coords.y = 1.0 - coords.y;
 
-	reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x * shadow;
+	reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
 #endif
 
 #ifdef REFLECTIONFRESNEL
@@ -819,7 +819,11 @@ void main(void) {
 #ifdef EMISSIVEASILLUMINATION
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
+	#ifdef LINKEMISSIVEWITHDIFFUSE
+	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+	#else
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
+#endif
 #endif
 
 #ifdef SPECULARTERM

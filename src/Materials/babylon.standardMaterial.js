@@ -87,6 +87,7 @@ var BABYLON;
             this.GLOSSINESS = false;
             this.ROUGHNESS = false;
             this.EMISSIVEASILLUMINATION = false;
+            this.LINKEMISSIVEWITHDIFFUSE = false;
             this.REFLECTIONFRESNELFROMSPECULAR = false;
             this.LIGHTMAP = false;
             this.USELIGHTMAPASSHADOWMAP = false;
@@ -115,6 +116,7 @@ var BABYLON;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             this.useAlphaFromDiffuseTexture = false;
             this.useEmissiveAsIllumination = false;
+            this.linkEmissiveWithDiffuse = false;
             this.useReflectionFresnelFromSpecular = false;
             this.useSpecularOverAlpha = true;
             this.disableLighting = false;
@@ -303,6 +305,9 @@ var BABYLON;
             }
             if (this.useEmissiveAsIllumination) {
                 this._defines.EMISSIVEASILLUMINATION = true;
+            }
+            if (this.linkEmissiveWithDiffuse) {
+                this._defines.LINKEMISSIVEWITHDIFFUSE = true;
             }
             if (this.useReflectionFresnelFromSpecular) {
                 this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
@@ -646,22 +651,16 @@ var BABYLON;
                 }
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                // Scaling down color according to emissive
-                this._scaledSpecular.r = this.specularColor.r * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.r);
-                this._scaledSpecular.g = this.specularColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
-                this._scaledSpecular.b = this.specularColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
                 if (this._defines.SPECULARTERM) {
-                    this._effect.setColor4("vSpecularColor", this._scaledSpecular, this.specularPower);
+                    this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
                 this._effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
-            // Scaling down color according to emissive
-            this._scaledDiffuse.r = this.diffuseColor.r * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.r);
-            this._scaledDiffuse.g = this.diffuseColor.g * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.g);
-            this._scaledDiffuse.b = this.diffuseColor.b * BABYLON.Tools.Clamp(1.0 - this.emissiveColor.b);
-            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            // Diffuse
+            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+            // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
                 for (var index = 0; index < scene.lights.length; index++) {

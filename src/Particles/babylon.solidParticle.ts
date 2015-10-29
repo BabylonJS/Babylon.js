@@ -13,8 +13,6 @@ module BABYLON {
         public _pos: number;                    // index of this particle in the global "positions" array
         public _model: ModelShape;              // model shape reference
         public shapeId: number;                 // model shape id
-        public previous: SolidParticle;         // pointer to the previous particle in the global particles array
-        public next: SolidParticle;             // pointer to the next particle in the global particles array
         public idxInShape: number;              // index of the particle in its shape id
 
         constructor(particleIndex: number, positionIndex: number, model: ModelShape, shapeId: number, idxInShape: number) {

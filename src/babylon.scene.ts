@@ -877,6 +877,16 @@
             return index;
         }
 
+        public removeSkeleton(toRemove: Skeleton): number {
+            var index = this.skeletons.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.skeletons.splice(index, 1);
+            }
+
+            return index;
+        }
+
         public removeLight(toRemove: Light): number {
             var index = this.lights.indexOf(toRemove);
             if (index !== -1) {

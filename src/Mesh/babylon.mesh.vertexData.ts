@@ -690,7 +690,7 @@
             var diameterX: number = options.diameterX || options.diameter || 1;
             var diameterY: number = options.diameterY || options.diameter || 1;
             var diameterZ: number = options.diameterZ || options.diameter || 1;
-            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var slice: number = (options.slice <= 0) ? 1.0 : options.slice || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
@@ -761,7 +761,7 @@
             var diameterBottom: number = options.diameterBottom || options.diameter || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
-            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
             var faceColors: Color4[] = options.faceColors;
@@ -1293,7 +1293,7 @@
 
             var radius = options.radius || 0.5;
             var tessellation = options.tessellation || 64;
-            var arc: number = (options.arc <= 0) ? 1.0 : options.arc || 1.0;
+            var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             // positions and uvs
@@ -1673,6 +1673,7 @@
         }
     }
 }
+
 
 
 

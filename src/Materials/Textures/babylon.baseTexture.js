@@ -99,6 +99,8 @@ var BABYLON;
             }
         };
         BaseTexture.prototype.dispose = function () {
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             var index = this._scene.textures.indexOf(this);
             if (index >= 0) {
