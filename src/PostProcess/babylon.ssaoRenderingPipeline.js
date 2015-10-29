@@ -76,8 +76,8 @@ var BABYLON;
             var combineRatio = ratio.combineRatio || ratio;
             this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(1.0, 0.0), 4.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 1.0), 4.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () { return _this._originalColorPostProcess; }, true));
@@ -147,7 +147,7 @@ var BABYLON;
                 if (_this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
-                    effect.setFloat("randTextureTiles", 4.0 / ratio);
+                    effect.setFloat("randTextureTiles", 4.0);
                     _this._firstUpdate = false;
                 }
                 effect.setFloat("totalStrength", _this.totalStrength);

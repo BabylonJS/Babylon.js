@@ -89,8 +89,8 @@
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(2.0, 0.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 2.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(1.0, 0.0), 4.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 1.0), 4.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
 
             // Set up pipeline
@@ -172,7 +172,7 @@
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
-                    effect.setFloat("randTextureTiles", 4.0 / ratio);
+                    effect.setFloat("randTextureTiles", 4.0);
                     this._firstUpdate = false;
                 }
 

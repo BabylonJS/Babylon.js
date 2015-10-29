@@ -36,7 +36,7 @@ void main(void)
 {
 	const float base = 0.2;
 
-	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
+	vec3 random = normalize(texture2D(randomSampler, vUV * randTextureTiles).rgb);
 	float depth = texture2D(textureSampler, vUV).r;
 	vec3 position = vec3(vUV, depth);
 	vec3 normal = normalFromDepth(depth, vUV);

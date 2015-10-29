@@ -1429,7 +1429,7 @@
                 zmax: zmax,
                 subdivisions: subdivisions,
                 precision: precision,
-                updatable: updatable               
+                updatable: updatable
             }
 
             return MeshBuilder.CreateTiledGround(name, options, scene);
@@ -1441,7 +1441,7 @@
                 height: height,
                 subdivisions: subdivisions,
                 minHeight: minHeight,
-                maxHeight: maxHeight, 
+                maxHeight: maxHeight,
                 updatable: updatable,
                 onReady: onReady
             };
@@ -1459,7 +1459,7 @@
                 cap: cap,
                 updatable: updatable,
                 sideOrientation: sideOrientation,
-                instance: instance        
+                instance: instance
             }
             return MeshBuilder.CreateTube(name, options, scene);
         }
@@ -1473,7 +1473,7 @@
             var options = {
                 position: position,
                 normal: normal,
-                size: size, 
+                size: size,
                 angle: angle
             }
 
@@ -1564,13 +1564,13 @@
 
             var matWeightIdx = 0;
             for (var index = 0; index < positionsData.length; index += 3) {
-                for (var inf = 0; inf < this.numBoneInfluencers; inf++){
+                for (var inf = 0; inf < this.numBoneInfluencers; inf++) {
                     var weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
                         Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
-                        
-                    }else break;           
+
+                    } else break;
                 }
                 matWeightIdx += this.numBoneInfluencers;
 
@@ -1683,6 +1683,7 @@
         }
     }
 }
+
 
 
 

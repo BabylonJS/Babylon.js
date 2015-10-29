@@ -58,8 +58,8 @@
         public useVertexColors = true;
         public applyFog = true;
         public computeBonesUsingShaders = true;
-        public numBoneInfluencers = 4;
         public scalingDeterminant = 1;
+        public numBoneInfluencers = 4; 
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
