@@ -96,7 +96,7 @@ module BABYLON {
 		/*
 		* Private members
 		*/
-		private _mesh: Mesh;
+		private _mesh: AbstractMesh = null;
 		
 		private _refractionRTT: RenderTargetTexture;
 		private _reflectionRTT: RenderTargetTexture;
@@ -115,25 +115,14 @@ module BABYLON {
 		/**
 		* Constructor
 		*/
-		constructor(name: string, scene: Scene, sourceMesh: Mesh = null, renderTargetSize: Vector2 = new Vector2(512, 512)) {
+		constructor(name: string, scene: Scene, renderTargetSize: Vector2 = new Vector2(512, 512)) {
             super(name, scene);
-			
-			// Set this
-			this._mesh = sourceMesh;
 			
 			// Create render targets
 			this._createRenderTargets(scene, renderTargetSize);
         }
 		
         // Get / Set
-		public get mesh(): Mesh {
-			return this._mesh;
-		}
-		
-		public set mesh(mesh: Mesh) {
-			this._mesh = mesh;
-		}
-        
         public get refractionTexture(): RenderTargetTexture {
             return this._refractionRTT;
         }
@@ -166,7 +155,7 @@ module BABYLON {
         public getAlphaTestTexture(): BaseTexture {
             return null;
         }
-         
+        
         private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (!mesh) {
                 return true;
@@ -348,6 +337,8 @@ module BABYLON {
                     this._defines.INSTANCES = true;
                 }
             }
+            
+            this._mesh = mesh;
 
             // Get correct effect      
             if (!this._defines.isEqual(this._cachedDefines)) {
@@ -597,28 +588,38 @@ module BABYLON {
 			var mirrorMatrix = Matrix.Zero();
 			
 			this._refractionRTT.onBeforeRender = () => {
-				isVisible = this._mesh.isVisible;
-				this._mesh.isVisible = false;
-				
+                
+                if (this._mesh) {
+                    isVisible = this._mesh.isVisible;
+                    this._mesh.isVisible = false;
+                }
 				// Clip plane
 				clipPlane = scene.clipPlane;
-				//scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, this._mesh.position.y, 0), new Vector3(0, 1, 0));
+                
+                var positiony = this._mesh ? this._mesh.position.y : 0.0;
+				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony, 0), new Vector3(0, 1, 0));
 			};
 			
 			this._refractionRTT.onAfterRender = () => {
-				this._mesh.isVisible = isVisible;
-				
+                if (this._mesh) {
+				    this._mesh.isVisible = isVisible;
+                }
+                
 				// Clip plane
 				scene.clipPlane = clipPlane;
 			};
 			
 			this._reflectionRTT.onBeforeRender = () => {
-				isVisible = this._mesh.isVisible;
-				this._mesh.isVisible = false;
-				
+                if (this._mesh) {
+                    isVisible = this._mesh.isVisible;
+                    this._mesh.isVisible = false;
+                }
+                
 				// Clip plane
 				clipPlane = scene.clipPlane;
-				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, this._mesh.position.y, 0), new Vector3(0, -1, 0));
+                
+                var positiony = this._mesh ? this._mesh.position.y : 0.0;
+				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony, 0), new Vector3(0, -1, 0));
 				
 				// Transform
 				Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
@@ -631,8 +632,10 @@ module BABYLON {
 			};
 			
 			this._reflectionRTT.onAfterRender = () => {
-				this._mesh.isVisible = isVisible;
-				
+                if (this._mesh) {
+				    this._mesh.isVisible = isVisible;
+                }
+                
 				// Clip plane
 				scene.clipPlane = clipPlane;
 				
