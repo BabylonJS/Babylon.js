@@ -1808,11 +1808,19 @@
         public updateTextureSamplingMode(samplingMode: number, texture: WebGLTexture): void {
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
 
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+            if (texture.isCube) {
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, texture);
 
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+            } else {
+                this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+
+                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            }
         }
 
         public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void {

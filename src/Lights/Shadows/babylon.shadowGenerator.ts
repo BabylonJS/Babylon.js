@@ -68,7 +68,7 @@
 
             this._filter = value;
 
-            if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
+            if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap || this.usePoissonSampling) {
                 this._shadowMap.anisotropicFilteringLevel = 16;
                 this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             } else {
@@ -135,10 +135,8 @@
             this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this._shadowMap.anisotropicFilteringLevel = 1;
-            if (!light.needCube()) {
-                this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
-            }
+            this._shadowMap.anisotropicFilteringLevel = 1;        
+            this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
 
             
