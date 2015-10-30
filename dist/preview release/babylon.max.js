@@ -6199,10 +6199,18 @@ var BABYLON;
         };
         Engine.prototype.updateTextureSamplingMode = function (samplingMode, texture) {
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            if (texture.isCube) {
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, texture);
+                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+            }
+            else {
+                this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            }
         };
         Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY) {
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -8697,9 +8705,7 @@ var BABYLON;
             this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
-            if (!light.needCube()) {
-                this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
-            }
+            this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
             this._shadowMap.onBeforeRender = function (faceIndex) {
                 _this._currentFaceIndex = faceIndex;
@@ -8849,7 +8855,7 @@ var BABYLON;
                     return;
                 }
                 this._filter = value;
-                if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
+                if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap || this.usePoissonSampling) {
                     this._shadowMap.anisotropicFilteringLevel = 16;
                     this._shadowMap.updateSamplingMode(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 }

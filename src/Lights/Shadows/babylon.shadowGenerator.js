@@ -26,9 +26,7 @@ var BABYLON;
             this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
-            if (!light.needCube()) {
-                this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
-            }
+            this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
             this._shadowMap.onBeforeRender = function (faceIndex) {
                 _this._currentFaceIndex = faceIndex;
@@ -178,7 +176,7 @@ var BABYLON;
                     return;
                 }
                 this._filter = value;
-                if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
+                if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap || this.usePoissonSampling) {
                     this._shadowMap.anisotropicFilteringLevel = 16;
                     this._shadowMap.updateSamplingMode(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 }
