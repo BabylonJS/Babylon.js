@@ -101,6 +101,35 @@
             return angle * Math.PI / 180;
         }
 
+        public static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string {
+            var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            var output = "";
+            var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+            var i = 0;
+            var bytes = new Uint8Array(buffer);
+
+            while (i < bytes.length) {
+                chr1 = bytes[i++];
+                chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index 
+                chr3 = i < bytes.length ? bytes[i++] : Number.NaN; // checks are needed here
+
+                enc1 = chr1 >> 2;
+                enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                enc4 = chr3 & 63;
+
+                if (isNaN(chr2)) {
+                    enc3 = enc4 = 64;
+                } else if (isNaN(chr3)) {
+                    enc4 = 64;
+                }
+                output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+                    keyStr.charAt(enc3) + keyStr.charAt(enc4);
+            }
+
+            return "data:image/png;base64," + output;
+        }
+
         public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[], indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -202,7 +231,11 @@
             return url;
         }
 
-        public static LoadImage(url: string, onload, onerror, database): HTMLImageElement {
+        public static LoadImage(url: any, onload, onerror, database): HTMLImageElement {
+            if (url instanceof ArrayBuffer) {
+                url = Tools.EncodeArrayBufferTobase64(url);
+            }
+
             url = Tools.CleanUrl(url);
 
             var img = new Image();
