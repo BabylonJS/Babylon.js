@@ -68,6 +68,12 @@ var BABYLON;
         DirectionalLight.prototype.needRefreshPerFrame = function () {
             return true;
         };
+        DirectionalLight.prototype.needCube = function () {
+            return false;
+        };
+        DirectionalLight.prototype.getShadowDirection = function (faceIndex) {
+            return this.direction;
+        };
         DirectionalLight.prototype.computeTransformedPosition = function () {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this.transformedPosition) {

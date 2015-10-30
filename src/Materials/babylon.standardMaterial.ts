@@ -44,10 +44,14 @@
         public HEMILIGHT1 = false;
         public HEMILIGHT2 = false;
         public HEMILIGHT3 = false;
-        public POINTDIRLIGHT0 = false;
-        public POINTDIRLIGHT1 = false;
-        public POINTDIRLIGHT2 = false;
-        public POINTDIRLIGHT3 = false;
+        public POINTLIGHT0 = false;
+        public POINTLIGHT1 = false;
+        public POINTLIGHT2 = false;
+        public POINTLIGHT3 = false;
+        public DIRLIGHT0 = false;
+        public DIRLIGHT1 = false;
+        public DIRLIGHT2 = false;
+        public DIRLIGHT3 = false;
         public SPECULARTERM = false;
         public SHADOW0 = false;
         public SHADOW1 = false;
@@ -411,8 +415,10 @@
                         type = "SPOTLIGHT" + lightIndex;
                     } else if (light instanceof HemisphericLight) {
                         type = "HEMILIGHT" + lightIndex;
+                    } else if (light instanceof PointLight) {
+                        type = "POINTLIGHT" + lightIndex;
                     } else {
-                        type = "POINTDIRLIGHT" + lightIndex;
+                        type = "DIRLIGHT" + lightIndex;
                     }
 
                     this._defines[type] = true;
@@ -837,7 +843,9 @@
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh.receiveShadows && shadowGenerator) {
-                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            if (!(<any>light).needCube()) {
+                                this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            }
                             this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
                             this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                         }

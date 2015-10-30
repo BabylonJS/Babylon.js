@@ -21,7 +21,7 @@
         private _drawingContext: CanvasRenderingContext2D;
         private _rootElement: HTMLElement;
 
-        private _syncPositions: () => void;
+        public _syncPositions: () => void;
         private _syncData: () => void;
         private _syncUI: () => void;
         private _onCanvasClick: (evt: MouseEvent) => void;
@@ -343,8 +343,6 @@
             this._scene.unregisterAfterRender(this._syncUI);
             this._rootElement.removeChild(this._globalDiv);
 
-            window.removeEventListener("resize", this._syncPositions);
-
             this._scene.forceShowBoundingBoxes = false;
             this._scene.forceWireframe = false;
 
@@ -395,8 +393,7 @@
             this._rootElement.appendChild(this._globalDiv);
 
             this._generateDOMelements();
-
-            window.addEventListener("resize", this._syncPositions);
+            
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();

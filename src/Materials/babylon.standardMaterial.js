@@ -52,10 +52,14 @@ var BABYLON;
             this.HEMILIGHT1 = false;
             this.HEMILIGHT2 = false;
             this.HEMILIGHT3 = false;
-            this.POINTDIRLIGHT0 = false;
-            this.POINTDIRLIGHT1 = false;
-            this.POINTDIRLIGHT2 = false;
-            this.POINTDIRLIGHT3 = false;
+            this.POINTLIGHT0 = false;
+            this.POINTLIGHT1 = false;
+            this.POINTLIGHT2 = false;
+            this.POINTLIGHT3 = false;
+            this.DIRLIGHT0 = false;
+            this.DIRLIGHT1 = false;
+            this.DIRLIGHT2 = false;
+            this.DIRLIGHT3 = false;
             this.SPECULARTERM = false;
             this.SHADOW0 = false;
             this.SHADOW1 = false;
@@ -359,8 +363,11 @@ var BABYLON;
                     else if (light instanceof BABYLON.HemisphericLight) {
                         type = "HEMILIGHT" + lightIndex;
                     }
+                    else if (light instanceof BABYLON.PointLight) {
+                        type = "POINTLIGHT" + lightIndex;
+                    }
                     else {
-                        type = "POINTDIRLIGHT" + lightIndex;
+                        type = "DIRLIGHT" + lightIndex;
                     }
                     this._defines[type] = true;
                     // Specular
@@ -697,7 +704,9 @@ var BABYLON;
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh.receiveShadows && shadowGenerator) {
-                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            if (!light.needCube()) {
+                                this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            }
                             this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
                             this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                         }

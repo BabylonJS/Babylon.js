@@ -15,17 +15,24 @@ var BABYLON;
             this._projectionMatrix = BABYLON.Matrix.Zero();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._worldViewProjection = BABYLON.Matrix.Zero();
+            this._currentFaceIndex = 0;
+            this._currentFaceIndexCache = 0;
             this._light = light;
             this._scene = light.getScene();
             this._mapSize = mapSize;
             light._shadowGenerator = this;
             // Render target
-            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
+            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
             this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
-            this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
+            if (!light.needCube()) {
+                this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
+            }
             this._shadowMap.renderParticles = false;
+            this._shadowMap.onBeforeRender = function (faceIndex) {
+                _this._currentFaceIndex = faceIndex;
+            };
             this._shadowMap.onAfterUnbind = function () {
                 if (!_this.useBlurVarianceShadowMap) {
                     return;
@@ -273,13 +280,14 @@ var BABYLON;
         // Methods
         ShadowGenerator.prototype.getTransformMatrix = function () {
             var scene = this._scene;
-            if (this._currentRenderID === scene.getRenderId()) {
+            if (this._currentRenderID === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
                 return this._transformMatrix;
             }
             this._currentRenderID = scene.getRenderId();
+            this._currentFaceIndexCache = this._currentFaceIndex;
             var lightPosition = this._light.position;
-            BABYLON.Vector3.NormalizeToRef(this._light.direction, this._lightDirection);
-            if (Math.abs(BABYLON.Vector3.Dot(this._lightDirection, BABYLON.Vector3.Up())) == 1.0) {
+            BABYLON.Vector3.NormalizeToRef(this._light.getShadowDirection(this._currentFaceIndex), this._lightDirection);
+            if (Math.abs(BABYLON.Vector3.Dot(this._lightDirection, BABYLON.Vector3.Up())) === 1.0) {
                 this._lightDirection.z = 0.0000000000001; // Need to avoid perfectly perpendicular light
             }
             if (this._light.computeTransformedPosition()) {
