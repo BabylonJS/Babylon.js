@@ -101,11 +101,17 @@
                         // Streaming sound using HTML5 Audio tag
                         else {
                             this._htmlAudioElement = new Audio();
-                            this._htmlAudioElement.src = urlOrArrayBuffer;;
+                            this._htmlAudioElement.src = urlOrArrayBuffer;
                             this._htmlAudioElement.controls = false;
                             this._htmlAudioElement.loop = this.loop;
                             this._isReadyToPlay = true;
                             document.body.appendChild(this._htmlAudioElement);
+                            // Simulating a ready to play event for consistent behavior with non streamed audio source
+                            if (this._readyToPlayCallback) {
+                                window.setTimeout(() => {
+                                    this._readyToPlayCallback();
+                                }, 1000);
+                            }
                             if (this.autoplay) { this.play(); }
                         }
                     }
@@ -161,6 +167,12 @@
                 }
                 this._audioBuffer = null;
 
+                if (this._htmlAudioElement) {
+                    this._htmlAudioElement.pause();
+                    this._htmlAudioElement.src = "";
+                    document.body.removeChild(this._htmlAudioElement);
+                }
+                
                 if (this._connectedMesh) {
                     this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                     this._connectedMesh = null;
@@ -345,12 +357,13 @@
                         }
                     }
                     if (this._streaming) {
-                        if (!this.isPaused) {
+                        if (!this._streamingSource) {
                             this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(this._htmlAudioElement);
-                            this._streamingSource.connect(this._inputAudioNode);
                             this._htmlAudioElement.onended = () => { this._onended(); };
                             this._htmlAudioElement.playbackRate = this._playbackRate;
                         }
+                        this._streamingSource.disconnect();
+                        this._streamingSource.connect(this._inputAudioNode);
                         this._htmlAudioElement.play();
                     }
                     else {
@@ -387,7 +400,10 @@
             if (this.isPlaying) {
                 if (this._streaming) {
                     this._htmlAudioElement.pause();
-                    this._htmlAudioElement.currentTime = 0;
+                    // Test needed for Firefox or it will generate an Invalid State Error
+                    if (this._htmlAudioElement.currentTime > 0) {
+                        this._htmlAudioElement.currentTime = 0;
+                    }
                 }
                 else {
                     var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
