@@ -819,6 +819,12 @@ var BABYLON;
             var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
             var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
             this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            for (var index = 0; index < this.scenes.length; index++) {
+                var scene = this.scenes[index];
+                if (scene.debugLayer.isVisible()) {
+                    scene.debugLayer._syncPositions();
+                }
+            }
         };
         /**
          * force a specific size of the canvas

@@ -2,7 +2,6 @@
 
     export interface IShadowLight {
         position: Vector3;
-        direction: Vector3;
         transformedPosition: Vector3;
         name: string;
 
@@ -13,6 +12,9 @@
 
         supportsVSM(): boolean;
         needRefreshPerFrame(): boolean;
+        needCube(): boolean;
+
+        getShadowDirection(faceIndex?: number): Vector3;
 
         _shadowGenerator: ShadowGenerator;
     }

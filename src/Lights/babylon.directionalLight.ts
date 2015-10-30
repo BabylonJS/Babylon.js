@@ -90,6 +90,14 @@
             return true;
         }
 
+        public needCube(): boolean {
+            return false;
+        }
+
+        public getShadowDirection(faceIndex?: number): Vector3 {
+            return this.direction;
+        }
+
         public computeTransformedPosition(): boolean {
             if (this.parent && this.parent.getWorldMatrix) {
                 if (!this.transformedPosition) {

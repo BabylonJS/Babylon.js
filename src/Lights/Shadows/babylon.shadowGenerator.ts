@@ -121,6 +121,8 @@
         private _downSamplePostprocess: PassPostProcess;
         private _boxBlurPostprocess: PostProcess;
         private _mapSize: number;
+        private _currentFaceIndex = 0;
+        private _currentFaceIndexCache = 0;
 
         constructor(mapSize: number, light: IShadowLight) {
             this._light = light;
@@ -130,12 +132,19 @@
             light._shadowGenerator = this;
 
             // Render target
-            this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
+            this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
-            this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+            if (!light.needCube()) {
+                this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+            }
             this._shadowMap.renderParticles = false;
+
+            
+            this._shadowMap.onBeforeRender = (faceIndex: number) => {
+                this._currentFaceIndex = faceIndex;
+            }
 
             this._shadowMap.onAfterUnbind = () => {
                 if (!this.useBlurVarianceShadowMap) {
@@ -306,16 +315,17 @@
         // Methods
         public getTransformMatrix(): Matrix {
             var scene = this._scene;
-            if (this._currentRenderID === scene.getRenderId()) {
+            if (this._currentRenderID === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
                 return this._transformMatrix;
             }
 
             this._currentRenderID = scene.getRenderId();
+            this._currentFaceIndexCache = this._currentFaceIndex;
 
             var lightPosition = this._light.position;
-            Vector3.NormalizeToRef(this._light.direction, this._lightDirection);
+            Vector3.NormalizeToRef(this._light.getShadowDirection(this._currentFaceIndex), this._lightDirection);
 
-            if (Math.abs(Vector3.Dot(this._lightDirection, Vector3.Up())) == 1.0) {
+            if (Math.abs(Vector3.Dot(this._lightDirection, Vector3.Up())) === 1.0) {
                 this._lightDirection.z = 0.0000000000001; // Need to avoid perfectly perpendicular light
             }
                 

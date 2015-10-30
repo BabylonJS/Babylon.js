@@ -21,11 +21,17 @@ var BABYLON;
             var activeCamera = this.getScene().activeCamera;
             BABYLON.Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
         };
+        SpotLight.prototype.needCube = function () {
+            return false;
+        };
         SpotLight.prototype.supportsVSM = function () {
             return true;
         };
         SpotLight.prototype.needRefreshPerFrame = function () {
             return false;
+        };
+        SpotLight.prototype.getShadowDirection = function (faceIndex) {
+            return this.direction;
         };
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));

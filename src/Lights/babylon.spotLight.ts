@@ -19,6 +19,9 @@
             Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
         }
 
+        public needCube(): boolean {
+            return false;
+        }
 
         public supportsVSM(): boolean {
             return true;
@@ -26,6 +29,10 @@
 
         public needRefreshPerFrame(): boolean {
             return false;
+        }
+
+        public getShadowDirection(faceIndex?: number): Vector3 {
+            return this.direction;
         }
 
         public setDirectionToTarget(target: Vector3): Vector3 {
