@@ -29,6 +29,7 @@
 
     export class Tools {
         public static BaseUrl = "";
+        public static CorsBehavior:any = "anonymous";
 
         public static ToHex(i: number): string {
             var str = i.toString(16);
@@ -241,7 +242,22 @@
             var img = new Image();
 
             if (url.substr(0, 5) !== "data:")
-                img.crossOrigin = 'anonymous';
+            {
+                if(Tools.CorsBehavior){
+                    switch(typeof(Tools.CorsBehavior)){
+                        case "function":
+                            var result = Tools.CorsBehavior(url);
+                            if(result){
+                                img.crossOrigin = result;
+                            }
+                            break; 
+                        case "string":
+                        default:
+                            img.crossOrigin = Tools.CorsBehavior;
+                        break;
+                    } 
+                }
+            }
 
             img.onload = () => {
                 onload(img);
