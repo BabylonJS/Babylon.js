@@ -29,7 +29,7 @@
 
     export class Tools {
         public static BaseUrl = "";
-        public static CorsBehavior:any = "anonymous";
+        public static CorsBehavior: any = "anonymous";
 
         public static ToHex(i: number): string {
             var str = i.toString(16);
@@ -125,7 +125,7 @@
                     enc4 = 64;
                 }
                 output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
-                    keyStr.charAt(enc3) + keyStr.charAt(enc4);
+                keyStr.charAt(enc3) + keyStr.charAt(enc4);
             }
 
             return "data:image/png;base64," + output;
@@ -241,21 +241,20 @@
 
             var img = new Image();
 
-            if (url.substr(0, 5) !== "data:")
-            {
-                if(Tools.CorsBehavior){
-                    switch(typeof(Tools.CorsBehavior)){
+            if (url.substr(0, 5) !== "data:") {
+                if (Tools.CorsBehavior) {
+                    switch (typeof (Tools.CorsBehavior)) {
                         case "function":
                             var result = Tools.CorsBehavior(url);
-                            if(result){
+                            if (result) {
                                 img.crossOrigin = result;
                             }
-                            break; 
+                            break;
                         case "string":
                         default:
                             img.crossOrigin = Tools.CorsBehavior;
-                        break;
-                    } 
+                            break;
+                    }
                 }
             }
 
@@ -982,3 +981,4 @@
         }
     }
 } 
+
