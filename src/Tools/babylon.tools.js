@@ -188,8 +188,22 @@ var BABYLON;
             }
             url = Tools.CleanUrl(url);
             var img = new Image();
-            if (url.substr(0, 5) !== "data:")
-                img.crossOrigin = 'anonymous';
+            if (url.substr(0, 5) !== "data:") {
+                if (Tools.CorsBehavior) {
+                    switch (typeof (Tools.CorsBehavior)) {
+                        case "function":
+                            var result = Tools.CorsBehavior(url);
+                            if (result) {
+                                img.crossOrigin = result;
+                            }
+                            break;
+                        case "string":
+                        default:
+                            img.crossOrigin = Tools.CorsBehavior;
+                            break;
+                    }
+                }
+            }
             img.onload = function () {
                 onload(img);
             };
@@ -762,6 +776,7 @@ var BABYLON;
             configurable: true
         });
         Tools.BaseUrl = "";
+        Tools.CorsBehavior = "anonymous";
         // Logs
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;
