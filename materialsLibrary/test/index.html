@@ -53,7 +53,7 @@
 
 			// Lights
 			var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
-			var pointLight = new BABYLON.PointLight("point", new BABYLON.Vector3(100, 100, 10), scene);
+			var pointLight = new BABYLON.PointLight("point", new BABYLON.Vector3(20, 20, 10), scene);
 			pointLight.setEnabled(false);
 			var directionalLight = new BABYLON.DirectionalLight("directional", new BABYLON.Vector3(0,-1, 0), scene);
 			directionalLight.setEnabled(false);
@@ -103,6 +103,10 @@
 				var shadowCaster2 = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
 				shadowCaster2.setEnabled(false);
 				shadowCaster2.position = new BABYLON.Vector3(0, -30, 0);
+				
+				var shadowCaster3 = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+				shadowCaster3.setEnabled(false);
+				shadowCaster3.position = new BABYLON.Vector3(20, 20, 10);
 
 				var shadowGenerator = new BABYLON.ShadowGenerator(1024, directionalLight);
 				shadowGenerator.getShadowMap().renderList.push(shadowCaster);
@@ -111,6 +115,10 @@
 				var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, spotLight);
 				shadowGenerator2.getShadowMap().renderList.push(shadowCaster2);
 				shadowGenerator2.usePoissonSampling = true;
+				
+				var shadowGenerator3 = new BABYLON.ShadowGenerator(1024, pointLight);
+				shadowGenerator3.getShadowMap().renderList.push(shadowCaster3);
+				shadowGenerator3.usePoissonSampling = true;
 
 				// Register a render loop to repeatedly render the scene
 				engine.runRenderLoop(function () {
@@ -122,6 +130,9 @@
 
 					shadowCaster2.rotation.x += 0.01;
 					shadowCaster2.rotation.y += 0.01;
+
+					shadowCaster3.rotation.x += 0.01;
+					shadowCaster3.rotation.y += 0.01;
 				});
 
 				// Resize
@@ -233,7 +244,8 @@
 				});
 
 				f1.add(options, 'pointLight').onChange(function () {
-					pointLight.setEnabled(options.pointLight);
+					pointLight.setEnabled(options.pointLight);					
+					shadowCaster3.setEnabled(options.pointLight && options.castShadows);					
 				});
 				
 				f1.add(options, 'spotLight').onChange(function () {
@@ -248,7 +260,8 @@
 
 				f1.add(options, 'castShadows').onChange(function () {
 					shadowCaster.setEnabled(options.directionalLight && options.castShadows);
-					shadowCaster2.setEnabled(options.spotLight && options.castShadows);					
+					shadowCaster2.setEnabled(options.spotLight && options.castShadows);	
+					shadowCaster3.setEnabled(options.pointLight && options.castShadows);				
 				});
 
 				gui.add(options, 'fog').onChange(function () {

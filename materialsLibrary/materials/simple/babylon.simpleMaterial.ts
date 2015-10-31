@@ -21,10 +21,14 @@ module BABYLON {
         public HEMILIGHT1 = false;
         public HEMILIGHT2 = false;
         public HEMILIGHT3 = false;
-        public POINTDIRLIGHT0 = false;
-        public POINTDIRLIGHT1 = false;
-        public POINTDIRLIGHT2 = false;
-        public POINTDIRLIGHT3 = false;
+        public DIRLIGHT0 = false;
+        public DIRLIGHT1 = false;
+        public DIRLIGHT2 = false;
+        public DIRLIGHT3 = false;
+        public POINTLIGHT0 = false;
+        public POINTLIGHT1 = false;
+        public POINTLIGHT2 = false;
+        public POINTLIGHT3 = false;        
         public SHADOW0 = false;
         public SHADOW1 = false;
         public SHADOW2 = false;
@@ -202,8 +206,10 @@ module BABYLON {
                         type = "SPOTLIGHT" + lightIndex;
                     } else if (light instanceof HemisphericLight) {
                         type = "HEMILIGHT" + lightIndex;
+                    } else if (light instanceof PointLight) {
+                        type = "POINTLIGHT" + lightIndex;
                     } else {
-                        type = "POINTDIRLIGHT" + lightIndex;
+                        type = "DIRLIGHT" + lightIndex;
                     }
 
                     this._defines[type] = true;
@@ -334,10 +340,7 @@ module BABYLON {
                 }
 
                 // Legacy browser patch
-                var shaderName = "default";
-                if (!scene.getEngine().getCaps().standardDerivatives) {
-                    shaderName = "legacydefault";
-                }
+                var shaderName = "simple";
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
