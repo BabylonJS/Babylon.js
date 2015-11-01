@@ -1823,10 +1823,11 @@ var BABYLON;
                 return;
             }
             // Video
+            var alreadyActivated = false;
             if (texture instanceof BABYLON.VideoTexture) {
-                if (texture.update()) {
-                    this._activeTexturesCache[channel] = null;
-                }
+                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                alreadyActivated = true;
+                texture.update();
             }
             else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 texture.delayLoad();
@@ -1837,7 +1838,9 @@ var BABYLON;
             }
             this._activeTexturesCache[channel] = texture;
             var internalTexture = texture.getInternalTexture();
-            this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+            if (!alreadyActivated) {
+                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+            }
             if (internalTexture.isCube) {
                 this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, internalTexture);
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {

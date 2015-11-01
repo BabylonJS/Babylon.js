@@ -47,7 +47,7 @@
             var now = Tools.Now;
 
             if (now - this._lastUpdate < 15 || this.video.readyState !== this.video.HAVE_ENOUGH_DATA) {
-                return false;
+               return false;
             }
 
             this._lastUpdate = now;
