@@ -19,7 +19,6 @@
         }
 
         public static CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
-
             var disc = new Mesh(name, scene);
             var vertexData = VertexData.CreateDisc(options);
 
@@ -27,6 +26,15 @@
 
             return disc;
         }
+
+        public static CreateIcoSphere(name: string, options: { radius?: number, flat?: number, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
+            var sphere = new Mesh(name, scene);
+            var vertexData = VertexData.CreateIcoSphere(options);
+
+            vertexData.applyToMesh(sphere, options.updatable);
+
+            return sphere;
+        };
 
         public static CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, instance?: Mesh }, scene?: Scene): Mesh {
             var pathArray = options.pathArray;

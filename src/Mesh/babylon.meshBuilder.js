@@ -21,6 +21,13 @@ var BABYLON;
             vertexData.applyToMesh(disc, options.updatable);
             return disc;
         };
+        MeshBuilder.CreateIcoSphere = function (name, options, scene) {
+            var sphere = new BABYLON.Mesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateIcoSphere(options);
+            vertexData.applyToMesh(sphere, options.updatable);
+            return sphere;
+        };
+        ;
         MeshBuilder.CreateRibbon = function (name, options, scene) {
             var pathArray = options.pathArray;
             var closeArray = options.closeArray;

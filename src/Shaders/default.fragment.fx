@@ -186,18 +186,18 @@ uniform sampler2D reflection2DSampler;
 #endif
 
 #ifdef REFLECTIONMAP_SKYBOX
-	varying vec3 vPositionUVW;
+varying vec3 vPositionUVW;
 #else
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR
-	varying vec3 vDirectionW;
+varying vec3 vDirectionW;
 #endif
 
-	#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-		uniform mat4 reflectionMatrix;
-	#endif
-	#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
-		uniform mat4 view;
-	#endif
+#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
+uniform mat4 reflectionMatrix;
+#endif
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
+uniform mat4 view;
+#endif
 #endif
 
 vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
@@ -287,10 +287,11 @@ float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float dar
 	return 1.0;
 }
 
-float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float bias, float darkness)
+float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float bias, float darkness)
 {
 	vec3 directionToLight = vPositionW - lightPosition;
 	float depth = length(directionToLight);
+	float diskScale = (1.0 - (1.0 + depth * 3.0)) / mapSize;
 
 	depth = clamp(depth, 0., 1.);
 
@@ -299,18 +300,18 @@ float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, fl
 	float visibility = 1.;
 
 	vec3 poissonDisk[4];
-	poissonDisk[0] = vec3(-0.094201624, 0.04, -0.039906216);
-	poissonDisk[1] = vec3(0.094558609, -0.04, -0.076890725);
-	poissonDisk[2] = vec3(-0.094184101, 0.01, -0.092938870);
-	poissonDisk[3] = vec3(0.034495938, -0.01, 0.029387760);
+	poissonDisk[0] = vec3(-1.0, 1.0, -1.0);
+	poissonDisk[1] = vec3(1.0, -1.0, -1.0);
+	poissonDisk[2] = vec3(-1.0, -1.0, -1.0);
+	poissonDisk[3] = vec3(1.0, -1.0, 1.0);
 
 	// Poisson Sampling
 	float biasedDepth = depth - bias;
 
-	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0])) < biasedDepth) visibility -= 0.25;
-	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1])) < biasedDepth) visibility -= 0.25;
-	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2])) < biasedDepth) visibility -= 0.25;
-	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3])) < biasedDepth) visibility -= 0.25;
+	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * diskScale)) < biasedDepth) visibility -= 0.25;
+	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * diskScale)) < biasedDepth) visibility -= 0.25;
+	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * diskScale)) < biasedDepth) visibility -= 0.25;
+	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * diskScale)) < biasedDepth) visibility -= 0.25;
 
 	return  min(1.0, visibility + darkness);
 }
@@ -679,17 +680,17 @@ void main(void) {
 	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x);
 #else
 #ifdef SHADOWPCF0
-	#if defined(POINTLIGHT0)
-	shadow = computeShadowWithPCFCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x);
-	#else
-	shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
-	#endif
+#if defined(POINTLIGHT0)
+	shadow = computeShadowWithPCFCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
 #else
-	#if defined(POINTLIGHT0)
+	shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
+#endif
+#else
+#if defined(POINTLIGHT0)
 	shadow = computeShadowCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
-	#else
+#else
 	shadow = computeShadow(vPositionFromLight0, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
-	#endif
+#endif
 #endif
 #endif
 #else
@@ -720,16 +721,16 @@ void main(void) {
 #else
 #ifdef SHADOWPCF1
 #if defined(POINTLIGHT1)
-	shadow = computeShadowWithPCFCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.z, shadowsInfo1.x);
+	shadow = computeShadowWithPCFCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
 #endif
 #else
-	#if defined(POINTLIGHT1)
+#if defined(POINTLIGHT1)
 	shadow = computeShadowCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
-	#else
+#else
 	shadow = computeShadow(vPositionFromLight1, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
-	#endif
+#endif
 #endif
 #endif
 #else
@@ -760,16 +761,16 @@ void main(void) {
 #else
 #ifdef SHADOWPCF2
 #if defined(POINTLIGHT2)
-	shadow = computeShadowWithPCFCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.z, shadowsInfo2.x);
+	shadow = computeShadowWithPCFCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
 #endif
 #else
-	#if defined(POINTLIGHT2)
+#if defined(POINTLIGHT2)
 	shadow = computeShadowCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
-	#else
+#else
 	shadow = computeShadow(vPositionFromLight2, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
-	#endif
+#endif
 #endif	
 #endif	
 #else
@@ -796,20 +797,20 @@ void main(void) {
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
-		shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
+	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
 #else
 #ifdef SHADOWPCF3
 #if defined(POINTLIGHT3)
-	shadow = computeShadowWithPCFCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
+	shadow = computeShadowWithPCFCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 #endif
 #else
-	#if defined(POINTLIGHT3)
+#if defined(POINTLIGHT3)
 	shadow = computeShadowCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
-	#else
+#else
 	shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
-	#endif
+#endif
 #endif	
 #endif	
 #else
@@ -843,7 +844,7 @@ void main(void) {
 #endif
 #endif
 
-	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x ;
+	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
 #else
 	vec2 coords = vReflectionUVW.xy;
 
@@ -917,9 +918,9 @@ void main(void) {
 #ifdef EMISSIVEASILLUMINATION
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #else
-	#ifdef LINKEMISSIVEWITHDIFFUSE
+#ifdef LINKEMISSIVEWITHDIFFUSE
 	vec3 finalDiffuse = clamp((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
-	#else
+#else
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0, 1.0) * baseColor.rgb;
 #endif
 #endif
@@ -944,11 +945,11 @@ void main(void) {
 #ifdef LIGHTMAP
 	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
 
-	#ifdef USELIGHTMAPASSHADOWMAP
-		color.rgb *= lightmapColor;
-	#else
-		color.rgb += lightmapColor;
-	#endif
+#ifdef USELIGHTMAPASSHADOWMAP
+	color.rgb *= lightmapColor;
+#else
+	color.rgb += lightmapColor;
+#endif
 #endif
 
 #ifdef FOG
