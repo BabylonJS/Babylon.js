@@ -157,6 +157,20 @@ var BABYLON;
             // Fragment shader
             BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         };
+        Effect.prototype._dumpShadersName = function () {
+            if (this.name.vertexElement) {
+                BABYLON.Tools.Error("Vertex shader:" + this.name.vertexElement);
+                BABYLON.Tools.Error("Fragment shader:" + this.name.fragmentElement);
+            }
+            else if (this.name.vertex) {
+                BABYLON.Tools.Error("Vertex shader:" + this.name.vertex);
+                BABYLON.Tools.Error("Fragment shader:" + this.name.fragment);
+            }
+            else {
+                BABYLON.Tools.Error("Vertex shader:" + this.name);
+                BABYLON.Tools.Error("Fragment shader:" + this.name);
+            }
+        };
         Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try {
                 var engine = this._engine;
@@ -190,23 +204,14 @@ var BABYLON;
                 }
                 // Let's go through fallbacks then
                 if (fallbacks && fallbacks.isMoreFallbacks) {
+                    BABYLON.Tools.Error("Unable to compile effect with current defines. Trying next fallback.");
+                    this._dumpShadersName();
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 }
                 else {
                     BABYLON.Tools.Error("Unable to compile effect: ");
-                    if (this.name.vertexElement) {
-                        BABYLON.Tools.Error("Vertex shader:" + this.name.vertexElement);
-                        BABYLON.Tools.Error("Fragment shader:" + this.name.fragmentElement);
-                    }
-                    else if (this.name.vertex) {
-                        BABYLON.Tools.Error("Vertex shader:" + this.name.vertex);
-                        BABYLON.Tools.Error("Fragment shader:" + this.name.fragment);
-                    }
-                    else {
-                        BABYLON.Tools.Error("Vertex shader:" + this.name);
-                        BABYLON.Tools.Error("Fragment shader:" + this.name);
-                    }
+                    this._dumpShadersName();
                     BABYLON.Tools.Error("Defines: " + defines);
                     BABYLON.Tools.Error("Error: " + e.message);
                     this._compilationError = e.message;
