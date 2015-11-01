@@ -1256,6 +1256,9 @@ var BABYLON;
         Mesh.CreatePolyhedron = function (name, options, scene) {
             return BABYLON.MeshBuilder.CreatePolyhedron(name, options, scene);
         };
+        Mesh.CreateIcoSphere = function (name, options, scene) {
+            return BABYLON.MeshBuilder.CreateIcoSphere(name, options, scene);
+        };
         // Decals
         Mesh.CreateDecal = function (name, sourceMesh, position, normal, size, angle) {
             var options = {

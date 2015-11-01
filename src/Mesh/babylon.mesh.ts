@@ -1468,6 +1468,10 @@
             return MeshBuilder.CreatePolyhedron(name, options, scene);
         }
 
+        public static CreateIcoSphere(name: string, options: { radius?: number, flat?: number, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
+            return MeshBuilder.CreateIcoSphere(name, options, scene);
+        }
+
         // Decals
         public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh {
             var options = {

@@ -1335,6 +1335,207 @@
             return vertexData;
         }
 
+        public static CreateIcoSphere(options: {radius?: number, flat?: number, subdivisions?: number, sideOrientation?: number}): VertexData {
+            var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
+            var radius = options.radius || 1;
+            var flat = options.flat || false;
+            var subdivisions = options.subdivisions || 1;
+
+            var t = (1 + Math.sqrt(5)) / 2;
+
+            // 12 vertex x,y,z
+            var ico_vertices = [
+                -1, t, -0, 1, t, 0, -1, -t, 0, 1, -t, 0, // v0-3
+                0, -1, -t, 0, 1, -t, 0, -1, t, 0, 1, t, // v4-7
+                t, 0, 1, t, 0, -1, -t, 0, 1, -t, 0, -1  // v8-11
+            ];
+
+            // index of 3 vertex makes a face of icopshere
+            var ico_indices = [
+                0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
+                1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
+                3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
+                4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1
+            ];
+
+            // uv as integer step (not pixels !)
+            var ico_vertexuv = [
+                4, 1, 2, 1, 6, 3, 5, 4,  // v0-3
+                4, 3, 3, 2, 7, 4, 3, 0,  // v4-7
+                1, 0, 0, 1, 5, 0, 5, 2   // v8-11
+            ];
+            // Vertices [0, 1, ...9, A, B] : position on UV plane (7,8,9,10=A have duplicate position)
+            // v=5h          9+  8+  7+
+            // v=4h        9+  3   6   A+
+            // v=3h      9+  4   2   A+
+            // v=2h    9+  5   B   A+
+            // v=1h  9   1   0   A+
+            // v=0h    8   7   A
+            //     u=0 1 2 3 4 5 6 7 8 9   *a
+            //
+
+            // uv step is u:1 or 0.5, v:cos(30)=sqrt(3)/2, ratio approx is 84/97
+            var ustep = 97 / 1024;
+            var vstep = 168 / 1024;
+            var uoffset = 50 / 1024;
+            var voffset = 51 / 1024;
+
+            var indices = [];
+            var positions = [];
+            var normals = [];
+            var uvs = [];
+
+            var current_indice = 0;
+            // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
+            var face_vertex_pos = new Array(3);
+            var face_vertex_uv = new Array(3);
+            for (var v012 = 0; v012 < 3; v012++) {
+                face_vertex_pos[v012] = Vector3.Zero();
+                face_vertex_uv[v012] = Vector2.Zero();
+            }
+            // create all with normals
+            for (var face = 0; face < 20; face++) {
+                // 3 vertex per face
+                for (var v012 = 0; v012 < 3; v012++) {
+                    // look up vertex 0,1,2 to its index in 0 to 11
+                    var v_id = ico_indices[3 * face + v012];
+                    // vertex have 3D position (x,y,z)
+                    face_vertex_pos[v012].copyFromFloats(
+                        ico_vertices[3 * v_id],
+                        ico_vertices[3 * v_id + 1],
+                        ico_vertices[3 * v_id + 2]);
+                    // Normalize to get normal, then scale to radius
+                    face_vertex_pos[v012].normalize().scaleInPlace(radius);
+
+                    // uv from vertex ID (may need fix due to unwrap on texture plan, unalias needed)
+                    // vertex may get to different UV according to belonging face (see fix below)
+                    var fix = 0;
+                    // Vertice 9 UV to be fixed
+                    if (face === 5 && v012 === 2) { fix = 1; }
+                    if (face === 15 && v012 === 1) { fix = 2; }
+                    if (face === 10 && v012 === 1) { fix = 3; }
+                    if (face === 14 && v012 === 2) { fix = 4; }
+                    // vertice 10 UV to be fixed
+                    if (face === 4 && v012 === 1) { fix = 1; }
+                    if (face === 7 && v012 === 1) { fix = 2; }
+                    if (face === 17 && v012 === 2) { fix = 3; }
+                    if (face === 8 && v012 === 0) { fix = 4; }
+                    // vertice 7 UV to be fixed
+                    if (face === 8 && v012 === 1) { fix = 5; }
+                    if (face === 18 && v012 === 0) { fix = 5; }
+                    // vertice 8 UV to be fixed
+                    if (face === 13 && v012 === 2) { fix = 5; }
+                    if (face === 14 && v012 === 1) { fix = 5; }
+                    if (face === 18 && v012 === 2) { fix = 5; }
+                    //
+                    face_vertex_uv[v012].copyFromFloats(
+                        (ico_vertexuv[2 * v_id] + fix) * ustep + uoffset,
+                        (ico_vertexuv[2 * v_id + 1] + fix) * vstep + voffset);
+
+                }
+
+                // Subdivide the face (interpolate pos, norm, uv)
+                // - pos is linear interpolation, then projected to sphere (converge polyhedron to sphere)
+                // - norm is linear interpolation of vertex corner normal
+                //   (to be checked if better to re-calc from face vertex, or if approximation is OK ??? )
+                // - uv is linear interpolation
+                //
+                // Topology is as below for sub-divide by 2
+                // vertex shown as v0,v1,v2
+                // interp index is i1 to progress in range [v0,v1[
+                // interp index is i2 to progress in range [v0,v2[
+                // face index as  (i1,i2)  for /\  : (i1,i2),(i1+1,i2),(i1,i2+1)
+                //            and (i1,i2)' for \/  : (i1+1,i2),(i1+1,i2+1),(i1,i2+1)
+                //
+                //
+                //                    i2    v2
+                //                    ^    ^
+                //                   /    / \
+                //                  /    /   \
+                //                 /    /     \
+                //                /    / (0,1) \
+                //               /    #---------\
+                //              /    / \ (0,0)'/ \
+                //             /    /   \     /   \
+                //            /    /     \   /     \
+                //           /    / (0,0) \ / (1,0) \
+                //          /    #---------#---------\
+                //              v0                    v1
+                //
+                //              --------------------> i1
+                //
+                // interp of (i1,i2):
+                //  along i2 :  x0=lerp(v0,v2, i2/S) <---> x1=lerp(v1,v2, i2/S)
+                //  along i1 :  lerp(x0,x1, i1/(S-i2))
+                //
+                // centroid of triangle is needed to get help normal computation
+                //  (c1,c2) are used for centroid location
+
+                var interp_vertex = (i1: number, i2: number, c1: number, c2: number) =>{
+                    // vertex is interpolated from
+                    //   - face_vertex_pos[0..2]
+                    //   - face_vertex_uv[0..2]
+                    var pos_x0 = Vector3.Lerp(face_vertex_pos[0], face_vertex_pos[2], i2 / subdivisions);
+                    var pos_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], i2 / subdivisions);
+                    var pos_interp = (subdivisions === i2) ? face_vertex_pos[2] : Vector3.Lerp(pos_x0, pos_x1, i1 / (subdivisions - i2));
+                    pos_interp.normalize().scaleInPlace(radius);
+
+                    var vertex_normal;
+                    if (flat) {
+                        // in flat mode, recalculate normal as face centroid normal
+                        var centroid_x0 = Vector3.Lerp(face_vertex_pos[0], face_vertex_pos[2], c2 / subdivisions);
+                        var centroid_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], c2 / subdivisions);
+                        var centroid_interp = Vector3.Lerp(centroid_x0, centroid_x1, c1 / (subdivisions - c2));
+                        vertex_normal = Vector3.Normalize(centroid_interp);
+                    } else {
+                        // in smooth mode, recalculate normal from each single vertex position
+                        vertex_normal = Vector3.Normalize(pos_interp);
+                    }
+
+                    var uv_x0 = Vector2.Lerp(face_vertex_uv[0], face_vertex_uv[2], i2 / subdivisions);
+                    var uv_x1 = Vector2.Lerp(face_vertex_uv[1], face_vertex_uv[2], i2 / subdivisions);
+                    var uv_interp = (subdivisions === i2) ? face_vertex_uv[2] : Vector2.Lerp(uv_x0, uv_x1, i1 / (subdivisions - i2));
+                    positions.push(pos_interp.x, pos_interp.y, pos_interp.z);
+                    normals.push(vertex_normal.x, vertex_normal.y, vertex_normal.z);
+                    uvs.push(uv_interp.x, uv_interp.y);
+                    // push each vertex has member of a face
+                    // Same vertex can bleong to multiple face, it is pushed multiple time (duplicate vertex are present)
+                    indices.push(current_indice);
+                    current_indice++;
+                }
+
+                for (var i2 = 0; i2 < subdivisions; i2++) {
+                    for (var i1 = 0; i1 + i2 < subdivisions; i1++) {
+                        // face : (i1,i2)  for /\  :
+                        // interp for : (i1,i2),(i1+1,i2),(i1,i2+1)
+                        interp_vertex(i1, i2, i1 + 1.0 / 3, i2 + 1.0 / 3);
+                        interp_vertex(i1 + 1, i2, i1 + 1.0 / 3, i2 + 1.0 / 3);
+                        interp_vertex(i1, i2 + 1, i1 + 1.0 / 3, i2 + 1.0 / 3);
+                        if (i1 + i2 + 1 < subdivisions) {
+                            // face : (i1,i2)' for \/  :
+                            // interp for (i1+1,i2),(i1+1,i2+1),(i1,i2+1)
+                            interp_vertex(i1 + 1, i2, i1 + 2.0 / 3, i2 + 2.0 / 3);
+                            interp_vertex(i1 + 1, i2 + 1, i1 + 2.0 / 3, i2 + 2.0 / 3);
+                            interp_vertex(i1, i2 + 1, i1 + 2.0 / 3, i2 + 2.0 / 3);
+                        }
+                    }
+                }
+            }
+
+
+            // Sides
+            VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+
+            // Result
+            var vertexData = new VertexData();
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            vertexData.normals = normals;
+            vertexData.uvs = uvs;
+            return vertexData;
+        }
+
+
         // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
         public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], singleFace?: boolean, sideOrientation?: number }): VertexData {
             // provided polyhedron types :
