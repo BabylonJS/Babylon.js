@@ -161,6 +161,7 @@
 				water.bumpTexture = new BABYLON.Texture("textures/waterbump.png", scene);
 				water.windForce = -45;
 				water.waveHeight = 1.3;
+				water.windDirection = new BABYLON.Vector2(1, 1);
 				water.addToRenderList(skybox);
 				water.addToRenderList(shadowCaster);
 				water.addToRenderList(shadowCaster2);
