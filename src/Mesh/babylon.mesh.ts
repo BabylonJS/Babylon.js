@@ -1560,6 +1560,10 @@
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
 
+            var needExtras = this.numBoneInfluencers > 4;
+            var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
+            var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
+
             var skeletonMatrices = skeleton.getTransformMatrices();
 
             var tempVector3 = Vector3.Zero();
@@ -1567,8 +1571,9 @@
             var tempMatrix = new Matrix();
 
             var matWeightIdx = 0;
-            for (var index = 0; index < positionsData.length; index += 3) {
-                for (var inf = 0; inf < this.numBoneInfluencers; inf++) {
+            var inf : number;
+            for (var index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
+                for (inf = 0; inf < 4; inf++) {
                     var weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
                         Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
@@ -1576,8 +1581,17 @@
 
                     } else break;
                 }
-                matWeightIdx += this.numBoneInfluencers;
+                if (needExtras) {
+                    for (inf = 0; inf < 4; inf++) {
+                        var weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        if (weight > 0) {
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            finalMatrix.addToSelf(tempMatrix);
 
+                        } else break;           
+                    }
+                }
+                
                 Vector3.TransformCoordinatesFromFloatsToRef(this._sourcePositions[index], this._sourcePositions[index + 1], this._sourcePositions[index + 2], finalMatrix, tempVector3);
                 tempVector3.toArray(positionsData, index);
 
