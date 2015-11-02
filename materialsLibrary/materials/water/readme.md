@@ -1,6 +1,6 @@
 # Water material
 
-## [Playground example](http://www.babylonjs-playground.com/#1SLLOJ#4)
+## [Playground example](http://www.babylonjs-playground.com/#1SLLOJ#6)
 
 ## Using the water material
 
