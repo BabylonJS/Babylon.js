@@ -104,3 +104,7 @@ interface Screen {
     orientation: string;
     mozOrientation: string;
 }
+
+interface HTMLMediaElement {
+    crossOrigin: string;
+}
