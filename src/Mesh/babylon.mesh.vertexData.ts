@@ -1335,11 +1335,14 @@
             return vertexData;
         }
 
-        public static CreateIcoSphere(options: {radius?: number, flat?: number, subdivisions?: number, sideOrientation?: number}): VertexData {
+        public static CreateIcoSphere(options: {radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number}): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
-            var flat = options.flat || false;
-            var subdivisions = options.subdivisions || 1;
+            var flat = (options.flat === undefined) ? true : options.flat;
+            var subdivisions = options.subdivisions || 4;
+            var radiusX = options.radiusX || radius;
+            var radiusY = options.radiusY || radius;
+            var radiusZ = options.radiusZ || radius;
 
             var t = (1 + Math.sqrt(5)) / 2;
 
@@ -1478,7 +1481,10 @@
                     var pos_x0 = Vector3.Lerp(face_vertex_pos[0], face_vertex_pos[2], i2 / subdivisions);
                     var pos_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], i2 / subdivisions);
                     var pos_interp = (subdivisions === i2) ? face_vertex_pos[2] : Vector3.Lerp(pos_x0, pos_x1, i1 / (subdivisions - i2));
-                    pos_interp.normalize().scaleInPlace(radius);
+                    pos_interp.normalize();
+                    pos_interp.x *= radiusX;
+                    pos_interp.y *= radiusY;
+                    pos_interp.z *= radiusZ;
 
                     var vertex_normal;
                     if (flat) {
@@ -1537,7 +1543,7 @@
 
 
         // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
-        public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], singleFace?: boolean, sideOrientation?: number }): VertexData {
+        public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number }): VertexData {
             // provided polyhedron types :
             // 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
             // 9 : Pentagonal Pyramid (J2), 10 : Triangular Dipyramid (J12), 11 : Pentagonal Dipyramid (J13), 12 : Elongated Square Dipyramid (J15), 13 : Elongated Pentagonal Dipyramid (J16), 14 : Elongated Pentagonal Cupola (J20)
@@ -1579,7 +1585,7 @@
             var nbfaces = data.face.length;
             var faceUV = options.faceUV || new Array(nbfaces);
             var faceColors = options.faceColors;
-            var singleFace = options.singleFace;
+            var flat = (options.flat === undefined) ? true : options.flat;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
 
             var positions = [];
@@ -1596,7 +1602,7 @@
 
 
             // default face colors and UV if undefined
-            if (!singleFace) {
+            if (flat) {
                 for (f = 0; f < nbfaces; f++) {
                     if (faceColors && faceColors[f] === undefined) {
                         faceColors[f] = new Color4(1, 1, 1, 1);
@@ -1607,7 +1613,7 @@
                 }
             }
 
-            if (singleFace) {
+            if (!flat) {
 
                 for (i = 0; i < data.vertex.length; i++) {
                     positions.push(data.vertex[i][0] * sizeX, data.vertex[i][1] * sizeY, data.vertex[i][2] * sizeZ);
@@ -1662,7 +1668,7 @@
             vertexData.indices = indices;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
-            if (faceColors && !singleFace) {
+            if (faceColors && flat) {
                 vertexData.colors = colors;
             }
             return vertexData;
