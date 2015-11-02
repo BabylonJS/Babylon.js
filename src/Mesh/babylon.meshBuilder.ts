@@ -27,7 +27,7 @@
             return disc;
         }
 
-        public static CreateIcoSphere(name: string, options: { radius?: number, flat?: number, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
+        public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
             var sphere = new Mesh(name, scene);
             var vertexData = VertexData.CreateIcoSphere(options);
 
@@ -496,7 +496,7 @@
             return tube;
         }
 
-        public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], singleFace?: boolean, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
+        public static CreatePolyhedron(name: string, options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
             var polyhedron = new Mesh(name, scene);
 
             var vertexData = VertexData.CreatePolyhedron(options);
