@@ -5,6 +5,9 @@
         private _currentRank = 32;
         private _maxRank = -1;
 
+        private _mesh : AbstractMesh;
+        private _meshRank : number;
+
         public addFallback(rank: number, define: string): void {
             if (!this._defines[rank]) {
                 if (rank < this._currentRank) {
@@ -21,6 +24,15 @@
             this._defines[rank].push(define);
         }
 
+            public addCPUSkinningFallback(rank: number, mesh : BABYLON.AbstractMesh){
+                this._meshRank = rank;
+                this._mesh = mesh;
+    
+                if (rank > this._maxRank) {
+                    this._maxRank = rank;
+                }
+            }
+
         public get isMoreFallbacks(): boolean {
             return this._currentRank <= this._maxRank;
         }
@@ -31,6 +43,12 @@
 
             for (var index = 0; index < currentFallbacks.length; index++) {
                 currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+            }
+
+            if (this._mesh && this._currentRank === this._meshRank){
+                this._mesh.computeBonesUsingShaders = false;
+                currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
+                Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
             }
 
             this._currentRank++;
