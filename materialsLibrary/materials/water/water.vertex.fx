@@ -67,19 +67,19 @@ varying float fFogDistance;
 #endif
 
 #ifdef SHADOWS
-#ifdef LIGHT0
+#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
 uniform mat4 lightMatrix0;
 varying vec4 vPositionFromLight0;
 #endif
-#ifdef LIGHT1
+#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
 uniform mat4 lightMatrix1;
 varying vec4 vPositionFromLight1;
 #endif
-#ifdef LIGHT2
+#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
 uniform mat4 lightMatrix2;
 varying vec4 vPositionFromLight2;
 #endif
-#ifdef LIGHT3
+#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
 uniform mat4 lightMatrix3;
 varying vec4 vPositionFromLight3;
 #endif
@@ -91,14 +91,12 @@ uniform vec2 windDirection;
 uniform float waveLength;
 uniform float time;
 uniform float windForce;
-uniform float bumpHeight;
 uniform float waveHeight;
 
 // Water varyings
 varying vec3 vPosition;
 varying vec3 vRefractionMapTexCoord;
 varying vec3 vReflectionMapTexCoord;
-varying float vWaveHeight;
 
 void main(void) {
 	mat4 finalWorld;
@@ -161,16 +159,16 @@ void main(void) {
 
 	// Shadows
 #ifdef SHADOWS
-#ifdef LIGHT0
+#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
 	vPositionFromLight0 = lightMatrix0 * worldPos;
 #endif
-#ifdef LIGHT1
+#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
 	vPositionFromLight1 = lightMatrix1 * worldPos;
 #endif
-#ifdef LIGHT2
+#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
 	vPositionFromLight2 = lightMatrix2 * worldPos;
 #endif
-#ifdef LIGHT3
+#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
 	vPositionFromLight3 = lightMatrix3 * worldPos;
 #endif
 #endif
@@ -186,14 +184,15 @@ void main(void) {
 #endif
 
 	vec3 p = position;
-	p.y += (sin(((p.x / 0.05) + time * 100.0)) * waveHeight * 5.0) + (cos(((p.z / 0.05) + time * 100.0)) * waveHeight * 5.0);
+	float newY = (sin(((p.x / 0.05) + time * 100.0)) * waveHeight * 5.0) + (cos(((p.z / 0.05) + time * 100.0)) * waveHeight * 5.0);
+	p.y += abs(newY);
 	
 	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);
 
-	worldPos = viewProjection * finalWorld * vec4(position, 1.0);
-
+#ifdef REFLECTION
+	worldPos = viewProjection * finalWorld * vec4(p, 1.0);
+	
 	// Water
-	vWaveHeight = bumpHeight;
 	vPosition = position;
 	
 	vRefractionMapTexCoord.x = 0.5 * (worldPos.w + worldPos.x);
@@ -204,4 +203,5 @@ void main(void) {
 	vReflectionMapTexCoord.x = 0.5 * (worldPos.w + worldPos.x);
 	vReflectionMapTexCoord.y = 0.5 * (worldPos.w + worldPos.y);
 	vReflectionMapTexCoord.z = worldPos.w;
+#endif
 }
