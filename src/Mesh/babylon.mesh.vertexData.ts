@@ -20,6 +20,8 @@
         public colors: number[] | Float32Array;
         public matricesIndices: number[] | Float32Array;
         public matricesWeights: number[] | Float32Array;
+        public matricesIndicesExtra: number[] | Float32Array;
+        public matricesWeightsExtra: number[] | Float32Array;
         public indices: number[];
 
         public set(data: number[] | Float32Array, kind: string) {
@@ -56,6 +58,12 @@
                     break;
                 case VertexBuffer.MatricesWeightsKind:
                     this.matricesWeights = data;
+                    break;
+                case VertexBuffer.MatricesIndicesExtraKind:
+                    this.matricesIndicesExtra = data;
+                    break;
+                case VertexBuffer.MatricesWeightsExtraKind:
+                    this.matricesWeightsExtra = data;
                     break;
             }
         }
@@ -121,6 +129,14 @@
                 meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
             }
 
+            if (this.matricesIndicesExtra) {
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updatable);
+            }
+
+            if (this.matricesWeightsExtra) {
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
+            }
+
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
             }
@@ -169,6 +185,14 @@
 
             if (this.matricesWeights) {
                 meshOrGeometry.updateVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
+            }
+
+            if (this.matricesIndicesExtra) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updateExtends, makeItUnique);
+            }
+
+            if (this.matricesWeightsExtra) {
+                meshOrGeometry.updateVerticesData(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updateExtends, makeItUnique);
             }
 
             if (this.indices) {
@@ -310,6 +334,24 @@
                 }
             }
 
+            if (other.matricesIndicesExtra) {
+                if (!this.matricesIndicesExtra) {
+                    this.matricesIndicesExtra = [];
+                }
+                for (index = 0; index < other.matricesIndicesExtra.length; index++) {
+                    (<number[]>this.matricesIndicesExtra).push(other.matricesIndicesExtra[index]);
+                }
+            }
+
+            if (other.matricesWeightsExtra) {
+                if (!this.matricesWeightsExtra) {
+                    this.matricesWeightsExtra = [];
+                }
+                for (index = 0; index < other.matricesWeightsExtra.length; index++) {
+                    (<number[]>this.matricesWeightsExtra).push(other.matricesWeightsExtra[index]);
+                }
+            }
+
             if (other.colors) {
                 if (!this.colors) {
                     this.colors = [];
@@ -374,6 +416,14 @@
 
             if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 result.matricesWeights = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsKind, copyWhenShared);
+            }
+
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesExtraKind)) {
+                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesIndicesExtraKind, copyWhenShared);
+            }
+
+            if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
+                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(VertexBuffer.MatricesWeightsExtraKind, copyWhenShared);
             }
 
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
