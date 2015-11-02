@@ -18,6 +18,13 @@ var BABYLON;
             }
             this._defines[rank].push(define);
         };
+        EffectFallbacks.prototype.addCPUSkinningFallback = function (rank, mesh) {
+            this._meshRank = rank;
+            this._mesh = mesh;
+            if (rank > this._maxRank) {
+                this._maxRank = rank;
+            }
+        };
         Object.defineProperty(EffectFallbacks.prototype, "isMoreFallbacks", {
             get: function () {
                 return this._currentRank <= this._maxRank;
@@ -29,6 +36,11 @@ var BABYLON;
             var currentFallbacks = this._defines[this._currentRank];
             for (var index = 0; index < currentFallbacks.length; index++) {
                 currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+            }
+            if (this._mesh && this._currentRank === this._meshRank) {
+                this._mesh.computeBonesUsingShaders = false;
+                currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
+                BABYLON.Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
             }
             this._currentRank++;
             return currentDefines;

@@ -117,10 +117,9 @@ var BABYLON;
             }
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                defines.push("#define BONES");
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
-                defines.push("#define BONES4");
-                fallbacks.addFallback(0, "BONES4");
+                fallbacks.addCPUSkinningFallback(0, mesh);
             }
             // Alpha test
             if (engine.getAlphaTesting()) {

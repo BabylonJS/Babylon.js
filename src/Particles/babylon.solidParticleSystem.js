@@ -7,6 +7,7 @@ var BABYLON;
             this.nbParticles = 0;
             this.billboard = false;
             this.counter = 0;
+            this.vars = {};
             this._positions = new Array();
             this._indices = new Array();
             this._normals = new Array();
@@ -45,6 +46,7 @@ var BABYLON;
             this._cosPitch = 0.0;
             this._sinYaw = 0.0;
             this._cosYaw = 0.0;
+            this._w = 0.0;
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -348,7 +350,11 @@ var BABYLON;
                     this._vertex.x *= this._particle.scale.x;
                     this._vertex.y *= this._particle.scale.y;
                     this._vertex.z *= this._particle.scale.z;
-                    BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
+                    //Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
+                    this._w = (this._vertex.x * this._rotMatrix.m[3]) + (this._vertex.y * this._rotMatrix.m[7]) + (this._vertex.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
+                    this._rotated.x = ((this._vertex.x * this._rotMatrix.m[0]) + (this._vertex.y * this._rotMatrix.m[4]) + (this._vertex.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
+                    this._rotated.y = ((this._vertex.x * this._rotMatrix.m[1]) + (this._vertex.y * this._rotMatrix.m[5]) + (this._vertex.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;
+                    this._rotated.z = ((this._vertex.x * this._rotMatrix.m[2]) + (this._vertex.y * this._rotMatrix.m[6]) + (this._vertex.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14]) / this._w;
                     this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                     this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
                     this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
@@ -418,6 +424,7 @@ var BABYLON;
         // dispose the SPS
         SolidParticleSystem.prototype.dispose = function () {
             this.mesh.dispose();
+            this.vars = null;
             // drop references to internal big arrays for the GC
             this._positions = null;
             this._indices = null;

@@ -84,8 +84,7 @@ var BABYLON;
             this.UV2 = false;
             this.VERTEXCOLOR = false;
             this.VERTEXALPHA = false;
-            this.BONES = false;
-            this.BONES4 = false;
+            this.NUM_BONE_INFLUENCERS = 0;
             this.BonesPerMesh = 0;
             this.INSTANCES = false;
             this.GLOSSINESS = false;
@@ -489,9 +488,8 @@ var BABYLON;
                     }
                 }
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.BONES = true;
+                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                    this._defines.BONES4 = true;
                 }
                 // Instances
                 if (useInstances) {
@@ -554,8 +552,8 @@ var BABYLON;
                 if (this._defines.FRESNEL) {
                     fallbacks.addFallback(4, "FRESNEL");
                 }
-                if (this._defines.BONES4) {
-                    fallbacks.addFallback(0, "BONES4");
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
                 }
                 //Attributes
                 var attribs = [BABYLON.VertexBuffer.PositionKind];
@@ -571,9 +569,13 @@ var BABYLON;
                 if (this._defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                if (this._defines.BONES) {
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
                     attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                     attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
+                        attribs.push(BABYLON.VertexBuffer.MatricesIndicesExtraKind);
+                        attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
+                    }
                 }
                 if (this._defines.INSTANCES) {
                     attribs.push("world0");
