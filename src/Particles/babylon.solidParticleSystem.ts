@@ -8,6 +8,7 @@ module BABYLON {
         public counter: number = 0;
         public name: string;
         public mesh: Mesh;
+        public vars: any = {};
         
         // private members
         private _scene: Scene;
@@ -480,6 +481,7 @@ module BABYLON {
         // dispose the SPS
         public dispose(): void {
             this.mesh.dispose();
+            this.vars = null;
             // drop references to internal big arrays for the GC
             this._positions = null;
             this._indices = null;
