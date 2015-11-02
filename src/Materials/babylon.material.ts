@@ -26,12 +26,12 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                if (prop === "BonesPerMesh") {
+                if (typeof(this[prop]) === "number") {
                     this[prop] = 0;
-                    continue;
+                
+                }else { 
+                    this[prop] = false; 
                 }
-
-                this[prop] = false;
             }
         }
 
@@ -40,12 +40,10 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                if (prop === "BonesPerMesh" && this[prop] > 0) {
-                    result += "#define BonesPerMesh " + this[prop] + "\n";
-                    continue;
-                }
-
-                if (this[prop]) {
+                if (typeof(this[prop]) === "number") {
+                    result += "#define "  + prop + " " + this[prop] + "\n";
+                
+                }else if (this[prop]) {
                     result += "#define " + prop + "\n";
                 }
             }
