@@ -9,6 +9,7 @@ module BABYLON {
         public name: string;
         public mesh: Mesh;
         public vars: any = {};
+        public pickedParticles: {idx: number; faceId: number}[];
         
         // private members
         private _scene: Scene;
@@ -24,6 +25,7 @@ module BABYLON {
         private _uvs32: Float32Array;
         private _index: number = 0;  // indices index
         private _updatable: boolean = true;
+        private _pickable: boolean = false;
         private _shapeCounter: number = 0;
         private _copy: SolidParticle = new SolidParticle(null, null, null, null, null);
         private _shape: Vector3[];
@@ -63,14 +65,18 @@ module BABYLON {
         private _w: number = 0.0;
 
 
-        constructor(name: string, scene: Scene, options?: { updatable?: boolean }) {
+        constructor(name: string, scene: Scene, options?: { updatable?: boolean, pickable? :boolean }) {
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
+            this._pickable = options ? options.pickable : false;
             if (options && options.updatable) {
                 this._updatable = options.updatable;
             } else {
                 this._updatable = true;
+            }
+            if (this._pickable) {
+                this.pickedParticles = [];
             }
         }
 
@@ -194,8 +200,16 @@ module BABYLON {
                 c += 4;
 
             }
+
             for (i = 0; i < meshInd.length; i++) {
                 indices.push(p + meshInd[i]);
+            }
+
+            if (this._pickable) {
+                var nbfaces = meshInd.length / 3;
+                for (i = 0; i < nbfaces; i++) {
+                    this.pickedParticles.push({idx: idx, faceId: i});
+                }
             }
         }
 
@@ -219,12 +233,12 @@ module BABYLON {
         }
 
         // adds a new particle object in the particles array
-        private _addParticle(p: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number): void {
-            this.particles.push(new SolidParticle(p, idxpos, model, shapeId, idxInShape));
+        private _addParticle(idx: number, idxpos: number, model: ModelShape, shapeId: number, idxInShape: number): void {
+            this.particles.push(new SolidParticle(idx, idxpos, model, shapeId, idxInShape));
         }
 
         // add solid particles from a shape model in the particles array
-        public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any, vertexFunction?: any }): number {
+        public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any }): number {
             var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
@@ -239,12 +253,14 @@ module BABYLON {
             var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, posfunc, vtxfunc);
 
             // particles
+            var idx = this.nbParticles;
             for (var i = 0; i < nb; i++) {
-                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, this.nbParticles + i, i, options);
+                this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, idx, i, options);
                 if (this._updatable) {
-                    this._addParticle(this.nbParticles + i, this._positions.length, modelShape, this._shapeCounter, i);
+                    this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, i);
                 }
                 this._index += shape.length;
+                idx++;
             }
             this.nbParticles += nb;
             this._shapeCounter++;
