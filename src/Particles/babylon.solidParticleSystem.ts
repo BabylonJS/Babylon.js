@@ -540,6 +540,7 @@ module BABYLON {
             this._fixedNormal32 = null;
             this._uvs32 = null;
             this._colors32 = null;
+            this.pickedParticles = null;
         }
 
         // Optimizer setters
