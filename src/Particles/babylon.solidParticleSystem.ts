@@ -18,7 +18,8 @@ module BABYLON {
         private _colors: number[] = new Array<number>();
         private _uvs: number[] = new Array<number>();
         private _positions32: Float32Array;
-        private _normals32: Float32Array;
+        private _normals32: Float32Array;           // updated normals for the VBO
+        private _fixedNormal32: Float32Array;       // initial normal references
         private _colors32: Float32Array;
         private _uvs32: Float32Array;
         private _index: number = 0;  // indices index
@@ -46,6 +47,7 @@ module BABYLON {
         private _rotated: Vector3 = Vector3.Zero();
         private _quaternion: Quaternion = new Quaternion();
         private _vertex: Vector3 = Vector3.Zero();
+        private _normal: Vector3 = Vector3.Zero();
         private _yaw: number = 0.0;
         private _pitch: number = 0.0;
         private _roll: number = 0.0;
@@ -84,6 +86,7 @@ module BABYLON {
             this._colors32 = new Float32Array(this._colors);
             VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
             this._normals32 = new Float32Array(this._normals);
+            this._fixedNormal32 = new Float32Array(this._normals);
             var vertexData = new VertexData();
             vertexData.set(this._positions32, VertexBuffer.PositionKind);
             vertexData.indices = this._indices;
@@ -311,6 +314,10 @@ module BABYLON {
 
         // sets all the particles : updates the VBO
         public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): void {
+            if (!this._updatable) {
+                return;
+            }
+
             // custom beforeUpdate
             this.beforeUpdateParticles(start, end, update);
 
@@ -396,11 +403,12 @@ module BABYLON {
                     if (this._computeParticleVertex) {
                         this.updateParticleVertex(this._particle, this._vertex, pt);
                     }
+
+                    // positions
                     this._vertex.x *= this._particle.scale.x;
                     this._vertex.y *= this._particle.scale.y;
                     this._vertex.z *= this._particle.scale.z;
 
-                    //Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                     this._w = (this._vertex.x * this._rotMatrix.m[3]) + (this._vertex.y * this._rotMatrix.m[7]) + (this._vertex.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
                     this._rotated.x = ( (this._vertex.x * this._rotMatrix.m[0]) + (this._vertex.y * this._rotMatrix.m[4]) + (this._vertex.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12] ) / this._w;
                     this._rotated.y = ( (this._vertex.x * this._rotMatrix.m[1]) + (this._vertex.y * this._rotMatrix.m[5]) + (this._vertex.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13] ) / this._w;
@@ -409,6 +417,22 @@ module BABYLON {
                     this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                     this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
                     this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+
+                    // normals : if the particles can't be morphed then just rotate the normals
+                    if (!this._computeParticleVertex) {
+                        this._normal.x = this._fixedNormal32[idx];
+                        this._normal.y = this._fixedNormal32[idx + 1];
+                        this._normal.z = this._fixedNormal32[idx + 2];
+
+                        this._w = (this._normal.x * this._rotMatrix.m[3]) + (this._normal.y * this._rotMatrix.m[7]) + (this._normal.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
+                        this._rotated.x = ( (this._normal.x * this._rotMatrix.m[0]) + (this._normal.y * this._rotMatrix.m[4]) + (this._normal.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12] ) / this._w;
+                        this._rotated.y = ( (this._normal.x * this._rotMatrix.m[1]) + (this._normal.y * this._rotMatrix.m[5]) + (this._normal.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13] ) / this._w;
+                        this._rotated.z = ( (this._normal.x * this._rotMatrix.m[2]) + (this._normal.y * this._rotMatrix.m[6]) + (this._normal.z * this._rotMatrix.m[10]) + this._rotMatrix.m[14] ) / this._w;
+
+                        this._normals32[idx] = this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                        this._normals32[idx + 1] = this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                        this._normals32[idx + 2] = this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z; 
+                    }
 
                     if (this._computeParticleColor) {
                         this._colors32[colidx] = this._particle.color.r;
@@ -436,7 +460,13 @@ module BABYLON {
                 }
                 this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
                 if (!this.mesh.areNormalsFrozen) {
-                    VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
+                    if (this._computeParticleVertex) {
+                        // recompute the normals only if the particles can be morphed, update then the normal reference array
+                        VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
+                        for (var i = 0; i < this._normals32.length; i++) {
+                            this._fixedNormal32[i] = this._normals32[i];
+                        }
+                    }
                     this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
                 }
             }
@@ -490,6 +520,7 @@ module BABYLON {
             this._colors = null;
             this._positions32 = null;
             this._normals32 = null;
+            this._fixedNormal32 = null;
             this._uvs32 = null;
             this._colors32 = null;
         }
