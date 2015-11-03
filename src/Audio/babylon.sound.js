@@ -87,6 +87,7 @@ var BABYLON;
                             this._htmlAudioElement.src = urlOrArrayBuffer;
                             this._htmlAudioElement.controls = false;
                             this._htmlAudioElement.loop = this.loop;
+                            this._htmlAudioElement.crossOrigin = "anonymous";
                             this._isReadyToPlay = true;
                             document.body.appendChild(this._htmlAudioElement);
                             // Simulating a ready to play event for consistent behavior with non streamed audio source

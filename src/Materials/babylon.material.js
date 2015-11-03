@@ -21,22 +21,22 @@ var BABYLON;
         MaterialDefines.prototype.reset = function () {
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
-                if (prop === "BonesPerMesh") {
+                if (typeof (this[prop]) === "number") {
                     this[prop] = 0;
-                    continue;
                 }
-                this[prop] = false;
+                else {
+                    this[prop] = false;
+                }
             }
         };
         MaterialDefines.prototype.toString = function () {
             var result = "";
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
-                if (prop === "BonesPerMesh" && this[prop] > 0) {
-                    result += "#define BonesPerMesh " + this[prop] + "\n";
-                    continue;
+                if (typeof (this[prop]) === "number") {
+                    result += "#define " + prop + " " + this[prop] + "\n";
                 }
-                if (this[prop]) {
+                else if (this[prop]) {
                     result += "#define " + prop + "\n";
                 }
             }

@@ -38,6 +38,12 @@ var BABYLON;
                 case BABYLON.VertexBuffer.MatricesWeightsKind:
                     this.matricesWeights = data;
                     break;
+                case BABYLON.VertexBuffer.MatricesIndicesExtraKind:
+                    this.matricesIndicesExtra = data;
+                    break;
+                case BABYLON.VertexBuffer.MatricesWeightsExtraKind:
+                    this.matricesWeightsExtra = data;
+                    break;
             }
         };
         VertexData.prototype.applyToMesh = function (mesh, updatable) {
@@ -86,6 +92,12 @@ var BABYLON;
             if (this.matricesWeights) {
                 meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
             }
+            if (this.matricesIndicesExtra) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updatable);
+            }
+            if (this.matricesWeightsExtra) {
+                meshOrGeometry.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
+            }
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
             }
@@ -123,6 +135,12 @@ var BABYLON;
             }
             if (this.matricesWeights) {
                 meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, this.matricesWeights, updateExtends, makeItUnique);
+            }
+            if (this.matricesIndicesExtra) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updateExtends, makeItUnique);
+            }
+            if (this.matricesWeightsExtra) {
+                meshOrGeometry.updateVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updateExtends, makeItUnique);
             }
             if (this.indices) {
                 meshOrGeometry.setIndices(this.indices);
@@ -243,6 +261,22 @@ var BABYLON;
                     this.matricesWeights.push(other.matricesWeights[index]);
                 }
             }
+            if (other.matricesIndicesExtra) {
+                if (!this.matricesIndicesExtra) {
+                    this.matricesIndicesExtra = [];
+                }
+                for (index = 0; index < other.matricesIndicesExtra.length; index++) {
+                    this.matricesIndicesExtra.push(other.matricesIndicesExtra[index]);
+                }
+            }
+            if (other.matricesWeightsExtra) {
+                if (!this.matricesWeightsExtra) {
+                    this.matricesWeightsExtra = [];
+                }
+                for (index = 0; index < other.matricesWeightsExtra.length; index++) {
+                    this.matricesWeightsExtra.push(other.matricesWeightsExtra[index]);
+                }
+            }
             if (other.colors) {
                 if (!this.colors) {
                     this.colors = [];
@@ -293,6 +327,12 @@ var BABYLON;
             }
             if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
                 result.matricesWeights = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, copyWhenShared);
+            }
+            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesExtraKind)) {
+                result.matricesIndicesExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, copyWhenShared);
+            }
+            if (meshOrGeometry.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsExtraKind)) {
+                result.matricesWeightsExtra = meshOrGeometry.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, copyWhenShared);
             }
             result.indices = meshOrGeometry.getIndices(copyWhenShared);
             return result;
@@ -1095,8 +1135,11 @@ var BABYLON;
         VertexData.CreateIcoSphere = function (options) {
             var sideOrientation = options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
-            var flat = options.flat || false;
-            var subdivisions = options.subdivisions || 1;
+            var flat = (options.flat === undefined) ? true : options.flat;
+            var subdivisions = options.subdivisions || 4;
+            var radiusX = options.radiusX || radius;
+            var radiusY = options.radiusY || radius;
+            var radiusZ = options.radiusZ || radius;
             var t = (1 + Math.sqrt(5)) / 2;
             // 12 vertex x,y,z
             var ico_vertices = [
@@ -1245,7 +1288,10 @@ var BABYLON;
                     var pos_x0 = BABYLON.Vector3.Lerp(face_vertex_pos[0], face_vertex_pos[2], i2 / subdivisions);
                     var pos_x1 = BABYLON.Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], i2 / subdivisions);
                     var pos_interp = (subdivisions === i2) ? face_vertex_pos[2] : BABYLON.Vector3.Lerp(pos_x0, pos_x1, i1 / (subdivisions - i2));
-                    pos_interp.normalize().scaleInPlace(radius);
+                    pos_interp.normalize();
+                    pos_interp.x *= radiusX;
+                    pos_interp.y *= radiusY;
+                    pos_interp.z *= radiusZ;
                     var vertex_normal;
                     if (flat) {
                         // in flat mode, recalculate normal as face centroid normal
@@ -1338,7 +1384,7 @@ var BABYLON;
             var nbfaces = data.face.length;
             var faceUV = options.faceUV || new Array(nbfaces);
             var faceColors = options.faceColors;
-            var singleFace = options.singleFace;
+            var flat = (options.flat === undefined) ? true : options.flat;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var positions = [];
             var indices = [];
@@ -1352,7 +1398,7 @@ var BABYLON;
             var f = 0;
             var u, v, ang, x, y, tmp;
             // default face colors and UV if undefined
-            if (!singleFace) {
+            if (flat) {
                 for (f = 0; f < nbfaces; f++) {
                     if (faceColors && faceColors[f] === undefined) {
                         faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
@@ -1362,7 +1408,7 @@ var BABYLON;
                     }
                 }
             }
-            if (singleFace) {
+            if (!flat) {
                 for (i = 0; i < data.vertex.length; i++) {
                     positions.push(data.vertex[i][0] * sizeX, data.vertex[i][1] * sizeY, data.vertex[i][2] * sizeZ);
                     uvs.push(0, 0);
@@ -1411,7 +1457,7 @@ var BABYLON;
             vertexData.indices = indices;
             vertexData.normals = normals;
             vertexData.uvs = uvs;
-            if (faceColors && !singleFace) {
+            if (faceColors && flat) {
                 vertexData.colors = colors;
             }
             return vertexData;
