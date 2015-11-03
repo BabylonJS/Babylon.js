@@ -1084,8 +1084,28 @@ var BABYLON;
                         mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, parsedGeometry.matricesIndices, false);
                     }
                 }
+                if (parsedGeometry.matricesIndicesExtra) {
+                    if (!parsedGeometry.matricesIndicesExtra._isExpanded) {
+                        var floatIndices = [];
+                        for (var i = 0; i < parsedGeometry.matricesIndicesExtra.length; i++) {
+                            var matricesIndex = parsedGeometry.matricesIndicesExtra[i];
+                            floatIndices.push(matricesIndex & 0x000000FF);
+                            floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
+                            floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
+                            floatIndices.push(matricesIndex >> 24);
+                        }
+                        mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, floatIndices, false);
+                    }
+                    else {
+                        delete parsedGeometry.matricesIndices._isExpanded;
+                        mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, parsedGeometry.matricesIndicesExtra, false);
+                    }
+                }
                 if (parsedGeometry.matricesWeights) {
                     mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, false);
+                }
+                if (parsedGeometry.matricesWeightsExtra) {
+                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, false);
                 }
                 mesh.setIndices(parsedGeometry.indices);
             }

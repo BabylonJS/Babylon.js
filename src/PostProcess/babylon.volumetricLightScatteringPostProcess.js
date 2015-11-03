@@ -130,8 +130,11 @@ var BABYLON;
             if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-                defines.push("#define BONES");
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+            }
+            else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
             // Instances
             if (useInstances) {

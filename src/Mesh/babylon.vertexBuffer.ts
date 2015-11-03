@@ -51,9 +51,11 @@
                     this._strideSize = 4;
                     break;
                 case VertexBuffer.MatricesIndicesKind:
+                case VertexBuffer.MatricesIndicesExtraKind:
                     this._strideSize = 4;
                     break;
                 case VertexBuffer.MatricesWeightsKind:
+                case VertexBuffer.MatricesWeightsExtraKind:
                     this._strideSize = 4;
                     break;
             }
@@ -134,6 +136,8 @@
         private static _ColorKind = "color";
         private static _MatricesIndicesKind = "matricesIndices";
         private static _MatricesWeightsKind = "matricesWeights";
+        private static _MatricesIndicesExtraKind = "matricesIndicesExtra";
+        private static _MatricesWeightsExtraKind = "matricesWeightsExtra";
 
         public static get PositionKind(): string {
             return VertexBuffer._PositionKind;
@@ -177,6 +181,14 @@
 
         public static get MatricesWeightsKind(): string {
             return VertexBuffer._MatricesWeightsKind;
+        }
+
+        public static get MatricesIndicesExtraKind(): string {
+            return VertexBuffer._MatricesIndicesExtraKind;
+        }
+
+        public static get MatricesWeightsExtraKind(): string {
+            return VertexBuffer._MatricesWeightsExtraKind;
         }
     }
 } 

@@ -84,6 +84,7 @@
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
         private _newPositionForCollisions = new Vector3(0, 0, 0);
         public onCollide: (collidedMesh: AbstractMesh) => void;
+        public onCollisionPositionChange: (newPosition: Vector3) => void;
 
         // Attach to bone
         private _meshToBoneReferal: AbstractMesh;
@@ -802,6 +803,10 @@
 
             if (this.onCollide && collidedMesh) {
                 this.onCollide(collidedMesh);
+            }
+            
+            if(this.onCollisionPositionChange) {
+                this.onCollisionPositionChange(this.position);
             }
         }
 
