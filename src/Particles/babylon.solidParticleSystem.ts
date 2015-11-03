@@ -115,6 +115,7 @@ module BABYLON {
 
             if (!this._updatable) {
                 this.particles.length = 0;
+                this.mesh.isPickable = true;
             }
 
             return mesh;
