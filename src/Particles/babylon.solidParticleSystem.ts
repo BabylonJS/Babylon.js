@@ -46,6 +46,7 @@ module BABYLON {
         private _fakeCamPos: Vector3 = Vector3.Zero();
         private _rotMatrix: Matrix = new Matrix();
         private _invertedMatrix: Matrix = new Matrix();
+        private _scalingMatrix: Matrix = new Matrix();
         private _rotated: Vector3 = Vector3.Zero();
         private _quaternion: Quaternion = new Quaternion();
         private _vertex: Vector3 = Vector3.Zero();
@@ -542,6 +543,17 @@ module BABYLON {
             this._colors32 = null;
             this.pickedParticles = null;
         }
+
+        // refresh the mesh bounding box
+        public refreshVisibleSize(): void {
+            this.mesh.refreshBoundingInfo();
+        }
+
+        // force the mesh to keep active in the render list
+        public forceVisibility(): void {
+            this.mesh.alwaysSelectAsActiveMesh = true;
+        }
+
 
         // Optimizer setters
         public set computeParticleRotation(val: boolean) {
