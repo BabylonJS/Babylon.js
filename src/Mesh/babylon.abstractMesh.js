@@ -89,6 +89,9 @@ var BABYLON;
                 if (_this.onCollide && collidedMesh) {
                     _this.onCollide(collidedMesh);
                 }
+                if (_this.onCollisionPositionChange) {
+                    _this.onCollisionPositionChange(_this.position);
+                }
             };
             scene.addMesh(this);
         }

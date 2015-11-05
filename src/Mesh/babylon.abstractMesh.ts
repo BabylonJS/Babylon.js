@@ -59,7 +59,7 @@
         public applyFog = true;
         public computeBonesUsingShaders = true;
         public scalingDeterminant = 1;
-        public numBoneInfluencers = 4; 
+        public numBoneInfluencers = 4;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
@@ -804,8 +804,8 @@
             if (this.onCollide && collidedMesh) {
                 this.onCollide(collidedMesh);
             }
-            
-            if(this.onCollisionPositionChange) {
+
+            if (this.onCollisionPositionChange) {
                 this.onCollisionPositionChange(this.position);
             }
         }
@@ -1053,6 +1053,7 @@
         }
     }
 }
+
 
 
 
