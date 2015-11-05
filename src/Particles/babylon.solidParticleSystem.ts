@@ -26,6 +26,7 @@ module BABYLON {
         private _index: number = 0;  // indices index
         private _updatable: boolean = true;
         private _pickable: boolean = false;
+        private _alwaysVisible: boolean = false;
         private _shapeCounter: number = 0;
         private _copy: SolidParticle = new SolidParticle(null, null, null, null, null);
         private _shape: Vector3[];
@@ -65,11 +66,11 @@ module BABYLON {
         private _w: number = 0.0;
 
 
-        constructor(name: string, scene: Scene, options?: { updatable?: boolean, pickable? :boolean }) {
+        constructor(name: string, scene: Scene, options?: { updatable?: boolean, isPickable? :boolean }) {
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
-            this._pickable = options ? options.pickable : false;
+            this._pickable = options ? options.isPickable : false;
             if (options && options.updatable) {
                 this._updatable = options.updatable;
             } else {
@@ -106,7 +107,8 @@ module BABYLON {
             var mesh = new Mesh(name, this._scene);
             vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
-
+            this.mesh.isPickable = this._pickable;
+            
             // free memory
             this._positions = null;
             this._normals = null;
@@ -115,7 +117,6 @@ module BABYLON {
 
             if (!this._updatable) {
                 this.particles.length = 0;
-                this.mesh.isPickable = true;
             }
 
             return mesh;
@@ -362,7 +363,7 @@ module BABYLON {
                 Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertedMatrix, this._fakeCamPos);
 
                 // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the cam-mesh axis (_cam_axisZ)
-                (this._fakeCamPos).subtractToRef(this.mesh.position, this._cam_axisZ);
+                (this.mesh.position).subtractToRef(this._fakeCamPos, this._cam_axisZ);
                 Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
                 Vector3.CrossToRef(this._cam_axisZ, this._cam_axisY, this._cam_axisX);
                 this._cam_axisY.normalize();
@@ -541,6 +542,21 @@ module BABYLON {
             this._uvs32 = null;
             this._colors32 = null;
             this.pickedParticles = null;
+        }
+
+        // Visibilty helpers
+        public refreshVisibleSize(): void {
+            this.mesh.refreshBoundingInfo();
+        }
+
+        // getter and setter
+        public get isAlwaysVisible(): boolean {
+            return this._alwaysVisible;
+        }
+
+        public set isAlwaysVisible(val: boolean) {
+            this._alwaysVisible = val;
+            this.mesh.alwaysSelectAsActiveMesh = val;
         }
 
         // Optimizer setters
