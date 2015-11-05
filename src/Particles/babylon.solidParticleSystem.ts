@@ -70,7 +70,7 @@ module BABYLON {
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
-            this._pickable = options ? options.pickable : false;
+            this._pickable = options ? options.isPickable : false;
             if (options && options.updatable) {
                 this._updatable = options.updatable;
             } else {
