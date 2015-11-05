@@ -1,21 +1,21 @@
 ﻿module BABYLON {
     declare var CANNON;
-    
+
     interface IRegisteredMesh {
         mesh: AbstractMesh;
         body: any; //Cannon body
-        material : any;
+        material: any;
         delta: Vector3;
         deltaRotation: Quaternion;
         heightmap: boolean;
         collisionFunction?: (event: any) => void;
-        
+
     }
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
         private _world: any;
-        private _registeredMeshes : Array<IRegisteredMesh> = [];
+        private _registeredMeshes: Array<IRegisteredMesh> = [];
         private _physicsMaterials = [];
 
         public initialize(iterations: number = 10): void {
@@ -46,14 +46,14 @@
                 if (registeredMesh.deltaRotation) {
                     registeredMesh.mesh.rotationQuaternion.multiplyInPlace(registeredMesh.deltaRotation);
                 }
-                
+
                 //is the physics collision callback is set?
-                if(registeredMesh.mesh.onPhysicsCollide) {
-                    if(!registeredMesh.collisionFunction) {
+                if (registeredMesh.mesh.onPhysicsCollide) {
+                    if (!registeredMesh.collisionFunction) {
                         registeredMesh.collisionFunction = (e) => {
                             //find the mesh that collided with the registered mesh
                             for (var idx = 0; idx < this._registeredMeshes.length; idx++) {
-                                if(this._registeredMeshes[idx].body == e.body) {
+                                if (this._registeredMeshes[idx].body == e.body) {
                                     registeredMesh.mesh.onPhysicsCollide(this._registeredMeshes[idx].mesh);
                                 }
                             }
@@ -62,11 +62,11 @@
                     }
                 } else {
                     //unregister, in case the function was removed for some reason
-                    if(registeredMesh.collisionFunction) {
-                        registeredMesh.body.removeEventListener("collide", registeredMesh.collisionFunction)
+                    if (registeredMesh.collisionFunction) {
+                        registeredMesh.body.removeEventListener("collide", registeredMesh.collisionFunction);
                     }
                 }
-            })
+            });
         }
 
         public setGravity(gravity: Vector3): void {
@@ -480,6 +480,7 @@
         }
     }
 }
+
 
 
 

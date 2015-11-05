@@ -2011,6 +2011,12 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
 
+            // mipmaps
+            if (texture.generateMipMaps) {
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            }
+
             // Unbind
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -2125,12 +2131,7 @@
             gl.deleteTexture(texture);
 
             // Unbind channels
-            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
-                this._activeTexturesCache[channel] = null;
-            }
+            this.unbindAllTextures();
 
             var index = this._loadedTexturesCache.indexOf(texture);
             if (index !== -1) {
@@ -2158,6 +2159,15 @@
 
         public setTextureFromPostProcess(channel: number, postProcess: PostProcess): void {
             this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
+        }
+
+        public unbindAllTextures(): void {
+            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
+                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+                this._activeTexturesCache[channel] = null;
+            }
         }
 
         public setTexture(channel: number, texture: BaseTexture): void {

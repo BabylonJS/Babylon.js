@@ -6412,6 +6412,11 @@ var BABYLON;
             var framebuffer = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            // mipmaps
+            if (texture.generateMipMaps) {
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            }
             // Unbind
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -6497,12 +6502,7 @@ var BABYLON;
             }
             gl.deleteTexture(texture);
             // Unbind channels
-            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
-                this._activeTexturesCache[channel] = null;
-            }
+            this.unbindAllTextures();
             var index = this._loadedTexturesCache.indexOf(texture);
             if (index !== -1) {
                 this._loadedTexturesCache.splice(index, 1);
@@ -6524,6 +6524,14 @@ var BABYLON;
         };
         Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
+        };
+        Engine.prototype.unbindAllTextures = function () {
+            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
+                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+                this._activeTexturesCache[channel] = null;
+            }
         };
         Engine.prototype.setTexture = function (channel, texture) {
             if (channel < 0) {
@@ -28377,12 +28385,9 @@ var BABYLON;
             return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
         };
         CannonJSPlugin.prototype.runOneStep = function (delta) {
+            var _this = this;
             this._world.step(delta);
-            for (var index = 0; index < this._registeredMeshes.length; index++) {
-                var registeredMesh = this._registeredMeshes[index];
-                if (registeredMesh.isChild) {
-                    continue;
-                }
+            this._registeredMeshes.forEach(function (registeredMesh) {
                 // Body position
                 var bodyX = registeredMesh.body.position.x, bodyY = registeredMesh.body.position.y, bodyZ = registeredMesh.body.position.z;
                 registeredMesh.mesh.position.x = bodyX + registeredMesh.delta.x;
@@ -28392,7 +28397,27 @@ var BABYLON;
                 if (registeredMesh.deltaRotation) {
                     registeredMesh.mesh.rotationQuaternion.multiplyInPlace(registeredMesh.deltaRotation);
                 }
-            }
+                //is the physics collision callback is set?
+                if (registeredMesh.mesh.onPhysicsCollide) {
+                    if (!registeredMesh.collisionFunction) {
+                        registeredMesh.collisionFunction = function (e) {
+                            //find the mesh that collided with the registered mesh
+                            for (var idx = 0; idx < _this._registeredMeshes.length; idx++) {
+                                if (_this._registeredMeshes[idx].body == e.body) {
+                                    registeredMesh.mesh.onPhysicsCollide(_this._registeredMeshes[idx].mesh);
+                                }
+                            }
+                        };
+                        registeredMesh.body.addEventListener("collide", registeredMesh.collisionFunction);
+                    }
+                }
+                else {
+                    //unregister, in case the function was removed for some reason
+                    if (registeredMesh.collisionFunction) {
+                        registeredMesh.body.removeEventListener("collide", registeredMesh.collisionFunction);
+                    }
+                }
+            });
         };
         CannonJSPlugin.prototype.setGravity = function (gravity) {
             this._world.gravity.set(gravity.x, gravity.y, gravity.z);
@@ -28736,6 +28761,7 @@ var BABYLON;
             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
             mesh.computeWorldMatrix(true);
             var bodyConfig = {
+                name: mesh.uniqueId,
                 pos: [bbox.center.x, bbox.center.y, bbox.center.z],
                 rot: [rot.x / OIMO.TO_RAD, rot.y / OIMO.TO_RAD, rot.z / OIMO.TO_RAD],
                 move: options.mass != 0,
@@ -28795,6 +28821,7 @@ var BABYLON;
                 rotations.push.apply(rotations, bodyParameters.rot);
             }
             var body = new OIMO.Body({
+                name: initialMesh.uniqueId,
                 type: types,
                 size: sizes,
                 pos: positions,
@@ -28821,6 +28848,7 @@ var BABYLON;
             mesh.computeWorldMatrix(true);
             var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w });
             var bodyParameters = {
+                name: mesh.uniqueId,
                 pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                 //A bug in Oimo (Body class) prevents us from using rot directly.
                 rot: [0, 0, 0],
@@ -28975,6 +29003,22 @@ var BABYLON;
                     }
                     mesh.rotationQuaternion.copyFrom(body.getQuaternion());
                     mesh.computeWorldMatrix();
+                }
+                //check if the collide callback is set. 
+                if (mesh.onPhysicsCollide) {
+                    var meshUniqueName = mesh.uniqueId;
+                    var contact = this._world.contacts;
+                    while (contact !== null) {
+                        //is this body colliding with any other?
+                        if ((contact.body1.name == mesh.uniqueId || contact.body2.name == mesh.uniqueId) && contact.touching && !contact.body1.sleeping && !contact.body2.sleeping) {
+                            var otherUniqueId = contact.body1.name == mesh.uniqueId ? contact.body2.name : contact.body1.name;
+                            //get the mesh and execute the callback
+                            var otherMesh = mesh.getScene().getMeshByUniqueID(otherUniqueId);
+                            if (otherMesh)
+                                mesh.onPhysicsCollide(otherMesh);
+                        }
+                        contact = contact.next;
+                    }
                 }
             }
         };
