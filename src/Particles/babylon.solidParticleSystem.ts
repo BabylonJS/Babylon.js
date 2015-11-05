@@ -363,7 +363,7 @@ module BABYLON {
                 Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertedMatrix, this._fakeCamPos);
 
                 // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the cam-mesh axis (_cam_axisZ)
-                (this._fakeCamPos).subtractToRef(this.mesh.position, this._cam_axisZ);
+                (this.mesh.position).subtractToRef(this._fakeCamPos, this._cam_axisZ);
                 Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
                 Vector3.CrossToRef(this._cam_axisZ, this._cam_axisY, this._cam_axisX);
                 this._cam_axisY.normalize();
