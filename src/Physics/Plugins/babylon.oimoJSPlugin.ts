@@ -384,16 +384,16 @@ module BABYLON {
                 }
                 
                 //check if the collide callback is set. 
-                if(mesh.onPhysicsCollide) {
+                if (mesh.onPhysicsCollide) {
                     var meshUniqueName = mesh.uniqueId;
                     var contact = this._world.contacts;
-                    while(contact!==null){
+                    while (contact !== null) {
                         //is this body colliding with any other?
-                        if((contact.body1.name == mesh.uniqueId || contact.body2.name == mesh.uniqueId) && contact.touching && /* !contact.sleeping*/ !contact.body1.sleeping && !contact.body2.sleeping) {
+                        if ((contact.body1.name == mesh.uniqueId || contact.body2.name == mesh.uniqueId) && contact.touching && /* !contact.sleeping*/ !contact.body1.sleeping && !contact.body2.sleeping) {
                             var otherUniqueId = contact.body1.name == mesh.uniqueId ? contact.body2.name : contact.body1.name;
                             //get the mesh and execute the callback
                             var otherMesh = mesh.getScene().getMeshByUniqueID(otherUniqueId);
-                            if(otherMesh)
+                            if (otherMesh)
                                 mesh.onPhysicsCollide(otherMesh);
                         }
                         contact = contact.next;
@@ -403,5 +403,6 @@ module BABYLON {
         }
     }
 }
+
 
 

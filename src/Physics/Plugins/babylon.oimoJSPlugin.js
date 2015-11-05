@@ -120,6 +120,7 @@ var BABYLON;
                 rotations.push.apply(rotations, bodyParameters.rot);
             }
             var body = new OIMO.Body({
+                name: initialMesh.uniqueId,
                 type: types,
                 size: sizes,
                 pos: positions,
@@ -308,7 +309,7 @@ var BABYLON;
                     var contact = this._world.contacts;
                     while (contact !== null) {
                         //is this body colliding with any other?
-                        if ((contact.body1.name == mesh.uniqueId || contact.body2.name == mesh.uniqueId) && contact.touching && !contact.sleeping) {
+                        if ((contact.body1.name == mesh.uniqueId || contact.body2.name == mesh.uniqueId) && contact.touching && !contact.body1.sleeping && !contact.body2.sleeping) {
                             var otherUniqueId = contact.body1.name == mesh.uniqueId ? contact.body2.name : contact.body1.name;
                             //get the mesh and execute the callback
                             var otherMesh = mesh.getScene().getMeshByUniqueID(otherUniqueId);
