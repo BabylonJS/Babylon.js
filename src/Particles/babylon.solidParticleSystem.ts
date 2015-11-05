@@ -66,7 +66,7 @@ module BABYLON {
         private _w: number = 0.0;
 
 
-        constructor(name: string, scene: Scene, options?: { updatable?: boolean, pickable? :boolean }) {
+        constructor(name: string, scene: Scene, options?: { updatable?: boolean, isPickable? :boolean }) {
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -550,11 +550,11 @@ module BABYLON {
         }
 
         // getter and setter
-        public get alwaysVisible(): boolean {
+        public get isAlwaysVisible(): boolean {
             return this._alwaysVisible;
         }
 
-        public set alwaysVisible(val: boolean) {
+        public set isAlwaysVisible(val: boolean) {
             this._alwaysVisible = val;
             this.mesh.alwaysSelectAsActiveMesh = val;
         }
