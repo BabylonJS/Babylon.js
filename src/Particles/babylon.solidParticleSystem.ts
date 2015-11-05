@@ -26,6 +26,7 @@ module BABYLON {
         private _index: number = 0;  // indices index
         private _updatable: boolean = true;
         private _pickable: boolean = false;
+        private _alwaysVisible: boolean = false;
         private _shapeCounter: number = 0;
         private _copy: SolidParticle = new SolidParticle(null, null, null, null, null);
         private _shape: Vector3[];
@@ -46,7 +47,6 @@ module BABYLON {
         private _fakeCamPos: Vector3 = Vector3.Zero();
         private _rotMatrix: Matrix = new Matrix();
         private _invertedMatrix: Matrix = new Matrix();
-        private _scalingMatrix: Matrix = new Matrix();
         private _rotated: Vector3 = Vector3.Zero();
         private _quaternion: Quaternion = new Quaternion();
         private _vertex: Vector3 = Vector3.Zero();
@@ -107,7 +107,8 @@ module BABYLON {
             var mesh = new Mesh(name, this._scene);
             vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
-
+            this.mesh.isPickable = this._pickable;
+            
             // free memory
             this._positions = null;
             this._normals = null;
@@ -116,7 +117,6 @@ module BABYLON {
 
             if (!this._updatable) {
                 this.particles.length = 0;
-                this.mesh.isPickable = true;
             }
 
             return mesh;
@@ -544,16 +544,20 @@ module BABYLON {
             this.pickedParticles = null;
         }
 
-        // refresh the mesh bounding box
+        // Visibilty helpers
         public refreshVisibleSize(): void {
             this.mesh.refreshBoundingInfo();
         }
 
-        // force the mesh to keep active in the render list
-        public forceVisibility(): void {
-            this.mesh.alwaysSelectAsActiveMesh = true;
+        // getter and setter
+        public get alwaysVisible(): boolean {
+            return this._alwaysVisible;
         }
 
+        public set alwaysVisible(val: boolean) {
+            this._alwaysVisible = val;
+            this.mesh.alwaysSelectAsActiveMesh = val;
+        }
 
         // Optimizer setters
         public set computeParticleRotation(val: boolean) {
