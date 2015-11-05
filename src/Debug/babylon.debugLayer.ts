@@ -486,6 +486,8 @@
             var button = document.createElement("button");
             button.innerHTML = title;
             button.style.height = "24px";
+            button.style.width = "150px";
+            button.style.marginBottom = "5px";
             button.style.color = "#444444";
             button.style.border = "1px solid white"; 
             button.className = "debugLayerButton";
@@ -697,6 +699,7 @@
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
+                this._generateButton(this._optionsSubsetDiv, "Run SceneOptimizer", (element) => { SceneOptimizer.OptimizeAsync(this._scene); });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
   
                 this._globalDiv.appendChild(this._statsDiv);

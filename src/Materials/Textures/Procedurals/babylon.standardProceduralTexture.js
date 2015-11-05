@@ -8,7 +8,7 @@ var BABYLON;
     var WoodProceduralTexture = (function (_super) {
         __extends(WoodProceduralTexture, _super);
         function WoodProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "wood", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "woodtexture", scene, fallbackTexture, generateMipMaps);
             this._ampScale = 100.0;
             this._woodColor = new BABYLON.Color3(0.32, 0.17, 0.09);
             this.updateShaderUniforms();
@@ -46,7 +46,7 @@ var BABYLON;
     var FireProceduralTexture = (function (_super) {
         __extends(FireProceduralTexture, _super);
         function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "fire", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "firetexture", scene, fallbackTexture, generateMipMaps);
             this._time = 0.0;
             this._speed = new BABYLON.Vector2(0.5, 0.3);
             this._autoGenerateTime = true;
@@ -179,7 +179,7 @@ var BABYLON;
     var CloudProceduralTexture = (function (_super) {
         __extends(CloudProceduralTexture, _super);
         function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "cloud", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "cloudtexture", scene, fallbackTexture, generateMipMaps);
             this._skyColor = new BABYLON.Color4(0.15, 0.68, 1.0, 1.0);
             this._cloudColor = new BABYLON.Color4(1, 1, 1, 1.0);
             this.updateShaderUniforms();
@@ -217,7 +217,7 @@ var BABYLON;
     var GrassProceduralTexture = (function (_super) {
         __extends(GrassProceduralTexture, _super);
         function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "grass", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "grasstexture", scene, fallbackTexture, generateMipMaps);
             this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
             this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
             this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
@@ -264,7 +264,7 @@ var BABYLON;
     var RoadProceduralTexture = (function (_super) {
         __extends(RoadProceduralTexture, _super);
         function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "road", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "roadtexture", scene, fallbackTexture, generateMipMaps);
             this._roadColor = new BABYLON.Color3(0.53, 0.53, 0.53);
             this.updateShaderUniforms();
             this.refreshRate = 0;
@@ -289,7 +289,7 @@ var BABYLON;
     var BrickProceduralTexture = (function (_super) {
         __extends(BrickProceduralTexture, _super);
         function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "brick", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "bricktexture", scene, fallbackTexture, generateMipMaps);
             this._numberOfBricksHeight = 15;
             this._numberOfBricksWidth = 5;
             this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
@@ -353,7 +353,7 @@ var BABYLON;
     var MarbleProceduralTexture = (function (_super) {
         __extends(MarbleProceduralTexture, _super);
         function MarbleProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "marble", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "marbletexture", scene, fallbackTexture, generateMipMaps);
             this._numberOfTilesHeight = 3;
             this._numberOfTilesWidth = 3;
             this._amplitude = 9.0;
