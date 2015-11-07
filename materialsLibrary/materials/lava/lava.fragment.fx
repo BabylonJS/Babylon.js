@@ -9,8 +9,9 @@ varying vec3 vPositionW;
 
 // MAGMAAAA
 uniform float time;
+uniform float speed;
+uniform vec3 fogColor;
 uniform sampler2D noiseTexture;
-uniform float incandescent;
 
 // Varying
 varying float noise;
@@ -395,11 +396,9 @@ void main(void) {
 #ifdef DIFFUSE
     ////// MAGMA ///
 
-    vec3 fogColor = vec3(0.5,0.5,0.5);
-
 	vec4 noiseTex = texture2D( noiseTexture, vDiffuseUV );
 	vec2 T1 = vDiffuseUV + vec2( 1.5, -1.5 ) * time  * 0.02;
-	vec2 T2 = vDiffuseUV + vec2( -0.5, 2.0 ) * time * 0.01;
+	vec2 T2 = vDiffuseUV + vec2( -0.5, 2.0 ) * time * 0.01 * speed;
 
 	T1.x += noiseTex.x * 2.0;
 	T1.y += noiseTex.y * 2.0;
@@ -408,12 +407,8 @@ void main(void) {
 
 	float p = texture2D( noiseTexture, T1 * 3.0 ).a;
 
-	vec4 lavaColor = texture2D( diffuseSampler, T2 * 4.0 );
+	vec4 lavaColor = texture2D( diffuseSampler, T2 * 4.0);
 	vec4 temp = lavaColor * ( vec4( p, p, p, p ) * 2.0 ) + ( lavaColor * lavaColor - 0.1 );
-
-	if( temp.r > 1.0 ){ temp.bg += clamp( temp.r - 2.0, 0.0, 100.0 ); }
-	if( temp.g > 1.0 ){ temp.rb += temp.g - 1.0; }
-	if( temp.b > 1.0 ){ temp.rg += temp.b - 1.0; }
 
 	baseColor = temp;
 
@@ -424,7 +419,6 @@ void main(void) {
     fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );
 
     baseColor = mix( baseColor, vec4( fogColor, baseColor.w ), fogFactor );
-
 
     ///// END MAGMA ////
 

@@ -61,6 +61,9 @@ module BABYLON {
     export class LavaMaterial extends Material {
         public diffuseTexture: BaseTexture;
         public noiseTexture: BaseTexture;
+        public fogColor: Color3;
+        public speed : number = 1;
+
         private _lastTime : number = 0;
 
         public diffuseColor = new Color3(1, 1, 1);
@@ -355,7 +358,7 @@ module BABYLON {
                         "vDiffuseInfos", 
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3","time"
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3","time", "speed", "fogColor"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3", "noiseTexture"
@@ -485,7 +488,13 @@ module BABYLON {
 
 
             this._lastTime += scene.getEngine().getDeltaTime();
-            this._effect.setFloat("time", this._lastTime / 1000);
+            this._effect.setFloat("time", this._lastTime * this.speed / 1000);
+
+            if (! this.fogColor) {
+                this.fogColor = Color3.Black();
+            }
+            this._effect.setColor3("fogColor", this.fogColor);
+
 
             super.bind(world, mesh);
         }
@@ -497,12 +506,19 @@ module BABYLON {
                 results.push(this.diffuseTexture);
             }
 
+            if (this.noiseTexture && this.noiseTexture.animations && this.noiseTexture.animations.length > 0) {
+                results.push(this.noiseTexture);
+            }
+
             return results;
         }
 
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();
+            }
+            if (this.noiseTexture) {
+                this.noiseTexture.dispose();
             }
 
             super.dispose(forceDisposeEffect);
@@ -518,8 +534,13 @@ module BABYLON {
             if (this.diffuseTexture && this.diffuseTexture.clone) {
                 newMaterial.diffuseTexture = this.diffuseTexture.clone();
             }
+            if (this.noiseTexture && this.noiseTexture.clone) {
+                newMaterial.noiseTexture = this.noiseTexture.clone();
+            }
+            if (this.fogColor && this.fogColor.clone) {
+                newMaterial.fogColor = this.fogColor.clone();
+            }
 
-            newMaterial.diffuseColor = this.diffuseColor.clone();
             return newMaterial;
         }
     }
