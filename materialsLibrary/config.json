@@ -1,10 +1,18 @@
 {
   "materials": [
     {
+      "file": "materials/glass/babylon.glassMaterial.ts",
+      "shaderFiles": [
+        "materials/glass/glass.vertex.fx",
+        "materials/glass/glass.fragment.fx"
+      ],
+      "output": "babylon.glassMaterial.js"
+    },
+    {
       "file": "materials/lava/babylon.lavaMaterial.ts",
       "shaderFiles": [
-          "materials/lava/lava.vertex.fx",
-          "materials/lava/lava.fragment.fx"
+        "materials/lava/lava.vertex.fx",
+        "materials/lava/lava.fragment.fx"
       ],
       "output": "babylon.lavaMaterial.js"
     },

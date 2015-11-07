@@ -1,6 +1,7 @@
 ﻿precision highp float;
 // Inputs
 uniform float time;
+uniform float speed;
 // Varying
 varying float noise;
 
@@ -222,7 +223,7 @@ void main(void) {
 
 
     // get a turbulent 3d noise using the normal, normal to high freq
-    noise = 10.0 *  -.10 * turbulence( .5 * normal + time*10.15 );
+    noise = 10.0 *  -.10 * turbulence( .5 * normal + time*1.15 );
     // get a 3d noise using the position, low frequency
     float b = 5.0 * pnoise( 0.05 * position +vec3(time*1.025), vec3( 100.0 ) );
     // compose both noises
