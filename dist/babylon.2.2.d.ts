@@ -5013,6 +5013,7 @@ declare module BABYLON {
         cellIndex: number;
         invertU: number;
         invertV: number;
+        isPickable: boolean;
         disposeWhenFinishedAnimating: boolean;
         animations: Animation[];
         private _animationStarted;
