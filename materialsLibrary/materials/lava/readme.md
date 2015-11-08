@@ -21,7 +21,7 @@ The diffuse texture will be the color of your lava, the noise texture will repre
 Notice that this material will update each vertex position of your object. If there are not enough vertices, 
 some artefacts may appears.
 
-## Customize the water material
+## Customize the lava material
 
 You can customize two properties of the material:
 
