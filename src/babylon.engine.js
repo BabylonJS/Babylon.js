@@ -1695,6 +1695,11 @@ var BABYLON;
             var framebuffer = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            // mipmaps
+            if (texture.generateMipMaps) {
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            }
             // Unbind
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -1780,12 +1785,7 @@ var BABYLON;
             }
             gl.deleteTexture(texture);
             // Unbind channels
-            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
-                this._activeTexturesCache[channel] = null;
-            }
+            this.unbindAllTextures();
             var index = this._loadedTexturesCache.indexOf(texture);
             if (index !== -1) {
                 this._loadedTexturesCache.splice(index, 1);
@@ -1807,6 +1807,14 @@ var BABYLON;
         };
         Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
+        };
+        Engine.prototype.unbindAllTextures = function () {
+            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
+                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+                this._activeTexturesCache[channel] = null;
+            }
         };
         Engine.prototype.setTexture = function (channel, texture) {
             if (channel < 0) {

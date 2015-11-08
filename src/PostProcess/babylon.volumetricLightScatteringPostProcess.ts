@@ -80,6 +80,14 @@
             // Configure
             this._createPass(scene, ratio.passRatio || ratio);
 
+            this.onActivate = (camera: Camera) => {
+                if (!this.isSupported) {
+                    this.dispose(camera);
+                }
+
+                this.onActivate = null;
+            };
+
             this.onApply = (effect: Effect) => {
                 this._updateMeshScreenCoordinates(scene);
 
@@ -360,7 +368,8 @@
 
         private _updateMeshScreenCoordinates(scene: Scene): void {
             var transform = scene.getTransformMatrix();
-            var pos = Vector3.Project(this.useCustomMeshPosition ? this._customMeshPosition : this.mesh.position, Matrix.Identity(), transform, this._viewPort);
+            var meshPosition = this.mesh.parent ? this.mesh.getAbsolutePosition() : this.mesh.position;
+            var pos = Vector3.Project(this.useCustomMeshPosition ? this._customMeshPosition : meshPosition, Matrix.Identity(), transform, this._viewPort);
 
             this._screenCoordinates.x = pos.x / this._viewPort.width;
             this._screenCoordinates.y = pos.y / this._viewPort.height;
