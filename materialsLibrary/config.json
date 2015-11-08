@@ -1,6 +1,22 @@
 {
   "materials": [
     {
+      "file": "materials/normal/babylon.normalMaterial.ts",
+      "shaderFiles": [
+        "materials/normal/normal.vertex.fx",
+        "materials/normal/normal.fragment.fx"
+      ],
+      "output": "babylon.normalMaterial.js"
+    },
+    {
+      "file": "materials/lava/babylon.lavaMaterial.ts",
+      "shaderFiles": [
+        "materials/lava/lava.vertex.fx",
+        "materials/lava/lava.fragment.fx"
+      ],
+      "output": "babylon.lavaMaterial.js"
+    },
+    {
       "file": "materials/simple/babylon.simpleMaterial.ts",
       "shaderFiles": [
         "materials/simple/simple.vertex.fx",
