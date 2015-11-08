@@ -59,7 +59,7 @@
         public applyFog = true;
         public computeBonesUsingShaders = true;
         public scalingDeterminant = 1;
-        public numBoneInfluencers = 4; 
+        public numBoneInfluencers = 4;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
@@ -74,6 +74,7 @@
         public _physicsMass: number;
         public _physicsFriction: number;
         public _physicRestitution: number;
+        public onPhysicsCollide: (collidedMesh: AbstractMesh) => void; 
 
         // Collisions
         private _checkCollisions = false;
@@ -804,8 +805,8 @@
             if (this.onCollide && collidedMesh) {
                 this.onCollide(collidedMesh);
             }
-            
-            if(this.onCollisionPositionChange) {
+
+            if (this.onCollisionPositionChange) {
                 this.onCollisionPositionChange(this.position);
             }
         }
@@ -1053,6 +1054,7 @@
         }
     }
 }
+
 
 
 

@@ -54,12 +54,9 @@ var BABYLON;
             return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
         };
         CannonJSPlugin.prototype.runOneStep = function (delta) {
+            var _this = this;
             this._world.step(delta);
-            for (var index = 0; index < this._registeredMeshes.length; index++) {
-                var registeredMesh = this._registeredMeshes[index];
-                if (registeredMesh.isChild) {
-                    continue;
-                }
+            this._registeredMeshes.forEach(function (registeredMesh) {
                 // Body position
                 var bodyX = registeredMesh.body.position.x, bodyY = registeredMesh.body.position.y, bodyZ = registeredMesh.body.position.z;
                 registeredMesh.mesh.position.x = bodyX + registeredMesh.delta.x;
@@ -69,7 +66,27 @@ var BABYLON;
                 if (registeredMesh.deltaRotation) {
                     registeredMesh.mesh.rotationQuaternion.multiplyInPlace(registeredMesh.deltaRotation);
                 }
-            }
+                //is the physics collision callback is set?
+                if (registeredMesh.mesh.onPhysicsCollide) {
+                    if (!registeredMesh.collisionFunction) {
+                        registeredMesh.collisionFunction = function (e) {
+                            //find the mesh that collided with the registered mesh
+                            for (var idx = 0; idx < _this._registeredMeshes.length; idx++) {
+                                if (_this._registeredMeshes[idx].body == e.body) {
+                                    registeredMesh.mesh.onPhysicsCollide(_this._registeredMeshes[idx].mesh);
+                                }
+                            }
+                        };
+                        registeredMesh.body.addEventListener("collide", registeredMesh.collisionFunction);
+                    }
+                }
+                else {
+                    //unregister, in case the function was removed for some reason
+                    if (registeredMesh.collisionFunction) {
+                        registeredMesh.body.removeEventListener("collide", registeredMesh.collisionFunction);
+                    }
+                }
+            });
         };
         CannonJSPlugin.prototype.setGravity = function (gravity) {
             this._world.gravity.set(gravity.x, gravity.y, gravity.z);

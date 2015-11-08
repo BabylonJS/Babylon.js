@@ -144,6 +144,9 @@ var BABYLON;
                 if (mesh.skeleton || mesh.hasLODLevels) {
                     return false;
                 }
+                if (mesh.parent) {
+                    return false;
+                }
                 return true;
             };
             this.apply = function (scene, updateSelectionTree) {

@@ -4,7 +4,7 @@
         private _woodColor: Color3 = new Color3(0.32, 0.17, 0.09);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "wood", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "woodtexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }
@@ -41,7 +41,7 @@
         private _alphaThreshold: number = 0.5;
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "fire", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "firetexture", scene, fallbackTexture, generateMipMaps);
             this._fireColors = FireProceduralTexture.RedFireColors;
             this.updateShaderUniforms();
             this.refreshRate = 1;
@@ -153,7 +153,7 @@
         private _cloudColor = new Color4(1, 1, 1, 1.0);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "cloud", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "cloudtexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }
@@ -190,7 +190,7 @@
         private _groundColor = new Color3(1, 1, 1);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "grass", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "grasstexture", scene, fallbackTexture, generateMipMaps);
 
             this._grassColors = [
                 new Color3(0.29, 0.38, 0.02),
@@ -232,7 +232,7 @@
         private _roadColor = new Color3(0.53, 0.53, 0.53);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "road", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "roadtexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }
@@ -258,7 +258,7 @@
         private _brickColor = new Color3(0.77, 0.47, 0.40);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "brick", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "bricktexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }
@@ -315,7 +315,7 @@
         private _jointColor = new Color3(0.72, 0.72, 0.72);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "marble", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "marbletexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }

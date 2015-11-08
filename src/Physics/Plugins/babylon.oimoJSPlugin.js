@@ -60,6 +60,7 @@ var BABYLON;
             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
             mesh.computeWorldMatrix(true);
             var bodyConfig = {
+                name: mesh.uniqueId,
                 pos: [bbox.center.x, bbox.center.y, bbox.center.z],
                 rot: [rot.x / OIMO.TO_RAD, rot.y / OIMO.TO_RAD, rot.z / OIMO.TO_RAD],
                 move: options.mass != 0,
@@ -119,6 +120,7 @@ var BABYLON;
                 rotations.push.apply(rotations, bodyParameters.rot);
             }
             var body = new OIMO.Body({
+                name: initialMesh.uniqueId,
                 type: types,
                 size: sizes,
                 pos: positions,
@@ -145,6 +147,7 @@ var BABYLON;
             mesh.computeWorldMatrix(true);
             var rot = new OIMO.Euler().setFromQuaternion({ x: mesh.rotationQuaternion.x, y: mesh.rotationQuaternion.y, z: mesh.rotationQuaternion.z, s: mesh.rotationQuaternion.w });
             var bodyParameters = {
+                name: mesh.uniqueId,
                 pos: [mesh.position.x, mesh.position.y, mesh.position.z],
                 //A bug in Oimo (Body class) prevents us from using rot directly.
                 rot: [0, 0, 0],
@@ -299,6 +302,22 @@ var BABYLON;
                     }
                     mesh.rotationQuaternion.copyFrom(body.getQuaternion());
                     mesh.computeWorldMatrix();
+                }
+                //check if the collide callback is set. 
+                if (mesh.onPhysicsCollide) {
+                    var meshUniqueName = mesh.uniqueId;
+                    var contact = this._world.contacts;
+                    while (contact !== null) {
+                        //is this body colliding with any other?
+                        if ((contact.body1.name == mesh.uniqueId || contact.body2.name == mesh.uniqueId) && contact.touching && !contact.body1.sleeping && !contact.body2.sleeping) {
+                            var otherUniqueId = contact.body1.name == mesh.uniqueId ? contact.body2.name : contact.body1.name;
+                            //get the mesh and execute the callback
+                            var otherMesh = mesh.getScene().getMeshByUniqueID(otherUniqueId);
+                            if (otherMesh)
+                                mesh.onPhysicsCollide(otherMesh);
+                        }
+                        contact = contact.next;
+                    }
                 }
             }
         };
