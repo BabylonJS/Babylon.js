@@ -1,20 +1,12 @@
 {
   "materials": [
     {
-      "file": "materials/glass/babylon.glassMaterial.ts",
+      "file": "materials/normal/babylon.normalMaterial.ts",
       "shaderFiles": [
-        "materials/glass/glass.vertex.fx",
-        "materials/glass/glass.fragment.fx"
+        "materials/normal/normal.vertex.fx",
+        "materials/normal/normal.fragment.fx"
       ],
-      "output": "babylon.glassMaterial.js"
-    },
-    {
-      "file": "materials/lava/babylon.lavaMaterial.ts",
-      "shaderFiles": [
-        "materials/lava/lava.vertex.fx",
-        "materials/lava/lava.fragment.fx"
-      ],
-      "output": "babylon.lavaMaterial.js"
+      "output": "babylon.normalMaterial.js"
     },
     {
       "file": "materials/simple/babylon.simpleMaterial.ts",
