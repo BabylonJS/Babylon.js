@@ -9,6 +9,14 @@
       "output": "babylon.normalMaterial.js"
     },
     {
+      "file": "materials/lava/babylon.lavaMaterial.ts",
+      "shaderFiles": [
+        "materials/lava/lava.vertex.fx",
+        "materials/lava/lava.fragment.fx"
+      ],
+      "output": "babylon.lavaMaterial.js"
+    },
+    {
       "file": "materials/simple/babylon.simpleMaterial.ts",
       "shaderFiles": [
         "materials/simple/simple.vertex.fx",
