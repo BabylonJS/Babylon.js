@@ -65,6 +65,7 @@
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
+        public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
@@ -314,7 +315,7 @@
             this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
         }
 
-        // Properties 
+        // Properties o
         public get debugLayer(): DebugLayer {
             return this._debugLayer;
         }
@@ -483,13 +484,17 @@
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
-                        return;
-                    }
+                    } else {
 
-                    // Restore pointer
-                    this.setPointerOverMesh(null);
-                    canvas.style.cursor = "";
-                    this._meshUnderPointer = null;
+                        // Restore pointer
+                        this.setPointerOverMesh(null);
+                        canvas.style.cursor = "";
+                        this._meshUnderPointer = null;
+                    }
+                }
+                
+                if (this.onPointerMove) {
+                    this.onPointerMove(evt, pickResult);
                 }
             };
 
