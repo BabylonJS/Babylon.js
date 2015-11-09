@@ -108,13 +108,13 @@ void main(void) {
 	
 	vec4 opacityColor = texture2D(opacitySampler, perturbedBaseCoords.xy);
 	
-	baseColor = texture2D(diffuseSampler, perturbedBaseCoords.xy) * 2.0;
-	baseColor *= opacityColor;
-
 #ifdef ALPHATEST
 	if (opacityColor.r < 0.1)
 		discard;
 #endif
+	
+	baseColor = texture2D(diffuseSampler, perturbedBaseCoords.xy) * 2.0;
+	baseColor *= opacityColor;
 
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
