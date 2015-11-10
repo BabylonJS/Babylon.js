@@ -241,6 +241,32 @@ var BABYLON;
             }
             return this._getKeyValue(this._keys[this._keys.length - 1].value);
         };
+        Animation.prototype.setValue = function (currentValue) {
+            // Set value
+            if (this.targetPropertyPath.length > 1) {
+                var property = this._target[this.targetPropertyPath[0]];
+                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
+                    property = property[this.targetPropertyPath[index]];
+                }
+                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
+            }
+            else {
+                this._target[this.targetPropertyPath[0]] = currentValue;
+            }
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this.targetProperty);
+            }
+        };
+        Animation.prototype.goToFrame = function (frame) {
+            if (frame < this._keys[0].frame) {
+                frame = this._keys[0].frame;
+            }
+            else if (frame > this._keys[this._keys.length - 1].frame) {
+                frame = this._keys[this._keys.length - 1].frame;
+            }
+            var currentValue = this._interpolate(frame, 0, this.loopMode);
+            this.setValue(currentValue);
+        };
         Animation.prototype.animate = function (delay, from, to, loop, speedRatio) {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
                 this._stopped = true;
@@ -331,19 +357,7 @@ var BABYLON;
             var currentFrame = returnValue ? from + ratio % range : to;
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
             // Set value
-            if (this.targetPropertyPath.length > 1) {
-                var property = this._target[this.targetPropertyPath[0]];
-                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
-                    property = property[this.targetPropertyPath[index]];
-                }
-                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
-            }
-            else {
-                this._target[this.targetPropertyPath[0]] = currentValue;
-            }
-            if (this._target.markAsDirty) {
-                this._target.markAsDirty(this.targetProperty);
-            }
+            this.setValue(currentValue);
             if (!returnValue) {
                 this._stopped = true;
             }
