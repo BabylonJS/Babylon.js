@@ -55,6 +55,14 @@
 
         }
 
+        public goToFrame(frame: number): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].goToFrame(frame);
+            }
+        }
+
         public pause(): void {
             if (this._paused) {
                 return;

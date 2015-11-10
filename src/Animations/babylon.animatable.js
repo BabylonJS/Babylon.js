@@ -49,6 +49,12 @@ var BABYLON;
             this._localDelayOffset = null;
             this._pausedDelay = null;
         };
+        Animatable.prototype.goToFrame = function (frame) {
+            var animations = this._animations;
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].goToFrame(frame);
+            }
+        };
         Animatable.prototype.pause = function () {
             if (this._paused) {
                 return;
