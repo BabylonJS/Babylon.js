@@ -19,10 +19,8 @@
 
         private _ranges = new Array<AnimationRange>();
 
-        public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string,
-            framePerSecond: number, totalFrame: number,
-            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
-
+        static _PrepareAnimation(targetProperty: string, framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation {
             var dataType = undefined;
 
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
@@ -52,10 +50,27 @@
                 animation.setEasingFunction(easingFunction);
             }
 
-            mesh.animations.push(animation);
+            return animation;
+        }
 
-            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
+            framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
 
+            var animation = Animation._PrepareAnimation(targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        }
+
+        public static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string,
+            framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
+
+            var animation = Animation._PrepareAnimation(targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            node.animations.push(animation);
+
+            return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         }
 
         constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number) {

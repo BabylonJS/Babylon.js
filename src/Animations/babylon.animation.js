@@ -25,7 +25,7 @@ var BABYLON;
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
-        Animation.CreateAndStartAnimation = function (name, mesh, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
+        Animation._PrepareAnimation = function (targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction) {
             var dataType = undefined;
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
                 dataType = Animation.ANIMATIONTYPE_FLOAT;
@@ -53,8 +53,16 @@ var BABYLON;
             if (easingFunction !== undefined) {
                 animation.setEasingFunction(easingFunction);
             }
-            mesh.animations.push(animation);
-            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+            return animation;
+        };
+        Animation.CreateAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
+            var animation = Animation._PrepareAnimation(targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        };
+        Animation.CreateMergeAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
+            var animation = Animation._PrepareAnimation(targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            node.animations.push(animation);
+            return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
         // Methods   
         Animation.prototype.createRange = function (name, from, to) {
