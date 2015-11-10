@@ -9,7 +9,7 @@
     - New serializers [folder](https://github.com/BabylonJS/Babylon.js/serializers) to host .babylon serializers ([deltakosh](https://github.com/deltakosh))
       - New .obj serializer ([BitOfGold](https://github.com/BitOfGold))
     - Sprites now can be [picked](http://www.babylonjs-playground.com/#1XMVZW#4) and can use [actions](http://www.babylonjs-playground.com/#9RUHH#4) ([deltakosh](https://github.com/deltakosh))
-    - New `Mesh.CreatePolygon()` method ([jerome](https://github.com/jbousquie))
+    - New `Mesh.CreatePolyhedron()` method ([jerome](https://github.com/jbousquie))
     - New `Mesh.CreateIcoSphere()` method. [Demo here](http://www.babylonjs-playground.com/#24DUYD) (G'kar)
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
