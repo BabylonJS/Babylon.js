@@ -357,14 +357,11 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 
 	// Specular
 #ifdef SPECULARTERM
-	vec3 angleW = normalize(vEyePosition - lightVectorW);
+	vec3 angleW = normalize(viewDirectionW - lightVectorW);
 	vec2 perturbation = bumpHeight * (bumpColor.rg - 0.5);
 	
-	vec3 upVector = vec3(0.0, 1.0, 0.0);
-	float fresnelTerm = max(dot(angleW, upVector), 0.0);
-	
-	vec3 halfvec = normalize(angleW + lightVectorW + vec3(perturbation.x * fresnelTerm, perturbation.y * fresnelTerm, 0.0) * max(1., glossiness));
-	float temp = pow(dot(halfvec, vNormal), max(1., glossiness));
+	vec3 halfvec = normalize(angleW + lightVectorW + vec3(perturbation.x, perturbation.y, 0.0) * max(1., glossiness));
+	float temp = pow(dot(vNormal, halfvec), max(1., glossiness));
 	result.specular = specularColor * temp * attenuation;
 #endif
 
@@ -393,13 +390,10 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 
 		// Specular
 #ifdef SPECULARTERM		
-		vec3 angleW = normalize(vEyePosition - lightVectorW);
+		vec3 angleW = normalize(viewDirectionW - lightVectorW);
 		vec2 perturbation = bumpHeight * (bumpColor.rg - 0.5);
 		
-		vec3 upVector = vec3(0.0, 1.0, 0.0);
-		float fresnelTerm = max(dot(angleW, upVector), 0.0);
-		
-		vec3 halfvec = normalize(angleW + lightVectorW + vec3(perturbation.x * fresnelTerm, perturbation.y * fresnelTerm, 0.0) * max(1., glossiness));
+		vec3 halfvec = normalize(angleW + vec3(perturbation.x, perturbation.y, 0.0) * max(1., glossiness));
 		float temp = pow(dot(halfvec, vNormal), max(1., glossiness));
 		result.specular = specularColor * temp * spotAtten * attenuation;
 #endif
@@ -423,14 +417,10 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 	
 	// Specular
 #ifdef SPECULARTERM
-	vec3 lightVectorW = normalize(vec3(0.1, 0.6, 0.5));
-	vec3 angleW = normalize(viewDirectionW - lightVectorW);
+	vec3 angleW = normalize(viewDirectionW + lightData.xyz);
 	vec2 perturbation = bumpHeight * (bumpColor.rg - 0.5);
 	
-	vec3 upVector = vec3(0.0, 1.0, 0.0);
-	float fresnelTerm = max(dot(angleW, upVector), 0.0);
-	
-	vec3 halfvec = normalize(angleW + lightVectorW + vec3(perturbation.x * fresnelTerm, perturbation.y * fresnelTerm, 0.0) * max(1., glossiness));
+	vec3 halfvec = normalize(angleW + vec3(perturbation.x, perturbation.y, 0.0) * max(1., glossiness));
 	float temp = pow(dot(halfvec, vNormal), max(1., glossiness));
 	result.specular = specularColor * temp;
 #endif
