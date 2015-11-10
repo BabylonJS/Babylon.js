@@ -32,7 +32,6 @@ var BABYLON;
             this._axisZ = BABYLON.Axis.Z;
             this._fakeCamPos = BABYLON.Vector3.Zero();
             this._rotMatrix = new BABYLON.Matrix();
-            this._invertedMatrix = new BABYLON.Matrix();
             this._rotated = BABYLON.Vector3.Zero();
             this._quaternion = new BABYLON.Quaternion();
             this._vertex = BABYLON.Vector3.Zero();
@@ -312,10 +311,9 @@ var BABYLON;
                 this._roll = this.mesh.rotation.z;
                 this._quaternionRotationYPR();
                 this._quaternionToRotationMatrix();
-                this._rotMatrix.invertToRef(this._invertedMatrix);
-                BABYLON.Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertedMatrix, this._fakeCamPos);
+                BABYLON.Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._rotMatrix, this._fakeCamPos);
                 // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the cam-mesh axis (_cam_axisZ)
-                (this.mesh.position).subtractToRef(this._fakeCamPos, this._cam_axisZ);
+                (this._fakeCamPos).subtractToRef(this.mesh.position, this._cam_axisZ);
                 BABYLON.Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);
                 BABYLON.Vector3.CrossToRef(this._cam_axisZ, this._cam_axisY, this._cam_axisX);
                 this._cam_axisY.normalize();
@@ -379,7 +377,7 @@ var BABYLON;
                     this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
                     this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
                     // normals : if the particles can't be morphed then just rotate the normals
-                    if (!this._computeParticleVertex) {
+                    if (!this._computeParticleVertex && !this.billboard) {
                         this._normal.x = this._fixedNormal32[idx];
                         this._normal.y = this._fixedNormal32[idx + 1];
                         this._normal.z = this._fixedNormal32[idx + 2];
@@ -415,7 +413,7 @@ var BABYLON;
                 }
                 this.mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this._positions32, false, false);
                 if (!this.mesh.areNormalsFrozen) {
-                    if (this._computeParticleVertex) {
+                    if (this._computeParticleVertex || this.billboard) {
                         // recompute the normals only if the particles can be morphed, update then the normal reference array
                         BABYLON.VertexData.ComputeNormals(this._positions32, this._indices, this._normals32);
                         for (var i = 0; i < this._normals32.length; i++) {
