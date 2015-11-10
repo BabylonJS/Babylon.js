@@ -2,6 +2,10 @@
   - **Major updates**
     - Point lights shadow mapping. [Demo here](http://www.babylonjs-playground.com/#LYCSQ#12) ([deltakosh](https://github.com/deltakosh))
     - Introducing [Materials Library](https://github.com/BabylonJS/Babylon.js/tree/master/materialsLibrary) ([deltakosh](https://github.com/deltakosh))
+      - Water material: http://doc.babylonjs.com/extensions/Water ([julien-moreau](https://github.com/julien-moreau))
+      - Fire material: http://doc.babylonjs.com/extensions/fire ([julien-moreau](https://github.com/julien-moreau))
+      - Normal material: http://doc.babylonjs.com/extensions/normal ([temechon](https://github.com/temechon))
+      - Lava Material: http://doc.babylonjs.com/extensions/lava ([temechon](https://github.com/temechon))
     - New cache mecanism for StandardMaterial ([deltakosh](https://github.com/deltakosh))
     - New Solid Particle System ([jerome](https://github.com/jbousquie))
     - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.useLightmapAsShadowMap` ([deltakosh](https://github.com/deltakosh))
@@ -13,6 +17,7 @@
     - New `Mesh.CreateIcoSphere()` method. [Demo here](http://www.babylonjs-playground.com/#24DUYD) (G'kar)
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+    - Fixed behavior or `Animation.CreateAndStartAnimation` and added `Animation.CreateMergeAndStartAnimation` to reproduce previous behavior ([deltakosh](https://github.com/deltakosh))
     - Adding `StandardMaterial.linkEmissiveWithDiffuse` to, well, link emissive with diffuse value. (With)[http://www.babylonjs-playground.com/#2FPUCS#2] and (without)[http://www.babylonjs-playground.com/#2FPUCS#1] ([deltakosh](https://github.com/deltakosh))
     - Adding support for equi-rectangular mapping. See [demo here](http://www.babylonjs-playground.com/#27FN5R#8) ([deltakosh](https://github.com/deltakosh))
     - Sprites and particles scheduler updated to be resolved before transparent objects ([deltakosh](https://github.com/deltakosh))
