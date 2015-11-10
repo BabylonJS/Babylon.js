@@ -53,6 +53,7 @@ module BABYLON {
         public BONES4 = false;
         public BonesPerMesh = 0;
         public INSTANCES = false;
+        public SPECULARTERM = false;
 
         constructor() {
             super();
@@ -66,6 +67,8 @@ module BABYLON {
 		*/
         public bumpTexture: BaseTexture;
         public diffuseColor = new Color3(1, 1, 1);
+        public specularColor = new Color3(0, 0, 0);
+        public specularPower = 64;
         public disableLighting = false;
         
         /**
@@ -96,6 +99,11 @@ module BABYLON {
         * @param {number}: Represents the maximum length of a wave
         */
 		public waveLength: number = 0.1;
+        
+        /**
+        * @param {number}: Defines the waves speed
+        */
+        public waveSpeed: number = 1.0;
 		
 		/*
 		* Private members
@@ -111,6 +119,7 @@ module BABYLON {
 		private _lastTime: number = 0;
         
         private _scaledDiffuse = new Color3();
+        private _scaledSpecular = new Color3();
         private _renderId: number;
 
         private _defines = new WaterMaterialDefines();
@@ -287,6 +296,11 @@ module BABYLON {
                     }
 
                     this._defines[type] = true;
+                    
+                    // Specular
+                    if (!light.specular.equalsFloats(0, 0, 0)) {
+                        this._defines.SPECULARTERM = true;
+                    }
 
                     // Shadows
                     if (scene.shadowsEnabled) {
@@ -421,7 +435,7 @@ module BABYLON {
 				
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                         "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
                         "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
                         "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
@@ -433,7 +447,7 @@ module BABYLON {
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
 						// Water
 						"worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
-						"cameraPosition", "bumpHeight", "waveHeight", "waterColor", "colorBlendFactor"
+						"cameraPosition", "bumpHeight", "waveHeight", "waterColor", "colorBlendFactor", "waveSpeed"
                     ],
                     ["normalSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
@@ -499,6 +513,10 @@ module BABYLON {
             }
 
             this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            
+            if (this._defines.SPECULARTERM) {
+                this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
+            }
 
             if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
@@ -529,6 +547,11 @@ module BABYLON {
 
                     light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
                     this._effect.setColor4("vLightDiffuse" + lightIndex, this._scaledDiffuse, light.range);
+                    
+                    if (this._defines.SPECULARTERM) {
+                        light.specular.scaleToRef(light.intensity, this._scaledSpecular);
+                        this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
+                    }
 
                     // Shadows
                     if (scene.shadowsEnabled) {
@@ -576,6 +599,7 @@ module BABYLON {
             this._effect.setFloat("bumpHeight", this.bumpHeight);
 			this._effect.setColor4("waterColor", this.waterColor, 1.0);
 			this._effect.setFloat("colorBlendFactor", this.colorBlendFactor);
+            this._effect.setFloat("waveSpeed", this.waveSpeed);
 
             super.bind(world, mesh);
 		}
