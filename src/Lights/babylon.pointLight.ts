@@ -3,8 +3,9 @@
         private _worldMatrix: Matrix;
         public transformedPosition: Vector3;
 
-        constructor(name: string, public position: Vector3, scene: Scene) {
+        constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
+            this.position = position;
         }
 
         public getAbsolutePosition(): Vector3 {

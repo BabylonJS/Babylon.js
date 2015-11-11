@@ -1,6 +1,5 @@
 ﻿module BABYLON {
     export class DirectionalLight extends Light implements IShadowLight {
-        public position: Vector3;
 
         private _transformedDirection: Vector3;
         public transformedPosition: Vector3;
@@ -16,9 +15,10 @@
         private _orthoTop = Number.MIN_VALUE;
         private _orthoBottom = Number.MAX_VALUE;
 
-        constructor(name: string, public direction: Vector3, scene: Scene) {
+        constructor(name: string, direction: Vector3, scene: Scene) {
             super(name, scene);
 
+            this.direction = direction;
             this.position = direction.scale(-1);
         }
 
