@@ -3,7 +3,6 @@
 
         public cameraDirection = new Vector3(0, 0, 0);
         public cameraRotation = new Vector2(0, 0);
-        public rotation = new Vector3(0, 0, 0);
 
         public speed = 2.0;
         public noRotationConstraint = false;
@@ -27,6 +26,7 @@
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
+            this.rotation = new Vector3(0, 0, 0);
         }
 
         public getFrontPosition(distance: number): Vector3 {

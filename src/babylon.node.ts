@@ -25,6 +25,13 @@
         private _scene: Scene;
         public _cache;
 
+        // enable POV at node level; not initialized, since not every light and camera has position & direction / rotation
+        public definedFacingForward = true;
+        public position : Vector3; // for meshes, all cameras (only TargetCamera sub-classes POV capable),  SpotLight, DirectionalLight, & PointLight (not POV capable)
+        public rotation : Vector3; // for meshes & TargetCamera sub-classes
+        public rotationQuaternion: Quaternion; // for meshes only
+        public direction: Vector3; // for SpotLight, DirectionalLight & HemisphericLight (POV rotation only)
+        
         /**
          * @constructor
          * @param {string} name - the name and id to be given to this node
@@ -216,6 +223,68 @@
             }
 
             return null;
+        }
+        // ================================== Point of View Movement =================================
+        /**
+         * Perform relative position change from the point of view of behind the front of the node.
+         * This is performed taking into account the nodes current rotation / direction, so you do not have to care.
+         * Supports definition of node facing forward or backward.
+         * @param {number} amountRight
+         * @param {number} amountUp
+         * @param {number} amountForward
+         */
+        public movePOV(amountRight: number, amountUp: number, amountForward: number): void {
+            if (!this.position) return;
+            this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
+        }
+
+        /**
+         * Calculate relative position change from the point of view of behind the front of the node.
+         * This is performed taking into account the nodes current rotation / direction, so you do not have to care.
+         * Supports definition of node facing forward or backward.
+         * @param {number} amountRight
+         * @param {number} amountUp
+         * @param {number} amountForward
+         */
+        public calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3 {
+            var vecInput = this.rotation ? this.rotation : this.direction;
+            if (!vecInput) return;
+            
+            var rotMatrix = new Matrix();
+            var rotQuaternion = (this.rotationQuaternion) ? this.rotationQuaternion : Quaternion.RotationYawPitchRoll(vecInput.y, vecInput.x, vecInput.z);
+            rotQuaternion.toRotationMatrix(rotMatrix);
+
+            var translationDelta = Vector3.Zero();
+            var defForwardMult = this.definedFacingForward ? -1 : 1;
+            Vector3.TransformCoordinatesFromFloatsToRef(amountRight * defForwardMult, amountUp, amountForward * defForwardMult, rotMatrix, translationDelta);
+            return translationDelta;
+        }
+        
+        // ================================== Point of View Rotation =================================
+        /**
+         * Perform relative rotation change from the point of view of behind the front of the node.
+         * Supports definition of node facing forward or backward.
+         * @param {number} flipBack
+         * @param {number} twirlClockwise
+         * @param {number} tiltRight
+         */
+        public rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): void {
+            var vecInput = this.rotation ? this.rotation : this.direction;
+            if (!vecInput) return;
+            
+            vecInput.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
+        }
+
+        /**
+         * Calculate relative rotation change from the point of view of behind the front of the node.
+         * Supports definition of node facing forward or backward.
+         * @param {number} flipBack
+         * @param {number} twirlClockwise
+         * @param {number} tiltRight
+         */
+        public calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3 {
+            var defForwardMult = this.definedFacingForward ? 1 : -1;
+            return new Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
         }
     }
 } 

@@ -28,10 +28,6 @@
         }
 
         // Properties
-        public definedFacingForward = true; // orientation for POV movement & rotation
-        public position = new Vector3(0, 0, 0);
-        public rotation = new Vector3(0, 0, 0);
-        public rotationQuaternion: Quaternion;
         public scaling = new Vector3(1, 1, 1);
         public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
@@ -134,6 +130,8 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
+            this.position = new Vector3(0, 0, 0);
+            this.rotation = new Vector3(0, 0, 0);
             scene.addMesh(this);
         }
 
@@ -306,60 +304,6 @@
                 this.position.y = absolutePositionY;
                 this.position.z = absolutePositionZ;
             }
-        }
-        // ================================== Point of View Movement =================================
-        /**
-         * Perform relative position change from the point of view of behind the front of the mesh.
-         * This is performed taking into account the meshes current rotation, so you do not have to care.
-         * Supports definition of mesh facing forward or backward.
-         * @param {number} amountRight
-         * @param {number} amountUp
-         * @param {number} amountForward
-         */
-        public movePOV(amountRight: number, amountUp: number, amountForward: number): void {
-            this.position.addInPlace(this.calcMovePOV(amountRight, amountUp, amountForward));
-        }
-
-        /**
-         * Calculate relative position change from the point of view of behind the front of the mesh.
-         * This is performed taking into account the meshes current rotation, so you do not have to care.
-         * Supports definition of mesh facing forward or backward.
-         * @param {number} amountRight
-         * @param {number} amountUp
-         * @param {number} amountForward
-         */
-        public calcMovePOV(amountRight: number, amountUp: number, amountForward: number): Vector3 {
-            var rotMatrix = new Matrix();
-            var rotQuaternion = (this.rotationQuaternion) ? this.rotationQuaternion : Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-            rotQuaternion.toRotationMatrix(rotMatrix);
-
-            var translationDelta = Vector3.Zero();
-            var defForwardMult = this.definedFacingForward ? -1 : 1;
-            Vector3.TransformCoordinatesFromFloatsToRef(amountRight * defForwardMult, amountUp, amountForward * defForwardMult, rotMatrix, translationDelta);
-            return translationDelta;
-        }
-        // ================================== Point of View Rotation =================================
-        /**
-         * Perform relative rotation change from the point of view of behind the front of the mesh.
-         * Supports definition of mesh facing forward or backward.
-         * @param {number} flipBack
-         * @param {number} twirlClockwise
-         * @param {number} tiltRight
-         */
-        public rotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): void {
-            this.rotation.addInPlace(this.calcRotatePOV(flipBack, twirlClockwise, tiltRight));
-        }
-
-        /**
-         * Calculate relative rotation change from the point of view of behind the front of the mesh.
-         * Supports definition of mesh facing forward or backward.
-         * @param {number} flipBack
-         * @param {number} twirlClockwise
-         * @param {number} tiltRight
-         */
-        public calcRotatePOV(flipBack: number, twirlClockwise: number, tiltRight: number): Vector3 {
-            var defForwardMult = this.definedFacingForward ? 1 : -1;
-            return new Vector3(flipBack * defForwardMult, twirlClockwise, tiltRight * defForwardMult);
         }
 
         public setPivotMatrix(matrix: Matrix): void {

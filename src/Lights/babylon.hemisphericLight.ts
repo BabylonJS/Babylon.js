@@ -4,8 +4,9 @@
 
         private _worldMatrix: Matrix;
 
-        constructor(name: string, public direction: Vector3, scene: Scene) {
+        constructor(name: string, direction: Vector3, scene: Scene) {
             super(name, scene);
+            this.direction = direction;
         }
 
         public setDirectionToTarget(target: Vector3): Vector3 {

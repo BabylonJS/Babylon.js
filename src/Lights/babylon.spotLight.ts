@@ -6,8 +6,10 @@
         private _transformedDirection: Vector3;
         private _worldMatrix: Matrix;
 
-        constructor(name: string, public position: Vector3, public direction: Vector3, public angle: number, public exponent: number, scene: Scene) {
+        constructor(name: string, position: Vector3, direction: Vector3, public angle: number, public exponent: number, scene: Scene) {
             super(name, scene);
+            this.position = position;
+            this.direction = direction;
         }
 
         public getAbsolutePosition(): Vector3 {

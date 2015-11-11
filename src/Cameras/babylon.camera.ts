@@ -152,8 +152,9 @@
 
         private _globalPosition = Vector3.Zero();
 
-        constructor(name: string, public position: Vector3, scene: Scene) {
+        constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
+            this.position = position;
 
             scene.addCamera(this);
 
