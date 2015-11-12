@@ -167,7 +167,7 @@
         public trackCreation(onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void) {
         }
 
-        public resetCheckOnlyOnceFlag(): void {
+        public resetCheckReadyOnlyOnceFlag(): void {
             this._wasPreviouslyReady = false;
         }
 
