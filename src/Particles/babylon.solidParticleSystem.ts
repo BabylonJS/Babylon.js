@@ -46,6 +46,7 @@ module BABYLON {
         private _particle: SolidParticle;
         private _fakeCamPos: Vector3 = Vector3.Zero();
         private _rotMatrix: Matrix = new Matrix();
+        private _invertMatrix: Matrix = new Matrix();
         private _rotated: Vector3 = Vector3.Zero();
         private _quaternion: Quaternion = new Quaternion();
         private _vertex: Vector3 = Vector3.Zero();
@@ -358,7 +359,8 @@ module BABYLON {
                 this._roll = this.mesh.rotation.z;
                 this._quaternionRotationYPR();
                 this._quaternionToRotationMatrix();
-                Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._rotMatrix, this._fakeCamPos);
+                this._rotMatrix.invertToRef(this._invertMatrix);
+                Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._fakeCamPos);
 
                 // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the cam-mesh axis (_cam_axisZ)
                 (this._fakeCamPos).subtractToRef(this.mesh.position, this._cam_axisZ);
