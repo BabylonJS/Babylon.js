@@ -92,6 +92,7 @@ uniform float waveLength;
 uniform float time;
 uniform float windForce;
 uniform float waveHeight;
+uniform float waveSpeed;
 
 // Water varyings
 varying vec3 vPosition;
@@ -184,8 +185,8 @@ void main(void) {
 #endif
 
 	vec3 p = position;
-	float newY = (sin(((p.x / 0.05) + time * windForce) * windDirection.x) * waveHeight * 5.0)
-			   + (cos(((p.z / 0.05) + time * windForce) * windDirection.y) * waveHeight * 5.0);
+	float newY = (sin(((p.x / 0.05) + time * waveSpeed * windForce) * windDirection.x) * waveHeight * 5.0)
+			   + (cos(((p.z / 0.05) + time * waveSpeed * windForce) * windDirection.y) * waveHeight * 5.0);
 	p.y += abs(newY);
 	
 	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);

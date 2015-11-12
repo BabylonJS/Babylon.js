@@ -602,6 +602,10 @@
                     fallbacks.addFallback(1, "FOG");
                 }
 
+                if (this._defines.POINTSIZE) {
+                    fallbacks.addFallback(0, "POINTSIZE");
+                }
+
                 for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                     if (!this._defines["LIGHT" + lightIndex]) {
                         continue;

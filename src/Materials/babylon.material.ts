@@ -167,6 +167,10 @@
         public trackCreation(onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void) {
         }
 
+        public resetCheckReadyOnlyOnceFlag(): void {
+            this._wasPreviouslyReady = false;
+        }
+
         public _preBind(): void {
             var engine = this._scene.getEngine();
 

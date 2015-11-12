@@ -152,6 +152,9 @@ var BABYLON;
         };
         Material.prototype.trackCreation = function (onCompiled, onError) {
         };
+        Material.prototype.resetCheckReadyOnlyOnceFlag = function () {
+            this._wasPreviouslyReady = false;
+        };
         Material.prototype._preBind = function () {
             var engine = this._scene.getEngine();
             engine.enableEffect(this._effect);
