@@ -134,8 +134,12 @@ module BABYLON {
         public disableDepthOfField() { this._dofDistance = -1; }
         public setAperture(amount: number) { this._dofAperture = amount; }
         public setDarkenOutOfFocus(amount: number) { this._dofDarken = amount; }
-        public enablePentagonBokeh() { this._dofPentagon = true; }
-        public disablePentagonBokeh() { this._dofPentagon = false; }
+        public enablePentagonBokeh() {
+            this._highlightsPostProcess.updateEffect("#define PENTAGON\n");
+        }
+        public disablePentagonBokeh() {
+            this._highlightsPostProcess.updateEffect();
+        }
         public enableNoiseBlur() { this._blurNoise = true; }
         public disableNoiseBlur() { this._blurNoise = false; }
         public setHighlightsGain(amount: number) {
@@ -185,15 +189,15 @@ module BABYLON {
         // highlights enhancing
         private _createHighlightsPostProcess(ratio: number): void {
             this._highlightsPostProcess = new PostProcess("LensHighlights", "lensHighlights",
-                ["pentagon", "gain", "threshold", "screen_width", "screen_height"],      // uniforms
+                ["gain", "threshold", "screen_width", "screen_height"],      // uniforms
                 [],     // samplers
-                ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
-                this._scene.getEngine(), false);
+                ratio,
+                null, Texture.TRILINEAR_SAMPLINGMODE,
+                this._scene.getEngine(), false, this._dofPentagon ? "#define PENTAGON\n" : "");
 
             this._highlightsPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat('gain', this._highlightsGain);
                 effect.setFloat('threshold', this._highlightsThreshold);
-                effect.setBool('pentagon', this._dofPentagon);
                 effect.setTextureFromPostProcess("textureSampler", this._chromaticAberrationPostProcess);
                 effect.setFloat('screen_width', this._scene.getEngine().getRenderingCanvas().width);
                 effect.setFloat('screen_height', this._scene.getEngine().getRenderingCanvas().height);

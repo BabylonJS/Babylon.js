@@ -32,6 +32,7 @@ var BABYLON;
             this._axisZ = BABYLON.Axis.Z;
             this._fakeCamPos = BABYLON.Vector3.Zero();
             this._rotMatrix = new BABYLON.Matrix();
+            this._invertMatrix = new BABYLON.Matrix();
             this._rotated = BABYLON.Vector3.Zero();
             this._quaternion = new BABYLON.Quaternion();
             this._vertex = BABYLON.Vector3.Zero();
@@ -311,7 +312,8 @@ var BABYLON;
                 this._roll = this.mesh.rotation.z;
                 this._quaternionRotationYPR();
                 this._quaternionToRotationMatrix();
-                BABYLON.Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._rotMatrix, this._fakeCamPos);
+                this._rotMatrix.invertToRef(this._invertMatrix);
+                BABYLON.Vector3.TransformCoordinatesToRef(this._camera.globalPosition, this._invertMatrix, this._fakeCamPos);
                 // set two orthogonal vectors (_cam_axisX and and _cam_axisY) to the cam-mesh axis (_cam_axisZ)
                 (this._fakeCamPos).subtractToRef(this.mesh.position, this._cam_axisZ);
                 BABYLON.Vector3.CrossToRef(this._cam_axisZ, this._axisX, this._cam_axisY);

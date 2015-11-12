@@ -113,8 +113,12 @@ var BABYLON;
         LensRenderingPipeline.prototype.disableDepthOfField = function () { this._dofDistance = -1; };
         LensRenderingPipeline.prototype.setAperture = function (amount) { this._dofAperture = amount; };
         LensRenderingPipeline.prototype.setDarkenOutOfFocus = function (amount) { this._dofDarken = amount; };
-        LensRenderingPipeline.prototype.enablePentagonBokeh = function () { this._dofPentagon = true; };
-        LensRenderingPipeline.prototype.disablePentagonBokeh = function () { this._dofPentagon = false; };
+        LensRenderingPipeline.prototype.enablePentagonBokeh = function () {
+            this._highlightsPostProcess.updateEffect("#define PENTAGON\n");
+        };
+        LensRenderingPipeline.prototype.disablePentagonBokeh = function () {
+            this._highlightsPostProcess.updateEffect();
+        };
         LensRenderingPipeline.prototype.enableNoiseBlur = function () { this._blurNoise = true; };
         LensRenderingPipeline.prototype.disableNoiseBlur = function () { this._blurNoise = false; };
         LensRenderingPipeline.prototype.setHighlightsGain = function (amount) {
@@ -157,13 +161,12 @@ var BABYLON;
         // highlights enhancing
         LensRenderingPipeline.prototype._createHighlightsPostProcess = function (ratio) {
             var _this = this;
-            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["pentagon", "gain", "threshold", "screen_width", "screen_height"], // uniforms
+            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["gain", "threshold", "screen_width", "screen_height"], // uniforms
             [], // samplers
-            ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, this._dofPentagon ? "#define PENTAGON\n" : "");
             this._highlightsPostProcess.onApply = function (effect) {
                 effect.setFloat('gain', _this._highlightsGain);
                 effect.setFloat('threshold', _this._highlightsThreshold);
-                effect.setBool('pentagon', _this._dofPentagon);
                 effect.setTextureFromPostProcess("textureSampler", _this._chromaticAberrationPostProcess);
                 effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
                 effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);

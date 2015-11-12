@@ -19,6 +19,9 @@
         public _textures = new SmartArray<WebGLTexture>(2);
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
+        private _samplers: string[];
+        private _fragmentUrl: string;
+        private _parameters: string[];
 
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number|any, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             if (camera != null) {
@@ -36,13 +39,20 @@
             this._reusable = reusable || false;
             this._textureType = textureType;
 
-            samplers = samplers || [];
-            samplers.push("textureSampler");
+            this._samplers = samplers || [];
+            this._samplers.push("textureSampler");
 
-            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl },
+            this._fragmentUrl = fragmentUrl;
+            this._parameters = parameters || []
+
+            this.updateEffect(defines);
+        }
+
+        public updateEffect(defines?: string) {
+            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl },
                 ["position"],
-                parameters || [],
-                samplers, defines !== undefined ? defines : "");
+                this._parameters,
+                this._samplers, defines !== undefined ? defines : "");
         }
 
         public isReusable(): boolean {
