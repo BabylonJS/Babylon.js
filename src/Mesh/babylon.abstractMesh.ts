@@ -1010,6 +1010,10 @@
                 this._edgesRenderer.dispose();
                 this._edgesRenderer = null;
             }
+            
+            if(this.skeleton) {
+                this.skeleton.dispose();
+            }
 
             // SubMeshes
             this.releaseSubMeshes();
