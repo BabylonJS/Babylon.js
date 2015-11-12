@@ -634,10 +634,3 @@ module BABYLON {
         }
     }
 }
-
-
-
-
-
-
-

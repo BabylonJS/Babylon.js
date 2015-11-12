@@ -23,10 +23,15 @@ var BABYLON;
             this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
             this._textureType = textureType;
-            samplers = samplers || [];
-            samplers.push("textureSampler");
-            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl }, ["position"], parameters || [], samplers, defines !== undefined ? defines : "");
+            this._samplers = samplers || [];
+            this._samplers.push("textureSampler");
+            this._fragmentUrl = fragmentUrl;
+            this._parameters = parameters || [];
+            this.updateEffect(defines);
         }
+        PostProcess.prototype.updateEffect = function (defines) {
+            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl }, ["position"], this._parameters, this._samplers, defines !== undefined ? defines : "");
+        };
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
         };
