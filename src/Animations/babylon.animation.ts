@@ -19,10 +19,8 @@
 
         private _ranges = new Array<AnimationRange>();
 
-        public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string,
-            framePerSecond: number, totalFrame: number,
-            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
-
+        static _PrepareAnimation(targetProperty: string, framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation {
             var dataType = undefined;
 
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
@@ -52,10 +50,27 @@
                 animation.setEasingFunction(easingFunction);
             }
 
-            mesh.animations.push(animation);
+            return animation;
+        }
 
-            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
+            framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
 
+            var animation = Animation._PrepareAnimation(targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        }
+
+        public static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string,
+            framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
+
+            var animation = Animation._PrepareAnimation(targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            node.animations.push(animation);
+
+            return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         }
 
         constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number) {
@@ -276,6 +291,36 @@
             return this._getKeyValue(this._keys[this._keys.length - 1].value);
         }
 
+        public setValue(currentValue: any): void {
+            // Set value
+            if (this.targetPropertyPath.length > 1) {
+                var property = this._target[this.targetPropertyPath[0]];
+
+                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
+                    property = property[this.targetPropertyPath[index]];
+                }
+
+                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
+            } else {
+                this._target[this.targetPropertyPath[0]] = currentValue;
+            }
+
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this.targetProperty);
+            }
+        }
+
+        public goToFrame(frame: number): void {
+            if (frame < this._keys[0].frame) {
+                frame = this._keys[0].frame
+            } else if (frame > this._keys[this._keys.length - 1].frame) {
+                frame = this._keys[this._keys.length - 1].frame;
+            }
+
+            var currentValue = this._interpolate(frame, 0, this.loopMode);
+
+            this.setValue(currentValue);
+        }
 
         public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
@@ -377,21 +422,7 @@
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
 
             // Set value
-            if (this.targetPropertyPath.length > 1) {
-                var property = this._target[this.targetPropertyPath[0]];
-
-                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
-                    property = property[this.targetPropertyPath[index]];
-                }
-
-                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
-            } else {
-                this._target[this.targetPropertyPath[0]] = currentValue;
-            }
-
-            if (this._target.markAsDirty) {
-                this._target.markAsDirty(this.targetProperty);
-            }
+            this.setValue(currentValue);
 
             if (!returnValue) {
                 this._stopped = true;

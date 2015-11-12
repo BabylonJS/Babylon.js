@@ -185,7 +185,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene.prototype, "debugLayer", {
-            // Properties 
+            // Properties
             get: function () {
                 return this._debugLayer;
             },
@@ -338,12 +338,16 @@ var BABYLON;
                     pickResult = _this.pickSprite(_this._pointerX, _this._pointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
-                        return;
                     }
-                    // Restore pointer
-                    _this.setPointerOverMesh(null);
-                    canvas.style.cursor = "";
-                    _this._meshUnderPointer = null;
+                    else {
+                        // Restore pointer
+                        _this.setPointerOverMesh(null);
+                        canvas.style.cursor = "";
+                        _this._meshUnderPointer = null;
+                    }
+                }
+                if (_this.onPointerMove) {
+                    _this.onPointerMove(evt, pickResult);
                 }
             };
             this._onPointerDown = function (evt) {

@@ -7,6 +7,7 @@ var rename = require("gulp-rename");
 var cleants = require('gulp-clean-ts-extends');
 var replace = require("gulp-replace");
 var webserver = require('gulp-webserver');
+var uglify = require("gulp-uglify");
 
 var config = require("./config.json");
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
@@ -41,6 +42,9 @@ gulp.task('default', ["copyReference"], function () {
             .pipe(cleants())
             .pipe(replace(extendsSearchRegex, ""))
             .pipe(concat(material.output))
+            .pipe(gulp.dest(config.build.distOutputDirectory))
+            .pipe(rename({extname: ".min.js"}))
+            .pipe(uglify())
             .pipe(gulp.dest(config.build.distOutputDirectory));
     });
 

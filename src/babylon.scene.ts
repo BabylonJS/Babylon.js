@@ -315,7 +315,7 @@
             this.workerCollisions = false;//(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
         }
 
-        // Properties o
+        // Properties
         public get debugLayer(): DebugLayer {
             return this._debugLayer;
         }
@@ -492,7 +492,7 @@
                         this._meshUnderPointer = null;
                     }
                 }
-                
+
                 if (this.onPointerMove) {
                     this.onPointerMove(evt, pickResult);
                 }
@@ -2426,3 +2426,4 @@
         }
     }
 } 
+

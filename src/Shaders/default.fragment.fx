@@ -830,21 +830,22 @@ void main(void) {
 	vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
 #ifdef REFLECTIONMAP_3D
-	float bias = 0.;
-
 #ifdef ROUGHNESS
-	bias = vReflectionInfos.y;
-#endif
+	 float bias = vReflectionInfos.y;
 
-#ifdef SPECULARTERM
-#ifdef SPECULAR
-#ifdef GLOSSINESS
-	bias *= (1.0 - specularMapColor.a);
-#endif
-#endif
-#endif
+	#ifdef SPECULARTERM
+	#ifdef SPECULAR
+	#ifdef GLOSSINESS
+		bias *= (1.0 - specularMapColor.a);
+	#endif
+	#endif
+	#endif
 
 	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
+#else
+	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.x;
+#endif
+
 #else
 	vec2 coords = vReflectionUVW.xy;
 

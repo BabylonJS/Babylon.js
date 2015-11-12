@@ -55,6 +55,14 @@
 
         }
 
+        public goToFrame(frame: number): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].goToFrame(frame);
+            }
+        }
+
         public pause(): void {
             if (this._paused) {
                 return;
@@ -80,6 +88,7 @@
 
         public _animate(delay: number): boolean {
             if (this._paused) {
+                this.animationStarted = false;
                 if (!this._pausedDelay) {
                     this._pausedDelay = delay;
                 }
@@ -96,12 +105,15 @@
             // Animating
             var running = false;
             var animations = this._animations;
+            var index: number;
 
-            for (var index = 0; index < animations.length; index++) {
+            for (index = 0; index < animations.length; index++) {
                 var animation = animations[index];
                 var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                 running = running || isRunning;
             }
+
+            this.animationStarted = running;
 
             if (!running) {
                 // Remove from active animatables
