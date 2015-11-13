@@ -152,7 +152,7 @@ var BABYLON;
         };
         Material.prototype.trackCreation = function (onCompiled, onError) {
         };
-        Material.prototype.resetCheckReadyOnlyOnceFlag = function () {
+        Material.prototype.markDirty = function () {
             this._wasPreviouslyReady = false;
         };
         Material.prototype._preBind = function () {
