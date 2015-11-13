@@ -6,6 +6,7 @@
       - Fire material: http://doc.babylonjs.com/extensions/fire ([julien-moreau](https://github.com/julien-moreau))
       - Normal material: http://doc.babylonjs.com/extensions/normal ([temechon](https://github.com/temechon))
       - Lava Material: http://doc.babylonjs.com/extensions/lava ([temechon](https://github.com/temechon))
+      - PBR Material: http://doc.babylonjs.com/extensions/pbr ([deltakosh](https://github.com/deltakosh))
     - New cache mecanism for StandardMaterial ([deltakosh](https://github.com/deltakosh))
     - New Solid Particle System ([jerome](https://github.com/jbousquie))
     - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.useLightmapAsShadowMap` ([deltakosh](https://github.com/deltakosh))

@@ -10,6 +10,7 @@
 	<script src="../dist/babylon.fireMaterial.js"></script>
     <script src="../dist/babylon.lavaMaterial.js"></script>
 	<script src="../dist/babylon.terrainMaterial.js"></script>
+	<script src="../dist/babylon.pbrMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -202,6 +203,8 @@
 				terrain.diffuseTexture2.uScale = terrain.diffuseTexture2.vScale = 10;
 				terrain.diffuseTexture3.uScale = terrain.diffuseTexture3.vScale = 10;
 				
+				var pbr = new BABYLON.PBRMaterial("pbr", scene);
+				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
@@ -221,7 +224,7 @@
 					skybox: false
 				}
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					
 					switch (options.material) {
@@ -245,6 +248,9 @@
 						case "terrain":
 							currentMaterial = terrain;
 							break;
+						case "pbr":
+							currentMaterial = pbr;
+							break;							
 						default:
 							currentMaterial = std;
 							break;
