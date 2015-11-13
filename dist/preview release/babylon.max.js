@@ -7808,7 +7808,7 @@ var BABYLON;
             if (this._isDirty) {
                 return false;
             }
-            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
+            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
                 return false;
             if (this._cache.pivotMatrixUpdated) {
                 return false;
@@ -7837,6 +7837,7 @@ var BABYLON;
             this._cache.scaling = BABYLON.Vector3.Zero();
             this._cache.rotation = BABYLON.Vector3.Zero();
             this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
+            this._cache.billboardMode = -1;
         };
         AbstractMesh.prototype.markAsDirty = function (property) {
             if (property === "rotation") {
@@ -7869,6 +7870,7 @@ var BABYLON;
             this._cache.position.copyFrom(this.position);
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;
+            this._cache.billboardMode = this.billboardMode;
             this._currentRenderId = this.getScene().getRenderId();
             this._isDirty = false;
             // Scaling
@@ -15023,6 +15025,14 @@ var BABYLON;
         };
         // Cylinder and cone
         Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable, sideOrientation) {
+            if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
+                if (scene !== undefined) {
+                    sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                    updatable = scene;
+                }
+                scene = subdivisions;
+                subdivisions = 1;
+            }
             var options = {
                 height: height,
                 diameterTop: diameterTop,
@@ -15112,7 +15122,7 @@ var BABYLON;
             var options = {
                 shape: shape,
                 radius: radius,
-                tesselation: tessellation,
+                tessellation: tessellation,
                 sideOrientation: sideOrientation,
                 updatable: updatable
             };
@@ -15266,8 +15276,9 @@ var BABYLON;
             var matWeightIdx = 0;
             var inf;
             for (var index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
+                var weight;
                 for (inf = 0; inf < 4; inf++) {
-                    var weight = matricesWeightsData[matWeightIdx + inf];
+                    weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
                         BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
@@ -15277,7 +15288,7 @@ var BABYLON;
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
-                        var weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        weight = matricesWeightsExtraData[matWeightIdx + inf];
                         if (weight > 0) {
                             BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
@@ -23781,6 +23792,7 @@ var BABYLON;
             var diameterBottom = options.diameterBottom || options.diameter || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
+            var hasRings = options.hasRings;
             var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(3);
@@ -23809,36 +23821,43 @@ var BABYLON;
             // positions, normals, uvs
             var i;
             var j;
+            var r;
+            var ringIdx = 1;
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
-                for (j = 0; j <= tessellation; j++) {
-                    angle = j * angle_step;
-                    ringVertex.x = Math.cos(-angle) * radius;
-                    ringVertex.y = -height / 2 + h * height;
-                    ringVertex.z = Math.sin(-angle) * radius;
-                    if (diameterTop === 0 && i === subdivisions) {
-                        // if no top cap, reuse former normals
-                        ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
-                        ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
-                        ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
-                    }
-                    else {
-                        ringNormal.x = ringVertex.x;
-                        ringNormal.z = ringVertex.z;
-                        ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
-                        ringNormal.normalize();
-                    }
-                    positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
-                    normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
-                    if (faceColors) {
-                        colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
+                for (r = 0; r < ringIdx; r++) {
+                    for (j = 0; j <= tessellation; j++) {
+                        angle = j * angle_step;
+                        ringVertex.x = Math.cos(-angle) * radius;
+                        ringVertex.y = -height / 2 + h * height;
+                        ringVertex.z = Math.sin(-angle) * radius;
+                        if (diameterTop === 0 && i === subdivisions) {
+                            // if no top cap, reuse former normals
+                            ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
+                            ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
+                            ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
+                        }
+                        else {
+                            ringNormal.x = ringVertex.x;
+                            ringNormal.z = ringVertex.z;
+                            ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
+                            ringNormal.normalize();
+                        }
+                        positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
+                        normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
+                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
+                        if (faceColors) {
+                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                        }
                     }
                 }
             }
             // indices
-            for (i = 0; i < subdivisions; i++) {
+            var s;
+            i = 0;
+            for (s = 0; s < subdivisions; s++) {
                 for (j = 0; j < tessellation; j++) {
                     var i0 = i * (tessellation + 1) + j;
                     var i1 = (i + 1) * (tessellation + 1) + j;
@@ -23847,6 +23866,7 @@ var BABYLON;
                     indices.push(i0, i1, i2);
                     indices.push(i3, i2, i1);
                 }
+                i = (hasRings) ? (i + 2) : (i + 1);
             }
             // Caps
             var createCylinderCap = function (isTop) {
@@ -24301,14 +24321,15 @@ var BABYLON;
             // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
             var face_vertex_pos = new Array(3);
             var face_vertex_uv = new Array(3);
-            for (var v012 = 0; v012 < 3; v012++) {
+            var v012;
+            for (v012 = 0; v012 < 3; v012++) {
                 face_vertex_pos[v012] = BABYLON.Vector3.Zero();
                 face_vertex_uv[v012] = BABYLON.Vector2.Zero();
             }
             // create all with normals
             for (var face = 0; face < 20; face++) {
                 // 3 vertex per face
-                for (var v012 = 0; v012 < 3; v012++) {
+                for (v012 = 0; v012 < 3; v012++) {
                     // look up vertex 0,1,2 to its index in 0 to 11
                     var v_id = ico_indices[3 * face + v012];
                     // vertex have 3D position (x,y,z)

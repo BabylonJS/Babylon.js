@@ -848,7 +848,7 @@
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
-                ringIdx = (hasRings && i != 0 && i != subdivisions) ? 2 : 1;
+                ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
                 for (r = 0; r < ringIdx; r++) {
                     for (j = 0; j <= tessellation; j++) {
                         angle = j * angle_step;
@@ -892,7 +892,7 @@
                 i = (hasRings) ? (i + 2) : (i + 1);
             }
 
-             // Caps
+            // Caps
             var createCylinderCap = isTop => {
                 var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
                 if (radius === 0) {
@@ -1394,7 +1394,7 @@
             return vertexData;
         }
 
-        public static CreateIcoSphere(options: {radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number}): VertexData {
+        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
             var flat = (options.flat === undefined) ? true : options.flat;
@@ -1451,14 +1451,15 @@
             // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
             var face_vertex_pos = new Array(3);
             var face_vertex_uv = new Array(3);
-            for (var v012 = 0; v012 < 3; v012++) {
+            var v012: number;
+            for (v012 = 0; v012 < 3; v012++) {
                 face_vertex_pos[v012] = Vector3.Zero();
                 face_vertex_uv[v012] = Vector2.Zero();
             }
             // create all with normals
             for (var face = 0; face < 20; face++) {
                 // 3 vertex per face
-                for (var v012 = 0; v012 < 3; v012++) {
+                for (v012 = 0; v012 < 3; v012++) {
                     // look up vertex 0,1,2 to its index in 0 to 11
                     var v_id = ico_indices[3 * face + v012];
                     // vertex have 3D position (x,y,z)
@@ -1533,7 +1534,7 @@
                 // centroid of triangle is needed to get help normal computation
                 //  (c1,c2) are used for centroid location
 
-                var interp_vertex = (i1: number, i2: number, c1: number, c2: number) =>{
+                var interp_vertex = (i1: number, i2: number, c1: number, c2: number) => {
                     // vertex is interpolated from
                     //   - face_vertex_pos[0..2]
                     //   - face_vertex_uv[0..2]
@@ -1834,21 +1835,12 @@
         public static ComputeNormals(positions: any, indices: any, normals: any) {
             var index = 0;
             
-            var p1p2x = 0.0;
-            var p1p2y = 0.0;
-            var p1p2z = 0.0;
-            var p3p2x = 0.0;
-            var p3p2y = 0.0;
-            var p3p2z = 0.0;
-            var faceNormalx = 0.0;
-            var faceNormaly = 0.0;
-            var faceNormalz = 0.0;
+            // temp Vector3
+            var p1p2 = Vector3.Zero();
+            var p3p2 = Vector3.Zero();
+            var faceNormal = Vector3.Zero();
 
-            var length = 0.0;
-
-            var i1 = 0;
-            var i2 = 0;
-            var i3 = 0;
+            var vertexNormali1 = Vector3.Zero();
 
             for (index = 0; index < positions.length; index++) {
                 normals[index] = 0.0;
@@ -1857,54 +1849,39 @@
             // indice triplet = 1 face
             var nbFaces = indices.length / 3;
             for (index = 0; index < nbFaces; index++) {
-                i1 = indices[index * 3];            // get the indexes of each vertex of the face
-                i2 = indices[index * 3 + 1];
-                i3 = indices[index * 3 + 2];
+                var i1 = indices[index * 3];
+                var i2 = indices[index * 3 + 1];
+                var i3 = indices[index * 3 + 2];
 
-                p1p2x = positions[i1 * 3] - positions[i2 * 3];          // compute two vectors per face
-                p1p2y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
-                p1p2z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
+                p1p2.x = positions[i1 * 3] - positions[i2 * 3];
+                p1p2.y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
+                p1p2.z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
 
-                p3p2x = positions[i3 * 3] - positions[i2 * 3];
-                p3p2y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
-                p3p2z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
+                p3p2.x = positions[i3 * 3] - positions[i2 * 3];
+                p3p2.y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
+                p3p2.z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
 
-                faceNormalx = p1p2y * p3p2z - p1p2z * p3p2y;            // compute the face normal with cross product
-                faceNormaly = p1p2z * p3p2x - p1p2x * p3p2z;
-                faceNormalz = p1p2x * p3p2y - p1p2y * p3p2x;
+                Vector3.CrossToRef(p1p2, p3p2, faceNormal);
+                faceNormal.normalize();
 
-                length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
-                length = (length === 0) ? 1.0 : length;
-                faceNormalx /= length;                                  // normalize this normal
-                faceNormaly /= length;
-                faceNormalz /= length;
-
-                normals[i1 * 3] += faceNormalx;                         // accumulate all the normals per face
-                normals[i1 * 3 + 1] += faceNormaly;
-                normals[i1 * 3 + 2] += faceNormalz;
-                normals[i2 * 3] += faceNormalx;
-                normals[i2 * 3 + 1] += faceNormaly;
-                normals[i2 * 3 + 2] += faceNormalz;
-                normals[i3 * 3] += faceNormalx;
-                normals[i3 * 3 + 1] += faceNormaly;
-                normals[i3 * 3 + 2] += faceNormalz;
+                normals[i1 * 3] += faceNormal.x;
+                normals[i1 * 3 + 1] += faceNormal.y;
+                normals[i1 * 3 + 2] += faceNormal.z;
+                normals[i2 * 3] += faceNormal.x;
+                normals[i2 * 3 + 1] += faceNormal.y;
+                normals[i2 * 3 + 2] += faceNormal.z;
+                normals[i3 * 3] += faceNormal.x;
+                normals[i3 * 3 + 1] += faceNormal.y;
+                normals[i3 * 3 + 2] += faceNormal.z;
             }
             
-            // last normalization of each normal
+            // last normalization
             for (index = 0; index < normals.length / 3; index++) {
-                faceNormalx = normals[index * 3];
-                faceNormaly = normals[index * 3 + 1];
-                faceNormalz = normals[index * 3 + 2];
-
-                length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
-                length = (length === 0) ? 1.0 : length;
-                faceNormalx /= length;                                 
-                faceNormaly /= length;
-                faceNormalz /= length;
-
-                normals[index * 3] = faceNormalx;
-                normals[index * 3 + 1] = faceNormaly;
-                normals[index * 3 + 2] = faceNormalz;
+                Vector3.FromFloatsToRef(normals[index * 3], normals[index * 3 + 1], normals[index * 3 + 2], vertexNormali1);
+                vertexNormali1.normalize();
+                normals[index * 3] = vertexNormali1.x;
+                normals[index * 3 + 1] = vertexNormali1.y;
+                normals[index * 3 + 2] = vertexNormali1.z;
             }
         }
 
@@ -1963,7 +1940,3 @@
         }
     }
 }
-
-
-
-
