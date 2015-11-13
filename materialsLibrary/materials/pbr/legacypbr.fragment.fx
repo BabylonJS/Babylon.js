@@ -396,7 +396,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV) {
     lightingInfo result;
 
-    vec3 lightVectorW = normalize(-lightData.xyz);
+    vec3 lightVectorW = normalize(lightData.xyz);
 
     // Diffuse
     float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
