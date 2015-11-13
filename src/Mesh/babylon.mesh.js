@@ -1100,6 +1100,14 @@ var BABYLON;
         };
         // Cylinder and cone
         Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable, sideOrientation) {
+            if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
+                if (scene !== undefined) {
+                    sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                    updatable = scene;
+                }
+                scene = subdivisions;
+                subdivisions = 1;
+            }
             var options = {
                 height: height,
                 diameterTop: diameterTop,
@@ -1189,7 +1197,7 @@ var BABYLON;
             var options = {
                 shape: shape,
                 radius: radius,
-                tesselation: tessellation,
+                tessellation: tessellation,
                 sideOrientation: sideOrientation,
                 updatable: updatable
             };
@@ -1343,8 +1351,9 @@ var BABYLON;
             var matWeightIdx = 0;
             var inf;
             for (var index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
+                var weight;
                 for (inf = 0; inf < 4; inf++) {
-                    var weight = matricesWeightsData[matWeightIdx + inf];
+                    weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
                         BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
@@ -1354,7 +1363,7 @@ var BABYLON;
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
-                        var weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        weight = matricesWeightsExtraData[matWeightIdx + inf];
                         if (weight > 0) {
                             BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
