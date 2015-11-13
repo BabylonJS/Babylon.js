@@ -9,6 +9,7 @@
 	<script src="../dist/babylon.waterMaterial.js"></script>
 	<script src="../dist/babylon.fireMaterial.js"></script>
     <script src="../dist/babylon.lavaMaterial.js"></script>
+	<script src="../dist/babylon.terrainMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -185,6 +186,22 @@
 				fire.distortionTexture = new BABYLON.Texture("textures/fire/distortion.png", scene);
 				fire.opacityTexture = new BABYLON.Texture("textures/fire/opacity.png", scene);
 				
+				var terrain = new BABYLON.TerrainMaterial("terrain", scene);
+				terrain.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+				terrain.specularPower = 64;
+				terrain.mixTexture = new BABYLON.Texture("textures/mixMap.png", scene);
+				terrain.diffuseTexture1 = new BABYLON.Texture("textures/grass.png", scene);
+				terrain.diffuseTexture2 = new BABYLON.Texture("textures/rock.png", scene);
+				terrain.diffuseTexture3 = new BABYLON.Texture("textures/floor.png", scene);
+				
+				terrain.bumpTexture1 = new BABYLON.Texture("textures/grassn.png", scene);
+				terrain.bumpTexture2 = new BABYLON.Texture("textures/rockn.png", scene);
+				terrain.bumpTexture3 = new BABYLON.Texture("textures/floor_bump.png", scene);
+				
+				terrain.diffuseTexture1.uScale = terrain.diffuseTexture1.vScale = 10;
+				terrain.diffuseTexture2.uScale = terrain.diffuseTexture2.vScale = 10;
+				terrain.diffuseTexture3.uScale = terrain.diffuseTexture3.vScale = 10;
+				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
@@ -204,7 +221,7 @@
 					skybox: false
 				}
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					
 					switch (options.material) {
@@ -224,6 +241,9 @@
 							break;
 						case "normal":
 							currentMaterial = normal;
+							break;
+						case "terrain":
+							currentMaterial = terrain;
 							break;
 						default:
 							currentMaterial = std;

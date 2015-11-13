@@ -39,6 +39,14 @@
         "materials/fire/fire.fragment.fx"
       ],
       "output": "babylon.fireMaterial.js"
+    },
+    {
+      "file": "materials/terrain/babylon.terrainMaterial.ts",
+      "shaderFiles": [
+        "materials/terrain/terrain.vertex.fx",
+        "materials/terrain/terrain.fragment.fx"
+      ],
+      "output": "babylon.terrainMaterial.js"
     }
   ],
   "build": {
