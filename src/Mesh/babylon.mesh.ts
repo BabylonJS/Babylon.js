@@ -1288,6 +1288,15 @@
 
         // Cylinder and cone
         public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh {
+            if (scene === undefined || !(scene instanceof Scene)) {
+                if (scene !== undefined) {
+                    sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                    updatable = scene;
+                }
+                scene = <Scene>subdivisions;
+                subdivisions = 1;
+            }            
+
             var options = {
                 height: height,
                 diameterTop: diameterTop,
@@ -1389,7 +1398,7 @@
             var options = {
                 shape: shape,
                 radius: radius,
-                tesselation: tessellation,
+                tessellation: tessellation,
                 sideOrientation: sideOrientation,
                 updatable: updatable
             };
