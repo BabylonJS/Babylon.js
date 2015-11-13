@@ -2,8 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>Shaders Library</title>
-	<script src="dat.gui.min.js"></script>
-	<script src="babylon.max.js"></script>
+	<script src="refs/dat.gui.min.js"></script>
+	<script src="refs/babylon.max.js"></script>
 	<script src="../dist/babylon.simpleMaterial.js"></script>
 	<script src="../dist/babylon.normalMaterial.js"></script>
 	<script src="../dist/babylon.waterMaterial.js"></script>
@@ -44,6 +44,8 @@
 	<div id="fps">0</div>
 	<canvas id="renderCanvas"></canvas>
 
+	<script src="index.js"></script>
+	<script src="add/addpbr.js"></script>
 	<script>
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -147,7 +149,7 @@
 				// Fog
 				scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
 				scene.fogDensity = 0.01;
-
+				
 				// Create shaders
 				var std = new BABYLON.StandardMaterial("std", scene);
 				std.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
@@ -203,26 +205,12 @@
 				terrain.diffuseTexture2.uScale = terrain.diffuseTexture2.vScale = 10;
 				terrain.diffuseTexture3.uScale = terrain.diffuseTexture3.vScale = 10;
 				
-				var pbr = new BABYLON.PBRMaterial("pbr", scene);
-				
+				var pbr = preparePBR();
+								
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
-
-				//UI
-				var gui = new dat.GUI();
-				var options = {
-					material: "standard",
-					mesh: "sphere",
-					hemisphericLight: true,
-					pointLight: false,
-					directionalLight: false,
-					castShadows: false,
-					spotLight: false,
-					fog: false,
-					skybox: false
-				}
 
 				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr']).onFinishChange(function () {
 					water.enableRenderTargets(false);
@@ -250,13 +238,15 @@
 							break;
 						case "pbr":
 							currentMaterial = pbr;
-							break;							
+							break;													
 						default:
 							currentMaterial = std;
 							break;
 					}
 
 					currentMesh.material = currentMaterial;
+					
+					window.enableMaterial(options.material);
 				});
 
 				gui.add(options, 'mesh', ['sphere', 'knot', 'plane', 'ground', 'rabbit']).onFinishChange(function () {
