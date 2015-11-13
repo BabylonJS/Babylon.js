@@ -805,12 +805,13 @@
         }
 
         // Cylinder and cone 
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
             var diameterBottom: number = options.diameterBottom || options.diameter || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
+            var hasRings: boolean = options.hasRings;
             var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
@@ -842,37 +843,44 @@
             // positions, normals, uvs
             var i: number;
             var j: number;
+            var r: number;
+            var ringIdx = 1;
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
-                for (j = 0; j <= tessellation; j++) {
-                    angle = j * angle_step;
-                    ringVertex.x = Math.cos(-angle) * radius;
-                    ringVertex.y = -height / 2 + h * height;
-                    ringVertex.z = Math.sin(-angle) * radius;
-                    if (diameterTop === 0 && i === subdivisions) {
-                        // if no top cap, reuse former normals
-                        ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
-                        ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
-                        ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
-                    }
-                    else {
-                        ringNormal.x = ringVertex.x;
-                        ringNormal.z = ringVertex.z;
-                        ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
-                        ringNormal.normalize();
-                    }
-                    positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
-                    normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
-                    if (faceColors) {
-                        colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                ringIdx = (hasRings && i != 0 && i != subdivisions) ? 2 : 1;
+                for (r = 0; r < ringIdx; r++) {
+                    for (j = 0; j <= tessellation; j++) {
+                        angle = j * angle_step;
+                        ringVertex.x = Math.cos(-angle) * radius;
+                        ringVertex.y = -height / 2 + h * height;
+                        ringVertex.z = Math.sin(-angle) * radius;
+                        if (diameterTop === 0 && i === subdivisions) {
+                            // if no top cap, reuse former normals
+                            ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
+                            ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
+                            ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
+                        }
+                        else {
+                            ringNormal.x = ringVertex.x;
+                            ringNormal.z = ringVertex.z;
+                            ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
+                            ringNormal.normalize();
+                        }
+                        positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
+                        normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
+                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
+                        if (faceColors) {
+                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                        }
                     }
                 }
             }
 
             // indices
-            for (i = 0; i < subdivisions; i++) {
+            var s;
+            i = 0;
+            for (s = 0; s < subdivisions; s++) {
                 for (j = 0; j < tessellation; j++) {
                     var i0 = i * (tessellation + 1) + j;
                     var i1 = (i + 1) * (tessellation + 1) + j;
@@ -881,9 +889,10 @@
                     indices.push(i0, i1, i2);
                     indices.push(i3, i2, i1);
                 }
+                i = (hasRings) ? (i + 2) : (i + 1);
             }
 
-            // Caps
+             // Caps
             var createCylinderCap = isTop => {
                 var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
                 if (radius === 0) {
