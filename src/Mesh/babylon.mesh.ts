@@ -1288,15 +1288,6 @@
 
         // Cylinder and cone
         public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene: Scene, updatable?: any, sideOrientation?: number): Mesh {
-            if (scene === undefined || !(scene instanceof Scene)) {
-                if (scene !== undefined) {
-                    sideOrientation = updatable || Mesh.DEFAULTSIDE;
-                    updatable = scene;
-                }
-                scene = <Scene>subdivisions;
-                subdivisions = 1;
-            }
-
             var options = {
                 height: height,
                 diameterTop: diameterTop,
@@ -1398,7 +1389,7 @@
             var options = {
                 shape: shape,
                 radius: radius,
-                tessellation: tessellation,
+                tesselation: tessellation,
                 sideOrientation: sideOrientation,
                 updatable: updatable
             };
@@ -1580,11 +1571,10 @@
             var tempMatrix = new Matrix();
 
             var matWeightIdx = 0;
-            var inf: number;
+            var inf : number;
             for (var index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
-                var weight: number;
                 for (inf = 0; inf < 4; inf++) {
-                    weight = matricesWeightsData[matWeightIdx + inf];
+                    var weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
                         Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
@@ -1593,15 +1583,15 @@
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
-                        weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        var weight = matricesWeightsExtraData[matWeightIdx + inf];
                         if (weight > 0) {
                             Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
 
-                        } else break;
+                        } else break;           
                     }
                 }
-
+                
                 Vector3.TransformCoordinatesFromFloatsToRef(this._sourcePositions[index], this._sourcePositions[index + 1], this._sourcePositions[index + 2], finalMatrix, tempVector3);
                 tempVector3.toArray(positionsData, index);
 
@@ -1711,7 +1701,6 @@
         }
     }
 }
-
 
 
 

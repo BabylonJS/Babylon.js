@@ -170,7 +170,6 @@
       "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
       "../../src/Rendering/babylon.edgesRenderer.js",
       "../../src/PostProcess/babylon.tonemapPostProcess.js",
-      "../../src/Materials/babylon.pbrMaterial.js",
       "../../src/Probes/babylon.reflectionProbe.js",
       "../../src/Particles/babylon.solidParticle.js",
       "../../src/Particles/babylon.solidParticleSystem.js"

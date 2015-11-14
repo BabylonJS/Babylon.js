@@ -376,7 +376,7 @@
                 return false;
             }
 
-            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
+            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
                 return false;
 
             if (this._cache.pivotMatrixUpdated) {
@@ -412,7 +412,6 @@
             this._cache.scaling = Vector3.Zero();
             this._cache.rotation = Vector3.Zero();
             this._cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
-            this._cache.billboardMode = -1;
         }
 
         public markAsDirty(property: string): void {
@@ -455,7 +454,6 @@
             this._cache.position.copyFrom(this.position);
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;
-            this._cache.billboardMode = this.billboardMode;
             this._currentRenderId = this.getScene().getRenderId();
             this._isDirty = false;
 

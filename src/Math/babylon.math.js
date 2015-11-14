@@ -1,7 +1,5 @@
 var BABYLON;
 (function (BABYLON) {
-    var ToGammaSpace = 1 / 2.2;
-    var ToLinearSpace = 2.2;
     var Color3 = (function () {
         function Color3(r, g, b) {
             if (r === void 0) { r = 0; }
@@ -98,28 +96,6 @@ var BABYLON;
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
             return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB);
-        };
-        Color3.prototype.toLinearSpace = function () {
-            var convertedColor = new Color3();
-            this.toLinearSpaceToRef(convertedColor);
-            return convertedColor;
-        };
-        Color3.prototype.toLinearSpaceToRef = function (convertedColor) {
-            convertedColor.r = Math.pow(this.r, ToLinearSpace);
-            convertedColor.g = Math.pow(this.g, ToLinearSpace);
-            convertedColor.b = Math.pow(this.b, ToLinearSpace);
-            return this;
-        };
-        Color3.prototype.toGammaSpace = function () {
-            var convertedColor = new Color3();
-            this.toGammaSpaceToRef(convertedColor);
-            return convertedColor;
-        };
-        Color3.prototype.toGammaSpaceToRef = function (convertedColor) {
-            convertedColor.r = Math.pow(this.r, ToGammaSpace);
-            convertedColor.g = Math.pow(this.g, ToGammaSpace);
-            convertedColor.b = Math.pow(this.b, ToGammaSpace);
-            return this;
         };
         // Statics
         Color3.FromHexString = function (hex) {
