@@ -2,9 +2,6 @@
 
     declare var SIMD;
 
-    const ToGammaSpace = 1 / 2.2;
-    const ToLinearSpace = 2.2;
-
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
         }
@@ -124,34 +121,6 @@
             var intB = (this.b * 255) | 0;
 
             return "#" + Tools.ToHex(intR) + Tools.ToHex(intG) + Tools.ToHex(intB);
-        }
-
-        public toLinearSpace(): Color3 {
-            var convertedColor = new Color3();
-            this.toLinearSpaceToRef(convertedColor);
-            return convertedColor;
-        }
-
-        public toLinearSpaceToRef(convertedColor: Color3): Color3 {
-            convertedColor.r = Math.pow(this.r, ToLinearSpace);
-            convertedColor.g = Math.pow(this.g, ToLinearSpace);
-            convertedColor.b = Math.pow(this.b, ToLinearSpace);
-
-            return this;
-        }
-
-        public toGammaSpace(): Color3 {
-            var convertedColor = new Color3();
-            this.toGammaSpaceToRef(convertedColor);
-            return convertedColor;
-        }
-
-        public toGammaSpaceToRef(convertedColor: Color3): Color3 {
-            convertedColor.r = Math.pow(this.r, ToGammaSpace);
-            convertedColor.g = Math.pow(this.g, ToGammaSpace);
-            convertedColor.b = Math.pow(this.b, ToGammaSpace);
-
-            return this;
         }
 
         // Statics

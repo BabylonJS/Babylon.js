@@ -805,13 +805,12 @@
         }
 
         // Cylinder and cone 
-        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, sideOrientation?: number }): VertexData {
+        public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
             var diameterBottom: number = options.diameterBottom || options.diameter || 1;
             var tessellation: number = options.tessellation || 24;
             var subdivisions: number = options.subdivisions || 1;
-            var hasRings: boolean = options.hasRings;
             var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
@@ -843,44 +842,37 @@
             // positions, normals, uvs
             var i: number;
             var j: number;
-            var r: number;
-            var ringIdx = 1;
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
-                ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
-                for (r = 0; r < ringIdx; r++) {
-                    for (j = 0; j <= tessellation; j++) {
-                        angle = j * angle_step;
-                        ringVertex.x = Math.cos(-angle) * radius;
-                        ringVertex.y = -height / 2 + h * height;
-                        ringVertex.z = Math.sin(-angle) * radius;
-                        if (diameterTop === 0 && i === subdivisions) {
-                            // if no top cap, reuse former normals
-                            ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
-                            ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
-                            ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
-                        }
-                        else {
-                            ringNormal.x = ringVertex.x;
-                            ringNormal.z = ringVertex.z;
-                            ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
-                            ringNormal.normalize();
-                        }
-                        positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
-                        normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
-                        if (faceColors) {
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
-                        }
+                for (j = 0; j <= tessellation; j++) {
+                    angle = j * angle_step;
+                    ringVertex.x = Math.cos(-angle) * radius;
+                    ringVertex.y = -height / 2 + h * height;
+                    ringVertex.z = Math.sin(-angle) * radius;
+                    if (diameterTop === 0 && i === subdivisions) {
+                        // if no top cap, reuse former normals
+                        ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
+                        ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
+                        ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
+                    }
+                    else {
+                        ringNormal.x = ringVertex.x;
+                        ringNormal.z = ringVertex.z;
+                        ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
+                        ringNormal.normalize();
+                    }
+                    positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
+                    normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
+                    uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
+                    if (faceColors) {
+                        colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
                     }
                 }
             }
 
             // indices
-            var s;
-            i = 0;
-            for (s = 0; s < subdivisions; s++) {
+            for (i = 0; i < subdivisions; i++) {
                 for (j = 0; j < tessellation; j++) {
                     var i0 = i * (tessellation + 1) + j;
                     var i1 = (i + 1) * (tessellation + 1) + j;
@@ -889,7 +881,6 @@
                     indices.push(i0, i1, i2);
                     indices.push(i3, i2, i1);
                 }
-                i = (hasRings) ? (i + 2) : (i + 1);
             }
 
             // Caps
@@ -1394,7 +1385,7 @@
             return vertexData;
         }
 
-        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
+        public static CreateIcoSphere(options: {radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number}): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
             var flat = (options.flat === undefined) ? true : options.flat;
@@ -1451,15 +1442,14 @@
             // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
             var face_vertex_pos = new Array(3);
             var face_vertex_uv = new Array(3);
-            var v012: number;
-            for (v012 = 0; v012 < 3; v012++) {
+            for (var v012 = 0; v012 < 3; v012++) {
                 face_vertex_pos[v012] = Vector3.Zero();
                 face_vertex_uv[v012] = Vector2.Zero();
             }
             // create all with normals
             for (var face = 0; face < 20; face++) {
                 // 3 vertex per face
-                for (v012 = 0; v012 < 3; v012++) {
+                for (var v012 = 0; v012 < 3; v012++) {
                     // look up vertex 0,1,2 to its index in 0 to 11
                     var v_id = ico_indices[3 * face + v012];
                     // vertex have 3D position (x,y,z)
@@ -1534,7 +1524,7 @@
                 // centroid of triangle is needed to get help normal computation
                 //  (c1,c2) are used for centroid location
 
-                var interp_vertex = (i1: number, i2: number, c1: number, c2: number) => {
+                var interp_vertex = (i1: number, i2: number, c1: number, c2: number) =>{
                     // vertex is interpolated from
                     //   - face_vertex_pos[0..2]
                     //   - face_vertex_uv[0..2]
@@ -1940,3 +1930,7 @@
         }
     }
 }
+
+
+
+
