@@ -663,15 +663,22 @@ var BABYLON;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
             var hasRings = options.hasRings;
+            var enclose = options.enclose;
             var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(3);
             var faceColors = options.faceColors;
             // default face colors and UV if undefined
-            for (var f = 0; f < 3; f++) {
+            var quadNb = (arc !== 1 && enclose) ? 2 : 0;
+            var ringNb = (hasRings) ? subdivisions : 1;
+            var colorNb = 2 + (1 + quadNb) * ringNb;
+            var f;
+            for (f = 0; f < colorNb; f++) {
                 if (faceColors && faceColors[f] === undefined) {
                     faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
                 }
+            }
+            for (f = 0; f < 3; f++) {
                 if (faceUV && faceUV[f] === undefined) {
                     faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
                 }
@@ -688,6 +695,10 @@ var BABYLON;
             var tan = (diameterBottom - diameterTop) / 2 / height;
             var ringVertex = BABYLON.Vector3.Zero();
             var ringNormal = BABYLON.Vector3.Zero();
+            var ringFirstVertex = BABYLON.Vector3.Zero();
+            var ringFirstNormal = BABYLON.Vector3.Zero();
+            var quadNormal = BABYLON.Vector3.Zero();
+            var Y = BABYLON.Axis.Y;
             // positions, normals, uvs
             var i;
             var j;
@@ -700,9 +711,11 @@ var BABYLON;
                 for (r = 0; r < ringIdx; r++) {
                     for (j = 0; j <= tessellation; j++) {
                         angle = j * angle_step;
+                        // position
                         ringVertex.x = Math.cos(-angle) * radius;
                         ringVertex.y = -height / 2 + h * height;
                         ringVertex.z = Math.sin(-angle) * radius;
+                        // normal
                         if (diameterTop === 0 && i === subdivisions) {
                             // if no top cap, reuse former normals
                             ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
@@ -715,6 +728,11 @@ var BABYLON;
                             ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
                             ringNormal.normalize();
                         }
+                        // keep first values for enclose
+                        if (j === 0) {
+                            ringFirstVertex.copyFrom(ringVertex);
+                            ringFirstNormal.copyFrom(ringNormal);
+                        }
                         positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                         normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
                         uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
@@ -722,19 +740,49 @@ var BABYLON;
                             colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
                         }
                     }
+                    // if enclose, add four vertices and their dedicated normals
+                    if (arc !== 1 && enclose) {
+                        positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
+                        positions.push(0, ringVertex.y, 0);
+                        positions.push(0, ringVertex.y, 0);
+                        positions.push(ringFirstVertex.x, ringFirstVertex.y, ringFirstVertex.z);
+                        BABYLON.Vector3.CrossToRef(Y, ringNormal, quadNormal);
+                        quadNormal.normalize();
+                        normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
+                        BABYLON.Vector3.CrossToRef(ringFirstNormal, Y, quadNormal);
+                        quadNormal.normalize();
+                        normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
+                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
+                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
+                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
+                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
+                        if (faceColors) {
+                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                        }
+                    }
                 }
             }
             // indices
+            var e = (arc !== 1 && enclose) ? tessellation + 4 : tessellation; // correction of number of iteration if enclose
             var s;
             i = 0;
             for (s = 0; s < subdivisions; s++) {
                 for (j = 0; j < tessellation; j++) {
-                    var i0 = i * (tessellation + 1) + j;
-                    var i1 = (i + 1) * (tessellation + 1) + j;
-                    var i2 = i * (tessellation + 1) + (j + 1);
-                    var i3 = (i + 1) * (tessellation + 1) + (j + 1);
+                    var i0 = i * (e + 1) + j;
+                    var i1 = (i + 1) * (e + 1) + j;
+                    var i2 = i * (e + 1) + (j + 1);
+                    var i3 = (i + 1) * (e + 1) + (j + 1);
                     indices.push(i0, i1, i2);
                     indices.push(i3, i2, i1);
+                }
+                if (arc !== 1 && enclose) {
+                    indices.push(i0 + 2, i1 + 2, i2 + 2);
+                    indices.push(i3 + 2, i2 + 2, i1 + 2);
+                    indices.push(i0 + 4, i1 + 4, i2 + 4);
+                    indices.push(i3 + 4, i2 + 4, i1 + 4);
                 }
                 i = (hasRings) ? (i + 2) : (i + 1);
             }
@@ -751,7 +799,7 @@ var BABYLON;
                 var u = (isTop) ? faceUV[2] : faceUV[0];
                 var c;
                 if (faceColors) {
-                    c = (isTop) ? faceColors[2] : faceColors[0];
+                    c = (isTop) ? faceColors[colorNb - 1] : faceColors[0];
                 }
                 // cap center
                 var vbase = positions.length / 3;

@@ -819,9 +819,9 @@
             var faceColors: Color4[] = options.faceColors;
     
             // default face colors and UV if undefined
-            var quadNb: number = (arc !==1 && enclose) ? 2 : 0;
+            var quadNb: number = (arc !== 1 && enclose) ? 2 : 0;
             var ringNb: number = (hasRings) ? subdivisions : 1;
-            var colorNb: number = 2 + (1 + quadNb) * ringNb; 
+            var colorNb: number = 2 + (1 + quadNb) * ringNb;
             var f: number;
             for (f = 0; f < colorNb; f++) {
                 if (faceColors && faceColors[f] === undefined) {
@@ -850,14 +850,14 @@
             var ringFirstVertex: Vector3 = Vector3.Zero();
             var ringFirstNormal: Vector3 = Vector3.Zero();
             var quadNormal: Vector3 = Vector3.Zero();
-            var Y:Vector3 = Axis.Y;
+            var Y: Vector3 = Axis.Y;
 
             // positions, normals, uvs
             var i: number;
             var j: number;
             var r: number;
             var ringIdx: number = 1;
-            
+
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
@@ -900,7 +900,7 @@
                     }
 
                     // if enclose, add four vertices and their dedicated normals
-                    if (arc !== 1 && enclose) {                 
+                    if (arc !== 1 && enclose) {
                         positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                         positions.push(0, ringVertex.y, 0);
                         positions.push(0, ringVertex.y, 0);
@@ -910,7 +910,7 @@
                         normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
                         Vector3.CrossToRef(ringFirstNormal, Y, quadNormal);
                         quadNormal.normalize();
-                        normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);                        
+                        normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
                         uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
                         uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
                         uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
@@ -938,7 +938,7 @@
                     indices.push(i0, i1, i2);
                     indices.push(i3, i2, i1);
                 }
-                if (arc != 1 && enclose) {      // if enclose, add two quads
+                if (arc !== 1 && enclose) {      // if enclose, add two quads
                     indices.push(i0 + 2, i1 + 2, i2 + 2);
                     indices.push(i3 + 2, i2 + 2, i1 + 2);
                     indices.push(i0 + 4, i1 + 4, i2 + 4);
@@ -1449,7 +1449,7 @@
             return vertexData;
         }
 
-        public static CreateIcoSphere(options: {radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number}): VertexData {
+        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
             var flat = (options.flat === undefined) ? true : options.flat;
@@ -1477,7 +1477,7 @@
             // vertex for uv have aliased position, not for UV
             var vertices_unalias_id = [
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-                // vertex alias
+            // vertex alias
                 0,  // 12: 0 + 12
                 2,  // 13: 2 + 11
                 3,  // 14: 3 + 11
@@ -1498,7 +1498,7 @@
                 5, 1, 3, 1, 6, 4, 0, 0,  // v0-3
                 5, 3, 4, 2, 2, 2, 4, 0,  // v4-7
                 2, 0, 1, 1, 6, 0, 6, 2,  // v8-11
-                // vertex alias (for same vertex on different faces)
+            // vertex alias (for same vertex on different faces)
                 0, 4, // 12: 0 + 12
                 3, 3, // 13: 2 + 11
                 4, 4, // 14: 3 + 11
@@ -1639,7 +1639,7 @@
                 // centroid of triangle is needed to get help normal computation
                 //  (c1,c2) are used for centroid location
 
-                var interp_vertex = (i1: number, i2: number, c1: number, c2: number) =>{
+                var interp_vertex = (i1: number, i2: number, c1: number, c2: number) => {
                     // vertex is interpolated from
                     //   - face_vertex_pos[0..2]
                     //   - face_vertex_uv[0..2]
@@ -1939,7 +1939,7 @@
          */
         public static ComputeNormals(positions: any, indices: any, normals: any) {
             var index = 0;
-            
+
             var p1p2x = 0.0;
             var p1p2y = 0.0;
             var p1p2z = 0.0;
@@ -2004,7 +2004,7 @@
 
                 length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
                 length = (length === 0) ? 1.0 : length;
-                faceNormalx /= length;                                 
+                faceNormalx /= length;
                 faceNormaly /= length;
                 faceNormalz /= length;
 
@@ -2069,6 +2069,7 @@
         }
     }
 }
+
 
 
 

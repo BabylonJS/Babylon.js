@@ -1,3 +1,9 @@
+// BABYLON.JS Chromatic Aberration GLSL Shader
+// Author: Olivier Guyot
+// Separates very slightly R, G and B colors on the edges of the screen
+// Inspired by Francois Tarlier & Martins Upitis
+
+
 module BABYLON {
     export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
@@ -268,6 +274,5 @@ module BABYLON {
             }
             (<DynamicTexture>this._grainTexture).update(false);
         }
-
     }
 }

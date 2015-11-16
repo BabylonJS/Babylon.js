@@ -21,6 +21,7 @@ var BABYLON;
         DefaultLoadingScreen.prototype.displayLoadingUI = function () {
             var _this = this;
             this._loadingDiv = document.createElement("div");
+            this._loadingDiv.id = "babylonjsLoadingDiv";
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.style.transition = "opacity 1.5s ease";
             // Loading text
