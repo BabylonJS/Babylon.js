@@ -21,6 +21,7 @@ module BABYLON {
 		public displayLoadingUI(): void {
 			this._loadingDiv = document.createElement("div");
 
+		    this._loadingDiv.id = "babylonjsLoadingDiv";
             this._loadingDiv.style.opacity = "0";
             this._loadingDiv.style.transition = "opacity 1.5s ease";
 
