@@ -1825,12 +1825,21 @@
         public static ComputeNormals(positions: any, indices: any, normals: any) {
             var index = 0;
             
-            // temp Vector3
-            var p1p2 = Vector3.Zero();
-            var p3p2 = Vector3.Zero();
-            var faceNormal = Vector3.Zero();
+            var p1p2x = 0.0;
+            var p1p2y = 0.0;
+            var p1p2z = 0.0;
+            var p3p2x = 0.0;
+            var p3p2y = 0.0;
+            var p3p2z = 0.0;
+            var faceNormalx = 0.0;
+            var faceNormaly = 0.0;
+            var faceNormalz = 0.0;
 
-            var vertexNormali1 = Vector3.Zero();
+            var length = 0.0;
+
+            var i1 = 0;
+            var i2 = 0;
+            var i3 = 0;
 
             for (index = 0; index < positions.length; index++) {
                 normals[index] = 0.0;
@@ -1839,39 +1848,54 @@
             // indice triplet = 1 face
             var nbFaces = indices.length / 3;
             for (index = 0; index < nbFaces; index++) {
-                var i1 = indices[index * 3];
-                var i2 = indices[index * 3 + 1];
-                var i3 = indices[index * 3 + 2];
+                i1 = indices[index * 3];            // get the indexes of each vertex of the face
+                i2 = indices[index * 3 + 1];
+                i3 = indices[index * 3 + 2];
 
-                p1p2.x = positions[i1 * 3] - positions[i2 * 3];
-                p1p2.y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
-                p1p2.z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
+                p1p2x = positions[i1 * 3] - positions[i2 * 3];          // compute two vectors per face
+                p1p2y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
+                p1p2z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
 
-                p3p2.x = positions[i3 * 3] - positions[i2 * 3];
-                p3p2.y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
-                p3p2.z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
+                p3p2x = positions[i3 * 3] - positions[i2 * 3];
+                p3p2y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
+                p3p2z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
 
-                Vector3.CrossToRef(p1p2, p3p2, faceNormal);
-                faceNormal.normalize();
+                faceNormalx = p1p2y * p3p2z - p1p2z * p3p2y;            // compute the face normal with cross product
+                faceNormaly = p1p2z * p3p2x - p1p2x * p3p2z;
+                faceNormalz = p1p2x * p3p2y - p1p2y * p3p2x;
 
-                normals[i1 * 3] += faceNormal.x;
-                normals[i1 * 3 + 1] += faceNormal.y;
-                normals[i1 * 3 + 2] += faceNormal.z;
-                normals[i2 * 3] += faceNormal.x;
-                normals[i2 * 3 + 1] += faceNormal.y;
-                normals[i2 * 3 + 2] += faceNormal.z;
-                normals[i3 * 3] += faceNormal.x;
-                normals[i3 * 3 + 1] += faceNormal.y;
-                normals[i3 * 3 + 2] += faceNormal.z;
+                length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
+                length = (length === 0) ? 1.0 : length;
+                faceNormalx /= length;                                  // normalize this normal
+                faceNormaly /= length;
+                faceNormalz /= length;
+
+                normals[i1 * 3] += faceNormalx;                         // accumulate all the normals per face
+                normals[i1 * 3 + 1] += faceNormaly;
+                normals[i1 * 3 + 2] += faceNormalz;
+                normals[i2 * 3] += faceNormalx;
+                normals[i2 * 3 + 1] += faceNormaly;
+                normals[i2 * 3 + 2] += faceNormalz;
+                normals[i3 * 3] += faceNormalx;
+                normals[i3 * 3 + 1] += faceNormaly;
+                normals[i3 * 3 + 2] += faceNormalz;
             }
             
-            // last normalization
+            // last normalization of each normal
             for (index = 0; index < normals.length / 3; index++) {
-                Vector3.FromFloatsToRef(normals[index * 3], normals[index * 3 + 1], normals[index * 3 + 2], vertexNormali1);
-                vertexNormali1.normalize();
-                normals[index * 3] = vertexNormali1.x;
-                normals[index * 3 + 1] = vertexNormali1.y;
-                normals[index * 3 + 2] = vertexNormali1.z;
+                faceNormalx = normals[index * 3];
+                faceNormaly = normals[index * 3 + 1];
+                faceNormalz = normals[index * 3 + 2];
+
+                length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
+                length = (length === 0) ? 1.0 : length;
+                faceNormalx /= length;                                 
+                faceNormaly /= length;
+                faceNormalz /= length;
+
+                normals[index * 3] = faceNormalx;
+                normals[index * 3 + 1] = faceNormaly;
+                normals[index * 3 + 2] = faceNormalz;
             }
         }
 
