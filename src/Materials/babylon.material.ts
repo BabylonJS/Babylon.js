@@ -257,8 +257,7 @@
             other.alpha = this.alpha;
             other.fillMode = this.fillMode;
             other.backFaceCulling = this.backFaceCulling;
-            other.wireframe = this.wireframe;
-            other.fogEnabled = this.fogEnabled
+            other.fogEnabled = this.fogEnabled;
             other.wireframe = this.wireframe;
             other.zOffset = this.zOffset;
             other.alphaMode = this.alphaMode;

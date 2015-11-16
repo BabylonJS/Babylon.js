@@ -1189,7 +1189,7 @@ var BABYLON;
             var options = {
                 shape: shape,
                 radius: radius,
-                tesselation: tessellation,
+                tessellation: tessellation,
                 sideOrientation: sideOrientation,
                 updatable: updatable
             };
@@ -1343,8 +1343,9 @@ var BABYLON;
             var matWeightIdx = 0;
             var inf;
             for (var index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
+                var weight;
                 for (inf = 0; inf < 4; inf++) {
-                    var weight = matricesWeightsData[matWeightIdx + inf];
+                    weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
                         BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
@@ -1354,7 +1355,7 @@ var BABYLON;
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
-                        var weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        weight = matricesWeightsExtraData[matWeightIdx + inf];
                         if (weight > 0) {
                             BABYLON.Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);

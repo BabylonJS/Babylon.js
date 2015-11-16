@@ -354,7 +354,7 @@ var BABYLON;
             if (this._isDirty) {
                 return false;
             }
-            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
+            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
                 return false;
             if (this._cache.pivotMatrixUpdated) {
                 return false;
@@ -383,6 +383,7 @@ var BABYLON;
             this._cache.scaling = BABYLON.Vector3.Zero();
             this._cache.rotation = BABYLON.Vector3.Zero();
             this._cache.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 0);
+            this._cache.billboardMode = -1;
         };
         AbstractMesh.prototype.markAsDirty = function (property) {
             if (property === "rotation") {
@@ -415,6 +416,7 @@ var BABYLON;
             this._cache.position.copyFrom(this.position);
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;
+            this._cache.billboardMode = this.billboardMode;
             this._currentRenderId = this.getScene().getRenderId();
             this._isDirty = false;
             // Scaling

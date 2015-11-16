@@ -1389,7 +1389,7 @@
             var options = {
                 shape: shape,
                 radius: radius,
-                tesselation: tessellation,
+                tessellation: tessellation,
                 sideOrientation: sideOrientation,
                 updatable: updatable
             };
@@ -1573,8 +1573,9 @@
             var matWeightIdx = 0;
             var inf : number;
             for (var index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
+                var weight: number;
                 for (inf = 0; inf < 4; inf++) {
-                    var weight = matricesWeightsData[matWeightIdx + inf];
+                    weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
                         Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
@@ -1583,7 +1584,7 @@
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
-                        var weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        weight = matricesWeightsExtraData[matWeightIdx + inf];
                         if (weight > 0) {
                             Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);

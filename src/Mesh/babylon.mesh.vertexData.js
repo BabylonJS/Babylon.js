@@ -662,6 +662,7 @@ var BABYLON;
             var diameterBottom = options.diameterBottom || options.diameter || 1;
             var tessellation = options.tessellation || 24;
             var subdivisions = options.subdivisions || 1;
+            var hasRings = options.hasRings;
             var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
             var faceUV = options.faceUV || new Array(3);
@@ -690,36 +691,43 @@ var BABYLON;
             // positions, normals, uvs
             var i;
             var j;
+            var r;
+            var ringIdx = 1;
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
-                for (j = 0; j <= tessellation; j++) {
-                    angle = j * angle_step;
-                    ringVertex.x = Math.cos(-angle) * radius;
-                    ringVertex.y = -height / 2 + h * height;
-                    ringVertex.z = Math.sin(-angle) * radius;
-                    if (diameterTop === 0 && i === subdivisions) {
-                        // if no top cap, reuse former normals
-                        ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
-                        ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
-                        ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
-                    }
-                    else {
-                        ringNormal.x = ringVertex.x;
-                        ringNormal.z = ringVertex.z;
-                        ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
-                        ringNormal.normalize();
-                    }
-                    positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
-                    normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                    uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
-                    if (faceColors) {
-                        colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
+                for (r = 0; r < ringIdx; r++) {
+                    for (j = 0; j <= tessellation; j++) {
+                        angle = j * angle_step;
+                        ringVertex.x = Math.cos(-angle) * radius;
+                        ringVertex.y = -height / 2 + h * height;
+                        ringVertex.z = Math.sin(-angle) * radius;
+                        if (diameterTop === 0 && i === subdivisions) {
+                            // if no top cap, reuse former normals
+                            ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
+                            ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
+                            ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
+                        }
+                        else {
+                            ringNormal.x = ringVertex.x;
+                            ringNormal.z = ringVertex.z;
+                            ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
+                            ringNormal.normalize();
+                        }
+                        positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
+                        normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
+                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
+                        if (faceColors) {
+                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                        }
                     }
                 }
             }
             // indices
-            for (i = 0; i < subdivisions; i++) {
+            var s;
+            i = 0;
+            for (s = 0; s < subdivisions; s++) {
                 for (j = 0; j < tessellation; j++) {
                     var i0 = i * (tessellation + 1) + j;
                     var i1 = (i + 1) * (tessellation + 1) + j;
@@ -728,6 +736,7 @@ var BABYLON;
                     indices.push(i0, i1, i2);
                     indices.push(i3, i2, i1);
                 }
+                i = (hasRings) ? (i + 2) : (i + 1);
             }
             // Caps
             var createCylinderCap = function (isTop) {
@@ -1149,31 +1158,99 @@ var BABYLON;
             ];
             // index of 3 vertex makes a face of icopshere
             var ico_indices = [
-                0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
-                1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
-                3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
-                4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1
+                0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 12, 22, 23,
+                1, 5, 20, 5, 11, 4, 23, 22, 13, 22, 18, 6, 7, 1, 8,
+                14, 21, 4, 14, 4, 2, 16, 13, 6, 15, 6, 19, 3, 8, 9,
+                4, 21, 5, 13, 17, 23, 6, 13, 22, 19, 6, 18, 9, 8, 1
+            ];
+            // vertex for uv have aliased position, not for UV
+            var vertices_unalias_id = [
+                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                // vertex alias
+                0,
+                2,
+                3,
+                3,
+                3,
+                4,
+                7,
+                8,
+                9,
+                9,
+                10,
+                11 // 23: B + 12
             ];
             // uv as integer step (not pixels !)
             var ico_vertexuv = [
-                4, 1, 2, 1, 6, 3, 5, 4,
-                4, 3, 3, 2, 7, 4, 3, 0,
-                1, 0, 0, 1, 5, 0, 5, 2 // v8-11
+                5, 1, 3, 1, 6, 4, 0, 0,
+                5, 3, 4, 2, 2, 2, 4, 0,
+                2, 0, 1, 1, 6, 0, 6, 2,
+                // vertex alias (for same vertex on different faces)
+                0, 4,
+                3, 3,
+                4, 4,
+                3, 1,
+                4, 2,
+                4, 4,
+                0, 2,
+                1, 1,
+                2, 2,
+                3, 3,
+                1, 3,
+                2, 4 // 23: B + 12
             ];
-            // Vertices [0, 1, ...9, A, B] : position on UV plane (7,8,9,10=A have duplicate position)
-            // v=5h          9+  8+  7+
-            // v=4h        9+  3   6   A+
-            // v=3h      9+  4   2   A+
-            // v=2h    9+  5   B   A+
-            // v=1h  9   1   0   A+
-            // v=0h    8   7   A
-            //     u=0 1 2 3 4 5 6 7 8 9   *a
-            //
+            // Vertices[0, 1, ...9, A, B] : position on UV plane
+            // '+' indicate duplicate position to be fixed (3,9:0,2,3,4,7,8,A,B)
+            // First island of uv mapping
+            // v = 4h          3+  2
+            // v = 3h        9+  4
+            // v = 2h      9+  5   B
+            // v = 1h    9   1   0
+            // v = 0h  3   8   7   A
+            //     u = 0 1 2 3 4 5 6  *a
+            // Second island of uv mapping
+            // v = 4h  0+  B+  4+
+            // v = 3h    A+  2+
+            // v = 2h  7+  6   3+
+            // v = 1h    8+  3+
+            // v = 0h
+            //     u = 0 1 2 3 4 5 6  *a
+            // Face layout on texture UV mapping
+            // ============
+            // \ 4  /\ 16 /   ======
+            //  \  /  \  /   /\ 11 /
+            //   \/ 7  \/   /  \  /
+            //    =======  / 10 \/
+            //   /\ 17 /\  =======
+            //  /  \  /  \ \ 15 /\
+            // / 8  \/ 12 \ \  /  \
+            // ============  \/ 6  \
+            // \ 18 /\  ============
+            //  \  /  \ \ 5  /\ 0  /
+            //   \/ 13 \ \  /  \  /
+            //   =======  \/ 1  \/
+            //       =============
+            //      /\ 19 /\  2 /\
+            //     /  \  /  \  /  \
+            //    / 14 \/ 9  \/  3 \
+            //   ===================
             // uv step is u:1 or 0.5, v:cos(30)=sqrt(3)/2, ratio approx is 84/97
-            var ustep = 97 / 1024;
-            var vstep = 168 / 1024;
-            var uoffset = 50 / 1024;
-            var voffset = 51 / 1024;
+            var ustep = 138 / 1024;
+            var vstep = 239 / 1024;
+            var uoffset = 60 / 1024;
+            var voffset = 26 / 1024;
+            // Second island should have margin, not to touch the first island
+            // avoid any borderline artefact in pixel rounding
+            var island_u_offset = -40 / 1024;
+            var island_v_offset = +20 / 1024;
+            // face is either island 0 or 1 :
+            // second island is for faces : [4, 7, 8, 12, 13, 16, 17, 18]
+            var island = [
+                0, 0, 0, 0, 1,
+                0, 0, 1, 1, 0,
+                0, 0, 1, 1, 0,
+                0, 1, 1, 1, 0,
+            ];
             var indices = [];
             var positions = [];
             var normals = [];
@@ -1190,60 +1267,14 @@ var BABYLON;
             for (var face = 0; face < 20; face++) {
                 // 3 vertex per face
                 for (var v012 = 0; v012 < 3; v012++) {
-                    // look up vertex 0,1,2 to its index in 0 to 11
+                    // look up vertex 0,1,2 to its index in 0 to 11 (or 23 including alias)
                     var v_id = ico_indices[3 * face + v012];
                     // vertex have 3D position (x,y,z)
-                    face_vertex_pos[v012].copyFromFloats(ico_vertices[3 * v_id], ico_vertices[3 * v_id + 1], ico_vertices[3 * v_id + 2]);
+                    face_vertex_pos[v012].copyFromFloats(ico_vertices[3 * vertices_unalias_id[v_id]], ico_vertices[3 * vertices_unalias_id[v_id] + 1], ico_vertices[3 * vertices_unalias_id[v_id] + 2]);
                     // Normalize to get normal, then scale to radius
                     face_vertex_pos[v012].normalize().scaleInPlace(radius);
-                    // uv from vertex ID (may need fix due to unwrap on texture plan, unalias needed)
-                    // vertex may get to different UV according to belonging face (see fix below)
-                    var fix = 0;
-                    // Vertice 9 UV to be fixed
-                    if (face === 5 && v012 === 2) {
-                        fix = 1;
-                    }
-                    if (face === 15 && v012 === 1) {
-                        fix = 2;
-                    }
-                    if (face === 10 && v012 === 1) {
-                        fix = 3;
-                    }
-                    if (face === 14 && v012 === 2) {
-                        fix = 4;
-                    }
-                    // vertice 10 UV to be fixed
-                    if (face === 4 && v012 === 1) {
-                        fix = 1;
-                    }
-                    if (face === 7 && v012 === 1) {
-                        fix = 2;
-                    }
-                    if (face === 17 && v012 === 2) {
-                        fix = 3;
-                    }
-                    if (face === 8 && v012 === 0) {
-                        fix = 4;
-                    }
-                    // vertice 7 UV to be fixed
-                    if (face === 8 && v012 === 1) {
-                        fix = 5;
-                    }
-                    if (face === 18 && v012 === 0) {
-                        fix = 5;
-                    }
-                    // vertice 8 UV to be fixed
-                    if (face === 13 && v012 === 2) {
-                        fix = 5;
-                    }
-                    if (face === 14 && v012 === 1) {
-                        fix = 5;
-                    }
-                    if (face === 18 && v012 === 2) {
-                        fix = 5;
-                    }
-                    //
-                    face_vertex_uv[v012].copyFromFloats((ico_vertexuv[2 * v_id] + fix) * ustep + uoffset, (ico_vertexuv[2 * v_id + 1] + fix) * vstep + voffset);
+                    // uv Coordinates from vertex ID
+                    face_vertex_uv[v012].copyFromFloats(ico_vertexuv[2 * v_id] * ustep + uoffset + island[face] * island_u_offset, ico_vertexuv[2 * v_id + 1] * vstep + voffset + island[face] * island_v_offset);
                 }
                 // Subdivide the face (interpolate pos, norm, uv)
                 // - pos is linear interpolation, then projected to sphere (converge polyhedron to sphere)
@@ -1547,45 +1578,65 @@ var BABYLON;
          */
         VertexData.ComputeNormals = function (positions, indices, normals) {
             var index = 0;
-            // temp Vector3
-            var p1p2 = BABYLON.Vector3.Zero();
-            var p3p2 = BABYLON.Vector3.Zero();
-            var faceNormal = BABYLON.Vector3.Zero();
-            var vertexNormali1 = BABYLON.Vector3.Zero();
+            var p1p2x = 0.0;
+            var p1p2y = 0.0;
+            var p1p2z = 0.0;
+            var p3p2x = 0.0;
+            var p3p2y = 0.0;
+            var p3p2z = 0.0;
+            var faceNormalx = 0.0;
+            var faceNormaly = 0.0;
+            var faceNormalz = 0.0;
+            var length = 0.0;
+            var i1 = 0;
+            var i2 = 0;
+            var i3 = 0;
             for (index = 0; index < positions.length; index++) {
                 normals[index] = 0.0;
             }
             // indice triplet = 1 face
             var nbFaces = indices.length / 3;
             for (index = 0; index < nbFaces; index++) {
-                var i1 = indices[index * 3];
-                var i2 = indices[index * 3 + 1];
-                var i3 = indices[index * 3 + 2];
-                p1p2.x = positions[i1 * 3] - positions[i2 * 3];
-                p1p2.y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
-                p1p2.z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
-                p3p2.x = positions[i3 * 3] - positions[i2 * 3];
-                p3p2.y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
-                p3p2.z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
-                BABYLON.Vector3.CrossToRef(p1p2, p3p2, faceNormal);
-                faceNormal.normalize();
-                normals[i1 * 3] += faceNormal.x;
-                normals[i1 * 3 + 1] += faceNormal.y;
-                normals[i1 * 3 + 2] += faceNormal.z;
-                normals[i2 * 3] += faceNormal.x;
-                normals[i2 * 3 + 1] += faceNormal.y;
-                normals[i2 * 3 + 2] += faceNormal.z;
-                normals[i3 * 3] += faceNormal.x;
-                normals[i3 * 3 + 1] += faceNormal.y;
-                normals[i3 * 3 + 2] += faceNormal.z;
+                i1 = indices[index * 3]; // get the indexes of each vertex of the face
+                i2 = indices[index * 3 + 1];
+                i3 = indices[index * 3 + 2];
+                p1p2x = positions[i1 * 3] - positions[i2 * 3]; // compute two vectors per face
+                p1p2y = positions[i1 * 3 + 1] - positions[i2 * 3 + 1];
+                p1p2z = positions[i1 * 3 + 2] - positions[i2 * 3 + 2];
+                p3p2x = positions[i3 * 3] - positions[i2 * 3];
+                p3p2y = positions[i3 * 3 + 1] - positions[i2 * 3 + 1];
+                p3p2z = positions[i3 * 3 + 2] - positions[i2 * 3 + 2];
+                faceNormalx = p1p2y * p3p2z - p1p2z * p3p2y; // compute the face normal with cross product
+                faceNormaly = p1p2z * p3p2x - p1p2x * p3p2z;
+                faceNormalz = p1p2x * p3p2y - p1p2y * p3p2x;
+                length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
+                length = (length === 0) ? 1.0 : length;
+                faceNormalx /= length; // normalize this normal
+                faceNormaly /= length;
+                faceNormalz /= length;
+                normals[i1 * 3] += faceNormalx; // accumulate all the normals per face
+                normals[i1 * 3 + 1] += faceNormaly;
+                normals[i1 * 3 + 2] += faceNormalz;
+                normals[i2 * 3] += faceNormalx;
+                normals[i2 * 3 + 1] += faceNormaly;
+                normals[i2 * 3 + 2] += faceNormalz;
+                normals[i3 * 3] += faceNormalx;
+                normals[i3 * 3 + 1] += faceNormaly;
+                normals[i3 * 3 + 2] += faceNormalz;
             }
-            // last normalization
+            // last normalization of each normal
             for (index = 0; index < normals.length / 3; index++) {
-                BABYLON.Vector3.FromFloatsToRef(normals[index * 3], normals[index * 3 + 1], normals[index * 3 + 2], vertexNormali1);
-                vertexNormali1.normalize();
-                normals[index * 3] = vertexNormali1.x;
-                normals[index * 3 + 1] = vertexNormali1.y;
-                normals[index * 3 + 2] = vertexNormali1.z;
+                faceNormalx = normals[index * 3];
+                faceNormaly = normals[index * 3 + 1];
+                faceNormalz = normals[index * 3 + 2];
+                length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
+                length = (length === 0) ? 1.0 : length;
+                faceNormalx /= length;
+                faceNormaly /= length;
+                faceNormalz /= length;
+                normals[index * 3] = faceNormalx;
+                normals[index * 3 + 1] = faceNormaly;
+                normals[index * 3 + 2] = faceNormalz;
             }
         };
         VertexData._ComputeSides = function (sideOrientation, positions, indices, normals, uvs) {
