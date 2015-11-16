@@ -848,7 +848,7 @@
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
-                ringIdx = (hasRings && i != 0 && i != subdivisions) ? 2 : 1;
+                ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
                 for (r = 0; r < ringIdx; r++) {
                     for (j = 0; j <= tessellation; j++) {
                         angle = j * angle_step;
