@@ -30,7 +30,8 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkCopyTextures, Loader.Core.RootNode, "babylonjs_copytextures", 1);
             Tools.PrepareCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
             Tools.PrepareCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave", 1);
-            Tools.PrepareCheckBox(chkOnlySelected, Loader.Core.RootNode, "babylonjs_onlySelected");   
+            Tools.PrepareCheckBox(chkOnlySelected, Loader.Core.RootNode, "babylonjs_onlySelected");
+            Tools.PrepareCheckBox(chkBinary, Loader.Core.RootNode, "babylonjs_binary"); 
         }
 
         private void butBrowse_Click(object sender, EventArgs e)
@@ -53,6 +54,7 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
             Tools.UpdateCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave");
             Tools.UpdateCheckBox(chkOnlySelected, Loader.Core.RootNode, "babylonjs_onlySelected");
+            Tools.UpdateCheckBox(chkBinary, Loader.Core.RootNode, "babylonjs_binary");
 
             Loader.Core.RootNode.SetLocalData(txtFilename.Text);
 
@@ -119,7 +121,7 @@ namespace Max2Babylon
                 exporter.AutoSave3dsMaxFile = chkAutoSave.Checked;
                 exporter.ExportHiddenObjects = chkHidden.Checked;
                 exporter.CopyTexturesToOutput = chkCopyTextures.Checked;
-                await exporter.ExportAsync(txtFilename.Text, chkManifest.Checked, chkOnlySelected.Checked, this);
+                await exporter.ExportAsync(txtFilename.Text, chkManifest.Checked, chkOnlySelected.Checked, chkBinary.Checked, this);
             }
             catch (OperationCanceledException)
             {

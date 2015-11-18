@@ -22,19 +22,13 @@ npm install
 npm update
 ```
 
-### Update gulpfile.js (task scripts) if you want to add your own files:
+### Update config.json if you want to add your own files:
 ```
-/**
- * Concat all js files in order into one big js file and minify it.
- * The list is based on https://github.com/BabylonJS/Babylon.js/wiki/Creating-the-minified-version
- * Do not hesistate to update it if you need to add your own files.
- */
-gulp.task('scripts', ['shaders'] ,function() {
-return gulp.src([
-      '../../Babylon/Math/babylon.math.js',
-      '../../Babylon/Math/babylon.axis.js',
-
-      ....
+"extras" : {
+    "files": [
+        "file1.js", "file2.js"
+    ]
+}
 ```
 ## From the javascript source
 ### Build Babylon.js from the javascript files:
@@ -43,8 +37,9 @@ return gulp.src([
 gulp
 ```
 Will be generated :
-- build/babylon.js
-- build/babylon.min.js
+- babylon.js
+- babylon.noworker.js (minified version without collisions workers)
+- babylon.max.js (unminified)
 
 ### Build Babylon.js when you save a javascript file:
 ```
@@ -58,25 +53,21 @@ gulp watch
 gulp typescript
 ```
 Will be generated :
-- build/babylon.js
-- build/babylon.d.ts
-- build/babylon.min.js
+- babylon.js
+- babylon.d.ts
+- babylon.noworker.js (minified version without collisions workers)
+- babylon.max.js (unminified)
 
 Be aware that all js files content will be overwrite.
 
-### Build Babylon.js when you save a javascript file:
+### Build Babylon.js when you save a typescript file:
 ```
 gulp watch-typescript
 ```
 
-### Compile all the typscript files to their javascript respective files
+### Compile all the typscript files to their javascript respective files including declaration file
 ```
-gulp typescript-to-js
+gulp typescript-compile
 ```
 
-Be aware that all js files content will be overwrite.
-
-### Build the typescript declaration file
-```
-gulp typescript-declaration
-```
+Be aware that all js files content will be overwritten.
