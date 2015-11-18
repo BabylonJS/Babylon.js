@@ -147,13 +147,13 @@
 
                     // Meshes
                     var meshes = this._camera.getActiveMeshes();
-                    for (var index = 0; index < meshes.length; index++) {
+                    var index: number;
+                    var projectedPosition: Vector3;
+                    for (index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
 
                         var position = mesh.getBoundingInfo().boundingSphere.center;
-
-                        var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), this._transformationMatrix, globalViewport);
-
+                        projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), this._transformationMatrix, globalViewport);
                         if (mesh.renderOverlay || this.shouldDisplayAxis && this.shouldDisplayAxis(mesh)) {
                             this._renderAxis(projectedPosition, mesh, globalViewport);
                         }
@@ -742,6 +742,7 @@
                 + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
                 + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
                 + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
+                + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
                 + "<b>Caps.</b><br>"
                 + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
                 + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
