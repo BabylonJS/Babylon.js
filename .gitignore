@@ -113,3 +113,10 @@ UpgradeLog*.XML
 .settings/
 .pydevproject
 
+/Exporters/3ds Max/Max2Babylon.sln.ide
+/Exporters/3ds Max/Max2Babylon.sln.ide
+/Exporters/ExportToBabylon.sln.ide
+
+# Do not ignore loaders/obj
+!loaders/*
+node_modules

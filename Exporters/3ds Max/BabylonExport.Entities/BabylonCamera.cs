@@ -3,7 +3,7 @@
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public class BabylonCamera
+    public class BabylonCamera : BabylonIAnimatable
     {
         [DataMember]
         public string name { get; set; }
@@ -16,6 +16,9 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public string lockedTargetId { get; set; }
+
+        [DataMember]
+        public string type { get; set; }
 
         [DataMember]
         public float[] position { get; set; }
@@ -64,7 +67,6 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public BabylonAnimation[] animations { get; set; }
-
 
         public BabylonCamera()
         {
