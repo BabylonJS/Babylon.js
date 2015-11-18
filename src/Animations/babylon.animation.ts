@@ -4,6 +4,14 @@
         }
     }
 
+    /**
+     * Composed of a frame, and an action function
+     */
+    export class AnimationEvent {
+        constructor(public frame: number, public action: () => void, public onlyOnce?: boolean) {
+        }
+    }
+
     export class Animation {
         private _keys: Array<any>;
         private _offsetsCache = {};
@@ -11,6 +19,9 @@
         private _stopped = false;
         public _target;
         private _easingFunction: IEasingFunction;
+
+        // The set of event that will be linked to this animation
+        private _events = new Array<AnimationEvent>();
 
         public targetPropertyPath: string[];
         public currentFrame: number;
@@ -79,7 +90,27 @@
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
 
-        // Methods   
+        // Methods
+        /**
+         * Add an event to this animation.
+         */
+        public addEvent(event: AnimationEvent) : void {
+            this._events.push(event);
+        }
+
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        public removeEvents(frame:number) : void {
+            for (var index = 0; index < this._events.length; index++) {
+                if (this._events[index].frame === frame) {
+                    this._events.splice(index, 1);
+                    index--;
+                }
+            }
+        }
+
         public createRange(name: string, from: number, to: number): void {
             this._ranges.push(new AnimationRange(name, from, to));
         }
@@ -420,6 +451,19 @@
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
+
+            // Check events
+            for (var index = 0; index < this._events.length; index++) {
+                if (this._events[index].frame >= currentFrame) {
+                    var event = this._events[index];
+                    // If event should be done only once, remove it.
+                    if (event.onlyOnce) {
+                        this._events.splice(index, 1);
+                        index--;
+                    }
+                    event.action();
+                }
+            }
 
             // Set value
             this.setValue(currentValue);

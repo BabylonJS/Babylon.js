@@ -9,6 +9,18 @@ var BABYLON;
         return AnimationRange;
     })();
     BABYLON.AnimationRange = AnimationRange;
+    /**
+     * Composed of a frame, and an action function
+     */
+    var AnimationEvent = (function () {
+        function AnimationEvent(frame, action, onlyOnce) {
+            this.frame = frame;
+            this.action = action;
+            this.onlyOnce = onlyOnce;
+        }
+        return AnimationEvent;
+    })();
+    BABYLON.AnimationEvent = AnimationEvent;
     var Animation = (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode) {
             this.name = name;
@@ -19,6 +31,8 @@ var BABYLON;
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._stopped = false;
+            // The set of event that will be linked to this animation
+            this._events = new Array();
             this.allowMatricesInterpolation = false;
             this._ranges = new Array();
             this.targetPropertyPath = targetProperty.split(".");
@@ -64,7 +78,25 @@ var BABYLON;
             node.animations.push(animation);
             return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
-        // Methods   
+        // Methods
+        /**
+         * Add an event to this animation.
+         */
+        Animation.prototype.addEvent = function (event) {
+            this._events.push(event);
+        };
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        Animation.prototype.removeEvents = function (frame) {
+            for (var index = 0; index < this._events.length; index++) {
+                if (this._events[index].frame === frame) {
+                    this._events.splice(index, 1);
+                    index--;
+                }
+            }
+        };
         Animation.prototype.createRange = function (name, from, to) {
             this._ranges.push(new AnimationRange(name, from, to));
         };
@@ -356,6 +388,18 @@ var BABYLON;
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
+            // Check events
+            for (var index = 0; index < this._events.length; index++) {
+                if (this._events[index].frame >= currentFrame) {
+                    var event = this._events[index];
+                    // If event should be done only once, remove it.
+                    if (event.onlyOnce) {
+                        this._events.splice(index, 1);
+                        index--;
+                    }
+                    event.action();
+                }
+            }
             // Set value
             this.setValue(currentValue);
             if (!returnValue) {

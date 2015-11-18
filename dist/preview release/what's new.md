@@ -17,6 +17,7 @@
     - Sprites now can be [picked](http://www.babylonjs-playground.com/#1XMVZW#4) and can use [actions](http://www.babylonjs-playground.com/#9RUHH#4) ([deltakosh](https://github.com/deltakosh))
     - New `Mesh.CreatePolyhedron()` method ([jerome](https://github.com/jbousquie))
     - New `Mesh.CreateIcoSphere()` method. [Demo here](http://www.babylonjs-playground.com/#24DUYD) (G'kar)
+    - Events can now be linked to an Animation to fire actions at a given frame [Documentation](TODO) ([temechon](https://github.com/temechon))
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - Added `Animatable.goToFrame()` ([deltakosh](https://github.com/deltakosh))   
