@@ -1,0 +1,14 @@
+{
+  "proceduralTextures": [
+    {
+      "file": "proceduralTextures/fire/babylon.fireProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/fire/fireProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.fireProceduralTexture.js"
+    }
+  ],
+  "build": {
+    "distOutputDirectory": "dist/"
+  }
+}
