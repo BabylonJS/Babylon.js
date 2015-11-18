@@ -94,6 +94,7 @@ var BABYLON;
             for (var index = 0; index < this._events.length; index++) {
                 if (this._events[index].frame === frame) {
                     this._events.splice(index, 1);
+                    index--;
                 }
             }
         };
@@ -400,11 +401,11 @@ var BABYLON;
                         }
                         event.isDone = true;
                         event.action();
-                    }
+                    } // Don't do anything if the event has already be done.
                 }
                 else if (this._events[index].isDone && !this._events[index].onlyOnce) {
                     // reset event, the animation is looping
-                    event.isDone = false;
+                    this._events[index].isDone = false;
                 }
             }
             // Set value
