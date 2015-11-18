@@ -103,6 +103,7 @@ var BABYLON;
             this.REFLECTIONMAP_EXPLICIT = false;
             this.REFLECTIONMAP_EQUIRECTANGULAR = false;
             this.INVERTCUBICMAP = false;
+            this.LOGARITHMICDEPTH = false;
             this._keys = Object.keys(this);
         }
         return StandardMaterialDefines;
@@ -140,6 +141,16 @@ var BABYLON;
                 return _this._renderTargets;
             };
         }
+        Object.defineProperty(StandardMaterial.prototype, "useLogarithmicDepth", {
+            get: function () {
+                return this._useLogarithmicDepth;
+            },
+            set: function (value) {
+                this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
+            },
+            enumerable: true,
+            configurable: true
+        });
         StandardMaterial.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
         };
@@ -432,6 +443,9 @@ var BABYLON;
             if (this.useReflectionFresnelFromSpecular) {
                 this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
             }
+            if (this.useLogarithmicDepth) {
+                this._defines.LOGARITHMICDEPTH = true;
+            }
             // Point size
             if (this.pointsCloud || scene.forcePointsCloud) {
                 this._defines.POINTSIZE = true;
@@ -520,6 +534,9 @@ var BABYLON;
                 if (this._defines.POINTSIZE) {
                     fallbacks.addFallback(0, "POINTSIZE");
                 }
+                if (this._defines.LOGARITHMICDEPTH) {
+                    fallbacks.addFallback(0, "LOGARITHMICDEPTH");
+                }
                 for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                     if (!this._defines["LIGHT" + lightIndex]) {
                         continue;
@@ -602,7 +619,8 @@ var BABYLON;
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
                     "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
+                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
+                    "logarithmicDepthConstant"
                 ], ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
                     "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                 ], join, fallbacks, this.onCompiled, this.onError);
@@ -735,6 +753,10 @@ var BABYLON;
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
                 this._effect.setColor3("vFogColor", scene.fogColor);
+            }
+            // Log. depth
+            if (this._defines.LOGARITHMICDEPTH) {
+                this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
             }
             _super.prototype.bind.call(this, world, mesh);
         };
