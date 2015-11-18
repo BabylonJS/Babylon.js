@@ -106,6 +106,7 @@
             for (var index = 0; index < this._events.length; index++) {
                 if (this._events[index].frame === frame) {
                     this._events.splice(index, 1);
+                    index--;
                 }
             }
         }
@@ -458,6 +459,7 @@
                     // If event should be done only once, remove it.
                     if (event.onlyOnce) {
                         this._events.splice(index, 1);
+                        index--;
                     }
                     event.action();
                 }
