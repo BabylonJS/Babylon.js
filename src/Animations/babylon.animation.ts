@@ -106,7 +106,6 @@
             for (var index = 0; index < this._events.length; index++) {
                 if (this._events[index].frame === frame) {
                     this._events.splice(index, 1);
-                    return;
                 }
             }
         }
