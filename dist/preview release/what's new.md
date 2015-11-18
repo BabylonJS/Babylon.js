@@ -46,6 +46,7 @@
     - AbstractMesh.onPhysicsCollide will be triggered when a physics-enabled mesh collides against another. [PR](https://github.com/BabylonJS/Babylon.js/pull/806) ([RaananW](https://github.com/RaananW))
     - Added scene onPointerMove public callback. [PR](https://github.com/BabylonJS/Babylon.js/pull/810) ([RaananW](https://github.com/RaananW))
     - Added streaming support for BABYLON.Sound ([davrous](https://github.com/davrous))
+    - Added collisionsEnabled and workerCollisions for serialization [PR](https://github.com/BabylonJS/Babylon.js/pull/830) ([Dad72](https://github.com/dad72))
   - **Bug fixes**
     - Fixed a bug with spherical mapping ([deltakosh](https://github.com/deltakosh)) 
     - Fixed a bug with clone and createInstance which was forcing the recomputation of bounding boxes ([deltakosh](https://github.com/deltakosh)) 
