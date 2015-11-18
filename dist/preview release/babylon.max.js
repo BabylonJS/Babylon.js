@@ -21844,6 +21844,7 @@ var BABYLON;
             this.frame = frame;
             this.action = action;
             this.onlyOnce = onlyOnce;
+            this.isDone = false;
         }
         return AnimationEvent;
     })();
@@ -21920,6 +21921,7 @@ var BABYLON;
             for (var index = 0; index < this._events.length; index++) {
                 if (this._events[index].frame === frame) {
                     this._events.splice(index, 1);
+                    index--;
                 }
             }
         };
@@ -22216,13 +22218,21 @@ var BABYLON;
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
             // Check events
             for (var index = 0; index < this._events.length; index++) {
-                if (this._events[index].frame >= currentFrame) {
+                if (currentFrame >= this._events[index].frame) {
                     var event = this._events[index];
-                    // If event should be done only once, remove it.
-                    if (event.onlyOnce) {
-                        this._events.splice(index, 1);
-                    }
-                    event.action();
+                    if (!event.isDone) {
+                        // If event should be done only once, remove it.
+                        if (event.onlyOnce) {
+                            this._events.splice(index, 1);
+                            index--;
+                        }
+                        event.isDone = true;
+                        event.action();
+                    } // Don't do anything if the event has already be done.
+                }
+                else if (this._events[index].isDone && !this._events[index].onlyOnce) {
+                    // reset event, the animation is looping
+                    this._events[index].isDone = false;
                 }
             }
             // Set value
