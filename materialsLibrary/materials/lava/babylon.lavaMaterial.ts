@@ -62,6 +62,9 @@ module BABYLON {
         public noiseTexture: BaseTexture;
         public fogColor: Color3;
         public speed : number = 1;
+        public movingSpeed : number = 1;
+        public lowFrequencySpeed : number = 1;
+        public fogDensity : number = 0.15;
 
         private _lastTime : number = 0;
 
@@ -361,7 +364,8 @@ module BABYLON {
                         "vDiffuseInfos", 
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3","time", "speed", "fogColor"
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3","time", "speed","movingSpeed",
+                        "fogColor","fogDensity", "lowFrequencySpeed"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3", "noiseTexture"
@@ -497,6 +501,10 @@ module BABYLON {
                 this.fogColor = Color3.Black();
             }
             this._effect.setColor3("fogColor", this.fogColor);
+            this._effect.setFloat("fogDensity", this.fogDensity);
+
+            this._effect.setFloat("lowFrequencySpeed", this.lowFrequencySpeed);
+            this._effect.setFloat("movingSpeed", this.movingSpeed);
 
 
             super.bind(world, mesh);
