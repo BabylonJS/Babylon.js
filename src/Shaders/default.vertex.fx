@@ -14,9 +14,8 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-#if NUM_BONE_INFLUENCERS > 0
 
-	// having bone influencers implies you have bones
+#if NUM_BONE_INFLUENCERS > 0
 	uniform mat4 mBones[BonesPerMesh];
 
 	attribute vec4 matricesIndices;
@@ -83,10 +82,6 @@ uniform vec2 vBumpInfos;
 uniform mat4 bumpMatrix;
 #endif
 
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
-#endif
-
 #ifdef POINTSIZE
 uniform float pointSize;
 #endif
@@ -135,6 +130,11 @@ varying vec3 vPositionUVW;
 
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR
 varying vec3 vDirectionW;
+#endif
+
+#ifdef LOGARITHMICDEPTH
+uniform float logarithmicDepthConstant;
+varying float vFragmentDepth;
 #endif
 
 void main(void) {
@@ -309,5 +309,11 @@ void main(void) {
 	// Point size
 #ifdef POINTSIZE
 	gl_PointSize = pointSize;
+#endif
+
+	// Log. depth
+#ifdef LOGARITHMICDEPTH
+	vFragmentDepth = 1.0 + gl_Position.w;
+	gl_Position.z = log2(max(0.000001, vFragmentDepth)) * logarithmicDepthConstant;
 #endif
 }

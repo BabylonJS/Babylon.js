@@ -96,10 +96,12 @@ var BABYLON;
                     var globalViewport = viewport.toGlobal(engine);
                     // Meshes
                     var meshes = _this._camera.getActiveMeshes();
-                    for (var index = 0; index < meshes.length; index++) {
+                    var index;
+                    var projectedPosition;
+                    for (index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
                         var position = mesh.getBoundingInfo().boundingSphere.center;
-                        var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), _this._transformationMatrix, globalViewport);
+                        projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), _this._transformationMatrix, globalViewport);
                         if (mesh.renderOverlay || _this.shouldDisplayAxis && _this.shouldDisplayAxis(mesh)) {
                             _this._renderAxis(projectedPosition, mesh, globalViewport);
                         }
@@ -594,6 +596,7 @@ var BABYLON;
                 + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
                 + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
                 + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
+                + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
                 + "<b>Caps.</b><br>"
                 + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
                 + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
