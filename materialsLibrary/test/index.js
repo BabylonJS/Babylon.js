@@ -15,6 +15,19 @@ var options = {
 var registeredUIs = {};
 var materialgui;
 
+window.registerColorPicker = function(material, name, color, onChange, onSet) {
+    if (!registeredUIs[material]) {
+        registeredUIs[material] = [];
+    }
+
+    registeredUIs[material].push({
+        name: name,
+        color: "#ff0000",
+        onChange: onChange,
+        onSet: onSet
+    });
+};
+
 
 window.registerRangeUI = function(material, name, minValue, maxValue, onChange, onSet) {
 	if (!registeredUIs[material]) {
@@ -32,10 +45,16 @@ window.registerRangeUI = function(material, name, minValue, maxValue, onChange, 
 
 var setUi = function(ui) {
 	options[ui.name] = ui.onSet();
-	
-	materialgui.add(options, ui.name, ui.minValue, ui.maxValue).onChange(function(value) {
-		ui.onChange(value);
-	});
+
+    if (ui.color) {
+        materialgui.addColor(options, ui.name).onChange(function(value) {
+            ui.onChange(value);
+        });
+    } else {
+        materialgui.add(options, ui.name, ui.minValue, ui.maxValue).onChange(function(value) {
+            ui.onChange(value);
+        });
+    }
 }
 
 window.enableMaterial = function(material) {
