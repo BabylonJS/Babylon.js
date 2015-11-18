@@ -95,6 +95,7 @@
         public REFLECTIONMAP_EXPLICIT = false;
         public REFLECTIONMAP_EQUIRECTANGULAR = false;
         public INVERTCUBICMAP = false;
+        public LOGARITHMICDEPTH = false;
 
         constructor() {
             super();
@@ -143,6 +144,8 @@
         private _defines = new StandardMaterialDefines();
         private _cachedDefines = new StandardMaterialDefines();
 
+        private _useLogarithmicDepth: boolean;
+
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
@@ -157,6 +160,14 @@
 
                 return this._renderTargets;
             }
+        }
+
+        public get useLogarithmicDepth(): boolean {
+            return this._useLogarithmicDepth;
+        }
+
+        public set useLogarithmicDepth(value: boolean) {
+            this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
         }
 
         public needAlphaBlending(): boolean {
@@ -497,6 +508,10 @@
                 this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
             }
 
+            if (this.useLogarithmicDepth) {
+                this._defines.LOGARITHMICDEPTH = true;
+            }
+
             // Point size
             if (this.pointsCloud || scene.forcePointsCloud) {
                 this._defines.POINTSIZE = true;
@@ -606,6 +621,10 @@
                     fallbacks.addFallback(0, "POINTSIZE");
                 }
 
+                if (this._defines.LOGARITHMICDEPTH) {
+                    fallbacks.addFallback(0, "LOGARITHMICDEPTH");
+                }
+
                 for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                     if (!this._defines["LIGHT" + lightIndex]) {
                         continue;
@@ -709,7 +728,8 @@
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor"
+                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
+                        "logarithmicDepthConstant"
                     ],
                     ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -884,6 +904,11 @@
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
                 this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
                 this._effect.setColor3("vFogColor", scene.fogColor);
+            }
+
+            // Log. depth
+            if (this._defines.LOGARITHMICDEPTH) {
+                this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
             }
 
             super.bind(world, mesh);

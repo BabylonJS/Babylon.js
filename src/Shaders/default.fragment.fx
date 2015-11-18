@@ -1,4 +1,12 @@
-﻿precision highp float;
+﻿#ifdef BUMP
+#extension GL_OES_standard_derivatives : enable
+#endif
+
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+precision highp float;
 
 // Constants
 #define RECIPROCAL_PI2 0.15915494
@@ -409,7 +417,6 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 
 // Bump
 #ifdef BUMP
-#extension GL_OES_standard_derivatives : enable
 varying vec2 vBumpUV;
 uniform vec2 vBumpInfos;
 uniform sampler2D bumpSampler;
@@ -445,6 +452,11 @@ vec3 perturbNormal(vec3 viewDir)
 
 #ifdef CLIPPLANE
 varying float fClipDistance;
+#endif
+
+#ifdef LOGARITHMICDEPTH
+uniform float logarithmicDepthConstant;
+varying float vFragmentDepth;
 #endif
 
 // Fog
@@ -951,6 +963,10 @@ void main(void) {
 #else
 	color.rgb += lightmapColor;
 #endif
+#endif
+
+#ifdef LOGARITHMICDEPTH
+	gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;
 #endif
 
 #ifdef FOG

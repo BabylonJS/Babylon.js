@@ -379,6 +379,7 @@
         public instancedArrays;
         public uintIndices: boolean;
         public highPrecisionShaderSupported: boolean;
+        public fragmentDepthSupported: boolean;
     }
 
     /**
@@ -634,6 +635,7 @@
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
+            this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
 
             if (this._gl.getShaderPrecisionFormat) {
