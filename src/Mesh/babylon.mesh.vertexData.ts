@@ -857,12 +857,19 @@
             var j: number;
             var r: number;
             var ringIdx: number = 1;
+            var c: number = 1;
 
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
                 ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
                 for (r = 0; r < ringIdx; r++) {
+                    if (hasRings) {
+                        c += r;
+                    }
+                    if (enclose) {
+                        c += 2 * r;
+                    }
                     for (j = 0; j <= tessellation; j++) {
                         angle = j * angle_step;
 
@@ -885,7 +892,7 @@
                             ringNormal.normalize();
                         }
 
-                        // keep first values for enclose
+                        // keep first ring vertex values for enclose
                         if (j === 0) {
                             ringFirstVertex.copyFrom(ringVertex);
                             ringFirstNormal.copyFrom(ringNormal);
@@ -895,7 +902,7 @@
                         normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
                         uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
                         if (faceColors) {
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                            colors.push(faceColors[c].r, faceColors[c].g, faceColors[c].b, faceColors[c].a);
                         }
                     }
 
@@ -915,14 +922,13 @@
                         uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
                         uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
                         uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        if (faceColors) {
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
-                        }
+                        colors.push(faceColors[c + 1].r, faceColors[c + 1].g, faceColors[c + 1].b, faceColors[c + 1].a);
+                        colors.push(faceColors[c + 1].r, faceColors[c + 1].g, faceColors[c + 1].b, faceColors[c + 1].a);
+                        colors.push(faceColors[c + 2].r, faceColors[c + 2].g, faceColors[c + 2].b, faceColors[c + 2].a);
+                        colors.push(faceColors[c + 2].r, faceColors[c + 2].g, faceColors[c + 2].b, faceColors[c + 2].a);
                     }
                 }
+
             }
 
             // indices
