@@ -4,6 +4,10 @@ module BABYLON {
     export class OimoJSPlugin implements IPhysicsEnginePlugin {
         private _world;
         private _registeredMeshes = [];
+		
+		public name = "oimo";
+		
+		private _gravity: Vector3;
 
         private _checkWithEpsilon(value: number): number {
             return value < PhysicsEngine.Epsilon ? PhysicsEngine.Epsilon : value;
@@ -15,8 +19,12 @@ module BABYLON {
         }
 
         public setGravity(gravity: Vector3): void {
-            this._world.gravity = gravity;
+            this._gravity = this._world.gravity = gravity;
         }
+		
+		public getGravity() : Vector3 {
+			return this._gravity;
+		}
 
         public registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any {
             this.unregisterMesh(mesh);

@@ -1269,7 +1269,9 @@ var BABYLON;
                 scene.autoClear = parsedData.autoClear;
                 scene.clearColor = BABYLON.Color3.FromArray(parsedData.clearColor);
                 scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
-                scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
+                if (parsedData.gravity) {
+                    scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
+                }
                 // Fog
                 if (parsedData.fogMode && parsedData.fogMode !== 0) {
                     scene.fogMode = parsedData.fogMode;
@@ -1278,6 +1280,24 @@ var BABYLON;
                     scene.fogEnd = parsedData.fogEnd;
                     scene.fogDensity = parsedData.fogDensity;
                 }
+                //Physics
+                if (parsedData.physicsEnabled) {
+                    var physicsPlugin;
+                    if (parsedData.physicsEngine === "cannon") {
+                        physicsPlugin = new BABYLON.CannonJSPlugin();
+                    }
+                    else if (parsedData.physicsEngine === "oimo") {
+                        physicsPlugin = new BABYLON.OimoJSPlugin();
+                    }
+                    //else - default engine, which is currently oimo
+                    var physicsGravity = parsedData.physicsGravity ? BABYLON.Vector3.FromArray(parsedData.physicsGravity) : null;
+                    scene.enablePhysics(physicsGravity, physicsPlugin);
+                }
+                //collisions, if defined. otherwise, default is true
+                if (parsedData.collisionsEnabled != undefined) {
+                    scene.collisionsEnabled = parsedData.collisionsEnabled;
+                }
+                scene.workerCollisions = !!parsedData.workerCollisions;
                 // Lights
                 for (var index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
