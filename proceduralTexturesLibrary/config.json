@@ -1,11 +1,11 @@
 {
   "proceduralTextures": [
     {
-      "file": "proceduralTextures/fire/babylon.fireProceduralTexture.ts",
+      "file": "proceduralTextures/wood/babylon.woodProceduralTexture.ts",
       "shaderFiles": [
-        "proceduralTextures/fire/fireProceduralTexture.fragment.fx"
+        "proceduralTextures/wood/woodProceduralTexture.fragment.fx"
       ],
-      "output": "babylon.fireProceduralTexture.js"
+      "output": "babylon.woodProceduralTexture.js"
     }
   ],
   "build": {
