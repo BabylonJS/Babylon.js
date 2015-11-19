@@ -3,6 +3,7 @@ var BABYLON;
     var OimoJSPlugin = (function () {
         function OimoJSPlugin() {
             this._registeredMeshes = [];
+            this.name = "oimo";
             /**
              * Update the body position according to the mesh position
              * @param mesh
@@ -42,7 +43,10 @@ var BABYLON;
             this._world.clear();
         };
         OimoJSPlugin.prototype.setGravity = function (gravity) {
-            this._world.gravity = gravity;
+            this._gravity = this._world.gravity = gravity;
+        };
+        OimoJSPlugin.prototype.getGravity = function () {
+            return this._gravity;
         };
         OimoJSPlugin.prototype.registerMesh = function (mesh, impostor, options) {
             this.unregisterMesh(mesh);

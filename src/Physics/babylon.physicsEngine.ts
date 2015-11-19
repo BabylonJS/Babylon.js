@@ -1,7 +1,9 @@
 ﻿module BABYLON {
     export interface IPhysicsEnginePlugin {
+		name: string;
         initialize(iterations?: number);
         setGravity(gravity: Vector3): void;
+		getGravity() : Vector3;
         runOneStep(delta: number): void;
         registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
         registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
@@ -54,6 +56,10 @@
             this.gravity = gravity || new Vector3(0, -9.807, 0);
             this._currentPlugin.setGravity(this.gravity);
         }
+		
+		public _getGravity() : Vector3 {
+			return this._currentPlugin.getGravity();
+		}
 
         public _registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any {
             return this._currentPlugin.registerMesh(mesh, impostor, options);
@@ -90,6 +96,10 @@
         public getPhysicsBodyOfMesh(mesh: AbstractMesh) {
             return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
         }
+		
+		public getPhysicsPluginName() : string {
+			return this._currentPlugin.name;
+		}
 
         // Statics
         public static NoImpostor = 0;
