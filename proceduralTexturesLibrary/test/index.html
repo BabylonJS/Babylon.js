@@ -5,6 +5,7 @@
 	<script src="refs/dat.gui.min.js"></script>
 	<script src="refs/babylon.max.js"></script>
 	<script src="../dist/babylon.fireProceduralTexture.js"></script>
+	<script src="../dist/babylon.woodProceduralTexture.js"></script>
 
 	<style>
 		html, body {
@@ -40,6 +41,7 @@
 
 	<script src="index.js"></script>
     <script src="add/addFirePT.js"></script>
+    <script src="add/addWoodPT.js"></script>
 	<script>
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -154,16 +156,24 @@
                 var firePT = addFirePT();
 				var fireMaterial =  new BABYLON.StandardMaterial("fire", scene);
 				fireMaterial.diffuseTexture = firePT;
+				
+				// Wood Procedural Texture
+                var woodPT = addWoodPT();
+				var woodMaterial =  new BABYLON.StandardMaterial("wood", scene);
+				woodMaterial.diffuseTexture = woodPT;
 								
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['none','fire']).onFinishChange(function () {
+				gui.add(options, 'material', ['none','fire', 'wood']).onFinishChange(function () {
 					switch (options.material) {
 						case "fire":
 							currentMaterial = fireMaterial;
+							break;
+						case "wood":
+							currentMaterial = woodMaterial;
 							break;
 						case "none":
 						default:
