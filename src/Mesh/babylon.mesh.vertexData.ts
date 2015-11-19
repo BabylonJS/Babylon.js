@@ -928,7 +928,7 @@
                         if (hasRings) {
                             v = (cs !== s) ? faceUV[s + 1].y : faceUV[s + 1].w;
                         } else {
-                            v = faceUV[s + 1].y + (faceUV[s + 1].w - faceUV[s + 1].y) * h; 
+                            v = faceUV[s + 1].y + (faceUV[s + 1].w - faceUV[s + 1].y) * h;
                         }
                         uvs.push(faceUV[s + 1].x, v);
                         uvs.push(faceUV[s + 1].z, v);

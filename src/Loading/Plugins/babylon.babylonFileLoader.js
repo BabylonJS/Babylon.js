@@ -1136,7 +1136,8 @@ var BABYLON;
                 var loadedSkeletonsIds = [];
                 var loadedMaterialsIds = [];
                 var hierarchyIds = [];
-                for (var index = 0; index < parsedData.meshes.length; index++) {
+                var index;
+                for (index = 0; index < parsedData.meshes.length; index++) {
                     var parsedMesh = parsedData.meshes[index];
                     if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
                         if (meshesNames instanceof Array) {
@@ -1236,8 +1237,9 @@ var BABYLON;
                     }
                 }
                 // Connecting parents
+                var currentMesh;
                 for (index = 0; index < scene.meshes.length; index++) {
-                    var currentMesh = scene.meshes[index];
+                    currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
                         currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                         currentMesh._waitingParentId = undefined;
@@ -1245,7 +1247,7 @@ var BABYLON;
                 }
                 // freeze world matrix application
                 for (index = 0; index < scene.meshes.length; index++) {
-                    var currentMesh = scene.meshes[index];
+                    currentMesh = scene.meshes[index];
                     if (currentMesh._waitingFreezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
                         currentMesh._waitingFreezeWorldMatrix = undefined;
@@ -1299,7 +1301,8 @@ var BABYLON;
                 }
                 scene.workerCollisions = !!parsedData.workerCollisions;
                 // Lights
-                for (var index = 0; index < parsedData.lights.length; index++) {
+                var index;
+                for (index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
                     parseLight(parsedLight, scene);
                 }

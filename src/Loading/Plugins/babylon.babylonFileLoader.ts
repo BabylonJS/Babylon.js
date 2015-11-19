@@ -1402,7 +1402,8 @@
             var loadedSkeletonsIds = [];
             var loadedMaterialsIds = [];
             var hierarchyIds = [];
-            for (var index = 0; index < parsedData.meshes.length; index++) {
+            var index: number;
+            for (index = 0; index < parsedData.meshes.length; index++) {
                 var parsedMesh = parsedData.meshes[index];
 
                 if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
@@ -1513,8 +1514,9 @@
             }
 
             // Connecting parents
+            var currentMesh: AbstractMesh;
             for (index = 0; index < scene.meshes.length; index++) {
-                var currentMesh = scene.meshes[index];
+                currentMesh = scene.meshes[index];
                 if (currentMesh._waitingParentId) {
                     currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                     currentMesh._waitingParentId = undefined;
@@ -1523,7 +1525,7 @@
 
             // freeze world matrix application
             for (index = 0; index < scene.meshes.length; index++) {
-                var currentMesh = scene.meshes[index];
+                currentMesh = scene.meshes[index];
                 if (currentMesh._waitingFreezeWorldMatrix) {
                     currentMesh.freezeWorldMatrix();
                     currentMesh._waitingFreezeWorldMatrix = undefined;
@@ -1569,7 +1571,7 @@
                 var physicsPlugin;
                 if (parsedData.physicsEngine === "cannon") {
                     physicsPlugin = new BABYLON.CannonJSPlugin();
-                } else if(parsedData.physicsEngine === "oimo") {
+                } else if (parsedData.physicsEngine === "oimo") {
                     physicsPlugin = new BABYLON.OimoJSPlugin();
                 }
                 //else - default engine, which is currently oimo
@@ -1578,13 +1580,14 @@
             }
             
             //collisions, if defined. otherwise, default is true
-            if(parsedData.collisionsEnabled != undefined) {
+            if (parsedData.collisionsEnabled != undefined) {
                 scene.collisionsEnabled = parsedData.collisionsEnabled;
             }
             scene.workerCollisions = !!parsedData.workerCollisions;            
 
             // Lights
-            for (var index = 0; index < parsedData.lights.length; index++) {
+            var index: number;
+            for (index = 0; index < parsedData.lights.length; index++) {
                 var parsedLight = parsedData.lights[index];
                 parseLight(parsedLight, scene);
             }
@@ -1791,5 +1794,6 @@
         }
     });
 }
+
 
 
