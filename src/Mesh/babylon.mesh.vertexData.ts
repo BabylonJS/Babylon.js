@@ -821,14 +821,14 @@
             // default face colors and UV if undefined
             var quadNb: number = (arc !== 1 && enclose) ? 2 : 0;
             var ringNb: number = (hasRings) ? subdivisions : 1;
-            var colorNb: number = 2 + (1 + quadNb) * ringNb;
+            var surfaceNb: number = 2 + (1 + quadNb) * ringNb;
             var f: number;
-            for (f = 0; f < colorNb; f++) {
+            for (f = 0; f < surfaceNb; f++) {
                 if (faceColors && faceColors[f] === undefined) {
                     faceColors[f] = new Color4(1, 1, 1, 1);
                 }
             }
-            for (f = 0; f < 3; f++) {
+            for (f = 0; f < surfaceNb; f++) {
                 if (faceUV && faceUV[f] === undefined) {
                     faceUV[f] = new Vector4(0, 0, 1, 1);
                 }
@@ -857,7 +857,9 @@
             var j: number;
             var r: number;
             var ringIdx: number = 1;
-            var c: number = 1;
+            var s: number = 1;      // surface index
+            var cs: number = 0;
+            var v: number = 0;
 
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
@@ -865,10 +867,10 @@
                 ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
                 for (r = 0; r < ringIdx; r++) {
                     if (hasRings) {
-                        c += r;
+                        s += r;
                     }
                     if (enclose) {
-                        c += 2 * r;
+                        s += 2 * r;
                     }
                     for (j = 0; j <= tessellation; j++) {
                         angle = j * angle_step;
@@ -900,9 +902,14 @@
 
                         positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                         normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s].y : faceUV[s].w;
+                        } else {
+                            v = faceUV[s].y + (faceUV[s].w - faceUV[s].y) * h;
+                        }
+                        uvs.push(faceUV[s].x + (faceUV[s].z - faceUV[s].x) * j / tessellation, v);
                         if (faceColors) {
-                            colors.push(faceColors[c].r, faceColors[c].g, faceColors[c].b, faceColors[c].a);
+                            colors.push(faceColors[s].r, faceColors[s].g, faceColors[s].b, faceColors[s].a);
                         }
                     }
 
@@ -918,15 +925,31 @@
                         Vector3.CrossToRef(ringFirstNormal, Y, quadNormal);
                         quadNormal.normalize();
                         normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        colors.push(faceColors[c + 1].r, faceColors[c + 1].g, faceColors[c + 1].b, faceColors[c + 1].a);
-                        colors.push(faceColors[c + 1].r, faceColors[c + 1].g, faceColors[c + 1].b, faceColors[c + 1].a);
-                        colors.push(faceColors[c + 2].r, faceColors[c + 2].g, faceColors[c + 2].b, faceColors[c + 2].a);
-                        colors.push(faceColors[c + 2].r, faceColors[c + 2].g, faceColors[c + 2].b, faceColors[c + 2].a);
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s + 1].y : faceUV[s + 1].w;
+                        } else {
+                            v = faceUV[s + 1].y + (faceUV[s + 1].w - faceUV[s + 1].y) * h; 
+                        }
+                        uvs.push(faceUV[s + 1].x, v);
+                        uvs.push(faceUV[s + 1].z, v);
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s + 2].y : faceUV[s + 2].w;
+                        } else {
+                            v = faceUV[s + 2].y + (faceUV[s + 2].w - faceUV[s + 2].y) * h;
+                        }
+                        uvs.push(faceUV[s + 2].x, v);
+                        uvs.push(faceUV[s + 2].z, v);
+                        if (faceColors) {
+                            colors.push(faceColors[s + 1].r, faceColors[s + 1].g, faceColors[s + 1].b, faceColors[s + 1].a);
+                            colors.push(faceColors[s + 1].r, faceColors[s + 1].g, faceColors[s + 1].b, faceColors[s + 1].a);
+                            colors.push(faceColors[s + 2].r, faceColors[s + 2].g, faceColors[s + 2].b, faceColors[s + 2].a);
+                            colors.push(faceColors[s + 2].r, faceColors[s + 2].g, faceColors[s + 2].b, faceColors[s + 2].a);
+                        }
                     }
+                    if (cs !== s) {
+                        cs = s;
+                    }
+
                 }
 
             }
@@ -964,10 +987,10 @@
                 var angle;
                 var circleVector;
                 var i: number;
-                var u: Vector4 = (isTop) ? faceUV[2] : faceUV[0];
+                var u: Vector4 = (isTop) ? faceUV[surfaceNb - 1] : faceUV[0];
                 var c: Color4;
                 if (faceColors) {
-                    c = (isTop) ? faceColors[colorNb - 1] : faceColors[0];
+                    c = (isTop) ? faceColors[surfaceNb - 1] : faceColors[0];
                 }
                 // cap center
                 var vbase = positions.length / 3;
