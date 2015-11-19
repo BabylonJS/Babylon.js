@@ -12,9 +12,16 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-#ifdef BONES
+
+#if NUM_BONE_INFLUENCERS > 0
+uniform mat4 mBones[BonesPerMesh];
+
 attribute vec4 matricesIndices;
 attribute vec4 matricesWeights;
+#if NUM_BONE_INFLUENCERS > 4
+attribute vec4 matricesIndicesExtra;
+attribute vec4 matricesWeightsExtra;
+#endif
 #endif
 
 // Uniforms
@@ -52,10 +59,6 @@ uniform vec2 vSpecularInfos;
 uniform mat4 specularMatrix;
 #endif
 
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
-#endif
-
 // Output
 varying vec3 vPositionW;
 varying vec3 vNormalW;
@@ -70,22 +73,36 @@ varying float fClipDistance;
 #endif
 
 void main(void) {
-	mat4 finalWorld;
+    mat4 finalWorld = world;
 
-#ifdef BONES
-	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
-	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
-	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
+#if NUM_BONE_INFLUENCERS > 0
+    mat4 influence;
+    influence = mBones[int(matricesIndices[0])] * matricesWeights[0];
 
-#ifdef BONES4
-	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = world * (m0 + m1 + m2 + m3);
-#else
-	finalWorld = world * (m0 + m1 + m2);
+#if NUM_BONE_INFLUENCERS > 1
+    influence += mBones[int(matricesIndices[1])] * matricesWeights[1];
 #endif 
+#if NUM_BONE_INFLUENCERS > 2
+    influence += mBones[int(matricesIndices[2])] * matricesWeights[2];
+#endif	
+#if NUM_BONE_INFLUENCERS > 3
+    influence += mBones[int(matricesIndices[3])] * matricesWeights[3];
+#endif	
 
-#else
-	finalWorld = world;
+#if NUM_BONE_INFLUENCERS > 4
+    influence += mBones[int(matricesIndicesExtra[0])] * matricesWeightsExtra[0];
+#endif
+#if NUM_BONE_INFLUENCERS > 5
+    influence += mBones[int(matricesIndicesExtra[1])] * matricesWeightsExtra[1];
+#endif	
+#if NUM_BONE_INFLUENCERS > 6
+    influence += mBones[int(matricesIndicesExtra[2])] * matricesWeightsExtra[2];
+#endif	
+#if NUM_BONE_INFLUENCERS > 7
+    influence += mBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
+#endif	
+
+    finalWorld = finalWorld * influence;
 #endif
 
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);

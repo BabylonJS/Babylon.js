@@ -4,8 +4,7 @@ window.preparePBR = function() {
 	pbr.diffuseTexture.uScale = 5;
 	pbr.diffuseTexture.vScale = 5;
 	pbr.specularColor = BABYLON.Color3.Gray();
-	pbr.specularPower = 0.8;
-	pbr.roughness = 6.0;
+	pbr.glossiness = 0.5;
 	
 	pbr.reflectionFresnelParameters = new BABYLON.FresnelParameters();
 	pbr.useReflectionFresnelFromSpecular = true;
@@ -14,16 +13,46 @@ window.preparePBR = function() {
 	
 	pbr.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/TropicalSunnyDay", scene);
 					
-	registerRangeUI("pbr", "specularPower", 0, 1, function(value) {
-		pbr.specularPower = value;
+	registerRangeUI("pbr", "directIntensity", 0, 1, function(value) {
+		pbr.directIntensity = value;
 	}, function() {
-		return pbr.specularPower;
+		return pbr.directIntensity;
 	});
 	
-	registerRangeUI("pbr", "roughness", 0, 10, function(value) {
-		pbr.roughness = value;
+	registerRangeUI("pbr", "emissiveIntensity", 0, 1, function(value) {
+		pbr.emissiveIntensity = value;
 	}, function() {
-		return pbr.roughness;
+		return pbr.emissiveIntensity;
+	});
+	
+	registerRangeUI("pbr", "environmentIntensity", 0, 1, function(value) {
+		pbr.environmentIntensity = value;
+	}, function() {
+		return pbr.environmentIntensity;
+	});
+	
+	registerRangeUI("pbr", "shadowIntensity", 0, 1, function(value) {
+		pbr.shadowIntensity = value;
+	}, function() {
+		return pbr.shadowIntensity;
+	});
+	
+	registerRangeUI("pbr", "shadeIntensity", 0, 1, function(value) {
+		pbr.shadeIntensity = value;
+	}, function() {
+		return pbr.shadeIntensity;
+	});
+	
+	registerRangeUI("pbr", "cameraExposure", 0, 1, function(value) {
+		pbr.cameraExposure = value;
+	}, function() {
+		return pbr.cameraExposure;
+	});
+	
+	registerRangeUI("pbr", "glossiness", 0, 1, function(value) {
+		pbr.glossiness = value;
+	}, function() {
+		return pbr.glossiness;
 	});
 		
 	return pbr;
