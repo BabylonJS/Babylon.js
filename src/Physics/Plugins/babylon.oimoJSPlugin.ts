@@ -4,6 +4,8 @@ module BABYLON {
     export class OimoJSPlugin implements IPhysicsEnginePlugin {
         private _world;
         private _registeredMeshes = [];
+		
+		public name = "oimo";
 
         private _checkWithEpsilon(value: number): number {
             return value < PhysicsEngine.Epsilon ? PhysicsEngine.Epsilon : value;

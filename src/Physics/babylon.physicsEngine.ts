@@ -1,5 +1,6 @@
 ﻿module BABYLON {
     export interface IPhysicsEnginePlugin {
+		name: string;
         initialize(iterations?: number);
         setGravity(gravity: Vector3): void;
         runOneStep(delta: number): void;
@@ -90,6 +91,10 @@
         public getPhysicsBodyOfMesh(mesh: AbstractMesh) {
             return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
         }
+		
+		public getPhysicsPluginName() : string {
+			return this._currentPlugin.name;
+		}
 
         // Statics
         public static NoImpostor = 0;
