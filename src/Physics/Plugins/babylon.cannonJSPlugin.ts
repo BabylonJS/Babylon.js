@@ -17,9 +17,9 @@
         private _world: any;
         private _registeredMeshes: Array<IRegisteredMesh> = [];
         private _physicsMaterials = [];
-		private _gravity: Vector3;
-		
-		public name = "cannon";
+        private _gravity: Vector3;
+
+        public name = "cannon";
 
         public initialize(iterations: number = 10): void {
             this._world = new CANNON.World();
@@ -73,13 +73,13 @@
         }
 
         public setGravity(gravity: Vector3): void {
-			this._gravity = gravity;
+            this._gravity = gravity;
             this._world.gravity.set(gravity.x, gravity.y, gravity.z);
         }
-		
-		public getGravity() : Vector3 {
-			return this._gravity;
-		}
+
+        public getGravity(): Vector3 {
+            return this._gravity;
+        }
 
         public registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any {
             this.unregisterMesh(mesh);
@@ -488,9 +488,3 @@
         }
     }
 }
-
-
-
-
-
-

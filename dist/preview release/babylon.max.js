@@ -20780,7 +20780,8 @@ var BABYLON;
                 var loadedSkeletonsIds = [];
                 var loadedMaterialsIds = [];
                 var hierarchyIds = [];
-                for (var index = 0; index < parsedData.meshes.length; index++) {
+                var index;
+                for (index = 0; index < parsedData.meshes.length; index++) {
                     var parsedMesh = parsedData.meshes[index];
                     if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
                         if (meshesNames instanceof Array) {
@@ -20880,8 +20881,9 @@ var BABYLON;
                     }
                 }
                 // Connecting parents
+                var currentMesh;
                 for (index = 0; index < scene.meshes.length; index++) {
-                    var currentMesh = scene.meshes[index];
+                    currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
                         currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                         currentMesh._waitingParentId = undefined;
@@ -20889,7 +20891,7 @@ var BABYLON;
                 }
                 // freeze world matrix application
                 for (index = 0; index < scene.meshes.length; index++) {
-                    var currentMesh = scene.meshes[index];
+                    currentMesh = scene.meshes[index];
                     if (currentMesh._waitingFreezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
                         currentMesh._waitingFreezeWorldMatrix = undefined;
@@ -20913,7 +20915,9 @@ var BABYLON;
                 scene.autoClear = parsedData.autoClear;
                 scene.clearColor = BABYLON.Color3.FromArray(parsedData.clearColor);
                 scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
-                scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
+                if (parsedData.gravity) {
+                    scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
+                }
                 // Fog
                 if (parsedData.fogMode && parsedData.fogMode !== 0) {
                     scene.fogMode = parsedData.fogMode;
@@ -20922,8 +20926,27 @@ var BABYLON;
                     scene.fogEnd = parsedData.fogEnd;
                     scene.fogDensity = parsedData.fogDensity;
                 }
+                //Physics
+                if (parsedData.physicsEnabled) {
+                    var physicsPlugin;
+                    if (parsedData.physicsEngine === "cannon") {
+                        physicsPlugin = new BABYLON.CannonJSPlugin();
+                    }
+                    else if (parsedData.physicsEngine === "oimo") {
+                        physicsPlugin = new BABYLON.OimoJSPlugin();
+                    }
+                    //else - default engine, which is currently oimo
+                    var physicsGravity = parsedData.physicsGravity ? BABYLON.Vector3.FromArray(parsedData.physicsGravity) : null;
+                    scene.enablePhysics(physicsGravity, physicsPlugin);
+                }
+                //collisions, if defined. otherwise, default is true
+                if (parsedData.collisionsEnabled != undefined) {
+                    scene.collisionsEnabled = parsedData.collisionsEnabled;
+                }
+                scene.workerCollisions = !!parsedData.workerCollisions;
                 // Lights
-                for (var index = 0; index < parsedData.lights.length; index++) {
+                var index;
+                for (index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
                     parseLight(parsedLight, scene);
                 }
@@ -23174,6 +23197,9 @@ var BABYLON;
             this.gravity = gravity || new BABYLON.Vector3(0, -9.807, 0);
             this._currentPlugin.setGravity(this.gravity);
         };
+        PhysicsEngine.prototype._getGravity = function () {
+            return this._currentPlugin.getGravity();
+        };
         PhysicsEngine.prototype._registerMesh = function (mesh, impostor, options) {
             return this._currentPlugin.registerMesh(mesh, impostor, options);
         };
@@ -23200,6 +23226,9 @@ var BABYLON;
         };
         PhysicsEngine.prototype.getPhysicsBodyOfMesh = function (mesh) {
             return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
+        };
+        PhysicsEngine.prototype.getPhysicsPluginName = function () {
+            return this._currentPlugin.name;
         };
         // Statics
         PhysicsEngine.NoImpostor = 0;
@@ -23891,14 +23920,14 @@ var BABYLON;
             // default face colors and UV if undefined
             var quadNb = (arc !== 1 && enclose) ? 2 : 0;
             var ringNb = (hasRings) ? subdivisions : 1;
-            var colorNb = 2 + (1 + quadNb) * ringNb;
+            var surfaceNb = 2 + (1 + quadNb) * ringNb;
             var f;
-            for (f = 0; f < colorNb; f++) {
+            for (f = 0; f < surfaceNb; f++) {
                 if (faceColors && faceColors[f] === undefined) {
                     faceColors[f] = new BABYLON.Color4(1, 1, 1, 1);
                 }
             }
-            for (f = 0; f < 3; f++) {
+            for (f = 0; f < surfaceNb; f++) {
                 if (faceUV && faceUV[f] === undefined) {
                     faceUV[f] = new BABYLON.Vector4(0, 0, 1, 1);
                 }
@@ -23924,17 +23953,19 @@ var BABYLON;
             var j;
             var r;
             var ringIdx = 1;
-            var c = 1;
+            var s = 1; // surface index
+            var cs = 0;
+            var v = 0;
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
                 ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
                 for (r = 0; r < ringIdx; r++) {
                     if (hasRings) {
-                        c += r;
+                        s += r;
                     }
                     if (enclose) {
-                        c += 2 * r;
+                        s += 2 * r;
                     }
                     for (j = 0; j <= tessellation; j++) {
                         angle = j * angle_step;
@@ -23962,9 +23993,15 @@ var BABYLON;
                         }
                         positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                         normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s].y : faceUV[s].w;
+                        }
+                        else {
+                            v = faceUV[s].y + (faceUV[s].w - faceUV[s].y) * h;
+                        }
+                        uvs.push(faceUV[s].x + (faceUV[s].z - faceUV[s].x) * j / tessellation, v);
                         if (faceColors) {
-                            colors.push(faceColors[c].r, faceColors[c].g, faceColors[c].b, faceColors[c].a);
+                            colors.push(faceColors[s].r, faceColors[s].g, faceColors[s].b, faceColors[s].a);
                         }
                     }
                     // if enclose, add four vertices and their dedicated normals
@@ -23979,14 +24016,31 @@ var BABYLON;
                         BABYLON.Vector3.CrossToRef(ringFirstNormal, Y, quadNormal);
                         quadNormal.normalize();
                         normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        colors.push(faceColors[c + 1].r, faceColors[c + 1].g, faceColors[c + 1].b, faceColors[c + 1].a);
-                        colors.push(faceColors[c + 1].r, faceColors[c + 1].g, faceColors[c + 1].b, faceColors[c + 1].a);
-                        colors.push(faceColors[c + 2].r, faceColors[c + 2].g, faceColors[c + 2].b, faceColors[c + 2].a);
-                        colors.push(faceColors[c + 2].r, faceColors[c + 2].g, faceColors[c + 2].b, faceColors[c + 2].a);
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s + 1].y : faceUV[s + 1].w;
+                        }
+                        else {
+                            v = faceUV[s + 1].y + (faceUV[s + 1].w - faceUV[s + 1].y) * h;
+                        }
+                        uvs.push(faceUV[s + 1].x, v);
+                        uvs.push(faceUV[s + 1].z, v);
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s + 2].y : faceUV[s + 2].w;
+                        }
+                        else {
+                            v = faceUV[s + 2].y + (faceUV[s + 2].w - faceUV[s + 2].y) * h;
+                        }
+                        uvs.push(faceUV[s + 2].x, v);
+                        uvs.push(faceUV[s + 2].z, v);
+                        if (faceColors) {
+                            colors.push(faceColors[s + 1].r, faceColors[s + 1].g, faceColors[s + 1].b, faceColors[s + 1].a);
+                            colors.push(faceColors[s + 1].r, faceColors[s + 1].g, faceColors[s + 1].b, faceColors[s + 1].a);
+                            colors.push(faceColors[s + 2].r, faceColors[s + 2].g, faceColors[s + 2].b, faceColors[s + 2].a);
+                            colors.push(faceColors[s + 2].r, faceColors[s + 2].g, faceColors[s + 2].b, faceColors[s + 2].a);
+                        }
+                    }
+                    if (cs !== s) {
+                        cs = s;
                     }
                 }
             }
@@ -24021,10 +24075,10 @@ var BABYLON;
                 var angle;
                 var circleVector;
                 var i;
-                var u = (isTop) ? faceUV[2] : faceUV[0];
+                var u = (isTop) ? faceUV[surfaceNb - 1] : faceUV[0];
                 var c;
                 if (faceColors) {
-                    c = (isTop) ? faceColors[colorNb - 1] : faceColors[0];
+                    c = (isTop) ? faceColors[surfaceNb - 1] : faceColors[0];
                 }
                 // cap center
                 var vbase = positions.length / 3;
@@ -28591,6 +28645,7 @@ var BABYLON;
         function CannonJSPlugin() {
             this._registeredMeshes = [];
             this._physicsMaterials = [];
+            this.name = "cannon";
             this.updateBodyPosition = function (mesh) {
                 for (var index = 0; index < this._registeredMeshes.length; index++) {
                     var registeredMesh = this._registeredMeshes[index];
@@ -28676,7 +28731,11 @@ var BABYLON;
             });
         };
         CannonJSPlugin.prototype.setGravity = function (gravity) {
+            this._gravity = gravity;
             this._world.gravity.set(gravity.x, gravity.y, gravity.z);
+        };
+        CannonJSPlugin.prototype.getGravity = function () {
+            return this._gravity;
         };
         CannonJSPlugin.prototype.registerMesh = function (mesh, impostor, options) {
             this.unregisterMesh(mesh);
@@ -28960,6 +29019,7 @@ var BABYLON;
     var OimoJSPlugin = (function () {
         function OimoJSPlugin() {
             this._registeredMeshes = [];
+            this.name = "oimo";
             /**
              * Update the body position according to the mesh position
              * @param mesh
@@ -28999,7 +29059,10 @@ var BABYLON;
             this._world.clear();
         };
         OimoJSPlugin.prototype.setGravity = function (gravity) {
-            this._world.gravity = gravity;
+            this._gravity = this._world.gravity = gravity;
+        };
+        OimoJSPlugin.prototype.getGravity = function () {
+            return this._gravity;
         };
         OimoJSPlugin.prototype.registerMesh = function (mesh, impostor, options) {
             this.unregisterMesh(mesh);
@@ -30632,6 +30695,8 @@ var BABYLON;
             serializationObject.clearColor = scene.clearColor.asArray();
             serializationObject.ambientColor = scene.ambientColor.asArray();
             serializationObject.gravity = scene.gravity.asArray();
+            serializationObject.collisionsEnabled = scene.collisionsEnabled;
+            serializationObject.workerCollisions = scene.workerCollisions;
             // Fog
             if (scene.fogMode && scene.fogMode !== 0) {
                 serializationObject.fogMode = scene.fogMode;
@@ -30639,6 +30704,12 @@ var BABYLON;
                 serializationObject.fogStart = scene.fogStart;
                 serializationObject.fogEnd = scene.fogEnd;
                 serializationObject.fogDensity = scene.fogDensity;
+            }
+            //Physics
+            if (scene.isPhysicsEnabled()) {
+                serializationObject.physicsEnabled = true;
+                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
+                serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
             // Lights
             serializationObject.lights = [];
