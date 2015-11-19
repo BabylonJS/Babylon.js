@@ -816,7 +816,7 @@
             //Physics
             if (scene.isPhysicsEnabled()) {
                 serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity();
+                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
 
