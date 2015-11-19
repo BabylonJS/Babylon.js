@@ -4,6 +4,7 @@ var BABYLON;
         function CannonJSPlugin() {
             this._registeredMeshes = [];
             this._physicsMaterials = [];
+            this.name = "cannon";
             this.updateBodyPosition = function (mesh) {
                 for (var index = 0; index < this._registeredMeshes.length; index++) {
                     var registeredMesh = this._registeredMeshes[index];
@@ -89,7 +90,11 @@ var BABYLON;
             });
         };
         CannonJSPlugin.prototype.setGravity = function (gravity) {
+            this._gravity = gravity;
             this._world.gravity.set(gravity.x, gravity.y, gravity.z);
+        };
+        CannonJSPlugin.prototype.getGravity = function () {
+            return this._gravity;
         };
         CannonJSPlugin.prototype.registerMesh = function (mesh, impostor, options) {
             this.unregisterMesh(mesh);
