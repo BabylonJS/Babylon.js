@@ -58,6 +58,7 @@ You can help by testing or contributing to the next version.
  - Debug layer to help you optimize and debug scenes
  - SIMD.js support
  - Collisions can be offloaded on webworkers
+ - Merge meshes
 - Standard material is a per pixel material that supports:
  - Diffuse lightning and texture
  - Ambient lightning and texture
