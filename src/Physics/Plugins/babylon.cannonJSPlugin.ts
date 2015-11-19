@@ -17,6 +17,8 @@
         private _world: any;
         private _registeredMeshes: Array<IRegisteredMesh> = [];
         private _physicsMaterials = [];
+		
+		public name = "cannon";
 
         public initialize(iterations: number = 10): void {
             this._world = new CANNON.World();
