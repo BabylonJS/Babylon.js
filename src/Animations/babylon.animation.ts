@@ -178,23 +178,7 @@
         }
 
         public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
-            var startScale = new Vector3(0, 0, 0);
-            var startRotation = new Quaternion();
-            var startTranslation = new Vector3(0, 0, 0);
-            startValue.decompose(startScale, startRotation, startTranslation);
-
-            var endScale = new Vector3(0, 0, 0);
-            var endRotation = new Quaternion();
-            var endTranslation = new Vector3(0, 0, 0);
-            endValue.decompose(endScale, endRotation, endTranslation);
-
-            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
-            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
-            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
-
-            var result = Matrix.Compose(resultScale, resultRotation, resultTranslation);
-
-            return result;
+            return Matrix.Lerp(startValue, endValue, gradient);
         }
 
         public clone(): Animation {

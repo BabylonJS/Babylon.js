@@ -336,6 +336,8 @@
     var partialLoad = (url: string, index: number, loadedImages: any, scene,
         onfinish: (images: HTMLImageElement[]) => void) => {
 
+        var img: HTMLImageElement;
+
         var onload = () => {
             loadedImages[index] = img;
             loadedImages._internalCount++;
@@ -351,7 +353,7 @@
             scene._removePendingData(img);
         };
 
-        var img = Tools.LoadImage(url, onload, onerror, scene.database);
+        img = Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
     }
 
@@ -1028,9 +1030,9 @@
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
 
             if (vertices instanceof Float32Array) {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.STATIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, <Float32Array>vertices, this._gl.STATIC_DRAW);
             } else {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(<number[]>vertices), this._gl.STATIC_DRAW);
             }
 
             this._resetVertexBufferBinding();
@@ -1055,9 +1057,9 @@
             }
 
             if (vertices instanceof Float32Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, vertices);
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, <Float32Array>vertices);
             } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(vertices));
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(<number[]>vertices));
             }
 
             this._resetVertexBufferBinding();
@@ -1365,28 +1367,28 @@
             if (!uniform)
                 return;
 
-            this._gl.uniform1fv(uniform, array);
+            this._gl.uniform1fv(uniform, <any>array);
         }
 
         public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform || array.length % 2 !== 0)
                 return;
 
-            this._gl.uniform2fv(uniform, array);
+            this._gl.uniform2fv(uniform, <any>array);
         }
 
         public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform || array.length % 3 !== 0)
                 return;
 
-            this._gl.uniform3fv(uniform, array);
+            this._gl.uniform3fv(uniform, <any>array);
         }
 
         public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
             if (!uniform || array.length % 4 !== 0)
                 return;
 
-            this._gl.uniform4fv(uniform, array);
+            this._gl.uniform4fv(uniform, <any>array);
         }
 
         public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
