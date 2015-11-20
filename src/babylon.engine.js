@@ -315,6 +315,7 @@ var BABYLON;
         scene._removePendingData(texture);
     };
     var partialLoad = function (url, index, loadedImages, scene, onfinish) {
+        var img;
         var onload = function () {
             loadedImages[index] = img;
             loadedImages._internalCount++;
@@ -326,7 +327,7 @@ var BABYLON;
         var onerror = function () {
             scene._removePendingData(img);
         };
-        var img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+        img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
     };
     var cascadeLoad = function (rootUrl, scene, onfinish, extensions) {

@@ -1681,46 +1681,57 @@
         }
 
         public static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void {
-            var data = matrix.m;
-            var m11 = data[0], m12 = data[4], m13 = data[8];
-            var m21 = data[1], m22 = data[5], m23 = data[9];
-            var m31 = data[2], m32 = data[6], m33 = data[10];
-            var trace = m11 + m22 + m33;
-            var s;
 
-            if (trace > 0) {
+            var absQ = Math.pow(matrix.determinant(), 1.0 / 3.0);
+            result.w = Math.sqrt(Math.max(0, absQ + matrix.m[0] + matrix.m[5] +matrix.m[10])) / 2;
+            result.x = Math.sqrt(Math.max(0, absQ + matrix.m[0] - matrix.m[5] -matrix.m[10])) / 2;
+            result.y = Math.sqrt(Math.max(0, absQ - matrix.m[0] + matrix.m[5] -matrix.m[10])) / 2;
+            result.z = Math.sqrt(Math.max(0, absQ - matrix.m[0] - matrix.m[5] + matrix.m[10])) / 2;
+            result.x = (matrix.m[6] - matrix.m[9]) < 0 ? -Math.abs(result.x) : Math.abs(result.x);
+            result.y = (matrix.m[8] - matrix.m[2]) < 0 ? -Math.abs(result.y) : Math.abs(result.y);
+            result.z = (matrix.m[1] - matrix.m[4]) < 0 ? -Math.abs(result.z) : Math.abs(result.z);
+            result.normalize(); 
 
-                s = 0.5 / Math.sqrt(trace + 1.0);
+            //var data = matrix.m;
+            //var m11 = data[0], m12 = data[4], m13 = data[8];
+            //var m21 = data[1], m22 = data[5], m23 = data[9];
+            //var m31 = data[2], m32 = data[6], m33 = data[10];
+            //var trace = m11 + m22 + m33;
+            //var s;
 
-                result.w = 0.25 / s;
-                result.x = (m32 - m23) * s;
-                result.y = (m13 - m31) * s;
-                result.z = (m21 - m12) * s;
-            } else if (m11 > m22 && m11 > m33) {
+            //if (trace > 0) {
 
-                s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
+            //    s = 0.5 / Math.sqrt(trace + 1.0);
 
-                result.w = (m32 - m23) / s;
-                result.x = 0.25 * s;
-                result.y = (m12 + m21) / s;
-                result.z = (m13 + m31) / s;
-            } else if (m22 > m33) {
+            //    result.w = 0.25 / s;
+            //    result.x = (m32 - m23) * s;
+            //    result.y = (m13 - m31) * s;
+            //    result.z = (m21 - m12) * s;
+            //} else if (m11 > m22 && m11 > m33) {
 
-                s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
+            //    s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
 
-                result.w = (m13 - m31) / s;
-                result.x = (m12 + m21) / s;
-                result.y = 0.25 * s;
-                result.z = (m23 + m32) / s;
-            } else {
+            //    result.w = (m32 - m23) / s;
+            //    result.x = 0.25 * s;
+            //    result.y = (m12 + m21) / s;
+            //    result.z = (m13 + m31) / s;
+            //} else if (m22 > m33) {
 
-                s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
+            //    s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
 
-                result.w = (m21 - m12) / s;
-                result.x = (m13 + m31) / s;
-                result.y = (m23 + m32) / s;
-                result.z = 0.25 * s;
-            }
+            //    result.w = (m13 - m31) / s;
+            //    result.x = (m12 + m21) / s;
+            //    result.y = 0.25 * s;
+            //    result.z = (m23 + m32) / s;
+            //} else {
+
+            //    s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
+
+            //    result.w = (m21 - m12) / s;
+            //    result.x = (m13 + m31) / s;
+            //    result.y = (m23 + m32) / s;
+            //    result.z = 0.25 * s;
+            //}
         }
 
         public static Inverse(q: Quaternion): Quaternion {
@@ -1798,30 +1809,77 @@
             result.w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
         }
 
+        // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
-            var num2;
-            var num3;
-            var num = amount;
-            var num4 = (((left.x * right.x) + (left.y * right.y)) + (left.z * right.z)) + (left.w * right.w);
-            var flag = false;
+            var cosHalfTheta = left.w * right.w + left.x * right.x + left.y * right.y + left.z * right.z;
+            var result = new Quaternion();
 
-            if (num4 < 0) {
-                flag = true;
-                num4 = -num4;
+            if (cosHalfTheta < 0) {
+                result.w = -right.w;
+                result.x = -right.x;
+                result.y = -right.y;
+                result.z = -right.z;
+
+                cosHalfTheta = -cosHalfTheta;
+            } else {
+                result.copyFrom(right);
             }
 
-            if (num4 > 0.999999) {
-                num3 = 1 - num;
-                num2 = flag ? -num : num;
-            }
-            else {
-                var num5 = Math.acos(num4);
-                var num6 = (1.0 / Math.sin(num5));
-                num3 = (Math.sin((1.0 - num) * num5)) * num6;
-                num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
+           	if (Math.abs(cosHalfTheta) >= 1.0) {
+                result.w = left.w;
+                result.x = left.x;
+                result.y = left.y;
+                result.z = left.z;
+
+                return result;
             }
 
-            return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
+            var halfTheta = Math.acos(cosHalfTheta);
+            var sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
+
+            if (Math.abs(sinHalfTheta) < 0.001) {
+                result.w = 0.5 * (left.w + result.w);
+                result.x = 0.5 * (left.x + result.x);
+                result.y = 0.5 * (left.y + result.y);
+                result.z = 0.5 * (left.z + result.z);
+
+                return result;
+            }
+
+            var ratioA = Math.sin((1 - amount) * halfTheta) / sinHalfTheta;
+            var ratioB = Math.sin(amount * halfTheta) / sinHalfTheta;
+
+            result.w = (left.w * ratioA + result.w * ratioB);
+            result.x = (left.x * ratioA + result.x * ratioB);
+            result.y = (left.y * ratioA + result.y * ratioB);
+            result.z = (left.z * ratioA + result.z * ratioB);
+
+
+            return result;
+
+            //var num2;
+            //var num3;
+            //var num = amount;
+            //var num4 = (((left.x * right.x) + (left.y * right.y)) + (left.z * right.z)) + (left.w * right.w);
+            //var flag = false;
+
+            //if (num4 < 0) {
+            //    flag = true;
+            //    num4 = -num4;
+            //}
+
+            //if (num4 > 0.999999) {
+            //    num3 = 1 - num;
+            //    num2 = flag ? -num : num;
+            //}
+            //else {
+            //    var num5 = Math.acos(num4);
+            //    var num6 = (1.0 / Math.sin(num5));
+            //    num3 = (Math.sin((1.0 - num) * num5)) * num6;
+            //    num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
+            //}
+
+            //return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         }
     }
 
@@ -2631,6 +2689,24 @@
             result.m[13] = temp2 * plane.d;
             result.m[14] = temp3 * plane.d;
             result.m[15] = 1.0;
+        }
+
+        public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            var startScale = new Vector3(0, 0, 0);
+            var startRotation = new Quaternion();
+            var startTranslation = new Vector3(0, 0, 0);
+            startValue.decompose(startScale, startRotation, startTranslation);
+
+            var endScale = new Vector3(0, 0, 0);
+            var endRotation = new Quaternion();
+            var endTranslation = new Vector3(0, 0, 0);
+            endValue.decompose(endScale, endRotation, endTranslation);
+
+            var resultScale = Vector3.Lerp(startScale, endScale, gradient);
+            var resultRotation = Quaternion.Slerp(startRotation, endRotation, gradient);
+            var resultTranslation = Vector3.Lerp(startTranslation, endTranslation, gradient);
+
+            return Matrix.Compose(resultScale, resultRotation, resultTranslation);
         }
     }
 
