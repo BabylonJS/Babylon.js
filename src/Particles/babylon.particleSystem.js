@@ -72,13 +72,13 @@ var BABYLON;
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
             this._vertices = new Float32Array(capacity * this._vertexStrideSize);
             // Default behaviors
-            this.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate) {
+            this.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
                 var randX = randomNumber(_this.direction1.x, _this.direction2.x);
                 var randY = randomNumber(_this.direction1.y, _this.direction2.y);
                 var randZ = randomNumber(_this.direction1.z, _this.direction2.z);
                 BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
             };
-            this.startPositionFunction = function (worldMatrix, positionToUpdate) {
+            this.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
                 var randX = randomNumber(_this.minEmitBox.x, _this.maxEmitBox.x);
                 var randY = randomNumber(_this.minEmitBox.y, _this.maxEmitBox.y);
                 var randZ = randomNumber(_this.minEmitBox.z, _this.maxEmitBox.z);
@@ -170,11 +170,11 @@ var BABYLON;
                 }
                 this.particles.push(particle);
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
-                this.startDirectionFunction(emitPower, worldMatrix, particle.direction);
+                this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
                 particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
                 particle.size = randomNumber(this.minSize, this.maxSize);
                 particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
-                this.startPositionFunction(worldMatrix, particle.position);
+                this.startPositionFunction(worldMatrix, particle.position, particle);
                 var step = randomNumber(0, 1.0);
                 BABYLON.Color4.LerpToRef(this.color1, this.color2, step, particle.color);
                 this.colorDead.subtractToRef(particle.color, this._colorDiff);
