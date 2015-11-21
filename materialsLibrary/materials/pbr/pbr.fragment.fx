@@ -19,7 +19,6 @@ uniform vec4 vDiffuseColor;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
-uniform vec4 vShadowIntensity;
 uniform vec4 vCameraInfos;
 
 #ifdef OVERLOADEDVALUES
@@ -28,7 +27,12 @@ uniform vec4 vCameraInfos;
     uniform vec3 vOverloadedDiffuse;
     uniform vec3 vOverloadedSpecular;
     uniform vec3 vOverloadedEmissive;
-    uniform vec3 vOverloadedSmoothness;
+    uniform vec3 vOverloadedReflection;
+    uniform vec3 vOverloadedGlossiness;
+#endif
+
+#ifdef OVERLOADEDSHADOWVALUES
+    uniform vec4 vOverloadedShadowIntensity;
 #endif
 
 // PBR CUSTOM CONSTANTS
@@ -447,7 +451,11 @@ float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float dar
 
     if (depth > shadow)
     {
-        return mix(1.0, darkness, vShadowIntensity.x);
+#ifdef OVERLOADEDSHADOWVALUES
+        return mix(1.0, darkness, vOverloadedShadowIntensity.x);
+#else
+        return darkness;
+#endif
     }
     return 1.0;
 }
@@ -478,7 +486,11 @@ float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, fl
     if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * diskScale)) < biasedDepth) visibility -= 0.25;
     if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * diskScale)) < biasedDepth) visibility -= 0.25;
 
-    return  min(1.0, mix(1.0, visibility + darkness, vShadowIntensity.x));
+#ifdef OVERLOADEDSHADOWVALUES
+    return  min(1.0, mix(1.0, visibility + darkness, vOverloadedShadowIntensity.x));
+#else
+    return  min(1.0, visibility + darkness);
+#endif
 }
 #endif
 
@@ -498,7 +510,11 @@ float computeShadow(vec4 vPositionFromLight, sampler2D shadowSampler, float dark
 
     if (depth.z > shadow)
     {
-        return mix(1.0, darkness, vShadowIntensity.x);
+#ifdef OVERLOADEDSHADOWVALUES
+        return mix(1.0, darkness, vOverloadedShadowIntensity.x);
+#else
+        return darkness;
+#endif
     }
     return 1.;
 }
@@ -530,7 +546,11 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, flo
     if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / mapSize)) < biasedDepth) visibility -= 0.25;
     if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / mapSize)) < biasedDepth) visibility -= 0.25;
 
-    return  min(1.0, mix(1.0, visibility + darkness, vShadowIntensity.x));
+#ifdef OVERLOADEDSHADOWVALUES
+    return  min(1.0, mix(1.0, visibility + darkness, vOverloadedShadowIntensity.x));
+#else
+    return  min(1.0, visibility + darkness);
+#endif
 }
 
 // Thanks to http://devmaster.net/
@@ -567,7 +587,11 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, flo
     vec4 texel = texture2D(shadowSampler, uv);
 
     vec2 moments = vec2(unpackHalf(texel.xy), unpackHalf(texel.zw));
-    return min(1.0, mix(1.0, 1.0 - ChebychevInequality(moments, depth.z, bias) + darkness, vShadowIntensity.x));
+#ifdef OVERLOADEDSHADOWVALUES
+    return min(1.0, mix(1.0, 1.0 - ChebychevInequality(moments, depth.z, bias) + darkness, vOverloadedShadowIntensity.x));
+#else
+    return min(1.0, 1.0 - ChebychevInequality(moments, depth.z, bias) + darkness);
+#endif
 }
 #endif
 
@@ -797,12 +821,13 @@ void main(void) {
     baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
-#ifdef OVERLOADEDVALUES
-    baseColor.rgb = mix(baseColor.rgb, vOverloadedDiffuse, vOverloadedIntensity.y);
-#endif
-
 #ifdef VERTEXCOLOR
     baseColor.rgb *= vColor.rgb;
+#endif
+
+#ifdef OVERLOADEDVALUES
+    baseColor.rgb = mix(baseColor.rgb, vOverloadedDiffuse, vOverloadedIntensity.y);
+    diffuseColor.rgb = mix(diffuseColor.rgb, vOverloadedDiffuse, vOverloadedIntensity.y);
 #endif
 
     // Bump
@@ -853,12 +878,12 @@ void main(void) {
     #endif
 
     #ifdef OVERLOADEDVALUES
-        glossiness = mix(glossiness, vOverloadedSmoothness.x, vOverloadedSmoothness.y);
+        glossiness = mix(glossiness, vOverloadedGlossiness.x, vOverloadedGlossiness.y);
     #endif
 #else
     float glossiness = 0.;
     #ifdef OVERLOADEDVALUES
-        glossiness = mix(glossiness, vOverloadedSmoothness.x, vOverloadedSmoothness.y);
+        glossiness = mix(glossiness, vOverloadedGlossiness.x, vOverloadedGlossiness.y);
     #endif
     
     vec3 specularColor = vec3(0., 0., 0);
@@ -882,8 +907,9 @@ void main(void) {
 
     // Lighting
     vec3 diffuseBase = vec3(0., 0., 0.);
-#ifdef OVERLOADEDVALUES
-    vec3 shadowedOnly = vOverloadedDiffuse;
+    
+#ifdef OVERLOADEDSHADOWVALUES
+    vec3 shadowedOnlyDiffuseBase = vec3(1., 1., 1.);
 #endif
 
 #ifdef SPECULARTERM
@@ -926,8 +952,8 @@ void main(void) {
     shadow = 1.;
 #endif
     diffuseBase += info.diffuse * shadow;
-#ifdef OVERLOADEDVALUES
-    shadowedOnly *= shadow;
+#ifdef OVERLOADEDSHADOWVALUES
+    shadowedOnlyDiffuseBase *= shadow;
 #endif
 
 #ifdef SPECULARTERM
@@ -971,8 +997,8 @@ void main(void) {
 #endif
 
     diffuseBase += info.diffuse * shadow;
-#ifdef OVERLOADEDVALUES
-    shadowedOnly *= shadow;
+#ifdef OVERLOADEDSHADOWVALUES
+    shadowedOnlyDiffuseBase *= shadow;
 #endif
 
 #ifdef SPECULARTERM
@@ -1016,8 +1042,8 @@ void main(void) {
 #endif
 
     diffuseBase += info.diffuse * shadow;
-#ifdef OVERLOADEDVALUES
-    shadowedOnly *= shadow;
+#ifdef OVERLOADEDSHADOWVALUES
+    shadowedOnlyDiffuseBase *= shadow;
 #endif
 
 #ifdef SPECULARTERM
@@ -1061,8 +1087,8 @@ void main(void) {
 #endif
 
     diffuseBase += info.diffuse * shadow;
-#ifdef OVERLOADEDVALUES
-    shadowedOnly *= shadow;
+#ifdef OVERLOADEDSHADOWVALUES
+    shadowedOnlyDiffuseBase *= shadow;
 #endif
 
 #ifdef SPECULARTERM
@@ -1107,6 +1133,11 @@ vec3 ambientReflectionColor = vReflectionColor.rgb;
     #endif
 #endif
 
+#ifdef OVERLOADEDVALUES
+    ambientReflectionColor = mix(ambientReflectionColor, vOverloadedReflection, vOverloadedGlossiness.z);
+    reflectionColor = mix(reflectionColor, vOverloadedReflection, vOverloadedGlossiness.z);
+#endif
+
 reflectionColor *= vLightingIntensity.z;
 ambientReflectionColor *= vLightingIntensity.z;
 
@@ -1143,10 +1174,10 @@ reflectionColor *= specularEnvironmentReflectanceViewer;
 #ifdef EMISSIVE
     vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV).rgb;
     emissiveColor = toLinearSpace(emissiveColorTex.rgb) * emissiveColor * vEmissiveInfos.y;
+#endif
 
-    #ifdef OVERLOADEDVALUES
-        emissiveColor = mix(emissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
-    #endif
+#ifdef OVERLOADEDVALUES
+    emissiveColor = mix(emissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
 #endif
 
 #ifdef EMISSIVEFRESNEL
@@ -1158,12 +1189,28 @@ reflectionColor *= specularEnvironmentReflectanceViewer;
     // Composition
 #ifdef EMISSIVEASILLUMINATION
     vec3 finalDiffuse = max(diffuseBase * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+    
+    #ifdef OVERLOADEDSHADOWVALUES
+        shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+    #endif
 #else
     #ifdef LINKEMISSIVEWITHDIFFUSE
         vec3 finalDiffuse = max((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+
+        #ifdef OVERLOADEDSHADOWVALUES
+            shadowedOnlyDiffuseBase = max((shadowedOnlyDiffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+        #endif
     #else
         vec3 finalDiffuse = max(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+
+        #ifdef OVERLOADEDSHADOWVALUES
+            shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+        #endif
     #endif
+#endif
+
+#ifdef OVERLOADEDSHADOWVALUES
+    finalDiffuse = mix(finalDiffuse, shadowedOnlyDiffuseBase, (1.0 - vOverloadedShadowIntensity.y));
 #endif
 
 // diffuse lighting from environment 0.2 replaces Harmonic...
@@ -1174,6 +1221,10 @@ finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
     vec3 finalSpecular = specularBase * specularColor;
 #else
     vec3 finalSpecular = vec3(0.0);
+#endif
+
+#ifdef OVERLOADEDSHADOWVALUES
+    finalSpecular = mix(finalSpecular, vec3(0.0), (1.0 - vOverloadedShadowIntensity.y));
 #endif
 
 #ifdef SPECULAROVERALPHA
@@ -1191,11 +1242,11 @@ finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
 #ifdef LIGHTMAP
     vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
 
-#ifdef USELIGHTMAPASSHADOWMAP
-    color.rgb *= lightmapColor;
-#else
-    color.rgb += lightmapColor;
-#endif
+    #ifdef USELIGHTMAPASSHADOWMAP
+        color.rgb *= lightmapColor;
+    #else
+        color.rgb += lightmapColor;
+    #endif
 #endif
 
 #ifdef FOG
@@ -1213,10 +1264,6 @@ finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
 
 #ifdef CAMERACONTRAST
     color = contrasts(color);
-#endif
-
-#ifdef OVERLOADEDVALUES
-    color.rgb = mix(color.rgb, shadowedOnly, (1.0 - vShadowIntensity.y));
 #endif
 
     // Normal Display.
