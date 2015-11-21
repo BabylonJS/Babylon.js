@@ -2,15 +2,15 @@
 
 // Constants
 #define RECIPROCAL_PI2 0.15915494
+#define FRESNEL_MAXIMUM_ON_ROUGH 0.25
 
 uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec4 vDiffuseColor;
+uniform vec3 vReflectionColor;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
-uniform vec4 vShadowIntensity;
-uniform vec3 vReflectionColor;
 uniform vec4 vCameraInfos;
 
 #ifdef OVERLOADEDVALUES
@@ -19,12 +19,16 @@ uniform vec3 vOverloadedAmbient;
 uniform vec3 vOverloadedDiffuse;
 uniform vec3 vOverloadedSpecular;
 uniform vec3 vOverloadedEmissive;
-uniform vec3 vOverloadedSmoothness;
+uniform vec3 vOverloadedReflection;
+uniform vec3 vOverloadedGlossiness;
+#endif
+
+#ifdef OVERLOADEDSHADOWVALUES
+uniform vec4 vOverloadedShadowIntensity;
 #endif
 
 // PBR CUSTOM CONSTANTS
 const float kPi = 3.1415926535897932384626433832795;
-#define FRESNEL_MAXIMUM_ON_ROUGH 0.25;
 
 // PBR HELPER METHODS
 float Square(float value)
@@ -463,12 +467,13 @@ void main(void) {
     baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
-#ifdef OVERLOADEDVALUES
-    baseColor.rgb = mix(baseColor.rgb, vOverloadedDiffuse, vOverloadedIntensity.y);
-#endif
-
 #ifdef VERTEXCOLOR
     baseColor.rgb *= vColor.rgb;
+#endif
+
+#ifdef OVERLOADEDVALUES
+    baseColor.rgb = mix(baseColor.rgb, vOverloadedDiffuse, vOverloadedIntensity.y);
+    diffuseColor.rgb = mix(diffuseColor.rgb, vOverloadedDiffuse, vOverloadedIntensity.y);
 #endif
 
     // Bump
@@ -506,19 +511,19 @@ void main(void) {
         #endif
 
         #ifdef GLOSSINESSFROMSPECULARMAP
-                glossiness = specularMapColor.a;
+            glossiness = specularMapColor.a;
         #else
-                glossiness = computeDefaultGlossiness(glossiness, specularColor);
+            glossiness = computeDefaultGlossiness(glossiness, specularColor);
         #endif
     #endif
 
     #ifdef OVERLOADEDVALUES
-            glossiness = mix(glossiness, vOverloadedSmoothness.x, vOverloadedSmoothness.y);
+        glossiness = mix(glossiness, vOverloadedGlossiness.x, vOverloadedGlossiness.y);
     #endif
 #else
     float glossiness = 0.;
     #ifdef OVERLOADEDVALUES
-            glossiness = mix(glossiness, vOverloadedSmoothness.x, vOverloadedSmoothness.y);
+        glossiness = mix(glossiness, vOverloadedGlossiness.x, vOverloadedGlossiness.y);
     #endif
 
     vec3 specularColor = vec3(0., 0., 0);
@@ -542,8 +547,9 @@ void main(void) {
 
     // Lighting
     vec3 diffuseBase = vec3(0., 0., 0.);
-#ifdef OVERLOADEDVALUES
-    vec3 shadowedOnly = vOverloadedDiffuse;
+
+#ifdef OVERLOADEDSHADOWVALUES
+    vec3 shadowedOnlyDiffuseBase = vec3(1., 1., 1.);
 #endif
 
 #ifdef SPECULARTERM
@@ -567,8 +573,8 @@ void main(void) {
 
     shadow = 1.;
     diffuseBase += info.diffuse * shadow;
-#ifdef OVERLOADEDVALUES
-    shadowedOnly *= shadow;
+#ifdef OVERLOADEDSHADOWVALUES
+    shadowedOnlyDiffuseBase *= shadow;
 #endif
 
 #ifdef SPECULARTERM
@@ -592,8 +598,8 @@ void main(void) {
 
     shadow = 1.;
     diffuseBase += info.diffuse * shadow;
-#ifdef OVERLOADEDVALUES
-    shadowedOnly *= shadow;
+#ifdef OVERLOADEDSHADOWVALUES
+    shadowedOnlyDiffuseBase *= shadow;
 #endif
 
 #ifdef SPECULARTERM
@@ -617,8 +623,8 @@ void main(void) {
 
     shadow = 1.;
     diffuseBase += info.diffuse * shadow;
-#ifdef OVERLOADEDVALUES
-    shadowedOnly *= shadow;
+#ifdef OVERLOADEDSHADOWVALUES
+    shadowedOnlyDiffuseBase *= shadow;
 #endif
 
 #ifdef SPECULARTERM
@@ -642,8 +648,8 @@ void main(void) {
 
     shadow = 1.;
     diffuseBase += info.diffuse * shadow;
-#ifdef OVERLOADEDVALUES
-    shadowedOnly *= shadow;
+#ifdef OVERLOADEDSHADOWVALUES
+    shadowedOnlyDiffuseBase *= shadow;
 #endif
 
 #ifdef SPECULARTERM
@@ -663,6 +669,11 @@ vec3 specularEnvironmentR0 = specularColor.rgb;
 vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
 vec3 specularEnvironmentReflectanceViewer = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), specularEnvironmentR0, specularEnvironmentR90, sqrt(glossiness));
 reflectionColor *= specularEnvironmentReflectanceViewer;
+
+#ifdef OVERLOADEDVALUES
+    ambientReflectionColor = mix(ambientReflectionColor, vOverloadedReflection, vOverloadedGlossiness.z);
+    reflectionColor = mix(reflectionColor, vOverloadedReflection, vOverloadedGlossiness.z);
+#endif
 
 #ifdef OPACITY
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
@@ -685,20 +696,35 @@ reflectionColor *= specularEnvironmentReflectanceViewer;
 #ifdef EMISSIVE
     vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV).rgb;
     emissiveColor = toLinearSpace(emissiveColorTex.rgb) * emissiveColor * vEmissiveInfos.y;
-    #ifdef OVERLOADEDVALUES
-        emissiveColor = mix(emissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
-    #endif
+#endif
+
+#ifdef OVERLOADEDVALUES
+    emissiveColor = mix(emissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
 #endif
 
     // Composition
 #ifdef EMISSIVEASILLUMINATION
     vec3 finalDiffuse = max(diffuseBase * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+
+    #ifdef OVERLOADEDSHADOWVALUES
+        shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+    #endif
 #else
     #ifdef LINKEMISSIVEWITHDIFFUSE
-            vec3 finalDiffuse = max((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+        vec3 finalDiffuse = max((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+        #ifdef OVERLOADEDSHADOWVALUES
+                shadowedOnlyDiffuseBase = max((shadowedOnlyDiffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+        #endif
     #else
-            vec3 finalDiffuse = max(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+        vec3 finalDiffuse = max(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+        #ifdef OVERLOADEDSHADOWVALUES
+            shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+        #endif
     #endif
+#endif
+
+#ifdef OVERLOADEDSHADOWVALUES
+      finalDiffuse = mix(finalDiffuse, shadowedOnlyDiffuseBase, (1.0 - vOverloadedShadowIntensity.y));
 #endif
 
 // diffuse lighting from environment 0.2 replaces Harmonic...
@@ -733,10 +759,6 @@ finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
 
 #ifdef CAMERACONTRAST
     color = contrasts(color);
-#endif
-
-#ifdef OVERLOADEDVALUES
-    color.rgb = mix(color.rgb, shadowedOnly, (1.0 - vShadowIntensity.y));
 #endif
 
     gl_FragColor = color;

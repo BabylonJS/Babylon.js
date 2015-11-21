@@ -81,6 +81,7 @@ module BABYLON {
         public CAMERATONEMAP = false;
         public CAMERACONTRAST = false;
         public OVERLOADEDVALUES = false;
+        public OVERLOADEDSHADOWVALUES = false;
 
         constructor() {
             super();
@@ -95,9 +96,9 @@ module BABYLON {
         public environmentIntensity: number = 1.0;
         private _lightingInfos: Vector4 = new Vector4(this.directIntensity, this.emissiveIntensity, this.environmentIntensity, 0.0);
 
-        public shadowIntensity: number = 1.0;
-        public shadeIntensity: number = 1.0;
-        private _shadowInfos: Vector4 = new Vector4(this.shadowIntensity, this.shadeIntensity, 0.0, 0.0);
+        public overloadedShadowIntensity: number = 1.0;
+        public overloadedShadeIntensity: number = 1.0;
+        private _overloadedShadowInfos: Vector4 = new Vector4(this.overloadedShadowIntensity, this.overloadedShadeIntensity, 0.0, 0.0);
 
         public cameraExposure: number = 1.0;
         public cameraContrast: number = 1.0;
@@ -108,14 +109,17 @@ module BABYLON {
         public overloadedSpecularIntensity: number = 0.0;
         public overloadedEmissiveIntensity: number = 0.0;
         private _overloadedIntensity: Vector4 = new Vector4(this.overloadedAmbientIntensity, this.overloadedDiffuseIntensity, this.overloadedSpecularIntensity, this.overloadedEmissiveIntensity);
+
         public overloadedAmbient: Color3 = BABYLON.Color3.White();
         public overloadedDiffuse: Color3 = BABYLON.Color3.White();
         public overloadedSpecular: Color3 = BABYLON.Color3.White();
         public overloadedEmissive: Color3 = BABYLON.Color3.White();
+        public overloadedReflection: Color3 = BABYLON.Color3.White();
 
-        public overloadedSmoothness: number = 0.0;
-        public overloadedSmoothnessIntensity: number = 0.0;
-        private _overloadedSmoothness: Vector3 = new Vector3(this.overloadedSmoothness, this.overloadedSmoothnessIntensity, 0.0);
+        public overloadedGlossiness: number = 0.0;
+        public overloadedGlossinessIntensity: number = 0.0;
+        public overloadedReflectionIntensity: number = 0.0;
+        private _overloadedGlossiness: Vector3 = new Vector3(this.overloadedGlossiness, this.overloadedGlossinessIntensity, this.overloadedReflectionIntensity);
        
         public disableBumpMap: boolean = false;
 
@@ -533,11 +537,17 @@ module BABYLON {
                 this._defines.CAMERATONEMAP = true;
             }
 
-            if (this.overloadedSmoothnessIntensity > 0 ||
+            if (this.overloadedShadeIntensity != 1 ||
+                this.overloadedShadowIntensity != 1) {
+                this._defines.OVERLOADEDSHADOWVALUES = true;
+            }
+
+            if (this.overloadedGlossinessIntensity > 0 ||
                 this.overloadedEmissiveIntensity > 0 ||
                 this.overloadedSpecularIntensity > 0 ||
                 this.overloadedDiffuseIntensity > 0 ||
-                this.overloadedAmbientIntensity > 0) {
+                this.overloadedAmbientIntensity > 0 ||
+                this.overloadedReflectionIntensity > 0) {
                 this._defines.OVERLOADEDVALUES = true;
             }
 
@@ -740,7 +750,7 @@ module BABYLON {
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
-                        "vLightingIntensity", "vShadowIntensity", "vOverloadedIntensity", "vCameraInfos", "vOverloadedDiffuse", "vOverloadedSpecular", "vOverloadedEmissive", "vOverloadedSmoothness",
+                        "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vCameraInfos", "vOverloadedDiffuse", "vOverloadedReflection", "vOverloadedSpecular", "vOverloadedEmissive", "vOverloadedGlossiness",
                         "logarithmicDepthConstant"
                     ],
                     ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
@@ -928,9 +938,9 @@ module BABYLON {
             this._lightingInfos.z = this.environmentIntensity;
             this._effect.setVector4("vLightingIntensity", this._lightingInfos);
 
-            this._shadowInfos.x = this.shadowIntensity;
-            this._shadowInfos.y = this.shadeIntensity;
-            this._effect.setVector4("vShadowIntensity", this._shadowInfos);
+            this._overloadedShadowInfos.x = this.overloadedShadowIntensity;
+            this._overloadedShadowInfos.y = this.overloadedShadeIntensity;
+            this._effect.setVector4("vOverloadedShadowIntensity", this._overloadedShadowInfos);
 
             this._cameraInfos.x = this.cameraExposure;
             this._cameraInfos.y = this.cameraContrast;
@@ -950,10 +960,13 @@ module BABYLON {
             this._effect.setColor3("vOverloadedSpecular", this._tempColor);
             this.overloadedEmissive.toLinearSpaceToRef(this._tempColor);
             this._effect.setColor3("vOverloadedEmissive", this._tempColor);
+            this.overloadedReflection.toLinearSpaceToRef(this._tempColor);
+            this._effect.setColor3("vOverloadedReflection", this._tempColor);
 
-            this._overloadedSmoothness.x = this.overloadedSmoothness;
-            this._overloadedSmoothness.y = this.overloadedSmoothnessIntensity;
-            this._effect.setVector3("vOverloadedSmoothness", this._overloadedSmoothness);
+            this._overloadedGlossiness.x = this.overloadedGlossiness;
+            this._overloadedGlossiness.y = this.overloadedGlossinessIntensity;
+            this._overloadedGlossiness.z = this.overloadedReflectionIntensity;
+            this._effect.setVector3("vOverloadedGlossiness", this._overloadedGlossiness);
 
             // Log. depth
             if (this._defines.LOGARITHMICDEPTH) {
@@ -1041,11 +1054,11 @@ module BABYLON {
             newPBRMaterial.emissiveIntensity = this.emissiveIntensity;
             newPBRMaterial.environmentIntensity = this.environmentIntensity;
         
-            newPBRMaterial.shadowIntensity = this.shadowIntensity;
-            newPBRMaterial.shadeIntensity = this.shadeIntensity;
-        
             newPBRMaterial.cameraExposure = this.cameraExposure;
             newPBRMaterial.cameraContrast = this.cameraContrast;
+
+            newPBRMaterial.overloadedShadowIntensity = this.overloadedShadowIntensity;
+            newPBRMaterial.overloadedShadeIntensity = this.overloadedShadeIntensity;
         
             newPBRMaterial.overloadedAmbientIntensity = this.overloadedAmbientIntensity;
             newPBRMaterial.overloadedDiffuseIntensity = this.overloadedDiffuseIntensity;
@@ -1055,9 +1068,11 @@ module BABYLON {
             newPBRMaterial.overloadedDiffuse = this.overloadedDiffuse;
             newPBRMaterial.overloadedSpecular = this.overloadedSpecular;
             newPBRMaterial.overloadedEmissive = this.overloadedEmissive;
+            newPBRMaterial.overloadedReflection = this.overloadedReflection;
 
-            newPBRMaterial.overloadedSmoothness = this.overloadedSmoothness;
-            newPBRMaterial.overloadedSmoothnessIntensity = this.overloadedSmoothnessIntensity;
+            newPBRMaterial.overloadedGlossiness = this.overloadedGlossiness;
+            newPBRMaterial.overloadedGlossinessIntensity = this.overloadedGlossinessIntensity;
+            newPBRMaterial.overloadedReflectionIntensity = this.overloadedReflectionIntensity;
         
             newPBRMaterial.disableBumpMap = this.disableBumpMap;
 
@@ -1105,4 +1120,4 @@ module BABYLON {
             return newPBRMaterial;
         }
     }
-} 
+}

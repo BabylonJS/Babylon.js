@@ -26,16 +26,55 @@ window.registerRangeUI = function(material, name, minValue, maxValue, onChange, 
 		minValue: minValue,
 		maxValue: maxValue,
 		onChange: onChange,
-		onSet: onSet
+		onSet: onSet,
+		type: "Range"
+	});
+}
+
+window.setRangeValues = function(json) {
+	for (var key in json) {
+		if (json.hasOwnProperty(key)) {
+			setRangeValue(key, json[key]);
+		}
+	}
+}
+
+window.setRangeValue = function(name, value) {
+	if (!materialgui) {
+		return;
+	}
+	
+	var controllers = materialgui.__controllers;
+	for (var i = 0; i < controllers.length; i++) {
+		if (controllers[i].property == name) {
+			controllers[i].setValue(value);
+		}
+	}
+}
+
+window.registerButtonUI = function(material, name, onClick) {
+	if (!registeredUIs[material]) {
+		registeredUIs[material] = [];
+	}
+	
+	registeredUIs[material].push({
+		name: name, 
+		onClick: onClick,
+		type: "Button"
 	});
 }
 
 var setUi = function(ui) {
-	options[ui.name] = ui.onSet();
-	
-	materialgui.add(options, ui.name, ui.minValue, ui.maxValue).onChange(function(value) {
-		ui.onChange(value);
-	});
+	if (ui.type == "Range") {
+		options[ui.name] = ui.onSet();
+		var test = materialgui.add(options, ui.name, ui.minValue, ui.maxValue).onChange(function(value) {
+			ui.onChange(value);
+		});
+	}
+	else if (ui.type == "Button") {
+		options[ui.name] = ui.onClick;
+		materialgui.add(options, ui.name);
+	}
 }
 
 window.enableMaterial = function(material) {
@@ -50,6 +89,6 @@ window.enableMaterial = function(material) {
 			var ui = registeredUIs[material][index];
 			
 			setUi(ui);
-		}	
+		}
 	}
 }
