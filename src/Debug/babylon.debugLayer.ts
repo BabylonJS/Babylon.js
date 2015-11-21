@@ -700,6 +700,13 @@
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
                 this._generateButton(this._optionsSubsetDiv, "Run SceneOptimizer", (element) => { SceneOptimizer.OptimizeAsync(this._scene); });
+                this._generateButton(this._optionsSubsetDiv, "Log camera object", (element) => {
+                    if (this._camera) {
+                        console.log(this._camera);
+                    } else {
+                        console.warn("No camera defined, or debug layer created before camera creation!");
+                    }
+                });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
   
                 this._globalDiv.appendChild(this._statsDiv);

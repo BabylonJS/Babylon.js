@@ -557,6 +557,14 @@ var BABYLON;
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", function (element) { _this._scene.dumpNextRenderTargets = true; });
                 this._generateButton(this._optionsSubsetDiv, "Run SceneOptimizer", function (element) { BABYLON.SceneOptimizer.OptimizeAsync(_this._scene); });
+                this._generateButton(this._optionsSubsetDiv, "Log camera object", function (element) {
+                    if (_this._camera) {
+                        console.log(_this._camera);
+                    }
+                    else {
+                        console.warn("No camera defined, or debug layer created before camera creation!");
+                    }
+                });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
