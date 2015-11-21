@@ -769,7 +769,7 @@
                     var complete = Vector3.TransformCoordinates(afterRotZ, rotationY);
 
                     var vertex = complete.multiply(radius);
-                    var normal = Vector3.Normalize(vertex);
+                    var normal = complete.divide(radius).normalize();
 
                     positions.push(vertex.x, vertex.y, vertex.z);
                     normals.push(normal.x, normal.y, normal.z);
@@ -1677,26 +1677,27 @@
                     var pos_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], i2 / subdivisions);
                     var pos_interp = (subdivisions === i2) ? face_vertex_pos[2] : Vector3.Lerp(pos_x0, pos_x1, i1 / (subdivisions - i2));
                     pos_interp.normalize();
-                    pos_interp.x *= radiusX;
-                    pos_interp.y *= radiusY;
-                    pos_interp.z *= radiusZ;
 
                     var vertex_normal;
                     if (flat) {
                         // in flat mode, recalculate normal as face centroid normal
                         var centroid_x0 = Vector3.Lerp(face_vertex_pos[0], face_vertex_pos[2], c2 / subdivisions);
                         var centroid_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], c2 / subdivisions);
-                        var centroid_interp = Vector3.Lerp(centroid_x0, centroid_x1, c1 / (subdivisions - c2));
-                        vertex_normal = Vector3.Normalize(centroid_interp);
+                        vertex_normal = Vector3.Lerp(centroid_x0, centroid_x1, c1 / (subdivisions - c2));
                     } else {
                         // in smooth mode, recalculate normal from each single vertex position
-                        vertex_normal = Vector3.Normalize(pos_interp);
+                        vertex_normal = new Vector3(pos_interp.x, pos_interp.y, pos_interp.z);
                     }
+                    // Vertex normal need correction due to X,Y,Z radius scaling
+                    vertex_normal.x /= radiusX;
+                    vertex_normal.y /= radiusY;
+                    vertex_normal.z /= radiusZ;
+                    vertex_normal.normalize();
 
                     var uv_x0 = Vector2.Lerp(face_vertex_uv[0], face_vertex_uv[2], i2 / subdivisions);
                     var uv_x1 = Vector2.Lerp(face_vertex_uv[1], face_vertex_uv[2], i2 / subdivisions);
                     var uv_interp = (subdivisions === i2) ? face_vertex_uv[2] : Vector2.Lerp(uv_x0, uv_x1, i1 / (subdivisions - i2));
-                    positions.push(pos_interp.x, pos_interp.y, pos_interp.z);
+                    positions.push(pos_interp.x * radiusX, pos_interp.y * radiusY, pos_interp.z * radiusZ);
                     normals.push(vertex_normal.x, vertex_normal.y, vertex_normal.z);
                     uvs.push(uv_interp.x, uv_interp.y);
                     // push each vertex has member of a face
