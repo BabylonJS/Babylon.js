@@ -1,7 +1,7 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
- export class FireProceduralTexture2 extends ProceduralTexture {
+ export class FireProceduralTexture extends ProceduralTexture {
         private _time: number = 0.0;
         private _speed = new Vector2(0.5, 0.3);
         private _autoGenerateTime: boolean = true;
