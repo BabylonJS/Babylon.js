@@ -626,7 +626,7 @@ module BABYLON {
 				clipPlane = scene.clipPlane;
                 
                 var positiony = this._mesh ? this._mesh.position.y : 0.0;
-				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony, 0), new Vector3(0, 1, 0));
+				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
 			};
 			
 			this._refractionRTT.onAfterRender = () => {
@@ -648,7 +648,7 @@ module BABYLON {
 				clipPlane = scene.clipPlane;
                 
                 var positiony = this._mesh ? this._mesh.position.y : 0.0;
-				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony, 0), new Vector3(0, -1, 0));
+				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
 				
 				// Transform
 				Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
