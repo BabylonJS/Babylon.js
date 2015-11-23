@@ -199,6 +199,7 @@ var BABYLON;
         Texture.SKYBOX_MODE = 5;
         Texture.INVCUBIC_MODE = 6;
         Texture.EQUIRECTANGULAR_MODE = 7;
+        Texture.FIXED_EQUIRECTANGULAR_MODE = 8;
         Texture.CLAMP_ADDRESSMODE = 0;
         Texture.WRAP_ADDRESSMODE = 1;
         Texture.MIRROR_ADDRESSMODE = 2;

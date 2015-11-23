@@ -73,7 +73,7 @@ var BABYLON;
                 _this.position.copyFrom(_this._newPosition);
                 var up = _this.upVector;
                 if (_this.allowUpsideDown && _this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
                 BABYLON.Matrix.LookAtLHToRef(_this.position, target, up, _this._viewMatrix);
@@ -148,7 +148,7 @@ var BABYLON;
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = function (evt) {
                     // Manage panning with right click
-                    _this._isRightClick = evt.button === 2 ? true : false;
+                    _this._isRightClick = evt.button === 2;
                     // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
                     cacheSoloPointer = pointers.item(evt.pointerId);
@@ -376,7 +376,7 @@ var BABYLON;
                 }
             }
             // Inertia
-            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;
@@ -481,7 +481,7 @@ var BABYLON;
                 this.position.copyFrom(this._newPosition);
                 var up = this.upVector;
                 if (this.allowUpsideDown && this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
                 BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
@@ -530,6 +530,7 @@ var BABYLON;
                     var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                     return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
             }
+            return null;
         };
         /**
          * @override
