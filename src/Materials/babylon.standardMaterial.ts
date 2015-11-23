@@ -94,6 +94,7 @@
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
         public REFLECTIONMAP_EQUIRECTANGULAR = false;
+        public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public LOGARITHMICDEPTH = false;
 
@@ -439,6 +440,9 @@
                                 break;
                             case Texture.EQUIRECTANGULAR_MODE:
                                 this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
+                                break;
+                            case Texture.FIXED_EQUIRECTANGULAR_MODE:
+                                this._defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
                                 break;
                         }
                     }
