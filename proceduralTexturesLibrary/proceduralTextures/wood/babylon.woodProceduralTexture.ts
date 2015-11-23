@@ -1,7 +1,7 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-	export class WoodProceduralTexture2 extends ProceduralTexture {
+	export class WoodProceduralTexture extends ProceduralTexture {
         private _ampScale: number = 100.0;
         private _woodColor: Color3 = new Color3(0.32, 0.17, 0.09);
 
