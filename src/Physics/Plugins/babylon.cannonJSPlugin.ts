@@ -145,7 +145,7 @@
             return returnValue;
         }
 
-        private _createConvexPolyhedron(rawVerts: number[] | Float32Array, rawFaces: number[], mesh: AbstractMesh): any {
+        private _createConvexPolyhedron(rawVerts: number[] | Float32Array, rawFaces: number[] | Int32Array, mesh: AbstractMesh): any {
             var verts = [], faces = [];
 
             mesh.computeWorldMatrix(true);
