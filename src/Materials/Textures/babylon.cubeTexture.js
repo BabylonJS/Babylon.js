@@ -57,6 +57,17 @@ var BABYLON;
         CubeTexture.prototype.getReflectionTextureMatrix = function () {
             return this._textureMatrix;
         };
+        CubeTexture.ParseCubeTexture = function (parsedTexture, scene, rootUrl) {
+            var texture = null;
+            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
+                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                texture.name = parsedTexture.name;
+                texture.hasAlpha = parsedTexture.hasAlpha;
+                texture.level = parsedTexture.level;
+                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            }
+            return texture;
+        };
         return CubeTexture;
     })(BABYLON.BaseTexture);
     BABYLON.CubeTexture = CubeTexture;

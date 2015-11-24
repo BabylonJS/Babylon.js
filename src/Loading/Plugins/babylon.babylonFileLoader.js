@@ -17,276 +17,14 @@ var BABYLON;
             }
             return colors;
         };
-        var parseSkeleton = function (parsedSkeleton, scene) {
-            var skeleton = new BABYLON.Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
-            for (var index = 0; index < parsedSkeleton.bones.length; index++) {
-                var parsedBone = parsedSkeleton.bones[index];
-                var parentBone = null;
-                if (parsedBone.parentBoneIndex > -1) {
-                    parentBone = skeleton.bones[parsedBone.parentBoneIndex];
-                }
-                var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
-                if (parsedBone.animation) {
-                    bone.animations.push(BABYLON.Animation.ParseAnimation(parsedBone.animation));
-                }
-            }
-            return skeleton;
-        };
-        var parseCustomMaterial = function (parsedMaterial, scene, rootUrl) {
-            return null;
-        };
-        var parseMaterial = function (parsedMaterial, scene, rootUrl) {
-            if (!parsedMaterial.customType) {
-                return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
-            }
-            return parseCustomMaterial(parsedMaterial, scene, rootUrl);
-        };
         var parseMaterialById = function (id, parsedData, scene, rootUrl) {
             for (var index = 0; index < parsedData.materials.length; index++) {
                 var parsedMaterial = parsedData.materials[index];
                 if (parsedMaterial.id === id) {
-                    return parseMaterial(parsedMaterial, scene, rootUrl);
+                    return BABYLON.Material.ParseMaterial(parsedMaterial, scene, rootUrl);
                 }
             }
             return null;
-        };
-        var parseMultiMaterial = function (parsedMultiMaterial, scene) {
-            var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
-            multiMaterial.id = parsedMultiMaterial.id;
-            BABYLON.Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
-            for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
-                var subMatId = parsedMultiMaterial.materials[matIndex];
-                if (subMatId) {
-                    multiMaterial.subMaterials.push(scene.getMaterialByID(subMatId));
-                }
-                else {
-                    multiMaterial.subMaterials.push(null);
-                }
-            }
-            return multiMaterial;
-        };
-        var parseLensFlareSystem = function (parsedLensFlareSystem, scene, rootUrl) {
-            var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
-            var lensFlareSystem = new BABYLON.LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
-            lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
-            for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
-                var parsedFlare = parsedLensFlareSystem.flares[index];
-                var flare = new BABYLON.LensFlare(parsedFlare.size, parsedFlare.position, BABYLON.Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
-            }
-            return lensFlareSystem;
-        };
-        var parseParticleSystem = function (parsedParticleSystem, scene, rootUrl) {
-            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
-            var particleSystem = new BABYLON.ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);
-            if (parsedParticleSystem.textureName) {
-                particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
-                particleSystem.particleTexture.name = parsedParticleSystem.textureName;
-            }
-            particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
-            particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
-            particleSystem.minSize = parsedParticleSystem.minSize;
-            particleSystem.maxSize = parsedParticleSystem.maxSize;
-            particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
-            particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
-            particleSystem.emitter = emitter;
-            particleSystem.emitRate = parsedParticleSystem.emitRate;
-            particleSystem.minEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.minEmitBox);
-            particleSystem.maxEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.maxEmitBox);
-            particleSystem.gravity = BABYLON.Vector3.FromArray(parsedParticleSystem.gravity);
-            particleSystem.direction1 = BABYLON.Vector3.FromArray(parsedParticleSystem.direction1);
-            particleSystem.direction2 = BABYLON.Vector3.FromArray(parsedParticleSystem.direction2);
-            particleSystem.color1 = BABYLON.Color4.FromArray(parsedParticleSystem.color1);
-            particleSystem.color2 = BABYLON.Color4.FromArray(parsedParticleSystem.color2);
-            particleSystem.colorDead = BABYLON.Color4.FromArray(parsedParticleSystem.colorDead);
-            particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
-            particleSystem.targetStopDuration = parsedParticleSystem.targetStopFrame;
-            particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
-            particleSystem.blendMode = parsedParticleSystem.blendMode;
-            particleSystem.start();
-            return particleSystem;
-        };
-        var parseShadowGenerator = function (parsedShadowGenerator, scene) {
-            var light = scene.getLightByID(parsedShadowGenerator.lightId);
-            var shadowGenerator = new BABYLON.ShadowGenerator(parsedShadowGenerator.mapSize, light);
-            for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
-                shadowGenerator.getShadowMap().renderList.push(mesh);
-            }
-            if (parsedShadowGenerator.usePoissonSampling) {
-                shadowGenerator.usePoissonSampling = true;
-            }
-            else if (parsedShadowGenerator.useVarianceShadowMap) {
-                shadowGenerator.useVarianceShadowMap = true;
-            }
-            else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
-                shadowGenerator.useBlurVarianceShadowMap = true;
-                if (parsedShadowGenerator.blurScale) {
-                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
-                }
-                if (parsedShadowGenerator.blurBoxOffset) {
-                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
-                }
-            }
-            if (parsedShadowGenerator.bias !== undefined) {
-                shadowGenerator.bias = parsedShadowGenerator.bias;
-            }
-            return shadowGenerator;
-        };
-        var parseLight = function (parsedLight, scene) {
-            var light;
-            switch (parsedLight.type) {
-                case 0:
-                    light = new BABYLON.PointLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), scene);
-                    break;
-                case 1:
-                    light = new BABYLON.DirectionalLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
-                    light.position = BABYLON.Vector3.FromArray(parsedLight.position);
-                    break;
-                case 2:
-                    light = new BABYLON.SpotLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), BABYLON.Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
-                    break;
-                case 3:
-                    light = new BABYLON.HemisphericLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
-                    light.groundColor = BABYLON.Color3.FromArray(parsedLight.groundColor);
-                    break;
-            }
-            light.id = parsedLight.id;
-            BABYLON.Tags.AddTagsTo(light, parsedLight.tags);
-            if (parsedLight.intensity !== undefined) {
-                light.intensity = parsedLight.intensity;
-            }
-            if (parsedLight.range) {
-                light.range = parsedLight.range;
-            }
-            light.diffuse = BABYLON.Color3.FromArray(parsedLight.diffuse);
-            light.specular = BABYLON.Color3.FromArray(parsedLight.specular);
-            if (parsedLight.excludedMeshesIds) {
-                light._excludedMeshesIds = parsedLight.excludedMeshesIds;
-            }
-            // Parent
-            if (parsedLight.parentId) {
-                light._waitingParentId = parsedLight.parentId;
-            }
-            if (parsedLight.includedOnlyMeshesIds) {
-                light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
-            }
-            // Animations
-            if (parsedLight.animations) {
-                for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
-                    var parsedAnimation = parsedLight.animations[animationIndex];
-                    light.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
-                }
-            }
-            if (parsedLight.autoAnimate) {
-                scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
-            }
-        };
-        var parseCamera = function (parsedCamera, scene) {
-            var camera;
-            var position = BABYLON.Vector3.FromArray(parsedCamera.position);
-            var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
-            if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
-                var alpha = parsedCamera.alpha;
-                var beta = parsedCamera.beta;
-                var radius = parsedCamera.radius;
-                if (parsedCamera.type === "AnaglyphArcRotateCamera") {
-                    var interaxial_distance = parsedCamera.interaxial_distance;
-                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
-                }
-                else {
-                    camera = new BABYLON.ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
-                }
-            }
-            else if (parsedCamera.type === "AnaglyphFreeCamera") {
-                interaxial_distance = parsedCamera.interaxial_distance;
-                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, interaxial_distance, scene);
-            }
-            else if (parsedCamera.type === "DeviceOrientationCamera") {
-                camera = new BABYLON.DeviceOrientationCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "FollowCamera") {
-                camera = new BABYLON.FollowCamera(parsedCamera.name, position, scene);
-                camera.heightOffset = parsedCamera.heightOffset;
-                camera.radius = parsedCamera.radius;
-                camera.rotationOffset = parsedCamera.rotationOffset;
-                if (lockedTargetMesh)
-                    camera.target = lockedTargetMesh;
-            }
-            else if (parsedCamera.type === "GamepadCamera") {
-                camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "TouchCamera") {
-                camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "VirtualJoysticksCamera") {
-                camera = new BABYLON.VirtualJoysticksCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "WebVRFreeCamera") {
-                camera = new BABYLON.WebVRFreeCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
-                camera = new BABYLON.VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
-            }
-            else {
-                // Free Camera is the default value
-                camera = new BABYLON.FreeCamera(parsedCamera.name, position, scene);
-            }
-            // apply 3d rig, when found
-            if (parsedCamera.cameraRigMode) {
-                var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
-                camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
-            }
-            // Test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
-            if (lockedTargetMesh && camera instanceof BABYLON.FreeCamera) {
-                camera.lockedTarget = lockedTargetMesh;
-            }
-            camera.id = parsedCamera.id;
-            BABYLON.Tags.AddTagsTo(camera, parsedCamera.tags);
-            // Parent
-            if (parsedCamera.parentId) {
-                camera._waitingParentId = parsedCamera.parentId;
-            }
-            // Target
-            if (parsedCamera.target) {
-                if (camera.setTarget) {
-                    camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
-                }
-                else {
-                    //For ArcRotate
-                    camera.target = BABYLON.Vector3.FromArray(parsedCamera.target);
-                }
-            }
-            else {
-                camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
-            }
-            camera.fov = parsedCamera.fov;
-            camera.minZ = parsedCamera.minZ;
-            camera.maxZ = parsedCamera.maxZ;
-            camera.speed = parsedCamera.speed;
-            camera.inertia = parsedCamera.inertia;
-            camera.checkCollisions = parsedCamera.checkCollisions;
-            camera.applyGravity = parsedCamera.applyGravity;
-            if (parsedCamera.ellipsoid) {
-                camera.ellipsoid = BABYLON.Vector3.FromArray(parsedCamera.ellipsoid);
-            }
-            // Animations
-            if (parsedCamera.animations) {
-                for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
-                    var parsedAnimation = parsedCamera.animations[animationIndex];
-                    camera.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
-                }
-            }
-            if (parsedCamera.autoAnimate) {
-                scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
-            }
-            // Layer Mask
-            if (parsedCamera.layerMask && (!isNaN(parsedCamera.layerMask))) {
-                camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
-            }
-            else {
-                camera.layerMask = 0x0FFFFFFF;
-            }
-            return camera;
         };
         var parseGeometry = function (parsedGeometry, scene) {
             var id = parsedGeometry.id;
@@ -1056,7 +794,7 @@ var BABYLON;
                                             parseMaterialById(subMatId, parsedData, scene, rootUrl);
                                         }
                                         loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                        parseMultiMaterial(parsedMultiMaterial, scene);
+                                        parsedMultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
                                         materialFound = true;
                                         break;
                                     }
@@ -1076,7 +814,7 @@ var BABYLON;
                                 for (var skeletonIndex = 0; skeletonIndex < parsedData.skeletons.length; skeletonIndex++) {
                                     var parsedSkeleton = parsedData.skeletons[skeletonIndex];
                                     if (parsedSkeleton.id === parsedMesh.skeletonId) {
-                                        skeletons.push(parseSkeleton(parsedSkeleton, scene));
+                                        skeletons.push(BABYLON.Skeleton.ParseSkeleton(parsedSkeleton, scene));
                                         loadedSkeletonsIds.push(parsedSkeleton.id);
                                     }
                                 }
@@ -1108,7 +846,7 @@ var BABYLON;
                     for (index = 0; index < parsedData.particleSystems.length; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
                         if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
-                            particleSystems.push(parseParticleSystem(parsedParticleSystem, scene, rootUrl));
+                            particleSystems.push(BABYLON.ParticleSystem.ParseParticleSystem(parsedParticleSystem, scene, rootUrl));
                         }
                     }
                 }
@@ -1154,26 +892,26 @@ var BABYLON;
                 var index;
                 for (index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
-                    parseLight(parsedLight, scene);
+                    BABYLON.Light.ParseLight(parsedLight, scene);
                 }
                 // Materials
                 if (parsedData.materials) {
                     for (index = 0; index < parsedData.materials.length; index++) {
                         var parsedMaterial = parsedData.materials[index];
-                        parseMaterial(parsedMaterial, scene, rootUrl);
+                        BABYLON.Material.ParseMaterial(parsedMaterial, scene, rootUrl);
                     }
                 }
                 if (parsedData.multiMaterials) {
                     for (index = 0; index < parsedData.multiMaterials.length; index++) {
                         var parsedMultiMaterial = parsedData.multiMaterials[index];
-                        parseMultiMaterial(parsedMultiMaterial, scene);
+                        BABYLON.MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
                     }
                 }
                 // Skeletons
                 if (parsedData.skeletons) {
                     for (index = 0; index < parsedData.skeletons.length; index++) {
                         var parsedSkeleton = parsedData.skeletons[index];
-                        parseSkeleton(parsedSkeleton, scene);
+                        BABYLON.Skeleton.ParseSkeleton(parsedSkeleton, scene);
                     }
                 }
                 // Geometries
@@ -1252,7 +990,7 @@ var BABYLON;
                 // Cameras
                 for (index = 0; index < parsedData.cameras.length; index++) {
                     var parsedCamera = parsedData.cameras[index];
-                    parseCamera(parsedCamera, scene);
+                    BABYLON.Camera.ParseCamera(parsedCamera, scene);
                 }
                 if (parsedData.activeCameraID) {
                     scene.setActiveCameraByID(parsedData.activeCameraID);
@@ -1308,21 +1046,21 @@ var BABYLON;
                 if (parsedData.particleSystems) {
                     for (index = 0; index < parsedData.particleSystems.length; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
-                        parseParticleSystem(parsedParticleSystem, scene, rootUrl);
+                        BABYLON.ParticleSystem.ParseParticleSystem(parsedParticleSystem, scene, rootUrl);
                     }
                 }
                 // Lens flares
                 if (parsedData.lensFlareSystems) {
                     for (index = 0; index < parsedData.lensFlareSystems.length; index++) {
                         var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-                        parseLensFlareSystem(parsedLensFlareSystem, scene, rootUrl);
+                        BABYLON.LensFlareSystem.ParseLensFlareSystem(parsedLensFlareSystem, scene, rootUrl);
                     }
                 }
                 // Shadows
                 if (parsedData.shadowGenerators) {
                     for (index = 0; index < parsedData.shadowGenerators.length; index++) {
                         var parsedShadowGenerator = parsedData.shadowGenerators[index];
-                        parseShadowGenerator(parsedShadowGenerator, scene);
+                        BABYLON.ShadowGenerator.ParseShadowGenerator(parsedShadowGenerator, scene);
                     }
                 }
                 // Actions (scene)
