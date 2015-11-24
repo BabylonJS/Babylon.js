@@ -1925,6 +1925,20 @@ var BABYLON;
         Matrix.TranslationToRef = function (x, y, z, result) {
             Matrix.FromValuesToRef(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, x, y, z, 1.0, result);
         };
+        Matrix.Lerp = function (startValue, endValue, gradient) {
+            var startScale = new Vector3(0, 0, 0);
+            var startRotation = new Quaternion();
+            var startTranslation = new Vector3(0, 0, 0);
+            startValue.decompose(startScale, startRotation, startTranslation);
+            var endScale = new Vector3(0, 0, 0);
+            var endRotation = new Quaternion();
+            var endTranslation = new Vector3(0, 0, 0);
+            endValue.decompose(endScale, endRotation, endTranslation);
+            var resultScale = Vector3.Lerp(startScale, endScale, gradient);
+            var resultRotation = Quaternion.Slerp(startRotation, endRotation, gradient);
+            var resultTranslation = Vector3.Lerp(startTranslation, endTranslation, gradient);
+            return Matrix.Compose(resultScale, resultRotation, resultTranslation);
+        };
         Matrix.LookAtLH = function (eye, target, up) {
             var result = Matrix.Zero();
             Matrix.LookAtLHToRef(eye, target, up, result);

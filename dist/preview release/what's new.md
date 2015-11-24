@@ -1,6 +1,5 @@
 - 2.3.0:
   - **Major updates**
-    - Adding support for logarithmic depth buffer. [Documentation](http://doc.babylonjs.com/tutorials/Using_logarithmic_depth_buffer) ([deltakosh](https://github.com/deltakosh))
     - Point lights shadow mapping. [Demo here](http://www.babylonjs-playground.com/#LYCSQ#12) ([deltakosh](https://github.com/deltakosh))
     - Introducing [Materials Library](https://github.com/BabylonJS/Babylon.js/tree/master/materialsLibrary) ([deltakosh](https://github.com/deltakosh))
       - Water material: http://doc.babylonjs.com/extensions/Water ([julien-moreau](https://github.com/julien-moreau))
@@ -19,10 +18,11 @@
     - New `Mesh.CreateIcoSphere()` method. [Demo here](http://www.babylonjs-playground.com/#24DUYD) (G'kar)
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+    - New button to log the camera position in the debug layer ([temechon](https://github.com/temechon))
     - Added `Animatable.goToFrame()` ([deltakosh](https://github.com/deltakosh))   
     - Fixed behavior or `Animation.CreateAndStartAnimation` and added `Animation.CreateMergeAndStartAnimation` to reproduce previous behavior ([deltakosh](https://github.com/deltakosh))
     - Adding `StandardMaterial.linkEmissiveWithDiffuse` to, well, link emissive with diffuse value. (With)[http://www.babylonjs-playground.com/#2FPUCS#2] and (without)[http://www.babylonjs-playground.com/#2FPUCS#1] ([deltakosh](https://github.com/deltakosh))
-    - Adding support for equi-rectangular mapping. See [demo here](http://www.babylonjs-playground.com/#27FN5R#8) ([deltakosh](https://github.com/deltakosh))
+    - Adding support for equi-rectangular mapping. See [demo here](http://www.babylonjs-playground.com/#27FN5R#12) ([deltakosh](https://github.com/deltakosh))
     - Sprites and particles scheduler updated to be resolved before transparent objects ([deltakosh](https://github.com/deltakosh))
     - Added ability to deactivate ArcRotateCamera panning mechanism (by setting panningSensibility to 0) ([vouskprod](http://www.github.com/vousk))    
     - Added `DirectionalLight.autoUpdateExtends` to prevent directional lights to adapt to scene extends ([deltakosh](https://github.com/deltakosh))
@@ -37,7 +37,7 @@
     - _Arc_ feature in `CreateCylinder`, `CreateSphere`, `CreateTube`, `CreateDisc` and `CreateLathe` ([jerome](https://github.com/jbousquie))
     - _Slice_ feature in `MeshBuilder.CreateSphere()` ([jerome](https://github.com/jbousquie))
     - `closed` parameter in `MeshBuilder.CreateLathe()` ([jerome](https://github.com/jbousquie))
-    - `diameter` parameter in `MeshBuilder.CreateCreateCylinder()` ([jerome](https://github.com/jbousquie))
+    - `diameter`, `hasRings`, `enclose` parameters in `MeshBuilder.CreateCreateCylinder()` ([jerome](https://github.com/jbousquie))
     - `Material.dispose()` now removes disposed material from meshes ([deltakosh](https://github.com/deltakosh))
     - New `Material.getBindedMeshes()` function ([deltakosh](https://github.com/deltakosh))
     - OimoJS Plugin now uses Quaternions exclusively and calculates body rotations correctly. [PR](https://github.com/BabylonJS/Babylon.js/pull/761) ([RaananW](https://github.com/RaananW))
@@ -47,6 +47,7 @@
     - AbstractMesh.onPhysicsCollide will be triggered when a physics-enabled mesh collides against another. [PR](https://github.com/BabylonJS/Babylon.js/pull/806) ([RaananW](https://github.com/RaananW))
     - Added scene onPointerMove public callback. [PR](https://github.com/BabylonJS/Babylon.js/pull/810) ([RaananW](https://github.com/RaananW))
     - Added streaming support for BABYLON.Sound ([davrous](https://github.com/davrous))
+    - Added collisionsEnabled and workerCollisions for serialization [PR](https://github.com/BabylonJS/Babylon.js/pull/830) ([Dad72](https://github.com/dad72))
   - **Bug fixes**
     - Fixed a bug with spherical mapping ([deltakosh](https://github.com/deltakosh)) 
     - Fixed a bug with clone and createInstance which was forcing the recomputation of bounding boxes ([deltakosh](https://github.com/deltakosh)) 

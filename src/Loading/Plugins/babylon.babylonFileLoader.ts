@@ -119,7 +119,11 @@
         return fresnelParameters;
     }
 
-    var parseMaterial = (parsedMaterial, scene, rootUrl) => {
+    var parseCustomMaterial = (parsedMaterial, scene, rootUrl): Material => {
+        return null;
+    }
+
+    var parseStandardMaterial = (parsedMaterial, scene, rootUrl): Material => {
         var material;
         material = new BABYLON.StandardMaterial(parsedMaterial.name, scene);
 
@@ -198,6 +202,14 @@
 
         return material;
     };
+
+    var parseMaterial = (parsedMaterial, scene, rootUrl): Material => {
+        if (!parsedMaterial.customType) {
+            return parseStandardMaterial(parsedMaterial, scene, rootUrl);
+        }
+
+        return parseCustomMaterial(parsedMaterial, scene, rootUrl);
+    }
 
     var parseMaterialById = (id, parsedData, scene, rootUrl) => {
         for (var index = 0; index < parsedData.materials.length; index++) {
@@ -1402,7 +1414,8 @@
             var loadedSkeletonsIds = [];
             var loadedMaterialsIds = [];
             var hierarchyIds = [];
-            for (var index = 0; index < parsedData.meshes.length; index++) {
+            var index: number;
+            for (index = 0; index < parsedData.meshes.length; index++) {
                 var parsedMesh = parsedData.meshes[index];
 
                 if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
@@ -1513,8 +1526,9 @@
             }
 
             // Connecting parents
+            var currentMesh: AbstractMesh;
             for (index = 0; index < scene.meshes.length; index++) {
-                var currentMesh = scene.meshes[index];
+                currentMesh = scene.meshes[index];
                 if (currentMesh._waitingParentId) {
                     currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                     currentMesh._waitingParentId = undefined;
@@ -1523,7 +1537,7 @@
 
             // freeze world matrix application
             for (index = 0; index < scene.meshes.length; index++) {
-                var currentMesh = scene.meshes[index];
+                currentMesh = scene.meshes[index];
                 if (currentMesh._waitingFreezeWorldMatrix) {
                     currentMesh.freezeWorldMatrix();
                     currentMesh._waitingFreezeWorldMatrix = undefined;
@@ -1551,8 +1565,10 @@
             scene.autoClear = parsedData.autoClear;
             scene.clearColor = BABYLON.Color3.FromArray(parsedData.clearColor);
             scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
-            scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
-
+            if (parsedData.gravity) {
+                scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
+            }
+            
             // Fog
             if (parsedData.fogMode && parsedData.fogMode !== 0) {
                 scene.fogMode = parsedData.fogMode;
@@ -1561,9 +1577,29 @@
                 scene.fogEnd = parsedData.fogEnd;
                 scene.fogDensity = parsedData.fogDensity;
             }
+            
+            //Physics
+            if (parsedData.physicsEnabled) {
+                var physicsPlugin;
+                if (parsedData.physicsEngine === "cannon") {
+                    physicsPlugin = new BABYLON.CannonJSPlugin();
+                } else if (parsedData.physicsEngine === "oimo") {
+                    physicsPlugin = new BABYLON.OimoJSPlugin();
+                }
+                //else - default engine, which is currently oimo
+                var physicsGravity = parsedData.physicsGravity ? BABYLON.Vector3.FromArray(parsedData.physicsGravity) : null;
+                scene.enablePhysics(physicsGravity, physicsPlugin);
+            }
+            
+            //collisions, if defined. otherwise, default is true
+            if (parsedData.collisionsEnabled != undefined) {
+                scene.collisionsEnabled = parsedData.collisionsEnabled;
+            }
+            scene.workerCollisions = !!parsedData.workerCollisions;            
 
             // Lights
-            for (var index = 0; index < parsedData.lights.length; index++) {
+            var index: number;
+            for (index = 0; index < parsedData.lights.length; index++) {
                 var parsedLight = parsedData.lights[index];
                 parseLight(parsedLight, scene);
             }
@@ -1770,5 +1806,6 @@
         }
     });
 }
+
 
 

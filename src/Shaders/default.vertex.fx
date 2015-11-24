@@ -128,7 +128,7 @@ varying vec4 vPositionFromLight3;
 varying vec3 vPositionUVW;
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
 varying vec3 vDirectionW;
 #endif
 
@@ -186,7 +186,7 @@ void main(void) {
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
 	vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
 #endif
 
