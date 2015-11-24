@@ -47,5 +47,17 @@
 
             return newTexture;
         }
+
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject = super.serialize();
+
+            serializationObject.mirrorPlane = this.mirrorPlane.asArray();
+
+            return serializationObject;
+        }
     }
 } 

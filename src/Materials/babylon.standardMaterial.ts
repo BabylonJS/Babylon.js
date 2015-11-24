@@ -15,6 +15,18 @@
 
             return new FresnelParameters;
         }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.isEnabled = this.isEnabled;
+            serializationObject.leftColor = this.leftColor;
+            serializationObject.rightColor = this.rightColor;
+            serializationObject.bias = this.bias;
+            serializationObject.power = this.power;
+
+            return serializationObject;
+        }
     }
 
     class StandardMaterialDefines extends MaterialDefines {
@@ -289,7 +301,7 @@
 
             return needNormals;
         }
-        
+
         private static _scaledDiffuse = new Color3();
         private static _scaledSpecular = new Color3();
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
@@ -675,8 +687,8 @@
                     fallbacks.addFallback(4, "FRESNEL");
                 }
 
-                if (this._defines.NUM_BONE_INFLUENCERS > 0){
-                    fallbacks.addCPUSkinningFallback(0, mesh);    
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
@@ -1045,6 +1057,69 @@
             return newStandardMaterial;
         }
 
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.ambient = this.ambientColor.asArray();
+            serializationObject.diffuse = this.diffuseColor.asArray();
+            serializationObject.specular = this.specularColor.asArray();
+            serializationObject.specularPower = this.specularPower;
+            serializationObject.emissive = this.emissiveColor.asArray();
+            serializationObject.useReflectionFresnelFromSpecular = serializationObject.useReflectionFresnelFromSpecular;
+            serializationObject.useEmissiveAsIllumination = serializationObject.useEmissiveAsIllumination;
+
+            if (this.diffuseTexture) {
+                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            }
+
+            if (this.diffuseFresnelParameters) {
+                serializationObject.diffuseFresnelParameters = this.diffuseFresnelParameters.serialize();
+            }
+
+            if (this.ambientTexture) {
+                serializationObject.ambientTexture = this.ambientTexture.serialize();
+            }
+
+            if (this.opacityTexture) {
+                serializationObject.opacityTexture = this.opacityTexture.serialize();
+            }
+
+            if (this.opacityFresnelParameters) {
+                serializationObject.opacityFresnelParameters = this.diffuseFresnelParameters.serialize();
+            }
+
+            if (this.reflectionTexture) {
+                serializationObject.reflectionTexture = this.reflectionTexture.serialize();
+            }
+
+            if (this.reflectionFresnelParameters) {
+                serializationObject.reflectionFresnelParameters = this.reflectionFresnelParameters.serialize();
+            }
+
+            if (this.emissiveTexture) {
+                serializationObject.emissiveTexture = this.emissiveTexture.serialize();
+            }
+
+            if (this.lightmapTexture) {
+                serializationObject.lightmapTexture = this.lightmapTexture.serialize();
+                serializationObject.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
+            }
+
+            if (this.emissiveFresnelParameters) {
+                serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
+            }
+
+            if (this.specularTexture) {
+                serializationObject.specularTexture = this.specularTexture.serialize();
+            }
+
+            if (this.bumpTexture) {
+                serializationObject.bumpTexture = this.bumpTexture.serialize();
+            }
+
+            return serializationObject;
+        }
+
         // Statics
         // Flags used to enable or disable a type of texture for all Standard Materials
         public static DiffuseTextureEnabled = true;
@@ -1097,7 +1172,7 @@
             }
 
             if (source.diffuseFresnelParameters) {
-                material.diffuseFresnelParameters =  StandardMaterial.ParseFresnelParameters(source.diffuseFresnelParameters);
+                material.diffuseFresnelParameters = StandardMaterial.ParseFresnelParameters(source.diffuseFresnelParameters);
             }
 
             if (source.ambientTexture) {

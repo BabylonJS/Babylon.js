@@ -57,6 +57,18 @@ var BABYLON;
         CubeTexture.prototype.getReflectionTextureMatrix = function () {
             return this._textureMatrix;
         };
+        CubeTexture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.hasAlpha = this.hasAlpha;
+            serializationObject.isCube = true;
+            serializationObject.level = this.level;
+            serializationObject.coordinatesMode = this.coordinatesMode;
+            return serializationObject;
+        };
         return CubeTexture;
     })(BABYLON.BaseTexture);
     BABYLON.CubeTexture = CubeTexture;
