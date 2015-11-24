@@ -17,75 +17,7 @@
 
         return colors;
     }
-
-    var loadCubeTexture = (rootUrl, parsedTexture, scene) => {
-        var texture = null;
-        if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
-            texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
-            texture.name = parsedTexture.name;
-            texture.hasAlpha = parsedTexture.hasAlpha;
-            texture.level = parsedTexture.level;
-            texture.coordinatesMode = parsedTexture.coordinatesMode;
-        }
-        return texture;
-    };
-
-    var loadTexture = (rootUrl, parsedTexture, scene) => {
-        if (parsedTexture.isCube) {
-            return loadCubeTexture(rootUrl, parsedTexture, scene);
-        }
-
-        if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
-            return null;
-        }
-
-        var texture;
-
-        if (parsedTexture.mirrorPlane) {
-            texture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-            texture._waitingRenderList = parsedTexture.renderList;
-            texture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
-        } else if (parsedTexture.isRenderTarget) {
-            texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-            texture._waitingRenderList = parsedTexture.renderList;
-        } else {
-            if (parsedTexture.base64String) {
-                texture = BABYLON.Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
-            } else {
-                texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
-            }
-        }
-
-        texture.name = parsedTexture.name;
-        texture.hasAlpha = parsedTexture.hasAlpha;
-        texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
-        texture.level = parsedTexture.level;
-
-        texture.coordinatesIndex = parsedTexture.coordinatesIndex;
-        texture.coordinatesMode = parsedTexture.coordinatesMode;
-        texture.uOffset = parsedTexture.uOffset;
-        texture.vOffset = parsedTexture.vOffset;
-        texture.uScale = parsedTexture.uScale;
-        texture.vScale = parsedTexture.vScale;
-        texture.uAng = parsedTexture.uAng;
-        texture.vAng = parsedTexture.vAng;
-        texture.wAng = parsedTexture.wAng;
-
-        texture.wrapU = parsedTexture.wrapU;
-        texture.wrapV = parsedTexture.wrapV;
-
-        // Animations
-        if (parsedTexture.animations) {
-            for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
-                var parsedAnimation = parsedTexture.animations[animationIndex];
-
-                texture.animations.push(parseAnimation(parsedAnimation));
-            }
-        }
-
-        return texture;
-    };
-
+    
     var parseSkeleton = (parsedSkeleton, scene) => {
         var skeleton = new BABYLON.Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
 
@@ -100,112 +32,20 @@
             var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
 
             if (parsedBone.animation) {
-                bone.animations.push(parseAnimation(parsedBone.animation));
+                bone.animations.push(Animation.ParseAnimation(parsedBone.animation));
             }
         }
 
         return skeleton;
-    };
-
-    var parseFresnelParameters = (parsedFresnelParameters) => {
-        var fresnelParameters = new BABYLON.FresnelParameters();
-
-        fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
-        fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
-        fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
-        fresnelParameters.bias = parsedFresnelParameters.bias;
-        fresnelParameters.power = parsedFresnelParameters.power || 1.0;
-
-        return fresnelParameters;
-    }
+    };    
 
     var parseCustomMaterial = (parsedMaterial, scene, rootUrl): Material => {
         return null;
     }
 
-    var parseStandardMaterial = (parsedMaterial, scene, rootUrl): Material => {
-        var material;
-        material = new BABYLON.StandardMaterial(parsedMaterial.name, scene);
-
-        material.ambientColor = BABYLON.Color3.FromArray(parsedMaterial.ambient);
-        material.diffuseColor = BABYLON.Color3.FromArray(parsedMaterial.diffuse);
-        material.specularColor = BABYLON.Color3.FromArray(parsedMaterial.specular);
-        material.specularPower = parsedMaterial.specularPower;
-        material.emissiveColor = BABYLON.Color3.FromArray(parsedMaterial.emissive);
-        material.useReflectionFresnelFromSpecular = parsedMaterial.useReflectionFresnelFromSpecular;
-        material.useEmissiveAsIllumination = parsedMaterial.useEmissiveAsIllumination;
-
-        material.alpha = parsedMaterial.alpha;
-
-        material.id = parsedMaterial.id;
-
-        if (parsedMaterial.disableDepthWrite) {
-            material.disableDepthWrite = parsedMaterial.disableDepthWrite;
-        }
-
-        BABYLON.Tags.AddTagsTo(material, parsedMaterial.tags);
-        material.backFaceCulling = parsedMaterial.backFaceCulling;
-        material.wireframe = parsedMaterial.wireframe;
-
-        if (parsedMaterial.diffuseTexture) {
-            material.diffuseTexture = loadTexture(rootUrl, parsedMaterial.diffuseTexture, scene);
-        }
-
-        if (parsedMaterial.diffuseFresnelParameters) {
-            material.diffuseFresnelParameters = parseFresnelParameters(parsedMaterial.diffuseFresnelParameters);
-        }
-
-        if (parsedMaterial.ambientTexture) {
-            material.ambientTexture = loadTexture(rootUrl, parsedMaterial.ambientTexture, scene);
-        }
-
-        if (parsedMaterial.opacityTexture) {
-            material.opacityTexture = loadTexture(rootUrl, parsedMaterial.opacityTexture, scene);
-        }
-
-        if (parsedMaterial.opacityFresnelParameters) {
-            material.opacityFresnelParameters = parseFresnelParameters(parsedMaterial.opacityFresnelParameters);
-        }
-
-        if (parsedMaterial.reflectionTexture) {
-            material.reflectionTexture = loadTexture(rootUrl, parsedMaterial.reflectionTexture, scene);
-        }
-
-        if (parsedMaterial.reflectionFresnelParameters) {
-            material.reflectionFresnelParameters = parseFresnelParameters(parsedMaterial.reflectionFresnelParameters);
-        }
-
-        if (parsedMaterial.emissiveTexture) {
-            material.emissiveTexture = loadTexture(rootUrl, parsedMaterial.emissiveTexture, scene);
-        }
-
-        if (parsedMaterial.lightmapTexture) {
-            material.lightmapTexture = loadTexture(rootUrl, parsedMaterial.lightmapTexture, scene);
-            material.lightmapThreshold = parsedMaterial.lightmapThreshold;
-        }
-
-        if (parsedMaterial.emissiveFresnelParameters) {
-            material.emissiveFresnelParameters = parseFresnelParameters(parsedMaterial.emissiveFresnelParameters);
-        }
-
-        if (parsedMaterial.specularTexture) {
-            material.specularTexture = loadTexture(rootUrl, parsedMaterial.specularTexture, scene);
-        }
-
-        if (parsedMaterial.bumpTexture) {
-            material.bumpTexture = loadTexture(rootUrl, parsedMaterial.bumpTexture, scene);
-        }
-
-        if (parsedMaterial.checkReadyOnlyOnce) {
-            material.checkReadyOnlyOnce = parsedMaterial.checkReadyOnlyOnce;
-        }
-
-        return material;
-    };
-
     var parseMaterial = (parsedMaterial, scene, rootUrl): Material => {
         if (!parsedMaterial.customType) {
-            return parseStandardMaterial(parsedMaterial, scene, rootUrl);
+            return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
         }
 
         return parseCustomMaterial(parsedMaterial, scene, rootUrl);
@@ -322,43 +162,6 @@
         return shadowGenerator;
     };
 
-    var parseAnimation = parsedAnimation => {
-        var animation = new BABYLON.Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
-
-        var dataType = parsedAnimation.dataType;
-        var keys = [];
-        for (var index = 0; index < parsedAnimation.keys.length; index++) {
-            var key = parsedAnimation.keys[index];
-
-            var data;
-
-            switch (dataType) {
-                case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
-                    data = key.values[0];
-                    break;
-                case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
-                    data = BABYLON.Quaternion.FromArray(key.values);
-                    break;
-                case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
-                    data = BABYLON.Matrix.FromArray(key.values);
-                    break;
-                case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
-                default:
-                    data = BABYLON.Vector3.FromArray(key.values);
-                    break;
-            }
-
-            keys.push({
-                frame: key.frame,
-                value: data
-            });
-        }
-
-        animation.setKeys(keys);
-
-        return animation;
-    };
-
     var parseLight = (parsedLight, scene) => {
         var light;
 
@@ -412,7 +215,7 @@
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
                 var parsedAnimation = parsedLight.animations[animationIndex];
 
-                light.animations.push(parseAnimation(parsedAnimation));
+                light.animations.push(Animation.ParseAnimation(parsedAnimation));
             }
         }
 
@@ -522,7 +325,7 @@
             for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
                 var parsedAnimation = parsedCamera.animations[animationIndex];
 
-                camera.animations.push(parseAnimation(parsedAnimation));
+                camera.animations.push(Animation.ParseAnimation(parsedAnimation));
             }
         }
 
@@ -852,7 +655,7 @@
             for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                 var parsedAnimation = parsedMesh.animations[animationIndex];
 
-                mesh.animations.push(parseAnimation(parsedAnimation));
+                mesh.animations.push(Animation.ParseAnimation(parsedAnimation));
             }
         }
 
@@ -891,7 +694,7 @@
                     for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                         parsedAnimation = parsedMesh.animations[animationIndex];
 
-                        instance.animations.push(parseAnimation(parsedAnimation));
+                        instance.animations.push(Animation.ParseAnimation(parsedAnimation));
                     }
                 }
             }

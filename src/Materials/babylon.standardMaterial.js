@@ -868,6 +868,74 @@ var BABYLON;
             }
             return newStandardMaterial;
         };
+        StandardMaterial.ParseFresnelParameters = function (parsedFresnelParameters) {
+            var fresnelParameters = new FresnelParameters();
+            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
+            fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
+            fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
+            fresnelParameters.bias = parsedFresnelParameters.bias;
+            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
+            return fresnelParameters;
+        };
+        StandardMaterial.Parse = function (source, scene, rootUrl) {
+            var material = new StandardMaterial(source.name, scene);
+            material.ambientColor = BABYLON.Color3.FromArray(source.ambient);
+            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuse);
+            material.specularColor = BABYLON.Color3.FromArray(source.specular);
+            material.specularPower = source.specularPower;
+            material.emissiveColor = BABYLON.Color3.FromArray(source.emissive);
+            material.useReflectionFresnelFromSpecular = source.useReflectionFresnelFromSpecular;
+            material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
+            material.alpha = source.alpha;
+            material.id = source.id;
+            if (source.disableDepthWrite) {
+                material.disableDepthWrite = source.disableDepthWrite;
+            }
+            BABYLON.Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+            if (source.diffuseTexture) {
+                material.diffuseTexture = BABYLON.BaseTexture.ParseTexture(source.diffuseTexture, scene, rootUrl);
+            }
+            if (source.diffuseFresnelParameters) {
+                material.diffuseFresnelParameters = StandardMaterial.ParseFresnelParameters(source.diffuseFresnelParameters);
+            }
+            if (source.ambientTexture) {
+                material.ambientTexture = BABYLON.BaseTexture.ParseTexture(source.ambientTexture, scene, rootUrl);
+            }
+            if (source.opacityTexture) {
+                material.opacityTexture = BABYLON.BaseTexture.ParseTexture(source.opacityTexture, scene, rootUrl);
+            }
+            if (source.opacityFresnelParameters) {
+                material.opacityFresnelParameters = StandardMaterial.ParseFresnelParameters(source.opacityFresnelParameters);
+            }
+            if (source.reflectionTexture) {
+                material.reflectionTexture = BABYLON.BaseTexture.ParseTexture(source.reflectionTexture, scene, rootUrl);
+            }
+            if (source.reflectionFresnelParameters) {
+                material.reflectionFresnelParameters = StandardMaterial.ParseFresnelParameters(source.reflectionFresnelParameters);
+            }
+            if (source.emissiveTexture) {
+                material.emissiveTexture = BABYLON.BaseTexture.ParseTexture(source.emissiveTexture, scene, rootUrl);
+            }
+            if (source.lightmapTexture) {
+                material.lightmapTexture = BABYLON.BaseTexture.ParseTexture(source.lightmapTexture, scene, rootUrl);
+                material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
+            }
+            if (source.emissiveFresnelParameters) {
+                material.emissiveFresnelParameters = StandardMaterial.ParseFresnelParameters(source.emissiveFresnelParameters);
+            }
+            if (source.specularTexture) {
+                material.specularTexture = BABYLON.BaseTexture.ParseTexture(source.specularTexture, scene, rootUrl);
+            }
+            if (source.bumpTexture) {
+                material.bumpTexture = BABYLON.BaseTexture.ParseTexture(source.bumpTexture, scene, rootUrl);
+            }
+            if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+            return material;
+        };
         StandardMaterial._scaledDiffuse = new BABYLON.Color3();
         StandardMaterial._scaledSpecular = new BABYLON.Color3();
         // Statics
