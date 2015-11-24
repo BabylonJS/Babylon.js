@@ -5,6 +5,13 @@
 	<script src="refs/dat.gui.min.js"></script>
 	<script src="refs/babylon.max.js"></script>
 	<script src="../dist/babylon.fireProceduralTexture.js"></script>
+	<script src="../dist/babylon.woodProceduralTexture.js"></script>
+	<script src="../dist/babylon.cloudProceduralTexture.js"></script>
+	<script src="../dist/babylon.grassProceduralTexture.js"></script>
+	<script src="../dist/babylon.roadProceduralTexture.js"></script>
+	<script src="../dist/babylon.brickProceduralTexture.js"></script>
+	<script src="../dist/babylon.marbleProceduralTexture.js"></script>
+	<script src="../dist/babylon.starfieldProceduralTexture.js"></script>
 
 	<style>
 		html, body {
@@ -39,7 +46,14 @@
 	<canvas id="renderCanvas"></canvas>
 
 	<script src="index.js"></script>
+    <script src="add/addCloudPT.js"></script>
     <script src="add/addFirePT.js"></script>
+    <script src="add/addWoodPT.js"></script>
+    <script src="add/addGrassPT.js"></script>
+    <script src="add/addRoadPT.js"></script>
+    <script src="add/addBrickPT.js"></script>
+    <script src="add/addMarblePT.js"></script>
+    <script src="add/addStarfieldPT.js"></script>
 	<script>
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -154,16 +168,72 @@
                 var firePT = addFirePT();
 				var fireMaterial =  new BABYLON.StandardMaterial("fire", scene);
 				fireMaterial.diffuseTexture = firePT;
+				
+				// Wood Procedural Texture
+                var woodPT = addWoodPT();
+				var woodMaterial =  new BABYLON.StandardMaterial("wood", scene);
+				woodMaterial.diffuseTexture = woodPT;
+				
+				// Cloud Procedural Texture
+                var cloudPT = addCloudPT();
+				var cloudMaterial =  new BABYLON.StandardMaterial("cloud", scene);
+				cloudMaterial.diffuseTexture = cloudPT;
+				
+				// Grass Procedural Texture
+                var grassPT = addGrassPT();
+				var grassMaterial =  new BABYLON.StandardMaterial("grass", scene);
+				grassMaterial.diffuseTexture = grassPT;
+				
+				// Road Procedural Texture
+                var roadPT = addRoadPT();
+				var roadMaterial =  new BABYLON.StandardMaterial("road", scene);
+				roadMaterial.diffuseTexture = roadPT;
+				
+				// Brick Procedural Texture
+                var brickPT = addBrickPT();
+				var brickMaterial =  new BABYLON.StandardMaterial("brick", scene);
+				brickMaterial.diffuseTexture = brickPT;
+				
+				// Marble Procedural Texture
+                var marblePT = addMarblePT();
+				var marbleMaterial =  new BABYLON.StandardMaterial("marble", scene);
+				marbleMaterial.diffuseTexture = marblePT;
+				
+				// Starfield Procedural Texture
+                var starfieldPT = addStarfieldPT();
+				var starfieldMaterial =  new BABYLON.StandardMaterial("starfield", scene);
+			 	starfieldMaterial.diffuseTexture = starfieldPT;
 								
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['none','fire']).onFinishChange(function () {
+				gui.add(options, 'material', ['none', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield']).onFinishChange(function () {
 					switch (options.material) {
 						case "fire":
 							currentMaterial = fireMaterial;
+							break;
+						case "wood":
+							currentMaterial = woodMaterial;
+							break;
+						case "cloud":
+							currentMaterial = cloudMaterial;
+							break;
+						case "grass":
+							currentMaterial = grassMaterial;
+							break;
+						case "road":
+							currentMaterial = roadMaterial;
+							break;
+						case "brick":
+							currentMaterial = brickMaterial;
+							break;
+						case "marble":
+							currentMaterial = marbleMaterial;
+							break;
+						case "starfield":
+							currentMaterial = starfieldMaterial;
 							break;
 						case "none":
 						default:
@@ -197,8 +267,6 @@
 					currentMesh.setEnabled(true);
 					currentMesh.receiveShadows = true;
 					currentMesh.material = currentMaterial;
-					
-					water.mesh = currentMesh;
 				});
 
 				var f1 = gui.addFolder('lights');
