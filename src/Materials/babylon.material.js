@@ -232,12 +232,14 @@ var BABYLON;
             other.pointSize = this.pointSize;
             other.pointsCloud = this.pointsCloud;
         };
-        Material.ParseMaterial = function (parsedMaterial, scene, rootUrl) {
-            if (!parsedMaterial.customType) {
-                return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
-            }
-            //TODO this is where custom materials are inspected and parsed.
-            return null;
+        Material.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.alpha = this.alpha;
+            serializationObject.id = this.id;
+            serializationObject.tags = BABYLON.Tags.GetTags(this);
+            serializationObject.backFaceCulling = this.backFaceCulling;
+            return serializationObject;
         };
         Material._TriangleFillMode = 0;
         Material._WireFrameFillMode = 1;

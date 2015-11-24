@@ -267,6 +267,19 @@
             other.pointsCloud = this.pointsCloud;
         }
 
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.alpha = this.alpha;
+
+            serializationObject.id = this.id;
+            serializationObject.tags = Tags.GetTags(this);
+            serializationObject.backFaceCulling = this.backFaceCulling;
+
+            return serializationObject;
+        }
+
         public static ParseMaterial(parsedMaterial: any, scene: Scene, rootUrl: string) {
             if (!parsedMaterial.customType) {
                 return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
