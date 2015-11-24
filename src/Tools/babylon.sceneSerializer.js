@@ -37,25 +37,6 @@ var BABYLON;
         serializationObject.specular = light.specular.asArray();
         return serializationObject;
     };
-    var serializeFresnelParameter = function (fresnelParameter) {
-        var serializationObject = {};
-        serializationObject.isEnabled = fresnelParameter.isEnabled;
-        serializationObject.leftColor = fresnelParameter.leftColor;
-        serializationObject.rightColor = fresnelParameter.rightColor;
-        serializationObject.bias = fresnelParameter.bias;
-        serializationObject.power = fresnelParameter.power;
-        return serializationObject;
-    };
-    var serializeAnimation;
-    var appendAnimations = function (source, destination) {
-        if (source.animations) {
-            destination.animations = [];
-            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                var animation = source.animations[animationIndex];
-                destination.animations.push(serializeAnimation(animation));
-            }
-        }
-    };
     var serializeCamera = function (camera) {
         var serializationObject = {};
         serializationObject.name = camera.name;
@@ -147,37 +128,9 @@ var BABYLON;
             serializationObject.ellipsoid = camera['ellipsoid'].asArray();
         }
         // Animations
-        appendAnimations(camera, serializationObject);
+        BABYLON.Animation.AppendSerializedAnimations(camera, serializationObject);
         // Layer mask
         serializationObject.layerMask = camera.layerMask;
-        return serializationObject;
-    };
-    serializeAnimation = function (animation) {
-        var serializationObject = {};
-        serializationObject.name = animation.name;
-        serializationObject.property = animation.targetProperty;
-        serializationObject.framePerSecond = animation.framePerSecond;
-        serializationObject.dataType = animation.dataType;
-        serializationObject.loopBehavior = animation.loopMode;
-        var dataType = animation.dataType;
-        serializationObject.keys = [];
-        var keys = animation.getKeys();
-        for (var index = 0; index < keys.length; index++) {
-            var animationKey = keys[index];
-            var key = {};
-            key.frame = animationKey.frame;
-            switch (dataType) {
-                case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
-                    key.values = [animationKey.value];
-                    break;
-                case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
-                case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
-                case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
-                    key.values = animationKey.value.asArray();
-                    break;
-            }
-            serializationObject.keys.push(key);
-        }
         return serializationObject;
     };
     var serializeMultiMaterial = function (material) {
@@ -197,110 +150,6 @@ var BABYLON;
         }
         return serializationObject;
     };
-    var serializeTexture;
-    var serializeMaterial = function (material) {
-        var serializationObject = {};
-        serializationObject.name = material.name;
-        serializationObject.ambient = material.ambientColor.asArray();
-        serializationObject.diffuse = material.diffuseColor.asArray();
-        serializationObject.specular = material.specularColor.asArray();
-        serializationObject.specularPower = material.specularPower;
-        serializationObject.emissive = material.emissiveColor.asArray();
-        serializationObject.useReflectionFresnelFromSpecular = serializationObject.useReflectionFresnelFromSpecular;
-        serializationObject.useEmissiveAsIllumination = serializationObject.useEmissiveAsIllumination;
-        serializationObject.alpha = material.alpha;
-        serializationObject.id = material.id;
-        serializationObject.tags = BABYLON.Tags.GetTags(material);
-        serializationObject.backFaceCulling = material.backFaceCulling;
-        if (material.diffuseTexture) {
-            serializationObject.diffuseTexture = serializeTexture(material.diffuseTexture);
-        }
-        if (material.diffuseFresnelParameters) {
-            serializationObject.diffuseFresnelParameters = serializeFresnelParameter(material.diffuseFresnelParameters);
-        }
-        if (material.ambientTexture) {
-            serializationObject.ambientTexture = serializeTexture(material.ambientTexture);
-        }
-        if (material.opacityTexture) {
-            serializationObject.opacityTexture = serializeTexture(material.opacityTexture);
-        }
-        if (material.opacityFresnelParameters) {
-            serializationObject.opacityFresnelParameters = serializeFresnelParameter(material.opacityFresnelParameters);
-        }
-        if (material.reflectionTexture) {
-            serializationObject.reflectionTexture = serializeTexture(material.reflectionTexture);
-        }
-        if (material.reflectionFresnelParameters) {
-            serializationObject.reflectionFresnelParameters = serializeFresnelParameter(material.reflectionFresnelParameters);
-        }
-        if (material.emissiveTexture) {
-            serializationObject.emissiveTexture = serializeTexture(material.emissiveTexture);
-        }
-        if (material.lightmapTexture) {
-            serializationObject.lightmapTexture = serializeTexture(material.lightmapTexture);
-            serializationObject.useLightmapAsShadowmap = material.useLightmapAsShadowmap;
-        }
-        if (material.emissiveFresnelParameters) {
-            serializationObject.emissiveFresnelParameters = serializeFresnelParameter(material.emissiveFresnelParameters);
-        }
-        if (material.specularTexture) {
-            serializationObject.specularTexture = serializeTexture(material.specularTexture);
-        }
-        if (material.bumpTexture) {
-            serializationObject.bumpTexture = serializeTexture(material.bumpTexture);
-        }
-        return serializationObject;
-    };
-    serializeTexture = function (texture) {
-        var serializationObject = {};
-        if (!texture.name) {
-            return null;
-        }
-        if (texture instanceof BABYLON.CubeTexture) {
-            serializationObject.name = texture.name;
-            serializationObject.hasAlpha = texture.hasAlpha;
-            serializationObject.isCube = true;
-            serializationObject.level = texture.level;
-            serializationObject.coordinatesMode = texture.coordinatesMode;
-            return serializationObject;
-        }
-        var index;
-        if (texture instanceof BABYLON.MirrorTexture) {
-            var mirrorTexture = texture;
-            serializationObject.renderTargetSize = mirrorTexture.getRenderSize();
-            serializationObject.renderList = [];
-            for (index = 0; index < mirrorTexture.renderList.length; index++) {
-                serializationObject.renderList.push(mirrorTexture.renderList[index].id);
-            }
-            serializationObject.mirrorPlane = mirrorTexture.mirrorPlane.asArray();
-        }
-        else if (texture instanceof BABYLON.RenderTargetTexture) {
-            var renderTargetTexture = texture;
-            serializationObject.renderTargetSize = renderTargetTexture.getRenderSize();
-            serializationObject.renderList = [];
-            for (index = 0; index < renderTargetTexture.renderList.length; index++) {
-                serializationObject.renderList.push(renderTargetTexture.renderList[index].id);
-            }
-        }
-        var regularTexture = texture;
-        serializationObject.name = texture.name;
-        serializationObject.hasAlpha = texture.hasAlpha;
-        serializationObject.level = texture.level;
-        serializationObject.coordinatesIndex = texture.coordinatesIndex;
-        serializationObject.coordinatesMode = texture.coordinatesMode;
-        serializationObject.uOffset = regularTexture.uOffset;
-        serializationObject.vOffset = regularTexture.vOffset;
-        serializationObject.uScale = regularTexture.uScale;
-        serializationObject.vScale = regularTexture.vScale;
-        serializationObject.uAng = regularTexture.uAng;
-        serializationObject.vAng = regularTexture.vAng;
-        serializationObject.wAng = regularTexture.wAng;
-        serializationObject.wrapU = texture.wrapU;
-        serializationObject.wrapV = texture.wrapV;
-        // Animations
-        appendAnimations(texture, serializationObject);
-        return serializationObject;
-    };
     var serializeSkeleton = function (skeleton) {
         var serializationObject = {};
         serializationObject.name = skeleton.name;
@@ -315,7 +164,7 @@ var BABYLON;
             };
             serializationObject.bones.push(serializedBone);
             if (bone.animations && bone.animations.length > 0) {
-                serializedBone.animation = serializeAnimation(bone.animations[0]);
+                serializedBone.animation = bone.animations[0].serialize();
             }
         }
         return serializationObject;
@@ -608,10 +457,10 @@ var BABYLON;
             };
             serializationObject.instances.push(serializationInstance);
             // Animations
-            appendAnimations(instance, serializationInstance);
+            BABYLON.Animation.AppendSerializedAnimations(instance, serializationInstance);
         }
         // Animations
-        appendAnimations(mesh, serializationObject);
+        BABYLON.Animation.AppendSerializedAnimations(mesh, serializationObject);
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
         return serializationObject;
@@ -624,7 +473,7 @@ var BABYLON;
                 if (mesh.material instanceof BABYLON.StandardMaterial) {
                     serializationObject.materials = serializationObject.materials || [];
                     if (!serializationObject.materials.some(function (mat) { return (mat.id === mesh.material.id); })) {
-                        serializationObject.materials.push(serializeMaterial(mesh.material));
+                        serializationObject.materials.push(mesh.material.serialize());
                     }
                 }
                 else if (mesh.material instanceof BABYLON.MultiMaterial) {
@@ -710,7 +559,7 @@ var BABYLON;
             var material;
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
-                serializationObject.materials.push(serializeMaterial(material));
+                serializationObject.materials.push(material.serialize());
             }
             // MultiMaterials
             serializationObject.multiMaterials = [];
@@ -721,7 +570,7 @@ var BABYLON;
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
                 if (material instanceof BABYLON.StandardMaterial) {
-                    serializationObject.materials.push(serializeMaterial(material));
+                    serializationObject.materials.push(material.serialize());
                 }
                 else if (material instanceof BABYLON.MultiMaterial) {
                     serializationObject.multiMaterials.push(serializeMultiMaterial(material));

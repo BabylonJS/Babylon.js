@@ -180,6 +180,20 @@ var BABYLON;
             newTexture.wAng = this.wAng;
             return newTexture;
         };
+        Texture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.uOffset = this.uOffset;
+            serializationObject.vOffset = this.vOffset;
+            serializationObject.uScale = this.uScale;
+            serializationObject.vScale = this.vScale;
+            serializationObject.uAng = this.uAng;
+            serializationObject.vAng = this.vAng;
+            serializationObject.wAng = this.wAng;
+            return serializationObject;
+        };
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }

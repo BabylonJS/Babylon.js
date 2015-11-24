@@ -114,6 +114,22 @@ var BABYLON;
                 this.onDispose();
             }
         };
+        BaseTexture.prototype.serialize = function () {
+            var serializationObject = {};
+            if (!this.name) {
+                return null;
+            }
+            serializationObject.name = this.name;
+            serializationObject.hasAlpha = this.hasAlpha;
+            serializationObject.level = this.level;
+            serializationObject.coordinatesIndex = this.coordinatesIndex;
+            serializationObject.coordinatesMode = this.coordinatesMode;
+            serializationObject.wrapU = this.wrapU;
+            serializationObject.wrapV = this.wrapV;
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            return serializationObject;
+        };
         BaseTexture.ParseCubeTexture = function (parsedTexture, scene, rootUrl) {
             var texture = null;
             if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {

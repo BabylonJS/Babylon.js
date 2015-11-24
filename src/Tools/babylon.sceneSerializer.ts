@@ -40,29 +40,6 @@
         return serializationObject;
     };
 
-    var serializeFresnelParameter = (fresnelParameter: FresnelParameters): any => {
-        var serializationObject: any = {};
-
-        serializationObject.isEnabled = fresnelParameter.isEnabled;
-        serializationObject.leftColor = fresnelParameter.leftColor;
-        serializationObject.rightColor = fresnelParameter.rightColor;
-        serializationObject.bias = fresnelParameter.bias;
-        serializationObject.power = fresnelParameter.power;
-
-        return serializationObject;
-    }
-    var serializeAnimation: (animation: Animation) => any;
-    var appendAnimations = (source: IAnimatable, destination: any): any => {
-        if (source.animations) {
-            destination.animations = [];
-            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                var animation = source.animations[animationIndex];
-
-                destination.animations.push(serializeAnimation(animation));
-            }
-        }
-    };
-
     var serializeCamera = (camera: Camera): any => {
         var serializationObject: any = {};
         serializationObject.name = camera.name;
@@ -154,47 +131,14 @@
         }
 
         // Animations
-        appendAnimations(camera, serializationObject);
+        Animation.AppendSerializedAnimations(camera, serializationObject);
 
         // Layer mask
         serializationObject.layerMask = camera.layerMask;
 
         return serializationObject;
     };
-    serializeAnimation = (animation: Animation): any => {
-        var serializationObject: any = {};
 
-        serializationObject.name = animation.name;
-        serializationObject.property = animation.targetProperty;
-        serializationObject.framePerSecond = animation.framePerSecond;
-        serializationObject.dataType = animation.dataType;
-        serializationObject.loopBehavior = animation.loopMode;
-
-        var dataType = animation.dataType;
-        serializationObject.keys = [];
-        var keys = animation.getKeys();
-        for (var index = 0; index < keys.length; index++) {
-            var animationKey = keys[index];
-
-            var key: any = {};
-            key.frame = animationKey.frame;
-
-            switch (dataType) {
-                case Animation.ANIMATIONTYPE_FLOAT:
-                    key.values = [animationKey.value];
-                    break;
-                case Animation.ANIMATIONTYPE_QUATERNION:
-                case Animation.ANIMATIONTYPE_MATRIX:
-                case Animation.ANIMATIONTYPE_VECTOR3:
-                    key.values = animationKey.value.asArray();
-                    break;
-            }
-
-            serializationObject.keys.push(key);
-        }
-
-        return serializationObject;
-    };
     var serializeMultiMaterial = (material: MultiMaterial): any => {
         var serializationObject: any = {};
 
@@ -216,138 +160,7 @@
 
         return serializationObject;
     };
-    var serializeTexture: (texture: BaseTexture) => any;
-    var serializeMaterial = (material: StandardMaterial): any => {
-        var serializationObject: any = {};
-
-        serializationObject.name = material.name;
-
-        serializationObject.ambient = material.ambientColor.asArray();
-        serializationObject.diffuse = material.diffuseColor.asArray();
-        serializationObject.specular = material.specularColor.asArray();
-        serializationObject.specularPower = material.specularPower;
-        serializationObject.emissive = material.emissiveColor.asArray();
-        serializationObject.useReflectionFresnelFromSpecular = serializationObject.useReflectionFresnelFromSpecular;
-        serializationObject.useEmissiveAsIllumination = serializationObject.useEmissiveAsIllumination;
-
-        serializationObject.alpha = material.alpha;
-
-        serializationObject.id = material.id;
-        serializationObject.tags = Tags.GetTags(material);
-        serializationObject.backFaceCulling = material.backFaceCulling;
-
-        if (material.diffuseTexture) {
-            serializationObject.diffuseTexture = serializeTexture(material.diffuseTexture);
-        }
-
-        if (material.diffuseFresnelParameters) {
-            serializationObject.diffuseFresnelParameters = serializeFresnelParameter(material.diffuseFresnelParameters);
-        }
-
-        if (material.ambientTexture) {
-            serializationObject.ambientTexture = serializeTexture(material.ambientTexture);
-        }
-
-        if (material.opacityTexture) {
-            serializationObject.opacityTexture = serializeTexture(material.opacityTexture);
-        }
-
-        if (material.opacityFresnelParameters) {
-            serializationObject.opacityFresnelParameters = serializeFresnelParameter(material.opacityFresnelParameters);
-        }
-
-        if (material.reflectionTexture) {
-            serializationObject.reflectionTexture = serializeTexture(material.reflectionTexture);
-        }
-
-        if (material.reflectionFresnelParameters) {
-            serializationObject.reflectionFresnelParameters = serializeFresnelParameter(material.reflectionFresnelParameters);
-        }
-
-        if (material.emissiveTexture) {
-            serializationObject.emissiveTexture = serializeTexture(material.emissiveTexture);
-        }
-
-        if (material.lightmapTexture) {
-            serializationObject.lightmapTexture = serializeTexture(material.lightmapTexture);
-            serializationObject.useLightmapAsShadowmap = material.useLightmapAsShadowmap;
-        }
-
-        if (material.emissiveFresnelParameters) {
-            serializationObject.emissiveFresnelParameters = serializeFresnelParameter(material.emissiveFresnelParameters);
-        }
-
-        if (material.specularTexture) {
-            serializationObject.specularTexture = serializeTexture(material.specularTexture);
-        }
-
-        if (material.bumpTexture) {
-            serializationObject.bumpTexture = serializeTexture(material.bumpTexture);
-        }
-
-        return serializationObject;
-    };
-    serializeTexture = (texture: BaseTexture): any => {
-        var serializationObject: any = {};
-
-        if (!texture.name) {
-            return null;
-        }
-
-        if (texture instanceof CubeTexture) {
-            serializationObject.name = texture.name;
-            serializationObject.hasAlpha = texture.hasAlpha;
-            serializationObject.isCube = true;
-            serializationObject.level = texture.level;
-            serializationObject.coordinatesMode = texture.coordinatesMode;
-
-            return serializationObject;
-        }
-        var index: number;
-        if (texture instanceof MirrorTexture) {
-            var mirrorTexture = texture;
-            serializationObject.renderTargetSize = mirrorTexture.getRenderSize();
-            serializationObject.renderList = [];
-
-            for (index = 0; index < mirrorTexture.renderList.length; index++) {
-                serializationObject.renderList.push(mirrorTexture.renderList[index].id);
-            }
-
-            serializationObject.mirrorPlane = mirrorTexture.mirrorPlane.asArray();
-        } else if (texture instanceof RenderTargetTexture) {
-            var renderTargetTexture = texture;
-            serializationObject.renderTargetSize = renderTargetTexture.getRenderSize();
-            serializationObject.renderList = [];
-
-            for (index = 0; index < renderTargetTexture.renderList.length; index++) {
-                serializationObject.renderList.push(renderTargetTexture.renderList[index].id);
-            }
-        }
-
-        var regularTexture = <Texture>texture;
-
-        serializationObject.name = texture.name;
-        serializationObject.hasAlpha = texture.hasAlpha;
-        serializationObject.level = texture.level;
-
-        serializationObject.coordinatesIndex = texture.coordinatesIndex;
-        serializationObject.coordinatesMode = texture.coordinatesMode;
-        serializationObject.uOffset = regularTexture.uOffset;
-        serializationObject.vOffset = regularTexture.vOffset;
-        serializationObject.uScale = regularTexture.uScale;
-        serializationObject.vScale = regularTexture.vScale;
-        serializationObject.uAng = regularTexture.uAng;
-        serializationObject.vAng = regularTexture.vAng;
-        serializationObject.wAng = regularTexture.wAng;
-
-        serializationObject.wrapU = texture.wrapU;
-        serializationObject.wrapV = texture.wrapV;
-
-        // Animations
-        appendAnimations(texture, serializationObject);
-
-        return serializationObject;
-    };
+   
     var serializeSkeleton = (skeleton: Skeleton): any => {
         var serializationObject: any = {};
 
@@ -368,7 +181,7 @@
             serializationObject.bones.push(serializedBone);
 
             if (bone.animations && bone.animations.length > 0) {
-                serializedBone.animation = serializeAnimation(bone.animations[0]);
+                serializedBone.animation = bone.animations[0].serialize();
             }
         }
         return serializationObject;
@@ -730,11 +543,11 @@
             serializationObject.instances.push(serializationInstance);
 
             // Animations
-            appendAnimations(instance, serializationInstance);
+            Animation.AppendSerializedAnimations(instance, serializationInstance);
         }
 
         // Animations
-        appendAnimations(mesh, serializationObject);
+        Animation.AppendSerializedAnimations(mesh, serializationObject);
 
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
@@ -750,7 +563,7 @@
                 if (mesh.material instanceof StandardMaterial) {
                     serializationObject.materials = serializationObject.materials || [];
                     if (!serializationObject.materials.some(mat => (mat.id === mesh.material.id))) {
-                        serializationObject.materials.push(serializeMaterial(<StandardMaterial>mesh.material));
+                        serializationObject.materials.push(mesh.material.serialize());
                     }
                 } else if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
@@ -846,7 +659,7 @@
             var material: Material;
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
-                serializationObject.materials.push(serializeMaterial(<StandardMaterial>material));
+                serializationObject.materials.push(material.serialize());
             }
 
             // MultiMaterials
@@ -859,7 +672,7 @@
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
                 if (material instanceof StandardMaterial) {
-                    serializationObject.materials.push(serializeMaterial(material));
+                    serializationObject.materials.push(material.serialize());
                 } else if (material instanceof MultiMaterial) {
                     serializationObject.multiMaterials.push(serializeMultiMaterial(material));
                 }

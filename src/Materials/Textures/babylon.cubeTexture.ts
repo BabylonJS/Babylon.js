@@ -70,5 +70,20 @@
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
+
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject: any = {};
+            serializationObject.name = this.name;
+            serializationObject.hasAlpha = this.hasAlpha;
+            serializationObject.isCube = true;
+            serializationObject.level = this.level;
+            serializationObject.coordinatesMode = this.coordinatesMode;
+
+            return serializationObject;
+        }
     }
 } 

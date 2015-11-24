@@ -145,6 +145,28 @@
             }
         }
 
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            if (!this.name) {
+                return null;
+            }
+            
+            serializationObject.name = this.name;
+            serializationObject.hasAlpha = this.hasAlpha;
+            serializationObject.level = this.level;
+
+            serializationObject.coordinatesIndex = this.coordinatesIndex;
+            serializationObject.coordinatesMode = this.coordinatesMode;
+            serializationObject.wrapU = this.wrapU;
+            serializationObject.wrapV = this.wrapV;
+
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+
+            return serializationObject;
+        }
+
         public static ParseCubeTexture(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = null;
             if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {

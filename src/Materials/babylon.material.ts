@@ -266,5 +266,18 @@
             other.pointSize = this.pointSize;
             other.pointsCloud = this.pointsCloud;
         }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.alpha = this.alpha;
+
+            serializationObject.id = this.id;
+            serializationObject.tags = Tags.GetTags(this);
+            serializationObject.backFaceCulling = this.backFaceCulling;
+
+            return serializationObject;
+        }
     }
 } 

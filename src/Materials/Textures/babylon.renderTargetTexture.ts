@@ -258,5 +258,22 @@
 
             return newTexture;
         }
+
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject = super.serialize();
+
+            serializationObject.renderTargetSize = this.getRenderSize();
+            serializationObject.renderList = [];
+
+            for (var index = 0; index < this.renderList.length; index++) {
+                serializationObject.renderList.push(this.renderList[index].id);
+            }
+
+            return serializationObject;
+        }
     }
 } 

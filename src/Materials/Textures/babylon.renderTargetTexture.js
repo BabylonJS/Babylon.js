@@ -226,6 +226,18 @@ var BABYLON;
             newTexture.renderList = this.renderList.slice(0);
             return newTexture;
         };
+        RenderTargetTexture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.renderTargetSize = this.getRenderSize();
+            serializationObject.renderList = [];
+            for (var index = 0; index < this.renderList.length; index++) {
+                serializationObject.renderList.push(this.renderList[index].id);
+            }
+            return serializationObject;
+        };
         RenderTargetTexture._REFRESHRATE_RENDER_ONCE = 0;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES = 2;

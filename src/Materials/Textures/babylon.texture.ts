@@ -237,6 +237,24 @@
             return newTexture;
         }
 
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject = super.serialize();
+
+            serializationObject.uOffset = this.uOffset;
+            serializationObject.vOffset = this.vOffset;
+            serializationObject.uScale = this.uScale;
+            serializationObject.vScale = this.vScale;
+            serializationObject.uAng = this.uAng;
+            serializationObject.vAng = this.vAng;
+            serializationObject.wAng = this.wAng;
+
+            return serializationObject;
+        }
+
         // Statics
         public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): Texture {
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
