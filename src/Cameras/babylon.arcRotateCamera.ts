@@ -142,7 +142,7 @@
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = evt => {
                     // Manage panning with right click
-                    this._isRightClick = evt.button === 2 ? true : false;
+                    this._isRightClick = evt.button === 2;
 
                     // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
@@ -408,7 +408,7 @@
             }			
 			
             // Inertia
-            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;
@@ -529,7 +529,7 @@
 
                 var up = this.upVector;
                 if (this.allowUpsideDown && this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
 
@@ -567,7 +567,7 @@
 
             var up = this.upVector;
             if (this.allowUpsideDown && this.beta < 0) {
-                var up = up.clone();
+                up = up.clone();
                 up = up.negate();
             }
 
@@ -624,6 +624,7 @@
                     var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                     return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
             }
+            return null;
         }
         
         /**

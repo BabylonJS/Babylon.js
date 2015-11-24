@@ -9,6 +9,19 @@ var BABYLON;
         return AnimationRange;
     })();
     BABYLON.AnimationRange = AnimationRange;
+    /**
+     * Composed of a frame, and an action function
+     */
+    var AnimationEvent = (function () {
+        function AnimationEvent(frame, action, onlyOnce) {
+            this.frame = frame;
+            this.action = action;
+            this.onlyOnce = onlyOnce;
+            this.isDone = false;
+        }
+        return AnimationEvent;
+    })();
+    BABYLON.AnimationEvent = AnimationEvent;
     var Animation = (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode) {
             this.name = name;
@@ -19,6 +32,8 @@ var BABYLON;
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._stopped = false;
+            // The set of event that will be linked to this animation
+            this._events = new Array();
             this.allowMatricesInterpolation = false;
             this._ranges = new Array();
             this.targetPropertyPath = targetProperty.split(".");
@@ -64,7 +79,25 @@ var BABYLON;
             node.animations.push(animation);
             return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
-        // Methods   
+        // Methods
+        /**
+         * Add an event to this animation.
+         */
+        Animation.prototype.addEvent = function (event) {
+            this._events.push(event);
+        };
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        Animation.prototype.removeEvents = function (frame) {
+            for (var index = 0; index < this._events.length; index++) {
+                if (this._events[index].frame === frame) {
+                    this._events.splice(index, 1);
+                    index--;
+                }
+            }
+        };
         Animation.prototype.createRange = function (name, from, to) {
             this._ranges.push(new AnimationRange(name, from, to));
         };
@@ -117,19 +150,7 @@ var BABYLON;
             return BABYLON.Color3.Lerp(startValue, endValue, gradient);
         };
         Animation.prototype.matrixInterpolateFunction = function (startValue, endValue, gradient) {
-            var startScale = new BABYLON.Vector3(0, 0, 0);
-            var startRotation = new BABYLON.Quaternion();
-            var startTranslation = new BABYLON.Vector3(0, 0, 0);
-            startValue.decompose(startScale, startRotation, startTranslation);
-            var endScale = new BABYLON.Vector3(0, 0, 0);
-            var endRotation = new BABYLON.Quaternion();
-            var endTranslation = new BABYLON.Vector3(0, 0, 0);
-            endValue.decompose(endScale, endRotation, endTranslation);
-            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
-            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
-            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
-            var result = BABYLON.Matrix.Compose(resultScale, resultRotation, resultTranslation);
-            return result;
+            return BABYLON.Matrix.Lerp(startValue, endValue, gradient);
         };
         Animation.prototype.clone = function () {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
@@ -356,6 +377,25 @@ var BABYLON;
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
+            // Check events
+            for (var index = 0; index < this._events.length; index++) {
+                if (currentFrame >= this._events[index].frame) {
+                    var event = this._events[index];
+                    if (!event.isDone) {
+                        // If event should be done only once, remove it.
+                        if (event.onlyOnce) {
+                            this._events.splice(index, 1);
+                            index--;
+                        }
+                        event.isDone = true;
+                        event.action();
+                    } // Don't do anything if the event has already be done.
+                }
+                else if (this._events[index].isDone && !this._events[index].onlyOnce) {
+                    // reset event, the animation is looping
+                    this._events[index].isDone = false;
+                }
+            }
             // Set value
             this.setValue(currentValue);
             if (!returnValue) {

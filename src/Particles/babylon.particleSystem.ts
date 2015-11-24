@@ -55,8 +55,8 @@
         public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
         public colorDead = new Color4(0, 0, 0, 1.0);
         public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
-        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
-        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
+        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
         private particles = new Array<Particle>();
 
@@ -115,7 +115,7 @@
             this._vertices = new Float32Array(capacity * this._vertexStrideSize);
 
             // Default behaviors
-            this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3): void => {
+            this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
                 var randX = randomNumber(this.direction1.x, this.direction2.x);
                 var randY = randomNumber(this.direction1.y, this.direction2.y);
                 var randZ = randomNumber(this.direction1.z, this.direction2.z);
@@ -123,7 +123,7 @@
                 Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
             }
 
-            this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3): void => {
+            this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
                 var randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
                 var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
                 var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
@@ -236,14 +236,14 @@
 
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
 
-                this.startDirectionFunction(emitPower, worldMatrix, particle.direction);
+                this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
 
                 particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = randomNumber(this.minSize, this.maxSize);
                 particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
 
-                this.startPositionFunction(worldMatrix, particle.position);
+                this.startPositionFunction(worldMatrix, particle.position, particle);
 
                 var step = randomNumber(0, 1.0);
 
