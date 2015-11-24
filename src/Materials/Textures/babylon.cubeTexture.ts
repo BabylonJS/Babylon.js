@@ -70,5 +70,17 @@
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
+        
+        public static ParseCubeTexture(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
+            var texture = null;
+            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
+                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                texture.name = parsedTexture.name;
+                texture.hasAlpha = parsedTexture.hasAlpha;
+                texture.level = parsedTexture.level;
+                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            }
+            return texture;
+        }
     }
 } 
