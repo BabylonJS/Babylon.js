@@ -466,6 +466,36 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Animation.ParseAnimation = function (parsedAnimation) {
+            var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+            var dataType = parsedAnimation.dataType;
+            var keys = [];
+            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+                var key = parsedAnimation.keys[index];
+                var data;
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        data = key.values[0];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        data = BABYLON.Quaternion.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                        data = BABYLON.Matrix.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    default:
+                        data = BABYLON.Vector3.FromArray(key.values);
+                        break;
+                }
+                keys.push({
+                    frame: key.frame,
+                    value: data
+                });
+            }
+            animation.setKeys(keys);
+            return animation;
+        };
         // Statics
         Animation._ANIMATIONTYPE_FLOAT = 0;
         Animation._ANIMATIONTYPE_VECTOR3 = 1;

@@ -114,6 +114,66 @@ var BABYLON;
                 this.onDispose();
             }
         };
+        BaseTexture.ParseCubeTexture = function (parsedTexture, scene, rootUrl) {
+            var texture = null;
+            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
+                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                texture.name = parsedTexture.name;
+                texture.hasAlpha = parsedTexture.hasAlpha;
+                texture.level = parsedTexture.level;
+                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            }
+            return texture;
+        };
+        BaseTexture.ParseTexture = function (parsedTexture, scene, rootUrl) {
+            if (parsedTexture.isCube) {
+                return BaseTexture.ParseCubeTexture(parsedTexture, scene, rootUrl);
+            }
+            if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+                return null;
+            }
+            var texture;
+            if (parsedTexture.mirrorPlane) {
+                texture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                texture._waitingRenderList = parsedTexture.renderList;
+                texture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
+            }
+            else if (parsedTexture.isRenderTarget) {
+                texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                texture._waitingRenderList = parsedTexture.renderList;
+            }
+            else {
+                if (parsedTexture.base64String) {
+                    texture = BABYLON.Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                }
+                else {
+                    texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
+                }
+            }
+            texture.name = parsedTexture.name;
+            texture.hasAlpha = parsedTexture.hasAlpha;
+            texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
+            texture.level = parsedTexture.level;
+            texture.coordinatesIndex = parsedTexture.coordinatesIndex;
+            texture.coordinatesMode = parsedTexture.coordinatesMode;
+            texture.uOffset = parsedTexture.uOffset;
+            texture.vOffset = parsedTexture.vOffset;
+            texture.uScale = parsedTexture.uScale;
+            texture.vScale = parsedTexture.vScale;
+            texture.uAng = parsedTexture.uAng;
+            texture.vAng = parsedTexture.vAng;
+            texture.wAng = parsedTexture.wAng;
+            texture.wrapU = parsedTexture.wrapU;
+            texture.wrapV = parsedTexture.wrapV;
+            // Animations
+            if (parsedTexture.animations) {
+                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedTexture.animations[animationIndex];
+                    texture.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                }
+            }
+            return texture;
+        };
         return BaseTexture;
     })();
     BABYLON.BaseTexture = BaseTexture;

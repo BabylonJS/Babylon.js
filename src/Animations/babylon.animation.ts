@@ -514,6 +514,43 @@
         public static get ANIMATIONLOOPMODE_CONSTANT(): number {
             return Animation._ANIMATIONLOOPMODE_CONSTANT;
         }
+
+        public static ParseAnimation(parsedAnimation: any): Animation {
+            var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+
+            var dataType = parsedAnimation.dataType;
+            var keys = [];
+            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+                var key = parsedAnimation.keys[index];
+
+                var data;
+
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        data = key.values[0];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        data = Quaternion.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                        data = Matrix.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    default:
+                        data = Vector3.FromArray(key.values);
+                        break;
+                }
+
+                keys.push({
+                    frame: key.frame,
+                    value: data
+                });
+            }
+
+            animation.setKeys(keys);
+
+            return animation;
+        }
     }
 } 
 

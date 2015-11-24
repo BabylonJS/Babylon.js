@@ -16389,6 +16389,66 @@ var BABYLON;
                 this.onDispose();
             }
         };
+        BaseTexture.ParseCubeTexture = function (parsedTexture, scene, rootUrl) {
+            var texture = null;
+            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
+                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                texture.name = parsedTexture.name;
+                texture.hasAlpha = parsedTexture.hasAlpha;
+                texture.level = parsedTexture.level;
+                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            }
+            return texture;
+        };
+        BaseTexture.ParseTexture = function (parsedTexture, scene, rootUrl) {
+            if (parsedTexture.isCube) {
+                return BaseTexture.ParseCubeTexture(parsedTexture, scene, rootUrl);
+            }
+            if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+                return null;
+            }
+            var texture;
+            if (parsedTexture.mirrorPlane) {
+                texture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                texture._waitingRenderList = parsedTexture.renderList;
+                texture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
+            }
+            else if (parsedTexture.isRenderTarget) {
+                texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                texture._waitingRenderList = parsedTexture.renderList;
+            }
+            else {
+                if (parsedTexture.base64String) {
+                    texture = BABYLON.Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                }
+                else {
+                    texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
+                }
+            }
+            texture.name = parsedTexture.name;
+            texture.hasAlpha = parsedTexture.hasAlpha;
+            texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
+            texture.level = parsedTexture.level;
+            texture.coordinatesIndex = parsedTexture.coordinatesIndex;
+            texture.coordinatesMode = parsedTexture.coordinatesMode;
+            texture.uOffset = parsedTexture.uOffset;
+            texture.vOffset = parsedTexture.vOffset;
+            texture.uScale = parsedTexture.uScale;
+            texture.vScale = parsedTexture.vScale;
+            texture.uAng = parsedTexture.uAng;
+            texture.vAng = parsedTexture.vAng;
+            texture.wAng = parsedTexture.wAng;
+            texture.wrapU = parsedTexture.wrapU;
+            texture.wrapV = parsedTexture.wrapV;
+            // Animations
+            if (parsedTexture.animations) {
+                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedTexture.animations[animationIndex];
+                    texture.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                }
+            }
+            return texture;
+        };
         return BaseTexture;
     })();
     BABYLON.BaseTexture = BaseTexture;
@@ -19000,6 +19060,74 @@ var BABYLON;
             }
             return newStandardMaterial;
         };
+        StandardMaterial.ParseFresnelParameters = function (parsedFresnelParameters) {
+            var fresnelParameters = new FresnelParameters();
+            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
+            fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
+            fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
+            fresnelParameters.bias = parsedFresnelParameters.bias;
+            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
+            return fresnelParameters;
+        };
+        StandardMaterial.Parse = function (source, scene, rootUrl) {
+            var material = new StandardMaterial(source.name, scene);
+            material.ambientColor = BABYLON.Color3.FromArray(source.ambient);
+            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuse);
+            material.specularColor = BABYLON.Color3.FromArray(source.specular);
+            material.specularPower = source.specularPower;
+            material.emissiveColor = BABYLON.Color3.FromArray(source.emissive);
+            material.useReflectionFresnelFromSpecular = source.useReflectionFresnelFromSpecular;
+            material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
+            material.alpha = source.alpha;
+            material.id = source.id;
+            if (source.disableDepthWrite) {
+                material.disableDepthWrite = source.disableDepthWrite;
+            }
+            BABYLON.Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+            if (source.diffuseTexture) {
+                material.diffuseTexture = BABYLON.BaseTexture.ParseTexture(source.diffuseTexture, scene, rootUrl);
+            }
+            if (source.diffuseFresnelParameters) {
+                material.diffuseFresnelParameters = StandardMaterial.ParseFresnelParameters(source.diffuseFresnelParameters);
+            }
+            if (source.ambientTexture) {
+                material.ambientTexture = BABYLON.BaseTexture.ParseTexture(source.ambientTexture, scene, rootUrl);
+            }
+            if (source.opacityTexture) {
+                material.opacityTexture = BABYLON.BaseTexture.ParseTexture(source.opacityTexture, scene, rootUrl);
+            }
+            if (source.opacityFresnelParameters) {
+                material.opacityFresnelParameters = StandardMaterial.ParseFresnelParameters(source.opacityFresnelParameters);
+            }
+            if (source.reflectionTexture) {
+                material.reflectionTexture = BABYLON.BaseTexture.ParseTexture(source.reflectionTexture, scene, rootUrl);
+            }
+            if (source.reflectionFresnelParameters) {
+                material.reflectionFresnelParameters = StandardMaterial.ParseFresnelParameters(source.reflectionFresnelParameters);
+            }
+            if (source.emissiveTexture) {
+                material.emissiveTexture = BABYLON.BaseTexture.ParseTexture(source.emissiveTexture, scene, rootUrl);
+            }
+            if (source.lightmapTexture) {
+                material.lightmapTexture = BABYLON.BaseTexture.ParseTexture(source.lightmapTexture, scene, rootUrl);
+                material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
+            }
+            if (source.emissiveFresnelParameters) {
+                material.emissiveFresnelParameters = StandardMaterial.ParseFresnelParameters(source.emissiveFresnelParameters);
+            }
+            if (source.specularTexture) {
+                material.specularTexture = BABYLON.BaseTexture.ParseTexture(source.specularTexture, scene, rootUrl);
+            }
+            if (source.bumpTexture) {
+                material.bumpTexture = BABYLON.BaseTexture.ParseTexture(source.bumpTexture, scene, rootUrl);
+            }
+            if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+            return material;
+        };
         StandardMaterial._scaledDiffuse = new BABYLON.Color3();
         StandardMaterial._scaledSpecular = new BABYLON.Color3();
         // Statics
@@ -19261,66 +19389,6 @@ var BABYLON;
             }
             return colors;
         };
-        var loadCubeTexture = function (rootUrl, parsedTexture, scene) {
-            var texture = null;
-            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
-                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
-                texture.name = parsedTexture.name;
-                texture.hasAlpha = parsedTexture.hasAlpha;
-                texture.level = parsedTexture.level;
-                texture.coordinatesMode = parsedTexture.coordinatesMode;
-            }
-            return texture;
-        };
-        var loadTexture = function (rootUrl, parsedTexture, scene) {
-            if (parsedTexture.isCube) {
-                return loadCubeTexture(rootUrl, parsedTexture, scene);
-            }
-            if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
-                return null;
-            }
-            var texture;
-            if (parsedTexture.mirrorPlane) {
-                texture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-                texture._waitingRenderList = parsedTexture.renderList;
-                texture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
-            }
-            else if (parsedTexture.isRenderTarget) {
-                texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-                texture._waitingRenderList = parsedTexture.renderList;
-            }
-            else {
-                if (parsedTexture.base64String) {
-                    texture = BABYLON.Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
-                }
-                else {
-                    texture = new BABYLON.Texture(rootUrl + parsedTexture.name, scene);
-                }
-            }
-            texture.name = parsedTexture.name;
-            texture.hasAlpha = parsedTexture.hasAlpha;
-            texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
-            texture.level = parsedTexture.level;
-            texture.coordinatesIndex = parsedTexture.coordinatesIndex;
-            texture.coordinatesMode = parsedTexture.coordinatesMode;
-            texture.uOffset = parsedTexture.uOffset;
-            texture.vOffset = parsedTexture.vOffset;
-            texture.uScale = parsedTexture.uScale;
-            texture.vScale = parsedTexture.vScale;
-            texture.uAng = parsedTexture.uAng;
-            texture.vAng = parsedTexture.vAng;
-            texture.wAng = parsedTexture.wAng;
-            texture.wrapU = parsedTexture.wrapU;
-            texture.wrapV = parsedTexture.wrapV;
-            // Animations
-            if (parsedTexture.animations) {
-                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
-                    var parsedAnimation = parsedTexture.animations[animationIndex];
-                    texture.animations.push(parseAnimation(parsedAnimation));
-                }
-            }
-            return texture;
-        };
         var parseSkeleton = function (parsedSkeleton, scene) {
             var skeleton = new BABYLON.Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
             for (var index = 0; index < parsedSkeleton.bones.length; index++) {
@@ -19331,86 +19399,17 @@ var BABYLON;
                 }
                 var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
                 if (parsedBone.animation) {
-                    bone.animations.push(parseAnimation(parsedBone.animation));
+                    bone.animations.push(BABYLON.Animation.ParseAnimation(parsedBone.animation));
                 }
             }
             return skeleton;
         };
-        var parseFresnelParameters = function (parsedFresnelParameters) {
-            var fresnelParameters = new BABYLON.FresnelParameters();
-            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
-            fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
-            fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
-            fresnelParameters.bias = parsedFresnelParameters.bias;
-            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
-            return fresnelParameters;
-        };
         var parseCustomMaterial = function (parsedMaterial, scene, rootUrl) {
             return null;
         };
-        var parseStandardMaterial = function (parsedMaterial, scene, rootUrl) {
-            var material;
-            material = new BABYLON.StandardMaterial(parsedMaterial.name, scene);
-            material.ambientColor = BABYLON.Color3.FromArray(parsedMaterial.ambient);
-            material.diffuseColor = BABYLON.Color3.FromArray(parsedMaterial.diffuse);
-            material.specularColor = BABYLON.Color3.FromArray(parsedMaterial.specular);
-            material.specularPower = parsedMaterial.specularPower;
-            material.emissiveColor = BABYLON.Color3.FromArray(parsedMaterial.emissive);
-            material.useReflectionFresnelFromSpecular = parsedMaterial.useReflectionFresnelFromSpecular;
-            material.useEmissiveAsIllumination = parsedMaterial.useEmissiveAsIllumination;
-            material.alpha = parsedMaterial.alpha;
-            material.id = parsedMaterial.id;
-            if (parsedMaterial.disableDepthWrite) {
-                material.disableDepthWrite = parsedMaterial.disableDepthWrite;
-            }
-            BABYLON.Tags.AddTagsTo(material, parsedMaterial.tags);
-            material.backFaceCulling = parsedMaterial.backFaceCulling;
-            material.wireframe = parsedMaterial.wireframe;
-            if (parsedMaterial.diffuseTexture) {
-                material.diffuseTexture = loadTexture(rootUrl, parsedMaterial.diffuseTexture, scene);
-            }
-            if (parsedMaterial.diffuseFresnelParameters) {
-                material.diffuseFresnelParameters = parseFresnelParameters(parsedMaterial.diffuseFresnelParameters);
-            }
-            if (parsedMaterial.ambientTexture) {
-                material.ambientTexture = loadTexture(rootUrl, parsedMaterial.ambientTexture, scene);
-            }
-            if (parsedMaterial.opacityTexture) {
-                material.opacityTexture = loadTexture(rootUrl, parsedMaterial.opacityTexture, scene);
-            }
-            if (parsedMaterial.opacityFresnelParameters) {
-                material.opacityFresnelParameters = parseFresnelParameters(parsedMaterial.opacityFresnelParameters);
-            }
-            if (parsedMaterial.reflectionTexture) {
-                material.reflectionTexture = loadTexture(rootUrl, parsedMaterial.reflectionTexture, scene);
-            }
-            if (parsedMaterial.reflectionFresnelParameters) {
-                material.reflectionFresnelParameters = parseFresnelParameters(parsedMaterial.reflectionFresnelParameters);
-            }
-            if (parsedMaterial.emissiveTexture) {
-                material.emissiveTexture = loadTexture(rootUrl, parsedMaterial.emissiveTexture, scene);
-            }
-            if (parsedMaterial.lightmapTexture) {
-                material.lightmapTexture = loadTexture(rootUrl, parsedMaterial.lightmapTexture, scene);
-                material.lightmapThreshold = parsedMaterial.lightmapThreshold;
-            }
-            if (parsedMaterial.emissiveFresnelParameters) {
-                material.emissiveFresnelParameters = parseFresnelParameters(parsedMaterial.emissiveFresnelParameters);
-            }
-            if (parsedMaterial.specularTexture) {
-                material.specularTexture = loadTexture(rootUrl, parsedMaterial.specularTexture, scene);
-            }
-            if (parsedMaterial.bumpTexture) {
-                material.bumpTexture = loadTexture(rootUrl, parsedMaterial.bumpTexture, scene);
-            }
-            if (parsedMaterial.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = parsedMaterial.checkReadyOnlyOnce;
-            }
-            return material;
-        };
         var parseMaterial = function (parsedMaterial, scene, rootUrl) {
             if (!parsedMaterial.customType) {
-                return parseStandardMaterial(parsedMaterial, scene, rootUrl);
+                return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
             return parseCustomMaterial(parsedMaterial, scene, rootUrl);
         };
@@ -19505,36 +19504,6 @@ var BABYLON;
             }
             return shadowGenerator;
         };
-        var parseAnimation = function (parsedAnimation) {
-            var animation = new BABYLON.Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
-            var dataType = parsedAnimation.dataType;
-            var keys = [];
-            for (var index = 0; index < parsedAnimation.keys.length; index++) {
-                var key = parsedAnimation.keys[index];
-                var data;
-                switch (dataType) {
-                    case BABYLON.Animation.ANIMATIONTYPE_FLOAT:
-                        data = key.values[0];
-                        break;
-                    case BABYLON.Animation.ANIMATIONTYPE_QUATERNION:
-                        data = BABYLON.Quaternion.FromArray(key.values);
-                        break;
-                    case BABYLON.Animation.ANIMATIONTYPE_MATRIX:
-                        data = BABYLON.Matrix.FromArray(key.values);
-                        break;
-                    case BABYLON.Animation.ANIMATIONTYPE_VECTOR3:
-                    default:
-                        data = BABYLON.Vector3.FromArray(key.values);
-                        break;
-                }
-                keys.push({
-                    frame: key.frame,
-                    value: data
-                });
-            }
-            animation.setKeys(keys);
-            return animation;
-        };
         var parseLight = function (parsedLight, scene) {
             var light;
             switch (parsedLight.type) {
@@ -19577,7 +19546,7 @@ var BABYLON;
             if (parsedLight.animations) {
                 for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
                     var parsedAnimation = parsedLight.animations[animationIndex];
-                    light.animations.push(parseAnimation(parsedAnimation));
+                    light.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
                 }
             }
             if (parsedLight.autoAnimate) {
@@ -19676,7 +19645,7 @@ var BABYLON;
             if (parsedCamera.animations) {
                 for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
                     var parsedAnimation = parsedCamera.animations[animationIndex];
-                    camera.animations.push(parseAnimation(parsedAnimation));
+                    camera.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
                 }
             }
             if (parsedCamera.autoAnimate) {
@@ -19925,7 +19894,7 @@ var BABYLON;
             if (parsedMesh.animations) {
                 for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                     var parsedAnimation = parsedMesh.animations[animationIndex];
-                    mesh.animations.push(parseAnimation(parsedAnimation));
+                    mesh.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
                 }
             }
             if (parsedMesh.autoAnimate) {
@@ -19956,7 +19925,7 @@ var BABYLON;
                     if (parsedMesh.animations) {
                         for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                             parsedAnimation = parsedMesh.animations[animationIndex];
-                            instance.animations.push(parseAnimation(parsedAnimation));
+                            instance.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
                         }
                     }
                 }
@@ -21926,6 +21895,36 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Animation.ParseAnimation = function (parsedAnimation) {
+            var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+            var dataType = parsedAnimation.dataType;
+            var keys = [];
+            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+                var key = parsedAnimation.keys[index];
+                var data;
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        data = key.values[0];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        data = BABYLON.Quaternion.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                        data = BABYLON.Matrix.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    default:
+                        data = BABYLON.Vector3.FromArray(key.values);
+                        break;
+                }
+                keys.push({
+                    frame: key.frame,
+                    value: data
+                });
+            }
+            animation.setKeys(keys);
+            return animation;
+        };
         // Statics
         Animation._ANIMATIONTYPE_FLOAT = 0;
         Animation._ANIMATIONTYPE_VECTOR3 = 1;
