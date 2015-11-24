@@ -2,21 +2,6 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
-        var checkColors4 = function (colors, count) {
-            // Check if color3 was used
-            if (colors.length === count * 3) {
-                var colors4 = [];
-                for (var index = 0; index < colors.length; index += 3) {
-                    var newIndex = (index / 3) * 4;
-                    colors4[newIndex] = colors[index];
-                    colors4[newIndex + 1] = colors[index + 1];
-                    colors4[newIndex + 2] = colors[index + 2];
-                    colors4[newIndex + 3] = 1.0;
-                }
-                return colors4;
-            }
-            return colors;
-        };
         var parseMaterialById = function (id, parsedData, scene, rootUrl) {
             for (var index = 0; index < parsedData.materials.length; index++) {
                 var parsedMaterial = parsedData.materials[index];
@@ -25,192 +10,6 @@ var BABYLON;
                 }
             }
             return null;
-        };
-        var parseGeometry = function (parsedGeometry, scene) {
-            var id = parsedGeometry.id;
-            return scene.getGeometryByID(id);
-        };
-        var parseActions = function (parsedActions, object, scene) {
-            var actionManager = new BABYLON.ActionManager(scene);
-            if (object === null)
-                scene.actionManager = actionManager;
-            else
-                object.actionManager = actionManager;
-            // instanciate a new object
-            var instanciate = function (name, params) {
-                var newInstance = Object.create(BABYLON[name].prototype);
-                newInstance.constructor.apply(newInstance, params);
-                return newInstance;
-            };
-            var parseParameter = function (name, value, target, propertyPath) {
-                if (propertyPath === null) {
-                    // String, boolean or float
-                    var floatValue = parseFloat(value);
-                    if (value === "true" || value === "false")
-                        return value === "true";
-                    else
-                        return isNaN(floatValue) ? value : floatValue;
-                }
-                var effectiveTarget = propertyPath.split(".");
-                var values = value.split(",");
-                // Get effective Target
-                for (var i = 0; i < effectiveTarget.length; i++) {
-                    target = target[effectiveTarget[i]];
-                }
-                // Return appropriate value with its type
-                if (typeof (target) === "boolean")
-                    return values[0] === "true";
-                if (typeof (target) === "string")
-                    return values[0];
-                // Parameters with multiple values such as Vector3 etc.
-                var split = new Array();
-                for (var i = 0; i < values.length; i++)
-                    split.push(parseFloat(values[i]));
-                if (target instanceof BABYLON.Vector3)
-                    return BABYLON.Vector3.FromArray(split);
-                if (target instanceof BABYLON.Vector4)
-                    return BABYLON.Vector4.FromArray(split);
-                if (target instanceof BABYLON.Color3)
-                    return BABYLON.Color3.FromArray(split);
-                if (target instanceof BABYLON.Color4)
-                    return BABYLON.Color4.FromArray(split);
-                return parseFloat(values[0]);
-            };
-            // traverse graph per trigger
-            var traverse = function (parsedAction, trigger, condition, action, combineArray) {
-                if (combineArray === void 0) { combineArray = null; }
-                if (parsedAction.detached)
-                    return;
-                var parameters = new Array();
-                var target = null;
-                var propertyPath = null;
-                var combine = parsedAction.combine && parsedAction.combine.length > 0;
-                // Parameters
-                if (parsedAction.type === 2)
-                    parameters.push(actionManager);
-                else
-                    parameters.push(trigger);
-                if (combine) {
-                    var actions = new Array();
-                    for (var j = 0; j < parsedAction.combine.length; j++) {
-                        traverse(parsedAction.combine[j], BABYLON.ActionManager.NothingTrigger, condition, action, actions);
-                    }
-                    parameters.push(actions);
-                }
-                else {
-                    for (var i = 0; i < parsedAction.properties.length; i++) {
-                        var value = parsedAction.properties[i].value;
-                        var name = parsedAction.properties[i].name;
-                        var targetType = parsedAction.properties[i].targetType;
-                        if (name === "target")
-                            if (targetType !== null && targetType === "SceneProperties")
-                                value = target = scene;
-                            else
-                                value = target = scene.getNodeByName(value);
-                        else if (name === "parent")
-                            value = scene.getNodeByName(value);
-                        else if (name === "sound")
-                            value = scene.getSoundByName(value);
-                        else if (name !== "propertyPath") {
-                            if (parsedAction.type === 2 && name === "operator")
-                                value = BABYLON.ValueCondition[value];
-                            else
-                                value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
-                        }
-                        else {
-                            propertyPath = value;
-                        }
-                        parameters.push(value);
-                    }
-                }
-                if (combineArray === null) {
-                    parameters.push(condition);
-                }
-                else {
-                    parameters.push(null);
-                }
-                // If interpolate value action
-                if (parsedAction.name === "InterpolateValueAction") {
-                    var param = parameters[parameters.length - 2];
-                    parameters[parameters.length - 1] = param;
-                    parameters[parameters.length - 2] = condition;
-                }
-                // Action or condition(s) and not CombineAction
-                var newAction = instanciate(parsedAction.name, parameters);
-                if (newAction instanceof BABYLON.Condition && condition !== null) {
-                    var nothing = new BABYLON.DoNothingAction(trigger, condition);
-                    if (action)
-                        action.then(nothing);
-                    else
-                        actionManager.registerAction(nothing);
-                    action = nothing;
-                }
-                if (combineArray === null) {
-                    if (newAction instanceof BABYLON.Condition) {
-                        condition = newAction;
-                        newAction = action;
-                    }
-                    else {
-                        condition = null;
-                        if (action)
-                            action.then(newAction);
-                        else
-                            actionManager.registerAction(newAction);
-                    }
-                }
-                else {
-                    combineArray.push(newAction);
-                }
-                for (var i = 0; i < parsedAction.children.length; i++)
-                    traverse(parsedAction.children[i], trigger, condition, newAction, null);
-            };
-            // triggers
-            for (var i = 0; i < parsedActions.children.length; i++) {
-                var triggerParams;
-                var trigger = parsedActions.children[i];
-                if (trigger.properties.length > 0) {
-                    var param = trigger.properties[0].value;
-                    var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
-                    triggerParams = { trigger: BABYLON.ActionManager[trigger.name], parameter: value };
-                }
-                else
-                    triggerParams = BABYLON.ActionManager[trigger.name];
-                for (var j = 0; j < trigger.children.length; j++) {
-                    if (!trigger.detached)
-                        traverse(trigger.children[j], triggerParams, null, null);
-                }
-            }
-        };
-        var parseSound = function (parsedSound, scene, rootUrl) {
-            var soundName = parsedSound.name;
-            var soundUrl = rootUrl + soundName;
-            var options = {
-                autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
-                spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
-                rolloffFactor: parsedSound.rolloffFactor,
-                refDistance: parsedSound.refDistance,
-                distanceModel: parsedSound.distanceModel,
-                playbackRate: parsedSound.playbackRate
-            };
-            var newSound = new BABYLON.Sound(soundName, soundUrl, scene, function () { scene._removePendingData(newSound); }, options);
-            scene._addPendingData(newSound);
-            if (parsedSound.position) {
-                var soundPosition = BABYLON.Vector3.FromArray(parsedSound.position);
-                newSound.setPosition(soundPosition);
-            }
-            if (parsedSound.isDirectional) {
-                newSound.setDirectionalCone(parsedSound.coneInnerAngle || 360, parsedSound.coneOuterAngle || 360, parsedSound.coneOuterGain || 0);
-                if (parsedSound.localDirectionToMesh) {
-                    var localDirectionToMesh = BABYLON.Vector3.FromArray(parsedSound.localDirectionToMesh);
-                    newSound.setLocalDirectionToMesh(localDirectionToMesh);
-                }
-            }
-            if (parsedSound.connectedMeshId) {
-                var connectedMesh = scene.getMeshByID(parsedSound.connectedMeshId);
-                if (connectedMesh) {
-                    newSound.attachToMesh(connectedMesh);
-                }
-            }
         };
         var isDescendantOf = function (mesh, names, hierarchyIds) {
             names = (names instanceof Array) ? names : [names];
@@ -524,7 +323,7 @@ var BABYLON;
                     for (index = 0; index < parsedData.sounds.length; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            parseSound(parsedSound, scene, rootUrl);
+                            BABYLON.Sound.ParseSound(parsedSound, scene, rootUrl);
                         }
                         else {
                             var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
@@ -539,7 +338,7 @@ var BABYLON;
                         mesh._waitingParentId = undefined;
                     }
                     if (mesh._waitingActions) {
-                        parseActions(mesh._waitingActions, mesh, scene);
+                        BABYLON.ActionManager.ParseActions(mesh._waitingActions, mesh, scene);
                         mesh._waitingActions = undefined;
                     }
                 }
@@ -574,7 +373,7 @@ var BABYLON;
                 }
                 // Actions (scene)
                 if (parsedData.actions) {
-                    parseActions(parsedData.actions, null, scene);
+                    BABYLON.ActionManager.ParseActions(parsedData.actions, null, scene);
                 }
                 // Finish
                 return true;
