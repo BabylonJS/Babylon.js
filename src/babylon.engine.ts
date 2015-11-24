@@ -1070,7 +1070,7 @@
             this._cachedIndexBuffer = null;
         }
 
-        public createIndexBuffer(indices: number[]): WebGLBuffer {
+        public createIndexBuffer(indices: number[] | Int32Array): WebGLBuffer {
             var vbo = this._gl.createBuffer();
             this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, vbo);
 

@@ -34,361 +34,6 @@
         return scene.getGeometryByID(id);
     };
 
-    var parseBox = (parsedBox, scene) => {
-        if (parseGeometry(parsedBox, scene)) {
-            return null; // null since geometry could be something else than a box...
-        }
-
-        var box = new BABYLON.Geometry.Primitives.Box(parsedBox.id, scene, parsedBox.size, parsedBox.canBeRegenerated, null);
-        BABYLON.Tags.AddTagsTo(box, parsedBox.tags);
-
-        scene.pushGeometry(box, true);
-
-        return box;
-    };
-
-    var parseSphere = (parsedSphere, scene) => {
-        if (parseGeometry(parsedSphere, scene)) {
-            return null; // null since geometry could be something else than a sphere...
-        }
-
-        var sphere = new BABYLON.Geometry.Primitives.Sphere(parsedSphere.id, scene, parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
-        BABYLON.Tags.AddTagsTo(sphere, parsedSphere.tags);
-
-        scene.pushGeometry(sphere, true);
-
-        return sphere;
-    };
-
-    var parseCylinder = (parsedCylinder, scene) => {
-        if (parseGeometry(parsedCylinder, scene)) {
-            return null; // null since geometry could be something else than a cylinder...
-        }
-
-        var cylinder = new BABYLON.Geometry.Primitives.Cylinder(parsedCylinder.id, scene, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.subdivisions, parsedCylinder.canBeRegenerated, null);
-        BABYLON.Tags.AddTagsTo(cylinder, parsedCylinder.tags);
-
-        scene.pushGeometry(cylinder, true);
-
-        return cylinder;
-    };
-
-    var parseTorus = (parsedTorus, scene) => {
-        if (parseGeometry(parsedTorus, scene)) {
-            return null; // null since geometry could be something else than a torus...
-        }
-
-        var torus = new BABYLON.Geometry.Primitives.Torus(parsedTorus.id, scene, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
-        BABYLON.Tags.AddTagsTo(torus, parsedTorus.tags);
-
-        scene.pushGeometry(torus, true);
-
-        return torus;
-    };
-
-    var parseGround = (parsedGround, scene) => {
-        if (parseGeometry(parsedGround, scene)) {
-            return null; // null since geometry could be something else than a ground...
-        }
-
-        var ground = new BABYLON.Geometry.Primitives.Ground(parsedGround.id, scene, parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
-        BABYLON.Tags.AddTagsTo(ground, parsedGround.tags);
-
-        scene.pushGeometry(ground, true);
-
-        return ground;
-    };
-
-    var parsePlane = (parsedPlane, scene) => {
-        if (parseGeometry(parsedPlane, scene)) {
-            return null; // null since geometry could be something else than a plane...
-        }
-
-        var plane = new BABYLON.Geometry.Primitives.Plane(parsedPlane.id, scene, parsedPlane.size, parsedPlane.canBeRegenerated, null);
-        BABYLON.Tags.AddTagsTo(plane, parsedPlane.tags);
-
-        scene.pushGeometry(plane, true);
-
-        return plane;
-    };
-
-    var parseTorusKnot = (parsedTorusKnot, scene) => {
-        if (parseGeometry(parsedTorusKnot, scene)) {
-            return null; // null since geometry could be something else than a torusKnot...
-        }
-
-        var torusKnot = new BABYLON.Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
-        BABYLON.Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
-
-        scene.pushGeometry(torusKnot, true);
-
-        return torusKnot;
-    };
-
-    var parseVertexData = (parsedVertexData, scene, rootUrl) => {
-        if (parseGeometry(parsedVertexData, scene)) {
-            return null; // null since geometry could be a primitive
-        }
-
-        var geometry = new BABYLON.Geometry(parsedVertexData.id, scene);
-
-        BABYLON.Tags.AddTagsTo(geometry, parsedVertexData.tags);
-
-        if (parsedVertexData.delayLoadingFile) {
-            geometry.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
-            geometry.delayLoadingFile = rootUrl + parsedVertexData.delayLoadingFile;
-            geometry._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Vector3.FromArray(parsedVertexData.boundingBoxMinimum), BABYLON.Vector3.FromArray(parsedVertexData.boundingBoxMaximum));
-
-            geometry._delayInfo = [];
-            if (parsedVertexData.hasUVs) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.UVKind);
-            }
-
-            if (parsedVertexData.hasUVs2) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.UV2Kind);
-            }
-
-            if (parsedVertexData.hasUVs3) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.UV3Kind);
-            }
-
-            if (parsedVertexData.hasUVs4) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.UV4Kind);
-            }
-
-            if (parsedVertexData.hasUVs5) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.UV5Kind);
-            }
-
-            if (parsedVertexData.hasUVs6) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.UV6Kind);
-            }
-
-            if (parsedVertexData.hasColors) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.ColorKind);
-            }
-
-            if (parsedVertexData.hasMatricesIndices) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.MatricesIndicesKind);
-            }
-
-            if (parsedVertexData.hasMatricesWeights) {
-                geometry._delayInfo.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-            }
-
-            geometry._delayLoadingFunction = importVertexData;
-        } else {
-            importVertexData(parsedVertexData, geometry);
-        }
-
-        scene.pushGeometry(geometry, true);
-
-        return geometry;
-    };
-
-    var parseMesh = (parsedMesh, scene, rootUrl) => {
-        var mesh = new BABYLON.Mesh(parsedMesh.name, scene);
-        mesh.id = parsedMesh.id;
-
-        BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
-
-        mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
-
-        if (parsedMesh.rotationQuaternion) {
-            mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedMesh.rotationQuaternion);
-        } else if (parsedMesh.rotation) {
-            mesh.rotation = BABYLON.Vector3.FromArray(parsedMesh.rotation);
-        }
-
-        mesh.scaling = BABYLON.Vector3.FromArray(parsedMesh.scaling);
-
-        if (parsedMesh.localMatrix) {
-            mesh.setPivotMatrix(BABYLON.Matrix.FromArray(parsedMesh.localMatrix));
-        } else if (parsedMesh.pivotMatrix) {
-            mesh.setPivotMatrix(BABYLON.Matrix.FromArray(parsedMesh.pivotMatrix));
-        }
-
-        mesh.setEnabled(parsedMesh.isEnabled);
-        mesh.isVisible = parsedMesh.isVisible;
-        mesh.infiniteDistance = parsedMesh.infiniteDistance;
-
-        mesh.showBoundingBox = parsedMesh.showBoundingBox;
-        mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
-
-        if (parsedMesh.applyFog !== undefined) {
-            mesh.applyFog = parsedMesh.applyFog;
-        }
-
-        if (parsedMesh.pickable !== undefined) {
-            mesh.isPickable = parsedMesh.pickable;
-        }
-
-        if (parsedMesh.alphaIndex !== undefined) {
-            mesh.alphaIndex = parsedMesh.alphaIndex;
-        }
-
-        mesh.receiveShadows = parsedMesh.receiveShadows;
-
-        mesh.billboardMode = parsedMesh.billboardMode;
-
-        if (parsedMesh.visibility !== undefined) {
-            mesh.visibility = parsedMesh.visibility;
-        }
-
-        mesh.checkCollisions = parsedMesh.checkCollisions;
-        mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
-
-        // freezeWorldMatrix
-        if (parsedMesh.freezeWorldMatrix) {
-            mesh._waitingFreezeWorldMatrix = parsedMesh.freezeWorldMatrix;
-        }
-
-        // Parent
-        if (parsedMesh.parentId) {
-            mesh._waitingParentId = parsedMesh.parentId;
-        }
-
-        // Actions
-        if (parsedMesh.actions !== undefined) {
-            mesh._waitingActions = parsedMesh.actions;
-        }
-
-        // Geometry
-        mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
-
-        if (parsedMesh.delayLoadingFile) {
-            mesh.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
-            mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
-            mesh._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Vector3.FromArray(parsedMesh.boundingBoxMinimum), BABYLON.Vector3.FromArray(parsedMesh.boundingBoxMaximum));
-
-            if (parsedMesh._binaryInfo) {
-                mesh._binaryInfo = parsedMesh._binaryInfo;
-            }
-
-            mesh._delayInfo = [];
-            if (parsedMesh.hasUVs) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.UVKind);
-            }
-
-            if (parsedMesh.hasUVs2) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.UV2Kind);
-            }
-
-            if (parsedMesh.hasUVs3) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.UV3Kind);
-            }
-
-            if (parsedMesh.hasUVs4) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.UV4Kind);
-            }
-
-            if (parsedMesh.hasUVs5) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.UV5Kind);
-            }
-
-            if (parsedMesh.hasUVs6) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.UV6Kind);
-            }
-
-            if (parsedMesh.hasColors) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.ColorKind);
-            }
-
-            if (parsedMesh.hasMatricesIndices) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.MatricesIndicesKind);
-            }
-
-            if (parsedMesh.hasMatricesWeights) {
-                mesh._delayInfo.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-            }
-
-            mesh._delayLoadingFunction = importGeometry;
-
-            if (BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental) {
-                mesh._checkDelayState();
-            }
-
-        } else {
-            importGeometry(parsedMesh, mesh);
-        }
-
-        // Material
-        if (parsedMesh.materialId) {
-            mesh.setMaterialByID(parsedMesh.materialId);
-        } else {
-            mesh.material = null;
-        }
-
-        // Skeleton
-        if (parsedMesh.skeletonId > -1) {
-            mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
-            if (parsedMesh.numBoneInfluencers) {
-                mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
-            }
-        }
-
-        // Physics
-        if (parsedMesh.physicsImpostor) {
-            if (!scene.isPhysicsEnabled()) {
-                scene.enablePhysics();
-            }
-
-            mesh.setPhysicsState({ impostor: parsedMesh.physicsImpostor, mass: parsedMesh.physicsMass, friction: parsedMesh.physicsFriction, restitution: parsedMesh.physicsRestitution });
-        }
-
-        // Animations
-        if (parsedMesh.animations) {
-            for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
-                var parsedAnimation = parsedMesh.animations[animationIndex];
-
-                mesh.animations.push(Animation.ParseAnimation(parsedAnimation));
-            }
-        }
-
-        if (parsedMesh.autoAnimate) {
-            scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
-        }
-
-        // Layer Mask
-        if (parsedMesh.layerMask && (!isNaN(parsedMesh.layerMask))) {
-            mesh.layerMask = Math.abs(parseInt(parsedMesh.layerMask));
-        } else {
-            mesh.layerMask = 0x0FFFFFFF;
-        }
-
-        // Instances
-        if (parsedMesh.instances) {
-            for (var index = 0; index < parsedMesh.instances.length; index++) {
-                var parsedInstance = parsedMesh.instances[index];
-                var instance = mesh.createInstance(parsedInstance.name);
-
-                BABYLON.Tags.AddTagsTo(instance, parsedInstance.tags);
-
-                instance.position = BABYLON.Vector3.FromArray(parsedInstance.position);
-
-                if (parsedInstance.rotationQuaternion) {
-                    instance.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedInstance.rotationQuaternion);
-                } else if (parsedInstance.rotation) {
-                    instance.rotation = BABYLON.Vector3.FromArray(parsedInstance.rotation);
-                }
-
-                instance.scaling = BABYLON.Vector3.FromArray(parsedInstance.scaling);
-
-                instance.checkCollisions = mesh.checkCollisions;
-
-                if (parsedMesh.animations) {
-                    for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
-                        parsedAnimation = parsedMesh.animations[animationIndex];
-
-                        instance.animations.push(Animation.ParseAnimation(parsedAnimation));
-                    }
-                }
-            }
-        }
-
-        return mesh;
-    };
-
     var parseActions = (parsedActions: any, object: AbstractMesh, scene: Scene) => {
         var actionManager = new BABYLON.ActionManager(scene);
         if (object === null)
@@ -621,280 +266,6 @@
         return false;
     };
 
-    var importVertexData = (parsedVertexData, geometry) => {
-        var vertexData = new BABYLON.VertexData();
-
-        // positions
-        var positions = parsedVertexData.positions;
-        if (positions) {
-            vertexData.set(positions, BABYLON.VertexBuffer.PositionKind);
-        }
-
-        // normals
-        var normals = parsedVertexData.normals;
-        if (normals) {
-            vertexData.set(normals, BABYLON.VertexBuffer.NormalKind);
-        }
-
-        // uvs
-        var uvs = parsedVertexData.uvs;
-        if (uvs) {
-            vertexData.set(uvs, BABYLON.VertexBuffer.UVKind);
-        }
-
-        // uv2s
-        var uv2s = parsedVertexData.uv2s;
-        if (uv2s) {
-            vertexData.set(uv2s, BABYLON.VertexBuffer.UV2Kind);
-        }
-
-        // uv3s
-        var uv3s = parsedVertexData.uv3s;
-        if (uv3s) {
-            vertexData.set(uv3s, BABYLON.VertexBuffer.UV3Kind);
-        }
-
-        // uv4s
-        var uv4s = parsedVertexData.uv4s;
-        if (uv4s) {
-            vertexData.set(uv4s, BABYLON.VertexBuffer.UV4Kind);
-        }
-
-        // uv5s
-        var uv5s = parsedVertexData.uv5s;
-        if (uv5s) {
-            vertexData.set(uv5s, BABYLON.VertexBuffer.UV5Kind);
-        }
-
-        // uv6s
-        var uv6s = parsedVertexData.uv6s;
-        if (uv6s) {
-            vertexData.set(uv6s, BABYLON.VertexBuffer.UV6Kind);
-        }
-
-        // colors
-        var colors = parsedVertexData.colors;
-        if (colors) {
-            vertexData.set(checkColors4(colors, positions.length / 3), BABYLON.VertexBuffer.ColorKind);
-        }
-
-        // matricesIndices
-        var matricesIndices = parsedVertexData.matricesIndices;
-        if (matricesIndices) {
-            vertexData.set(matricesIndices, BABYLON.VertexBuffer.MatricesIndicesKind);
-        }
-
-        // matricesWeights
-        var matricesWeights = parsedVertexData.matricesWeights;
-        if (matricesWeights) {
-            vertexData.set(matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind);
-        }
-
-        // indices
-        var indices = parsedVertexData.indices;
-        if (indices) {
-            vertexData.indices = indices;
-        }
-
-        geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
-    };
-
-    var importGeometry = (parsedGeometry, mesh) => {
-        var scene = mesh.getScene();
-
-        // Geometry
-        var geometryId = parsedGeometry.geometryId;
-        if (geometryId) {
-            var geometry = scene.getGeometryByID(geometryId);
-            if (geometry) {
-                geometry.applyToMesh(mesh);
-            }
-        } else if (parsedGeometry instanceof ArrayBuffer) {
-
-            var binaryInfo = mesh._binaryInfo;
-
-            if (binaryInfo.positionsAttrDesc && binaryInfo.positionsAttrDesc.count > 0) {
-                var positionsData = new Float32Array(parsedGeometry, binaryInfo.positionsAttrDesc.offset, binaryInfo.positionsAttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, positionsData, false);
-            }
-
-            if (binaryInfo.normalsAttrDesc && binaryInfo.normalsAttrDesc.count > 0) {
-                var normalsData = new Float32Array(parsedGeometry, binaryInfo.normalsAttrDesc.offset, binaryInfo.normalsAttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, normalsData, false);
-            }
-
-            if (binaryInfo.uvsAttrDesc && binaryInfo.uvsAttrDesc.count > 0) {
-                var uvsData = new Float32Array(parsedGeometry, binaryInfo.uvsAttrDesc.offset, binaryInfo.uvsAttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.UVKind, uvsData, false);
-            }
-
-            if (binaryInfo.uvs2AttrDesc && binaryInfo.uvs2AttrDesc.count > 0) {
-                var uvs2Data = new Float32Array(parsedGeometry, binaryInfo.uvs2AttrDesc.offset, binaryInfo.uvs2AttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, uvs2Data, false);
-            }
-
-            if (binaryInfo.uvs3AttrDesc && binaryInfo.uvs3AttrDesc.count > 0) {
-                var uvs3Data = new Float32Array(parsedGeometry, binaryInfo.uvs3AttrDesc.offset, binaryInfo.uvs3AttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV3Kind, uvs3Data, false);
-            }
-
-            if (binaryInfo.uvs4AttrDesc && binaryInfo.uvs4AttrDesc.count > 0) {
-                var uvs4Data = new Float32Array(parsedGeometry, binaryInfo.uvs4AttrDesc.offset, binaryInfo.uvs4AttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV4Kind, uvs4Data, false);
-            }
-
-            if (binaryInfo.uvs5AttrDesc && binaryInfo.uvs5AttrDesc.count > 0) {
-                var uvs5Data = new Float32Array(parsedGeometry, binaryInfo.uvs5AttrDesc.offset, binaryInfo.uvs5AttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV5Kind, uvs5Data, false);
-            }
-
-            if (binaryInfo.uvs6AttrDesc && binaryInfo.uvs6AttrDesc.count > 0) {
-                var uvs6Data = new Float32Array(parsedGeometry, binaryInfo.uvs6AttrDesc.offset, binaryInfo.uvs6AttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV6Kind, uvs6Data, false);
-            }
-
-            if (binaryInfo.colorsAttrDesc && binaryInfo.colorsAttrDesc.count > 0) {
-                var colorsData = new Float32Array(parsedGeometry, binaryInfo.colorsAttrDesc.offset, binaryInfo.colorsAttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colorsData, false, binaryInfo.colorsAttrDesc.stride);
-            }
-
-            if (binaryInfo.matricesIndicesAttrDesc && binaryInfo.matricesIndicesAttrDesc.count > 0) {
-                var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesAttrDesc.offset, binaryInfo.matricesIndicesAttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, matricesIndicesData, false);
-            }
-
-            if (binaryInfo.matricesWeightsAttrDesc && binaryInfo.matricesWeightsAttrDesc.count > 0) {
-                var matricesWeightsData = new Float32Array(parsedGeometry, binaryInfo.matricesWeightsAttrDesc.offset, binaryInfo.matricesWeightsAttrDesc.count);
-                mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, matricesWeightsData, false);
-            }
-
-            if (binaryInfo.indicesAttrDesc && binaryInfo.indicesAttrDesc.count > 0) {
-                var indicesData = new Int32Array(parsedGeometry, binaryInfo.indicesAttrDesc.offset, binaryInfo.indicesAttrDesc.count);
-                mesh.setIndices(indicesData);
-            }
-
-            if (binaryInfo.subMeshesAttrDesc && binaryInfo.subMeshesAttrDesc.count > 0) {
-                var subMeshesData = new Int32Array(parsedGeometry, binaryInfo.subMeshesAttrDesc.offset, binaryInfo.subMeshesAttrDesc.count * 5);
-
-                mesh.subMeshes = [];
-                for (var i = 0; i < binaryInfo.subMeshesAttrDesc.count; i++) {
-                    var materialIndex = subMeshesData[(i * 5) + 0];
-                    var verticesStart = subMeshesData[(i * 5) + 1];
-                    var verticesCount = subMeshesData[(i * 5) + 2];
-                    var indexStart = subMeshesData[(i * 5) + 3];
-                    var indexCount = subMeshesData[(i * 5) + 4];
-
-                    var subMesh = new BABYLON.SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
-                }
-            }
-        } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
-            mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, parsedGeometry.positions, false);
-            mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, parsedGeometry.normals, false);
-
-            if (parsedGeometry.uvs) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.UVKind, parsedGeometry.uvs, false);
-            }
-
-            if (parsedGeometry.uvs2) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, parsedGeometry.uvs2, false);
-            }
-
-            if (parsedGeometry.uvs3) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV3Kind, parsedGeometry.uvs3, false);
-            }
-
-            if (parsedGeometry.uvs4) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV4Kind, parsedGeometry.uvs4, false);
-            }
-
-            if (parsedGeometry.uvs5) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV5Kind, parsedGeometry.uvs5, false);
-            }
-
-            if (parsedGeometry.uvs6) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.UV6Kind, parsedGeometry.uvs6, false);
-            }
-
-            if (parsedGeometry.colors) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, checkColors4(parsedGeometry.colors, parsedGeometry.positions.length / 3), false);
-            }
-
-            if (parsedGeometry.matricesIndices) {
-                if (!parsedGeometry.matricesIndices._isExpanded) {
-                    var floatIndices = [];
-
-                    for (var i = 0; i < parsedGeometry.matricesIndices.length; i++) {
-                        var matricesIndex = parsedGeometry.matricesIndices[i];
-
-                        floatIndices.push(matricesIndex & 0x000000FF);
-                        floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
-                        floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
-                    }
-
-                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, floatIndices, false);
-                } else {
-                    delete parsedGeometry.matricesIndices._isExpanded;
-                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind, parsedGeometry.matricesIndices, false);
-                }
-            }
-
-            if (parsedGeometry.matricesIndicesExtra) {
-                if (!parsedGeometry.matricesIndicesExtra._isExpanded) {
-                    var floatIndices = [];
-
-                    for (var i = 0; i < parsedGeometry.matricesIndicesExtra.length; i++) {
-                        var matricesIndex = parsedGeometry.matricesIndicesExtra[i];
-
-                        floatIndices.push(matricesIndex & 0x000000FF);
-                        floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
-                        floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
-                    }
-
-                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, floatIndices, false);
-                } else {
-                    delete parsedGeometry.matricesIndices._isExpanded;
-                    mesh.setVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind, parsedGeometry.matricesIndicesExtra, false);
-                }
-            }
-
-            if (parsedGeometry.matricesWeights) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, false);
-            }
-
-            if (parsedGeometry.matricesWeightsExtra) {
-                mesh.setVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, false);
-            }
-
-            mesh.setIndices(parsedGeometry.indices);
-        }
-
-        // SubMeshes
-        if (parsedGeometry.subMeshes) {
-            mesh.subMeshes = [];
-            for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
-                var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
-
-                var subMesh = new BABYLON.SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
-            }
-        }
-
-        // Flat shading
-        if (mesh._shouldGenerateFlatShading) {
-            mesh.convertToFlatShadedMesh();
-            delete mesh._shouldGenerateFlatShading;
-        }
-
-        // Update
-        mesh.computeWorldMatrix(true);
-
-        // Octree
-        if (scene._selectionOctree) {
-            scene._selectionOctree.addMesh(mesh);
-        }
-    };
-
     BABYLON.SceneLoader.RegisterPlugin({
         extensions: ".babylon",
         importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean => {
@@ -927,28 +298,28 @@
                                         if (parsedGeometryData.id == parsedMesh.geometryId) {
                                             switch (geometryType) {
                                                 case "boxes":
-                                                    parseBox(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Box.ParseBox(parsedGeometryData, scene);
                                                     break;
                                                 case "spheres":
-                                                    parseSphere(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Sphere.ParseSphere(parsedGeometryData, scene);
                                                     break;
                                                 case "cylinders":
-                                                    parseCylinder(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Cylinder.ParseCylinder(parsedGeometryData, scene);
                                                     break;
                                                 case "toruses":
-                                                    parseTorus(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Torus.ParseTorus(parsedGeometryData, scene);
                                                     break;
                                                 case "grounds":
-                                                    parseGround(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Ground.ParseGround(parsedGeometryData, scene);
                                                     break;
                                                 case "planes":
-                                                    parsePlane(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Plane.ParsePlane(parsedGeometryData, scene);
                                                     break;
                                                 case "torusKnots":
-                                                    parseTorusKnot(parsedGeometryData, scene);
+                                                    Geometry.Primitives.TorusKnot.ParseTorusKnot(parsedGeometryData, scene);
                                                     break;
                                                 case "vertexData":
-                                                    parseVertexData(parsedGeometryData, scene, rootUrl);
+                                                    Geometry.ParseGeometry(parsedGeometryData, scene, rootUrl);
                                                     break;
                                             }
                                             found = true;
@@ -1009,7 +380,7 @@
                         }
                     }
 
-                    var mesh = parseMesh(parsedMesh, scene, rootUrl);
+                    var mesh = mesh.ParseMesh(parsedMesh, scene, rootUrl);
                     meshes.push(mesh);
                 }
             }
@@ -1124,7 +495,7 @@
                 if (boxes) {
                     for (index = 0; index < boxes.length; index++) {
                         var parsedBox = boxes[index];
-                        parseBox(parsedBox, scene);
+                        Geometry.Primitives.Box.ParseBox(parsedBox, scene);
                     }
                 }
 
@@ -1133,7 +504,7 @@
                 if (spheres) {
                     for (index = 0; index < spheres.length; index++) {
                         var parsedSphere = spheres[index];
-                        parseSphere(parsedSphere, scene);
+                        Geometry.Primitives.Sphere.ParseSphere(parsedSphere, scene);
                     }
                 }
 
@@ -1142,7 +513,7 @@
                 if (cylinders) {
                     for (index = 0; index < cylinders.length; index++) {
                         var parsedCylinder = cylinders[index];
-                        parseCylinder(parsedCylinder, scene);
+                        Geometry.Primitives.Cylinder.ParseCylinder(parsedCylinder, scene);
                     }
                 }
 
@@ -1151,7 +522,7 @@
                 if (toruses) {
                     for (index = 0; index < toruses.length; index++) {
                         var parsedTorus = toruses[index];
-                        parseTorus(parsedTorus, scene);
+                        Geometry.Primitives.Torus.ParseTorus(parsedTorus, scene);
                     }
                 }
 
@@ -1160,7 +531,7 @@
                 if (grounds) {
                     for (index = 0; index < grounds.length; index++) {
                         var parsedGround = grounds[index];
-                        parseGround(parsedGround, scene);
+                        Geometry.Primitives.Ground.ParseGround(parsedGround, scene);
                     }
                 }
 
@@ -1169,7 +540,7 @@
                 if (planes) {
                     for (index = 0; index < planes.length; index++) {
                         var parsedPlane = planes[index];
-                        parsePlane(parsedPlane, scene);
+                        Geometry.Primitives.Plane.ParsePlane(parsedPlane, scene);
                     }
                 }
 
@@ -1178,7 +549,7 @@
                 if (torusKnots) {
                     for (index = 0; index < torusKnots.length; index++) {
                         var parsedTorusKnot = torusKnots[index];
-                        parseTorusKnot(parsedTorusKnot, scene);
+                        Geometry.Primitives.TorusKnot.ParseTorusKnot(parsedTorusKnot, scene);
                     }
                 }
 
@@ -1187,7 +558,7 @@
                 if (vertexData) {
                     for (index = 0; index < vertexData.length; index++) {
                         var parsedVertexData = vertexData[index];
-                        parseVertexData(parsedVertexData, scene, rootUrl);
+                        Geometry.ParseGeometry(parsedVertexData, scene, rootUrl);
                     }
                 }
             }
@@ -1195,7 +566,7 @@
             // Meshes
             for (index = 0; index < parsedData.meshes.length; index++) {
                 var parsedMesh = parsedData.meshes[index];
-                parseMesh(parsedMesh, scene, rootUrl);
+                Mesh.ParseMesh(parsedMesh, scene, rootUrl);
             }
 
             // Cameras

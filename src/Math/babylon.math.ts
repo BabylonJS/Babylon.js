@@ -322,6 +322,24 @@
         public static FromInts(r: number, g: number, b: number, a: number): Color4 {
             return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
         }
+
+        public static CheckColors4(colors: number[], count: number): number[] {
+            // Check if color3 was used
+            if (colors.length === count * 3) {
+                var colors4 = [];
+                for (var index = 0; index < colors.length; index += 3) {
+                    var newIndex = (index / 3) * 4;
+                    colors4[newIndex] = colors[index];
+                    colors4[newIndex + 1] = colors[index + 1];
+                    colors4[newIndex + 2] = colors[index + 2];
+                    colors4[newIndex + 3] = 1.0;
+                }
+
+                return colors4;
+            }
+
+            return colors;
+        }
     }
 
     export class Vector2 {
@@ -2429,7 +2447,7 @@
             var resultTranslation = Vector3.Lerp(startTranslation, endTranslation, gradient);
 
             return Matrix.Compose(resultScale, resultRotation, resultTranslation);
-        }    
+        }
 
         public static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
             var result = Matrix.Zero();

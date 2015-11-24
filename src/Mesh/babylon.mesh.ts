@@ -150,8 +150,8 @@
         /**
          * Add a mesh as LOD level triggered at the given distance.
          * @param {number} distance - the distance from the center of the object to show this level
-         * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
-         * @return {BABYLON.Mesh} this mesh (for chaining)
+         * @param {Mesh} mesh - the mesh to be added as LOD level
+         * @return {Mesh} this mesh (for chaining)
          */
         public addLODLevel(distance: number, mesh: Mesh): Mesh {
             if (mesh && mesh._masterMesh) {
@@ -184,8 +184,8 @@
 
         /**
          * Remove a mesh from the LOD array
-         * @param {BABYLON.Mesh} mesh - the mesh to be removed.
-         * @return {BABYLON.Mesh} this mesh (for chaining)
+         * @param {Mesh} mesh - the mesh to be removed.
+         * @return {Mesh} this mesh (for chaining)
          */
         public removeLODLevel(mesh: Mesh): Mesh {
 
@@ -293,7 +293,7 @@
             return this._geometry.getTotalIndices();
         }
 
-        public getIndices(copyWhenShared?: boolean): number[] {
+        public getIndices(copyWhenShared?: boolean): number[] | Int32Array {
             if (!this._geometry) {
                 return [];
             }
@@ -485,7 +485,7 @@
             geometry.applyToMesh(this);
         }
 
-        public setIndices(indices: number[], totalVertices?: number): void {
+        public setIndices(indices: number[] | Int32Array, totalVertices?: number): void {
             if (!this._geometry) {
                 var vertexData = new VertexData();
                 vertexData.indices = indices;
@@ -1240,6 +1240,210 @@
         }
 
         // Statics
+        
+        public static ParseMesh(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
+            var mesh = new Mesh(parsedMesh.name, scene);
+            mesh.id = parsedMesh.id;
+
+            Tags.AddTagsTo(mesh, parsedMesh.tags);
+
+            mesh.position = Vector3.FromArray(parsedMesh.position);
+
+            if (parsedMesh.rotationQuaternion) {
+                mesh.rotationQuaternion = Quaternion.FromArray(parsedMesh.rotationQuaternion);
+            } else if (parsedMesh.rotation) {
+                mesh.rotation = Vector3.FromArray(parsedMesh.rotation);
+            }
+
+            mesh.scaling = Vector3.FromArray(parsedMesh.scaling);
+
+            if (parsedMesh.localMatrix) {
+                mesh.setPivotMatrix(Matrix.FromArray(parsedMesh.localMatrix));
+            } else if (parsedMesh.pivotMatrix) {
+                mesh.setPivotMatrix(Matrix.FromArray(parsedMesh.pivotMatrix));
+            }
+
+            mesh.setEnabled(parsedMesh.isEnabled);
+            mesh.isVisible = parsedMesh.isVisible;
+            mesh.infiniteDistance = parsedMesh.infiniteDistance;
+
+            mesh.showBoundingBox = parsedMesh.showBoundingBox;
+            mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
+
+            if (parsedMesh.applyFog !== undefined) {
+                mesh.applyFog = parsedMesh.applyFog;
+            }
+
+            if (parsedMesh.pickable !== undefined) {
+                mesh.isPickable = parsedMesh.pickable;
+            }
+
+            if (parsedMesh.alphaIndex !== undefined) {
+                mesh.alphaIndex = parsedMesh.alphaIndex;
+            }
+
+            mesh.receiveShadows = parsedMesh.receiveShadows;
+
+            mesh.billboardMode = parsedMesh.billboardMode;
+
+            if (parsedMesh.visibility !== undefined) {
+                mesh.visibility = parsedMesh.visibility;
+            }
+
+            mesh.checkCollisions = parsedMesh.checkCollisions;
+            mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
+
+            // freezeWorldMatrix
+            if (parsedMesh.freezeWorldMatrix) {
+                mesh._waitingFreezeWorldMatrix = parsedMesh.freezeWorldMatrix;
+            }
+
+            // Parent
+            if (parsedMesh.parentId) {
+                mesh._waitingParentId = parsedMesh.parentId;
+            }
+
+            // Actions
+            if (parsedMesh.actions !== undefined) {
+                mesh._waitingActions = parsedMesh.actions;
+            }
+
+            // Geometry
+            mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
+
+            if (parsedMesh.delayLoadingFile) {
+                mesh.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
+                mesh._boundingInfo = new BoundingInfo(Vector3.FromArray(parsedMesh.boundingBoxMinimum), Vector3.FromArray(parsedMesh.boundingBoxMaximum));
+
+                if (parsedMesh._binaryInfo) {
+                    mesh._binaryInfo = parsedMesh._binaryInfo;
+                }
+
+                mesh._delayInfo = [];
+                if (parsedMesh.hasUVs) {
+                    mesh._delayInfo.push(VertexBuffer.UVKind);
+                }
+
+                if (parsedMesh.hasUVs2) {
+                    mesh._delayInfo.push(VertexBuffer.UV2Kind);
+                }
+
+                if (parsedMesh.hasUVs3) {
+                    mesh._delayInfo.push(VertexBuffer.UV3Kind);
+                }
+
+                if (parsedMesh.hasUVs4) {
+                    mesh._delayInfo.push(VertexBuffer.UV4Kind);
+                }
+
+                if (parsedMesh.hasUVs5) {
+                    mesh._delayInfo.push(VertexBuffer.UV5Kind);
+                }
+
+                if (parsedMesh.hasUVs6) {
+                    mesh._delayInfo.push(VertexBuffer.UV6Kind);
+                }
+
+                if (parsedMesh.hasColors) {
+                    mesh._delayInfo.push(VertexBuffer.ColorKind);
+                }
+
+                if (parsedMesh.hasMatricesIndices) {
+                    mesh._delayInfo.push(VertexBuffer.MatricesIndicesKind);
+                }
+
+                if (parsedMesh.hasMatricesWeights) {
+                    mesh._delayInfo.push(VertexBuffer.MatricesWeightsKind);
+                }
+
+                mesh._delayLoadingFunction = Geometry.ImportGeometry;
+
+                if (SceneLoader.ForceFullSceneLoadingForIncremental) {
+                    mesh._checkDelayState();
+                }
+
+            } else {
+                Geometry.ImportGeometry(parsedMesh, mesh);
+            }
+
+            // Material
+            if (parsedMesh.materialId) {
+                mesh.setMaterialByID(parsedMesh.materialId);
+            } else {
+                mesh.material = null;
+            }
+
+            // Skeleton
+            if (parsedMesh.skeletonId > -1) {
+                mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
+                if (parsedMesh.numBoneInfluencers) {
+                    mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
+                }
+            }
+
+            // Physics
+            if (parsedMesh.physicsImpostor) {
+                if (!scene.isPhysicsEnabled()) {
+                    scene.enablePhysics();
+                }
+
+                mesh.setPhysicsState({ impostor: parsedMesh.physicsImpostor, mass: parsedMesh.physicsMass, friction: parsedMesh.physicsFriction, restitution: parsedMesh.physicsRestitution });
+            }
+
+            // Animations
+            if (parsedMesh.animations) {
+                for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedMesh.animations[animationIndex];
+
+                    mesh.animations.push(Animation.ParseAnimation(parsedAnimation));
+                }
+            }
+
+            if (parsedMesh.autoAnimate) {
+                scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
+            }
+
+            // Layer Mask
+            if (parsedMesh.layerMask && (!isNaN(parsedMesh.layerMask))) {
+                mesh.layerMask = Math.abs(parseInt(parsedMesh.layerMask));
+            } else {
+                mesh.layerMask = 0x0FFFFFFF;
+            }
+
+            // Instances
+            if (parsedMesh.instances) {
+                for (var index = 0; index < parsedMesh.instances.length; index++) {
+                    var parsedInstance = parsedMesh.instances[index];
+                    var instance = mesh.createInstance(parsedInstance.name);
+
+                    Tags.AddTagsTo(instance, parsedInstance.tags);
+
+                    instance.position = Vector3.FromArray(parsedInstance.position);
+
+                    if (parsedInstance.rotationQuaternion) {
+                        instance.rotationQuaternion = Quaternion.FromArray(parsedInstance.rotationQuaternion);
+                    } else if (parsedInstance.rotation) {
+                        instance.rotation = Vector3.FromArray(parsedInstance.rotation);
+                    }
+
+                    instance.scaling = Vector3.FromArray(parsedInstance.scaling);
+
+                    instance.checkCollisions = mesh.checkCollisions;
+
+                    if (parsedMesh.animations) {
+                        for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
+                            parsedAnimation = parsedMesh.animations[animationIndex];
+
+                            instance.animations.push(Animation.ParseAnimation(parsedAnimation));
+                        }
+                    }
+                }
+            }
+
+            return mesh;
+        }
+
         public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
             return MeshBuilder.CreateRibbon(name, {
                 pathArray: pathArray,
@@ -1571,7 +1775,7 @@
             var tempMatrix = new Matrix();
 
             var matWeightIdx = 0;
-            var inf : number;
+            var inf: number;
             for (var index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
                 var weight: number;
                 for (inf = 0; inf < 4; inf++) {
@@ -1589,10 +1793,10 @@
                             Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
 
-                        } else break;           
+                        } else break;
                     }
                 }
-                
+
                 Vector3.TransformCoordinatesFromFloatsToRef(this._sourcePositions[index], this._sourcePositions[index + 1], this._sourcePositions[index + 2], finalMatrix, tempVector3);
                 tempVector3.toArray(positionsData, index);
 

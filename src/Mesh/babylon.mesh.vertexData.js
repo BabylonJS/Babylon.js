@@ -178,6 +178,7 @@ var BABYLON;
                 }
                 var offset = this.positions ? this.positions.length / 3 : 0;
                 for (index = 0; index < other.indices.length; index++) {
+                    //TODO check type - if Int32Array!
                     this.indices.push(other.indices[index] + offset);
                 }
             }
@@ -1766,6 +1767,70 @@ var BABYLON;
                     }
                     break;
             }
+        };
+        VertexData.ImportVertexData = function (parsedVertexData, geometry) {
+            var vertexData = new VertexData();
+            // positions
+            var positions = parsedVertexData.positions;
+            if (positions) {
+                vertexData.set(positions, BABYLON.VertexBuffer.PositionKind);
+            }
+            // normals
+            var normals = parsedVertexData.normals;
+            if (normals) {
+                vertexData.set(normals, BABYLON.VertexBuffer.NormalKind);
+            }
+            // uvs
+            var uvs = parsedVertexData.uvs;
+            if (uvs) {
+                vertexData.set(uvs, BABYLON.VertexBuffer.UVKind);
+            }
+            // uv2s
+            var uv2s = parsedVertexData.uv2s;
+            if (uv2s) {
+                vertexData.set(uv2s, BABYLON.VertexBuffer.UV2Kind);
+            }
+            // uv3s
+            var uv3s = parsedVertexData.uv3s;
+            if (uv3s) {
+                vertexData.set(uv3s, BABYLON.VertexBuffer.UV3Kind);
+            }
+            // uv4s
+            var uv4s = parsedVertexData.uv4s;
+            if (uv4s) {
+                vertexData.set(uv4s, BABYLON.VertexBuffer.UV4Kind);
+            }
+            // uv5s
+            var uv5s = parsedVertexData.uv5s;
+            if (uv5s) {
+                vertexData.set(uv5s, BABYLON.VertexBuffer.UV5Kind);
+            }
+            // uv6s
+            var uv6s = parsedVertexData.uv6s;
+            if (uv6s) {
+                vertexData.set(uv6s, BABYLON.VertexBuffer.UV6Kind);
+            }
+            // colors
+            var colors = parsedVertexData.colors;
+            if (colors) {
+                vertexData.set(BABYLON.Color4.CheckColors4(colors, positions.length / 3), BABYLON.VertexBuffer.ColorKind);
+            }
+            // matricesIndices
+            var matricesIndices = parsedVertexData.matricesIndices;
+            if (matricesIndices) {
+                vertexData.set(matricesIndices, BABYLON.VertexBuffer.MatricesIndicesKind);
+            }
+            // matricesWeights
+            var matricesWeights = parsedVertexData.matricesWeights;
+            if (matricesWeights) {
+                vertexData.set(matricesWeights, BABYLON.VertexBuffer.MatricesWeightsKind);
+            }
+            // indices
+            var indices = parsedVertexData.indices;
+            if (indices) {
+                vertexData.indices = indices;
+            }
+            geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
         };
         return VertexData;
     })();
