@@ -5,7 +5,7 @@ var BABYLON;
     var FireProceduralTexture = (function (_super) {
         __extends(FireProceduralTexture, _super);
         function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "firetexture", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this._time = 0.0;
             this._speed = new BABYLON.Vector2(0.5, 0.3);
             this._autoGenerateTime = true;

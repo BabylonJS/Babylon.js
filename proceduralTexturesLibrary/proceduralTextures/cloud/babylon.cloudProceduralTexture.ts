@@ -6,7 +6,7 @@ module BABYLON {
         private _cloudColor = new Color4(1, 1, 1, 1.0);
     
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "cloudtexture", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "cloudProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }

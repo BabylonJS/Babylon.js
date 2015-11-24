@@ -5,7 +5,7 @@ var BABYLON;
     var WoodProceduralTexture = (function (_super) {
         __extends(WoodProceduralTexture, _super);
         function WoodProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "woodtexture", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "woodProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this._ampScale = 100.0;
             this._woodColor = new BABYLON.Color3(0.32, 0.17, 0.09);
             this.updateShaderUniforms();

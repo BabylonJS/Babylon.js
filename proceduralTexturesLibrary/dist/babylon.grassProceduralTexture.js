@@ -5,7 +5,7 @@ var BABYLON;
     var GrassProceduralTexture = (function (_super) {
         __extends(GrassProceduralTexture, _super);
         function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "grasstexture", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
             this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
             this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);

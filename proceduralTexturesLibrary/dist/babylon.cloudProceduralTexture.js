@@ -5,7 +5,7 @@ var BABYLON;
     var CloudProceduralTexture = (function (_super) {
         __extends(CloudProceduralTexture, _super);
         function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "cloudtexture", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "cloudProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this._skyColor = new BABYLON.Color4(0.15, 0.68, 1.0, 1.0);
             this._cloudColor = new BABYLON.Color4(1, 1, 1, 1.0);
             this.updateShaderUniforms();

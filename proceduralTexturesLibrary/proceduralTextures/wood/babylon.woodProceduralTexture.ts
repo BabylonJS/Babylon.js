@@ -6,7 +6,7 @@ module BABYLON {
         private _woodColor: Color3 = new Color3(0.32, 0.17, 0.09);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "woodtexture", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "woodProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }

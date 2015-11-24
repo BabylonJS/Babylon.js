@@ -9,7 +9,7 @@ module BABYLON {
         private _jointColor = new Color3(0.72, 0.72, 0.72);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "marbletexture", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "marbleProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }

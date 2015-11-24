@@ -5,7 +5,7 @@ var BABYLON;
     var MarbleProceduralTexture = (function (_super) {
         __extends(MarbleProceduralTexture, _super);
         function MarbleProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
-            _super.call(this, name, size, "marbletexture", scene, fallbackTexture, generateMipMaps);
+            _super.call(this, name, size, "marbleProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this._numberOfTilesHeight = 3;
             this._numberOfTilesWidth = 3;
             this._amplitude = 9.0;
