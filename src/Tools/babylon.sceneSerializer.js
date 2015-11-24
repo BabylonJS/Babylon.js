@@ -671,6 +671,8 @@ var BABYLON;
             serializationObject.clearColor = scene.clearColor.asArray();
             serializationObject.ambientColor = scene.ambientColor.asArray();
             serializationObject.gravity = scene.gravity.asArray();
+            serializationObject.collisionsEnabled = scene.collisionsEnabled;
+            serializationObject.workerCollisions = scene.workerCollisions;
             // Fog
             if (scene.fogMode && scene.fogMode !== 0) {
                 serializationObject.fogMode = scene.fogMode;
@@ -678,6 +680,12 @@ var BABYLON;
                 serializationObject.fogStart = scene.fogStart;
                 serializationObject.fogEnd = scene.fogEnd;
                 serializationObject.fogDensity = scene.fogDensity;
+            }
+            //Physics
+            if (scene.isPhysicsEnabled()) {
+                serializationObject.physicsEnabled = true;
+                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
+                serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
             // Lights
             serializationObject.lights = [];

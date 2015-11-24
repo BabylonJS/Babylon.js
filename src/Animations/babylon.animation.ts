@@ -1,6 +1,15 @@
 ﻿module BABYLON {
     export class AnimationRange {
-        constructor(public name: string, public from: number, public to: number) {            
+        constructor(public name: string, public from: number, public to: number) {
+        }
+    }
+
+    /**
+     * Composed of a frame, and an action function
+     */
+    export class AnimationEvent {
+        public isDone: boolean = false;
+        constructor(public frame: number, public action: () => void, public onlyOnce?: boolean) {
         }
     }
 
@@ -11,6 +20,9 @@
         private _stopped = false;
         public _target;
         private _easingFunction: IEasingFunction;
+
+        // The set of event that will be linked to this animation
+        private _events = new Array<AnimationEvent>();
 
         public targetPropertyPath: string[];
         public currentFrame: number;
@@ -79,7 +91,27 @@
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
 
-        // Methods   
+        // Methods
+        /**
+         * Add an event to this animation.
+         */
+        public addEvent(event: AnimationEvent): void {
+            this._events.push(event);
+        }
+
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        public removeEvents(frame: number): void {
+            for (var index = 0; index < this._events.length; index++) {
+                if (this._events[index].frame === frame) {
+                    this._events.splice(index, 1);
+                    index--;
+                }
+            }
+        }
+
         public createRange(name: string, from: number, to: number): void {
             this._ranges.push(new AnimationRange(name, from, to));
         }
@@ -95,7 +127,7 @@
 
         public getRange(name: string): AnimationRange {
             for (var index = 0; index < this._ranges.length; index++) {
-                if (this._ranges[index].name === name) {                    
+                if (this._ranges[index].name === name) {
                     return this._ranges[index];
                 }
             }
@@ -146,23 +178,7 @@
         }
 
         public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
-            var startScale = new Vector3(0, 0, 0);
-            var startRotation = new Quaternion();
-            var startTranslation = new Vector3(0, 0, 0);
-            startValue.decompose(startScale, startRotation, startTranslation);
-
-            var endScale = new Vector3(0, 0, 0);
-            var endRotation = new Quaternion();
-            var endTranslation = new Vector3(0, 0, 0);
-            endValue.decompose(endScale, endRotation, endTranslation);
-
-            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
-            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
-            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
-
-            var result = Matrix.Compose(resultScale, resultRotation, resultTranslation);
-
-            return result;
+            return Matrix.Lerp(startValue, endValue, gradient);
         }
 
         public clone(): Animation {
@@ -421,6 +437,25 @@
             var currentFrame = returnValue ? from + ratio % range : to;
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
 
+            // Check events
+            for (var index = 0; index < this._events.length; index++) {
+                if (currentFrame >= this._events[index].frame) {
+                    var event = this._events[index];
+                    if (!event.isDone) {
+                        // If event should be done only once, remove it.
+                        if (event.onlyOnce) {
+                            this._events.splice(index, 1);
+                            index--;
+                        }
+                        event.isDone = true;
+                        event.action();
+                    } // Don't do anything if the event has already be done.
+                } else if (this._events[index].isDone && !this._events[index].onlyOnce) {
+                    // reset event, the animation is looping
+                    this._events[index].isDone = false;
+                }
+            }
+
             // Set value
             this.setValue(currentValue);
 
@@ -481,4 +516,5 @@
         }
     }
 } 
+
 

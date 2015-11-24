@@ -49,7 +49,8 @@ module BABYLON {
         public UV2 = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public NUM_BONE_INFLUENCERS = 0;
+        public BONES = false;
+        public BONES4 = false;
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public SPECULARTERM = false;
@@ -346,8 +347,9 @@ module BABYLON {
                     }
                 }
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
+                    this._defines.BONES = true;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
+                    this._defines.BONES4 = true;
                 }
 
                 // Instances
@@ -392,8 +394,8 @@ module BABYLON {
                     }
                 }
              
-                if (this._defines.NUM_BONE_INFLUENCERS > 0){
-                    fallbacks.addCPUSkinningFallback(0, mesh);    
+                if (this._defines.BONES4) {
+                    fallbacks.addFallback(0, "BONES4");
                 }
 
                 //Attributes
@@ -415,13 +417,9 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                if (this._defines.BONES) {
                     attribs.push(VertexBuffer.MatricesIndicesKind);
                     attribs.push(VertexBuffer.MatricesWeightsKind);
-                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
-                        attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                        attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-                    }
                 }
 
                 if (this._defines.INSTANCES) {
@@ -628,7 +626,7 @@ module BABYLON {
 				clipPlane = scene.clipPlane;
                 
                 var positiony = this._mesh ? this._mesh.position.y : 0.0;
-				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony, 0), new Vector3(0, 1, 0));
+				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
 			};
 			
 			this._refractionRTT.onAfterRender = () => {
@@ -650,7 +648,7 @@ module BABYLON {
 				clipPlane = scene.clipPlane;
                 
                 var positiony = this._mesh ? this._mesh.position.y : 0.0;
-				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony, 0), new Vector3(0, -1, 0));
+				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
 				
 				// Transform
 				Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);

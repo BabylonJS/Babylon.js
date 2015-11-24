@@ -2413,6 +2413,24 @@
                 x, y, z, 1.0, result);
         }
 
+        public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            var startScale = new Vector3(0, 0, 0);
+            var startRotation = new Quaternion();
+            var startTranslation = new Vector3(0, 0, 0);
+            startValue.decompose(startScale, startRotation, startTranslation);
+
+            var endScale = new Vector3(0, 0, 0);
+            var endRotation = new Quaternion();
+            var endTranslation = new Vector3(0, 0, 0);
+            endValue.decompose(endScale, endRotation, endTranslation);
+
+            var resultScale = Vector3.Lerp(startScale, endScale, gradient);
+            var resultRotation = Quaternion.Slerp(startRotation, endRotation, gradient);
+            var resultTranslation = Vector3.Lerp(startTranslation, endTranslation, gradient);
+
+            return Matrix.Compose(resultScale, resultRotation, resultTranslation);
+        }    
+
         public static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
             var result = Matrix.Zero();
 

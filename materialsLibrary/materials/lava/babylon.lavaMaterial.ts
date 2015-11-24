@@ -47,7 +47,8 @@ module BABYLON {
         public UV2 = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public NUM_BONE_INFLUENCERS = 0;
+        public BONES = false;
+        public BONES4 = false;
         public BonesPerMesh = 0;
         public INSTANCES = false;
 
@@ -62,9 +63,6 @@ module BABYLON {
         public noiseTexture: BaseTexture;
         public fogColor: Color3;
         public speed : number = 1;
-        public movingSpeed : number = 1;
-        public lowFrequencySpeed : number = 1;
-        public fogDensity : number = 0.15;
 
         private _lastTime : number = 0;
 
@@ -265,10 +263,10 @@ module BABYLON {
                         this._defines.VERTEXALPHA = true;
                     }
                 }
-                
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
+                    this._defines.BONES = true;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
+                    this._defines.BONES4 = true;
                 }
 
                 // Instances
@@ -311,8 +309,8 @@ module BABYLON {
                     }
                 }
              
-                if (this._defines.NUM_BONE_INFLUENCERS > 0){
-                    fallbacks.addCPUSkinningFallback(0, mesh);    
+                if (this._defines.BONES4) {
+                    fallbacks.addFallback(0, "BONES4");
                 }
 
                 //Attributes
@@ -334,13 +332,9 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                if (this._defines.BONES) {
                     attribs.push(VertexBuffer.MatricesIndicesKind);
                     attribs.push(VertexBuffer.MatricesWeightsKind);
-                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
-                        attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                        attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-                    }
                 }
 
                 if (this._defines.INSTANCES) {
@@ -364,8 +358,7 @@ module BABYLON {
                         "vDiffuseInfos", 
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3","time", "speed","movingSpeed",
-                        "fogColor","fogDensity", "lowFrequencySpeed"
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3","time", "speed", "fogColor"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3", "noiseTexture"
@@ -501,10 +494,6 @@ module BABYLON {
                 this.fogColor = Color3.Black();
             }
             this._effect.setColor3("fogColor", this.fogColor);
-            this._effect.setFloat("fogDensity", this.fogDensity);
-
-            this._effect.setFloat("lowFrequencySpeed", this.lowFrequencySpeed);
-            this._effect.setFloat("movingSpeed", this.movingSpeed);
 
 
             super.bind(world, mesh);

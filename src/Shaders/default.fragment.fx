@@ -196,7 +196,7 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #else
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
 varying vec3 vDirectionW;
 #endif
 
@@ -210,11 +210,21 @@ uniform mat4 view;
 
 vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
 	vec3 direction = normalize(vDirectionW);
 
 	float t = clamp(direction.y * -0.5 + 0.5, 0., 1.0);
 	float s = atan(direction.z, direction.x) * RECIPROCAL_PI2 + 0.5;
+
+	return vec3(s, t, 0);
+#endif
+
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+
+	vec3 cameraToVertex = normalize(worldPos.xyz - vEyePosition);
+	vec3 r = reflect(cameraToVertex, worldNormal);
+	float t = clamp(r.y * -0.5 + 0.5, 0., 1.0);
+	float s = atan(r.z, r.x) * RECIPROCAL_PI2 + 0.5;
 
 	return vec3(s, t, 0);
 #endif
@@ -546,16 +556,15 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 
 	// diffuse
 	float cosAngle = max(0., dot(-lightDirection.xyz, lightVectorW));
-	float spotAtten = 0.0;
 
 	if (cosAngle >= lightDirection.w)
 	{
 		cosAngle = max(0., pow(cosAngle, lightData.w));
-		spotAtten = clamp((cosAngle - lightDirection.w) / (1. - cosAngle), 0.0, 1.0);
+		attenuation *= cosAngle;
 
 		// Diffuse
 		float ndl = max(0., dot(vNormal, -lightDirection.xyz));
-		result.diffuse = ndl * spotAtten * diffuseColor * attenuation;
+		result.diffuse = ndl * diffuseColor * attenuation;
 
 #ifdef SPECULARTERM
 		// Specular
@@ -563,7 +572,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 		float specComp = max(0., dot(vNormal, angleW));
 		specComp = pow(specComp, max(1., glossiness));
 
-		result.specular = specComp * specularColor * spotAtten * attenuation;
+		result.specular = specComp * specularColor * attenuation;
 #endif
 
 		return result;

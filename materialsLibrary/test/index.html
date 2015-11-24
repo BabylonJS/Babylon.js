@@ -45,9 +45,9 @@
 	<canvas id="renderCanvas"></canvas>
 
 	<script src="index.js"></script>
-    <script src="add/addpbr.js"></script>
-    <script src="add/addlava.js"></script>
-    <script src="add/addnormal.js"></script>
+	<script src="add/addpbr.js"></script>
+	<script src="add/addwater.js"></script>
+	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -158,19 +158,23 @@
 				std.diffuseTexture.uScale = 5;
 				std.diffuseTexture.vScale = 5;
 
+                // Lava
+                var lava = new BABYLON.LavaMaterial("lava", scene);
+                lava.diffuseTexture = new BABYLON.Texture("textures/lava/lavatile.jpg", scene);
+                lava.diffuseTexture.uScale = 0.5;
+                lava.diffuseTexture.vScale = 0.5;
+				lava.noiseTexture = new BABYLON.Texture("textures/lava/cloud.png", scene);
+				lava.fogColor = BABYLON.Color3.Black();
+				lava.speed = 2.5;
 
 				var simple = new BABYLON.SimpleMaterial("simple", scene);
 				simple.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
 				simple.diffuseTexture.uScale = 5;
 				simple.diffuseTexture.vScale = 5;
 
-				var water = new BABYLON.WaterMaterial("water", scene);
-				water.backFaceCulling = false;
-				water.enableRenderTargets(false);
-				water.bumpTexture = new BABYLON.Texture("textures/waterbump.png", scene);
-				water.windForce = -45;
-				water.waveHeight = 1.3;
-				water.windDirection = new BABYLON.Vector2(1, 1);
+				var normal = new BABYLON.NormalMaterial("normal", scene);
+				
+				var water = prepareWater();
 				water.addToRenderList(skybox);
 				water.addToRenderList(shadowCaster);
 				water.addToRenderList(shadowCaster2);
@@ -196,13 +200,8 @@
 				terrain.diffuseTexture1.uScale = terrain.diffuseTexture1.vScale = 10;
 				terrain.diffuseTexture2.uScale = terrain.diffuseTexture2.vScale = 10;
 				terrain.diffuseTexture3.uScale = terrain.diffuseTexture3.vScale = 10;
-
-                // PBR
-				var pbr         = preparePBR();
-                // Normal
-                var normal      = prepareNormal();
-                // Lava
-                var lava        = prepareLava();
+				
+				var pbr = preparePBR();
 								
 				// Default to std
 				var currentMaterial = std;

@@ -393,7 +393,7 @@
             this._rootElement.appendChild(this._globalDiv);
 
             this._generateDOMelements();
-            
+
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
@@ -489,10 +489,10 @@
             button.style.width = "150px";
             button.style.marginBottom = "5px";
             button.style.color = "#444444";
-            button.style.border = "1px solid white"; 
+            button.style.border = "1px solid white";
             button.className = "debugLayerButton";
 
-            button.addEventListener("click",(evt: Event) => {
+            button.addEventListener("click", (evt: Event) => {
                 task(evt.target, tag);
             });
 
@@ -700,8 +700,15 @@
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
                 this._generateButton(this._optionsSubsetDiv, "Run SceneOptimizer", (element) => { SceneOptimizer.OptimizeAsync(this._scene); });
+                this._generateButton(this._optionsSubsetDiv, "Log camera object", (element) => {
+                    if (this._camera) {
+                        console.log(this._camera);
+                    } else {
+                        console.warn("No camera defined, or debug layer created before camera creation!");
+                    }
+                });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-  
+
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
@@ -715,42 +722,42 @@
             var glInfo = engine.getGlInfo();
 
             this._statsSubsetDiv.innerHTML = "Babylon.js v" + Engine.Version + " - <b>" + Tools.Format(engine.getFps(), 0) + " fps</b><br><br>"
-                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
-                + "<b>Count</b><br>"
-                + "Total meshes: " + scene.meshes.length + "<br>"
-                + "Total vertices: " + scene.getTotalVertices() + "<br>"
-                + "Total materials: " + scene.materials.length + "<br>"
-                + "Total textures: " + scene.textures.length + "<br>"
-                + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
-                + "Active indices: " + scene.getActiveIndices() + "<br>"
-                + "Active bones: " + scene.getActiveBones() + "<br>"
-                + "Active particles: " + scene.getActiveParticles() + "<br>"
-                + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
-                + "<b>Duration</b><br>"
-                + "Meshes selection:</i> " + Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
-                + "Render Targets: " + Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
-                + "Particles: " + Tools.Format(scene.getParticlesDuration()) + " ms<br>"
-                + "Sprites: " + Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
-                + "Render: <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
-                + "Frame: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
-                + "Potential FPS: " + Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
-                + "</div>"
-                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
-                + "<b>Extensions</b><br>"
-                + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
-                + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
-                + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
-                + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
-                + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
-                + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
-                + "<b>Caps.</b><br>"
-                + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
-                + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
-                + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>"
-                + "</div><br>"
-                + "<b>Info</b><br>"
-                + glInfo.version + "<br>"
-                + glInfo.renderer + "<br>";
+            + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+            + "<b>Count</b><br>"
+            + "Total meshes: " + scene.meshes.length + "<br>"
+            + "Total vertices: " + scene.getTotalVertices() + "<br>"
+            + "Total materials: " + scene.materials.length + "<br>"
+            + "Total textures: " + scene.textures.length + "<br>"
+            + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
+            + "Active indices: " + scene.getActiveIndices() + "<br>"
+            + "Active bones: " + scene.getActiveBones() + "<br>"
+            + "Active particles: " + scene.getActiveParticles() + "<br>"
+            + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
+            + "<b>Duration</b><br>"
+            + "Meshes selection:</i> " + Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
+            + "Render Targets: " + Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
+            + "Particles: " + Tools.Format(scene.getParticlesDuration()) + " ms<br>"
+            + "Sprites: " + Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
+            + "Render: <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
+            + "Frame: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
+            + "Potential FPS: " + Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
+            + "</div>"
+            + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+            + "<b>Extensions</b><br>"
+            + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
+            + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
+            + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
+            + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
+            + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
+            + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
+            + "<b>Caps.</b><br>"
+            + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
+            + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
+            + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>"
+            + "</div><br>"
+            + "<b>Info</b><br>"
+            + glInfo.version + "<br>"
+            + glInfo.renderer + "<br>";
 
             if (this.customStatsFunction) {
                 this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;
