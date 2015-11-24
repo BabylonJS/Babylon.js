@@ -26,11 +26,11 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                if (typeof(this[prop]) === "number") {
+                if (typeof (this[prop]) === "number") {
                     this[prop] = 0;
-                
-                }else { 
-                    this[prop] = false; 
+
+                } else {
+                    this[prop] = false;
                 }
             }
         }
@@ -40,10 +40,10 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                if (typeof(this[prop]) === "number") {
-                    result += "#define "  + prop + " " + this[prop] + "\n";
-                
-                }else if (this[prop]) {
+                if (typeof (this[prop]) === "number") {
+                    result += "#define " + prop + " " + this[prop] + "\n";
+
+                } else if (this[prop]) {
                     result += "#define " + prop + "\n";
                 }
             }
@@ -265,6 +265,15 @@
             other.disableDepthWrite = this.disableDepthWrite;
             other.pointSize = this.pointSize;
             other.pointsCloud = this.pointsCloud;
+        }
+
+        public static ParseMaterial(parsedMaterial: any, scene: Scene, rootUrl: string) {
+            if (!parsedMaterial.customType) {
+                return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
+            }
+
+            //TODO this is where custom materials are inspected and parsed.
+            return null;
         }
     }
 } 
