@@ -1,7 +1,7 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
- export class FireProceduralTexture2 extends ProceduralTexture {
+ export class FireProceduralTexture extends ProceduralTexture {
         private _time: number = 0.0;
         private _speed = new Vector2(0.5, 0.3);
         private _autoGenerateTime: boolean = true;
@@ -9,7 +9,7 @@ module BABYLON {
         private _alphaThreshold: number = 0.5;
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "firetexture", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this._fireColors = FireProceduralTexture.RedFireColors;
             this.updateShaderUniforms();
             this.refreshRate = 1;
