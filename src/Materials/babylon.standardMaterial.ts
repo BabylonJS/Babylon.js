@@ -1093,7 +1093,7 @@
             material.wireframe = source.wireframe;
 
             if (source.diffuseTexture) {
-                material.diffuseTexture = BaseTexture.ParseTexture(source.diffuseTexture, scene, rootUrl);
+                material.diffuseTexture = Texture.ParseTexture(source.diffuseTexture, scene, rootUrl);
             }
 
             if (source.diffuseFresnelParameters) {
@@ -1101,11 +1101,11 @@
             }
 
             if (source.ambientTexture) {
-                material.ambientTexture = BaseTexture.ParseTexture(source.ambientTexture, scene, rootUrl);
+                material.ambientTexture = Texture.ParseTexture(source.ambientTexture, scene, rootUrl);
             }
 
             if (source.opacityTexture) {
-                material.opacityTexture = BaseTexture.ParseTexture(source.opacityTexture, scene, rootUrl);
+                material.opacityTexture = Texture.ParseTexture(source.opacityTexture, scene, rootUrl);
             }
 
             if (source.opacityFresnelParameters) {
@@ -1113,7 +1113,7 @@
             }
 
             if (source.reflectionTexture) {
-                material.reflectionTexture = BaseTexture.ParseTexture(source.reflectionTexture, scene, rootUrl);
+                material.reflectionTexture = Texture.ParseTexture(source.reflectionTexture, scene, rootUrl);
             }
 
             if (source.reflectionFresnelParameters) {
@@ -1121,11 +1121,11 @@
             }
 
             if (source.emissiveTexture) {
-                material.emissiveTexture = BaseTexture.ParseTexture(source.emissiveTexture, scene, rootUrl);
+                material.emissiveTexture = Texture.ParseTexture(source.emissiveTexture, scene, rootUrl);
             }
 
             if (source.lightmapTexture) {
-                material.lightmapTexture = BaseTexture.ParseTexture(source.lightmapTexture, scene, rootUrl);
+                material.lightmapTexture = Texture.ParseTexture(source.lightmapTexture, scene, rootUrl);
                 material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
             }
 
@@ -1134,11 +1134,11 @@
             }
 
             if (source.specularTexture) {
-                material.specularTexture = BaseTexture.ParseTexture(source.specularTexture, scene, rootUrl);
+                material.specularTexture = Texture.ParseTexture(source.specularTexture, scene, rootUrl);
             }
 
             if (source.bumpTexture) {
-                material.bumpTexture = BaseTexture.ParseTexture(source.bumpTexture, scene, rootUrl);
+                material.bumpTexture = Texture.ParseTexture(source.bumpTexture, scene, rootUrl);
             }
 
             if (source.checkReadyOnlyOnce) {

@@ -338,6 +338,34 @@ var BABYLON;
                 this._boxBlurPostprocess.dispose();
             }
         };
+        ShadowGenerator.ParseShadowGenerator = function (parsedShadowGenerator, scene) {
+            //casting to point light, as light is missing the position attr and typescript complains.
+            var light = scene.getLightByID(parsedShadowGenerator.lightId);
+            var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
+            for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
+                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
+                shadowGenerator.getShadowMap().renderList.push(mesh);
+            }
+            if (parsedShadowGenerator.usePoissonSampling) {
+                shadowGenerator.usePoissonSampling = true;
+            }
+            else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useVarianceShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurVarianceShadowMap = true;
+                if (parsedShadowGenerator.blurScale) {
+                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
+                }
+                if (parsedShadowGenerator.blurBoxOffset) {
+                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
+                }
+            }
+            if (parsedShadowGenerator.bias !== undefined) {
+                shadowGenerator.bias = parsedShadowGenerator.bias;
+            }
+            return shadowGenerator;
+        };
         ShadowGenerator._FILTER_NONE = 0;
         ShadowGenerator._FILTER_VARIANCESHADOWMAP = 1;
         ShadowGenerator._FILTER_POISSONSAMPLING = 2;

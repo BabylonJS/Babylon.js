@@ -393,7 +393,8 @@
         }
 
         public static ParseShadowGenerator(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
-            var light = scene.getLightByID(parsedShadowGenerator.lightId);
+            //casting to point light, as light is missing the position attr and typescript complains.
+            var light = <PointLight> scene.getLightByID(parsedShadowGenerator.lightId);
             var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
 
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
