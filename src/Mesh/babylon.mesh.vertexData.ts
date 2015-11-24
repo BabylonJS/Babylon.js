@@ -769,7 +769,7 @@
                     var complete = Vector3.TransformCoordinates(afterRotZ, rotationY);
 
                     var vertex = complete.multiply(radius);
-                    var normal = Vector3.Normalize(vertex);
+                    var normal = complete.divide(radius).normalize();
 
                     positions.push(vertex.x, vertex.y, vertex.z);
                     normals.push(normal.x, normal.y, normal.z);
@@ -821,14 +821,14 @@
             // default face colors and UV if undefined
             var quadNb: number = (arc !== 1 && enclose) ? 2 : 0;
             var ringNb: number = (hasRings) ? subdivisions : 1;
-            var colorNb: number = 2 + (1 + quadNb) * ringNb;
+            var surfaceNb: number = 2 + (1 + quadNb) * ringNb;
             var f: number;
-            for (f = 0; f < colorNb; f++) {
+            for (f = 0; f < surfaceNb; f++) {
                 if (faceColors && faceColors[f] === undefined) {
                     faceColors[f] = new Color4(1, 1, 1, 1);
                 }
             }
-            for (f = 0; f < 3; f++) {
+            for (f = 0; f < surfaceNb; f++) {
                 if (faceUV && faceUV[f] === undefined) {
                     faceUV[f] = new Vector4(0, 0, 1, 1);
                 }
@@ -857,12 +857,21 @@
             var j: number;
             var r: number;
             var ringIdx: number = 1;
+            var s: number = 1;      // surface index
+            var cs: number = 0;
+            var v: number = 0;
 
             for (i = 0; i <= subdivisions; i++) {
                 h = i / subdivisions;
                 radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
                 ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
                 for (r = 0; r < ringIdx; r++) {
+                    if (hasRings) {
+                        s += r;
+                    }
+                    if (enclose) {
+                        s += 2 * r;
+                    }
                     for (j = 0; j <= tessellation; j++) {
                         angle = j * angle_step;
 
@@ -885,7 +894,7 @@
                             ringNormal.normalize();
                         }
 
-                        // keep first values for enclose
+                        // keep first ring vertex values for enclose
                         if (j === 0) {
                             ringFirstVertex.copyFrom(ringVertex);
                             ringFirstNormal.copyFrom(ringNormal);
@@ -893,9 +902,14 @@
 
                         positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                         normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x) * j / tessellation, faceUV[1].y + (faceUV[1].w - faceUV[1].y) * h);
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s].y : faceUV[s].w;
+                        } else {
+                            v = faceUV[s].y + (faceUV[s].w - faceUV[s].y) * h;
+                        }
+                        uvs.push(faceUV[s].x + (faceUV[s].z - faceUV[s].x) * j / tessellation, v);
                         if (faceColors) {
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                            colors.push(faceColors[s].r, faceColors[s].g, faceColors[s].b, faceColors[s].a);
                         }
                     }
 
@@ -911,18 +925,33 @@
                         Vector3.CrossToRef(ringFirstNormal, Y, quadNormal);
                         quadNormal.normalize();
                         normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
-                        uvs.push(faceUV[1].x + (faceUV[1].z - faceUV[1].x), faceUV[1].y + (faceUV[1].w - faceUV[1].y));
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s + 1].y : faceUV[s + 1].w;
+                        } else {
+                            v = faceUV[s + 1].y + (faceUV[s + 1].w - faceUV[s + 1].y) * h;
+                        }
+                        uvs.push(faceUV[s + 1].x, v);
+                        uvs.push(faceUV[s + 1].z, v);
+                        if (hasRings) {
+                            v = (cs !== s) ? faceUV[s + 2].y : faceUV[s + 2].w;
+                        } else {
+                            v = faceUV[s + 2].y + (faceUV[s + 2].w - faceUV[s + 2].y) * h;
+                        }
+                        uvs.push(faceUV[s + 2].x, v);
+                        uvs.push(faceUV[s + 2].z, v);
                         if (faceColors) {
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
-                            colors.push(faceColors[1].r, faceColors[1].g, faceColors[1].b, faceColors[1].a);
+                            colors.push(faceColors[s + 1].r, faceColors[s + 1].g, faceColors[s + 1].b, faceColors[s + 1].a);
+                            colors.push(faceColors[s + 1].r, faceColors[s + 1].g, faceColors[s + 1].b, faceColors[s + 1].a);
+                            colors.push(faceColors[s + 2].r, faceColors[s + 2].g, faceColors[s + 2].b, faceColors[s + 2].a);
+                            colors.push(faceColors[s + 2].r, faceColors[s + 2].g, faceColors[s + 2].b, faceColors[s + 2].a);
                         }
                     }
+                    if (cs !== s) {
+                        cs = s;
+                    }
+
                 }
+
             }
 
             // indices
@@ -958,10 +987,10 @@
                 var angle;
                 var circleVector;
                 var i: number;
-                var u: Vector4 = (isTop) ? faceUV[2] : faceUV[0];
+                var u: Vector4 = (isTop) ? faceUV[surfaceNb - 1] : faceUV[0];
                 var c: Color4;
                 if (faceColors) {
-                    c = (isTop) ? faceColors[colorNb - 1] : faceColors[0];
+                    c = (isTop) ? faceColors[surfaceNb - 1] : faceColors[0];
                 }
                 // cap center
                 var vbase = positions.length / 3;
@@ -1566,7 +1595,7 @@
                 0, 0, 0, 0, 1, //  0 - 4
                 0, 0, 1, 1, 0, //  5 - 9
                 0, 0, 1, 1, 0, //  10 - 14
-                0, 1, 1, 1, 0, //  15 - 19
+                0, 1, 1, 1, 0 //  15 - 19
             ];
 
             var indices = [];
@@ -1578,14 +1607,15 @@
             // prepare array of 3 vector (empty) (to be worked in place, shared for each face)
             var face_vertex_pos = new Array(3);
             var face_vertex_uv = new Array(3);
-            for (var v012 = 0; v012 < 3; v012++) {
+            var v012;
+            for (v012 = 0; v012 < 3; v012++) {
                 face_vertex_pos[v012] = Vector3.Zero();
                 face_vertex_uv[v012] = Vector2.Zero();
             }
             // create all with normals
             for (var face = 0; face < 20; face++) {
                 // 3 vertex per face
-                for (var v012 = 0; v012 < 3; v012++) {
+                for (v012 = 0; v012 < 3; v012++) {
                     // look up vertex 0,1,2 to its index in 0 to 11 (or 23 including alias)
                     var v_id = ico_indices[3 * face + v012];
                     // vertex have 3D position (x,y,z)
@@ -1647,26 +1677,27 @@
                     var pos_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], i2 / subdivisions);
                     var pos_interp = (subdivisions === i2) ? face_vertex_pos[2] : Vector3.Lerp(pos_x0, pos_x1, i1 / (subdivisions - i2));
                     pos_interp.normalize();
-                    pos_interp.x *= radiusX;
-                    pos_interp.y *= radiusY;
-                    pos_interp.z *= radiusZ;
 
                     var vertex_normal;
                     if (flat) {
                         // in flat mode, recalculate normal as face centroid normal
                         var centroid_x0 = Vector3.Lerp(face_vertex_pos[0], face_vertex_pos[2], c2 / subdivisions);
                         var centroid_x1 = Vector3.Lerp(face_vertex_pos[1], face_vertex_pos[2], c2 / subdivisions);
-                        var centroid_interp = Vector3.Lerp(centroid_x0, centroid_x1, c1 / (subdivisions - c2));
-                        vertex_normal = Vector3.Normalize(centroid_interp);
+                        vertex_normal = Vector3.Lerp(centroid_x0, centroid_x1, c1 / (subdivisions - c2));
                     } else {
                         // in smooth mode, recalculate normal from each single vertex position
-                        vertex_normal = Vector3.Normalize(pos_interp);
+                        vertex_normal = new Vector3(pos_interp.x, pos_interp.y, pos_interp.z);
                     }
+                    // Vertex normal need correction due to X,Y,Z radius scaling
+                    vertex_normal.x /= radiusX;
+                    vertex_normal.y /= radiusY;
+                    vertex_normal.z /= radiusZ;
+                    vertex_normal.normalize();
 
                     var uv_x0 = Vector2.Lerp(face_vertex_uv[0], face_vertex_uv[2], i2 / subdivisions);
                     var uv_x1 = Vector2.Lerp(face_vertex_uv[1], face_vertex_uv[2], i2 / subdivisions);
                     var uv_interp = (subdivisions === i2) ? face_vertex_uv[2] : Vector2.Lerp(uv_x0, uv_x1, i1 / (subdivisions - i2));
-                    positions.push(pos_interp.x, pos_interp.y, pos_interp.z);
+                    positions.push(pos_interp.x * radiusX, pos_interp.y * radiusY, pos_interp.z * radiusZ);
                     normals.push(vertex_normal.x, vertex_normal.y, vertex_normal.z);
                     uvs.push(uv_interp.x, uv_interp.y);
                     // push each vertex has member of a face
@@ -2069,8 +2100,3 @@
         }
     }
 }
-
-
-
-
-

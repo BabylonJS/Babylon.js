@@ -10,10 +10,8 @@ varying vec3 vPositionW;
 // MAGMAAAA
 uniform float time;
 uniform float speed;
-uniform float movingSpeed;
 uniform vec3 fogColor;
 uniform sampler2D noiseTexture;
-uniform float fogDensity;
 
 // Varying
 varying float noise;
@@ -404,16 +402,17 @@ void main(void) {
 
 	T1.x += noiseTex.x * 2.0;
 	T1.y += noiseTex.y * 2.0;
-	T2.x -= noiseTex.y * 0.2 + time*0.001*movingSpeed;
-	T2.y += noiseTex.z * 0.2 + time*0.002*movingSpeed;
+	T2.x -= noiseTex.y * 0.2;
+	T2.y += noiseTex.z * 0.2;
 
 	float p = texture2D( noiseTexture, T1 * 3.0 ).a;
 
 	vec4 lavaColor = texture2D( diffuseSampler, T2 * 4.0);
-	vec4 temp = lavaColor * ( vec4( p, p, p, p ) * 2. ) + ( lavaColor * lavaColor - 0.1 );
+	vec4 temp = lavaColor * ( vec4( p, p, p, p ) * 2.0 ) + ( lavaColor * lavaColor - 0.1 );
 
 	baseColor = temp;
 
+	float fogDensity = 0.15;
 	float depth = gl_FragCoord.z * 4.0;
 	const float LOG2 = 1.442695;
     float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );

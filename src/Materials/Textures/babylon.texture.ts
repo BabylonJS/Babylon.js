@@ -13,6 +13,7 @@
         public static SKYBOX_MODE = 5;
         public static INVCUBIC_MODE = 6;
         public static EQUIRECTANGULAR_MODE = 7;
+        public static FIXED_EQUIRECTANGULAR_MODE = 8;
 
         public static CLAMP_ADDRESSMODE = 0;
         public static WRAP_ADDRESSMODE = 1;
