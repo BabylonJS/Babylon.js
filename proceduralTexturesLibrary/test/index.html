@@ -11,6 +11,7 @@
 	<script src="../dist/babylon.roadProceduralTexture.js"></script>
 	<script src="../dist/babylon.brickProceduralTexture.js"></script>
 	<script src="../dist/babylon.marbleProceduralTexture.js"></script>
+	<script src="../dist/babylon.starfieldProceduralTexture.js"></script>
 
 	<style>
 		html, body {
@@ -52,6 +53,7 @@
     <script src="add/addRoadPT.js"></script>
     <script src="add/addBrickPT.js"></script>
     <script src="add/addMarblePT.js"></script>
+    <script src="add/addStarfieldPT.js"></script>
 	<script>
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -196,13 +198,18 @@
                 var marblePT = addMarblePT();
 				var marbleMaterial =  new BABYLON.StandardMaterial("marble", scene);
 				marbleMaterial.diffuseTexture = marblePT;
+				
+				// Starfield Procedural Texture
+                var starfieldPT = addStarfieldPT();
+				var starfieldMaterial =  new BABYLON.StandardMaterial("starfield", scene);
+			 	starfieldMaterial.diffuseTexture = starfieldPT;
 								
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['none', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble']).onFinishChange(function () {
+				gui.add(options, 'material', ['none', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield']).onFinishChange(function () {
 					switch (options.material) {
 						case "fire":
 							currentMaterial = fireMaterial;
@@ -224,6 +231,9 @@
 							break;
 						case "marble":
 							currentMaterial = marbleMaterial;
+							break;
+						case "starfield":
+							currentMaterial = starfieldMaterial;
 							break;
 						case "none":
 						default:
@@ -257,8 +267,6 @@
 					currentMesh.setEnabled(true);
 					currentMesh.receiveShadows = true;
 					currentMesh.material = currentMaterial;
-					
-					water.mesh = currentMesh;
 				});
 
 				var f1 = gui.addFolder('lights');

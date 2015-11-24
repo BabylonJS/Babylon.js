@@ -48,6 +48,13 @@
         "proceduralTextures/marble/marbleProceduralTexture.fragment.fx"
       ],
       "output": "babylon.marbleProceduralTexture.js"
+    },
+    {
+      "file": "proceduralTextures/starfield/babylon.starfieldProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/starfield/starfieldProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.starfieldProceduralTexture.js"
     }
   ],
   "build": {

@@ -9,7 +9,7 @@ module BABYLON {
         private _groundColor = new Color3(1, 1, 1);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "grasstexture", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps);
 
             this._grassColors = [
                 new Color3(0.29, 0.38, 0.02),

@@ -8,7 +8,7 @@ module BABYLON {
         private _brickColor = new Color3(0.77, 0.47, 0.40);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "bricktexture", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
             this.refreshRate = 0;
         }

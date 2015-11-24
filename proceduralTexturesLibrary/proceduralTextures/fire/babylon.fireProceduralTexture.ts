@@ -9,7 +9,7 @@ module BABYLON {
         private _alphaThreshold: number = 0.5;
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
-            super(name, size, "firetexture", scene, fallbackTexture, generateMipMaps);
+            super(name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this._fireColors = FireProceduralTexture.RedFireColors;
             this.updateShaderUniforms();
             this.refreshRate = 1;
