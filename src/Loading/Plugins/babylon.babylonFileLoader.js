@@ -101,7 +101,10 @@ var BABYLON;
             fresnelParameters.power = parsedFresnelParameters.power || 1.0;
             return fresnelParameters;
         };
-        var parseMaterial = function (parsedMaterial, scene, rootUrl) {
+        var parseCustomMaterial = function (parsedMaterial, scene, rootUrl) {
+            return null;
+        };
+        var parseStandardMaterial = function (parsedMaterial, scene, rootUrl) {
             var material;
             material = new BABYLON.StandardMaterial(parsedMaterial.name, scene);
             material.ambientColor = BABYLON.Color3.FromArray(parsedMaterial.ambient);
@@ -160,6 +163,12 @@ var BABYLON;
                 material.checkReadyOnlyOnce = parsedMaterial.checkReadyOnlyOnce;
             }
             return material;
+        };
+        var parseMaterial = function (parsedMaterial, scene, rootUrl) {
+            if (!parsedMaterial.customType) {
+                return parseStandardMaterial(parsedMaterial, scene, rootUrl);
+            }
+            return parseCustomMaterial(parsedMaterial, scene, rootUrl);
         };
         var parseMaterialById = function (id, parsedData, scene, rootUrl) {
             for (var index = 0; index < parsedData.materials.length; index++) {

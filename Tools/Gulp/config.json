@@ -61,7 +61,6 @@
       "../../src/Materials/Textures/babylon.videoTexture.js",
       "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js",
       "../../src/Materials/Textures/babylon.proceduralTexture.js",
-      "../../src/Materials/Textures/Procedurals/babylon.standardProceduralTexture.js",
       "../../src/Materials/babylon.effect.js",
       "../../src/Materials/babylon.material.js",
       "../../src/Materials/babylon.standardMaterial.js",

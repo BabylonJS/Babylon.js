@@ -119,7 +119,11 @@
         return fresnelParameters;
     }
 
-    var parseMaterial = (parsedMaterial, scene, rootUrl) => {
+    var parseCustomMaterial = (parsedMaterial, scene, rootUrl): Material => {
+        return null;
+    }
+
+    var parseStandardMaterial = (parsedMaterial, scene, rootUrl): Material => {
         var material;
         material = new BABYLON.StandardMaterial(parsedMaterial.name, scene);
 
@@ -198,6 +202,14 @@
 
         return material;
     };
+
+    var parseMaterial = (parsedMaterial, scene, rootUrl): Material => {
+        if (!parsedMaterial.customType) {
+            return parseStandardMaterial(parsedMaterial, scene, rootUrl);
+        }
+
+        return parseCustomMaterial(parsedMaterial, scene, rootUrl);
+    }
 
     var parseMaterialById = (id, parsedData, scene, rootUrl) => {
         for (var index = 0; index < parsedData.materials.length; index++) {
