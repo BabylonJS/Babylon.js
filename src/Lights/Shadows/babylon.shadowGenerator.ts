@@ -89,7 +89,7 @@
                 (!this._light.supportsVSM() && (
                     this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP ||
                     this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP
-                    ));
+                ));
         }
         public set usePoissonSampling(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
@@ -135,11 +135,11 @@
             this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this._shadowMap.anisotropicFilteringLevel = 1;        
+            this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
 
-            
+
             this._shadowMap.onBeforeRender = (faceIndex: number) => {
                 this._currentFaceIndex = faceIndex;
             }
@@ -332,7 +332,7 @@
             if (Math.abs(Vector3.Dot(this._lightDirection, Vector3.Up())) === 1.0) {
                 this._lightDirection.z = 0.0000000000001; // Need to avoid perfectly perpendicular light
             }
-                
+
             if (this._light.computeTransformedPosition()) {
                 lightPosition = this._light.transformedPosition;
             }
@@ -390,6 +390,39 @@
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
             }
+        }
+
+        public static ParseShadowGenerator(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
+            var light = scene.getLightByID(parsedShadowGenerator.lightId);
+            var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
+
+            for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
+                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
+
+                shadowGenerator.getShadowMap().renderList.push(mesh);
+            }
+
+            if (parsedShadowGenerator.usePoissonSampling) {
+                shadowGenerator.usePoissonSampling = true;
+            } else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useVarianceShadowMap = true;
+            } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurVarianceShadowMap = true;
+
+                if (parsedShadowGenerator.blurScale) {
+                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
+                }
+
+                if (parsedShadowGenerator.blurBoxOffset) {
+                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
+                }
+            }
+
+            if (parsedShadowGenerator.bias !== undefined) {
+                shadowGenerator.bias = parsedShadowGenerator.bias;
+            }
+
+            return shadowGenerator;
         }
     }
 } 

@@ -136,5 +136,26 @@
             // Remove from scene
             this.getScene().removeSkeleton(this);
         }
+        
+        public static ParseSkeleton(parsedSkeleton: any, scene: BABYLON.Scene) : BABYLON.Skeleton {
+            var skeleton = new BABYLON.Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+
+            for (var index = 0; index < parsedSkeleton.bones.length; index++) {
+                var parsedBone = parsedSkeleton.bones[index];
+    
+                var parentBone = null;
+                if (parsedBone.parentBoneIndex > -1) {
+                    parentBone = skeleton.bones[parsedBone.parentBoneIndex];
+                }
+    
+                var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
+    
+                if (parsedBone.animation) {
+                    bone.animations.push(Animation.ParseAnimation(parsedBone.animation));
+                }
+            }
+    
+            return skeleton;
+        }
     }
 }
