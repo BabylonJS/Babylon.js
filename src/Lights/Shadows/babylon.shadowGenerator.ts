@@ -410,7 +410,7 @@
             return serializationObject;
         }
 
-        public static ParseShadowGenerator(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
+        public static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
             //casting to point light, as light is missing the position attr and typescript complains.
             var light = <PointLight>scene.getLightByID(parsedShadowGenerator.lightId);
             var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);

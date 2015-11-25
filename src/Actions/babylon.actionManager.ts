@@ -278,7 +278,7 @@
             return properties[properties.length - 1];
         }
 
-        public static ParseActions(parsedActions: any, object: AbstractMesh, scene: Scene) {
+        public static Parse(parsedActions: any, object: AbstractMesh, scene: Scene) {
             var actionManager = new BABYLON.ActionManager(scene);
             if (object === null)
                 scene.actionManager = actionManager;

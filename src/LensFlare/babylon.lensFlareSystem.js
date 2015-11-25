@@ -176,7 +176,7 @@ var BABYLON;
             var index = this._scene.lensFlareSystems.indexOf(this);
             this._scene.lensFlareSystems.splice(index, 1);
         };
-        LensFlareSystem.ParseLensFlareSystem = function (parsedLensFlareSystem, scene, rootUrl) {
+        LensFlareSystem.Parse = function (parsedLensFlareSystem, scene, rootUrl) {
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
             var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;

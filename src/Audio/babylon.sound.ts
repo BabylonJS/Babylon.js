@@ -478,7 +478,7 @@
             }
         }
 
-        public static ParseSound(parsedSound: any, scene: Scene, rootUrl: string): Sound {
+        public static Parse(parsedSound: any, scene: Scene, rootUrl: string): Sound {
             var soundName = parsedSound.name;
             var soundUrl = rootUrl + soundName;
 

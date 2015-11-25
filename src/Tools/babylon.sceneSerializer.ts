@@ -1,180 +1,40 @@
 ﻿module BABYLON {  
     var serializedGeometries: Geometry[] = [];
-    var serializeVertexData: (vertexData: Geometry) => any;
-    var serializeTorusKnot: (torusKnot: Geometry.Primitives.TorusKnot) => any;
-    var serializePlane: (plane) => any;
-    var serializeGround: (ground: Geometry.Primitives.Ground) => any;
-    var serializeTorus: (torus: Geometry.Primitives.Torus) => any;
-    var serializeCylinder: (cylinder: Geometry.Primitives.Cylinder) => any;
-    var serializeSphere: (sphere: Geometry.Primitives.Sphere) => any;
-    var serializeBox: (box: Geometry.Primitives.Box) => any;
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
         if (serializedGeometries[geometry.id]) {
             return;
         }
         if (geometry instanceof Geometry.Primitives.Box) {
-            serializationGeometries.boxes.push(serializeBox(geometry));
+            serializationGeometries.boxes.push(geometry.serialize());
         }
         else if (geometry instanceof Geometry.Primitives.Sphere) {
-            serializationGeometries.spheres.push(serializeSphere(geometry));
+            serializationGeometries.spheres.push(geometry.serialize());
         }
         else if (geometry instanceof Geometry.Primitives.Cylinder) {
-            serializationGeometries.cylinders.push(serializeCylinder(geometry));
+            serializationGeometries.cylinders.push(geometry.serialize());
         }
         else if (geometry instanceof Geometry.Primitives.Torus) {
-            serializationGeometries.toruses.push(serializeTorus(geometry));
+            serializationGeometries.toruses.push(geometry.serialize());
         }
         else if (geometry instanceof Geometry.Primitives.Ground) {
-            serializationGeometries.grounds.push(serializeGround(geometry));
+            serializationGeometries.grounds.push(geometry.serialize());
         }
         else if (geometry instanceof Geometry.Primitives.Plane) {
-            serializationGeometries.planes.push(serializePlane(geometry));
+            serializationGeometries.planes.push(geometry.serialize());
         }
         else if (geometry instanceof Geometry.Primitives.TorusKnot) {
-            serializationGeometries.torusKnots.push(serializeTorusKnot(geometry));
+            serializationGeometries.torusKnots.push(geometry.serialize());
         }
         else if (geometry instanceof Geometry.Primitives._Primitive) {
             throw new Error("Unknown primitive type");
         }
         else {
-            serializationGeometries.vertexData.push(serializeVertexData(geometry));
+            serializationGeometries.vertexData.push(geometry.serializeVerticeData());
         }
 
         serializedGeometries[geometry.id] = true;
     };
 
-    var serializeGeometryBase = (geometry: Geometry): any => {
-        var serializationObject: any = {};
-
-        serializationObject.id = geometry.id;
-
-        if (Tags.HasTags(geometry)) {
-            serializationObject.tags = Tags.GetTags(geometry);
-        }
-
-        return serializationObject;
-    };
-    serializeVertexData = (vertexData: Geometry): any => {
-        var serializationObject = serializeGeometryBase(vertexData);
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-            serializationObject.positions = vertexData.getVerticesData(VertexBuffer.PositionKind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            serializationObject.normals = vertexData.getVerticesData(VertexBuffer.NormalKind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.UVKind)) {
-            serializationObject.uvs = vertexData.getVerticesData(VertexBuffer.UVKind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-            serializationObject.uvs2 = vertexData.getVerticesData(VertexBuffer.UV2Kind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-            serializationObject.uvs3 = vertexData.getVerticesData(VertexBuffer.UV3Kind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-            serializationObject.uvs4 = vertexData.getVerticesData(VertexBuffer.UV4Kind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-            serializationObject.uvs5 = vertexData.getVerticesData(VertexBuffer.UV5Kind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-            serializationObject.uvs6 = vertexData.getVerticesData(VertexBuffer.UV6Kind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-            serializationObject.colors = vertexData.getVerticesData(VertexBuffer.ColorKind);
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-            serializationObject.matricesIndices = vertexData.getVerticesData(VertexBuffer.MatricesIndicesKind);
-            serializationObject.matricesIndices._isExpanded = true;
-        }
-
-        if (vertexData.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-            serializationObject.matricesWeights = vertexData.getVerticesData(VertexBuffer.MatricesWeightsKind);
-        }
-
-        serializationObject.indices = vertexData.getIndices();
-
-        return serializationObject;
-    };
-    var serializePrimitive = (primitive: Geometry.Primitives._Primitive): any => {
-        var serializationObject = serializeGeometryBase(primitive);
-
-        serializationObject.canBeRegenerated = primitive.canBeRegenerated();
-
-        return serializationObject;
-    };
-    serializeBox = (box: Geometry.Primitives.Box): any => {
-        var serializationObject = serializePrimitive(box);
-
-        serializationObject.size = box.size;
-
-        return serializationObject;
-    };
-    serializeSphere = (sphere: Geometry.Primitives.Sphere): any => {
-        var serializationObject = serializePrimitive(sphere);
-
-        serializationObject.segments = sphere.segments;
-        serializationObject.diameter = sphere.diameter;
-
-        return serializationObject;
-    };
-    serializeCylinder = (cylinder: Geometry.Primitives.Cylinder): any => {
-        var serializationObject = serializePrimitive(cylinder);
-
-        serializationObject.height = cylinder.height;
-        serializationObject.diameterTop = cylinder.diameterTop;
-        serializationObject.diameterBottom = cylinder.diameterBottom;
-        serializationObject.tessellation = cylinder.tessellation;
-
-        return serializationObject;
-    };
-    serializeTorus = (torus: Geometry.Primitives.Torus): any => {
-        var serializationObject = serializePrimitive(torus);
-
-        serializationObject.diameter = torus.diameter;
-        serializationObject.thickness = torus.thickness;
-        serializationObject.tessellation = torus.tessellation;
-
-        return serializationObject;
-    };
-    serializeGround = (ground: Geometry.Primitives.Ground): any => {
-        var serializationObject = serializePrimitive(ground);
-
-        serializationObject.width = ground.width;
-        serializationObject.height = ground.height;
-        serializationObject.subdivisions = ground.subdivisions;
-
-        return serializationObject;
-    };
-    serializePlane = (plane: Geometry.Primitives.Plane): any => {
-        var serializationObject = serializePrimitive(plane);
-
-        serializationObject.size = plane.size;
-
-        return serializationObject;
-    };
-    serializeTorusKnot = (torusKnot: Geometry.Primitives.TorusKnot): any => {
-        var serializationObject = serializePrimitive(torusKnot);
-
-        serializationObject.radius = torusKnot.radius;
-        serializationObject.tube = torusKnot.tube;
-        serializationObject.radialSegments = torusKnot.radialSegments;
-        serializationObject.tubularSegments = torusKnot.tubularSegments;
-        serializationObject.p = torusKnot.p;
-        serializationObject.q = torusKnot.q;
-
-        return serializationObject;
-    };
     var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
         var serializationObject: any = {};
 
@@ -340,7 +200,6 @@
             serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
         }
     }
-
 
     export class SceneSerializer {
         public static Serialize(scene: Scene): any {

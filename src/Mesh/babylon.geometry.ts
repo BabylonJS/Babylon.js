@@ -471,6 +471,71 @@
             return geometry;
         }
 
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.id = this.id;
+
+            if (Tags.HasTags(this)) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
+
+            return serializationObject;
+        }
+
+        public serializeVerticeData(): any {
+            var serializationObject = this.serialize();
+
+            if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+                serializationObject.positions = this.getVerticesData(VertexBuffer.PositionKind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                serializationObject.normals = this.getVerticesData(VertexBuffer.NormalKind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                serializationObject.uvs = this.getVerticesData(VertexBuffer.UVKind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                serializationObject.uvs2 = this.getVerticesData(VertexBuffer.UV2Kind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
+                serializationObject.uvs3 = this.getVerticesData(VertexBuffer.UV3Kind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
+                serializationObject.uvs4 = this.getVerticesData(VertexBuffer.UV4Kind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
+                serializationObject.uvs5 = this.getVerticesData(VertexBuffer.UV5Kind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
+                serializationObject.uvs6 = this.getVerticesData(VertexBuffer.UV6Kind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+                serializationObject.colors = this.getVerticesData(VertexBuffer.ColorKind);
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
+                serializationObject.matricesIndices = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                serializationObject.matricesIndices._isExpanded = true;
+            }
+
+            if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
+                serializationObject.matricesWeights = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+            }
+
+            serializationObject.indices = this.getIndices();
+
+            return serializationObject;
+        }
+
         // Statics
         public static ExtractFromMesh(mesh: Mesh, id: string): Geometry {
             var geometry = mesh._geometry;
@@ -687,7 +752,7 @@
             }
         }
 
-        public static ParseGeometry(parsedVertexData: any, scene: Scene, rootUrl: string): Geometry {
+        public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Geometry {
             if (scene.getGeometryByID(parsedVertexData.id)) {
                 return null; // null since geometry could be something else than a box...
             }
@@ -806,6 +871,14 @@
             public copy(id: string): Geometry {
                 throw new Error("Must be overriden in sub-classes.");
             }
+
+            public serialize(): any {
+                var serializationObject = super.serialize();
+
+                serializationObject.canBeRegenerated = this.canBeRegenerated();
+
+                return serializationObject;
+            }
         }
 
         export class Ribbon extends _Primitive {
@@ -855,7 +928,15 @@
                 return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
             }
 
-            public static ParseBox(parsedBox: any, scene: Scene): Geometry.Primitives.Box {
+            public serialize(): any {
+                var serializationObject = super.serialize();
+
+                serializationObject.size = this.size;
+
+                return serializationObject;
+            }
+
+            public static Parse(parsedBox: any, scene: Scene): Box {
                 if (scene.getGeometryByID(parsedBox.id)) {
                     return null; // null since geometry could be something else than a box...
                 }
@@ -891,7 +972,16 @@
                 return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
             }
 
-            public static ParseSphere(parsedSphere: any, scene: Scene): Geometry.Primitives.Sphere {
+            public serialize(): any {
+                var serializationObject = super.serialize();
+
+                serializationObject.segments = this.segments;
+                serializationObject.diameter = this.diameter;
+
+                return serializationObject;
+            }
+
+            public static Parse(parsedSphere: any, scene: Scene): Geometry.Primitives.Sphere {
                 if (scene.getGeometryByID(parsedSphere.id)) {
                     return null; // null since geometry could be something else than a sphere...
                 }
@@ -957,7 +1047,18 @@
                 return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null, this.side);
             }
 
-            public static ParseCylinder(parsedCylinder: any, scene: Scene): Geometry.Primitives.Cylinder {
+            public serialize(): any {
+                var serializationObject = super.serialize();
+
+                serializationObject.height = this.height;
+                serializationObject.diameterTop = this.diameterTop;
+                serializationObject.diameterBottom = this.diameterBottom;
+                serializationObject.tessellation = this.tessellation;
+
+                return serializationObject;
+            }
+
+            public static Parse(parsedCylinder: any, scene: Scene): Geometry.Primitives.Cylinder {
                 if (scene.getGeometryByID(parsedCylinder.id)) {
                     return null; // null since geometry could be something else than a cylinder...
                 }
@@ -995,7 +1096,17 @@
                 return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null, this.side);
             }
 
-            public static ParseTorus(parsedTorus: any, scene: Scene): Geometry.Primitives.Torus {
+            public serialize(): any {
+                var serializationObject = super.serialize();
+
+                serializationObject.diameter = this.diameter;
+                serializationObject.thickness = this.thickness;
+                serializationObject.tessellation = this.tessellation;
+
+                return serializationObject;
+            }
+
+            public static Parse(parsedTorus: any, scene: Scene): Geometry.Primitives.Torus {
                 if (scene.getGeometryByID(parsedTorus.id)) {
                     return null; // null since geometry could be something else than a torus...
                 }
@@ -1031,7 +1142,17 @@
                 return new Ground(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
             }
 
-            public static ParseGround(parsedGround: any, scene: Scene): Geometry.Primitives.Ground {
+            public serialize(): any {
+                var serializationObject = super.serialize();
+
+                serializationObject.width = this.width;
+                serializationObject.height = this.height;
+                serializationObject.subdivisions = this.subdivisions;
+
+                return serializationObject;
+            }
+
+            public static Parse(parsedGround: any, scene: Scene): Geometry.Primitives.Ground {
                 if (scene.getGeometryByID(parsedGround.id)) {
                     return null; // null since geometry could be something else than a ground...
                 }
@@ -1094,7 +1215,15 @@
                 return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
             }
 
-            public static ParsePlane(parsedPlane: any, scene: Scene): Geometry.Primitives.Plane {
+            public serialize(): any {
+                var serializationObject = super.serialize();
+
+                serializationObject.size = this.size;
+
+                return serializationObject;
+            }
+
+            public static Parse(parsedPlane: any, scene: Scene): Geometry.Primitives.Plane {
                 if (scene.getGeometryByID(parsedPlane.id)) {
                     return null; // null since geometry could be something else than a ground...
                 }
@@ -1138,7 +1267,20 @@
                 return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null, this.side);
             }
 
-            public static ParseTorusKnot(parsedTorusKnot: any, scene: Scene): Geometry.Primitives.TorusKnot {
+            public serialize(): any {
+                var serializationObject = super.serialize();
+
+                serializationObject.radius = this.radius;
+                serializationObject.tube = this.tube;
+                serializationObject.radialSegments = this.radialSegments;
+                serializationObject.tubularSegments = this.tubularSegments;
+                serializationObject.p = this.p;
+                serializationObject.q = this.q;
+
+                return serializationObject;
+            };
+
+            public static Parse(parsedTorusKnot: any, scene: Scene): Geometry.Primitives.TorusKnot {
                 if (scene.getGeometryByID(parsedTorusKnot.id)) {
                     return null; // null since geometry could be something else than a ground...
                 }

@@ -281,7 +281,7 @@ var BABYLON;
             var properties = propertyPath.split(".");
             return properties[properties.length - 1];
         };
-        ActionManager.ParseActions = function (parsedActions, object, scene) {
+        ActionManager.Parse = function (parsedActions, object, scene) {
             var actionManager = new BABYLON.ActionManager(scene);
             if (object === null)
                 scene.actionManager = actionManager;

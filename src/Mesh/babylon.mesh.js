@@ -1059,7 +1059,7 @@ var BABYLON;
             });
         };
         // Statics
-        Mesh.ParseMesh = function (parsedMesh, scene, rootUrl) {
+        Mesh.Parse = function (parsedMesh, scene, rootUrl) {
             var mesh = new Mesh(parsedMesh.name, scene);
             mesh.id = parsedMesh.id;
             BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
@@ -1180,7 +1180,7 @@ var BABYLON;
             if (parsedMesh.animations) {
                 for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                     var parsedAnimation = parsedMesh.animations[animationIndex];
-                    mesh.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                    mesh.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
             }
             if (parsedMesh.autoAnimate) {
@@ -1211,7 +1211,7 @@ var BABYLON;
                     if (parsedMesh.animations) {
                         for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                             parsedAnimation = parsedMesh.animations[animationIndex];
-                            instance.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                            instance.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                         }
                     }
                 }

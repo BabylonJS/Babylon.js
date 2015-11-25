@@ -280,14 +280,30 @@
             return serializationObject;
         }
 
-        public static ParseMaterial(parsedMaterial: any, scene: Scene, rootUrl: string) {
+        public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
+            var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
+
+            multiMaterial.id = parsedMultiMaterial.id;
+
+            Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+
+            for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
+                var subMatId = parsedMultiMaterial.materials[matIndex];
+
+                if (subMatId) {
+                    multiMaterial.subMaterials.push(scene.getMaterialByID(subMatId));
+                } else {
+                    multiMaterial.subMaterials.push(null);
+                }
+            }
+
+            return multiMaterial;
+        }
+
+        public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string) {
             if (!parsedMaterial.customType) {
                 return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
-            // parse Lava material
-            //else if (parsedMaterial.customType === "lava") {
-            //    return LavaMaterial.Parse(parsedMaterial, scene, rootUrl);
-            //}
 
             //TODO this is where custom materials are inspected and parsed.
             return null;

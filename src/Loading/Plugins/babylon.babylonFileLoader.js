@@ -6,7 +6,7 @@ var BABYLON;
             for (var index = 0; index < parsedData.materials.length; index++) {
                 var parsedMaterial = parsedData.materials[index];
                 if (parsedMaterial.id === id) {
-                    return BABYLON.Material.ParseMaterial(parsedMaterial, scene, rootUrl);
+                    return BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
                 }
             }
             return null;
@@ -52,31 +52,31 @@ var BABYLON;
                                     }
                                     else {
                                         parsedData.geometries[geometryType].forEach(function (parsedGeometryData) {
-                                            if (parsedGeometryData.id == parsedMesh.geometryId) {
+                                            if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                 switch (geometryType) {
                                                     case "boxes":
-                                                        BABYLON.Geometry.Primitives.Box.ParseBox(parsedGeometryData, scene);
+                                                        BABYLON.Geometry.Primitives.Box.Parse(parsedGeometryData, scene);
                                                         break;
                                                     case "spheres":
-                                                        BABYLON.Geometry.Primitives.Sphere.ParseSphere(parsedGeometryData, scene);
+                                                        BABYLON.Geometry.Primitives.Sphere.Parse(parsedGeometryData, scene);
                                                         break;
                                                     case "cylinders":
-                                                        BABYLON.Geometry.Primitives.Cylinder.ParseCylinder(parsedGeometryData, scene);
+                                                        BABYLON.Geometry.Primitives.Cylinder.Parse(parsedGeometryData, scene);
                                                         break;
                                                     case "toruses":
-                                                        BABYLON.Geometry.Primitives.Torus.ParseTorus(parsedGeometryData, scene);
+                                                        BABYLON.Geometry.Primitives.Torus.Parse(parsedGeometryData, scene);
                                                         break;
                                                     case "grounds":
-                                                        BABYLON.Geometry.Primitives.Ground.ParseGround(parsedGeometryData, scene);
+                                                        BABYLON.Geometry.Primitives.Ground.Parse(parsedGeometryData, scene);
                                                         break;
                                                     case "planes":
-                                                        BABYLON.Geometry.Primitives.Plane.ParsePlane(parsedGeometryData, scene);
+                                                        BABYLON.Geometry.Primitives.Plane.Parse(parsedGeometryData, scene);
                                                         break;
                                                     case "torusKnots":
-                                                        BABYLON.Geometry.Primitives.TorusKnot.ParseTorusKnot(parsedGeometryData, scene);
+                                                        BABYLON.Geometry.Primitives.TorusKnot.Parse(parsedGeometryData, scene);
                                                         break;
                                                     case "vertexData":
-                                                        BABYLON.Geometry.ParseGeometry(parsedGeometryData, scene, rootUrl);
+                                                        BABYLON.Geometry.Parse(parsedGeometryData, scene, rootUrl);
                                                         break;
                                                 }
                                                 found = true;
@@ -102,7 +102,7 @@ var BABYLON;
                                             parseMaterialById(subMatId, parsedData, scene, rootUrl);
                                         }
                                         loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                        parsedMultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
+                                        parsedMultiMaterial.Parse(parsedMultiMaterial, scene);
                                         materialFound = true;
                                         break;
                                     }
@@ -122,13 +122,13 @@ var BABYLON;
                                 for (var skeletonIndex = 0; skeletonIndex < parsedData.skeletons.length; skeletonIndex++) {
                                     var parsedSkeleton = parsedData.skeletons[skeletonIndex];
                                     if (parsedSkeleton.id === parsedMesh.skeletonId) {
-                                        skeletons.push(BABYLON.Skeleton.ParseSkeleton(parsedSkeleton, scene));
+                                        skeletons.push(BABYLON.Skeleton.Parse(parsedSkeleton, scene));
                                         loadedSkeletonsIds.push(parsedSkeleton.id);
                                     }
                                 }
                             }
                         }
-                        var mesh = BABYLON.Mesh.ParseMesh(parsedMesh, scene, rootUrl);
+                        var mesh = BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
                         meshes.push(mesh);
                     }
                 }
@@ -154,7 +154,7 @@ var BABYLON;
                     for (index = 0; index < parsedData.particleSystems.length; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
                         if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
-                            particleSystems.push(BABYLON.ParticleSystem.ParseParticleSystem(parsedParticleSystem, scene, rootUrl));
+                            particleSystems.push(BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl));
                         }
                     }
                 }
@@ -200,26 +200,26 @@ var BABYLON;
                 var index;
                 for (index = 0; index < parsedData.lights.length; index++) {
                     var parsedLight = parsedData.lights[index];
-                    BABYLON.Light.ParseLight(parsedLight, scene);
+                    BABYLON.Light.Parse(parsedLight, scene);
                 }
                 // Materials
                 if (parsedData.materials) {
                     for (index = 0; index < parsedData.materials.length; index++) {
                         var parsedMaterial = parsedData.materials[index];
-                        BABYLON.Material.ParseMaterial(parsedMaterial, scene, rootUrl);
+                        BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
                     }
                 }
                 if (parsedData.multiMaterials) {
                     for (index = 0; index < parsedData.multiMaterials.length; index++) {
                         var parsedMultiMaterial = parsedData.multiMaterials[index];
-                        BABYLON.MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
+                        BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
                     }
                 }
                 // Skeletons
                 if (parsedData.skeletons) {
                     for (index = 0; index < parsedData.skeletons.length; index++) {
                         var parsedSkeleton = parsedData.skeletons[index];
-                        BABYLON.Skeleton.ParseSkeleton(parsedSkeleton, scene);
+                        BABYLON.Skeleton.Parse(parsedSkeleton, scene);
                     }
                 }
                 // Geometries
@@ -230,7 +230,7 @@ var BABYLON;
                     if (boxes) {
                         for (index = 0; index < boxes.length; index++) {
                             var parsedBox = boxes[index];
-                            BABYLON.Geometry.Primitives.Box.ParseBox(parsedBox, scene);
+                            BABYLON.Geometry.Primitives.Box.Parse(parsedBox, scene);
                         }
                     }
                     // Spheres
@@ -238,7 +238,7 @@ var BABYLON;
                     if (spheres) {
                         for (index = 0; index < spheres.length; index++) {
                             var parsedSphere = spheres[index];
-                            BABYLON.Geometry.Primitives.Sphere.ParseSphere(parsedSphere, scene);
+                            BABYLON.Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
                         }
                     }
                     // Cylinders
@@ -246,7 +246,7 @@ var BABYLON;
                     if (cylinders) {
                         for (index = 0; index < cylinders.length; index++) {
                             var parsedCylinder = cylinders[index];
-                            BABYLON.Geometry.Primitives.Cylinder.ParseCylinder(parsedCylinder, scene);
+                            BABYLON.Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
                         }
                     }
                     // Toruses
@@ -254,7 +254,7 @@ var BABYLON;
                     if (toruses) {
                         for (index = 0; index < toruses.length; index++) {
                             var parsedTorus = toruses[index];
-                            BABYLON.Geometry.Primitives.Torus.ParseTorus(parsedTorus, scene);
+                            BABYLON.Geometry.Primitives.Torus.Parse(parsedTorus, scene);
                         }
                     }
                     // Grounds
@@ -262,7 +262,7 @@ var BABYLON;
                     if (grounds) {
                         for (index = 0; index < grounds.length; index++) {
                             var parsedGround = grounds[index];
-                            BABYLON.Geometry.Primitives.Ground.ParseGround(parsedGround, scene);
+                            BABYLON.Geometry.Primitives.Ground.Parse(parsedGround, scene);
                         }
                     }
                     // Planes
@@ -270,7 +270,7 @@ var BABYLON;
                     if (planes) {
                         for (index = 0; index < planes.length; index++) {
                             var parsedPlane = planes[index];
-                            BABYLON.Geometry.Primitives.Plane.ParsePlane(parsedPlane, scene);
+                            BABYLON.Geometry.Primitives.Plane.Parse(parsedPlane, scene);
                         }
                     }
                     // TorusKnots
@@ -278,7 +278,7 @@ var BABYLON;
                     if (torusKnots) {
                         for (index = 0; index < torusKnots.length; index++) {
                             var parsedTorusKnot = torusKnots[index];
-                            BABYLON.Geometry.Primitives.TorusKnot.ParseTorusKnot(parsedTorusKnot, scene);
+                            BABYLON.Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
                         }
                     }
                     // VertexData
@@ -286,19 +286,19 @@ var BABYLON;
                     if (vertexData) {
                         for (index = 0; index < vertexData.length; index++) {
                             var parsedVertexData = vertexData[index];
-                            BABYLON.Geometry.ParseGeometry(parsedVertexData, scene, rootUrl);
+                            BABYLON.Geometry.Parse(parsedVertexData, scene, rootUrl);
                         }
                     }
                 }
                 // Meshes
                 for (index = 0; index < parsedData.meshes.length; index++) {
                     var parsedMesh = parsedData.meshes[index];
-                    BABYLON.Mesh.ParseMesh(parsedMesh, scene, rootUrl);
+                    BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
                 }
                 // Cameras
                 for (index = 0; index < parsedData.cameras.length; index++) {
                     var parsedCamera = parsedData.cameras[index];
-                    BABYLON.Camera.ParseCamera(parsedCamera, scene);
+                    BABYLON.Camera.Parse(parsedCamera, scene);
                 }
                 if (parsedData.activeCameraID) {
                     scene.setActiveCameraByID(parsedData.activeCameraID);
@@ -323,7 +323,7 @@ var BABYLON;
                     for (index = 0; index < parsedData.sounds.length; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            BABYLON.Sound.ParseSound(parsedSound, scene, rootUrl);
+                            BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
                         }
                         else {
                             var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
@@ -338,7 +338,7 @@ var BABYLON;
                         mesh._waitingParentId = undefined;
                     }
                     if (mesh._waitingActions) {
-                        BABYLON.ActionManager.ParseActions(mesh._waitingActions, mesh, scene);
+                        BABYLON.ActionManager.Parse(mesh._waitingActions, mesh, scene);
                         mesh._waitingActions = undefined;
                     }
                 }
@@ -354,26 +354,26 @@ var BABYLON;
                 if (parsedData.particleSystems) {
                     for (index = 0; index < parsedData.particleSystems.length; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
-                        BABYLON.ParticleSystem.ParseParticleSystem(parsedParticleSystem, scene, rootUrl);
+                        BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
                     }
                 }
                 // Lens flares
                 if (parsedData.lensFlareSystems) {
                     for (index = 0; index < parsedData.lensFlareSystems.length; index++) {
                         var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-                        BABYLON.LensFlareSystem.ParseLensFlareSystem(parsedLensFlareSystem, scene, rootUrl);
+                        BABYLON.LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
                     }
                 }
                 // Shadows
                 if (parsedData.shadowGenerators) {
                     for (index = 0; index < parsedData.shadowGenerators.length; index++) {
                         var parsedShadowGenerator = parsedData.shadowGenerators[index];
-                        BABYLON.ShadowGenerator.ParseShadowGenerator(parsedShadowGenerator, scene);
+                        BABYLON.ShadowGenerator.Parse(parsedShadowGenerator, scene);
                     }
                 }
                 // Actions (scene)
                 if (parsedData.actions) {
-                    BABYLON.ActionManager.ParseActions(parsedData.actions, null, scene);
+                    BABYLON.ActionManager.Parse(parsedData.actions, null, scene);
                 }
                 // Finish
                 return true;

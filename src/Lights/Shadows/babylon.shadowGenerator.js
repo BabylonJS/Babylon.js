@@ -351,7 +351,7 @@ var BABYLON;
             }
             return serializationObject;
         };
-        ShadowGenerator.ParseShadowGenerator = function (parsedShadowGenerator, scene) {
+        ShadowGenerator.Parse = function (parsedShadowGenerator, scene) {
             //casting to point light, as light is missing the position attr and typescript complains.
             var light = scene.getLightByID(parsedShadowGenerator.lightId);
             var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);

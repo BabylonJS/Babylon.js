@@ -479,7 +479,7 @@
             return serializationObject;
         }
 
-        public static ParseParticleSystem(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
 
             var particleSystem = new ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);

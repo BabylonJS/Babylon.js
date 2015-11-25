@@ -1241,7 +1241,7 @@
 
         // Statics
         
-        public static ParseMesh(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
+        public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
             var mesh = new Mesh(parsedMesh.name, scene);
             mesh.id = parsedMesh.id;
 
@@ -1396,7 +1396,7 @@
                 for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                     var parsedAnimation = parsedMesh.animations[animationIndex];
 
-                    mesh.animations.push(Animation.ParseAnimation(parsedAnimation));
+                    mesh.animations.push(Animation.Parse(parsedAnimation));
                 }
             }
 
@@ -1435,7 +1435,7 @@
                         for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
                             parsedAnimation = parsedMesh.animations[animationIndex];
 
-                            instance.animations.push(Animation.ParseAnimation(parsedAnimation));
+                            instance.animations.push(Animation.Parse(parsedAnimation));
                         }
                     }
                 }

@@ -163,7 +163,7 @@
             return serializationObject;
         }
         
-        public static ParseSkeleton(parsedSkeleton: any, scene: Scene) : Skeleton {
+        public static Parse(parsedSkeleton: any, scene: Scene) : Skeleton {
             var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
 
             for (var index = 0; index < parsedSkeleton.bones.length; index++) {
@@ -177,7 +177,7 @@
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix));
     
                 if (parsedBone.animation) {
-                    bone.animations.push(Animation.ParseAnimation(parsedBone.animation));
+                    bone.animations.push(Animation.Parse(parsedBone.animation));
                 }
             }
     

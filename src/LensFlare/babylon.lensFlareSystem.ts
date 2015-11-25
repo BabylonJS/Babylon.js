@@ -234,7 +234,7 @@
             this._scene.lensFlareSystems.splice(index, 1);
         }
         
-        public static ParseLensFlareSystem(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
+        public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
 
             var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);

@@ -614,7 +614,7 @@
             return serializationObject;
         }
 
-        public static ParseCamera(parsedCamera: any, scene: Scene): Camera {
+        public static Parse(parsedCamera: any, scene: Scene): Camera {
             var camera;
             var position = Vector3.FromArray(parsedCamera.position);
             var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
@@ -716,7 +716,7 @@
                 for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
                     var parsedAnimation = parsedCamera.animations[animationIndex];
 
-                    camera.animations.push(Animation.ParseAnimation(parsedAnimation));
+                    camera.animations.push(Animation.Parse(parsedAnimation));
                 }
             }
 

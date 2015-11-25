@@ -548,7 +548,7 @@
             return Animation._ANIMATIONLOOPMODE_CONSTANT;
         }
 
-        public static ParseAnimation(parsedAnimation: any): Animation {
+        public static Parse(parsedAnimation: any): Animation {
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
             var dataType = parsedAnimation.dataType;

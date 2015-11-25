@@ -378,6 +378,53 @@ var BABYLON;
             geometry._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
             return geometry;
         };
+        Geometry.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.id = this.id;
+            if (BABYLON.Tags.HasTags(this)) {
+                serializationObject.tags = BABYLON.Tags.GetTags(this);
+            }
+            return serializationObject;
+        };
+        Geometry.prototype.serializeVerticeData = function () {
+            var serializationObject = this.serialize();
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
+                serializationObject.positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
+                serializationObject.normals = this.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
+                serializationObject.uvs = this.getVerticesData(BABYLON.VertexBuffer.UVKind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
+                serializationObject.uvs2 = this.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
+                serializationObject.uvs3 = this.getVerticesData(BABYLON.VertexBuffer.UV3Kind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
+                serializationObject.uvs4 = this.getVerticesData(BABYLON.VertexBuffer.UV4Kind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
+                serializationObject.uvs5 = this.getVerticesData(BABYLON.VertexBuffer.UV5Kind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
+                serializationObject.uvs6 = this.getVerticesData(BABYLON.VertexBuffer.UV6Kind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
+                serializationObject.colors = this.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
+                serializationObject.matricesIndices = this.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
+                serializationObject.matricesIndices._isExpanded = true;
+            }
+            if (this.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
+                serializationObject.matricesWeights = this.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
+            }
+            serializationObject.indices = this.getIndices();
+            return serializationObject;
+        };
         // Statics
         Geometry.ExtractFromMesh = function (mesh, id) {
             var geometry = mesh._geometry;
@@ -553,7 +600,7 @@ var BABYLON;
                 scene['_selectionOctree'].addMesh(mesh);
             }
         };
-        Geometry.ParseGeometry = function (parsedVertexData, scene, rootUrl) {
+        Geometry.Parse = function (parsedVertexData, scene, rootUrl) {
             if (scene.getGeometryByID(parsedVertexData.id)) {
                 return null; // null since geometry could be something else than a box...
             }
@@ -651,6 +698,11 @@ var BABYLON;
                 _Primitive.prototype.copy = function (id) {
                     throw new Error("Must be overriden in sub-classes.");
                 };
+                _Primitive.prototype.serialize = function () {
+                    var serializationObject = _super.prototype.serialize.call(this);
+                    serializationObject.canBeRegenerated = this.canBeRegenerated();
+                    return serializationObject;
+                };
                 return _Primitive;
             })(Geometry);
             Primitives._Primitive = _Primitive;
@@ -688,7 +740,12 @@ var BABYLON;
                 Box.prototype.copy = function (id) {
                     return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
                 };
-                Box.ParseBox = function (parsedBox, scene) {
+                Box.prototype.serialize = function () {
+                    var serializationObject = _super.prototype.serialize.call(this);
+                    serializationObject.size = this.size;
+                    return serializationObject;
+                };
+                Box.Parse = function (parsedBox, scene) {
                     if (scene.getGeometryByID(parsedBox.id)) {
                         return null; // null since geometry could be something else than a box...
                     }
@@ -715,7 +772,13 @@ var BABYLON;
                 Sphere.prototype.copy = function (id) {
                     return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
                 };
-                Sphere.ParseSphere = function (parsedSphere, scene) {
+                Sphere.prototype.serialize = function () {
+                    var serializationObject = _super.prototype.serialize.call(this);
+                    serializationObject.segments = this.segments;
+                    serializationObject.diameter = this.diameter;
+                    return serializationObject;
+                };
+                Sphere.Parse = function (parsedSphere, scene) {
                     if (scene.getGeometryByID(parsedSphere.id)) {
                         return null; // null since geometry could be something else than a sphere...
                     }
@@ -764,7 +827,15 @@ var BABYLON;
                 Cylinder.prototype.copy = function (id) {
                     return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null, this.side);
                 };
-                Cylinder.ParseCylinder = function (parsedCylinder, scene) {
+                Cylinder.prototype.serialize = function () {
+                    var serializationObject = _super.prototype.serialize.call(this);
+                    serializationObject.height = this.height;
+                    serializationObject.diameterTop = this.diameterTop;
+                    serializationObject.diameterBottom = this.diameterBottom;
+                    serializationObject.tessellation = this.tessellation;
+                    return serializationObject;
+                };
+                Cylinder.Parse = function (parsedCylinder, scene) {
                     if (scene.getGeometryByID(parsedCylinder.id)) {
                         return null; // null since geometry could be something else than a cylinder...
                     }
@@ -792,7 +863,14 @@ var BABYLON;
                 Torus.prototype.copy = function (id) {
                     return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null, this.side);
                 };
-                Torus.ParseTorus = function (parsedTorus, scene) {
+                Torus.prototype.serialize = function () {
+                    var serializationObject = _super.prototype.serialize.call(this);
+                    serializationObject.diameter = this.diameter;
+                    serializationObject.thickness = this.thickness;
+                    serializationObject.tessellation = this.tessellation;
+                    return serializationObject;
+                };
+                Torus.Parse = function (parsedTorus, scene) {
                     if (scene.getGeometryByID(parsedTorus.id)) {
                         return null; // null since geometry could be something else than a torus...
                     }
@@ -818,7 +896,14 @@ var BABYLON;
                 Ground.prototype.copy = function (id) {
                     return new Ground(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
                 };
-                Ground.ParseGround = function (parsedGround, scene) {
+                Ground.prototype.serialize = function () {
+                    var serializationObject = _super.prototype.serialize.call(this);
+                    serializationObject.width = this.width;
+                    serializationObject.height = this.height;
+                    serializationObject.subdivisions = this.subdivisions;
+                    return serializationObject;
+                };
+                Ground.Parse = function (parsedGround, scene) {
                     if (scene.getGeometryByID(parsedGround.id)) {
                         return null; // null since geometry could be something else than a ground...
                     }
@@ -864,7 +949,12 @@ var BABYLON;
                 Plane.prototype.copy = function (id) {
                     return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
                 };
-                Plane.ParsePlane = function (parsedPlane, scene) {
+                Plane.prototype.serialize = function () {
+                    var serializationObject = _super.prototype.serialize.call(this);
+                    serializationObject.size = this.size;
+                    return serializationObject;
+                };
+                Plane.Parse = function (parsedPlane, scene) {
                     if (scene.getGeometryByID(parsedPlane.id)) {
                         return null; // null since geometry could be something else than a ground...
                     }
@@ -895,7 +985,18 @@ var BABYLON;
                 TorusKnot.prototype.copy = function (id) {
                     return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null, this.side);
                 };
-                TorusKnot.ParseTorusKnot = function (parsedTorusKnot, scene) {
+                TorusKnot.prototype.serialize = function () {
+                    var serializationObject = _super.prototype.serialize.call(this);
+                    serializationObject.radius = this.radius;
+                    serializationObject.tube = this.tube;
+                    serializationObject.radialSegments = this.radialSegments;
+                    serializationObject.tubularSegments = this.tubularSegments;
+                    serializationObject.p = this.p;
+                    serializationObject.q = this.q;
+                    return serializationObject;
+                };
+                ;
+                TorusKnot.Parse = function (parsedTorusKnot, scene) {
                     if (scene.getGeometryByID(parsedTorusKnot.id)) {
                         return null; // null since geometry could be something else than a ground...
                     }

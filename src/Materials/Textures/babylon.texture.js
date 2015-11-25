@@ -201,9 +201,9 @@ var BABYLON;
             if (onError === void 0) { onError = null; }
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
         };
-        Texture.ParseTexture = function (parsedTexture, scene, rootUrl) {
+        Texture.Parse = function (parsedTexture, scene, rootUrl) {
             if (parsedTexture.isCube) {
-                return BABYLON.CubeTexture.ParseCubeTexture(parsedTexture, scene, rootUrl);
+                return BABYLON.CubeTexture.Parse(parsedTexture, scene, rootUrl);
             }
             if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
                 return null;
@@ -245,7 +245,7 @@ var BABYLON;
             if (parsedTexture.animations) {
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                     var parsedAnimation = parsedTexture.animations[animationIndex];
-                    texture.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                    texture.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
             }
             return texture;

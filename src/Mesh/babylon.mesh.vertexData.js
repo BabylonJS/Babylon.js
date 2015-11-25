@@ -287,6 +287,45 @@ var BABYLON;
                 }
             }
         };
+        VertexData.prototype.serialize = function () {
+            var serializationObject = this.serialize();
+            if (this.positions) {
+                serializationObject.positions = this.positions;
+            }
+            if (this.normals) {
+                serializationObject.normals = this.normals;
+            }
+            if (this.uvs) {
+                serializationObject.uvs = this.uvs;
+            }
+            if (this.uvs2) {
+                serializationObject.uvs2 = this.uvs2;
+            }
+            if (this.uvs3) {
+                serializationObject.uvs3 = this.uvs3;
+            }
+            if (this.uvs4) {
+                serializationObject.uvs4 = this.uvs4;
+            }
+            if (this.uvs5) {
+                serializationObject.uvs5 = this.uvs5;
+            }
+            if (this.uvs6) {
+                serializationObject.uvs6 = this.uvs6;
+            }
+            if (this.colors) {
+                serializationObject.colors = this.colors;
+            }
+            if (this.matricesIndices) {
+                serializationObject.matricesIndices = this.matricesIndices;
+                serializationObject.matricesIndices._isExpanded = true;
+            }
+            if (this.matricesWeights) {
+                serializationObject.matricesWeights = this.matricesWeights;
+            }
+            serializationObject.indices = this.indices;
+            return serializationObject;
+        };
         // Statics
         VertexData.ExtractFromMesh = function (mesh, copyWhenShared) {
             return VertexData._ExtractFrom(mesh, copyWhenShared);

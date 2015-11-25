@@ -439,7 +439,7 @@ var BABYLON;
                 this._updateDirection();
             }
         };
-        Sound.ParseSound = function (parsedSound, scene, rootUrl) {
+        Sound.Parse = function (parsedSound, scene, rootUrl) {
             var soundName = parsedSound.name;
             var soundUrl = rootUrl + soundName;
             var options = {
