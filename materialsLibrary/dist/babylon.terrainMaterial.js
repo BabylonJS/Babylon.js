@@ -470,6 +470,70 @@ var BABYLON;
             newMaterial.diffuseColor = this.diffuseColor.clone();
             return newMaterial;
         };
+        TerrainMaterial.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.customType = "terrain";
+            serializationObject.diffuseColor = this.diffuseColor.asArray();
+            serializationObject.specularColor = this.specularColor.asArray();
+            serializationObject.specularPower = this.specularPower;
+            serializationObject.disableLighting = this.disableLighting;
+            if (this.diffuseTexture1) {
+                serializationObject.diffuseTexture1 = this.diffuseTexture1.serialize();
+            }
+            if (this.diffuseTexture2) {
+                serializationObject.diffuseTexture2 = this.diffuseTexture2.serialize();
+            }
+            if (this.diffuseTexture3) {
+                serializationObject.diffuseTexture3 = this.diffuseTexture3.serialize();
+            }
+            if (this.bumpTexture1) {
+                serializationObject.bumpTexture1 = this.bumpTexture1.serialize();
+            }
+            if (this.bumpTexture2) {
+                serializationObject.bumpTexture2 = this.bumpTexture2.serialize();
+            }
+            if (this.bumpTexture3) {
+                serializationObject.bumpTexture3 = this.bumpTexture3.serialize();
+            }
+            if (this.mixTexture) {
+                serializationObject.mixTexture = this.mixTexture.serialize();
+            }
+            return serializationObject;
+        };
+        TerrainMaterial.Parse = function (source, scene, rootUrl) {
+            var material = new TerrainMaterial(source.name, scene);
+            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
+            material.specularColor = BABYLON.Color3.FromArray(source.specularColor);
+            material.specularPower = source.specularPower;
+            material.disableLighting = source.disableLighting;
+            material.alpha = source.alpha;
+            material.id = source.id;
+            BABYLON.Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+            if (source.diffuseTexture1) {
+                material.diffuseTexture1 = BABYLON.Texture.Parse(source.diffuseTexture1, scene, rootUrl);
+            }
+            if (source.diffuseTexture2) {
+                material.diffuseTexture2 = BABYLON.Texture.Parse(source.diffuseTexture2, scene, rootUrl);
+            }
+            if (source.diffuseTexture3) {
+                material.diffuseTexture3 = BABYLON.Texture.Parse(source.diffuseTexture3, scene, rootUrl);
+            }
+            if (source.bumpTexture1) {
+                material.bumpTexture1 = BABYLON.Texture.Parse(source.bumpTexture1, scene, rootUrl);
+            }
+            if (source.bumpTexture2) {
+                material.bumpTexture2 = BABYLON.Texture.Parse(source.bumpTexture2, scene, rootUrl);
+            }
+            if (source.bumpTexture3) {
+                material.bumpTexture3 = BABYLON.Texture.Parse(source.bumpTexture3, scene, rootUrl);
+            }
+            if (source.mixTexture) {
+                material.mixTexture = BABYLON.Texture.Parse(source.mixTexture, scene, rootUrl);
+            }
+            return material;
+        };
         return TerrainMaterial;
     })(BABYLON.Material);
     BABYLON.TerrainMaterial = TerrainMaterial;
