@@ -305,8 +305,8 @@
                 return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
 
-            //TODO this is where custom materials are inspected and parsed.
-            return null;
+            var materialType = Tools.Instantiate(parsedMaterial.customType);
+            return materialType.Parse(parsedMaterial, scene, rootUrl);;
         }
     }
 } 

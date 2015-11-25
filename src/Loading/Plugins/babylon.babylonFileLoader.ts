@@ -4,7 +4,7 @@
         for (var index = 0; index < parsedData.materials.length; index++) {
             var parsedMaterial = parsedData.materials[index];
             if (parsedMaterial.id === id) {
-                return BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
+                return Material.Parse(parsedMaterial, scene, rootUrl);
             }
         }
 
@@ -28,7 +28,7 @@
         return false;
     };
 
-    BABYLON.SceneLoader.RegisterPlugin({
+    SceneLoader.RegisterPlugin({
         extensions: ".babylon",
         importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean => {
             var parsedData = JSON.parse(data);
@@ -103,7 +103,7 @@
                         if (!materialFound && parsedData.multiMaterials) {
                             for (var multimatIndex = 0; multimatIndex < parsedData.multiMaterials.length; multimatIndex++) {
                                 var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
-                                if (parsedMultiMaterial.id == parsedMesh.materialId) {
+                                if (parsedMultiMaterial.id === parsedMesh.materialId) {
                                     for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
                                         var subMatId = parsedMultiMaterial.materials[matIndex];
                                         loadedMaterialsIds.push(subMatId);

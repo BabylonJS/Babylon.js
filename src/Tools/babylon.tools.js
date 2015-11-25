@@ -19,6 +19,17 @@ var BABYLON;
     var Tools = (function () {
         function Tools() {
         }
+        Tools.Instantiate = function (className) {
+            var arr = className.split(".");
+            var fn = (window || this);
+            for (var i = 0, len = arr.length; i < len; i++) {
+                fn = fn[arr[i]];
+            }
+            if (typeof fn !== "function") {
+                return null;
+            }
+            return fn;
+        };
         Tools.GetConstructorName = function (obj) {
             var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
             var cname = str.match(/function\s(\w*)/)[1];

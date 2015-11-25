@@ -3904,6 +3904,17 @@ var BABYLON;
     var Tools = (function () {
         function Tools() {
         }
+        Tools.Instantiate = function (className) {
+            var arr = className.split(".");
+            var fn = (window || this);
+            for (var i = 0, len = arr.length; i < len; i++) {
+                fn = fn[arr[i]];
+            }
+            if (typeof fn !== "function") {
+                return null;
+            }
+            return fn;
+        };
         Tools.GetConstructorName = function (obj) {
             var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
             var cname = str.match(/function\s(\w*)/)[1];
@@ -18756,8 +18767,9 @@ var BABYLON;
             if (!parsedMaterial.customType) {
                 return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
-            //TODO this is where custom materials are inspected and parsed.
-            return null;
+            var materialType = BABYLON.Tools.Instantiate(parsedMaterial.customType);
+            return materialType.Parse(parsedMaterial, scene, rootUrl);
+            ;
         };
         Material._TriangleFillMode = 0;
         Material._WireFrameFillMode = 1;
@@ -20121,7 +20133,7 @@ var BABYLON;
                             if (!materialFound && parsedData.multiMaterials) {
                                 for (var multimatIndex = 0; multimatIndex < parsedData.multiMaterials.length; multimatIndex++) {
                                     var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
-                                    if (parsedMultiMaterial.id == parsedMesh.materialId) {
+                                    if (parsedMultiMaterial.id === parsedMesh.materialId) {
                                         for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
                                             var subMatId = parsedMultiMaterial.materials[matIndex];
                                             loadedMaterialsIds.push(subMatId);
