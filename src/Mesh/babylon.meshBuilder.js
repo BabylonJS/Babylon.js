@@ -583,6 +583,7 @@ var BABYLON;
                 // Add UVs and get back to world
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                     var vertex = faceVertices[vIndex];
+                    //TODO check for Int32Array
                     vertexData.indices.push(currentVertexDataIndex);
                     vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);

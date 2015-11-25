@@ -445,5 +445,38 @@
 
             return result;
         }
+
+        public static ParseParticleSystem(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
+            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+
+            var particleSystem = new ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);
+            if (parsedParticleSystem.textureName) {
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture.name = parsedParticleSystem.textureName;
+            }
+            particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
+            particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
+            particleSystem.minSize = parsedParticleSystem.minSize;
+            particleSystem.maxSize = parsedParticleSystem.maxSize;
+            particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
+            particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
+            particleSystem.emitter = emitter;
+            particleSystem.emitRate = parsedParticleSystem.emitRate;
+            particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
+            particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
+            particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
+            particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
+            particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
+            particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
+            particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
+            particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
+            particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
+            particleSystem.targetStopDuration = parsedParticleSystem.targetStopFrame;
+            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
+            particleSystem.blendMode = parsedParticleSystem.blendMode;
+            particleSystem.start();
+
+            return particleSystem;
+        }
     }
 }  

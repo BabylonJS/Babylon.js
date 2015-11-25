@@ -154,8 +154,8 @@ var BABYLON;
         /**
          * Add a mesh as LOD level triggered at the given distance.
          * @param {number} distance - the distance from the center of the object to show this level
-         * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
-         * @return {BABYLON.Mesh} this mesh (for chaining)
+         * @param {Mesh} mesh - the mesh to be added as LOD level
+         * @return {Mesh} this mesh (for chaining)
          */
         Mesh.prototype.addLODLevel = function (distance, mesh) {
             if (mesh && mesh._masterMesh) {
@@ -181,8 +181,8 @@ var BABYLON;
         };
         /**
          * Remove a mesh from the LOD array
-         * @param {BABYLON.Mesh} mesh - the mesh to be removed.
-         * @return {BABYLON.Mesh} this mesh (for chaining)
+         * @param {Mesh} mesh - the mesh to be removed.
+         * @return {Mesh} this mesh (for chaining)
          */
         Mesh.prototype.removeLODLevel = function (mesh) {
             for (var index = 0; index < this._LODLevels.length; index++) {
@@ -1059,6 +1059,165 @@ var BABYLON;
             });
         };
         // Statics
+        Mesh.ParseMesh = function (parsedMesh, scene, rootUrl) {
+            var mesh = new Mesh(parsedMesh.name, scene);
+            mesh.id = parsedMesh.id;
+            BABYLON.Tags.AddTagsTo(mesh, parsedMesh.tags);
+            mesh.position = BABYLON.Vector3.FromArray(parsedMesh.position);
+            if (parsedMesh.rotationQuaternion) {
+                mesh.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedMesh.rotationQuaternion);
+            }
+            else if (parsedMesh.rotation) {
+                mesh.rotation = BABYLON.Vector3.FromArray(parsedMesh.rotation);
+            }
+            mesh.scaling = BABYLON.Vector3.FromArray(parsedMesh.scaling);
+            if (parsedMesh.localMatrix) {
+                mesh.setPivotMatrix(BABYLON.Matrix.FromArray(parsedMesh.localMatrix));
+            }
+            else if (parsedMesh.pivotMatrix) {
+                mesh.setPivotMatrix(BABYLON.Matrix.FromArray(parsedMesh.pivotMatrix));
+            }
+            mesh.setEnabled(parsedMesh.isEnabled);
+            mesh.isVisible = parsedMesh.isVisible;
+            mesh.infiniteDistance = parsedMesh.infiniteDistance;
+            mesh.showBoundingBox = parsedMesh.showBoundingBox;
+            mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
+            if (parsedMesh.applyFog !== undefined) {
+                mesh.applyFog = parsedMesh.applyFog;
+            }
+            if (parsedMesh.pickable !== undefined) {
+                mesh.isPickable = parsedMesh.pickable;
+            }
+            if (parsedMesh.alphaIndex !== undefined) {
+                mesh.alphaIndex = parsedMesh.alphaIndex;
+            }
+            mesh.receiveShadows = parsedMesh.receiveShadows;
+            mesh.billboardMode = parsedMesh.billboardMode;
+            if (parsedMesh.visibility !== undefined) {
+                mesh.visibility = parsedMesh.visibility;
+            }
+            mesh.checkCollisions = parsedMesh.checkCollisions;
+            mesh._shouldGenerateFlatShading = parsedMesh.useFlatShading;
+            // freezeWorldMatrix
+            if (parsedMesh.freezeWorldMatrix) {
+                mesh._waitingFreezeWorldMatrix = parsedMesh.freezeWorldMatrix;
+            }
+            // Parent
+            if (parsedMesh.parentId) {
+                mesh._waitingParentId = parsedMesh.parentId;
+            }
+            // Actions
+            if (parsedMesh.actions !== undefined) {
+                mesh._waitingActions = parsedMesh.actions;
+            }
+            // Geometry
+            mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
+            if (parsedMesh.delayLoadingFile) {
+                mesh.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
+                mesh._boundingInfo = new BABYLON.BoundingInfo(BABYLON.Vector3.FromArray(parsedMesh.boundingBoxMinimum), BABYLON.Vector3.FromArray(parsedMesh.boundingBoxMaximum));
+                if (parsedMesh._binaryInfo) {
+                    mesh._binaryInfo = parsedMesh._binaryInfo;
+                }
+                mesh._delayInfo = [];
+                if (parsedMesh.hasUVs) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UVKind);
+                }
+                if (parsedMesh.hasUVs2) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV2Kind);
+                }
+                if (parsedMesh.hasUVs3) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV3Kind);
+                }
+                if (parsedMesh.hasUVs4) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV4Kind);
+                }
+                if (parsedMesh.hasUVs5) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV5Kind);
+                }
+                if (parsedMesh.hasUVs6) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.UV6Kind);
+                }
+                if (parsedMesh.hasColors) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.ColorKind);
+                }
+                if (parsedMesh.hasMatricesIndices) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.MatricesIndicesKind);
+                }
+                if (parsedMesh.hasMatricesWeights) {
+                    mesh._delayInfo.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+                }
+                mesh._delayLoadingFunction = BABYLON.Geometry.ImportGeometry;
+                if (BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental) {
+                    mesh._checkDelayState();
+                }
+            }
+            else {
+                BABYLON.Geometry.ImportGeometry(parsedMesh, mesh);
+            }
+            // Material
+            if (parsedMesh.materialId) {
+                mesh.setMaterialByID(parsedMesh.materialId);
+            }
+            else {
+                mesh.material = null;
+            }
+            // Skeleton
+            if (parsedMesh.skeletonId > -1) {
+                mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
+                if (parsedMesh.numBoneInfluencers) {
+                    mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
+                }
+            }
+            // Physics
+            if (parsedMesh.physicsImpostor) {
+                if (!scene.isPhysicsEnabled()) {
+                    scene.enablePhysics();
+                }
+                mesh.setPhysicsState({ impostor: parsedMesh.physicsImpostor, mass: parsedMesh.physicsMass, friction: parsedMesh.physicsFriction, restitution: parsedMesh.physicsRestitution });
+            }
+            // Animations
+            if (parsedMesh.animations) {
+                for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedMesh.animations[animationIndex];
+                    mesh.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                }
+            }
+            if (parsedMesh.autoAnimate) {
+                scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
+            }
+            // Layer Mask
+            if (parsedMesh.layerMask && (!isNaN(parsedMesh.layerMask))) {
+                mesh.layerMask = Math.abs(parseInt(parsedMesh.layerMask));
+            }
+            else {
+                mesh.layerMask = 0x0FFFFFFF;
+            }
+            // Instances
+            if (parsedMesh.instances) {
+                for (var index = 0; index < parsedMesh.instances.length; index++) {
+                    var parsedInstance = parsedMesh.instances[index];
+                    var instance = mesh.createInstance(parsedInstance.name);
+                    BABYLON.Tags.AddTagsTo(instance, parsedInstance.tags);
+                    instance.position = BABYLON.Vector3.FromArray(parsedInstance.position);
+                    if (parsedInstance.rotationQuaternion) {
+                        instance.rotationQuaternion = BABYLON.Quaternion.FromArray(parsedInstance.rotationQuaternion);
+                    }
+                    else if (parsedInstance.rotation) {
+                        instance.rotation = BABYLON.Vector3.FromArray(parsedInstance.rotation);
+                    }
+                    instance.scaling = BABYLON.Vector3.FromArray(parsedInstance.scaling);
+                    instance.checkCollisions = mesh.checkCollisions;
+                    if (parsedMesh.animations) {
+                        for (animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
+                            parsedAnimation = parsedMesh.animations[animationIndex];
+                            instance.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                        }
+                    }
+                }
+            }
+            return mesh;
+        };
         Mesh.CreateRibbon = function (name, pathArray, closeArray, closePath, offset, scene, updatable, sideOrientation, instance) {
             return BABYLON.MeshBuilder.CreateRibbon(name, {
                 pathArray: pathArray,

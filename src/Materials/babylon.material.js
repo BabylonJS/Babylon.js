@@ -241,6 +241,13 @@ var BABYLON;
             serializationObject.backFaceCulling = this.backFaceCulling;
             return serializationObject;
         };
+        Material.ParseMaterial = function (parsedMaterial, scene, rootUrl) {
+            if (!parsedMaterial.customType) {
+                return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
+            }
+            //TODO this is where custom materials are inspected and parsed.
+            return null;
+        };
         Material._TriangleFillMode = 0;
         Material._WireFrameFillMode = 1;
         Material._PointFillMode = 2;

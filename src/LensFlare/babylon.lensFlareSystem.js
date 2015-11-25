@@ -176,6 +176,16 @@ var BABYLON;
             var index = this._scene.lensFlareSystems.indexOf(this);
             this._scene.lensFlareSystems.splice(index, 1);
         };
+        LensFlareSystem.ParseLensFlareSystem = function (parsedLensFlareSystem, scene, rootUrl) {
+            var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
+            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
+            for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
+                var parsedFlare = parsedLensFlareSystem.flares[index];
+                var flare = new BABYLON.LensFlare(parsedFlare.size, parsedFlare.position, BABYLON.Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
+            }
+            return lensFlareSystem;
+        };
         return LensFlareSystem;
     })();
     BABYLON.LensFlareSystem = LensFlareSystem;
