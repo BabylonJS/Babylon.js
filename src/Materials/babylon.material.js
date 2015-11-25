@@ -260,8 +260,9 @@ var BABYLON;
             if (!parsedMaterial.customType) {
                 return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
-            //TODO this is where custom materials are inspected and parsed.
-            return null;
+            var materialType = BABYLON.Tools.Instantiate(parsedMaterial.customType);
+            return materialType.Parse(parsedMaterial, scene, rootUrl);
+            ;
         };
         Material._TriangleFillMode = 0;
         Material._WireFrameFillMode = 1;

@@ -31,6 +31,20 @@
         public static BaseUrl = "";
         public static CorsBehavior: any = "anonymous";
 
+        public static Instantiate(className: string): any {
+            var arr = className.split(".");
+
+            var fn = (window || this);
+            for (var i = 0, len = arr.length; i < len; i++) {
+                fn = fn[arr[i]];
+            }
+
+            if (typeof fn !== "function") {
+                return null;
+            }
+
+            return fn;
+        }
 
         public static GetConstructorName(obj) {
             var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();

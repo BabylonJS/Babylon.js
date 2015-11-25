@@ -95,7 +95,7 @@ var BABYLON;
                             if (!materialFound && parsedData.multiMaterials) {
                                 for (var multimatIndex = 0; multimatIndex < parsedData.multiMaterials.length; multimatIndex++) {
                                     var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
-                                    if (parsedMultiMaterial.id == parsedMesh.materialId) {
+                                    if (parsedMultiMaterial.id === parsedMesh.materialId) {
                                         for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
                                             var subMatId = parsedMultiMaterial.materials[matIndex];
                                             loadedMaterialsIds.push(subMatId);
