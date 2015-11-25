@@ -1,146 +1,38 @@
 var BABYLON;
 (function (BABYLON) {
     var serializedGeometries = [];
-    var serializeVertexData;
-    var serializeTorusKnot;
-    var serializePlane;
-    var serializeGround;
-    var serializeTorus;
-    var serializeCylinder;
-    var serializeSphere;
-    var serializeBox;
     var serializeGeometry = function (geometry, serializationGeometries) {
         if (serializedGeometries[geometry.id]) {
             return;
         }
         if (geometry instanceof BABYLON.Geometry.Primitives.Box) {
-            serializationGeometries.boxes.push(serializeBox(geometry));
+            serializationGeometries.boxes.push(geometry.serialize());
         }
         else if (geometry instanceof BABYLON.Geometry.Primitives.Sphere) {
-            serializationGeometries.spheres.push(serializeSphere(geometry));
+            serializationGeometries.spheres.push(geometry.serialize());
         }
         else if (geometry instanceof BABYLON.Geometry.Primitives.Cylinder) {
-            serializationGeometries.cylinders.push(serializeCylinder(geometry));
+            serializationGeometries.cylinders.push(geometry.serialize());
         }
         else if (geometry instanceof BABYLON.Geometry.Primitives.Torus) {
-            serializationGeometries.toruses.push(serializeTorus(geometry));
+            serializationGeometries.toruses.push(geometry.serialize());
         }
         else if (geometry instanceof BABYLON.Geometry.Primitives.Ground) {
-            serializationGeometries.grounds.push(serializeGround(geometry));
+            serializationGeometries.grounds.push(geometry.serialize());
         }
         else if (geometry instanceof BABYLON.Geometry.Primitives.Plane) {
-            serializationGeometries.planes.push(serializePlane(geometry));
+            serializationGeometries.planes.push(geometry.serialize());
         }
         else if (geometry instanceof BABYLON.Geometry.Primitives.TorusKnot) {
-            serializationGeometries.torusKnots.push(serializeTorusKnot(geometry));
+            serializationGeometries.torusKnots.push(geometry.serialize());
         }
         else if (geometry instanceof BABYLON.Geometry.Primitives._Primitive) {
             throw new Error("Unknown primitive type");
         }
         else {
-            serializationGeometries.vertexData.push(serializeVertexData(geometry));
+            serializationGeometries.vertexData.push(geometry.serializeVerticeData());
         }
         serializedGeometries[geometry.id] = true;
-    };
-    var serializeGeometryBase = function (geometry) {
-        var serializationObject = {};
-        serializationObject.id = geometry.id;
-        if (BABYLON.Tags.HasTags(geometry)) {
-            serializationObject.tags = BABYLON.Tags.GetTags(geometry);
-        }
-        return serializationObject;
-    };
-    serializeVertexData = function (vertexData) {
-        var serializationObject = serializeGeometryBase(vertexData);
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
-            serializationObject.positions = vertexData.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-            serializationObject.normals = vertexData.getVerticesData(BABYLON.VertexBuffer.NormalKind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
-            serializationObject.uvs = vertexData.getVerticesData(BABYLON.VertexBuffer.UVKind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV2Kind)) {
-            serializationObject.uvs2 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV2Kind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV3Kind)) {
-            serializationObject.uvs3 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV3Kind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV4Kind)) {
-            serializationObject.uvs4 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV4Kind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV5Kind)) {
-            serializationObject.uvs5 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV5Kind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.UV6Kind)) {
-            serializationObject.uvs6 = vertexData.getVerticesData(BABYLON.VertexBuffer.UV6Kind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.ColorKind)) {
-            serializationObject.colors = vertexData.getVerticesData(BABYLON.VertexBuffer.ColorKind);
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesIndicesKind)) {
-            serializationObject.matricesIndices = vertexData.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesKind);
-            serializationObject.matricesIndices._isExpanded = true;
-        }
-        if (vertexData.isVerticesDataPresent(BABYLON.VertexBuffer.MatricesWeightsKind)) {
-            serializationObject.matricesWeights = vertexData.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsKind);
-        }
-        serializationObject.indices = vertexData.getIndices();
-        return serializationObject;
-    };
-    var serializePrimitive = function (primitive) {
-        var serializationObject = serializeGeometryBase(primitive);
-        serializationObject.canBeRegenerated = primitive.canBeRegenerated();
-        return serializationObject;
-    };
-    serializeBox = function (box) {
-        var serializationObject = serializePrimitive(box);
-        serializationObject.size = box.size;
-        return serializationObject;
-    };
-    serializeSphere = function (sphere) {
-        var serializationObject = serializePrimitive(sphere);
-        serializationObject.segments = sphere.segments;
-        serializationObject.diameter = sphere.diameter;
-        return serializationObject;
-    };
-    serializeCylinder = function (cylinder) {
-        var serializationObject = serializePrimitive(cylinder);
-        serializationObject.height = cylinder.height;
-        serializationObject.diameterTop = cylinder.diameterTop;
-        serializationObject.diameterBottom = cylinder.diameterBottom;
-        serializationObject.tessellation = cylinder.tessellation;
-        return serializationObject;
-    };
-    serializeTorus = function (torus) {
-        var serializationObject = serializePrimitive(torus);
-        serializationObject.diameter = torus.diameter;
-        serializationObject.thickness = torus.thickness;
-        serializationObject.tessellation = torus.tessellation;
-        return serializationObject;
-    };
-    serializeGround = function (ground) {
-        var serializationObject = serializePrimitive(ground);
-        serializationObject.width = ground.width;
-        serializationObject.height = ground.height;
-        serializationObject.subdivisions = ground.subdivisions;
-        return serializationObject;
-    };
-    serializePlane = function (plane) {
-        var serializationObject = serializePrimitive(plane);
-        serializationObject.size = plane.size;
-        return serializationObject;
-    };
-    serializeTorusKnot = function (torusKnot) {
-        var serializationObject = serializePrimitive(torusKnot);
-        serializationObject.radius = torusKnot.radius;
-        serializationObject.tube = torusKnot.tube;
-        serializationObject.radialSegments = torusKnot.radialSegments;
-        serializationObject.tubularSegments = torusKnot.tubularSegments;
-        serializationObject.p = torusKnot.p;
-        serializationObject.q = torusKnot.q;
-        return serializationObject;
     };
     var serializeMesh = function (mesh, serializationScene) {
         var serializationObject = {};

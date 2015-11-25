@@ -86,7 +86,7 @@ var BABYLON;
             serializationObject.specular = this.specular.asArray();
             return serializationObject;
         };
-        Light.ParseLight = function (parsedLight, scene) {
+        Light.Parse = function (parsedLight, scene) {
             var light;
             switch (parsedLight.type) {
                 case 0:
@@ -128,7 +128,7 @@ var BABYLON;
             if (parsedLight.animations) {
                 for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
                     var parsedAnimation = parsedLight.animations[animationIndex];
-                    light.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                    light.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
             }
             if (parsedLight.autoAnimate) {

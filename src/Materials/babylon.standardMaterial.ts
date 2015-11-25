@@ -27,6 +27,18 @@
 
             return serializationObject;
         }
+
+        public static Parse(parsedFresnelParameters: any): FresnelParameters {
+            var fresnelParameters = new FresnelParameters();
+
+            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
+            fresnelParameters.leftColor = Color3.FromArray(parsedFresnelParameters.leftColor);
+            fresnelParameters.rightColor = Color3.FromArray(parsedFresnelParameters.rightColor);
+            fresnelParameters.bias = parsedFresnelParameters.bias;
+            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
+
+            return fresnelParameters;
+        }
     }
 
     class StandardMaterialDefines extends MaterialDefines {
@@ -1132,18 +1144,6 @@
         public static FresnelEnabled = true;
         public static LightmapEnabled = true;
 
-        public static ParseFresnelParameters(parsedFresnelParameters: any): FresnelParameters {
-            var fresnelParameters = new FresnelParameters();
-
-            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
-            fresnelParameters.leftColor = Color3.FromArray(parsedFresnelParameters.leftColor);
-            fresnelParameters.rightColor = Color3.FromArray(parsedFresnelParameters.rightColor);
-            fresnelParameters.bias = parsedFresnelParameters.bias;
-            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
-
-            return fresnelParameters;
-        }
-
         public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
             var material = new StandardMaterial(source.name, scene);
 
@@ -1168,52 +1168,52 @@
             material.wireframe = source.wireframe;
 
             if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.ParseTexture(source.diffuseTexture, scene, rootUrl);
+                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
             }
 
             if (source.diffuseFresnelParameters) {
-                material.diffuseFresnelParameters = StandardMaterial.ParseFresnelParameters(source.diffuseFresnelParameters);
+                material.diffuseFresnelParameters = FresnelParameters.Parse(source.diffuseFresnelParameters);
             }
 
             if (source.ambientTexture) {
-                material.ambientTexture = Texture.ParseTexture(source.ambientTexture, scene, rootUrl);
+                material.ambientTexture = Texture.Parse(source.ambientTexture, scene, rootUrl);
             }
 
             if (source.opacityTexture) {
-                material.opacityTexture = Texture.ParseTexture(source.opacityTexture, scene, rootUrl);
+                material.opacityTexture = Texture.Parse(source.opacityTexture, scene, rootUrl);
             }
 
             if (source.opacityFresnelParameters) {
-                material.opacityFresnelParameters = StandardMaterial.ParseFresnelParameters(source.opacityFresnelParameters);
+                material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);
             }
 
             if (source.reflectionTexture) {
-                material.reflectionTexture = Texture.ParseTexture(source.reflectionTexture, scene, rootUrl);
+                material.reflectionTexture = Texture.Parse(source.reflectionTexture, scene, rootUrl);
             }
 
             if (source.reflectionFresnelParameters) {
-                material.reflectionFresnelParameters = StandardMaterial.ParseFresnelParameters(source.reflectionFresnelParameters);
+                material.reflectionFresnelParameters = FresnelParameters.Parse(source.reflectionFresnelParameters);
             }
 
             if (source.emissiveTexture) {
-                material.emissiveTexture = Texture.ParseTexture(source.emissiveTexture, scene, rootUrl);
+                material.emissiveTexture = Texture.Parse(source.emissiveTexture, scene, rootUrl);
             }
 
             if (source.lightmapTexture) {
-                material.lightmapTexture = Texture.ParseTexture(source.lightmapTexture, scene, rootUrl);
+                material.lightmapTexture = Texture.Parse(source.lightmapTexture, scene, rootUrl);
                 material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
             }
 
             if (source.emissiveFresnelParameters) {
-                material.emissiveFresnelParameters = StandardMaterial.ParseFresnelParameters(source.emissiveFresnelParameters);
+                material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
             }
 
             if (source.specularTexture) {
-                material.specularTexture = Texture.ParseTexture(source.specularTexture, scene, rootUrl);
+                material.specularTexture = Texture.Parse(source.specularTexture, scene, rootUrl);
             }
 
             if (source.bumpTexture) {
-                material.bumpTexture = Texture.ParseTexture(source.bumpTexture, scene, rootUrl);
+                material.bumpTexture = Texture.Parse(source.bumpTexture, scene, rootUrl);
             }
 
             if (source.checkReadyOnlyOnce) {

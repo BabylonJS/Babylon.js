@@ -357,7 +357,7 @@ var BABYLON;
             serializationObject.blendMode = this.blendMode;
             return serializationObject;
         };
-        ParticleSystem.ParseParticleSystem = function (parsedParticleSystem, scene, rootUrl) {
+        ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
             var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
             var particleSystem = new ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);
             if (parsedParticleSystem.textureName) {

@@ -537,7 +537,7 @@ var BABYLON;
             serializationObject.layerMask = this.layerMask;
             return serializationObject;
         };
-        Camera.ParseCamera = function (parsedCamera, scene) {
+        Camera.Parse = function (parsedCamera, scene) {
             var camera;
             var position = BABYLON.Vector3.FromArray(parsedCamera.position);
             var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
@@ -630,7 +630,7 @@ var BABYLON;
             if (parsedCamera.animations) {
                 for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
                     var parsedAnimation = parsedCamera.animations[animationIndex];
-                    camera.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                    camera.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
             }
             if (parsedCamera.autoAnimate) {

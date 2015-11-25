@@ -56,21 +56,6 @@ var BABYLON;
             }
             return serializationObject;
         };
-        MultiMaterial.ParseMultiMaterial = function (parsedMultiMaterial, scene) {
-            var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
-            multiMaterial.id = parsedMultiMaterial.id;
-            BABYLON.Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
-            for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
-                var subMatId = parsedMultiMaterial.materials[matIndex];
-                if (subMatId) {
-                    multiMaterial.subMaterials.push(scene.getMaterialByID(subMatId));
-                }
-                else {
-                    multiMaterial.subMaterials.push(null);
-                }
-            }
-            return multiMaterial;
-        };
         return MultiMaterial;
     })(BABYLON.Material);
     BABYLON.MultiMaterial = MultiMaterial;

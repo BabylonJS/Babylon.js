@@ -260,9 +260,9 @@
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
         }
         
-        public static ParseTexture(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
             if (parsedTexture.isCube) {
-                return CubeTexture.ParseCubeTexture(parsedTexture, scene, rootUrl);
+                return CubeTexture.Parse(parsedTexture, scene, rootUrl);
             }
 
             if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
@@ -309,7 +309,7 @@
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
                     var parsedAnimation = parsedTexture.animations[animationIndex];
 
-                    texture.animations.push(Animation.ParseAnimation(parsedAnimation));
+                    texture.animations.push(Animation.Parse(parsedAnimation));
                 }
             }
 

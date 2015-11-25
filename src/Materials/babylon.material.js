@@ -241,14 +241,25 @@ var BABYLON;
             serializationObject.backFaceCulling = this.backFaceCulling;
             return serializationObject;
         };
-        Material.ParseMaterial = function (parsedMaterial, scene, rootUrl) {
+        Material.ParseMultiMaterial = function (parsedMultiMaterial, scene) {
+            var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
+            multiMaterial.id = parsedMultiMaterial.id;
+            BABYLON.Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+            for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
+                var subMatId = parsedMultiMaterial.materials[matIndex];
+                if (subMatId) {
+                    multiMaterial.subMaterials.push(scene.getMaterialByID(subMatId));
+                }
+                else {
+                    multiMaterial.subMaterials.push(null);
+                }
+            }
+            return multiMaterial;
+        };
+        Material.Parse = function (parsedMaterial, scene, rootUrl) {
             if (!parsedMaterial.customType) {
                 return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
-            // parse Lava material
-            //else if (parsedMaterial.customType === "lava") {
-            //    return LavaMaterial.Parse(parsedMaterial, scene, rootUrl);
-            //}
             //TODO this is where custom materials are inspected and parsed.
             return null;
         };

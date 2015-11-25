@@ -57,7 +57,7 @@ var BABYLON;
         CubeTexture.prototype.getReflectionTextureMatrix = function () {
             return this._textureMatrix;
         };
-        CubeTexture.ParseCubeTexture = function (parsedTexture, scene, rootUrl) {
+        CubeTexture.Parse = function (parsedTexture, scene, rootUrl) {
             var texture = null;
             if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
                 texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);

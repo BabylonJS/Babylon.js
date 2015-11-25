@@ -28,6 +28,15 @@ var BABYLON;
             serializationObject.power = this.power;
             return serializationObject;
         };
+        FresnelParameters.Parse = function (parsedFresnelParameters) {
+            var fresnelParameters = new FresnelParameters();
+            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
+            fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
+            fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
+            fresnelParameters.bias = parsedFresnelParameters.bias;
+            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
+            return fresnelParameters;
+        };
         return FresnelParameters;
     })();
     BABYLON.FresnelParameters = FresnelParameters;
@@ -925,15 +934,6 @@ var BABYLON;
             }
             return serializationObject;
         };
-        StandardMaterial.ParseFresnelParameters = function (parsedFresnelParameters) {
-            var fresnelParameters = new FresnelParameters();
-            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
-            fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
-            fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
-            fresnelParameters.bias = parsedFresnelParameters.bias;
-            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
-            return fresnelParameters;
-        };
         StandardMaterial.Parse = function (source, scene, rootUrl) {
             var material = new StandardMaterial(source.name, scene);
             material.ambientColor = BABYLON.Color3.FromArray(source.ambient);
@@ -952,41 +952,41 @@ var BABYLON;
             material.backFaceCulling = source.backFaceCulling;
             material.wireframe = source.wireframe;
             if (source.diffuseTexture) {
-                material.diffuseTexture = BABYLON.Texture.ParseTexture(source.diffuseTexture, scene, rootUrl);
+                material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
             }
             if (source.diffuseFresnelParameters) {
-                material.diffuseFresnelParameters = StandardMaterial.ParseFresnelParameters(source.diffuseFresnelParameters);
+                material.diffuseFresnelParameters = FresnelParameters.Parse(source.diffuseFresnelParameters);
             }
             if (source.ambientTexture) {
-                material.ambientTexture = BABYLON.Texture.ParseTexture(source.ambientTexture, scene, rootUrl);
+                material.ambientTexture = BABYLON.Texture.Parse(source.ambientTexture, scene, rootUrl);
             }
             if (source.opacityTexture) {
-                material.opacityTexture = BABYLON.Texture.ParseTexture(source.opacityTexture, scene, rootUrl);
+                material.opacityTexture = BABYLON.Texture.Parse(source.opacityTexture, scene, rootUrl);
             }
             if (source.opacityFresnelParameters) {
-                material.opacityFresnelParameters = StandardMaterial.ParseFresnelParameters(source.opacityFresnelParameters);
+                material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);
             }
             if (source.reflectionTexture) {
-                material.reflectionTexture = BABYLON.Texture.ParseTexture(source.reflectionTexture, scene, rootUrl);
+                material.reflectionTexture = BABYLON.Texture.Parse(source.reflectionTexture, scene, rootUrl);
             }
             if (source.reflectionFresnelParameters) {
-                material.reflectionFresnelParameters = StandardMaterial.ParseFresnelParameters(source.reflectionFresnelParameters);
+                material.reflectionFresnelParameters = FresnelParameters.Parse(source.reflectionFresnelParameters);
             }
             if (source.emissiveTexture) {
-                material.emissiveTexture = BABYLON.Texture.ParseTexture(source.emissiveTexture, scene, rootUrl);
+                material.emissiveTexture = BABYLON.Texture.Parse(source.emissiveTexture, scene, rootUrl);
             }
             if (source.lightmapTexture) {
-                material.lightmapTexture = BABYLON.Texture.ParseTexture(source.lightmapTexture, scene, rootUrl);
+                material.lightmapTexture = BABYLON.Texture.Parse(source.lightmapTexture, scene, rootUrl);
                 material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
             }
             if (source.emissiveFresnelParameters) {
-                material.emissiveFresnelParameters = StandardMaterial.ParseFresnelParameters(source.emissiveFresnelParameters);
+                material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
             }
             if (source.specularTexture) {
-                material.specularTexture = BABYLON.Texture.ParseTexture(source.specularTexture, scene, rootUrl);
+                material.specularTexture = BABYLON.Texture.Parse(source.specularTexture, scene, rootUrl);
             }
             if (source.bumpTexture) {
-                material.bumpTexture = BABYLON.Texture.ParseTexture(source.bumpTexture, scene, rootUrl);
+                material.bumpTexture = BABYLON.Texture.Parse(source.bumpTexture, scene, rootUrl);
             }
             if (source.checkReadyOnlyOnce) {
                 material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;

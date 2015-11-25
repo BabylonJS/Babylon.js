@@ -132,7 +132,7 @@
             return serializationObject;
         }
 
-        public static ParseLight(parsedLight: any, scene: Scene): Light {
+        public static Parse(parsedLight: any, scene: Scene): Light {
             var light;
 
             switch (parsedLight.type) {
@@ -185,7 +185,7 @@
                 for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
                     var parsedAnimation = parsedLight.animations[animationIndex];
 
-                    light.animations.push(Animation.ParseAnimation(parsedAnimation));
+                    light.animations.push(Animation.Parse(parsedAnimation));
                 }
             }
 

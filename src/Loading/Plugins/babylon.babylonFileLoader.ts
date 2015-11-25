@@ -4,7 +4,7 @@
         for (var index = 0; index < parsedData.materials.length; index++) {
             var parsedMaterial = parsedData.materials[index];
             if (parsedMaterial.id === id) {
-                return BABYLON.Material.ParseMaterial(parsedMaterial, scene, rootUrl);
+                return BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
             }
         }
 
@@ -57,31 +57,31 @@
                                     return;
                                 } else {
                                     parsedData.geometries[geometryType].forEach((parsedGeometryData) => {
-                                        if (parsedGeometryData.id == parsedMesh.geometryId) {
+                                        if (parsedGeometryData.id === parsedMesh.geometryId) {
                                             switch (geometryType) {
                                                 case "boxes":
-                                                    Geometry.Primitives.Box.ParseBox(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Box.Parse(parsedGeometryData, scene);
                                                     break;
                                                 case "spheres":
-                                                    Geometry.Primitives.Sphere.ParseSphere(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Sphere.Parse(parsedGeometryData, scene);
                                                     break;
                                                 case "cylinders":
-                                                    Geometry.Primitives.Cylinder.ParseCylinder(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Cylinder.Parse(parsedGeometryData, scene);
                                                     break;
                                                 case "toruses":
-                                                    Geometry.Primitives.Torus.ParseTorus(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Torus.Parse(parsedGeometryData, scene);
                                                     break;
                                                 case "grounds":
-                                                    Geometry.Primitives.Ground.ParseGround(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Ground.Parse(parsedGeometryData, scene);
                                                     break;
                                                 case "planes":
-                                                    Geometry.Primitives.Plane.ParsePlane(parsedGeometryData, scene);
+                                                    Geometry.Primitives.Plane.Parse(parsedGeometryData, scene);
                                                     break;
                                                 case "torusKnots":
-                                                    Geometry.Primitives.TorusKnot.ParseTorusKnot(parsedGeometryData, scene);
+                                                    Geometry.Primitives.TorusKnot.Parse(parsedGeometryData, scene);
                                                     break;
                                                 case "vertexData":
-                                                    Geometry.ParseGeometry(parsedGeometryData, scene, rootUrl);
+                                                    Geometry.Parse(parsedGeometryData, scene, rootUrl);
                                                     break;
                                             }
                                             found = true;
@@ -111,7 +111,7 @@
                                     }
 
                                     loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                    parsedMultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
+                                    parsedMultiMaterial.Parse(parsedMultiMaterial, scene);
                                     materialFound = true;
                                     break;
                                 }
@@ -135,14 +135,14 @@
                                 var parsedSkeleton = parsedData.skeletons[skeletonIndex];
 
                                 if (parsedSkeleton.id === parsedMesh.skeletonId) {
-                                    skeletons.push(Skeleton.ParseSkeleton(parsedSkeleton, scene));
+                                    skeletons.push(Skeleton.Parse(parsedSkeleton, scene));
                                     loadedSkeletonsIds.push(parsedSkeleton.id);
                                 }
                             }
                         }
                     }
 
-                    var mesh = Mesh.ParseMesh(parsedMesh, scene, rootUrl);
+                    var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
                     meshes.push(mesh);
                 }
             }
@@ -172,7 +172,7 @@
                     var parsedParticleSystem = parsedData.particleSystems[index];
 
                     if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
-                        particleSystems.push(ParticleSystem.ParseParticleSystem(parsedParticleSystem, scene, rootUrl));
+                        particleSystems.push(ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl));
                     }
                 }
             }
@@ -223,21 +223,21 @@
             var index: number;
             for (index = 0; index < parsedData.lights.length; index++) {
                 var parsedLight = parsedData.lights[index];
-                Light.ParseLight(parsedLight, scene);
+                Light.Parse(parsedLight, scene);
             }
 
             // Materials
             if (parsedData.materials) {
                 for (index = 0; index < parsedData.materials.length; index++) {
                     var parsedMaterial = parsedData.materials[index];
-                    Material.ParseMaterial(parsedMaterial, scene, rootUrl);
+                    Material.Parse(parsedMaterial, scene, rootUrl);
                 }
             }
 
             if (parsedData.multiMaterials) {
                 for (index = 0; index < parsedData.multiMaterials.length; index++) {
                     var parsedMultiMaterial = parsedData.multiMaterials[index];
-                    MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
+                    Material.ParseMultiMaterial(parsedMultiMaterial, scene);
                 }
             }
 
@@ -245,7 +245,7 @@
             if (parsedData.skeletons) {
                 for (index = 0; index < parsedData.skeletons.length; index++) {
                     var parsedSkeleton = parsedData.skeletons[index];
-                    Skeleton.ParseSkeleton(parsedSkeleton, scene);
+                    Skeleton.Parse(parsedSkeleton, scene);
                 }
             }
 
@@ -257,7 +257,7 @@
                 if (boxes) {
                     for (index = 0; index < boxes.length; index++) {
                         var parsedBox = boxes[index];
-                        Geometry.Primitives.Box.ParseBox(parsedBox, scene);
+                        Geometry.Primitives.Box.Parse(parsedBox, scene);
                     }
                 }
 
@@ -266,7 +266,7 @@
                 if (spheres) {
                     for (index = 0; index < spheres.length; index++) {
                         var parsedSphere = spheres[index];
-                        Geometry.Primitives.Sphere.ParseSphere(parsedSphere, scene);
+                        Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
                     }
                 }
 
@@ -275,7 +275,7 @@
                 if (cylinders) {
                     for (index = 0; index < cylinders.length; index++) {
                         var parsedCylinder = cylinders[index];
-                        Geometry.Primitives.Cylinder.ParseCylinder(parsedCylinder, scene);
+                        Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
                     }
                 }
 
@@ -284,7 +284,7 @@
                 if (toruses) {
                     for (index = 0; index < toruses.length; index++) {
                         var parsedTorus = toruses[index];
-                        Geometry.Primitives.Torus.ParseTorus(parsedTorus, scene);
+                        Geometry.Primitives.Torus.Parse(parsedTorus, scene);
                     }
                 }
 
@@ -293,7 +293,7 @@
                 if (grounds) {
                     for (index = 0; index < grounds.length; index++) {
                         var parsedGround = grounds[index];
-                        Geometry.Primitives.Ground.ParseGround(parsedGround, scene);
+                        Geometry.Primitives.Ground.Parse(parsedGround, scene);
                     }
                 }
 
@@ -302,7 +302,7 @@
                 if (planes) {
                     for (index = 0; index < planes.length; index++) {
                         var parsedPlane = planes[index];
-                        Geometry.Primitives.Plane.ParsePlane(parsedPlane, scene);
+                        Geometry.Primitives.Plane.Parse(parsedPlane, scene);
                     }
                 }
 
@@ -311,7 +311,7 @@
                 if (torusKnots) {
                     for (index = 0; index < torusKnots.length; index++) {
                         var parsedTorusKnot = torusKnots[index];
-                        Geometry.Primitives.TorusKnot.ParseTorusKnot(parsedTorusKnot, scene);
+                        Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
                     }
                 }
 
@@ -320,7 +320,7 @@
                 if (vertexData) {
                     for (index = 0; index < vertexData.length; index++) {
                         var parsedVertexData = vertexData[index];
-                        Geometry.ParseGeometry(parsedVertexData, scene, rootUrl);
+                        Geometry.Parse(parsedVertexData, scene, rootUrl);
                     }
                 }
             }
@@ -328,13 +328,13 @@
             // Meshes
             for (index = 0; index < parsedData.meshes.length; index++) {
                 var parsedMesh = parsedData.meshes[index];
-                Mesh.ParseMesh(parsedMesh, scene, rootUrl);
+                Mesh.Parse(parsedMesh, scene, rootUrl);
             }
 
             // Cameras
             for (index = 0; index < parsedData.cameras.length; index++) {
                 var parsedCamera = parsedData.cameras[index];
-                Camera.ParseCamera(parsedCamera, scene);
+                Camera.Parse(parsedCamera, scene);
             }
 
             if (parsedData.activeCameraID) {
@@ -363,10 +363,10 @@
                 for (index = 0; index < parsedData.sounds.length; index++) {
                     var parsedSound = parsedData.sounds[index];
                     if (Engine.audioEngine.canUseWebAudio) {
-                        Sound.ParseSound(parsedSound, scene, rootUrl);
+                        Sound.Parse(parsedSound, scene, rootUrl);
                     }
                     else {
-                        var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
+                        var emptySound = new Sound(parsedSound.name, null, scene);
                     }
                 }
             }
@@ -379,7 +379,7 @@
                     mesh._waitingParentId = undefined;
                 }
                 if (mesh._waitingActions) {
-                    ActionManager.ParseActions(mesh._waitingActions, mesh, scene);
+                    ActionManager.Parse(mesh._waitingActions, mesh, scene);
                     mesh._waitingActions = undefined;
                 }
             }
@@ -397,7 +397,7 @@
             if (parsedData.particleSystems) {
                 for (index = 0; index < parsedData.particleSystems.length; index++) {
                     var parsedParticleSystem = parsedData.particleSystems[index];
-                    ParticleSystem.ParseParticleSystem(parsedParticleSystem, scene, rootUrl);
+                    ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
                 }
             }
 
@@ -405,7 +405,7 @@
             if (parsedData.lensFlareSystems) {
                 for (index = 0; index < parsedData.lensFlareSystems.length; index++) {
                     var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-                    LensFlareSystem.ParseLensFlareSystem(parsedLensFlareSystem, scene, rootUrl);
+                    LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
                 }
             }
 
@@ -414,13 +414,13 @@
                 for (index = 0; index < parsedData.shadowGenerators.length; index++) {
                     var parsedShadowGenerator = parsedData.shadowGenerators[index];
 
-                    ShadowGenerator.ParseShadowGenerator(parsedShadowGenerator, scene);
+                    ShadowGenerator.Parse(parsedShadowGenerator, scene);
                 }
             }
 
             // Actions (scene)
             if (parsedData.actions) {
-                ActionManager.ParseActions(parsedData.actions, null, scene);
+                ActionManager.Parse(parsedData.actions, null, scene);
             }
 
             // Finish

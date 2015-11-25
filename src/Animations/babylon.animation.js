@@ -494,7 +494,7 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Animation.ParseAnimation = function (parsedAnimation) {
+        Animation.Parse = function (parsedAnimation) {
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
             var dataType = parsedAnimation.dataType;
             var keys = [];

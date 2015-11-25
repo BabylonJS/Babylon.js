@@ -122,7 +122,7 @@ var BABYLON;
             }
             return serializationObject;
         };
-        Skeleton.ParseSkeleton = function (parsedSkeleton, scene) {
+        Skeleton.Parse = function (parsedSkeleton, scene) {
             var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
             for (var index = 0; index < parsedSkeleton.bones.length; index++) {
                 var parsedBone = parsedSkeleton.bones[index];
@@ -132,7 +132,7 @@ var BABYLON;
                 }
                 var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
                 if (parsedBone.animation) {
-                    bone.animations.push(BABYLON.Animation.ParseAnimation(parsedBone.animation));
+                    bone.animations.push(BABYLON.Animation.Parse(parsedBone.animation));
                 }
             }
             return skeleton;

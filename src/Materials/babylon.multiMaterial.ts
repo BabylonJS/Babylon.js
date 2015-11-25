@@ -64,24 +64,5 @@
             return serializationObject;
         }
 
-        public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
-            var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
-
-            multiMaterial.id = parsedMultiMaterial.id;
-
-            Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
-
-            for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
-                var subMatId = parsedMultiMaterial.materials[matIndex];
-
-                if (subMatId) {
-                    multiMaterial.subMaterials.push(scene.getMaterialByID(subMatId));
-                } else {
-                    multiMaterial.subMaterials.push(null);
-                }
-            }
-
-            return multiMaterial;
-        }
     }
 } 
