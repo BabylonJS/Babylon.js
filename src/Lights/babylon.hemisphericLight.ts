@@ -30,5 +30,14 @@
 
             return this._worldMatrix;
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            serializationObject.type = 3;
+            serializationObject.direction = this.direction.asArray();
+            serializationObject.groundColor = this.groundColor.asArray();
+
+            return serializationObject;
+        }
     }
 } 

@@ -585,17 +585,47 @@
             }
         }
 
+        public serialize(): any {
+            var serializationObject: any = {};
+            serializationObject.name = this.name;
+            serializationObject.tags = Tags.GetTags(this);
+            serializationObject.id = this.id;
+            serializationObject.position = this.position.asArray();
+
+            serializationObject.type = Tools.GetConstructorName(this);
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+
+            serializationObject.fov = this.fov;
+            serializationObject.minZ = this.minZ;
+            serializationObject.maxZ = this.maxZ;
+
+            serializationObject.inertia = this.inertia;
+            
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+
+            // Layer mask
+            serializationObject.layerMask = this.layerMask;
+
+            return serializationObject;
+        }
+
         public static ParseCamera(parsedCamera: any, scene: Scene): Camera {
             var camera;
             var position = Vector3.FromArray(parsedCamera.position);
             var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
+            var interaxial_distance: number;
 
             if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
                 var alpha = parsedCamera.alpha;
                 var beta = parsedCamera.beta;
                 var radius = parsedCamera.radius;
                 if (parsedCamera.type === "AnaglyphArcRotateCamera") {
-                    var interaxial_distance = parsedCamera.interaxial_distance;
+                    interaxial_distance = parsedCamera.interaxial_distance;
                     camera = new AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
                 } else {
                     camera = new ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);

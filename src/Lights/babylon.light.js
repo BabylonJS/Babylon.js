@@ -73,6 +73,19 @@ var BABYLON;
             // Remove from scene
             this.getScene().removeLight(this);
         };
+        Light.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.tags = BABYLON.Tags.GetTags(this);
+            if (this.intensity) {
+                serializationObject.intensity = this.intensity;
+            }
+            serializationObject.range = this.range;
+            serializationObject.diffuse = this.diffuse.asArray();
+            serializationObject.specular = this.specular.asArray();
+            return serializationObject;
+        };
         Light.ParseLight = function (parsedLight, scene) {
             var light;
             switch (parsedLight.type) {

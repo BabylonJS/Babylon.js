@@ -103,8 +103,27 @@ var BABYLON;
             // Remove from scene
             this.getScene().removeSkeleton(this);
         };
+        Skeleton.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.bones = [];
+            for (var index = 0; index < this.bones.length; index++) {
+                var bone = this.bones[index];
+                var serializedBone = {
+                    parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
+                    name: bone.name,
+                    matrix: bone.getLocalMatrix().toArray()
+                };
+                serializationObject.bones.push(serializedBone);
+                if (bone.animations && bone.animations.length > 0) {
+                    serializedBone.animation = bone.animations[0].serialize();
+                }
+            }
+            return serializationObject;
+        };
         Skeleton.ParseSkeleton = function (parsedSkeleton, scene) {
-            var skeleton = new BABYLON.Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+            var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
             for (var index = 0; index < parsedSkeleton.bones.length; index++) {
                 var parsedBone = parsedSkeleton.bones[index];
                 var parentBone = null;

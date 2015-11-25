@@ -128,7 +128,7 @@ var BABYLON;
                                 }
                             }
                         }
-                        var mesh = mesh.ParseMesh(parsedMesh, scene, rootUrl);
+                        var mesh = BABYLON.Mesh.ParseMesh(parsedMesh, scene, rootUrl);
                         meshes.push(mesh);
                     }
                 }

@@ -1,266 +1,4 @@
-﻿module BABYLON {
-
-    var serializeLight = (light: Light): any => {
-        var serializationObject: any = {};
-        serializationObject.name = light.name;
-        serializationObject.id = light.id;
-        serializationObject.tags = Tags.GetTags(light);
-
-        if (light instanceof PointLight) {
-            serializationObject.type = 0;
-            serializationObject.position = (light).position.asArray();
-        } else if (light instanceof DirectionalLight) {
-            serializationObject.type = 1;
-            var directionalLight = light;
-            serializationObject.position = directionalLight.position.asArray();
-            serializationObject.direction = directionalLight.direction.asArray();
-        } else if (light instanceof SpotLight) {
-            serializationObject.type = 2;
-            var spotLight = light;
-            serializationObject.position = spotLight.position.asArray();
-            serializationObject.direction = spotLight.position.asArray();
-            serializationObject.angle = spotLight.angle;
-            serializationObject.exponent = spotLight.exponent;
-        } else if (light instanceof HemisphericLight) {
-            serializationObject.type = 3;
-            var hemisphericLight = light;
-            serializationObject.direction = hemisphericLight.direction.asArray();
-            serializationObject.groundColor = hemisphericLight.groundColor.asArray();
-        }
-
-        if (light.intensity) {
-            serializationObject.intensity = light.intensity;
-        }
-
-        serializationObject.range = light.range;
-
-        serializationObject.diffuse = light.diffuse.asArray();
-        serializationObject.specular = light.specular.asArray();
-
-        return serializationObject;
-    };
-
-    var serializeCamera = (camera: Camera): any => {
-        var serializationObject: any = {};
-        serializationObject.name = camera.name;
-        serializationObject.tags = Tags.GetTags(camera);
-        serializationObject.id = camera.id;
-        serializationObject.position = camera.position.asArray();
-
-        // Parent
-        if (camera.parent) {
-            serializationObject.parentId = camera.parent.id;
-        }
-
-        serializationObject.fov = camera.fov;
-        serializationObject.minZ = camera.minZ;
-        serializationObject.maxZ = camera.maxZ;
-
-        serializationObject.inertia = camera.inertia;
-
-        //setting the type
-        if (camera instanceof FreeCamera) {
-            serializationObject.type = "FreeCamera";
-        } else if (camera instanceof ArcRotateCamera) {
-            serializationObject.type = "ArcRotateCamera";
-        } else if (camera instanceof AnaglyphArcRotateCamera) {
-            serializationObject.type = "AnaglyphArcRotateCamera";
-        } else if (camera instanceof GamepadCamera) {
-            serializationObject.type = "GamepadCamera";
-        } else if (camera instanceof AnaglyphFreeCamera) {
-            serializationObject.type = "AnaglyphFreeCamera";
-        } else if (camera instanceof DeviceOrientationCamera) {
-            serializationObject.type = "DeviceOrientationCamera";
-        } else if (camera instanceof FollowCamera) {
-            serializationObject.type = "FollowCamera";
-        } else if (camera instanceof TouchCamera) {
-            serializationObject.type = "TouchCamera";
-        } else if (camera instanceof VirtualJoysticksCamera) {
-            serializationObject.type = "VirtualJoysticksCamera";
-        } else if (camera instanceof WebVRFreeCamera) {
-            serializationObject.type = "WebVRFreeCamera";
-        } else if (camera instanceof VRDeviceOrientationFreeCamera) {
-            serializationObject.type = "VRDeviceOrientationFreeCamera";
-        }
-
-        //special properties of specific cameras
-        if (camera instanceof ArcRotateCamera || camera instanceof AnaglyphArcRotateCamera) {
-            var arcCamera = camera;
-            serializationObject.alpha = arcCamera.alpha;
-            serializationObject.beta = arcCamera.beta;
-            serializationObject.radius = arcCamera.radius;
-            if (arcCamera.target && arcCamera.target.id) {
-                serializationObject.lockedTargetId = arcCamera.target.id;
-            }
-        } else if (camera instanceof FollowCamera) {
-            var followCam = camera;
-            serializationObject.radius = followCam.radius;
-            serializationObject.heightOffset = followCam.heightOffset;
-            serializationObject.rotationOffset = followCam.rotationOffset;
-        } else if (camera instanceof AnaglyphFreeCamera || camera instanceof AnaglyphArcRotateCamera) {
-            //eye space is a private member and can only be access like this. Without changing the implementation this is the best way to get it.
-            if (camera['_interaxialDistance'] !== undefined) {
-                serializationObject.interaxial_distance = Tools.ToDegrees(camera['_interaxialDistance']);
-            }
-        }
-
-        //general properties that not all cameras have. The [] is due to typescript's type safety
-        if (camera['speed'] !== undefined) {
-            serializationObject.speed = camera['speed'];
-        }
-
-        if (camera['target'] && camera['target'] instanceof Vector3) {
-            serializationObject.target = camera['target'].asArray();
-        }
-
-        // Target
-        if (camera['rotation'] && camera['rotation'] instanceof Vector3) {
-            serializationObject.rotation = camera['rotation'].asArray();
-        }
-
-        // Locked target
-        if (camera['lockedTarget'] && camera['lockedTarget'].id) {
-            serializationObject.lockedTargetId = camera['lockedTarget'].id;
-        }
-
-        serializationObject.checkCollisions = camera['checkCollisions'] || false;
-        serializationObject.applyGravity = camera['applyGravity'] || false;
-
-        if (camera['ellipsoid']) {
-            serializationObject.ellipsoid = camera['ellipsoid'].asArray();
-        }
-
-        // Animations
-        Animation.AppendSerializedAnimations(camera, serializationObject);
-
-        // Layer mask
-        serializationObject.layerMask = camera.layerMask;
-
-        return serializationObject;
-    };
-
-    var serializeMultiMaterial = (material: MultiMaterial): any => {
-        var serializationObject: any = {};
-
-        serializationObject.name = material.name;
-        serializationObject.id = material.id;
-        serializationObject.tags = Tags.GetTags(material);
-
-        serializationObject.materials = [];
-
-        for (var matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
-            var subMat = material.subMaterials[matIndex];
-
-            if (subMat) {
-                serializationObject.materials.push(subMat.id);
-            } else {
-                serializationObject.materials.push(null);
-            }
-        }
-
-        return serializationObject;
-    };
-   
-    var serializeSkeleton = (skeleton: Skeleton): any => {
-        var serializationObject: any = {};
-
-        serializationObject.name = skeleton.name;
-        serializationObject.id = skeleton.id;
-
-        serializationObject.bones = [];
-
-        for (var index = 0; index < skeleton.bones.length; index++) {
-            var bone = skeleton.bones[index];
-
-            var serializedBone: any = {
-                parentBoneIndex: bone.getParent() ? skeleton.bones.indexOf(bone.getParent()) : -1,
-                name: bone.name,
-                matrix: bone.getLocalMatrix().toArray()
-            };
-
-            serializationObject.bones.push(serializedBone);
-
-            if (bone.animations && bone.animations.length > 0) {
-                serializedBone.animation = bone.animations[0].serialize();
-            }
-        }
-        return serializationObject;
-    };
-
-    var serializeParticleSystem = (particleSystem: ParticleSystem): any => {
-        var serializationObject: any = {};
-
-        serializationObject.emitterId = particleSystem.emitter.id;
-        serializationObject.capacity = particleSystem.getCapacity();
-
-        if (particleSystem.particleTexture) {
-            serializationObject.textureName = particleSystem.particleTexture.name;
-        }
-
-        serializationObject.minAngularSpeed = particleSystem.minAngularSpeed;
-        serializationObject.maxAngularSpeed = particleSystem.maxAngularSpeed;
-        serializationObject.minSize = particleSystem.minSize;
-        serializationObject.maxSize = particleSystem.maxSize;
-        serializationObject.minLifeTime = particleSystem.minLifeTime;
-        serializationObject.maxLifeTime = particleSystem.maxLifeTime;
-        serializationObject.emitRate = particleSystem.emitRate;
-        serializationObject.minEmitBox = particleSystem.minEmitBox.asArray();
-        serializationObject.maxEmitBox = particleSystem.maxEmitBox.asArray();
-        serializationObject.gravity = particleSystem.gravity.asArray();
-        serializationObject.direction1 = particleSystem.direction1.asArray();
-        serializationObject.direction2 = particleSystem.direction2.asArray();
-        serializationObject.color1 = particleSystem.color1.asArray();
-        serializationObject.color2 = particleSystem.color2.asArray();
-        serializationObject.colorDead = particleSystem.colorDead.asArray();
-        serializationObject.updateSpeed = particleSystem.updateSpeed;
-        serializationObject.targetStopDuration = particleSystem.targetStopDuration;
-        serializationObject.textureMask = particleSystem.textureMask.asArray();
-        serializationObject.blendMode = particleSystem.blendMode;
-
-        return serializationObject;
-    };
-
-    var serializeLensFlareSystem = (lensFlareSystem: LensFlareSystem): any => {
-        var serializationObject: any = {};
-
-        serializationObject.emitterId = lensFlareSystem.getEmitter().id;
-        serializationObject.borderLimit = lensFlareSystem.borderLimit;
-
-        serializationObject.flares = [];
-        for (var index = 0; index < lensFlareSystem.lensFlares.length; index++) {
-            var flare = lensFlareSystem.lensFlares[index];
-
-            serializationObject.flares.push({
-                size: flare.size,
-                position: flare.position,
-                color: flare.color.asArray(),
-                textureName: Tools.GetFilename(flare.texture.name)
-            });
-        }
-
-
-        return serializationObject;
-    };
-
-    var serializeShadowGenerator = (light: Light): any => {
-        var serializationObject: any = {};
-        var shadowGenerator = light.getShadowGenerator();
-
-        serializationObject.lightId = light.id;
-        serializationObject.mapSize = shadowGenerator.getShadowMap().getRenderSize();
-        serializationObject.useVarianceShadowMap = shadowGenerator.useVarianceShadowMap;
-        serializationObject.usePoissonSampling = shadowGenerator.usePoissonSampling;
-
-        serializationObject.renderList = [];
-        for (var meshIndex = 0; meshIndex < shadowGenerator.getShadowMap().renderList.length; meshIndex++) {
-            var mesh = shadowGenerator.getShadowMap().renderList[meshIndex];
-
-            serializationObject.renderList.push(mesh.id);
-        }
-
-        return serializationObject;
-    };
-
+﻿module BABYLON {  
     var serializedGeometries: Geometry[] = [];
     var serializeVertexData: (vertexData: Geometry) => any;
     var serializeTorusKnot: (torusKnot: Geometry.Primitives.TorusKnot) => any;
@@ -568,7 +306,7 @@
                 } else if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
                     if (!serializationObject.multiMaterials.some(mat => (mat.id === mesh.material.id))) {
-                        serializationObject.multiMaterials.push(serializeMultiMaterial(<MultiMaterial>mesh.material));
+                        serializationObject.multiMaterials.push(mesh.material.serialize());
                     }
 
                 }
@@ -594,7 +332,7 @@
             // Skeletons
             if (mesh.skeleton) {
                 serializationObject.skeletons = serializationObject.skeletons || [];
-                serializationObject.skeletons.push(serializeSkeleton(mesh.skeleton));
+                serializationObject.skeletons.push(mesh.skeleton.serialize());
             }
 
             //serialize the actual mesh
@@ -639,14 +377,14 @@
             var light: Light;
             for (index = 0; index < scene.lights.length; index++) {
                 light = scene.lights[index];
-                serializationObject.lights.push(serializeLight(light));
+                serializationObject.lights.push(light.serialize());
             }
 
             // Cameras
             serializationObject.cameras = [];
             for (index = 0; index < scene.cameras.length; index++) {
                 var camera = scene.cameras[index];
-                serializationObject.cameras.push(serializeCamera(camera));
+                serializationObject.cameras.push(camera.serialize());
             }
 
             if (scene.activeCamera) {
@@ -666,22 +404,18 @@
             serializationObject.multiMaterials = [];
             for (index = 0; index < scene.multiMaterials.length; index++) {
                 var multiMaterial = scene.multiMaterials[index];
-                serializationObject.multiMaterials.push(serializeMultiMaterial(multiMaterial));
+                serializationObject.multiMaterials.push(multiMaterial.serialize());
             }
 
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
-                if (material instanceof StandardMaterial) {
-                    serializationObject.materials.push(material.serialize());
-                } else if (material instanceof MultiMaterial) {
-                    serializationObject.multiMaterials.push(serializeMultiMaterial(material));
-                }
+                serializationObject.materials.push(material.serialize());
             }
 
             // Skeletons
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
-                serializationObject.skeletons.push(serializeSkeleton(scene.skeletons[index]));
+                serializationObject.skeletons.push(scene.skeletons[index].serialize());
             }
 
             // Geometries
@@ -722,13 +456,13 @@
             // Particles Systems
             serializationObject.particleSystems = [];
             for (index = 0; index < scene.particleSystems.length; index++) {
-                serializationObject.particleSystems.push(serializeParticleSystem(scene.particleSystems[index]));
+                serializationObject.particleSystems.push(scene.particleSystems[index].serialize());
             }
 
             // Lens flares
             serializationObject.lensFlareSystems = [];
             for (index = 0; index < scene.lensFlareSystems.length; index++) {
-                serializationObject.lensFlareSystems.push(serializeLensFlareSystem(scene.lensFlareSystems[index]));
+                serializationObject.lensFlareSystems.push(scene.lensFlareSystems[index].serialize());
             }
 
             // Shadows
@@ -737,7 +471,7 @@
                 light = scene.lights[index];
 
                 if (light.getShadowGenerator()) {
-                    serializationObject.shadowGenerators.push(serializeShadowGenerator(light));
+                    serializationObject.shadowGenerators.push(light.getShadowGenerator().serialize());
                 }
             }
 

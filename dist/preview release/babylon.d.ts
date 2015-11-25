@@ -228,7 +228,7 @@ declare module BABYLON {
         createDynamicVertexBuffer(capacity: number): WebGLBuffer;
         updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: number[] | Float32Array, offset?: number): void;
         private _resetIndexBufferBinding();
-        createIndexBuffer(indices: number[]): WebGLBuffer;
+        createIndexBuffer(indices: number[] | Int32Array): WebGLBuffer;
         bindBuffers(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void;
         bindMultiBuffers(vertexBuffers: VertexBuffer[], indexBuffer: WebGLBuffer, effect: Effect): void;
         _releaseBuffer(buffer: WebGLBuffer): boolean;
@@ -1058,6 +1058,7 @@ declare module BABYLON {
         processTrigger(trigger: number, evt: ActionEvent): void;
         _getEffectiveTarget(target: any, propertyPath: string): any;
         _getProperty(propertyPath: string): string;
+        static ParseActions(parsedActions: any, object: AbstractMesh, scene: Scene): void;
     }
 }
 
@@ -1298,6 +1299,7 @@ declare module BABYLON {
         setValue(currentValue: any): void;
         goToFrame(frame: number): void;
         animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean;
+        serialize(): any;
         private static _ANIMATIONTYPE_FLOAT;
         private static _ANIMATIONTYPE_VECTOR3;
         private static _ANIMATIONTYPE_QUATERNION;
@@ -1317,6 +1319,7 @@ declare module BABYLON {
         static ANIMATIONLOOPMODE_CYCLE: number;
         static ANIMATIONLOOPMODE_CONSTANT: number;
         static ParseAnimation(parsedAnimation: any): Animation;
+        static AppendSerializedAnimations(source: IAnimatable, destination: any): any;
     }
 }
 
@@ -1534,6 +1537,7 @@ declare module BABYLON {
         getVolume(): number;
         attachToMesh(meshToConnectTo: AbstractMesh): void;
         private _onRegisterAfterWorldMatrixUpdate(connectedMesh);
+        static ParseSound(parsedSound: any, scene: Scene, rootUrl: string): Sound;
     }
 }
 
@@ -1609,6 +1613,407 @@ declare module BABYLON {
         getAnimatables(): IAnimatable[];
         clone(name: string, id: string): Skeleton;
         dispose(): void;
+        serialize(): any;
+        static ParseSkeleton(parsedSkeleton: any, scene: Scene): Skeleton;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCamera extends TargetCamera {
+        alpha: number;
+        beta: number;
+        radius: number;
+        target: any;
+        inertialAlphaOffset: number;
+        inertialBetaOffset: number;
+        inertialRadiusOffset: number;
+        lowerAlphaLimit: any;
+        upperAlphaLimit: any;
+        lowerBetaLimit: number;
+        upperBetaLimit: number;
+        lowerRadiusLimit: any;
+        upperRadiusLimit: any;
+        angularSensibilityX: number;
+        angularSensibilityY: number;
+        wheelPrecision: number;
+        pinchPrecision: number;
+        panningSensibility: number;
+        inertialPanningX: number;
+        inertialPanningY: number;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        zoomOnFactor: number;
+        targetScreenOffset: Vector2;
+        pinchInwards: boolean;
+        allowUpsideDown: boolean;
+        private _keys;
+        _viewMatrix: Matrix;
+        private _attachedElement;
+        private _onContextMenu;
+        private _onPointerDown;
+        private _onPointerUp;
+        private _onPointerMove;
+        private _wheel;
+        private _onMouseMove;
+        private _onKeyDown;
+        private _onKeyUp;
+        private _onLostFocus;
+        _reset: () => void;
+        private _onGestureStart;
+        private _onGesture;
+        private _MSGestureHandler;
+        private _localDirection;
+        private _transformedDirection;
+        private _isRightClick;
+        private _isCtrlPushed;
+        onCollide: (collidedMesh: AbstractMesh) => void;
+        checkCollisions: boolean;
+        collisionRadius: Vector3;
+        private _collider;
+        private _previousPosition;
+        private _collisionVelocity;
+        private _newPosition;
+        private _previousAlpha;
+        private _previousBeta;
+        private _previousRadius;
+        private _collisionTriggered;
+        angularSensibility: number;
+        constructor(name: string, alpha: number, beta: number, radius: number, target: any, scene: Scene);
+        _getTargetPosition(): Vector3;
+        _initCache(): void;
+        _updateCache(ignoreParentClass?: boolean): void;
+        _isSynchronizedViewMatrix(): boolean;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        _checkInputs(): void;
+        private _checkLimits();
+        setPosition(position: Vector3): void;
+        setTarget(target: Vector3): void;
+        _getViewMatrix(): Matrix;
+        private _onCollisionPositionChange;
+        zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ?: boolean): void;
+        focusOn(meshesOrMinMaxVectorAndDistance: any, doNotUpdateMaxZ?: boolean): void;
+        /**
+         * @override
+         * Override Camera.createRigCamera
+         */
+        createRigCamera(name: string, cameraIndex: number): Camera;
+        /**
+         * @override
+         * Override Camera._updateRigCameras
+         */
+        _updateRigCameras(): void;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        aspectRatio: number;
+        aspectRatioFov: number;
+        leftHMatrix: Matrix;
+        rightHMatrix: Matrix;
+        leftPreViewMatrix: Matrix;
+        rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+    class Camera extends Node {
+        position: Vector3;
+        private static _PERSPECTIVE_CAMERA;
+        private static _ORTHOGRAPHIC_CAMERA;
+        private static _FOVMODE_VERTICAL_FIXED;
+        private static _FOVMODE_HORIZONTAL_FIXED;
+        private static _RIG_MODE_NONE;
+        private static _RIG_MODE_STEREOSCOPIC_ANAGLYPH;
+        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
+        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
+        private static _RIG_MODE_STEREOSCOPIC_OVERUNDER;
+        private static _RIG_MODE_VR;
+        static PERSPECTIVE_CAMERA: number;
+        static ORTHOGRAPHIC_CAMERA: number;
+        static FOVMODE_VERTICAL_FIXED: number;
+        static FOVMODE_HORIZONTAL_FIXED: number;
+        static RIG_MODE_NONE: number;
+        static RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
+        static RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
+        static RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
+        static RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
+        static RIG_MODE_VR: number;
+        upVector: Vector3;
+        orthoLeft: any;
+        orthoRight: any;
+        orthoBottom: any;
+        orthoTop: any;
+        fov: number;
+        minZ: number;
+        maxZ: number;
+        inertia: number;
+        mode: number;
+        isIntermediate: boolean;
+        viewport: Viewport;
+        layerMask: number;
+        fovMode: number;
+        cameraRigMode: number;
+        _cameraRigParams: any;
+        _rigCameras: Camera[];
+        private _computedViewMatrix;
+        _projectionMatrix: Matrix;
+        private _worldMatrix;
+        _postProcesses: PostProcess[];
+        _postProcessesTakenIndices: any[];
+        _activeMeshes: SmartArray<Mesh>;
+        private _globalPosition;
+        constructor(name: string, position: Vector3, scene: Scene);
+        globalPosition: Vector3;
+        getActiveMeshes(): SmartArray<Mesh>;
+        isActiveMesh(mesh: Mesh): boolean;
+        _initCache(): void;
+        _updateCache(ignoreParentClass?: boolean): void;
+        _updateFromScene(): void;
+        _isSynchronized(): boolean;
+        _isSynchronizedViewMatrix(): boolean;
+        _isSynchronizedProjectionMatrix(): boolean;
+        attachControl(element: HTMLElement): void;
+        detachControl(element: HTMLElement): void;
+        _update(): void;
+        _checkInputs(): void;
+        attachPostProcess(postProcess: PostProcess, insertAt?: number): number;
+        detachPostProcess(postProcess: PostProcess, atIndices?: any): number[];
+        getWorldMatrix(): Matrix;
+        _getViewMatrix(): Matrix;
+        getViewMatrix(force?: boolean): Matrix;
+        _computeViewMatrix(force?: boolean): Matrix;
+        getProjectionMatrix(force?: boolean): Matrix;
+        dispose(): void;
+        setCameraRigMode(mode: number, rigParams: any): void;
+        private _getVRProjectionMatrix();
+        setCameraRigParameter(name: string, value: any): void;
+        /**
+         * May needs to be overridden by children so sub has required properties to be copied
+         */
+        createRigCamera(name: string, cameraIndex: number): Camera;
+        /**
+         * May needs to be overridden by children
+         */
+        _updateRigCameras(): void;
+        serialize(): any;
+        static ParseCamera(parsedCamera: any, scene: Scene): Camera;
+    }
+}
+
+declare module BABYLON {
+    class DeviceOrientationCamera extends FreeCamera {
+        private _offsetX;
+        private _offsetY;
+        private _orientationGamma;
+        private _orientationBeta;
+        private _initialOrientationGamma;
+        private _initialOrientationBeta;
+        private _attachedCanvas;
+        private _orientationChanged;
+        angularSensibility: number;
+        moveSensibility: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
+        detachControl(canvas: HTMLCanvasElement): void;
+        _checkInputs(): void;
+    }
+}
+
+declare module BABYLON {
+    class FollowCamera extends TargetCamera {
+        radius: number;
+        rotationOffset: number;
+        heightOffset: number;
+        cameraAcceleration: number;
+        maxCameraSpeed: number;
+        target: AbstractMesh;
+        constructor(name: string, position: Vector3, scene: Scene);
+        private getRadians(degrees);
+        private follow(cameraTarget);
+        _checkInputs(): void;
+        serialize(): any;
+    }
+    class ArcFollowCamera extends TargetCamera {
+        alpha: number;
+        beta: number;
+        radius: number;
+        target: AbstractMesh;
+        private _cartesianCoordinates;
+        constructor(name: string, alpha: number, beta: number, radius: number, target: AbstractMesh, scene: Scene);
+        private follow();
+        _checkInputs(): void;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class FreeCamera extends TargetCamera {
+        ellipsoid: Vector3;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        checkCollisions: boolean;
+        applyGravity: boolean;
+        angularSensibility: number;
+        onCollide: (collidedMesh: AbstractMesh) => void;
+        private _keys;
+        private _collider;
+        private _needMoveForGravity;
+        private _oldPosition;
+        private _diffPosition;
+        private _newPosition;
+        private _attachedElement;
+        private _localDirection;
+        private _transformedDirection;
+        private _onMouseDown;
+        private _onMouseUp;
+        private _onMouseOut;
+        private _onMouseMove;
+        private _onKeyDown;
+        private _onKeyUp;
+        _onLostFocus: (e: FocusEvent) => any;
+        _waitingLockedTargetId: string;
+        constructor(name: string, position: Vector3, scene: Scene);
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        _collideWithWorld(velocity: Vector3): void;
+        private _onCollisionPositionChange;
+        _checkInputs(): void;
+        _decideIfNeedsToMove(): boolean;
+        _updatePosition(): void;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class GamepadCamera extends FreeCamera {
+        private _gamepad;
+        private _gamepads;
+        angularSensibility: number;
+        moveSensibility: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        private _onNewGameConnected(gamepad);
+        _checkInputs(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class AnaglyphFreeCamera extends FreeCamera {
+        interaxialDistance: number;
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+    }
+    class AnaglyphArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: any, interaxialDistance: number, scene: Scene);
+    }
+    class AnaglyphGamepadCamera extends GamepadCamera {
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+    }
+    class StereoscopicFreeCamera extends FreeCamera {
+        constructor(name: string, position: Vector3, interaxialDistance: number, isSideBySide: boolean, scene: Scene);
+    }
+    class StereoscopicArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: any, interaxialDistance: number, isSideBySide: boolean, scene: Scene);
+    }
+    class StereoscopicGamepadCamera extends GamepadCamera {
+        constructor(name: string, position: Vector3, interaxialDistance: number, isSideBySide: boolean, scene: Scene);
+    }
+}
+
+declare module BABYLON {
+    class TargetCamera extends Camera {
+        cameraDirection: Vector3;
+        cameraRotation: Vector2;
+        rotation: Vector3;
+        speed: number;
+        noRotationConstraint: boolean;
+        lockedTarget: any;
+        _currentTarget: Vector3;
+        _viewMatrix: Matrix;
+        _camMatrix: Matrix;
+        _cameraTransformMatrix: Matrix;
+        _cameraRotationMatrix: Matrix;
+        private _rigCamTransformMatrix;
+        _referencePoint: Vector3;
+        _transformedReferencePoint: Vector3;
+        _lookAtTemp: Matrix;
+        _tempMatrix: Matrix;
+        _reset: () => void;
+        _waitingLockedTargetId: string;
+        constructor(name: string, position: Vector3, scene: Scene);
+        getFrontPosition(distance: number): Vector3;
+        _getLockedTargetPosition(): Vector3;
+        _initCache(): void;
+        _updateCache(ignoreParentClass?: boolean): void;
+        _isSynchronizedViewMatrix(): boolean;
+        _computeLocalCameraSpeed(): number;
+        setTarget(target: Vector3): void;
+        getTarget(): Vector3;
+        _decideIfNeedsToMove(): boolean;
+        _updatePosition(): void;
+        _checkInputs(): void;
+        _getViewMatrix(): Matrix;
+        _getVRViewMatrix(): Matrix;
+        /**
+         * @override
+         * Override Camera.createRigCamera
+         */
+        createRigCamera(name: string, cameraIndex: number): Camera;
+        /**
+         * @override
+         * Override Camera._updateRigCameras
+         */
+        _updateRigCameras(): void;
+        private _getRigCamPosition(halfSpace, result);
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class TouchCamera extends FreeCamera {
+        private _offsetX;
+        private _offsetY;
+        private _pointerCount;
+        private _pointerPressed;
+        private _attachedCanvas;
+        private _onPointerDown;
+        private _onPointerUp;
+        private _onPointerMove;
+        angularSensibility: number;
+        moveSensibility: number;
+        constructor(name: string, position: Vector3, scene: Scene);
+        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
+        detachControl(canvas: HTMLCanvasElement): void;
+        _checkInputs(): void;
+    }
+}
+
+declare module BABYLON {
+    class VirtualJoysticksCamera extends FreeCamera {
+        private _leftjoystick;
+        private _rightjoystick;
+        constructor(name: string, position: Vector3, scene: Scene);
+        getLeftJoystick(): VirtualJoystick;
+        getRightJoystick(): VirtualJoystick;
+        _checkInputs(): void;
+        dispose(): void;
     }
 }
 
@@ -1644,7 +2049,7 @@ declare module BABYLON {
         _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
         _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
         _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[], indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: number[] | Int32Array, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
         _getResponse(pos: Vector3, vel: Vector3): void;
     }
 }
@@ -1911,392 +2316,21 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ArcRotateCamera extends TargetCamera {
-        alpha: number;
-        beta: number;
-        radius: number;
-        target: any;
-        inertialAlphaOffset: number;
-        inertialBetaOffset: number;
-        inertialRadiusOffset: number;
-        lowerAlphaLimit: any;
-        upperAlphaLimit: any;
-        lowerBetaLimit: number;
-        upperBetaLimit: number;
-        lowerRadiusLimit: any;
-        upperRadiusLimit: any;
-        angularSensibilityX: number;
-        angularSensibilityY: number;
-        wheelPrecision: number;
-        pinchPrecision: number;
-        panningSensibility: number;
-        inertialPanningX: number;
-        inertialPanningY: number;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        zoomOnFactor: number;
-        targetScreenOffset: Vector2;
-        pinchInwards: boolean;
-        allowUpsideDown: boolean;
-        private _keys;
-        _viewMatrix: Matrix;
-        private _attachedElement;
-        private _onContextMenu;
-        private _onPointerDown;
-        private _onPointerUp;
-        private _onPointerMove;
-        private _wheel;
-        private _onMouseMove;
-        private _onKeyDown;
-        private _onKeyUp;
-        private _onLostFocus;
-        _reset: () => void;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _localDirection;
-        private _transformedDirection;
-        private _isRightClick;
-        private _isCtrlPushed;
-        onCollide: (collidedMesh: AbstractMesh) => void;
-        checkCollisions: boolean;
-        collisionRadius: Vector3;
-        private _collider;
-        private _previousPosition;
-        private _collisionVelocity;
-        private _newPosition;
-        private _previousAlpha;
-        private _previousBeta;
-        private _previousRadius;
-        private _collisionTriggered;
-        angularSensibility: number;
-        constructor(name: string, alpha: number, beta: number, radius: number, target: any, scene: Scene);
-        _getTargetPosition(): Vector3;
-        _initCache(): void;
-        _updateCache(ignoreParentClass?: boolean): void;
-        _isSynchronizedViewMatrix(): boolean;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        _checkInputs(): void;
-        private _checkLimits();
-        setPosition(position: Vector3): void;
-        setTarget(target: Vector3): void;
-        _getViewMatrix(): Matrix;
-        private _onCollisionPositionChange;
-        zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ?: boolean): void;
-        focusOn(meshesOrMinMaxVectorAndDistance: any, doNotUpdateMaxZ?: boolean): void;
-        /**
-         * @override
-         * Override Camera.createRigCamera
-         */
-        createRigCamera(name: string, cameraIndex: number): Camera;
-        /**
-         * @override
-         * Override Camera._updateRigCameras
-         */
-        _updateRigCameras(): void;
-    }
-}
-
-declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        aspectRatio: number;
-        aspectRatioFov: number;
-        leftHMatrix: Matrix;
-        rightHMatrix: Matrix;
-        leftPreViewMatrix: Matrix;
-        rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-    class Camera extends Node {
-        position: Vector3;
-        private static _PERSPECTIVE_CAMERA;
-        private static _ORTHOGRAPHIC_CAMERA;
-        private static _FOVMODE_VERTICAL_FIXED;
-        private static _FOVMODE_HORIZONTAL_FIXED;
-        private static _RIG_MODE_NONE;
-        private static _RIG_MODE_STEREOSCOPIC_ANAGLYPH;
-        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
-        private static _RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
-        private static _RIG_MODE_STEREOSCOPIC_OVERUNDER;
-        private static _RIG_MODE_VR;
-        static PERSPECTIVE_CAMERA: number;
-        static ORTHOGRAPHIC_CAMERA: number;
-        static FOVMODE_VERTICAL_FIXED: number;
-        static FOVMODE_HORIZONTAL_FIXED: number;
-        static RIG_MODE_NONE: number;
-        static RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
-        static RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
-        static RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
-        static RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
-        static RIG_MODE_VR: number;
-        upVector: Vector3;
-        orthoLeft: any;
-        orthoRight: any;
-        orthoBottom: any;
-        orthoTop: any;
-        fov: number;
-        minZ: number;
-        maxZ: number;
-        inertia: number;
-        mode: number;
-        isIntermediate: boolean;
-        viewport: Viewport;
-        layerMask: number;
-        fovMode: number;
-        cameraRigMode: number;
-        _cameraRigParams: any;
-        _rigCameras: Camera[];
-        private _computedViewMatrix;
-        _projectionMatrix: Matrix;
-        private _worldMatrix;
-        _postProcesses: PostProcess[];
-        _postProcessesTakenIndices: any[];
-        _activeMeshes: SmartArray<Mesh>;
-        private _globalPosition;
-        constructor(name: string, position: Vector3, scene: Scene);
-        globalPosition: Vector3;
-        getActiveMeshes(): SmartArray<Mesh>;
-        isActiveMesh(mesh: Mesh): boolean;
-        _initCache(): void;
-        _updateCache(ignoreParentClass?: boolean): void;
-        _updateFromScene(): void;
-        _isSynchronized(): boolean;
-        _isSynchronizedViewMatrix(): boolean;
-        _isSynchronizedProjectionMatrix(): boolean;
-        attachControl(element: HTMLElement): void;
-        detachControl(element: HTMLElement): void;
-        _update(): void;
-        _checkInputs(): void;
-        attachPostProcess(postProcess: PostProcess, insertAt?: number): number;
-        detachPostProcess(postProcess: PostProcess, atIndices?: any): number[];
-        getWorldMatrix(): Matrix;
-        _getViewMatrix(): Matrix;
-        getViewMatrix(force?: boolean): Matrix;
-        _computeViewMatrix(force?: boolean): Matrix;
-        getProjectionMatrix(force?: boolean): Matrix;
-        dispose(): void;
-        setCameraRigMode(mode: number, rigParams: any): void;
-        private _getVRProjectionMatrix();
-        setCameraRigParameter(name: string, value: any): void;
-        /**
-         * May needs to be overridden by children so sub has required properties to be copied
-         */
-        createRigCamera(name: string, cameraIndex: number): Camera;
-        /**
-         * May needs to be overridden by children
-         */
-        _updateRigCameras(): void;
-    }
-}
-
-declare module BABYLON {
-    class DeviceOrientationCamera extends FreeCamera {
-        private _offsetX;
-        private _offsetY;
-        private _orientationGamma;
-        private _orientationBeta;
-        private _initialOrientationGamma;
-        private _initialOrientationBeta;
-        private _attachedCanvas;
-        private _orientationChanged;
-        angularSensibility: number;
-        moveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
-        detachControl(canvas: HTMLCanvasElement): void;
-        _checkInputs(): void;
-    }
-}
-
-declare module BABYLON {
-    class FollowCamera extends TargetCamera {
-        radius: number;
-        rotationOffset: number;
-        heightOffset: number;
-        cameraAcceleration: number;
-        maxCameraSpeed: number;
-        target: AbstractMesh;
-        constructor(name: string, position: Vector3, scene: Scene);
-        private getRadians(degrees);
-        private follow(cameraTarget);
-        _checkInputs(): void;
-    }
-    class ArcFollowCamera extends TargetCamera {
-        alpha: number;
-        beta: number;
-        radius: number;
-        target: AbstractMesh;
-        private _cartesianCoordinates;
-        constructor(name: string, alpha: number, beta: number, radius: number, target: AbstractMesh, scene: Scene);
-        private follow();
-        _checkInputs(): void;
-    }
-}
-
-declare module BABYLON {
-    class FreeCamera extends TargetCamera {
-        ellipsoid: Vector3;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        checkCollisions: boolean;
-        applyGravity: boolean;
-        angularSensibility: number;
-        onCollide: (collidedMesh: AbstractMesh) => void;
-        private _keys;
-        private _collider;
-        private _needMoveForGravity;
-        private _oldPosition;
-        private _diffPosition;
-        private _newPosition;
-        private _attachedElement;
-        private _localDirection;
-        private _transformedDirection;
-        private _onMouseDown;
-        private _onMouseUp;
-        private _onMouseOut;
-        private _onMouseMove;
-        private _onKeyDown;
-        private _onKeyUp;
-        _onLostFocus: (e: FocusEvent) => any;
-        _waitingLockedTargetId: string;
-        constructor(name: string, position: Vector3, scene: Scene);
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        _collideWithWorld(velocity: Vector3): void;
-        private _onCollisionPositionChange;
-        _checkInputs(): void;
-        _decideIfNeedsToMove(): boolean;
-        _updatePosition(): void;
-    }
-}
-
-declare module BABYLON {
-    class GamepadCamera extends FreeCamera {
-        private _gamepad;
-        private _gamepads;
-        angularSensibility: number;
-        moveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        private _onNewGameConnected(gamepad);
-        _checkInputs(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class AnaglyphFreeCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-    }
-    class AnaglyphArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: any, interaxialDistance: number, scene: Scene);
-    }
-    class AnaglyphGamepadCamera extends GamepadCamera {
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
-    }
-    class StereoscopicFreeCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, interaxialDistance: number, isSideBySide: boolean, scene: Scene);
-    }
-    class StereoscopicArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: any, interaxialDistance: number, isSideBySide: boolean, scene: Scene);
-    }
-    class StereoscopicGamepadCamera extends GamepadCamera {
-        constructor(name: string, position: Vector3, interaxialDistance: number, isSideBySide: boolean, scene: Scene);
-    }
-}
-
-declare module BABYLON {
-    class TargetCamera extends Camera {
-        cameraDirection: Vector3;
-        cameraRotation: Vector2;
-        rotation: Vector3;
-        speed: number;
-        noRotationConstraint: boolean;
-        lockedTarget: any;
-        _currentTarget: Vector3;
-        _viewMatrix: Matrix;
-        _camMatrix: Matrix;
-        _cameraTransformMatrix: Matrix;
-        _cameraRotationMatrix: Matrix;
-        private _rigCamTransformMatrix;
-        _referencePoint: Vector3;
-        _transformedReferencePoint: Vector3;
-        _lookAtTemp: Matrix;
-        _tempMatrix: Matrix;
-        _reset: () => void;
-        _waitingLockedTargetId: string;
-        constructor(name: string, position: Vector3, scene: Scene);
-        getFrontPosition(distance: number): Vector3;
-        _getLockedTargetPosition(): Vector3;
-        _initCache(): void;
-        _updateCache(ignoreParentClass?: boolean): void;
-        _isSynchronizedViewMatrix(): boolean;
-        _computeLocalCameraSpeed(): number;
-        setTarget(target: Vector3): void;
-        getTarget(): Vector3;
-        _decideIfNeedsToMove(): boolean;
-        _updatePosition(): void;
-        _checkInputs(): void;
-        _getViewMatrix(): Matrix;
-        _getVRViewMatrix(): Matrix;
-        /**
-         * @override
-         * Override Camera.createRigCamera
-         */
-        createRigCamera(name: string, cameraIndex: number): Camera;
-        /**
-         * @override
-         * Override Camera._updateRigCameras
-         */
-        _updateRigCameras(): void;
-        private _getRigCamPosition(halfSpace, result);
-    }
-}
-
-declare module BABYLON {
-    class TouchCamera extends FreeCamera {
-        private _offsetX;
-        private _offsetY;
-        private _pointerCount;
-        private _pointerPressed;
-        private _attachedCanvas;
-        private _onPointerDown;
-        private _onPointerUp;
-        private _onPointerMove;
-        angularSensibility: number;
-        moveSensibility: number;
-        constructor(name: string, position: Vector3, scene: Scene);
-        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
-        detachControl(canvas: HTMLCanvasElement): void;
-        _checkInputs(): void;
-    }
-}
-
-declare module BABYLON {
-    class VirtualJoysticksCamera extends FreeCamera {
-        private _leftjoystick;
-        private _rightjoystick;
-        constructor(name: string, position: Vector3, scene: Scene);
-        getLeftJoystick(): VirtualJoystick;
-        getRightJoystick(): VirtualJoystick;
-        _checkInputs(): void;
+    class Layer {
+        name: string;
+        texture: Texture;
+        isBackground: boolean;
+        color: Color4;
+        onDispose: () => void;
+        alphaBlendingMode: number;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
+        render(): void;
         dispose(): void;
     }
 }
@@ -2362,26 +2396,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Layer {
-        name: string;
-        texture: Texture;
-        isBackground: boolean;
-        color: Color4;
-        onDispose: () => void;
-        alphaBlendingMode: number;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class LensFlare {
         size: number;
         position: number;
@@ -2420,6 +2434,8 @@ declare module BABYLON {
         _isVisible(): boolean;
         render(): boolean;
         dispose(): void;
+        static ParseLensFlareSystem(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -2447,6 +2463,7 @@ declare module BABYLON {
         computeTransformedPosition(): boolean;
         transferToEffect(effect: Effect, directionUniformName: string): void;
         _getWorldMatrix(): Matrix;
+        serialize(): any;
     }
 }
 
@@ -2460,11 +2477,13 @@ declare module BABYLON {
         getShadowGenerator(): ShadowGenerator;
         transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void;
         _getWorldMatrix(): Matrix;
+        serialize(): any;
     }
 }
 
 declare module BABYLON {
     interface IShadowLight {
+        id: string;
         position: Vector3;
         transformedPosition: Vector3;
         name: string;
@@ -2498,6 +2517,8 @@ declare module BABYLON {
         canAffectMesh(mesh: AbstractMesh): boolean;
         getWorldMatrix(): Matrix;
         dispose(): void;
+        serialize(): any;
+        static ParseLight(parsedLight: any, scene: Scene): Light;
     }
 }
 
@@ -2516,6 +2537,7 @@ declare module BABYLON {
         getShadowDirection(faceIndex?: number): Vector3;
         setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
         _getWorldMatrix(): Matrix;
+        serialize(): any;
     }
 }
 
@@ -2539,6 +2561,7 @@ declare module BABYLON {
         computeTransformedPosition(): boolean;
         transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
         _getWorldMatrix(): Matrix;
+        serialize(): any;
     }
 }
 
@@ -2710,6 +2733,8 @@ declare module BABYLON {
         getBindedMeshes(): AbstractMesh[];
         dispose(forceDisposeEffect?: boolean): void;
         copyTo(other: Material): void;
+        serialize(): any;
+        static ParseMaterial(parsedMaterial: any, scene: Scene, rootUrl: string): StandardMaterial;
     }
 }
 
@@ -2720,6 +2745,8 @@ declare module BABYLON {
         getSubMaterial(index: any): Material;
         isReady(mesh?: AbstractMesh): boolean;
         clone(name: string): MultiMaterial;
+        serialize(): any;
+        static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial;
     }
 }
 
@@ -2771,6 +2798,7 @@ declare module BABYLON {
         bias: number;
         power: number;
         clone(): FresnelParameters;
+        serialize(): any;
     }
     class StandardMaterial extends Material {
         diffuseTexture: BaseTexture;
@@ -2824,6 +2852,7 @@ declare module BABYLON {
         getAnimatables(): IAnimatable[];
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): StandardMaterial;
+        serialize(): any;
         static DiffuseTextureEnabled: boolean;
         static AmbientTextureEnabled: boolean;
         static OpacityTextureEnabled: boolean;
@@ -2922,6 +2951,7 @@ declare module BABYLON {
         static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
         static FromArray(array: number[], offset?: number): Color4;
         static FromInts(r: number, g: number, b: number, a: number): Color4;
+        static CheckColors4(colors: number[], count: number): number[];
     }
     class Vector2 {
         x: number;
@@ -3371,226 +3401,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Particle {
-        position: Vector3;
-        direction: Vector3;
-        color: Color4;
-        colorStep: Color4;
-        lifeTime: number;
-        age: number;
-        size: number;
-        angle: number;
-        angularSpeed: number;
-        copyTo(other: Particle): void;
-    }
-}
-
-declare module BABYLON {
-    class ParticleSystem implements IDisposable {
-        name: string;
-        static BLENDMODE_ONEONE: number;
-        static BLENDMODE_STANDARD: number;
-        id: string;
-        renderingGroupId: number;
-        emitter: any;
-        emitRate: number;
-        manualEmitCount: number;
-        updateSpeed: number;
-        targetStopDuration: number;
-        disposeOnStop: boolean;
-        minEmitPower: number;
-        maxEmitPower: number;
-        minLifeTime: number;
-        maxLifeTime: number;
-        minSize: number;
-        maxSize: number;
-        minAngularSpeed: number;
-        maxAngularSpeed: number;
-        particleTexture: Texture;
-        layerMask: number;
-        onDispose: () => void;
-        updateFunction: (particles: Particle[]) => void;
-        blendMode: number;
-        forceDepthWrite: boolean;
-        gravity: Vector3;
-        direction1: Vector3;
-        direction2: Vector3;
-        minEmitBox: Vector3;
-        maxEmitBox: Vector3;
-        color1: Color4;
-        color2: Color4;
-        colorDead: Color4;
-        textureMask: Color4;
-        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
-        private particles;
-        private _capacity;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _stockParticles;
-        private _newPartsExcess;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _vertices;
-        private _effect;
-        private _customEffect;
-        private _cachedDefines;
-        private _scaledColorStep;
-        private _colorDiff;
-        private _scaledDirection;
-        private _scaledGravity;
-        private _currentRenderId;
-        private _alive;
-        private _started;
-        private _stopped;
-        private _actualFrame;
-        private _scaledUpdateSpeed;
-        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
-        recycleParticle(particle: Particle): void;
-        getCapacity(): number;
-        isAlive(): boolean;
-        isStarted(): boolean;
-        start(): void;
-        stop(): void;
-        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
-        private _update(newParticles);
-        private _getEffect();
-        animate(): void;
-        render(): number;
-        dispose(): void;
-        clone(name: string, newEmitter: any): ParticleSystem;
-    }
-}
-
-declare module BABYLON {
-    class SolidParticle {
-        idx: number;
-        color: Color4;
-        position: Vector3;
-        rotation: Vector3;
-        quaternion: Vector4;
-        scale: Vector3;
-        uvs: Vector4;
-        velocity: Vector3;
-        alive: boolean;
-        _pos: number;
-        _model: ModelShape;
-        shapeId: number;
-        idxInShape: number;
-        constructor(particleIndex: number, positionIndex: number, model: ModelShape, shapeId: number, idxInShape: number);
-    }
-    class ModelShape {
-        shapeID: number;
-        _shape: Vector3[];
-        _shapeUV: number[];
-        _positionFunction: (particle: SolidParticle, i: number, s: number) => void;
-        _vertexFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void;
-        constructor(id: number, shape: Vector3[], shapeUV: number[], posFunction: (particle: SolidParticle, i: number, s: number) => void, vtxFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void);
-    }
-}
-
-declare module BABYLON {
-    class SolidParticleSystem implements IDisposable {
-        particles: SolidParticle[];
-        nbParticles: number;
-        billboard: boolean;
-        counter: number;
-        name: string;
-        mesh: Mesh;
-        vars: any;
-        pickedParticles: {
-            idx: number;
-            faceId: number;
-        }[];
-        private _scene;
-        private _positions;
-        private _indices;
-        private _normals;
-        private _colors;
-        private _uvs;
-        private _positions32;
-        private _normals32;
-        private _fixedNormal32;
-        private _colors32;
-        private _uvs32;
-        private _index;
-        private _updatable;
-        private _pickable;
-        private _alwaysVisible;
-        private _shapeCounter;
-        private _copy;
-        private _shape;
-        private _shapeUV;
-        private _color;
-        private _computeParticleColor;
-        private _computeParticleTexture;
-        private _computeParticleRotation;
-        private _computeParticleVertex;
-        private _cam_axisZ;
-        private _cam_axisY;
-        private _cam_axisX;
-        private _axisX;
-        private _axisY;
-        private _axisZ;
-        private _camera;
-        private _particle;
-        private _fakeCamPos;
-        private _rotMatrix;
-        private _invertMatrix;
-        private _rotated;
-        private _quaternion;
-        private _vertex;
-        private _normal;
-        private _yaw;
-        private _pitch;
-        private _roll;
-        private _halfroll;
-        private _halfpitch;
-        private _halfyaw;
-        private _sinRoll;
-        private _cosRoll;
-        private _sinPitch;
-        private _cosPitch;
-        private _sinYaw;
-        private _cosYaw;
-        private _w;
-        constructor(name: string, scene: Scene, options?: {
-            updatable?: boolean;
-            isPickable?: boolean;
-        });
-        buildMesh(): Mesh;
-        private _resetCopy();
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idx, idxInShape, options);
-        private _posToShape(positions);
-        private _uvsToShapeUV(uvs);
-        private _addParticle(idx, idxpos, model, shapeId, idxInShape);
-        addShape(mesh: Mesh, nb: number, options?: {
-            positionFunction?: any;
-            vertexFunction?: any;
-        }): number;
-        private _rebuildParticle(particle);
-        rebuildMesh(): void;
-        setParticles(start?: number, end?: number, update?: boolean): void;
-        private _quaternionRotationYPR();
-        private _quaternionToRotationMatrix();
-        dispose(): void;
-        refreshVisibleSize(): void;
-        isAlwaysVisible: boolean;
-        computeParticleRotation: boolean;
-        computeParticleColor: boolean;
-        computeParticleTexture: boolean;
-        computeParticleVertex: boolean;
-        initParticles(): void;
-        recycleParticle(particle: SolidParticle): SolidParticle;
-        updateParticle(particle: SolidParticle): SolidParticle;
-        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
-        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
-        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
-    }
-}
-
-declare module BABYLON {
     class AbstractMesh extends Node implements IDisposable {
         private static _BILLBOARDMODE_NONE;
         private static _BILLBOARDMODE_X;
@@ -3691,7 +3501,7 @@ declare module BABYLON {
         isBlocked: boolean;
         getLOD(camera: Camera): AbstractMesh;
         getTotalVertices(): number;
-        getIndices(): number[];
+        getIndices(): number[] | Int32Array;
         getVerticesData(kind: string): number[] | Float32Array;
         isVerticesDataPresent(kind: string): boolean;
         getBoundingInfo(): BoundingInfo;
@@ -3857,9 +3667,9 @@ declare module BABYLON {
         getVertexBuffers(): VertexBuffer[];
         isVerticesDataPresent(kind: string): boolean;
         getVerticesDataKinds(): string[];
-        setIndices(indices: number[], totalVertices?: number): void;
+        setIndices(indices: number[] | Int32Array, totalVertices?: number): void;
         getTotalIndices(): number;
-        getIndices(copyWhenShared?: boolean): number[];
+        getIndices(copyWhenShared?: boolean): number[] | Int32Array;
         getIndexBuffer(): any;
         releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void;
         applyToMesh(mesh: Mesh): void;
@@ -3871,6 +3681,8 @@ declare module BABYLON {
         copy(id: string): Geometry;
         static ExtractFromMesh(mesh: Mesh, id: string): Geometry;
         static RandomId(): string;
+        static ImportGeometry(parsedGeometry: any, mesh: Mesh): void;
+        static ParseGeometry(parsedVertexData: any, scene: Scene, rootUrl: string): Geometry;
     }
     module Geometry.Primitives {
         class _Primitive extends Geometry {
@@ -3881,7 +3693,7 @@ declare module BABYLON {
             regenerate(): void;
             asNewGeometry(id: string): Geometry;
             setAllVerticesData(vertexData: VertexData, updatable?: boolean): void;
-            setVerticesData(kind: string, data: number[], updatable?: boolean): void;
+            setVerticesData(kind: string, data: number[] | Int32Array | Float32Array, updatable?: boolean): void;
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
         }
@@ -3901,6 +3713,7 @@ declare module BABYLON {
             constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
+            static ParseBox(parsedBox: any, scene: Scene): Geometry.Primitives.Box;
         }
         class Sphere extends _Primitive {
             segments: number;
@@ -3909,6 +3722,7 @@ declare module BABYLON {
             constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
+            static ParseSphere(parsedSphere: any, scene: Scene): Geometry.Primitives.Sphere;
         }
         class Disc extends _Primitive {
             radius: number;
@@ -3928,6 +3742,7 @@ declare module BABYLON {
             constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions?: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
+            static ParseCylinder(parsedCylinder: any, scene: Scene): Geometry.Primitives.Cylinder;
         }
         class Torus extends _Primitive {
             diameter: number;
@@ -3937,6 +3752,7 @@ declare module BABYLON {
             constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
+            static ParseTorus(parsedTorus: any, scene: Scene): Geometry.Primitives.Torus;
         }
         class Ground extends _Primitive {
             width: number;
@@ -3945,6 +3761,7 @@ declare module BABYLON {
             constructor(id: string, scene: Scene, width: number, height: number, subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
+            static ParseGround(parsedGround: any, scene: Scene): Geometry.Primitives.Ground;
         }
         class TiledGround extends _Primitive {
             xmin: number;
@@ -3975,6 +3792,7 @@ declare module BABYLON {
             constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
+            static ParsePlane(parsedPlane: any, scene: Scene): Geometry.Primitives.Plane;
         }
         class TorusKnot extends _Primitive {
             radius: number;
@@ -3987,6 +3805,7 @@ declare module BABYLON {
             constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh, side?: number);
             _regenerateVertexData(): VertexData;
             copy(id: string): Geometry;
+            static ParseTorusKnot(parsedTorusKnot: any, scene: Scene): Geometry.Primitives.TorusKnot;
         }
     }
 }
@@ -4019,7 +3838,7 @@ declare module BABYLON {
         sourceMesh: Mesh;
         getVerticesData(kind: string): number[] | Float32Array;
         isVerticesDataPresent(kind: string): boolean;
-        getIndices(): number[];
+        getIndices(): number[] | Int32Array;
         _positions: Vector3[];
         refreshBoundingInfo(): void;
         _preActivate(): void;
@@ -4111,15 +3930,15 @@ declare module BABYLON {
         /**
          * Add a mesh as LOD level triggered at the given distance.
          * @param {number} distance - the distance from the center of the object to show this level
-         * @param {BABYLON.Mesh} mesh - the mesh to be added as LOD level
-         * @return {BABYLON.Mesh} this mesh (for chaining)
+         * @param {Mesh} mesh - the mesh to be added as LOD level
+         * @return {Mesh} this mesh (for chaining)
          */
         addLODLevel(distance: number, mesh: Mesh): Mesh;
         getLODLevelAtDistance(distance: number): Mesh;
         /**
          * Remove a mesh from the LOD array
-         * @param {BABYLON.Mesh} mesh - the mesh to be removed.
-         * @return {BABYLON.Mesh} this mesh (for chaining)
+         * @param {Mesh} mesh - the mesh to be removed.
+         * @return {Mesh} this mesh (for chaining)
          */
         removeLODLevel(mesh: Mesh): Mesh;
         getLOD(camera: Camera, boundingSphere?: BoundingSphere): AbstractMesh;
@@ -4130,7 +3949,7 @@ declare module BABYLON {
         isVerticesDataPresent(kind: string): boolean;
         getVerticesDataKinds(): string[];
         getTotalIndices(): number;
-        getIndices(copyWhenShared?: boolean): number[];
+        getIndices(copyWhenShared?: boolean): number[] | Int32Array;
         isBlocked: boolean;
         isReady(): boolean;
         isDisposed(): boolean;
@@ -4150,7 +3969,7 @@ declare module BABYLON {
         updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void;
         updateMeshPositions(positionFunction: any, computeNormals?: boolean): void;
         makeGeometryUnique(): void;
-        setIndices(indices: number[], totalVertices?: number): void;
+        setIndices(indices: number[] | Int32Array, totalVertices?: number): void;
         _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void;
         _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void;
         registerBeforeRender(func: (mesh: AbstractMesh) => void): void;
@@ -4196,6 +4015,7 @@ declare module BABYLON {
          * @param successCallback an optional success callback to be called after the optimization finished.
          */
         optimizeIndices(successCallback?: (mesh?: Mesh) => void): void;
+        static ParseMesh(parsedMesh: any, scene: Scene, rootUrl: string): Mesh;
         static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh;
         static CreateDisc(name: string, radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
         static CreateBox(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh;
@@ -4273,11 +4093,11 @@ declare module BABYLON {
 declare module BABYLON {
     interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array;
-        getIndices(copyWhenShared?: boolean): number[];
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Int32Array | Float32Array;
+        getIndices(copyWhenShared?: boolean): number[] | Int32Array;
         setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: number[] | Float32Array): void;
+        setIndices(indices: number[] | Int32Array): void;
     }
     class VertexData {
         positions: number[] | Float32Array;
@@ -4293,7 +4113,7 @@ declare module BABYLON {
         matricesWeights: number[] | Float32Array;
         matricesIndicesExtra: number[] | Float32Array;
         matricesWeightsExtra: number[] | Float32Array;
-        indices: number[];
+        indices: number[] | Int32Array;
         set(data: number[] | Float32Array, kind: string): void;
         applyToMesh(mesh: Mesh, updatable?: boolean): void;
         applyToGeometry(geometry: Geometry, updatable?: boolean): void;
@@ -4439,6 +4259,7 @@ declare module BABYLON {
          */
         static ComputeNormals(positions: any, indices: any, normals: any): void;
         private static _ComputeSides(sideOrientation, positions, indices, normals, uvs);
+        static ImportVertexData(parsedVertexData: any, geometry: Geometry): void;
     }
 }
 
@@ -4822,9 +4643,9 @@ declare module BABYLON {
         updateBoundingInfo(world: Matrix): void;
         isInFrustum(frustumPlanes: Plane[]): boolean;
         render(enableAlphaMode: boolean): void;
-        getLinesIndexBuffer(indices: number[], engine: any): WebGLBuffer;
+        getLinesIndexBuffer(indices: number[] | Int32Array, engine: any): WebGLBuffer;
         canIntersects(ray: Ray): boolean;
-        intersects(ray: Ray, positions: Vector3[], indices: number[], fastCheck?: boolean): IntersectionInfo;
+        intersects(ray: Ray, positions: Vector3[], indices: number[] | Int32Array, fastCheck?: boolean): IntersectionInfo;
         clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh;
         dispose(): void;
         static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh): SubMesh;
@@ -4875,6 +4696,228 @@ declare module BABYLON {
         static MatricesWeightsKind: string;
         static MatricesIndicesExtraKind: string;
         static MatricesWeightsExtraKind: string;
+    }
+}
+
+declare module BABYLON {
+    class Particle {
+        position: Vector3;
+        direction: Vector3;
+        color: Color4;
+        colorStep: Color4;
+        lifeTime: number;
+        age: number;
+        size: number;
+        angle: number;
+        angularSpeed: number;
+        copyTo(other: Particle): void;
+    }
+}
+
+declare module BABYLON {
+    class ParticleSystem implements IDisposable {
+        name: string;
+        static BLENDMODE_ONEONE: number;
+        static BLENDMODE_STANDARD: number;
+        id: string;
+        renderingGroupId: number;
+        emitter: any;
+        emitRate: number;
+        manualEmitCount: number;
+        updateSpeed: number;
+        targetStopDuration: number;
+        disposeOnStop: boolean;
+        minEmitPower: number;
+        maxEmitPower: number;
+        minLifeTime: number;
+        maxLifeTime: number;
+        minSize: number;
+        maxSize: number;
+        minAngularSpeed: number;
+        maxAngularSpeed: number;
+        particleTexture: Texture;
+        layerMask: number;
+        onDispose: () => void;
+        updateFunction: (particles: Particle[]) => void;
+        blendMode: number;
+        forceDepthWrite: boolean;
+        gravity: Vector3;
+        direction1: Vector3;
+        direction2: Vector3;
+        minEmitBox: Vector3;
+        maxEmitBox: Vector3;
+        color1: Color4;
+        color2: Color4;
+        colorDead: Color4;
+        textureMask: Color4;
+        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+        private particles;
+        private _capacity;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _stockParticles;
+        private _newPartsExcess;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _vertices;
+        private _effect;
+        private _customEffect;
+        private _cachedDefines;
+        private _scaledColorStep;
+        private _colorDiff;
+        private _scaledDirection;
+        private _scaledGravity;
+        private _currentRenderId;
+        private _alive;
+        private _started;
+        private _stopped;
+        private _actualFrame;
+        private _scaledUpdateSpeed;
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Effect);
+        recycleParticle(particle: Particle): void;
+        getCapacity(): number;
+        isAlive(): boolean;
+        isStarted(): boolean;
+        start(): void;
+        stop(): void;
+        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
+        private _update(newParticles);
+        private _getEffect();
+        animate(): void;
+        render(): number;
+        dispose(): void;
+        clone(name: string, newEmitter: any): ParticleSystem;
+        serialize(): any;
+        static ParseParticleSystem(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem;
+    }
+}
+
+declare module BABYLON {
+    class SolidParticle {
+        idx: number;
+        color: Color4;
+        position: Vector3;
+        rotation: Vector3;
+        quaternion: Vector4;
+        scale: Vector3;
+        uvs: Vector4;
+        velocity: Vector3;
+        alive: boolean;
+        _pos: number;
+        _model: ModelShape;
+        shapeId: number;
+        idxInShape: number;
+        constructor(particleIndex: number, positionIndex: number, model: ModelShape, shapeId: number, idxInShape: number);
+    }
+    class ModelShape {
+        shapeID: number;
+        _shape: Vector3[];
+        _shapeUV: number[];
+        _positionFunction: (particle: SolidParticle, i: number, s: number) => void;
+        _vertexFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void;
+        constructor(id: number, shape: Vector3[], shapeUV: number[], posFunction: (particle: SolidParticle, i: number, s: number) => void, vtxFunction: (particle: SolidParticle, vertex: Vector3, i: number) => void);
+    }
+}
+
+declare module BABYLON {
+    class SolidParticleSystem implements IDisposable {
+        particles: SolidParticle[];
+        nbParticles: number;
+        billboard: boolean;
+        counter: number;
+        name: string;
+        mesh: Mesh;
+        vars: any;
+        pickedParticles: {
+            idx: number;
+            faceId: number;
+        }[];
+        private _scene;
+        private _positions;
+        private _indices;
+        private _normals;
+        private _colors;
+        private _uvs;
+        private _positions32;
+        private _normals32;
+        private _fixedNormal32;
+        private _colors32;
+        private _uvs32;
+        private _index;
+        private _updatable;
+        private _pickable;
+        private _alwaysVisible;
+        private _shapeCounter;
+        private _copy;
+        private _shape;
+        private _shapeUV;
+        private _color;
+        private _computeParticleColor;
+        private _computeParticleTexture;
+        private _computeParticleRotation;
+        private _computeParticleVertex;
+        private _cam_axisZ;
+        private _cam_axisY;
+        private _cam_axisX;
+        private _axisX;
+        private _axisY;
+        private _axisZ;
+        private _camera;
+        private _particle;
+        private _fakeCamPos;
+        private _rotMatrix;
+        private _invertMatrix;
+        private _rotated;
+        private _quaternion;
+        private _vertex;
+        private _normal;
+        private _yaw;
+        private _pitch;
+        private _roll;
+        private _halfroll;
+        private _halfpitch;
+        private _halfyaw;
+        private _sinRoll;
+        private _cosRoll;
+        private _sinPitch;
+        private _cosPitch;
+        private _sinYaw;
+        private _cosYaw;
+        private _w;
+        constructor(name: string, scene: Scene, options?: {
+            updatable?: boolean;
+            isPickable?: boolean;
+        });
+        buildMesh(): Mesh;
+        private _resetCopy();
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, idx, idxInShape, options);
+        private _posToShape(positions);
+        private _uvsToShapeUV(uvs);
+        private _addParticle(idx, idxpos, model, shapeId, idxInShape);
+        addShape(mesh: Mesh, nb: number, options?: {
+            positionFunction?: any;
+            vertexFunction?: any;
+        }): number;
+        private _rebuildParticle(particle);
+        rebuildMesh(): void;
+        setParticles(start?: number, end?: number, update?: boolean): void;
+        private _quaternionRotationYPR();
+        private _quaternionToRotationMatrix();
+        dispose(): void;
+        refreshVisibleSize(): void;
+        isAlwaysVisible: boolean;
+        computeParticleRotation: boolean;
+        computeParticleColor: boolean;
+        computeParticleTexture: boolean;
+        computeParticleVertex: boolean;
+        initParticles(): void;
+        recycleParticle(particle: SolidParticle): SolidParticle;
+        updateParticle(particle: SolidParticle): SolidParticle;
+        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
+        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
     }
 }
 
@@ -6168,6 +6211,7 @@ declare module BABYLON {
     class Tools {
         static BaseUrl: string;
         static CorsBehavior: any;
+        static GetConstructorName(obj: any): any;
         static ToHex(i: number): string;
         static SetImmediate(action: () => void): void;
         static IsExponentOfTwo(value: number): boolean;
@@ -6177,7 +6221,7 @@ declare module BABYLON {
         static ToDegrees(angle: number): number;
         static ToRadians(angle: number): number;
         static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string;
-        static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[], indexStart: number, indexCount: number): {
+        static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[] | Int32Array, indexStart: number, indexCount: number): {
             minimum: Vector3;
             maximum: Vector3;
         };
@@ -6491,6 +6535,8 @@ declare module BABYLON {
         setTransparencyShadow(hasShadow: boolean): void;
         private _packHalf(depth);
         dispose(): void;
+        serialize(): any;
+        static ParseShadowGenerator(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
 }
 
@@ -6532,6 +6578,7 @@ declare module BABYLON {
         clone(): BaseTexture;
         releaseInternalTexture(): void;
         dispose(): void;
+        serialize(): any;
         static ParseCubeTexture(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture;
         static ParseTexture(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture;
     }
@@ -6548,6 +6595,8 @@ declare module BABYLON {
         clone(): CubeTexture;
         delayLoad(): void;
         getReflectionTextureMatrix(): Matrix;
+        static ParseCubeTexture(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture;
+        serialize(): any;
     }
 }
 
@@ -6575,6 +6624,7 @@ declare module BABYLON {
         private _savedViewMatrix;
         constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
         clone(): MirrorTexture;
+        serialize(): any;
     }
 }
 
@@ -6631,6 +6681,7 @@ declare module BABYLON {
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
         renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void;
         clone(): RenderTargetTexture;
+        serialize(): any;
     }
 }
 
@@ -6685,7 +6736,9 @@ declare module BABYLON {
         getTextureMatrix(): Matrix;
         getReflectionTextureMatrix(): Matrix;
         clone(): Texture;
+        serialize(): any;
         static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: () => void, onError?: () => void): Texture;
+        static ParseTexture(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture;
     }
 }
 

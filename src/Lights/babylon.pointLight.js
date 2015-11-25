@@ -69,6 +69,12 @@ var BABYLON;
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
         };
+        PointLight.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = 0;
+            serializationObject.position = this.position.asArray();
+            return serializationObject;
+        };
         return PointLight;
     })(BABYLON.Light);
     BABYLON.PointLight = PointLight;

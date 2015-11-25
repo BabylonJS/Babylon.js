@@ -157,12 +157,13 @@ var BABYLON;
             else {
                 worldMatrix = BABYLON.Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
             }
+            var particle;
             for (var index = 0; index < newParticles; index++) {
                 if (this.particles.length === this._capacity) {
                     break;
                 }
                 if (this._stockParticles.length !== 0) {
-                    var particle = this._stockParticles.pop();
+                    particle = this._stockParticles.pop();
                     particle.age = 0;
                 }
                 else {
@@ -327,6 +328,34 @@ var BABYLON;
             }
             result.start();
             return result;
+        };
+        ParticleSystem.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.emitterId = this.emitter.id;
+            serializationObject.capacity = this.getCapacity();
+            if (this.particleTexture) {
+                serializationObject.textureName = this.particleTexture.name;
+            }
+            serializationObject.minAngularSpeed = this.minAngularSpeed;
+            serializationObject.maxAngularSpeed = this.maxAngularSpeed;
+            serializationObject.minSize = this.minSize;
+            serializationObject.maxSize = this.maxSize;
+            serializationObject.minLifeTime = this.minLifeTime;
+            serializationObject.maxLifeTime = this.maxLifeTime;
+            serializationObject.emitRate = this.emitRate;
+            serializationObject.minEmitBox = this.minEmitBox.asArray();
+            serializationObject.maxEmitBox = this.maxEmitBox.asArray();
+            serializationObject.gravity = this.gravity.asArray();
+            serializationObject.direction1 = this.direction1.asArray();
+            serializationObject.direction2 = this.direction2.asArray();
+            serializationObject.color1 = this.color1.asArray();
+            serializationObject.color2 = this.color2.asArray();
+            serializationObject.colorDead = this.colorDead.asArray();
+            serializationObject.updateSpeed = this.updateSpeed;
+            serializationObject.targetStopDuration = this.targetStopDuration;
+            serializationObject.textureMask = this.textureMask.asArray();
+            serializationObject.blendMode = this.blendMode;
+            return serializationObject;
         };
         ParticleSystem.ParseParticleSystem = function (parsedParticleSystem, scene, rootUrl) {
             var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);

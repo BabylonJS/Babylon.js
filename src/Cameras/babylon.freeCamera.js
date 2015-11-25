@@ -222,6 +222,13 @@ var BABYLON;
                 this.position.addInPlace(this.cameraDirection);
             }
         };
+        FreeCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.applyGravity = this.applyGravity;
+            serializationObject.ellipsoid = this.ellipsoid.asArray();
+            return serializationObject;
+        };
         return FreeCamera;
     })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;

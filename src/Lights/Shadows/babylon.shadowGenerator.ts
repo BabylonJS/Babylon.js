@@ -392,9 +392,27 @@
             }
         }
 
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.lightId = this._light.id;
+            serializationObject.mapSize = this.getShadowMap().getRenderSize();
+            serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
+            serializationObject.usePoissonSampling = this.usePoissonSampling;
+
+            serializationObject.renderList = [];
+            for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
+                var mesh = this.getShadowMap().renderList[meshIndex];
+
+                serializationObject.renderList.push(mesh.id);
+            }
+
+            return serializationObject;
+        }
+
         public static ParseShadowGenerator(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
             //casting to point light, as light is missing the position attr and typescript complains.
-            var light = <PointLight> scene.getLightByID(parsedShadowGenerator.lightId);
+            var light = <PointLight>scene.getLightByID(parsedShadowGenerator.lightId);
             var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
 
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {

@@ -1,6 +1,7 @@
 ﻿module BABYLON {
 
     export interface IShadowLight {
+        id: string;
         position: Vector3;
         transformedPosition: Vector3;
         name: string;
@@ -111,6 +112,24 @@
 
             // Remove from scene
             this.getScene().removeLight(this);
+        }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.tags = Tags.GetTags(this);
+
+            if (this.intensity) {
+                serializationObject.intensity = this.intensity;
+            }
+
+            serializationObject.range = this.range;
+
+            serializationObject.diffuse = this.diffuse.asArray();
+            serializationObject.specular = this.specular.asArray();
+
+            return serializationObject;
         }
 
         public static ParseLight(parsedLight: any, scene: Scene): Light {

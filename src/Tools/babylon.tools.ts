@@ -31,6 +31,14 @@
         public static BaseUrl = "";
         public static CorsBehavior: any = "anonymous";
 
+
+        public static GetConstructorName(obj) {
+            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
+            var cname = str.match(/function\s(\w*)/)[1];
+            var aliases = ["", "anonymous", "Anonymous"];
+            return aliases.indexOf(cname) > -1 ? "Function" : cname;
+        }
+
         public static ToHex(i: number): string {
             var str = i.toString(16);
 

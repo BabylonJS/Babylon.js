@@ -516,16 +516,38 @@ var BABYLON;
                 this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
         };
+        Camera.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.tags = BABYLON.Tags.GetTags(this);
+            serializationObject.id = this.id;
+            serializationObject.position = this.position.asArray();
+            serializationObject.type = BABYLON.Tools.GetConstructorName(this);
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+            serializationObject.fov = this.fov;
+            serializationObject.minZ = this.minZ;
+            serializationObject.maxZ = this.maxZ;
+            serializationObject.inertia = this.inertia;
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            // Layer mask
+            serializationObject.layerMask = this.layerMask;
+            return serializationObject;
+        };
         Camera.ParseCamera = function (parsedCamera, scene) {
             var camera;
             var position = BABYLON.Vector3.FromArray(parsedCamera.position);
             var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
+            var interaxial_distance;
             if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
                 var alpha = parsedCamera.alpha;
                 var beta = parsedCamera.beta;
                 var radius = parsedCamera.radius;
                 if (parsedCamera.type === "AnaglyphArcRotateCamera") {
-                    var interaxial_distance = parsedCamera.interaxial_distance;
+                    interaxial_distance = parsedCamera.interaxial_distance;
                     camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
                 }
                 else {
