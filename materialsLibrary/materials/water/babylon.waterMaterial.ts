@@ -128,7 +128,7 @@ module BABYLON {
 		/**
 		* Constructor
 		*/
-		constructor(name: string, scene: Scene, renderTargetSize: Vector2 = new Vector2(512, 512)) {
+		constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
             super(name, scene);
 			
 			// Create render targets
@@ -720,6 +720,69 @@ module BABYLON {
             return newMaterial;
         }
         
+		public serialize(): any {
+		        		
+            var serializationObject = super.serialize();
+			
+            serializationObject.customType 			= "water";
+            serializationObject.diffuseColor    	= this.diffuseColor.asArray();
+			serializationObject.specularColor   	= this.specularColor.asArray();
+            serializationObject.specularPower   	= this.specularPower;
+            serializationObject.disableLighting 	= this.disableLighting;
+            serializationObject.windForce     		= this.windForce;
+            serializationObject.windDirection 		= this.windDirection.asArray();
+            serializationObject.waveHeight      	= this.waveHeight;
+            serializationObject.bumpHeight 			= this.bumpHeight;
+			serializationObject.waterColor 			= this.waterColor.asArray();
+			serializationObject.colorBlendFactor	= this.colorBlendFactor;
+			serializationObject.waveLength 			= this.waveLength;
+			serializationObject.renderTargetSize	= this.renderTargetSize.asArray();
+			
+            if (this.bumpTexture) {
+                serializationObject.bumpTexture 	= this.bumpTexture.serialize();
+            }
+
+            return serializationObject;
+        }
+
+        public static Parse(source: any, scene: Scene, rootUrl: string): LavaMaterial {
+		
+			var renderTargetSize = source.renderTargetSize ? Vector2.FromArray(source.renderTargetSize) : null;
+		
+            var material = new WaterMaterial(source.name, scene, renderTargetSize);
+
+            material.diffuseColor    	= Color3.FromArray(source.diffuseColor);
+			material.specularColor   	= Color3.FromArray(source.specularColor);
+            material.specularPower   	= source.specularPower;
+            material.disableLighting 	= source.disableLighting;
+            material.windForce     		= source.windForce;
+            material.windDirection 		= Vector2.FromArray(source.windDirection);
+            material.waveHeight      	= source.waveHeight;
+            material.bumpHeight 		= source.bumpHeight;
+			material.waterColor 		= Color3.FromArray(source.waterColor);
+			material.colorBlendFactor	= source.colorBlendFactor;
+			material.waveLength 		= source.waveLength;
+			material.renderTargetSize	= Vector2.FromArray(source.renderTargetSize);
+
+            material.alpha          = source.alpha;
+
+            material.id             = source.id;
+
+            Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+
+            if (source.bumpTexture) {
+                material.bumpTexture = Texture.ParseTexture(source.bumpTexture, scene, rootUrl);
+            }
+
+            if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+
+            return material;
+        }
+		
 		public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
 			var mesh = Mesh.CreateGround(name, 512, 512, 32, scene, false);
 			return mesh;
