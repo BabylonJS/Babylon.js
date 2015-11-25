@@ -952,41 +952,41 @@ var BABYLON;
             material.backFaceCulling = source.backFaceCulling;
             material.wireframe = source.wireframe;
             if (source.diffuseTexture) {
-                material.diffuseTexture = BABYLON.BaseTexture.ParseTexture(source.diffuseTexture, scene, rootUrl);
+                material.diffuseTexture = BABYLON.Texture.ParseTexture(source.diffuseTexture, scene, rootUrl);
             }
             if (source.diffuseFresnelParameters) {
                 material.diffuseFresnelParameters = StandardMaterial.ParseFresnelParameters(source.diffuseFresnelParameters);
             }
             if (source.ambientTexture) {
-                material.ambientTexture = BABYLON.BaseTexture.ParseTexture(source.ambientTexture, scene, rootUrl);
+                material.ambientTexture = BABYLON.Texture.ParseTexture(source.ambientTexture, scene, rootUrl);
             }
             if (source.opacityTexture) {
-                material.opacityTexture = BABYLON.BaseTexture.ParseTexture(source.opacityTexture, scene, rootUrl);
+                material.opacityTexture = BABYLON.Texture.ParseTexture(source.opacityTexture, scene, rootUrl);
             }
             if (source.opacityFresnelParameters) {
                 material.opacityFresnelParameters = StandardMaterial.ParseFresnelParameters(source.opacityFresnelParameters);
             }
             if (source.reflectionTexture) {
-                material.reflectionTexture = BABYLON.BaseTexture.ParseTexture(source.reflectionTexture, scene, rootUrl);
+                material.reflectionTexture = BABYLON.Texture.ParseTexture(source.reflectionTexture, scene, rootUrl);
             }
             if (source.reflectionFresnelParameters) {
                 material.reflectionFresnelParameters = StandardMaterial.ParseFresnelParameters(source.reflectionFresnelParameters);
             }
             if (source.emissiveTexture) {
-                material.emissiveTexture = BABYLON.BaseTexture.ParseTexture(source.emissiveTexture, scene, rootUrl);
+                material.emissiveTexture = BABYLON.Texture.ParseTexture(source.emissiveTexture, scene, rootUrl);
             }
             if (source.lightmapTexture) {
-                material.lightmapTexture = BABYLON.BaseTexture.ParseTexture(source.lightmapTexture, scene, rootUrl);
+                material.lightmapTexture = BABYLON.Texture.ParseTexture(source.lightmapTexture, scene, rootUrl);
                 material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
             }
             if (source.emissiveFresnelParameters) {
                 material.emissiveFresnelParameters = StandardMaterial.ParseFresnelParameters(source.emissiveFresnelParameters);
             }
             if (source.specularTexture) {
-                material.specularTexture = BABYLON.BaseTexture.ParseTexture(source.specularTexture, scene, rootUrl);
+                material.specularTexture = BABYLON.Texture.ParseTexture(source.specularTexture, scene, rootUrl);
             }
             if (source.bumpTexture) {
-                material.bumpTexture = BABYLON.BaseTexture.ParseTexture(source.bumpTexture, scene, rootUrl);
+                material.bumpTexture = BABYLON.Texture.ParseTexture(source.bumpTexture, scene, rootUrl);
             }
             if (source.checkReadyOnlyOnce) {
                 material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;

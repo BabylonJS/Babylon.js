@@ -1,11 +1,11 @@
 ﻿module BABYLON {
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array;
-        getIndices(copyWhenShared?: boolean): number[];
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Int32Array |Float32Array;
+        getIndices(copyWhenShared?: boolean): number[] | Int32Array;
         setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: number[] | Float32Array): void;
+        setIndices(indices: number[] | Int32Array): void;
     }
 
     export class VertexData {
@@ -22,7 +22,7 @@
         public matricesWeights: number[] | Float32Array;
         public matricesIndicesExtra: number[] | Float32Array;
         public matricesWeightsExtra: number[] | Float32Array;
-        public indices: number[];
+        public indices: number[] | Int32Array;
 
         public set(data: number[] | Float32Array, kind: string) {
             switch (kind) {
@@ -239,7 +239,8 @@
 
                 var offset = this.positions ? this.positions.length / 3 : 0;
                 for (index = 0; index < other.indices.length; index++) {
-                    this.indices.push(other.indices[index] + offset);
+                    //TODO check type - if Int32Array!
+                    (<number[]>this.indices).push(other.indices[index] + offset);
                 }
             }
 
@@ -2097,6 +2098,84 @@
                     }
                     break;
             }
+        }
+
+        public static ImportVertexData(parsedVertexData: any, geometry: Geometry) {
+            var vertexData = new VertexData();
+
+            // positions
+            var positions = parsedVertexData.positions;
+            if (positions) {
+                vertexData.set(positions, VertexBuffer.PositionKind);
+            }
+
+            // normals
+            var normals = parsedVertexData.normals;
+            if (normals) {
+                vertexData.set(normals, VertexBuffer.NormalKind);
+            }
+
+            // uvs
+            var uvs = parsedVertexData.uvs;
+            if (uvs) {
+                vertexData.set(uvs, VertexBuffer.UVKind);
+            }
+
+            // uv2s
+            var uv2s = parsedVertexData.uv2s;
+            if (uv2s) {
+                vertexData.set(uv2s, VertexBuffer.UV2Kind);
+            }
+
+            // uv3s
+            var uv3s = parsedVertexData.uv3s;
+            if (uv3s) {
+                vertexData.set(uv3s, VertexBuffer.UV3Kind);
+            }
+
+            // uv4s
+            var uv4s = parsedVertexData.uv4s;
+            if (uv4s) {
+                vertexData.set(uv4s, VertexBuffer.UV4Kind);
+            }
+
+            // uv5s
+            var uv5s = parsedVertexData.uv5s;
+            if (uv5s) {
+                vertexData.set(uv5s, VertexBuffer.UV5Kind);
+            }
+
+            // uv6s
+            var uv6s = parsedVertexData.uv6s;
+            if (uv6s) {
+                vertexData.set(uv6s, VertexBuffer.UV6Kind);
+            }
+
+            // colors
+            var colors = parsedVertexData.colors;
+            if (colors) {
+                vertexData.set(Color4.CheckColors4(colors, positions.length / 3), VertexBuffer.ColorKind);
+            }
+
+            // matricesIndices
+            var matricesIndices = parsedVertexData.matricesIndices;
+            if (matricesIndices) {
+                vertexData.set(matricesIndices, VertexBuffer.MatricesIndicesKind);
+            }
+
+            // matricesWeights
+            var matricesWeights = parsedVertexData.matricesWeights;
+            if (matricesWeights) {
+                vertexData.set(matricesWeights, VertexBuffer.MatricesWeightsKind);
+            }
+
+            // indices
+            var indices = parsedVertexData.indices;
+            if (indices) {
+                vertexData.indices = indices;
+            }
+
+            geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
         }
     }
 }

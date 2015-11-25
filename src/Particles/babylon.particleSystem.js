@@ -328,6 +328,36 @@ var BABYLON;
             result.start();
             return result;
         };
+        ParticleSystem.ParseParticleSystem = function (parsedParticleSystem, scene, rootUrl) {
+            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            var particleSystem = new ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);
+            if (parsedParticleSystem.textureName) {
+                particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture.name = parsedParticleSystem.textureName;
+            }
+            particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
+            particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
+            particleSystem.minSize = parsedParticleSystem.minSize;
+            particleSystem.maxSize = parsedParticleSystem.maxSize;
+            particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
+            particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
+            particleSystem.emitter = emitter;
+            particleSystem.emitRate = parsedParticleSystem.emitRate;
+            particleSystem.minEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.minEmitBox);
+            particleSystem.maxEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.maxEmitBox);
+            particleSystem.gravity = BABYLON.Vector3.FromArray(parsedParticleSystem.gravity);
+            particleSystem.direction1 = BABYLON.Vector3.FromArray(parsedParticleSystem.direction1);
+            particleSystem.direction2 = BABYLON.Vector3.FromArray(parsedParticleSystem.direction2);
+            particleSystem.color1 = BABYLON.Color4.FromArray(parsedParticleSystem.color1);
+            particleSystem.color2 = BABYLON.Color4.FromArray(parsedParticleSystem.color2);
+            particleSystem.colorDead = BABYLON.Color4.FromArray(parsedParticleSystem.colorDead);
+            particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
+            particleSystem.targetStopDuration = parsedParticleSystem.targetStopFrame;
+            particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
+            particleSystem.blendMode = parsedParticleSystem.blendMode;
+            particleSystem.start();
+            return particleSystem;
+        };
         // Statics
         ParticleSystem.BLENDMODE_ONEONE = 0;
         ParticleSystem.BLENDMODE_STANDARD = 1;

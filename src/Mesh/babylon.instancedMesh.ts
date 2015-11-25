@@ -63,7 +63,7 @@
             return this._sourceMesh.isVerticesDataPresent(kind);
         }
 
-        public getIndices(): number[] {
+        public getIndices(): number[] | Int32Array {
             return this._sourceMesh.getIndices();
         }
 

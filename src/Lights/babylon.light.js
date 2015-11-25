@@ -73,6 +73,56 @@ var BABYLON;
             // Remove from scene
             this.getScene().removeLight(this);
         };
+        Light.ParseLight = function (parsedLight, scene) {
+            var light;
+            switch (parsedLight.type) {
+                case 0:
+                    light = new BABYLON.PointLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), scene);
+                    break;
+                case 1:
+                    light = new BABYLON.DirectionalLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
+                    light.position = BABYLON.Vector3.FromArray(parsedLight.position);
+                    break;
+                case 2:
+                    light = new BABYLON.SpotLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.position), BABYLON.Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
+                    break;
+                case 3:
+                    light = new BABYLON.HemisphericLight(parsedLight.name, BABYLON.Vector3.FromArray(parsedLight.direction), scene);
+                    light.groundColor = BABYLON.Color3.FromArray(parsedLight.groundColor);
+                    break;
+            }
+            light.id = parsedLight.id;
+            BABYLON.Tags.AddTagsTo(light, parsedLight.tags);
+            if (parsedLight.intensity !== undefined) {
+                light.intensity = parsedLight.intensity;
+            }
+            if (parsedLight.range) {
+                light.range = parsedLight.range;
+            }
+            light.diffuse = BABYLON.Color3.FromArray(parsedLight.diffuse);
+            light.specular = BABYLON.Color3.FromArray(parsedLight.specular);
+            if (parsedLight.excludedMeshesIds) {
+                light._excludedMeshesIds = parsedLight.excludedMeshesIds;
+            }
+            // Parent
+            if (parsedLight.parentId) {
+                light._waitingParentId = parsedLight.parentId;
+            }
+            if (parsedLight.includedOnlyMeshesIds) {
+                light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
+            }
+            // Animations
+            if (parsedLight.animations) {
+                for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedLight.animations[animationIndex];
+                    light.animations.push(BABYLON.Animation.ParseAnimation(parsedAnimation));
+                }
+            }
+            if (parsedLight.autoAnimate) {
+                scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
+            }
+            return light;
+        };
         return Light;
     })(BABYLON.Node);
     BABYLON.Light = Light;
