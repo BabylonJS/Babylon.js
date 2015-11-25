@@ -458,6 +458,10 @@
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
+                if (!this.cameraToUseForPointers && !this.activeCamera) {
+                    return;
+                }
+
                 var canvas = this._engine.getRenderingCanvas();
 
                 this._updatePointerPosition(evt);
@@ -499,6 +503,9 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
+                if (!this.cameraToUseForPointers && !this.activeCamera) {
+                    return;
+                }
 
                 this._updatePointerPosition(evt);
 
@@ -556,6 +563,9 @@
                 }
             };
             this._onPointerUp = (evt: PointerEvent) => {
+                if (!this.cameraToUseForPointers && !this.activeCamera) {
+                    return;
+                }
 
                 var predicate = null;
 

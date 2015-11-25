@@ -319,6 +319,9 @@ var BABYLON;
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPickTriggers;
             };
             this._onPointerMove = function (evt) {
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
+                }
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
                 // Meshes
@@ -351,6 +354,9 @@ var BABYLON;
                 }
             };
             this._onPointerDown = function (evt) {
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
+                }
                 _this._updatePointerPosition(evt);
                 var predicate = null;
                 // Meshes
@@ -401,6 +407,9 @@ var BABYLON;
                 }
             };
             this._onPointerUp = function (evt) {
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
+                }
                 var predicate = null;
                 _this._updatePointerPosition(evt);
                 if (!_this.onPointerUp) {
