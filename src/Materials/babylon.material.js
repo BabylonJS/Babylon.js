@@ -262,6 +262,7 @@ var BABYLON;
             }
             var materialType = BABYLON.Tools.Instantiate(parsedMaterial.customType);
             return materialType.Parse(parsedMaterial, scene, rootUrl);
+            ;
         };
         Material._TriangleFillMode = 0;
         Material._WireFrameFillMode = 1;

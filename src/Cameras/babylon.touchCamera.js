@@ -82,7 +82,7 @@ var BABYLON;
             ]);
         };
         TouchCamera.prototype.detachControl = function (canvas) {
-            if (this._attachedCanvas != canvas) {
+            if (this._attachedCanvas !== canvas) {
                 return;
             }
             canvas.removeEventListener("pointerdown", this._onPointerDown);

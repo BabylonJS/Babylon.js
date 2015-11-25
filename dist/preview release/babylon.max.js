@@ -4035,9 +4035,9 @@ var BABYLON;
         Tools.GetPointerPrefix = function () {
             var eventPrefix = "pointer";
             // Check if hand.js is referenced or if the browser natively supports pointer events
-            if (!navigator.pointerEnabled) {
-                eventPrefix = "mouse";
-            }
+            //if (!navigator.pointerEnabled) {
+            //    eventPrefix = "mouse";
+            //}
             return eventPrefix;
         };
         Tools.QueueNewFrame = function (func) {
@@ -10911,7 +10911,7 @@ var BABYLON;
             ]);
         };
         FreeCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
             element.removeEventListener("mousedown", this._onMouseDown);
@@ -11182,7 +11182,7 @@ var BABYLON;
             ]);
         };
         TouchCamera.prototype.detachControl = function (canvas) {
-            if (this._attachedCanvas != canvas) {
+            if (this._attachedCanvas !== canvas) {
                 return;
             }
             canvas.removeEventListener("pointerdown", this._onPointerDown);

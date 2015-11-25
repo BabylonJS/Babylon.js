@@ -156,7 +156,7 @@
         }
 
         public detachControl(element: HTMLElement): void {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
 

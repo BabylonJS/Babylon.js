@@ -148,7 +148,7 @@ var BABYLON;
             ]);
         };
         FreeCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
             element.removeEventListener("mousedown", this._onMouseDown);
