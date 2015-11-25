@@ -136,9 +136,35 @@
             // Remove from scene
             this.getScene().removeSkeleton(this);
         }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+
+            serializationObject.bones = [];
+
+            for (var index = 0; index < this.bones.length; index++) {
+                var bone = this.bones[index];
+
+                var serializedBone: any = {
+                    parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
+                    name: bone.name,
+                    matrix: bone.getLocalMatrix().toArray()
+                };
+
+                serializationObject.bones.push(serializedBone);
+
+                if (bone.animations && bone.animations.length > 0) {
+                    serializedBone.animation = bone.animations[0].serialize();
+                }
+            }
+            return serializationObject;
+        }
         
-        public static ParseSkeleton(parsedSkeleton: any, scene: BABYLON.Scene) : BABYLON.Skeleton {
-            var skeleton = new BABYLON.Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+        public static ParseSkeleton(parsedSkeleton: any, scene: Scene) : Skeleton {
+            var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
 
             for (var index = 0; index < parsedSkeleton.bones.length; index++) {
                 var parsedBone = parsedSkeleton.bones[index];
@@ -148,7 +174,7 @@
                     parentBone = skeleton.bones[parsedBone.parentBoneIndex];
                 }
     
-                var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
+                var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix));
     
                 if (parsedBone.animation) {
                     bone.animations.push(Animation.ParseAnimation(parsedBone.animation));

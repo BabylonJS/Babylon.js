@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class AnaglyphFreeCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene) {
+        constructor(name: string, position: Vector3, public interaxialDistance: number, scene: Scene) {
             super(name, position, scene);
             this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }

@@ -247,5 +247,26 @@
 
             return lensFlareSystem;
         }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.emitterId = this.getEmitter().id;
+            serializationObject.borderLimit = this.borderLimit;
+
+            serializationObject.flares = [];
+            for (var index = 0; index < this.lensFlares.length; index++) {
+                var flare = this.lensFlares[index];
+
+                serializationObject.flares.push({
+                    size: flare.size,
+                    position: flare.position,
+                    color: flare.color.asArray(),
+                    textureName: Tools.GetFilename(flare.texture.name)
+                });
+            }
+
+            return serializationObject;
+        }
     }
 } 

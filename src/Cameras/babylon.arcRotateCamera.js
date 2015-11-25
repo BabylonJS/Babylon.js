@@ -553,6 +553,20 @@ var BABYLON;
             }
             _super.prototype._updateRigCameras.call(this);
         };
+        ArcRotateCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            if (this.target instanceof BABYLON.Vector3) {
+                serializationObject.target = this.target.asArray();
+            }
+            if (this.target && this.target.id) {
+                serializationObject.lockedTargetId = this.target.id;
+            }
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.alpha = this.alpha;
+            serializationObject.beta = this.beta;
+            serializationObject.radius = this.radius;
+            return serializationObject;
+        };
         return ArcRotateCamera;
     })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;

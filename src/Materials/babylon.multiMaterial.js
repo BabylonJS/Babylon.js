@@ -39,6 +39,23 @@ var BABYLON;
             }
             return newMultiMaterial;
         };
+        MultiMaterial.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.tags = BABYLON.Tags.GetTags(this);
+            serializationObject.materials = [];
+            for (var matIndex = 0; matIndex < this.subMaterials.length; matIndex++) {
+                var subMat = this.subMaterials[matIndex];
+                if (subMat) {
+                    serializationObject.materials.push(subMat.id);
+                }
+                else {
+                    serializationObject.materials.push(null);
+                }
+            }
+            return serializationObject;
+        };
         MultiMaterial.ParseMultiMaterial = function (parsedMultiMaterial, scene) {
             var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
             multiMaterial.id = parsedMultiMaterial.id;

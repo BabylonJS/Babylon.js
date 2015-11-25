@@ -648,7 +648,25 @@
             }
             super._updateRigCameras();
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            if (this.target instanceof Vector3) {
+                serializationObject.target = this.target.asArray();
+            }
+
+            if (this.target && this.target.id) {
+                serializationObject.lockedTargetId = this.target.id;
+            }
+
+            serializationObject.checkCollisions = this.checkCollisions;
+
+            serializationObject.alpha = this.alpha;
+            serializationObject.beta = this.beta;
+            serializationObject.radius = this.radius;
+
+            return serializationObject;
+        }
     }
 } 
-
-

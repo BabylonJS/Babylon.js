@@ -42,6 +42,28 @@
             return newMultiMaterial;
         }
 
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.tags = Tags.GetTags(this);
+
+            serializationObject.materials = [];
+
+            for (var matIndex = 0; matIndex < this.subMaterials.length; matIndex++) {
+                var subMat = this.subMaterials[matIndex];
+
+                if (subMat) {
+                    serializationObject.materials.push(subMat.id);
+                } else {
+                    serializationObject.materials.push(null);
+                }
+            }
+
+            return serializationObject;
+        }
+
         public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
             var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
 

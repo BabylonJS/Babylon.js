@@ -240,6 +240,17 @@ var BABYLON;
             this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
             BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         };
+        TargetCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.speed = this.speed;
+            if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+            if (this.lockedTarget && this.lockedTarget.id) {
+                serializationObject.lockedTargetId = this.lockedTarget.id;
+            }
+            return serializationObject;
+        };
         return TargetCamera;
     })(BABYLON.Camera);
     BABYLON.TargetCamera = TargetCamera;

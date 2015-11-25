@@ -71,6 +71,15 @@ var BABYLON;
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
         };
+        SpotLight.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = 2;
+            serializationObject.position = this.position.asArray();
+            serializationObject.direction = this.position.asArray();
+            serializationObject.angle = this.angle;
+            serializationObject.exponent = this.exponent;
+            return serializationObject;
+        };
         return SpotLight;
     })(BABYLON.Light);
     BABYLON.SpotLight = SpotLight;

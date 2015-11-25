@@ -142,7 +142,7 @@
                         }
                     }
 
-                    var mesh = mesh.ParseMesh(parsedMesh, scene, rootUrl);
+                    var mesh = Mesh.ParseMesh(parsedMesh, scene, rootUrl);
                     meshes.push(mesh);
                 }
             }

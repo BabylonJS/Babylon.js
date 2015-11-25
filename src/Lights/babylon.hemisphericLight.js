@@ -30,6 +30,13 @@ var BABYLON;
             }
             return this._worldMatrix;
         };
+        HemisphericLight.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = 3;
+            serializationObject.direction = this.direction.asArray();
+            serializationObject.groundColor = this.groundColor.asArray();
+            return serializationObject;
+        };
         return HemisphericLight;
     })(BABYLON.Light);
     BABYLON.HemisphericLight = HemisphericLight;

@@ -82,5 +82,14 @@
 
             return this._worldMatrix;
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.type = 0;
+            serializationObject.position = this.position.asArray();
+
+            return serializationObject;
+        }
     }
 } 

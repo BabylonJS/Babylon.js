@@ -296,5 +296,20 @@
 
             Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            serializationObject.speed = this.speed;
+
+            if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+
+            if (this.lockedTarget && this.lockedTarget.id) {
+                serializationObject.lockedTargetId = this.lockedTarget.id;
+            }
+
+            return serializationObject;
+        }
     }
 } 
