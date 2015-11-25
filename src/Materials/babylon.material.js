@@ -245,6 +245,10 @@ var BABYLON;
             if (!parsedMaterial.customType) {
                 return BABYLON.StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
+            // parse Lava material
+            //else if (parsedMaterial.customType === "lava") {
+            //    return LavaMaterial.Parse(parsedMaterial, scene, rootUrl);
+            //}
             //TODO this is where custom materials are inspected and parsed.
             return null;
         };
