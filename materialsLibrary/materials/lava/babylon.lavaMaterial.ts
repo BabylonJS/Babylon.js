@@ -559,7 +559,7 @@ module BABYLON {
         public serialize(): any {
             var serializationObject = super.serialize();
             serializationObject.customType = "lava";
-            serializationObject.diffuse         = this.diffuseColor.asArray();
+            serializationObject.diffuseColor    = this.diffuseColor.asArray();
             serializationObject.fogColor        = this.fogColor.asArray();
             serializationObject.speed           = this.speed;
             serializationObject.movingSpeed     = this.movingSpeed;
@@ -571,7 +571,7 @@ module BABYLON {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
             }
             if (this.noiseTexture) {
-                serializationObject.diffuseTexture = this.noiseTexture.serialize();
+                serializationObject.noiseTexture = this.noiseTexture.serialize();
             }
 
             return serializationObject;
@@ -580,7 +580,7 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): LavaMaterial {
             var material = new LavaMaterial(source.name, scene);
 
-            material.diffuseColor   = Color3.FromArray(source.diffuse);
+            material.diffuseColor   = Color3.FromArray(source.diffuseColor);
             material.speed          = source.speed;
             material.fogColor       = Color3.FromArray(source.fogColor);
             material.movingSpeed    = source.movingSpeed;
@@ -596,11 +596,11 @@ module BABYLON {
             material.wireframe = source.wireframe;
 
             if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.ParseTexture(source.diffuseTexture, scene, rootUrl);
+                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
             }
 
             if (source.noiseTexture) {
-                material.noiseTexture = Texture.ParseTexture(source.noiseTexture, scene, rootUrl);
+                material.noiseTexture = Texture.Parse(source.noiseTexture, scene, rootUrl);
             }
 
             if (source.checkReadyOnlyOnce) {

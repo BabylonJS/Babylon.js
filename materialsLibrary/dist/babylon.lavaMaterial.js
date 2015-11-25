@@ -455,7 +455,8 @@ var BABYLON;
         };
         LavaMaterial.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.diffuse = this.diffuseColor.asArray();
+            serializationObject.customType = "lava";
+            serializationObject.diffuseColor = this.diffuseColor.asArray();
             serializationObject.fogColor = this.fogColor.asArray();
             serializationObject.speed = this.speed;
             serializationObject.movingSpeed = this.movingSpeed;
@@ -466,13 +467,13 @@ var BABYLON;
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
             }
             if (this.noiseTexture) {
-                serializationObject.diffuseTexture = this.noiseTexture.serialize();
+                serializationObject.noiseTexture = this.noiseTexture.serialize();
             }
             return serializationObject;
         };
         LavaMaterial.Parse = function (source, scene, rootUrl) {
             var material = new LavaMaterial(source.name, scene);
-            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuse);
+            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
             material.speed = source.speed;
             material.fogColor = BABYLON.Color3.FromArray(source.fogColor);
             material.movingSpeed = source.movingSpeed;
@@ -484,10 +485,10 @@ var BABYLON;
             material.backFaceCulling = source.backFaceCulling;
             material.wireframe = source.wireframe;
             if (source.diffuseTexture) {
-                material.diffuseTexture = BABYLON.Texture.ParseTexture(source.diffuseTexture, scene, rootUrl);
+                material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
             }
             if (source.noiseTexture) {
-                material.noiseTexture = BABYLON.Texture.ParseTexture(source.noiseTexture, scene, rootUrl);
+                material.noiseTexture = BABYLON.Texture.Parse(source.noiseTexture, scene, rootUrl);
             }
             if (source.checkReadyOnlyOnce) {
                 material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;

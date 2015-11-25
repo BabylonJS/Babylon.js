@@ -422,6 +422,30 @@ var BABYLON;
             newMaterial.diffuseColor = this.diffuseColor.clone();
             return newMaterial;
         };
+        NormalMaterial.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.customType = "normal";
+            serializationObject.diffuseColor = this.diffuseColor.asArray();
+            serializationObject.disableLighting = this.disableLighting;
+            return serializationObject;
+        };
+        NormalMaterial.Parse = function (source, scene, rootUrl) {
+            var material = new NormalMaterial(source.name, scene);
+            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
+            material.disableLighting = source.disableLighting;
+            material.alpha = source.alpha;
+            material.id = source.id;
+            BABYLON.Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+            if (source.diffuseTexture) {
+                material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            }
+            if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+            return material;
+        };
         return NormalMaterial;
     })(BABYLON.Material);
     BABYLON.NormalMaterial = NormalMaterial;
