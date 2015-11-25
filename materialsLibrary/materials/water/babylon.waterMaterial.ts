@@ -745,7 +745,7 @@ module BABYLON {
             return serializationObject;
         }
 
-        public static Parse(source: any, scene: Scene, rootUrl: string): LavaMaterial {
+        public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
 		
 			var renderTargetSize = source.renderTargetSize ? Vector2.FromArray(source.renderTargetSize) : null;
 		
@@ -773,7 +773,7 @@ module BABYLON {
             material.wireframe = source.wireframe;
 
             if (source.bumpTexture) {
-                material.bumpTexture = Texture.ParseTexture(source.bumpTexture, scene, rootUrl);
+                material.bumpTexture = Texture.Parse(source.bumpTexture, scene, rootUrl);
             }
 
             if (source.checkReadyOnlyOnce) {
