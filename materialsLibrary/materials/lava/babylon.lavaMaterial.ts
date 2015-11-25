@@ -559,7 +559,7 @@ module BABYLON {
         public serialize(): any {
             var serializationObject = super.serialize();
             serializationObject.customType = "lava";
-            serializationObject.diffuse         = this.diffuseColor.asArray();
+            serializationObject.diffuseColor    = this.diffuseColor.asArray();
             serializationObject.fogColor        = this.fogColor.asArray();
             serializationObject.speed           = this.speed;
             serializationObject.movingSpeed     = this.movingSpeed;
@@ -580,7 +580,7 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): LavaMaterial {
             var material = new LavaMaterial(source.name, scene);
 
-            material.diffuseColor   = Color3.FromArray(source.diffuse);
+            material.diffuseColor   = Color3.FromArray(source.diffuseColor);
             material.speed          = source.speed;
             material.fogColor       = Color3.FromArray(source.fogColor);
             material.movingSpeed    = source.movingSpeed;
