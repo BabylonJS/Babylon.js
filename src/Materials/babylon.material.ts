@@ -276,6 +276,8 @@
             serializationObject.id = this.id;
             serializationObject.tags = Tags.GetTags(this);
             serializationObject.backFaceCulling = this.backFaceCulling;
+            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
+            serializationObject.disableDepthWrite = this.disableDepthWrite;
 
             return serializationObject;
         }

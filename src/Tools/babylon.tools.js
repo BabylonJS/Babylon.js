@@ -149,10 +149,10 @@ var BABYLON;
         // Misc.
         Tools.GetPointerPrefix = function () {
             var eventPrefix = "pointer";
-            // Check if hand.js is referenced or if the browser natively supports pointer events
-            //if (!navigator.pointerEnabled) {
-            //    eventPrefix = "mouse";
-            //}
+            // Check if pointer events are supported
+            if (!window.PointerEvent) {
+                eventPrefix = "mouse";
+            }
             return eventPrefix;
         };
         Tools.QueueNewFrame = function (func) {
