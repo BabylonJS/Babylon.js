@@ -1259,6 +1259,14 @@ var BABYLON;
         };
         // Cylinder and cone
         Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable, sideOrientation) {
+            if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
+                if (scene !== undefined) {
+                    sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                    updatable = scene;
+                }
+                scene = subdivisions;
+                subdivisions = 1;
+            }
             var options = {
                 height: height,
                 diameterTop: diameterTop,

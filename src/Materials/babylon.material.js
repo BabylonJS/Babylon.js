@@ -239,6 +239,8 @@ var BABYLON;
             serializationObject.id = this.id;
             serializationObject.tags = BABYLON.Tags.GetTags(this);
             serializationObject.backFaceCulling = this.backFaceCulling;
+            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
+            serializationObject.disableDepthWrite = this.disableDepthWrite;
             return serializationObject;
         };
         Material.ParseMultiMaterial = function (parsedMultiMaterial, scene) {
