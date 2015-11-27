@@ -515,9 +515,13 @@ module BABYLON {
 		public serialize(): any {
 		
             var serializationObject = super.serialize();
-            serializationObject.customType 		= "normal";
+            serializationObject.customType      = "BABYLON.NormalMaterial";
             serializationObject.diffuseColor    = this.diffuseColor.asArray();
             serializationObject.disableLighting = this.disableLighting;
+            
+            if (this.diffuseTexture) {
+                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            }
 
             return serializationObject;
         }

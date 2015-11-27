@@ -356,7 +356,7 @@ module BABYLON {
 		public serialize(): any {
 		
             var serializationObject = super.serialize();
-            serializationObject.customType 		= "fire";
+            serializationObject.customType      = "BABYLON.FireMaterial";
             serializationObject.diffuseColor    = this.diffuseColor.asArray();
             serializationObject.speed           = this.speed;
             serializationObject.disableLighting = this.disableLighting;
