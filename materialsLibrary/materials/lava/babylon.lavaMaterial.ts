@@ -558,7 +558,7 @@ module BABYLON {
 
         public serialize(): any {
             var serializationObject = super.serialize();
-            serializationObject.customType = "lava";
+            serializationObject.customType      = "BABYLON.LavaMaterial";
             serializationObject.diffuseColor    = this.diffuseColor.asArray();
             serializationObject.fogColor        = this.fogColor.asArray();
             serializationObject.speed           = this.speed;

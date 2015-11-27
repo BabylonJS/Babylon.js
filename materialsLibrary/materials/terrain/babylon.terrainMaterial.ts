@@ -576,7 +576,7 @@ module BABYLON {
 		public serialize(): any {
 		
             var serializationObject = super.serialize();
-            serializationObject.customType 		= "terrain";
+            serializationObject.customType      = "BABYLON.TerrainMaterial";
             serializationObject.diffuseColor    = this.diffuseColor.asArray();
 			serializationObject.specularColor   = this.specularColor.asArray();
             serializationObject.specularPower   = this.specularPower;
