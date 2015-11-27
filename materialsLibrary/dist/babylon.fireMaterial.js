@@ -279,7 +279,7 @@ var BABYLON;
         };
         FireMaterial.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.customType = "fire";
+            serializationObject.customType = "BABYLON.FireMaterial";
             serializationObject.diffuseColor = this.diffuseColor.asArray();
             serializationObject.speed = this.speed;
             serializationObject.disableLighting = this.disableLighting;

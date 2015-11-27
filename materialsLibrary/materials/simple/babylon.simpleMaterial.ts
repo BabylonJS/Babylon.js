@@ -511,6 +511,44 @@ module BABYLON {
             newMaterial.diffuseColor = this.diffuseColor.clone();
             return newMaterial;
         }
+        
+        public serialize(): any {		
+            var serializationObject = super.serialize();
+            serializationObject.customType      = "BABYLON.SimpleMaterial";
+            serializationObject.diffuseColor    = this.diffuseColor.asArray();
+            serializationObject.disableLighting = this.disableLighting;
+            
+            if (this.diffuseTexture) {
+                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            }
+
+            return serializationObject;
+        }
+
+        public static Parse(source: any, scene: Scene, rootUrl: string): SimpleMaterial {
+            var material = new SimpleMaterial(source.name, scene);
+
+            material.diffuseColor       = Color3.FromArray(source.diffuseColor);
+            material.disableLighting    = source.disableLighting;
+
+            material.alpha          = source.alpha;
+
+            material.id             = source.id;
+
+            Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+
+            if (source.diffuseTexture) {
+                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            }
+
+            if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+
+            return material;
+        }
     }
 } 
 

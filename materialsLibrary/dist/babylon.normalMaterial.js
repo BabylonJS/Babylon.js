@@ -424,9 +424,12 @@ var BABYLON;
         };
         NormalMaterial.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.customType = "normal";
+            serializationObject.customType = "BABYLON.NormalMaterial";
             serializationObject.diffuseColor = this.diffuseColor.asArray();
             serializationObject.disableLighting = this.disableLighting;
+            if (this.diffuseTexture) {
+                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            }
             return serializationObject;
         };
         NormalMaterial.Parse = function (source, scene, rootUrl) {

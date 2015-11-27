@@ -913,6 +913,7 @@ var BABYLON;
         };
         PBRMaterial.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.customType = "BABYLON.PBRMaterial";
             serializationObject.directIntensity = this.directIntensity;
             serializationObject.emissiveIntensity = this.emissiveIntensity;
             serializationObject.environmentIntensity = this.environmentIntensity;

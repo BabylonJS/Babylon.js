@@ -1122,6 +1122,8 @@ module BABYLON {
         
         public serialize(): any {
             var serializationObject = super.serialize();
+                        
+            serializationObject.customType = "BABYLON.PBRMaterial";
 
             serializationObject.directIntensity = this.directIntensity;
             serializationObject.emissiveIntensity = this.emissiveIntensity;

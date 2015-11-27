@@ -724,7 +724,7 @@ module BABYLON {
 		        		
             var serializationObject = super.serialize();
 			
-            serializationObject.customType 			= "water";
+             serializationObject.customType         = "BABYLON.WaterMaterial";
             serializationObject.diffuseColor    	= this.diffuseColor.asArray();
 			serializationObject.specularColor   	= this.specularColor.asArray();
             serializationObject.specularPower   	= this.specularPower;

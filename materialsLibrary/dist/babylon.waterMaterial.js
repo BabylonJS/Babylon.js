@@ -603,7 +603,7 @@ var BABYLON;
         };
         WaterMaterial.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.customType = "water";
+            serializationObject.customType = "BABYLON.WaterMaterial";
             serializationObject.diffuseColor = this.diffuseColor.asArray();
             serializationObject.specularColor = this.specularColor.asArray();
             serializationObject.specularPower = this.specularPower;
