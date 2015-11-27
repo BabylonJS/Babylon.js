@@ -1119,5 +1119,166 @@ module BABYLON {
 
             return newPBRMaterial;
         }
+        
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.directIntensity = this.directIntensity;
+            serializationObject.emissiveIntensity = this.emissiveIntensity;
+            serializationObject.environmentIntensity = this.environmentIntensity;
+        
+            serializationObject.cameraExposure = this.cameraExposure;
+            serializationObject.cameraContrast = this.cameraContrast;
+
+            serializationObject.overloadedShadowIntensity = this.overloadedShadowIntensity;
+            serializationObject.overloadedShadeIntensity = this.overloadedShadeIntensity;
+        
+            serializationObject.overloadedAmbientIntensity = this.overloadedAmbientIntensity;
+            serializationObject.overloadedDiffuseIntensity = this.overloadedDiffuseIntensity;
+            serializationObject.overloadedSpecularIntensity = this.overloadedSpecularIntensity;
+            serializationObject.overloadedEmissiveIntensity = this.overloadedEmissiveIntensity;
+            serializationObject.overloadedAmbient = this.overloadedAmbient.asArray();
+            serializationObject.overloadedDiffuse = this.overloadedDiffuse.asArray();
+            serializationObject.overloadedSpecular = this.overloadedSpecular.asArray();
+            serializationObject.overloadedEmissive = this.overloadedEmissive.asArray();
+            serializationObject.overloadedReflection = this.overloadedReflection.asArray();
+
+            serializationObject.overloadedGlossiness = this.overloadedGlossiness;
+            serializationObject.overloadedGlossinessIntensity = this.overloadedGlossinessIntensity;
+            serializationObject.overloadedReflectionIntensity = this.overloadedReflectionIntensity;
+        
+            serializationObject.disableBumpMap = this.disableBumpMap;
+
+            // Standard material
+            if (this.diffuseTexture) {
+                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            }
+            if (this.ambientTexture) {
+                serializationObject.ambientTexture = this.ambientTexture.serialize();
+            }
+            if (this.opacityTexture) {
+                serializationObject.opacityTexture = this.opacityTexture.serialize();
+            }
+            if (this.reflectionTexture) {
+                serializationObject.reflectionTexture = this.reflectionTexture.serialize();
+            }
+            if (this.emissiveTexture) {
+                serializationObject.emissiveTexture = this.emissiveTexture.serialize();
+            }
+            if (this.specularTexture) {
+                serializationObject.specularTexture = this.specularTexture.serialize();
+            }
+            if (this.bumpTexture) {
+                serializationObject.bumpTexture = this.bumpTexture.serialize();
+            }
+            if (this.lightmapTexture) {
+                serializationObject.lightmapTexture = this.lightmapTexture.serialize();
+                serializationObject.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
+            }
+
+            serializationObject.ambientColor = this.ambientColor.asArray();
+            serializationObject.diffuseColor = this.diffuseColor.asArray();
+            serializationObject.specularColor = this.specularColor.asArray();
+            serializationObject.reflectionColor = this.reflectionColor.asArray();
+            serializationObject.glossiness = this.glossiness;
+            serializationObject.emissiveColor = this.emissiveColor.asArray();
+            serializationObject.useAlphaFromDiffuseTexture = this.useAlphaFromDiffuseTexture;
+            serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
+            serializationObject.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
+            serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
+            
+            serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
+            serializationObject.opacityFresnelParameters = this.opacityFresnelParameters.serialize();
+
+            return serializationObject;
+        }
+                
+        public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
+            var material = new PBRMaterial(source.name, scene);
+            
+            material.alpha = source.alpha;
+            material.id = source.id;
+            
+            if (source.disableDepthWrite) {
+                material.disableDepthWrite = source.disableDepthWrite;
+            }
+            
+           if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+
+            Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+            
+            material.directIntensity = source.directIntensity;
+            material.emissiveIntensity = source.emissiveIntensity;
+            material.environmentIntensity = source.environmentIntensity;
+        
+            material.cameraExposure = source.cameraExposure;
+            material.cameraContrast = source.cameraContrast;
+
+            material.overloadedShadowIntensity = source.overloadedShadowIntensity;
+            material.overloadedShadeIntensity = source.overloadedShadeIntensity;
+        
+            material.overloadedAmbientIntensity = source.overloadedAmbientIntensity;
+            material.overloadedDiffuseIntensity = source.overloadedDiffuseIntensity;
+            material.overloadedSpecularIntensity = source.overloadedSpecularIntensity;
+            material.overloadedEmissiveIntensity = source.overloadedEmissiveIntensity;
+            material.overloadedAmbient = Color3.FromArray(source.overloadedAmbient);
+            material.overloadedDiffuse = Color3.FromArray(source.overloadedDiffuse);
+            material.overloadedSpecular = Color3.FromArray(source.overloadedSpecular);
+            material.overloadedEmissive = Color3.FromArray(source.overloadedEmissive);
+            material.overloadedReflection = Color3.FromArray(source.overloadedReflection);
+
+            material.overloadedGlossiness = source.overloadedGlossiness;
+            material.overloadedGlossinessIntensity = source.overloadedGlossinessIntensity;
+            material.overloadedReflectionIntensity = source.overloadedReflectionIntensity;
+        
+            material.disableBumpMap = source.disableBumpMap;
+
+            // Standard material
+            if (source.diffuseTexture) {
+                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            }
+            if (source.ambientTexture) {
+                material.ambientTexture = Texture.Parse(source.ambientTexture, scene, rootUrl);
+            }
+            if (source.opacityTexture) {
+                material.opacityTexture = Texture.Parse(source.opacityTexture, scene, rootUrl);
+            }
+            if (source.reflectionTexture) {
+                material.reflectionTexture = Texture.Parse(source.reflectionTexture, scene, rootUrl);
+            }
+            if (source.emissiveTexture) {
+                material.emissiveTexture = Texture.Parse(source.emissiveTexture, scene, rootUrl);
+            }
+            if (source.specularTexture) {
+                material.specularTexture = Texture.Parse(source.specularTexture, scene, rootUrl);
+            }
+            if (source.bumpTexture) {
+                material.bumpTexture = Texture.Parse(source.bumpTexture, scene, rootUrl);
+            }
+            if (source.lightmapTexture) {
+                material.lightmapTexture = Texture.Parse(source.lightmapTexture, scene, rootUrl);
+                material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
+            }
+
+            material.ambientColor = Color3.FromArray(source.ambient);
+            material.diffuseColor = Color3.FromArray(source.diffuse);
+            material.specularColor = Color3.FromArray(source.specular);
+            material.reflectionColor = Color3.FromArray(source.reflectionColor);
+            material.glossiness = source.glossiness;
+            material.emissiveColor = Color3.FromArray(source.emissive);
+            material.useAlphaFromDiffuseTexture = source.useAlphaFromDiffuseTexture;
+            material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
+            material.useGlossinessFromSpecularMapAlpha = source.useGlossinessFromSpecularMapAlpha;
+            material.useSpecularOverAlpha = source.useSpecularOverAlpha;
+            
+            material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
+            material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);
+       
+            return material;
+        }
     }
 }
