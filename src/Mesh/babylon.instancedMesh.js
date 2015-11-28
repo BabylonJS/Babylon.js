@@ -54,6 +54,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(InstancedMesh.prototype, "renderingGroupId", {
+            get: function () {
+                return this._sourceMesh.renderingGroupId;
+            },
+            enumerable: true,
+            configurable: true
+        });
         InstancedMesh.prototype.getTotalVertices = function () {
             return this._sourceMesh.getTotalVertices();
         };

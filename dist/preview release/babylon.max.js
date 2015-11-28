@@ -14216,6 +14216,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(InstancedMesh.prototype, "renderingGroupId", {
+            get: function () {
+                return this._sourceMesh.renderingGroupId;
+            },
+            enumerable: true,
+            configurable: true
+        });
         InstancedMesh.prototype.getTotalVertices = function () {
             return this._sourceMesh.getTotalVertices();
         };
@@ -20159,7 +20166,7 @@ var BABYLON;
                                             parseMaterialById(subMatId, parsedData, scene, rootUrl);
                                         }
                                         loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                        parsedMultiMaterial.Parse(parsedMultiMaterial, scene);
+                                        BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
                                         materialFound = true;
                                         break;
                                     }
