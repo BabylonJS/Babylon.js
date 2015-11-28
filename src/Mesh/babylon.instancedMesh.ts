@@ -59,8 +59,8 @@
             return this._sourceMesh;
         }
 
-        public getVerticesData(kind: string): number[] | Float32Array {
-            return this._sourceMesh.getVerticesData(kind);
+        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+            return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         }
 
         public isVerticesDataPresent(kind: string): boolean {
