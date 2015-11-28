@@ -11,6 +11,7 @@
     <script src="../dist/babylon.lavaMaterial.js"></script>
 	<script src="../dist/babylon.terrainMaterial.js"></script>
 	<script src="../dist/babylon.pbrMaterial.js"></script>
+	<script src="../dist/babylon.furMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -49,6 +50,7 @@
     <script src="add/addlava.js"></script>
     <script src="add/addnormal.js"></script>
 	<script src="add/addwater.js"></script>
+	<script src="add/addfur.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -162,6 +164,9 @@
 
                 // Lava
                 var lava = prepareLava();
+				
+				//Fur
+				var fur = prepareFur();
 
 				var simple = new BABYLON.SimpleMaterial("simple", scene);
 				simple.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
@@ -204,7 +209,7 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					
 					switch (options.material) {
@@ -230,7 +235,10 @@
 							break;
 						case "pbr":
 							currentMaterial = pbr;
-							break;													
+							break;
+						case "fur":
+							currentMaterial = fur;
+							break;														
 						default:
 							currentMaterial = std;
 							break;

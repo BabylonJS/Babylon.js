@@ -4034,10 +4034,10 @@ var BABYLON;
         // Misc.
         Tools.GetPointerPrefix = function () {
             var eventPrefix = "pointer";
-            // Check if hand.js is referenced or if the browser natively supports pointer events
-            //if (!navigator.pointerEnabled) {
-            //    eventPrefix = "mouse";
-            //}
+            // Check if pointer events are supported
+            if (!window.PointerEvent) {
+                eventPrefix = "mouse";
+            }
             return eventPrefix;
         };
         Tools.QueueNewFrame = function (func) {
@@ -15572,6 +15572,14 @@ var BABYLON;
         };
         // Cylinder and cone
         Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable, sideOrientation) {
+            if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
+                if (scene !== undefined) {
+                    sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                    updatable = scene;
+                }
+                scene = subdivisions;
+                subdivisions = 1;
+            }
             var options = {
                 height: height,
                 diameterTop: diameterTop,
@@ -18755,6 +18763,8 @@ var BABYLON;
             serializationObject.id = this.id;
             serializationObject.tags = BABYLON.Tags.GetTags(this);
             serializationObject.backFaceCulling = this.backFaceCulling;
+            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
+            serializationObject.disableDepthWrite = this.disableDepthWrite;
             return serializationObject;
         };
         Material.ParseMultiMaterial = function (parsedMultiMaterial, scene) {

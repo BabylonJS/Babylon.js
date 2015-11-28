@@ -51,6 +51,14 @@
       "output": "babylon.fireMaterial.js"
     },
     {
+      "file": "materials/fur/babylon.furMaterial.ts",
+      "shaderFiles": [
+        "materials/fur/fur.vertex.fx",
+        "materials/fire/fur.fragment.fx"
+      ],
+      "output": "babylon.furMaterial.js"
+    },
+    {
       "file": "materials/terrain/babylon.terrainMaterial.ts",
       "shaderFiles": [
         "materials/terrain/terrain.vertex.fx",
