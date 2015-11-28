@@ -28,13 +28,17 @@ Compiles all typescript files and creating a declaration file.
 */
 gulp.task('default', ["copyReference"], function () {
     var tasks = config.materials.map(function (material) {
-        var js = gulp.src(material.file)
+        var compilOutput = gulp.src(material.file)
             .pipe(typescript({
                 noExternalResolve: false,
                 target: 'ES5',
                 declarationFiles: true,
                 typescript: require('typescript')
-            })).js;
+            }));
+
+        var js = compilOutput.js;
+        // Build definitions file
+        var dts = compilOutput.dts.pipe(gulp.dest(config.build.dtsOutputDirectory));
 
         var shader = gulp.src(material.shaderFiles).pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
 
