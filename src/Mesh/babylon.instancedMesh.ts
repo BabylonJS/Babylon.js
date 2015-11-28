@@ -47,6 +47,10 @@
             return this._sourceMesh.skeleton;
         }
 
+        public get renderingGroupId(): number {
+            return this._sourceMesh.renderingGroupId;
+        }
+
         public getTotalVertices(): number {
             return this._sourceMesh.getTotalVertices();
         }

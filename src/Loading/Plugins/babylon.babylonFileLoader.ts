@@ -111,7 +111,7 @@
                                     }
 
                                     loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                    parsedMultiMaterial.Parse(parsedMultiMaterial, scene);
+                                    Material.ParseMultiMaterial(parsedMultiMaterial, scene);
                                     materialFound = true;
                                     break;
                                 }
