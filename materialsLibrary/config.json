@@ -60,6 +60,7 @@
     }
   ],
   "build": {
-    "distOutputDirectory": "dist/"
+    "distOutputDirectory": "dist/",
+    "dtsOutputDirectory": "dist/dts/"
   }
 }
