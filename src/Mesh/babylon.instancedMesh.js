@@ -71,8 +71,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        InstancedMesh.prototype.getVerticesData = function (kind) {
-            return this._sourceMesh.getVerticesData(kind);
+        InstancedMesh.prototype.getVerticesData = function (kind, copyWhenShared) {
+            return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         };
         InstancedMesh.prototype.isVerticesDataPresent = function (kind) {
             return this._sourceMesh.isVerticesDataPresent(kind);
