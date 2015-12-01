@@ -1066,6 +1066,42 @@
         }
 
         /**
+         * get a bone using its id
+         * @param {string} the bone's id
+         * @return {BABYLON.Bone|null} the bone or null if not found
+         */
+        public getBoneByID(id: string): Bone {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].id === id) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+        * get a bone using its id
+        * @param {string} the bone's name
+        * @return {BABYLON.Bone|null} the bone or null if not found
+        */
+        public getBoneByName(name: string): Bone {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].name === name) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
          * get a light node using its name
          * @param {string} the light's name
          * @return {BABYLON.Light|null} the light or null if none found.
@@ -1260,7 +1296,15 @@
                 return light;
             }
 
-            return this.getCameraByID(id);
+            var camera = this.getCameraByID(id);
+
+            if (camera) {
+                return camera;
+            }
+
+            var bone = this.getBoneByID(id);
+
+            return bone;
         }
 
         public getNodeByName(name: string): Node {
@@ -1276,7 +1320,15 @@
                 return light;
             }
 
-            return this.getCameraByName(name);
+            var camera = this.getCameraByName(name);
+
+            if (camera) {
+                return camera;
+            }
+
+            var bone = this.getBoneByName(name);
+
+            return bone;
         }
 
         public getMeshByName(name: string): AbstractMesh {
