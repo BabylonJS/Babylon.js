@@ -1,4 +1,4 @@
-module BABYLON.Internals {
+﻿module BABYLON.Internals {
 
     var parseMaterialById = (id, parsedData, scene, rootUrl) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
@@ -34,7 +34,7 @@ module BABYLON.Internals {
             var loadedMaterialsIds = [];
             var hierarchyIds = [];
             var index: number;
-			var cache: number;
+            var cache: number;
             for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                 var parsedMesh = parsedData.meshes[index];
 
@@ -210,11 +210,11 @@ module BABYLON.Internals {
             if (parsedData.collisionsEnabled != undefined) {
                 scene.collisionsEnabled = parsedData.collisionsEnabled;
             }
-            scene.workerCollisions = !!parsedData.workerCollisions;            
+            scene.workerCollisions = !!parsedData.workerCollisions;
 
             var index: number;
             var cache: number;
-			// Lights
+            // Lights
             for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
                 var parsedLight = parsedData.lights[index];
                 Light.Parse(parsedLight, scene);
