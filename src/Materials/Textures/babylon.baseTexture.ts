@@ -139,6 +139,9 @@
                 return;
             }
 
+            // Release
+            this.releaseInternalTexture();
+
             // Callback
             if (this.onDispose) {
                 this.onDispose();

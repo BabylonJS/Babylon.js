@@ -109,6 +109,8 @@ var BABYLON;
             if (this._texture === undefined) {
                 return;
             }
+            // Release
+            this.releaseInternalTexture();
             // Callback
             if (this.onDispose) {
                 this.onDispose();
