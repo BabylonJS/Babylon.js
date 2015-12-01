@@ -831,65 +831,67 @@
                     }
                 }
 
-                // Textures        
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    this._effect.setTexture("diffuseSampler", this.diffuseTexture);
+                // Textures     
+                if (scene.texturesEnabled) {
+                    if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        this._effect.setTexture("diffuseSampler", this.diffuseTexture);
 
-                    this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                    this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
-                }
-
-                if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                    this._effect.setTexture("ambientSampler", this.ambientTexture);
-
-                    this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
-                    this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
-                }
-
-                if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                    this._effect.setTexture("opacitySampler", this.opacityTexture);
-
-                    this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
-                    this._effect.setMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
-                }
-
-                if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                    if (this.reflectionTexture.isCube) {
-                        this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
-                    } else {
-                        this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
+                        this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
+                        this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
                     }
 
-                    this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
-                    this._effect.setFloat2("vReflectionInfos", this.reflectionTexture.level, this.roughness);
-                }
+                    if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                        this._effect.setTexture("ambientSampler", this.ambientTexture);
 
-                if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                    this._effect.setTexture("emissiveSampler", this.emissiveTexture);
+                        this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
+                        this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
+                    }
 
-                    this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
-                    this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
-                }
+                    if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                        this._effect.setTexture("opacitySampler", this.opacityTexture);
 
-                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
-                    this._effect.setTexture("lightmapSampler", this.lightmapTexture);
+                        this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
+                        this._effect.setMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
+                    }
 
-                    this._effect.setFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
-                    this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
-                }
+                    if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        if (this.reflectionTexture.isCube) {
+                            this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
+                        } else {
+                            this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
+                        }
 
-                if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
-                    this._effect.setTexture("specularSampler", this.specularTexture);
+                        this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
+                        this._effect.setFloat2("vReflectionInfos", this.reflectionTexture.level, this.roughness);
+                    }
 
-                    this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
-                    this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
-                }
+                    if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                        this._effect.setTexture("emissiveSampler", this.emissiveTexture);
 
-                if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
-                    this._effect.setTexture("bumpSampler", this.bumpTexture);
+                        this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
+                        this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
+                    }
 
-                    this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
-                    this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+                    if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                        this._effect.setTexture("lightmapSampler", this.lightmapTexture);
+
+                        this._effect.setFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
+                        this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
+                    }
+
+                    if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
+                        this._effect.setTexture("specularSampler", this.specularTexture);
+
+                        this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
+                        this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
+                    }
+
+                    if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
+                        this._effect.setTexture("bumpSampler", this.bumpTexture);
+
+                        this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
+                        this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+                    }
                 }
 
                 // Clip plane
