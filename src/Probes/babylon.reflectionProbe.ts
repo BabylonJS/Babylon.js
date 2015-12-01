@@ -89,6 +89,11 @@
                 // Remove from the scene if found 
                 this._scene.reflectionProbes.splice(index, 1);
             }            
+
+            if (this._renderTargetTexture) {
+                this._renderTargetTexture.dispose();
+                this._renderTargetTexture = null;
+            }
         }
     }    
 }
