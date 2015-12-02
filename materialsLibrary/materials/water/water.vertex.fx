@@ -185,8 +185,8 @@ void main(void) {
 #endif
 
 	vec3 p = position;
-	float newY = (sin(((p.x / 0.05) + time * waveSpeed * windForce) * windDirection.x) * waveHeight * 5.0)
-			   + (cos(((p.z / 0.05) + time * waveSpeed * windForce) * windDirection.y) * waveHeight * 5.0);
+	float newY = (sin(((p.x / 0.05) + time * waveSpeed)) * waveHeight * windDirection.x * 5.0)
+			   + (cos(((p.z / 0.05) +  time * waveSpeed)) * waveHeight * windDirection.y * 5.0);
 	p.y += abs(newY);
 	
 	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);
