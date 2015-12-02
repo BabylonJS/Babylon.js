@@ -150,7 +150,7 @@ var BABYLON;
         Tools.GetPointerPrefix = function () {
             var eventPrefix = "pointer";
             // Check if pointer events are supported
-            if (!window.PointerEvent) {
+            if (!window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
             return eventPrefix;
