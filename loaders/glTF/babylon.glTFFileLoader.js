@@ -472,8 +472,10 @@ var BABYLON;
             }
             if (!isInJoints) {
                 var mat = configureBoneTransformation(node);
-                nodeToRoot = new BABYLON.Bone(node.name, newSkeleton, null, mat, false);
+                nodeToRoot = new BABYLON.Bone(node.name, newSkeleton, null, mat);
                 nodeToRoot.id = nde;
+                // Remove root from bones
+                newSkeleton.bones = [];
                 break;
             }
         }
