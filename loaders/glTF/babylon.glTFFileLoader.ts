@@ -524,8 +524,10 @@
 
             if (!isInJoints) {
                 var mat = configureBoneTransformation(node);
-                nodeToRoot = new Bone(node.name, newSkeleton, null, mat, false);
+                nodeToRoot = new Bone(node.name, newSkeleton, null, mat);
                 nodeToRoot.id = nde;
+                // Remove root from bones
+                newSkeleton.bones = [];
                 break;
             }
         }
