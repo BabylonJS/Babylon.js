@@ -116,10 +116,14 @@ var BABYLON;
             var serializationInstance = {
                 name: instance.name,
                 position: instance.position.asArray(),
-                rotation: instance.rotation.asArray(),
-                rotationQuaternion: instance.rotationQuaternion.asArray(),
                 scaling: instance.scaling.asArray()
             };
+            if (instance.rotationQuaternion) {
+                serializationInstance.rotationQuaternion = instance.rotationQuaternion.asArray();
+            }
+            else if (instance.rotation) {
+                serializationInstance.rotation = instance.rotation.asArray();
+            }
             serializationObject.instances.push(serializationInstance);
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(instance, serializationInstance);
