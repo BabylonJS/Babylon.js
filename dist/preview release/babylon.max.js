@@ -17461,6 +17461,9 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+            }
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
@@ -17503,6 +17506,9 @@ var BABYLON;
             }
             if (this.onAfterUnbind) {
                 this.onAfterUnbind();
+            }
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
             scene.resetCachedMaterial();
         };
