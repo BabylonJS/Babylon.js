@@ -62,13 +62,14 @@ module BABYLON {
     export class FurMaterial extends Material {
         public diffuseTexture: BaseTexture;
         public heightTexture: BaseTexture;
-        public furLength: number = 0.5;
+        public diffuseColor = new Color3(1, 1, 1);
+        public furLength: number = 1;
         public furAngle: number = 0;
-        public diffuseColor = new Color3(0.44,0.21,0.02);
+        public furColor = new Color3(0.44,0.21,0.02);
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
-        private _scaledDiffuse = new Color3();
+        private _scaledDiffuse = new Color3(1.,1.,1.);
         private _renderId: number;
 
         private _defines = new FurMaterialDefines();
@@ -351,7 +352,7 @@ module BABYLON {
                 }
 
                 // Legacy browser patch
-                var shaderName = "simple";
+                var shaderName = "fur";
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
@@ -365,7 +366,7 @@ module BABYLON {
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                        "furLength", "furAngle"
+                        "furLength", "furAngle", "furColor"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
@@ -496,6 +497,7 @@ module BABYLON {
             
             this._effect.setFloat("furLength", this.furLength);
             this._effect.setFloat("furAngle", this.furAngle);
+            this._effect.setColor4("furColor", this.furColor, 1.0);
 
  
             super.bind(world, mesh);
@@ -550,6 +552,7 @@ module BABYLON {
             serializationObject.disableLighting = this.disableLighting;
             serializationObject.furLength = this.furLength;
             serializationObject.furAngle = this.furAngle;
+            serializationObject.furColor = this.furColor.asArray();
             
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
@@ -568,6 +571,7 @@ module BABYLON {
             material.diffuseColor       = Color3.FromArray(source.diffuseColor);
             material.furLength          = source.furLength;
             material.furAngle           = source.furAngle;
+            material.furColor           = Color3.FromArray(source.furColor);
             material.disableLighting    = source.disableLighting;
 
             material.alpha          = source.alpha;

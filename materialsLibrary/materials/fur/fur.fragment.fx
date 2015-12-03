@@ -5,13 +5,9 @@ uniform vec3 vEyePosition;
 uniform vec4 vDiffuseColor;
 
 // Input
+uniform vec4 furColor;
 varying vec3 vPositionW;
 varying float vfur_length;
-
-//
-#ifdef HEIGHTMAP
-uniform sampler2D heightTexture
-#endif
 
 #ifdef NORMAL
 varying vec3 vNormalW;
@@ -381,7 +377,7 @@ void main(void) {
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
 	// Base color
-	vec4 baseColor = vec4(1., 1., 1., 1.);
+	vec4 baseColor = furColor;
 	vec3 diffuseColor = vDiffuseColor.rgb;
 
 	// Alpha
@@ -540,7 +536,7 @@ void main(void) {
 	shadow = computeShadowCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
 	#else
 	shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
-	#endifprecision highp float;
+	#endif
 #endif	
 #endif	
 #else
@@ -556,7 +552,8 @@ void main(void) {
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor, 0.0, 1.0) * baseColor.rgb;
 
 	// Composition
-	float r = Rand(vfur_length) * 0.5;
+	//float r = Rand(vPositionW) * 0.5;
+	float r = vfur_length * 0.5;
 	vec4 color = vec4(finalDiffuse * (0.5 + r), alpha);
 
 #ifdef FOG

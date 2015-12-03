@@ -2,9 +2,8 @@
 
 // Attributes
 attribute vec3 position;
-#ifdef NORMAL
 attribute vec3 normal;
-#endif
+
 #ifdef UV1
 attribute vec2 uv;
 #endif
@@ -21,10 +20,10 @@ attribute vec4 matricesWeights;
 
 
 // Uniforms
-uniform furLength;
-uniform furAngle;
+uniform float furLength;
+uniform float furAngle;
 #ifdef HEIGHTMAP
-uniform sampler2D heightTexture
+uniform sampler2D heightTexture;
 #endif
 
 #ifdef INSTANCES
@@ -120,14 +119,12 @@ void main(void) {
 
 #endif
 //FUR
+float r = Rand(position);
 #ifdef HEIGHTMAP	
-	vfur_length = furLength * texture2D(heightTexture, uv).rgb.x;\r\n"+
-#else
-	float r = Rand(position);	
+	vfur_length = furLength * texture2D(heightTexture, uv).rgb.x;
+#else	
 	vfur_length = (furLength * r);
 #endif
-	float r = Rand(position);
-	vfur_length = 5 * r;
 	vec3 tangent1 = vec3(normal.y, -normal.x, 0);
 	vec3 tangent2 = vec3(-normal.z, 0, normal.x);
 	r = Rand(tangent1*r);
