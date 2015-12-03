@@ -126,10 +126,10 @@
 
         public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
             var scene = this.getScene();
-            
-            if (this.activeCamera !== scene.activeCamera) {
-        		scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
-        	}
+
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+            }
 
             if (this._waitingRenderList) {
                 this.renderList = [];
@@ -171,7 +171,7 @@
                     }
                 }
             }
-            
+
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
                     this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
@@ -183,10 +183,10 @@
             if (this.onAfterUnbind) {
                 this.onAfterUnbind();
             }
-            
-            if (this.activeCamera !== scene.activeCamera) {
-        		scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
-        	}
+
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+            }
 
             scene.resetCachedMaterial();
         }
@@ -284,4 +284,4 @@
             return serializationObject;
         }
     }
-} 
+}
