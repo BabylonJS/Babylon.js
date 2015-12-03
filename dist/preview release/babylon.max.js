@@ -11275,7 +11275,7 @@ var BABYLON;
                     _this._previousPosition.copyFrom(_this.position);
                 }
                 else {
-                    _this.setPosition(_this.position);
+                    _this.setPosition(newPosition);
                     if (_this.onCollide) {
                         _this.onCollide(collidedMesh);
                     }
