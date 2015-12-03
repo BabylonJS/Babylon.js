@@ -549,7 +549,7 @@
             if (!collidedMesh) {
                 this._previousPosition.copyFrom(this.position);
             } else {
-                this.setPosition(newPosition);
+                this.setPosition(newPosition); 
 
                 if (this.onCollide) {
                     this.onCollide(collidedMesh);
