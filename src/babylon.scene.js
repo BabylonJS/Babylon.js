@@ -892,6 +892,19 @@ var BABYLON;
             return null;
         };
         /**
+         * get a particle system by id
+         * @param id {number} the particle system id
+         * @return {BABYLON.ParticleSystem|null} the corresponding system or null if none found.
+         */
+        Scene.prototype.getParticleSystemByID = function (id) {
+            for (var index = 0; index < this.particleSystems.length; index++) {
+                if (this.particleSystems[index].id === id) {
+                    return this.particleSystems[index];
+                }
+            }
+            return null;
+        };
+        /**
          * get a geometry using its ID
          * @param {string} the geometry's id
          * @return {BABYLON.Geometry|null} the geometry or null if none found.

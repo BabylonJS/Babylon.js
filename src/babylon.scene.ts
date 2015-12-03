@@ -1146,6 +1146,22 @@
             return null;
         }
 
+
+        /**
+         * get a particle system by id
+         * @param id {number} the particle system id
+         * @return {BABYLON.ParticleSystem|null} the corresponding system or null if none found.
+         */
+        public getParticleSystemByID(id: string): ParticleSystem {
+            for (var index = 0; index < this.particleSystems.length; index++) {
+                if (this.particleSystems[index].id === id) {
+                    return this.particleSystems[index];
+                }
+            }
+
+            return null;
+        }
+
         /**
          * get a geometry using its ID
          * @param {string} the geometry's id
