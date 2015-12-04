@@ -112,7 +112,7 @@ namespace Unity3D2Babylon
             }
         }
 
-        private void ConvertUnityMeshToBabylon(Mesh mesh, Transform transform, GameObject gameObject, float progress)
+        private void ConvertUnityMeshToBabylon(Mesh mesh, Transform transform, GameObject gameObject, float progress, BabylonAbstractMesh[] instances = null)
         {
             BabylonMesh babylonMesh = new BabylonMesh();
             var renderer = gameObject.GetComponent<Renderer>();
@@ -124,15 +124,7 @@ namespace Unity3D2Babylon
             babylonMesh.receiveShadows = renderer.receiveShadows;
 
             babylonMesh.parentId = GetParentID(transform);
-
-            babylonMesh.position = transform.localPosition.ToFloat();
-
-            babylonMesh.rotation = new float[3];
-            babylonMesh.rotation[0] = transform.localRotation.eulerAngles.x * (float)Math.PI / 180;
-            babylonMesh.rotation[1] = transform.localRotation.eulerAngles.y * (float)Math.PI / 180;
-            babylonMesh.rotation[2] = transform.localRotation.eulerAngles.z * (float)Math.PI / 180;
-
-            babylonMesh.scaling = transform.localScale.ToFloat();
+            ConvertTransform(babylonMesh, transform, gameObject, instances);
 
             babylonMesh.positions = new float[mesh.vertexCount * 3];
 
