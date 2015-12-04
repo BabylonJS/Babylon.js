@@ -449,6 +449,7 @@
         public serialize(): any {
             var serializationObject: any = {};
 
+            serializationObject.name = this.name;
             serializationObject.emitterId = this.emitter.id;
             serializationObject.capacity = this.getCapacity();
 
@@ -482,19 +483,14 @@
         }
 
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
-            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
-            var name = "no-emitter";
-            if (emitter){
-                name = emitter.name;
-            }
-            var particleSystem = new ParticleSystem("particles#" + name, parsedParticleSystem.capacity, scene);
+            var name = parsedParticleSystem.name;
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
-            if (emitter) {
-                particleSystem.emitter = emitter;
-            }
+            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            particleSystem.emitter = emitter ? emitter : BABYLON.Vector3.Zero();
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
