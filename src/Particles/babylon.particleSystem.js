@@ -362,7 +362,7 @@ var BABYLON;
             var name = parsedParticleSystem.name;
             var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
             if (parsedParticleSystem.textureName) {
-                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
             var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
