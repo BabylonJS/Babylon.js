@@ -56,6 +56,10 @@ private:
 	bool _applyFog;
 	int _alphaIndex;
 public:
+	std::shared_ptr<BabylonSkeleton> associatedSkeleton;
+
+	std::vector<std::shared_ptr < BabylonAnimationBase>> animations;
+	FbxMatrix pivotMatrix;
 	std::vector<std::string> uvsets;
 	const std::wstring& id(){ return _id; }
 	const std::wstring& parentId(){ return _parentId; }
@@ -112,14 +116,14 @@ public:
 	void alphaIndex(int value){ _alphaIndex = value; }
 
 
-	std::shared_ptr<BabylonSkeleton> associatedSkeleton;
-
-	std::vector<std::shared_ptr < BabylonAnimationBase>> animations;
-	FbxMatrix pivotMatrix;
+	
 
 	virtual web::json::value toJson() override;
 	BabylonMesh();
 	BabylonMesh(BabylonNode* node);
+	BabylonMesh(const BabylonMesh&) = default;
+	BabylonMesh(BabylonMesh&& moved);
+	void addInstance(BabylonNode* node);
 	virtual ~BabylonMesh();
 };
 

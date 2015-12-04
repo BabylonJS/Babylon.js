@@ -57,6 +57,9 @@
         public hasVertexAlpha = false;
         public useVertexColors = true;
         public applyFog = true;
+        public computeBonesUsingShaders = true;
+        public scalingDeterminant = 1;
+        public numBoneInfluencers = 4;
 
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
@@ -71,6 +74,7 @@
         public _physicsMass: number;
         public _physicsFriction: number;
         public _physicRestitution: number;
+        public onPhysicsCollide: (collidedMesh: AbstractMesh) => void; 
 
         // Collisions
         private _checkCollisions = false;
@@ -81,9 +85,15 @@
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
         private _newPositionForCollisions = new Vector3(0, 0, 0);
         public onCollide: (collidedMesh: AbstractMesh) => void;
+        public onCollisionPositionChange: (newPosition: Vector3) => void;
 
         // Attach to bone
         private _meshToBoneReferal: AbstractMesh;
+
+        // Edges
+        public edgesWidth = 1;
+        public edgesColor = new Color4(1, 0, 0, 1);
+        public _edgesRenderer: EdgesRenderer;
 
         // Cache
         private _localScaling = Matrix.Zero();
@@ -102,6 +112,7 @@
         public _positions: Vector3[];
         private _isDirty = false;
         public _masterMesh: AbstractMesh;
+        public _materialDefines: MaterialDefines;
 
         public _boundingInfo: BoundingInfo;
         private _pivotMatrix = Matrix.Identity();
@@ -127,6 +138,18 @@
         }
 
         // Methods
+        public disableEdgesRendering(): void {
+            if (this._edgesRenderer !== undefined) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = undefined;
+            }
+        }
+        public enableEdgesRendering(epsilon = 0.95, checkVerticesInsteadOfIndices = false) {
+            this.disableEdgesRendering();
+
+            this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+        }
+
         public get isBlocked(): boolean {
             return false;
         }
@@ -139,11 +162,11 @@
             return 0;
         }
 
-        public getIndices(): number[] {
+        public getIndices(): number[] | Int32Array {
             return null;
         }
 
-        public getVerticesData(kind: string): number[] {
+        public getVerticesData(kind: string): number[] | Float32Array {
             return null;
         }
 
@@ -207,16 +230,16 @@
             return this._isWorldMatrixFrozen;
         }
 
-        public rotate(axis: Vector3, amount: number, space: Space): void {
+        public rotate(axis: Vector3, amount: number, space?: Space): void {
             axis.normalize();
 
             if (!this.rotationQuaternion) {
                 this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
                 this.rotation = Vector3.Zero();
             }
-
+            var rotationQuaternion: Quaternion;
             if (!space || space === Space.LOCAL) {
-                var rotationQuaternion = Quaternion.RotationAxis(axis, amount);
+                rotationQuaternion = Quaternion.RotationAxis(axis, amount);
                 this.rotationQuaternion = this.rotationQuaternion.multiply(rotationQuaternion);
             }
             else {
@@ -231,7 +254,7 @@
             }
         }
 
-        public translate(axis: Vector3, distance: number, space: Space): void {
+        public translate(axis: Vector3, distance: number, space?: Space): void {
             var displacementVector = axis.scale(distance);
 
             if (!space || space === Space.LOCAL) {
@@ -353,7 +376,7 @@
                 return false;
             }
 
-            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
+            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
                 return false;
 
             if (this._cache.pivotMatrixUpdated) {
@@ -389,6 +412,7 @@
             this._cache.scaling = Vector3.Zero();
             this._cache.rotation = Vector3.Zero();
             this._cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
+            this._cache.billboardMode = -1;
         }
 
         public markAsDirty(property: string): void {
@@ -431,11 +455,12 @@
             this._cache.position.copyFrom(this.position);
             this._cache.scaling.copyFrom(this.scaling);
             this._cache.pivotMatrixUpdated = false;
+            this._cache.billboardMode = this.billboardMode;
             this._currentRenderId = this.getScene().getRenderId();
             this._isDirty = false;
 
             // Scaling
-            Matrix.ScalingToRef(this.scaling.x, this.scaling.y, this.scaling.z, this._localScaling);
+            Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, this._localScaling);
 
             // Rotation
             if (this.rotationQuaternion) {
@@ -475,7 +500,7 @@
                     Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
                 }
 
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) != AbstractMesh.BILLBOARDMODE_ALL) {
+                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
                         zero.x = localPosition.x + Engine.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
@@ -586,9 +611,17 @@
         public attachToBone(bone: Bone, affectedMesh: AbstractMesh): void {
             this._meshToBoneReferal = affectedMesh;
             this.parent = bone;
+
+            if (bone.getWorldMatrix().determinant() < 0) {
+                this.scalingDeterminant *= -1;
+            }
         }
 
         public detachFromBone(): void {
+            if (this.parent.getWorldMatrix().determinant() < 0) {
+                this.scalingDeterminant *= -1;
+            }
+
             this._meshToBoneReferal = null;
             this.parent = null;
         }
@@ -632,7 +665,7 @@
             var physicsEngine = this.getScene().getPhysicsEngine();
 
             if (!physicsEngine) {
-                return;
+                return null;
             }
 
             impostor = impostor || PhysicsEngine.NoImpostor;
@@ -645,7 +678,7 @@
 
             if (impostor === PhysicsEngine.NoImpostor) {
                 physicsEngine._unregisterMesh(this);
-                return;
+                return null;
             }
 
             if (!options) {
@@ -773,6 +806,10 @@
 
             if (this.onCollide && collidedMesh) {
                 this.onCollide(collidedMesh);
+            }
+
+            if (this.onCollisionPositionChange) {
+                this.onCollisionPositionChange(this.position);
             }
         }
 
@@ -952,6 +989,9 @@
         public dispose(doNotRecurse?: boolean): void {
             var index: number;
 
+            // Animations
+            this.getScene().stopAnimation(this);
+
             // Physics
             if (this.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
                 this.setPhysicsState(PhysicsEngine.NoImpostor);
@@ -966,6 +1006,12 @@
             }
 
             this._intersectionsInProgress = [];
+
+            // Edges
+            if (this._edgesRenderer) {
+                this._edgesRenderer.dispose();
+                this._edgesRenderer = null;
+            }
 
             // SubMeshes
             this.releaseSubMeshes();
@@ -1010,5 +1056,7 @@
         }
     }
 }
+
+
 
 

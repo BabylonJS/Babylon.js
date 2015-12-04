@@ -79,14 +79,14 @@
                     try {
                         if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
                             if (onerror) {
-                                onerror(scene, 'unable to load the scene');
+                                onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename);
                             }
                             scene._removePendingData(loadingToken);
                             return;
                         }
                     } catch (e) {
                         if (onerror) {
-                            onerror(scene, e);
+                            onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename + ' (Exception: ' + e + ')');
                         }
                         scene._removePendingData(loadingToken);
                         return;
@@ -111,8 +111,13 @@
                 }, progressCallBack, database);
             };
 
-            // Checking if a manifest file has been set for this scene and if offline mode has been requested
-            var database = new Database(rootUrl + sceneFilename, manifestChecked);
+            if (scene.getEngine().enableOfflineSupport) {
+                // Checking if a manifest file has been set for this scene and if offline mode has been requested
+                var database = new Database(rootUrl + sceneFilename, manifestChecked);
+            }
+            else {
+                manifestChecked(true);
+            }
         }
 
         /**
@@ -184,8 +189,13 @@
             }
 
             if (rootUrl.indexOf("file:") === -1) {
-                // Checking if a manifest file has been set for this scene and if offline mode has been requested
-                database = new Database(rootUrl + sceneFilename, manifestChecked);
+                if (scene.getEngine().enableOfflineSupport) {
+                    // Checking if a manifest file has been set for this scene and if offline mode has been requested
+                    database = new Database(rootUrl + sceneFilename, manifestChecked);
+                }
+                else {
+                    manifestChecked(true);
+                }
             }
             // Loading file from disk via input file or drag'n'drop
             else {

@@ -201,7 +201,7 @@ namespace Max2Babylon
 
         static float[] weightedLerp(int frame0, int frame1, int frame2, float[] value0, float[] value2)
         {
-            double weight2 = (double)(frame1 - frame0) / (double)(frame2 - frame0);
+            double weight2 = (frame1 - frame0) / (double)(frame2 - frame0);
             double weight0 = 1 - weight2;
             float[] result = new float[value0.Length];
             for (int i = 0; i < result.Length; ++i)
@@ -237,6 +237,8 @@ namespace Max2Babylon
 
         private static void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType)
         {
+            var exportNonOptimizedAnimations = Loader.Core.RootNode.GetBoolProperty("babylonjs_exportnonoptimizedanimations");
+
             var start = Loader.Core.AnimRange.Start;
             var end = Loader.Core.AnimRange.End;
 
@@ -246,6 +248,10 @@ namespace Max2Babylon
             {
                 var current = extractValueFunc(key);
 
+                if (exportNonOptimizedAnimations && previous != null && previous.IsEqualTo(current))
+                {
+                    continue; // Do not add key
+                }
 
                 keys.Add(new BabylonAnimationKey()
                 {
@@ -253,11 +259,15 @@ namespace Max2Babylon
                     values = current
                 });
 
-
                 previous = current;
             }
-            RemoveLinearAnimationKeys(keys);
-            if (keys.Count > 0)
+
+            if (!exportNonOptimizedAnimations)
+            {
+                RemoveLinearAnimationKeys(keys);
+            }
+
+            if (keys.Count > 1)
             {
                 var animationPresent = true;
 

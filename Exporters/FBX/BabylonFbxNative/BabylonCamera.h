@@ -77,6 +77,8 @@ public:
 
 	BabylonCamera();
 	BabylonCamera(BabylonNode& babnode);
+	BabylonCamera(const BabylonCamera& ) = default;
+	BabylonCamera(BabylonCamera&& moved);
 	~BabylonCamera();
 };
 

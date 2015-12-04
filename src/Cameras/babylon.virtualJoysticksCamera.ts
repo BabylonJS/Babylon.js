@@ -18,9 +18,18 @@
             this._rightjoystick.setJoystickColor("yellow");
         }
 
+        public getLeftJoystick(): VirtualJoystick {
+            return this._leftjoystick;
+        }
+
+        public getRightJoystick(): VirtualJoystick {
+            return this._rightjoystick;
+        }
+
         public _checkInputs(): void {
+            var speed = this._computeLocalCameraSpeed() * 50;
             var cameraTransform = Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-            var deltaTransform = Vector3.TransformCoordinates(this._leftjoystick.deltaPosition, cameraTransform);
+            var deltaTransform = Vector3.TransformCoordinates(new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
             this.cameraDirection = this.cameraDirection.add(deltaTransform);
             this.cameraRotation = this.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
             if (!this._leftjoystick.pressed) {

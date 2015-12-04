@@ -20,7 +20,7 @@ var BABYLON;
             this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : 1.0);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            if (mesh.useBones) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
             mesh._bind(subMesh, this._effect, BABYLON.Material.TriangleFillMode);
@@ -50,11 +50,18 @@ var BABYLON;
                 }
             }
             // Bones
-            if (mesh.useBones) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-                defines.push("#define BONES");
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(BABYLON.VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
+                }
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+            }
+            else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
             // Instances
             if (useInstances) {
@@ -76,4 +83,3 @@ var BABYLON;
     })();
     BABYLON.OutlineRenderer = OutlineRenderer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.outlineRenderer.js.map

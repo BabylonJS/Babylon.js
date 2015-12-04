@@ -16,7 +16,7 @@
         }
 
         constructor() {
-            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+            if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 this.canUseWebAudio = true;
             }

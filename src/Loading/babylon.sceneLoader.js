@@ -60,7 +60,7 @@ var BABYLON;
                     try {
                         if (!plugin.importMesh(meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons)) {
                             if (onerror) {
-                                onerror(scene, 'unable to load the scene');
+                                onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename);
                             }
                             scene._removePendingData(loadingToken);
                             return;
@@ -68,7 +68,7 @@ var BABYLON;
                     }
                     catch (e) {
                         if (onerror) {
-                            onerror(scene, e);
+                            onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename + ' (Exception: ' + e + ')');
                         }
                         scene._removePendingData(loadingToken);
                         return;
@@ -88,8 +88,13 @@ var BABYLON;
                     importMeshFromData(data);
                 }, progressCallBack, database);
             };
-            // Checking if a manifest file has been set for this scene and if offline mode has been requested
-            var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
+            if (scene.getEngine().enableOfflineSupport) {
+                // Checking if a manifest file has been set for this scene and if offline mode has been requested
+                var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
+            }
+            else {
+                manifestChecked(true);
+            }
         };
         /**
         * Load a scene
@@ -147,8 +152,13 @@ var BABYLON;
                 return;
             }
             if (rootUrl.indexOf("file:") === -1) {
-                // Checking if a manifest file has been set for this scene and if offline mode has been requested
-                database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
+                if (scene.getEngine().enableOfflineSupport) {
+                    // Checking if a manifest file has been set for this scene and if offline mode has been requested
+                    database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
+                }
+                else {
+                    manifestChecked(true);
+                }
             }
             else {
                 BABYLON.Tools.ReadFile(sceneFilename, loadSceneFromData, progressCallBack);
@@ -164,4 +174,3 @@ var BABYLON;
     BABYLON.SceneLoader = SceneLoader;
     ;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sceneLoader.js.map

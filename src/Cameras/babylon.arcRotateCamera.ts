@@ -11,7 +11,8 @@
         public upperBetaLimit = Math.PI;
         public lowerRadiusLimit = null;
         public upperRadiusLimit = null;
-        public angularSensibility = 1000.0;
+        public angularSensibilityX = 1000.0;
+        public angularSensibilityY = 1000.0;
         public wheelPrecision = 3.0;
         public pinchPrecision = 2.0;
         public panningSensibility: number = 50.0;
@@ -63,6 +64,19 @@
         private _previousRadius: number;
         //due to async collision inspection
         private _collisionTriggered: boolean;
+        
+        //deprecated angularSensibility support
+        public get angularSensibility() {
+            Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+            return Math.max(this.angularSensibilityX, this.angularSensibilityY);
+        }
+        
+        //deprecated angularSensibility support
+        public set angularSensibility(value) {
+            Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+            this.angularSensibilityX = value;
+            this.angularSensibilityY = value;
+        }
 
         constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
             super(name, Vector3.Zero(), scene);
@@ -85,7 +99,7 @@
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
-            this._cache.targetScreenOffset = undefined;
+            this._cache.targetScreenOffset = Vector2.Zero();
         }
 
         public _updateCache(ignoreParentClass?: boolean): void {
@@ -97,7 +111,7 @@
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
-            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
+            this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
         }
 
         // Synchronized
@@ -128,7 +142,7 @@
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = evt => {
                     // Manage panning with right click
-                    this._isRightClick = evt.button === 2 ? true : false;
+                    this._isRightClick = evt.button === 2;
 
                     // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
@@ -147,7 +161,7 @@
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
                     pointers.empty();
-                                       
+
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -165,14 +179,14 @@
                     switch (pointers.count) {
 
                         case 1: //normal camera rotation
-                            if ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick)) {
+                            if (this.panningSensibility !== 0 && ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick))) {
                                 this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
                                 this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
                             } else {
                                 var offsetX = evt.clientX - cacheSoloPointer.x;
                                 var offsetY = evt.clientY - cacheSoloPointer.y;
-                                this.inertialAlphaOffset -= offsetX / this.angularSensibility;
-                                this.inertialBetaOffset -= offsetY / this.angularSensibility;
+                                this.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
+                                this.inertialBetaOffset -= offsetY / this.angularSensibilityY;
                             }
                             cacheSoloPointer.x = evt.clientX;
                             cacheSoloPointer.y = evt.clientY;
@@ -192,7 +206,7 @@
                             }
 
                             if (pinchSquaredDistance !== previousPinchDistance) {
-                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * this.angularSensibility * direction);
+                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * ((this.angularSensibilityX + this.angularSensibilityY) / 2) * direction);
                                 previousPinchDistance = pinchSquaredDistance;
                             }
                             break;
@@ -213,8 +227,8 @@
                     var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                     var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
-                    this.inertialAlphaOffset -= offsetX / this.angularSensibility;
-                    this.inertialBetaOffset -= offsetY / this.angularSensibility;
+                    this.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
+                    this.inertialBetaOffset -= offsetY / this.angularSensibilityY;
 
                     if (!noPreventDefault) {
                         evt.preventDefault();
@@ -394,7 +408,7 @@
             }			
 			
             // Inertia
-            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;
@@ -473,6 +487,9 @@
         }
 
         public setPosition(position: Vector3): void {
+            if (this.position.equals(position)) {
+                return;
+            }
             var radiusv3 = position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
 
@@ -487,6 +504,10 @@
             this.beta = Math.acos(radiusv3.y / this.radius);
 
             this._checkLimits();
+        }
+
+        public setTarget(target: Vector3): void {
+            this.target = target;
         }
 
         public _getViewMatrix(): Matrix {
@@ -508,7 +529,7 @@
 
                 var up = this.upVector;
                 if (this.allowUpsideDown && this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
 
@@ -528,7 +549,7 @@
             if (!collidedMesh) {
                 this._previousPosition.copyFrom(this.position);
             } else {
-                this.setPosition(this.position);
+                this.setPosition(newPosition); 
 
                 if (this.onCollide) {
                     this.onCollide(collidedMesh);
@@ -546,7 +567,7 @@
 
             var up = this.upVector;
             if (this.allowUpsideDown && this.beta < 0) {
-                var up = up.clone();
+                up = up.clone();
                 up = up.negate();
             }
 
@@ -603,6 +624,7 @@
                     var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                     return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
             }
+            return null;
         }
         
         /**
@@ -616,8 +638,8 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    var camLeft = <ArcRotateCamera> this._rigCameras[0];
-                    var camRight = <ArcRotateCamera> this._rigCameras[1];
+                    var camLeft = <ArcRotateCamera>this._rigCameras[0];
+                    var camRight = <ArcRotateCamera>this._rigCameras[1];
                     camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                     camLeft.beta = camRight.beta = this.beta;
@@ -625,6 +647,26 @@
                     break;
             }
             super._updateRigCameras();
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            if (this.target instanceof Vector3) {
+                serializationObject.target = this.target.asArray();
+            }
+
+            if (this.target && this.target.id) {
+                serializationObject.lockedTargetId = this.target.id;
+            }
+
+            serializationObject.checkCollisions = this.checkCollisions;
+
+            serializationObject.alpha = this.alpha;
+            serializationObject.beta = this.beta;
+            serializationObject.radius = this.radius;
+
+            return serializationObject;
         }
     }
 } 

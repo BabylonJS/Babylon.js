@@ -1,5 +1,7 @@
 var BABYLON;
 (function (BABYLON) {
+    var ToGammaSpace = 1 / 2.2;
+    var ToLinearSpace = 2.2;
     var Color3 = (function () {
         function Color3(r, g, b) {
             if (r === void 0) { r = 0; }
@@ -91,7 +93,45 @@ var BABYLON;
             this.b = b;
             return this;
         };
+        Color3.prototype.toHexString = function () {
+            var intR = (this.r * 255) | 0;
+            var intG = (this.g * 255) | 0;
+            var intB = (this.b * 255) | 0;
+            return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB);
+        };
+        Color3.prototype.toLinearSpace = function () {
+            var convertedColor = new Color3();
+            this.toLinearSpaceToRef(convertedColor);
+            return convertedColor;
+        };
+        Color3.prototype.toLinearSpaceToRef = function (convertedColor) {
+            convertedColor.r = Math.pow(this.r, ToLinearSpace);
+            convertedColor.g = Math.pow(this.g, ToLinearSpace);
+            convertedColor.b = Math.pow(this.b, ToLinearSpace);
+            return this;
+        };
+        Color3.prototype.toGammaSpace = function () {
+            var convertedColor = new Color3();
+            this.toGammaSpaceToRef(convertedColor);
+            return convertedColor;
+        };
+        Color3.prototype.toGammaSpaceToRef = function (convertedColor) {
+            convertedColor.r = Math.pow(this.r, ToGammaSpace);
+            convertedColor.g = Math.pow(this.g, ToGammaSpace);
+            convertedColor.b = Math.pow(this.b, ToGammaSpace);
+            return this;
+        };
         // Statics
+        Color3.FromHexString = function (hex) {
+            if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
+                BABYLON.Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
+                return new Color3(0, 0, 0);
+            }
+            var r = parseInt(hex.substring(1, 3), 16);
+            var g = parseInt(hex.substring(3, 5), 16);
+            var b = parseInt(hex.substring(5, 7), 16);
+            return Color3.FromInts(r, g, b);
+        };
         Color3.FromArray = function (array, offset) {
             if (offset === void 0) { offset = 0; }
             return new Color3(array[offset], array[offset + 1], array[offset + 2]);
@@ -183,7 +223,25 @@ var BABYLON;
             this.a = source.a;
             return this;
         };
+        Color4.prototype.toHexString = function () {
+            var intR = (this.r * 255) | 0;
+            var intG = (this.g * 255) | 0;
+            var intB = (this.b * 255) | 0;
+            var intA = (this.a * 255) | 0;
+            return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB) + BABYLON.Tools.ToHex(intA);
+        };
         // Statics
+        Color4.FromHexString = function (hex) {
+            if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
+                BABYLON.Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
+                return new Color4(0, 0, 0, 0);
+            }
+            var r = parseInt(hex.substring(1, 3), 16);
+            var g = parseInt(hex.substring(3, 5), 16);
+            var b = parseInt(hex.substring(5, 7), 16);
+            var a = parseInt(hex.substring(7, 9), 16);
+            return Color4.FromInts(r, g, b, a);
+        };
         Color4.Lerp = function (left, right, amount) {
             var result = new Color4(0, 0, 0, 0);
             Color4.LerpToRef(left, right, amount, result);
@@ -201,6 +259,21 @@ var BABYLON;
         };
         Color4.FromInts = function (r, g, b, a) {
             return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+        };
+        Color4.CheckColors4 = function (colors, count) {
+            // Check if color3 was used
+            if (colors.length === count * 3) {
+                var colors4 = [];
+                for (var index = 0; index < colors.length; index += 3) {
+                    var newIndex = (index / 3) * 4;
+                    colors4[newIndex] = colors[index];
+                    colors4[newIndex + 1] = colors[index + 1];
+                    colors4[newIndex + 2] = colors[index + 2];
+                    colors4[newIndex + 3] = 1.0;
+                }
+                return colors4;
+            }
+            return colors;
         };
         return Color4;
     })();
@@ -586,6 +659,12 @@ var BABYLON;
             }
             return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
         };
+        Vector3.FromFloatArray = function (array, offset) {
+            if (!offset) {
+                offset = 0;
+            }
+            return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
+        };
         Vector3.FromArrayToRef = function (array, offset, result) {
             result.x = array[offset];
             result.y = array[offset + 1];
@@ -629,28 +708,6 @@ var BABYLON;
             result.x = rx / rw;
             result.y = ry / rw;
             result.z = rz / rw;
-        };
-        Vector3.TransformCoordinatesToRefSIMD = function (vector, transformation, result) {
-            var v = SIMD.float32x4.loadXYZ(vector._data, 0);
-            var m0 = SIMD.float32x4.load(transformation.m, 0);
-            var m1 = SIMD.float32x4.load(transformation.m, 4);
-            var m2 = SIMD.float32x4.load(transformation.m, 8);
-            var m3 = SIMD.float32x4.load(transformation.m, 12);
-            var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 0, 0, 0, 0), m0), SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 1, 1, 1, 1), m1)), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(v, 2, 2, 2, 2), m2), m3));
-            r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
-            SIMD.float32x4.storeXYZ(result._data, 0, r);
-        };
-        Vector3.TransformCoordinatesFromFloatsToRefSIMD = function (x, y, z, transformation, result) {
-            var v0 = SIMD.float32x4.splat(x);
-            var v1 = SIMD.float32x4.splat(y);
-            var v2 = SIMD.float32x4.splat(z);
-            var m0 = SIMD.float32x4.load(transformation.m, 0);
-            var m1 = SIMD.float32x4.load(transformation.m, 4);
-            var m2 = SIMD.float32x4.load(transformation.m, 8);
-            var m3 = SIMD.float32x4.load(transformation.m, 12);
-            var r = SIMD.float32x4.add(SIMD.float32x4.add(SIMD.float32x4.mul(v0, m0), SIMD.float32x4.mul(v1, m1)), SIMD.float32x4.add(SIMD.float32x4.mul(v2, m2), m3));
-            r = SIMD.float32x4.div(r, SIMD.float32x4.swizzle(r, 3, 3, 3, 3));
-            SIMD.float32x4.storeXYZ(result._data, 0, r);
         };
         Vector3.TransformNormal = function (vector, transformation) {
             var result = Vector3.Zero();
@@ -757,10 +814,9 @@ var BABYLON;
         Vector3.Unproject = function (source, viewportWidth, viewportHeight, world, view, projection) {
             var matrix = world.multiply(view).multiply(projection);
             matrix.invert();
-            source.x = source.x / viewportWidth * 2 - 1;
-            source.y = -(source.y / viewportHeight * 2 - 1);
-            var vector = Vector3.TransformCoordinates(source, matrix);
-            var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
+            var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), source.z);
+            var vector = Vector3.TransformCoordinates(screenSource, matrix);
+            var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
             if (BABYLON.Tools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
@@ -796,13 +852,19 @@ var BABYLON;
          * to something in order to rotate it from its local system to the given target system.
          */
         Vector3.RotationFromAxis = function (axis1, axis2, axis3) {
+            var rotation = Vector3.Zero();
+            Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
+            return rotation;
+        };
+        /**
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
+         */
+        Vector3.RotationFromAxisToRef = function (axis1, axis2, axis3, ref) {
             var u = Vector3.Normalize(axis1);
-            var v = Vector3.Normalize(axis2);
             var w = Vector3.Normalize(axis3);
             // world axis
             var X = Axis.X;
             var Y = Axis.Y;
-            var Z = Axis.Z;
             // equation unknowns and vars
             var yaw = 0.0;
             var pitch = 0.0;
@@ -812,7 +874,6 @@ var BABYLON;
             var z = 0.0;
             var t = 0.0;
             var sign = -1.0;
-            var pi = Math.PI;
             var nbRevert = 0;
             var cross;
             var dot = 0.0;
@@ -821,10 +882,10 @@ var BABYLON;
             // Rv3(w) = w1 = w invariant
             var u1;
             var v1;
-            if (w.z == 0) {
+            if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 z = 1.0;
             }
-            else if (w.x == 0) {
+            else if (BABYLON.Tools.WithinEpsilon(w.x, 0, BABYLON.Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -833,12 +894,16 @@ var BABYLON;
                 z = Math.sqrt(1 / (1 + t * t));
             }
             u1 = new Vector3(x, y, z);
+            u1.normalize();
             v1 = Vector3.Cross(w, u1); // v1 image of v through rotation around w
+            v1.normalize();
             cross = Vector3.Cross(u, u1); // returns same direction as w (=local z) if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(w, cross) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(u, u1);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             roll = Math.acos(dot) * sign;
             if (Vector3.Dot(u1, X) < 0) {
                 roll = Math.PI + roll;
@@ -855,7 +920,7 @@ var BABYLON;
             y = 0.0;
             z = 0.0;
             sign = -1;
-            if (w.z == 0) {
+            if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -864,12 +929,16 @@ var BABYLON;
                 z = Math.sqrt(1 / (1 + t * t));
             }
             w2 = new Vector3(x, y, z);
+            w2.normalize();
             v2 = Vector3.Cross(w2, u1); // v2 image of v1 through rotation around u1
+            v2.normalize();
             cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(u1, cross) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(w, w2);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             pitch = Math.acos(dot) * sign;
             if (Vector3.Dot(v2, Y) < 0) {
                 pitch = Math.PI + pitch;
@@ -881,15 +950,19 @@ var BABYLON;
             // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
             sign = -1;
             cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            cross.normalize();
             if (Vector3.Dot(cross, Y) < 0) {
-                sign = 1;
+                sign = 1.0;
             }
             dot = Vector3.Dot(u1, X);
+            dot = (Math.min(1.0, Math.max(-1.0, dot))); // to force dot to be in the range [-1, 1]
             yaw = -Math.acos(dot) * sign; // negative : plane zOx oriented clockwise
             if (dot < 0 && nbRevert < 2) {
                 yaw = Math.PI + yaw;
             }
-            return new Vector3(pitch, yaw, roll);
+            ref.x = pitch;
+            ref.y = yaw;
+            ref.z = roll;
         };
         return Vector3;
     })();
@@ -1210,6 +1283,10 @@ var BABYLON;
             result.copyFromFloats(x, y, z, w);
             return this;
         };
+        Quaternion.prototype.multiplyInPlace = function (q1) {
+            this.multiplyToRef(q1, this);
+            return this;
+        };
         Quaternion.prototype.length = function () {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
         };
@@ -1343,6 +1420,7 @@ var BABYLON;
         Quaternion.RotationAxis = function (axis, angle) {
             var result = new Quaternion();
             var sin = Math.sin(angle / 2);
+            axis.normalize();
             result.w = Math.cos(angle / 2);
             result.x = axis.x * sin;
             result.y = axis.y * sin;
@@ -1453,6 +1531,29 @@ var BABYLON;
             this.invertToRef(this);
             return this;
         };
+        Matrix.prototype.reset = function () {
+            for (var index = 0; index < 16; index++) {
+                this.m[index] = 0;
+            }
+            return this;
+        };
+        Matrix.prototype.add = function (other) {
+            var result = new Matrix();
+            this.addToRef(other, result);
+            return result;
+        };
+        Matrix.prototype.addToRef = function (other, result) {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = this.m[index] + other.m[index];
+            }
+            return this;
+        };
+        Matrix.prototype.addToSelf = function (other) {
+            for (var index = 0; index < 16; index++) {
+                this.m[index] += other.m[index];
+            }
+            return this;
+        };
         Matrix.prototype.invertToRef = function (other) {
             var l1 = this.m[0];
             var l2 = this.m[1];
@@ -1509,112 +1610,6 @@ var BABYLON;
             other.m[7] = (((l1 * l34) - (l3 * l37)) + (l4 * l38)) * l27;
             other.m[11] = -(((l1 * l35) - (l2 * l37)) + (l4 * l39)) * l27;
             other.m[15] = (((l1 * l36) - (l2 * l38)) + (l3 * l39)) * l27;
-            return this;
-        };
-        Matrix.prototype.invertToRefSIMD = function (other) {
-            var src = this.m;
-            var dest = other.m;
-            var row0, row1, row2, row3;
-            var tmp1;
-            var minor0, minor1, minor2, minor3;
-            var det;
-            // Load the 4 rows
-            var src0 = SIMD.float32x4.load(src, 0);
-            var src1 = SIMD.float32x4.load(src, 4);
-            var src2 = SIMD.float32x4.load(src, 8);
-            var src3 = SIMD.float32x4.load(src, 12);
-            // Transpose the source matrix.  Sort of.  Not a true transpose operation
-            tmp1 = SIMD.float32x4.shuffle(src0, src1, 0, 1, 4, 5);
-            row1 = SIMD.float32x4.shuffle(src2, src3, 0, 1, 4, 5);
-            row0 = SIMD.float32x4.shuffle(tmp1, row1, 0, 2, 4, 6);
-            row1 = SIMD.float32x4.shuffle(row1, tmp1, 1, 3, 5, 7);
-            tmp1 = SIMD.float32x4.shuffle(src0, src1, 2, 3, 6, 7);
-            row3 = SIMD.float32x4.shuffle(src2, src3, 2, 3, 6, 7);
-            row2 = SIMD.float32x4.shuffle(tmp1, row3, 0, 2, 4, 6);
-            row3 = SIMD.float32x4.shuffle(row3, tmp1, 1, 3, 5, 7);
-            // This is a true transposition, but it will lead to an incorrect result
-            //tmp1 = SIMD.float32x4.shuffle(src0, src1, 0, 1, 4, 5);
-            //tmp2 = SIMD.float32x4.shuffle(src2, src3, 0, 1, 4, 5);
-            //row0  = SIMD.float32x4.shuffle(tmp1, tmp2, 0, 2, 4, 6);
-            //row1  = SIMD.float32x4.shuffle(tmp1, tmp2, 1, 3, 5, 7);
-            //tmp1 = SIMD.float32x4.shuffle(src0, src1, 2, 3, 6, 7);
-            //tmp2 = SIMD.float32x4.shuffle(src2, src3, 2, 3, 6, 7);
-            //row2  = SIMD.float32x4.shuffle(tmp1, tmp2, 0, 2, 4, 6);
-            //row3  = SIMD.float32x4.shuffle(tmp1, tmp2, 1, 3, 5, 7);
-            // ----
-            tmp1 = SIMD.float32x4.mul(row2, row3);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor0 = SIMD.float32x4.mul(row1, tmp1);
-            minor1 = SIMD.float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.float32x4.sub(SIMD.float32x4.mul(row1, tmp1), minor0);
-            minor1 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor1);
-            minor1 = SIMD.float32x4.swizzle(minor1, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.float32x4.mul(row1, row2);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor0 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor0);
-            minor3 = SIMD.float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.float32x4.sub(minor0, SIMD.float32x4.mul(row3, tmp1));
-            minor3 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor3);
-            minor3 = SIMD.float32x4.swizzle(minor3, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.float32x4.mul(SIMD.float32x4.swizzle(row1, 2, 3, 0, 1), row3); // 0x4E = 01001110
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            row2 = SIMD.float32x4.swizzle(row2, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.float32x4.add(SIMD.float32x4.mul(row2, tmp1), minor0);
-            minor2 = SIMD.float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.float32x4.sub(minor0, SIMD.float32x4.mul(row2, tmp1));
-            minor2 = SIMD.float32x4.sub(SIMD.float32x4.mul(row0, tmp1), minor2);
-            minor2 = SIMD.float32x4.swizzle(minor2, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.float32x4.mul(row0, row1);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor2 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor2);
-            minor3 = SIMD.float32x4.sub(SIMD.float32x4.mul(row2, tmp1), minor3);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor2 = SIMD.float32x4.sub(SIMD.float32x4.mul(row3, tmp1), minor2);
-            minor3 = SIMD.float32x4.sub(minor3, SIMD.float32x4.mul(row2, tmp1));
-            // ----
-            tmp1 = SIMD.float32x4.mul(row0, row3);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor1 = SIMD.float32x4.sub(minor1, SIMD.float32x4.mul(row2, tmp1));
-            minor2 = SIMD.float32x4.add(SIMD.float32x4.mul(row1, tmp1), minor2);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor1 = SIMD.float32x4.add(SIMD.float32x4.mul(row2, tmp1), minor1);
-            minor2 = SIMD.float32x4.sub(minor2, SIMD.float32x4.mul(row1, tmp1));
-            // ----
-            tmp1 = SIMD.float32x4.mul(row0, row2);
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor1 = SIMD.float32x4.add(SIMD.float32x4.mul(row3, tmp1), minor1);
-            minor3 = SIMD.float32x4.sub(minor3, SIMD.float32x4.mul(row1, tmp1));
-            tmp1 = SIMD.float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor1 = SIMD.float32x4.sub(minor1, SIMD.float32x4.mul(row3, tmp1));
-            minor3 = SIMD.float32x4.add(SIMD.float32x4.mul(row1, tmp1), minor3);
-            // Compute determinant
-            det = SIMD.float32x4.mul(row0, minor0);
-            det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 2, 3, 0, 1), det); // 0x4E = 01001110
-            det = SIMD.float32x4.add(SIMD.float32x4.swizzle(det, 1, 0, 3, 2), det); // 0xB1 = 10110001
-            tmp1 = SIMD.float32x4.reciprocalApproximation(det);
-            det = SIMD.float32x4.sub(SIMD.float32x4.add(tmp1, tmp1), SIMD.float32x4.mul(det, SIMD.float32x4.mul(tmp1, tmp1)));
-            det = SIMD.float32x4.swizzle(det, 0, 0, 0, 0);
-            // These shuffles aren't necessary if the faulty transposition is done
-            // up at the top of this function.
-            //minor0 = SIMD.float32x4.swizzle(minor0, 2, 1, 0, 3);
-            //minor1 = SIMD.float32x4.swizzle(minor1, 2, 1, 0, 3);
-            //minor2 = SIMD.float32x4.swizzle(minor2, 2, 1, 0, 3);
-            //minor3 = SIMD.float32x4.swizzle(minor3, 2, 1, 0, 3);
-            // Compute final values by multiplying with 1/det
-            minor0 = SIMD.float32x4.mul(det, minor0);
-            minor1 = SIMD.float32x4.mul(det, minor1);
-            minor2 = SIMD.float32x4.mul(det, minor2);
-            minor3 = SIMD.float32x4.mul(det, minor3);
-            SIMD.float32x4.store(dest, 0, minor0);
-            SIMD.float32x4.store(dest, 4, minor1);
-            SIMD.float32x4.store(dest, 8, minor2);
-            SIMD.float32x4.store(dest, 12, minor3);
             return this;
         };
         Matrix.prototype.setTranslation = function (vector3) {
@@ -1696,23 +1691,6 @@ var BABYLON;
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
             return this;
         };
-        Matrix.prototype.multiplyToArraySIMD = function (other, result, offset) {
-            if (offset === void 0) { offset = 0; }
-            var tm = this.m;
-            var om = other.m;
-            var om0 = SIMD.float32x4.load(om, 0);
-            var om1 = SIMD.float32x4.load(om, 4);
-            var om2 = SIMD.float32x4.load(om, 8);
-            var om3 = SIMD.float32x4.load(om, 12);
-            var tm0 = SIMD.float32x4.load(tm, 0);
-            SIMD.float32x4.store(result, offset + 0, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm0, 3, 3, 3, 3), om3)))));
-            var tm1 = SIMD.float32x4.load(tm, 4);
-            SIMD.float32x4.store(result, offset + 4, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm1, 3, 3, 3, 3), om3)))));
-            var tm2 = SIMD.float32x4.load(tm, 8);
-            SIMD.float32x4.store(result, offset + 8, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm2, 3, 3, 3, 3), om3)))));
-            var tm3 = SIMD.float32x4.load(tm, 12);
-            SIMD.float32x4.store(result, offset + 12, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 0, 0, 0, 0), om0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 1, 1, 1, 1), om1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 2, 2, 2, 2), om2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(tm3, 3, 3, 3, 3), om3)))));
-        };
         Matrix.prototype.equals = function (value) {
             return value &&
                 (this.m[0] === value.m[0] && this.m[1] === value.m[1] && this.m[2] === value.m[2] && this.m[3] === value.m[3] &&
@@ -1756,6 +1734,11 @@ var BABYLON;
         Matrix.FromArrayToRef = function (array, offset, result) {
             for (var index = 0; index < 16; index++) {
                 result.m[index] = array[index + offset];
+            }
+        };
+        Matrix.FromFloat32ArrayToRefScaled = function (array, offset, scale, result) {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = array[index + offset] * scale;
             }
         };
         Matrix.FromValuesToRef = function (initialM11, initialM12, initialM13, initialM14, initialM21, initialM22, initialM23, initialM24, initialM31, initialM32, initialM33, initialM34, initialM41, initialM42, initialM43, initialM44, result) {
@@ -1894,11 +1877,15 @@ var BABYLON;
             result.m[14] = 0;
         };
         Matrix.RotationAxis = function (axis, angle) {
+            var result = Matrix.Zero();
+            Matrix.RotationAxisToRef(axis, angle, result);
+            return result;
+        };
+        Matrix.RotationAxisToRef = function (axis, angle, result) {
             var s = Math.sin(-angle);
             var c = Math.cos(-angle);
             var c1 = 1 - c;
             axis.normalize();
-            var result = Matrix.Zero();
             result.m[0] = (axis.x * axis.x) * c1 + c;
             result.m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
             result.m[2] = (axis.x * axis.z) * c1 + (axis.y * s);
@@ -1912,7 +1899,6 @@ var BABYLON;
             result.m[10] = (axis.z * axis.z) * c1 + c;
             result.m[11] = 0.0;
             result.m[15] = 1.0;
-            return result;
         };
         Matrix.RotationYawPitchRoll = function (yaw, pitch, roll) {
             var result = new Matrix();
@@ -1954,6 +1940,20 @@ var BABYLON;
         Matrix.TranslationToRef = function (x, y, z, result) {
             Matrix.FromValuesToRef(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, x, y, z, 1.0, result);
         };
+        Matrix.Lerp = function (startValue, endValue, gradient) {
+            var startScale = new Vector3(0, 0, 0);
+            var startRotation = new Quaternion();
+            var startTranslation = new Vector3(0, 0, 0);
+            startValue.decompose(startScale, startRotation, startTranslation);
+            var endScale = new Vector3(0, 0, 0);
+            var endRotation = new Quaternion();
+            var endTranslation = new Vector3(0, 0, 0);
+            endValue.decompose(endScale, endRotation, endTranslation);
+            var resultScale = Vector3.Lerp(startScale, endScale, gradient);
+            var resultRotation = Quaternion.Slerp(startRotation, endRotation, gradient);
+            var resultTranslation = Vector3.Lerp(startTranslation, endTranslation, gradient);
+            return Matrix.Compose(resultScale, resultRotation, resultTranslation);
+        };
         Matrix.LookAtLH = function (eye, target, up) {
             var result = Matrix.Zero();
             Matrix.LookAtLHToRef(eye, target, up, result);
@@ -1963,9 +1963,14 @@ var BABYLON;
             // Z axis
             target.subtractToRef(eye, this._zAxis);
             this._zAxis.normalize();
-            // X axis
+            // X axis            
             Vector3.CrossToRef(up, this._zAxis, this._xAxis);
-            this._xAxis.normalize();
+            if (this._xAxis.lengthSquared() === 0) {
+                this._xAxis.x = 1.0;
+            }
+            else {
+                this._xAxis.normalize();
+            }
             // Y axis
             Vector3.CrossToRef(this._zAxis, this._xAxis, this._yAxis);
             this._yAxis.normalize();
@@ -1974,54 +1979,6 @@ var BABYLON;
             var ey = -Vector3.Dot(this._yAxis, eye);
             var ez = -Vector3.Dot(this._zAxis, eye);
             return Matrix.FromValuesToRef(this._xAxis.x, this._yAxis.x, this._zAxis.x, 0, this._xAxis.y, this._yAxis.y, this._zAxis.y, 0, this._xAxis.z, this._yAxis.z, this._zAxis.z, 0, ex, ey, ez, 1, result);
-        };
-        Matrix.LookAtLHToRefSIMD = function (eyeRef, targetRef, upRef, result) {
-            var out = result.m;
-            var center = SIMD.float32x4(targetRef.x, targetRef.y, targetRef.z, 0);
-            var eye = SIMD.float32x4(eyeRef.x, eyeRef.y, eyeRef.z, 0);
-            var up = SIMD.float32x4(upRef.x, upRef.y, upRef.z, 0);
-            // cc.kmVec3Subtract(f, pCenter, pEye);
-            var f = SIMD.float32x4.sub(center, eye);
-            // cc.kmVec3Normalize(f, f);    
-            var tmp = SIMD.float32x4.mul(f, f);
-            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            f = SIMD.float32x4.mul(f, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Assign(up, pUp);
-            // cc.kmVec3Normalize(up, up);
-            tmp = SIMD.float32x4.mul(up, up);
-            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            up = SIMD.float32x4.mul(up, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Cross(s, f, up);
-            var s = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 1, 2, 0, 3), SIMD.float32x4.swizzle(up, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(f, 2, 0, 1, 3), SIMD.float32x4.swizzle(up, 1, 2, 0, 3)));
-            // cc.kmVec3Normalize(s, s);
-            tmp = SIMD.float32x4.mul(s, s);
-            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Cross(u, s, f);
-            var u = SIMD.float32x4.sub(SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 1, 2, 0, 3), SIMD.float32x4.swizzle(f, 2, 0, 1, 3)), SIMD.float32x4.mul(SIMD.float32x4.swizzle(s, 2, 0, 1, 3), SIMD.float32x4.swizzle(f, 1, 2, 0, 3)));
-            // cc.kmVec3Normalize(s, s);
-            tmp = SIMD.float32x4.mul(s, s);
-            tmp = SIMD.float32x4.add(tmp, SIMD.float32x4.add(SIMD.float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            s = SIMD.float32x4.mul(s, SIMD.float32x4.reciprocalSqrtApproximation(tmp));
-            var zero = SIMD.float32x4.splat(0.0);
-            s = SIMD.float32x4.neg(s);
-            var tmp01 = SIMD.float32x4.shuffle(s, u, 0, 1, 4, 5);
-            var tmp23 = SIMD.float32x4.shuffle(f, zero, 0, 1, 4, 5);
-            var a0 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
-            var a1 = SIMD.float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
-            tmp01 = SIMD.float32x4.shuffle(s, u, 2, 3, 6, 7);
-            tmp23 = SIMD.float32x4.shuffle(f, zero, 2, 3, 6, 7);
-            var a2 = SIMD.float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
-            var a3 = SIMD.float32x4(0.0, 0.0, 0.0, 1.0);
-            var b0 = SIMD.float32x4(1.0, 0.0, 0.0, 0.0);
-            var b1 = SIMD.float32x4(0.0, 1.0, 0.0, 0.0);
-            var b2 = SIMD.float32x4(0.0, 0.0, 1.0, 0.0);
-            var b3 = SIMD.float32x4.neg(eye);
-            b3 = SIMD.float32x4.withW(b3, 1.0);
-            SIMD.float32x4.store(out, 0, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b0, 3, 3, 3, 3), a3)))));
-            SIMD.float32x4.store(out, 4, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b1, 3, 3, 3, 3), a3)))));
-            SIMD.float32x4.store(out, 8, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b2, 3, 3, 3, 3), a3)))));
-            SIMD.float32x4.store(out, 12, SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 0, 0, 0, 0), a0), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 1, 1, 1, 1), a1), SIMD.float32x4.add(SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 2, 2, 2, 2), a2), SIMD.float32x4.mul(SIMD.float32x4.swizzle(b3, 3, 3, 3, 3), a3)))));
         };
         Matrix.OrthoLH = function (width, height, znear, zfar) {
             var matrix = Matrix.Zero();
@@ -2101,6 +2058,19 @@ var BABYLON;
             var cy = viewport.y;
             var viewportMatrix = Matrix.FromValues(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, zmax - zmin, 0, cx + cw / 2.0, ch / 2.0 + cy, zmin, 1);
             return world.multiply(view).multiply(projection).multiply(viewportMatrix);
+        };
+        Matrix.GetAsMatrix2x2 = function (matrix) {
+            return new Float32Array([
+                matrix.m[0], matrix.m[1],
+                matrix.m[4], matrix.m[5]
+            ]);
+        };
+        Matrix.GetAsMatrix3x3 = function (matrix) {
+            return new Float32Array([
+                matrix.m[0], matrix.m[1], matrix.m[2],
+                matrix.m[4], matrix.m[5], matrix.m[6],
+                matrix.m[8], matrix.m[9], matrix.m[10]
+            ]);
         };
         Matrix.Transpose = function (matrix) {
             var result = new Matrix();
@@ -2282,7 +2252,7 @@ var BABYLON;
             // Near
             frustumPlanes[0].normal.x = transform.m[3] + transform.m[2];
             frustumPlanes[0].normal.y = transform.m[7] + transform.m[6];
-            frustumPlanes[0].normal.z = transform.m[10] + transform.m[10];
+            frustumPlanes[0].normal.z = transform.m[11] + transform.m[10];
             frustumPlanes[0].d = transform.m[15] + transform.m[14];
             frustumPlanes[0].normalize();
             // Far
@@ -2330,20 +2300,24 @@ var BABYLON;
         Ray.prototype.intersectsBoxMinMax = function (minimum, maximum) {
             var d = 0.0;
             var maxValue = Number.MAX_VALUE;
+            var inv;
+            var min;
+            var max;
+            var temp;
             if (Math.abs(this.direction.x) < 0.0000001) {
                 if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
                     return false;
                 }
             }
             else {
-                var inv = 1.0 / this.direction.x;
-                var min = (minimum.x - this.origin.x) * inv;
-                var max = (maximum.x - this.origin.x) * inv;
+                inv = 1.0 / this.direction.x;
+                min = (minimum.x - this.origin.x) * inv;
+                max = (maximum.x - this.origin.x) * inv;
                 if (max === -Infinity) {
                     max = Infinity;
                 }
                 if (min > max) {
-                    var temp = min;
+                    temp = min;
                     min = max;
                     max = temp;
                 }
@@ -2724,7 +2698,13 @@ var BABYLON;
     })();
     BABYLON.Path2 = Path2;
     var Path3D = (function () {
-        function Path3D(path, firstNormal) {
+        /**
+        * new Path3D(path, normal, raw)
+        * path : an array of Vector3, the curve axis of the Path3D
+        * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        */
+        function Path3D(path, firstNormal, raw) {
             this.path = path;
             this._curve = new Array();
             this._distances = new Array();
@@ -2734,6 +2714,7 @@ var BABYLON;
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
             }
+            this._raw = raw || false;
             this._compute(firstNormal);
         }
         Path3D.prototype.getCurve = function () {
@@ -2765,22 +2746,30 @@ var BABYLON;
             var l = this._curve.length;
             // first and last tangents
             this._tangents[0] = this._getFirstNonNullVector(0);
-            this._tangents[0].normalize();
+            if (!this._raw) {
+                this._tangents[0].normalize();
+            }
             this._tangents[l - 1] = this._curve[l - 1].subtract(this._curve[l - 2]);
-            this._tangents[l - 1].normalize();
+            if (!this._raw) {
+                this._tangents[l - 1].normalize();
+            }
             // normals and binormals at first point : arbitrary vector with _normalVector()
             var tg0 = this._tangents[0];
             var pp0 = this._normalVector(this._curve[0], tg0, firstNormal);
             this._normals[0] = pp0;
-            this._normals[0].normalize();
+            if (!this._raw) {
+                this._normals[0].normalize();
+            }
             this._binormals[0] = Vector3.Cross(tg0, this._normals[0]);
-            this._binormals[0].normalize();
+            if (!this._raw) {
+                this._binormals[0].normalize();
+            }
             this._distances[0] = 0;
             // normals and binormals : next points
             var prev; // previous vector (segment)
             var cur; // current vector (segment)
             var curTang; // current tangent
-            var prevNorm; // previous normal
+            // previous normal
             var prevBinor; // previous binormal
             for (var i = 1; i < l; i++) {
                 // tangents
@@ -2794,12 +2783,15 @@ var BABYLON;
                 // normals and binormals
                 // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
                 curTang = this._tangents[i];
-                prevNorm = this._normals[i - 1];
                 prevBinor = this._binormals[i - 1];
                 this._normals[i] = Vector3.Cross(prevBinor, curTang);
-                this._normals[i].normalize();
+                if (!this._raw) {
+                    this._normals[i].normalize();
+                }
                 this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
-                this._binormals[i].normalize();
+                if (!this._raw) {
+                    this._binormals[i].normalize();
+                }
             }
         };
         // private function getFirstNonNullVector(index)
@@ -2807,7 +2799,7 @@ var BABYLON;
         Path3D.prototype._getFirstNonNullVector = function (index) {
             var i = 1;
             var nNVector = this._curve[index + i].subtract(this._curve[index]);
-            while (nNVector.length() == 0 && index + i + 1 < this._curve.length) {
+            while (nNVector.length() === 0 && index + i + 1 < this._curve.length) {
                 i++;
                 nNVector = this._curve[index + i].subtract(this._curve[index]);
             }
@@ -2818,7 +2810,7 @@ var BABYLON;
         Path3D.prototype._getLastNonNullVector = function (index) {
             var i = 1;
             var nLVector = this._curve[index].subtract(this._curve[index - i]);
-            while (nLVector.length() == 0 && index > i + 1) {
+            while (nLVector.length() === 0 && index > i + 1) {
                 i++;
                 nLVector = this._curve[index].subtract(this._curve[index - i]);
             }
@@ -2831,13 +2823,13 @@ var BABYLON;
             var normal0;
             if (va === undefined || va === null) {
                 var point;
-                if (vt.y !== 1) {
+                if (!BABYLON.Tools.WithinEpsilon(vt.y, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(0, -1, 0);
                 }
-                else if (vt.x !== 1) {
+                else if (!BABYLON.Tools.WithinEpsilon(vt.x, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(1, 0, 0);
                 }
-                else if (vt.z !== 1) {
+                else if (!BABYLON.Tools.WithinEpsilon(vt.z, 1, BABYLON.Engine.Epsilon)) {
                     point = new Vector3(0, 0, 1);
                 }
                 normal0 = Vector3.Cross(vt, point);
@@ -2948,67 +2940,4 @@ var BABYLON;
         return PositionNormalTextureVertex;
     })();
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
-    // SIMD
-    var previousMultiplyToArray = Matrix.prototype.multiplyToArray;
-    var previousInvertToRef = Matrix.prototype.invertToRef;
-    var previousLookAtLHToRef = Matrix.LookAtLHToRef;
-    var previousTransformCoordinatesToRef = Vector3.TransformCoordinatesToRef;
-    var previousTransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRef;
-    var SIMDHelper = (function () {
-        function SIMDHelper() {
-        }
-        Object.defineProperty(SIMDHelper, "IsEnabled", {
-            get: function () {
-                return SIMDHelper._isEnabled;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        SIMDHelper.DisableSIMD = function () {
-            // Replace functions
-            Matrix.prototype.multiplyToArray = previousMultiplyToArray;
-            Matrix.prototype.invertToRef = previousInvertToRef;
-            Matrix.LookAtLHToRef = previousLookAtLHToRef;
-            Vector3.TransformCoordinatesToRef = previousTransformCoordinatesToRef;
-            Vector3.TransformCoordinatesFromFloatsToRef = previousTransformCoordinatesFromFloatsToRef;
-            SIMDHelper._isEnabled = false;
-        };
-        SIMDHelper.EnableSIMD = function () {
-            if (window.SIMD === undefined) {
-                return;
-            }
-            // Replace functions
-            Matrix.prototype.multiplyToArray = Matrix.prototype.multiplyToArraySIMD;
-            Matrix.prototype.invertToRef = Matrix.prototype.invertToRefSIMD;
-            Matrix.LookAtLHToRef = Matrix.LookAtLHToRefSIMD;
-            Vector3.TransformCoordinatesToRef = Vector3.TransformCoordinatesToRefSIMD;
-            Vector3.TransformCoordinatesFromFloatsToRef = Vector3.TransformCoordinatesFromFloatsToRefSIMD;
-            Object.defineProperty(Vector3.prototype, "x", {
-                get: function () { return this._data[0]; },
-                set: function (value) {
-                    if (!this._data) {
-                        this._data = new Float32Array(3);
-                    }
-                    this._data[0] = value;
-                }
-            });
-            Object.defineProperty(Vector3.prototype, "y", {
-                get: function () { return this._data[1]; },
-                set: function (value) {
-                    this._data[1] = value;
-                }
-            });
-            Object.defineProperty(Vector3.prototype, "z", {
-                get: function () { return this._data[2]; },
-                set: function (value) {
-                    this._data[2] = value;
-                }
-            });
-            SIMDHelper._isEnabled = true;
-        };
-        SIMDHelper._isEnabled = false;
-        return SIMDHelper;
-    })();
-    BABYLON.SIMDHelper = SIMDHelper;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.math.js.map

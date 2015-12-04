@@ -89,6 +89,15 @@
     }
 
     export class MergeMeshesOptimization extends SceneOptimization {
+        static _UpdateSelectionTree = false;
+
+        public static get UpdateSelectionTree(): boolean {
+            return MergeMeshesOptimization._UpdateSelectionTree;
+        }
+
+        public static set UpdateSelectionTree(value: boolean) {
+            MergeMeshesOptimization._UpdateSelectionTree = value;
+        }
 
         private _canBeMerged = (abstractMesh: AbstractMesh): boolean => {
             if (!(abstractMesh instanceof Mesh)) {
@@ -109,10 +118,14 @@
                 return false;
             }
 
+            if (mesh.parent) {
+                return false;
+            }
+
             return true;
         }
 
-        public apply = (scene: Scene): boolean => {
+        public apply = (scene: Scene, updateSelectionTree?: boolean): boolean => {
 
             var globalPool = scene.meshes.slice(0);
             var globalLength = globalPool.length;
@@ -158,6 +171,15 @@
 
                 // Merge meshes
                 Mesh.MergeMeshes(currentPool);
+            }
+
+            if (updateSelectionTree != undefined) {
+                if (updateSelectionTree) {
+                    scene.createOrUpdateSelectionOctree();
+                }
+            }
+            else if (MergeMeshesOptimization.UpdateSelectionTree) {
+                scene.createOrUpdateSelectionOctree();
             }
 
             return true;

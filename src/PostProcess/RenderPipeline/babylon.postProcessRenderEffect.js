@@ -12,6 +12,18 @@ var BABYLON;
             this._renderPasses = {};
             this._renderEffectAsPasses = {};
         }
+        Object.defineProperty(PostProcessRenderEffect.prototype, "isSupported", {
+            get: function () {
+                for (var index in this._postProcesses) {
+                    if (!this._postProcesses[index].isSupported) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         PostProcessRenderEffect.prototype._update = function () {
             for (var renderPassName in this._renderPasses) {
                 this._renderPasses[renderPassName]._update();
@@ -138,4 +150,3 @@ var BABYLON;
     })();
     BABYLON.PostProcessRenderEffect = PostProcessRenderEffect;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.postProcessRenderEffect.js.map

@@ -3,6 +3,7 @@
         public lensFlares = new Array<LensFlare>();
         public borderLimit = 300;
         public meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        public layerMask: number = 0x0FFFFFFF;
 
         private _scene: Scene;
         private _emitter: any;
@@ -65,6 +66,10 @@
 
         public getEmitter(): any {
             return this._emitter;
+        }
+
+        public setEmitter(newEmitter: any): void {
+            this._emitter = newEmitter;
         }
 
         public getEmitterPosition(): Vector3 {
@@ -169,7 +174,7 @@
             engine.enableEffect(this._effect);
             engine.setState(false);
             engine.setDepthBuffer(false);
-            engine.setAlphaMode(Engine.ALPHA_ADD);
+            engine.setAlphaMode(Engine.ALPHA_ONEONE);
 
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
@@ -227,6 +232,41 @@
             // Remove from scene
             var index = this._scene.lensFlareSystems.indexOf(this);
             this._scene.lensFlareSystems.splice(index, 1);
+        }
+        
+        public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
+            var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
+
+            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
+
+            for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
+                var parsedFlare = parsedLensFlareSystem.flares[index];
+                var flare = new LensFlare(parsedFlare.size, parsedFlare.position, Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
+            }
+
+            return lensFlareSystem;
+        }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.emitterId = this.getEmitter().id;
+            serializationObject.borderLimit = this.borderLimit;
+
+            serializationObject.flares = [];
+            for (var index = 0; index < this.lensFlares.length; index++) {
+                var flare = this.lensFlares[index];
+
+                serializationObject.flares.push({
+                    size: flare.size,
+                    position: flare.position,
+                    color: flare.color.asArray(),
+                    textureName: Tools.GetFilename(flare.texture.name)
+                });
+            }
+
+            return serializationObject;
         }
     }
 } 

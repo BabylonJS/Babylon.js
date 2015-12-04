@@ -1,6 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
+﻿precision highp float;
 
 // samplers
 uniform sampler2D textureSampler;	// screen render

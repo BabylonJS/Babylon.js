@@ -118,13 +118,13 @@ BabylonCamera::BabylonCamera(BabylonNode& babnode)
 	if (!hasAnimStack){
 		return;
 	}
-	auto animStack = node->GetScene()->GetSrcObject<FbxAnimStack>(0);
+	auto animStack = node->GetScene()->GetCurrentAnimationStack();
 	FbxString animStackName = animStack->GetName();
-	FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
+	//FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
 	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
 	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
+	auto startFrame = animStack->GetLocalTimeSpan().GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = animStack->GetLocalTimeSpan().GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 
 	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"position", L"position", true, 0, static_cast<int>(animLengthInFrame), true);
@@ -168,6 +168,32 @@ BabylonCamera::BabylonCamera(BabylonNode& babnode)
 	}
 }
 
+
+BabylonCamera::BabylonCamera(BabylonCamera && moved) : 
+	name(std::move(moved.name)),
+	id(std::move(moved.id)),
+	parentId(std::move(moved.parentId)),
+	lockedTargetId(std::move(moved.lockedTargetId)),
+	type(std::move(moved.type)),
+	position(std::move(moved.position)),
+	rotationQuaternion(std::move(moved.rotationQuaternion)),
+	target(std::move(moved.target)),
+	fov(std::move(moved.fov)),
+	minZ(std::move(moved.minZ)),
+	maxZ(std::move(moved.maxZ)),
+	speed(std::move(moved.speed)),
+	inertia(std::move(moved.inertia)),
+	checkCollisions(std::move(moved.checkCollisions)),
+	applyGravity(std::move(moved.applyGravity)),
+	ellipsoid(std::move(moved.ellipsoid)),
+	autoAnimate(std::move(moved.autoAnimate)),
+	autoAnimateFrom(std::move(moved.autoAnimateFrom)),
+	autoAnimateTo(std::move(moved.autoAnimateTo)),
+	autoAnimateLoop(std::move(moved.autoAnimateLoop)),
+	animations(std::move(moved.animations)),
+	quatAnimations(std::move(moved.quatAnimations))
+{
+}
 
 BabylonCamera::~BabylonCamera()
 {

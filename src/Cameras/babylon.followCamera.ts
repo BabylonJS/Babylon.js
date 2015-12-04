@@ -59,6 +59,16 @@
             super._checkInputs();
             this.follow(this.target);
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+       
+            serializationObject.radius = this.radius;
+            serializationObject.heightOffset = this.heightOffset;
+            serializationObject.rotationOffset = this.rotationOffset;
+       
+            return serializationObject;
+        }
     }
 
     export class ArcFollowCamera extends TargetCamera {
@@ -82,6 +92,14 @@
         public _checkInputs(): void {
             super._checkInputs();
             this.follow();
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.radius = this.radius;
+
+            return serializationObject;
         }
     }
 }

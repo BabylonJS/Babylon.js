@@ -1,19 +1,17 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
     var LinesMesh = (function (_super) {
         __extends(LinesMesh, _super);
-        function LinesMesh(name, scene, updatable) {
-            if (updatable === void 0) { updatable = false; }
-            _super.call(this, name, scene);
+        function LinesMesh(name, scene, parent, source, doNotCloneChildren) {
+            if (parent === void 0) { parent = null; }
+            _super.call(this, name, scene, parent, source, doNotCloneChildren);
             this.color = new BABYLON.Color3(1, 1, 1);
             this.alpha = 1;
-            this._indices = new Array();
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", scene, "color", {
                 attributes: ["position"],
                 uniforms: ["worldViewProjection", "color"],
@@ -64,8 +62,10 @@ var BABYLON;
             this._colorShader.dispose();
             _super.prototype.dispose.call(this, doNotRecurse);
         };
+        LinesMesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
+            return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+        };
         return LinesMesh;
     })(BABYLON.Mesh);
     BABYLON.LinesMesh = LinesMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.linesMesh.js.map

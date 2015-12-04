@@ -38,9 +38,11 @@ var BABYLON;
                     this._strideSize = 4;
                     break;
                 case VertexBuffer.MatricesIndicesKind:
+                case VertexBuffer.MatricesIndicesExtraKind:
                     this._strideSize = 4;
                     break;
                 case VertexBuffer.MatricesWeightsKind:
+                case VertexBuffer.MatricesWeightsExtraKind:
                     this._strideSize = 4;
                     break;
             }
@@ -174,6 +176,20 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(VertexBuffer, "MatricesIndicesExtraKind", {
+            get: function () {
+                return VertexBuffer._MatricesIndicesExtraKind;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VertexBuffer, "MatricesWeightsExtraKind", {
+            get: function () {
+                return VertexBuffer._MatricesWeightsExtraKind;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Enums
         VertexBuffer._PositionKind = "position";
         VertexBuffer._NormalKind = "normal";
@@ -186,8 +202,9 @@ var BABYLON;
         VertexBuffer._ColorKind = "color";
         VertexBuffer._MatricesIndicesKind = "matricesIndices";
         VertexBuffer._MatricesWeightsKind = "matricesWeights";
+        VertexBuffer._MatricesIndicesExtraKind = "matricesIndicesExtra";
+        VertexBuffer._MatricesWeightsExtraKind = "matricesWeightsExtra";
         return VertexBuffer;
     })();
     BABYLON.VertexBuffer = VertexBuffer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.vertexBuffer.js.map

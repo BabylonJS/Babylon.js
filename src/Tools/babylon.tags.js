@@ -44,6 +44,9 @@ var BABYLON;
             if (!tagsString) {
                 return;
             }
+            if (typeof tagsString !== "string") {
+                return;
+            }
             var tags = tagsString.split(" ");
             for (var t in tags) {
                 Tags._AddTagTo(obj, tags[t]);
@@ -85,4 +88,3 @@ var BABYLON;
     })();
     BABYLON.Tags = Tags;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.tags.js.map

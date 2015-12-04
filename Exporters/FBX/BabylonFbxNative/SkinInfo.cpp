@@ -140,14 +140,13 @@ _node(meshNode), _mesh(meshNode->GetMesh()), _skin(nullptr)
 
 
 	// compute anim
-	auto animStack = _node->GetScene()->GetSrcObject<FbxAnimStack>(0);
+	auto animStack = _node->GetScene()->GetCurrentAnimationStack();
 	FbxString animStackName = animStack->GetName();
-	FbxTakeInfo* takeInfo = _node->GetScene()->GetTakeInfo(animStackName);
-
+	//FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
 	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
 	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
+	auto startFrame = animStack->GetLocalTimeSpan().GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = animStack->GetLocalTimeSpan().GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 
 
@@ -199,13 +198,13 @@ void SkinInfo::buildBabylonSkeleton(BabylonSkeleton& skel){
 		babbone.name = b.name;
 		babbone.parentBoneIndex = b.parentBoneIndex;
 
-		auto animStack = _node->GetScene()->GetSrcObject<FbxAnimStack>(0);
+		auto animStack = _node->GetScene()->GetCurrentAnimationStack();
 		FbxString animStackName = animStack->GetName();
-		FbxTakeInfo* takeInfo = _node->GetScene()->GetTakeInfo(animStackName);
+		//FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
 		auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
 		auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
-		auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
-		auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
+		auto startFrame = animStack->GetLocalTimeSpan().GetStart().GetFrameCount(animTimeMode);
+		auto endFrame = animStack->GetLocalTimeSpan().GetStop().GetFrameCount(animTimeMode);
 		auto animLengthInFrame = endFrame - startFrame + 1;
 
 		auto matrixAnim = std::make_shared<BabylonAnimation<FbxMatrix>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"_matrix", L"_matrix", true, 0, static_cast<int>(animLengthInFrame), true);

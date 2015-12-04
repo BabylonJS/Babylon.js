@@ -208,9 +208,9 @@ var BABYLON;
                 var bbox = _this._mesh.getBoundingInfo().boundingBox;
                 if (bbox.maximum.x - vPos.x < _this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > _this.boundingBoxEpsilon)
                     ++count;
-                if (bbox.maximum.y == vPos.y || vPos.y == bbox.minimum.y)
+                if (bbox.maximum.y === vPos.y || vPos.y === bbox.minimum.y)
                     ++count;
-                if (bbox.maximum.z == vPos.z || vPos.z == bbox.minimum.z)
+                if (bbox.maximum.z === vPos.z || vPos.z === bbox.minimum.z)
                     ++count;
                 if (count > 1) {
                     ++gCount;
@@ -271,7 +271,7 @@ var BABYLON;
                                         uniqueArray.push(deletedT);
                                     }
                                 });
-                                if (uniqueArray.length % 2 != 0) {
+                                if (uniqueArray.length % 2 !== 0) {
                                     continue;
                                 }
                                 v0.q = v1.q.add(v0.q);
@@ -337,7 +337,7 @@ var BABYLON;
                 var position = BABYLON.Vector3.FromArray(positionData, offset * 3);
                 var vertex = findInVertices(position) || new DecimationVertex(position, _this.vertices.length);
                 vertex.originalOffsets.push(offset);
-                if (vertex.id == _this.vertices.length) {
+                if (vertex.id === _this.vertices.length) {
                     _this.vertices.push(vertex);
                 }
                 vertexReferences.push(vertex.id);
@@ -403,10 +403,10 @@ var BABYLON;
                     newTriangles.push(t);
                 }
             }
-            var newPositionData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind) || [];
-            var newNormalData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind) || [];
-            var newUVsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.UVKind) || [];
-            var newColorsData = this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.ColorKind) || [];
+            var newPositionData = (this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind) || []);
+            var newNormalData = (this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.NormalKind) || []);
+            var newUVsData = (this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.UVKind) || []);
+            var newColorsData = (this._reconstructedMesh.getVerticesData(BABYLON.VertexBuffer.ColorKind) || []);
             var normalData = this._mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
             var uvs = this._mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
             var colorsData = this._mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
@@ -443,8 +443,7 @@ var BABYLON;
             var newIndicesArray = this._reconstructedMesh.getIndices(); //[];
             var originalIndices = this._mesh.getIndices();
             for (i = 0; i < newTriangles.length; ++i) {
-                var t = newTriangles[i];
-                //now get the new referencing point for each vertex
+                t = newTriangles[i]; //now get the new referencing point for each vertex
                 [0, 1, 2].forEach(function (idx) {
                     var id = originalIndices[t.originalOffset + idx];
                     var offset = t.vertices[idx].originalOffsets.indexOf(id);
@@ -466,9 +465,9 @@ var BABYLON;
             if (submeshIndex > 0) {
                 this._reconstructedMesh.subMeshes = [];
                 submeshesArray.forEach(function (submesh) {
-                    new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                    new BABYLON.SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, /* 0, newPositionData.length/3, */ submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
-                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+                var newSubmesh = new BABYLON.SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, /* 0, newPositionData.length / 3, */ startingIndex, newTriangles.length * 3, this._reconstructedMesh);
             }
         };
         QuadraticErrorSimplification.prototype.initDecimatedMesh = function () {
@@ -656,4 +655,3 @@ var BABYLON;
     })();
     BABYLON.QuadraticErrorSimplification = QuadraticErrorSimplification;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.meshSimplification.js.map

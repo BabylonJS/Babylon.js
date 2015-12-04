@@ -16,6 +16,7 @@
         public bv = 0;
         public faceId = -1;
         public subMeshId = 0;
+        public pickedSprite: Sprite = null;
 
         // Methods
         public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Vector3 {

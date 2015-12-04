@@ -7,6 +7,7 @@
 #include "BabylonLight.h"
 #include "BabylonSkeleton.h"
 #include <memory>
+#include "BabylonNode.h"
 
 class BabylonScene
 {
@@ -83,6 +84,11 @@ public:
 	web::json::value toJson() ;
 
 	BabylonScene();
+	BabylonScene(BabylonNode& rootNode, bool skipEmptyNodes);
+	BabylonScene(const BabylonScene&) = default;
+	BabylonScene(BabylonScene&& moved);
 	~BabylonScene();
+private:
+	void exploreNodes(BabylonNode& node, bool skipEmptyNodes, std::map<FbxMesh*, size_t>& meshInstanceMap);
 };
 

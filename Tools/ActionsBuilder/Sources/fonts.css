@@ -1,0 +1,36 @@
+@font-face {
+    font-family: "Sinkin Sans Light";
+    src: url('fonts/SinkinSans/SinkinSans-300Light.ttf');
+    src: url('fonts/SinkinSans/SinkinSans-300Light.eot?#iefix') format('embedded-opentype'),
+        url('fonts/SinkinSans/SinkinSans-300Light.woff') format('woff'),
+        url('fonts/SinkinSans/SinkinSans-300Light.ttf') format('truetype'),
+        url('fonts/SinkinSans/SinkinSans-300Light.svg#segeoN') format('svg');
+}
+
+@font-face {
+    font-family: "Sinkin Sans Light Italic";
+    src: url('fonts/SinkinSans/SinkinSans-300LightItalic.ttf');
+    src: url('fonts/SinkinSans/SinkinSans-300LightItalic.eot?#iefix') format('embedded-opentype'),
+        url('fonts/SinkinSans/SinkinSans-300LightItalic.woff') format('woff'),
+        url('fonts/SinkinSans/SinkinSans-300LightItalic.ttf') format('truetype'),
+        url('fonts/SinkinSans/SinkinSans-300LightItalic.svg#segeoN') format('svg');
+}
+
+@font-face {
+    font-family: "Sinkin Sans Medium";
+    src: url('fonts/SinkinSans/SinkinSans-500Medium.ttf');
+    src: url('fonts/SinkinSans/SinkinSans-500Medium.eot?#iefix') format('embedded-opentype'),
+        url('fonts/SinkinSans/SinkinSans-500Medium.woff') format('woff'),
+        url('fonts/SinkinSans/SinkinSans-500Medium.ttf') format('truetype'),
+        url('fonts/SinkinSans/SinkinSans-500Medium.svg#segeoN') format('svg');
+}
+
+@font-face {
+    font-family: "Sinkin Sans Semi-Bold";
+    src: url('fonts/SinkinSans/SinkinSans-600SemiBold.ttf');
+    src: url('fonts/SinkinSans/SinkinSans-600SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('fonts/SinkinSans/SinkinSans-600SemiBold.woff') format('woff'),
+        url('fonts/SinkinSans/SinkinSans-600SemiBold.ttf') format('truetype'),
+        url('fonts/SinkinSans/SinkinSans-600SemiBold.svg#segeoN') format('svg');
+}
+
