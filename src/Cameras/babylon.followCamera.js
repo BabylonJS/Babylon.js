@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -56,6 +55,13 @@ var BABYLON;
             _super.prototype._checkInputs.call(this);
             this.follow(this.target);
         };
+        FollowCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.radius = this.radius;
+            serializationObject.heightOffset = this.heightOffset;
+            serializationObject.rotationOffset = this.rotationOffset;
+            return serializationObject;
+        };
         return FollowCamera;
     })(BABYLON.TargetCamera);
     BABYLON.FollowCamera = FollowCamera;
@@ -80,6 +86,11 @@ var BABYLON;
         ArcFollowCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
             this.follow();
+        };
+        ArcFollowCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.radius = this.radius;
+            return serializationObject;
         };
         return ArcFollowCamera;
     })(BABYLON.TargetCamera);

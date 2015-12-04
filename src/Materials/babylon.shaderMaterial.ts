@@ -25,6 +25,7 @@
             options.attributes = options.attributes || ["position", "normal", "uv"];
             options.uniforms = options.uniforms || ["worldViewProjection"];
             options.samplers = options.samplers || [];
+            options.defines = options.defines || [];
 
             this._options = options;
         }
@@ -139,12 +140,15 @@
                 defines.push("#define INSTANCES");
             }
 
+            for (var index = 0; index < this._options.defines.length; index++) {
+                defines.push(this._options.defines[index]);
+            }
+
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                defines.push("#define BONES");
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
-                defines.push("#define BONES4");
-                fallbacks.addFallback(0, "BONES4");
+                fallbacks.addCPUSkinningFallback(0, mesh);
             }
 
             // Alpha test

@@ -156,7 +156,7 @@
         }
 
         public detachControl(element: HTMLElement): void {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
 
@@ -189,12 +189,16 @@
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
+            //no need for clone, as long as gravity is not on.
+            var actualVelocity = velocity;
+			
             //add gravity to the velocity to prevent the dual-collision checking
             if (this.applyGravity) {
-                velocity.addInPlace(this.getScene().gravity);
+                //this prevents mending with cameraDirection, a global variable of the free camera class.
+                actualVelocity = velocity.add(this.getScene().gravity);
             }
 
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
 
         }
 
@@ -259,6 +263,16 @@
             } else {
                 this.position.addInPlace(this.cameraDirection);
             }
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.applyGravity = this.applyGravity;
+            serializationObject.ellipsoid = this.ellipsoid.asArray();
+
+            return serializationObject;
         }
     }
 } 

@@ -1,21 +1,20 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
     var VRDeviceOrientationFreeCamera = (function (_super) {
         __extends(VRDeviceOrientationFreeCamera, _super);
-        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistorsion) {
-            if (compensateDistorsion === void 0) { compensateDistorsion = true; }
+        function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion) {
+            if (compensateDistortion === void 0) { compensateDistortion = true; }
             _super.call(this, name, position, scene);
             this._alpha = 0;
             this._beta = 0;
             this._gamma = 0;
             var metrics = BABYLON.VRCameraMetrics.GetDefault();
-            metrics.compensateDistorsion = compensateDistorsion;
+            metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }

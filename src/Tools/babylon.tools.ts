@@ -1,4 +1,4 @@
-﻿module BABYLON {
+﻿﻿module BABYLON {
     export interface IAnimatable {
         animations: Array<Animation>;
     }
@@ -29,6 +29,29 @@
 
     export class Tools {
         public static BaseUrl = "";
+        public static CorsBehavior: any = "anonymous";
+
+        public static Instantiate(className: string): any {
+            var arr = className.split(".");
+
+            var fn = (window || this);
+            for (var i = 0, len = arr.length; i < len; i++) {
+                fn = fn[arr[i]];
+            }
+
+            if (typeof fn !== "function") {
+                return null;
+            }
+
+            return fn;
+        }
+
+        public static GetConstructorName(obj) {
+            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
+            var cname = str.match(/function\s(\w*)/)[1];
+            var aliases = ["", "anonymous", "Anonymous"];
+            return aliases.indexOf(cname) > -1 ? "Function" : cname;
+        }
 
         public static ToHex(i: number): string {
             var str = i.toString(16);
@@ -48,7 +71,7 @@
             }
         }
 
-        public static IsExponantOfTwo(value: number): boolean {
+        public static IsExponentOfTwo(value: number): boolean {
             var count = 1;
 
             do {
@@ -58,7 +81,7 @@
             return count === value;
         }
 
-        public static GetExponantOfTwo(value: number, max: number): number {
+        public static GetExponentOfTwo(value: number, max: number): number {
             var count = 1;
 
             do {
@@ -101,7 +124,36 @@
             return angle * Math.PI / 180;
         }
 
-        public static ExtractMinAndMaxIndexed(positions: number[], indices: number[], indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
+        public static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string {
+            var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            var output = "";
+            var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+            var i = 0;
+            var bytes = new Uint8Array(buffer);
+
+            while (i < bytes.length) {
+                chr1 = bytes[i++];
+                chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index 
+                chr3 = i < bytes.length ? bytes[i++] : Number.NaN; // checks are needed here
+
+                enc1 = chr1 >> 2;
+                enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                enc4 = chr3 & 63;
+
+                if (isNaN(chr2)) {
+                    enc3 = enc4 = 64;
+                } else if (isNaN(chr3)) {
+                    enc4 = 64;
+                }
+                output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+                keyStr.charAt(enc3) + keyStr.charAt(enc4);
+            }
+
+            return "data:image/png;base64," + output;
+        }
+
+        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[] | Int32Array, indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -118,7 +170,7 @@
             };
         }
 
-        public static ExtractMinAndMax(positions: number[], start: number, count: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -146,8 +198,8 @@
         public static GetPointerPrefix(): string {
             var eventPrefix = "pointer";
 
-            // Check if hand.js is referenced or if the browser natively supports pointer events
-            if (!navigator.pointerEnabled) {
+            // Check if pointer events are supported
+            if (!window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
 
@@ -202,13 +254,31 @@
             return url;
         }
 
-        public static LoadImage(url: string, onload, onerror, database): HTMLImageElement {
+        public static LoadImage(url: any, onload, onerror, database): HTMLImageElement {
+            if (url instanceof ArrayBuffer) {
+                url = Tools.EncodeArrayBufferTobase64(url);
+            }
+
             url = Tools.CleanUrl(url);
 
             var img = new Image();
 
-            if (url.substr(0, 5) !== "data:")
-                img.crossOrigin = 'anonymous';
+            if (url.substr(0, 5) !== "data:") {
+                if (Tools.CorsBehavior) {
+                    switch (typeof (Tools.CorsBehavior)) {
+                        case "function":
+                            var result = Tools.CorsBehavior(url);
+                            if (result) {
+                                img.crossOrigin = result;
+                            }
+                            break;
+                        case "string":
+                        default:
+                            img.crossOrigin = Tools.CorsBehavior;
+                            break;
+                    }
+                }
+            }
 
             img.onload = () => {
                 onload(img);
@@ -325,7 +395,7 @@
             var reader = new FileReader();
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
-                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: []}));
+                callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
             };
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
@@ -339,6 +409,14 @@
             else {
                 reader.readAsArrayBuffer(fileToLoad);
             }
+        }
+
+        //returns a downloadable url to a file content.
+        public static FileAsURL(content: string): string {
+            var fileBlob = new Blob([content]);
+            var url = window.URL || window.webkitURL;
+            var link: string = url.createObjectURL(fileBlob);
+            return link;
         }
 
         // Misc.   
@@ -462,7 +540,7 @@
             }
         }
 
-        public static DumpFramebuffer(width: number, height: number, engine: Engine): void {
+        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: String) => void): void {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -494,47 +572,43 @@
             // Copy the pixels to a 2D canvas
             var imageData = context.createImageData(width, height);
             //cast is due to ts error in lib.d.ts, see here - https://github.com/Microsoft/TypeScript/issues/949
-            var castData = <Uint8Array> (<any> imageData.data);
+            var castData = <Uint8Array>(<any>imageData.data);
             castData.set(data);
             context.putImageData(imageData, 0, 0);
 
             var base64Image = screenshotCanvas.toDataURL();
 
-            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-            if (("download" in document.createElement("a"))) {
-                var a = window.document.createElement("a");
-                a.href = base64Image;
-                var date = new Date();
-                var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                a.setAttribute("download", "screenshot-" + stringDate + ".png");
-
-                window.document.body.appendChild(a);
-
-                a.addEventListener("click",() => {
-                    a.parentElement.removeChild(a);
-                });
-                a.click();
-
-                //Or opening a new tab with the image if it is not possible to automatically start download.
+            if (successCallback) {
+                successCallback(base64Image);
             } else {
-                var newWindow = window.open("");
-                var img = newWindow.document.createElement("img");
-                img.src = base64Image;
-                newWindow.document.body.appendChild(img);
+                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                if (("download" in document.createElement("a"))) {
+                    var a = window.document.createElement("a");
+                    a.href = base64Image;
+                    var date = new Date();
+                    var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                    a.setAttribute("download", "screenshot_" + stringDate + ".png");
+
+                    window.document.body.appendChild(a);
+
+                    a.addEventListener("click", () => {
+                        a.parentElement.removeChild(a);
+                    });
+                    a.click();
+
+                    //Or opening a new tab with the image if it is not possible to automatically start download.
+                } else {
+                    var newWindow = window.open("");
+                    var img = newWindow.document.createElement("img");
+                    img.src = base64Image;
+                    newWindow.document.body.appendChild(img);
+                }
             }
         }
 
-        public static CreateScreenshot(engine: Engine, camera: Camera, size: any): void {
+        public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: String) => void): void {
             var width: number;
             var height: number;
-
-            var scene = camera.getScene();
-            var previousCamera: Camera = null;
-
-            if (scene.activeCamera !== camera) {
-                previousCamera = scene.activeCamera;
-                scene.activeCamera = camera;
-            }
 
             //If a precision value is specified
             if (size.precision) {
@@ -568,12 +642,20 @@
                 return;
             }
 
+            var scene = camera.getScene();
+            var previousCamera: Camera = null;
+
+            if (scene.activeCamera !== camera) {
+                previousCamera = scene.activeCamera;
+                scene.activeCamera = camera;
+            }
+
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false);
             texture.renderList = scene.meshes;
 
             texture.onAfterRender = () => {
-                Tools.DumpFramebuffer(width, height, engine);
+                Tools.DumpFramebuffer(width, height, engine, successCallback);
             };
 
             scene.incrementRenderId();
@@ -835,15 +917,6 @@
 
             return new Date().getTime();
         }
-
-        // Deprecated
-
-        public static GetFps(): number {
-            Tools.Warn("Tools.GetFps() is deprecated. Please use engine.getFps() instead");
-            return 0;
-        }
-
-
     }
 
     /**
@@ -910,7 +983,7 @@
          * @constructor
          */
         public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0) {
-            AsyncLoop.Run(Math.ceil(iterations / syncedIterations),(loop: AsyncLoop) => {
+            AsyncLoop.Run(Math.ceil(iterations / syncedIterations), (loop: AsyncLoop) => {
                 if (breakFunction && breakFunction()) loop.breakLoop();
                 else {
                     setTimeout(() => {
@@ -930,3 +1003,4 @@
         }
     }
 } 
+

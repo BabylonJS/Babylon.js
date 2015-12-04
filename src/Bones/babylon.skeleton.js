@@ -7,6 +7,7 @@ var BABYLON;
             this.bones = new Array();
             this._isDirty = true;
             this._identity = BABYLON.Matrix.Identity();
+            this._ranges = new Array();
             this.bones = [];
             this._scene = scene;
             scene.skeletons.push(this);
@@ -22,6 +23,32 @@ var BABYLON;
             return this._scene;
         };
         // Methods
+        Skeleton.prototype.createAnimationRange = function (name, from, to) {
+            this._ranges.push(new BABYLON.AnimationRange(name, from, to));
+        };
+        Skeleton.prototype.deleteAnimationRange = function (name) {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    this._ranges.splice(index, 1);
+                    return;
+                }
+            }
+        };
+        Skeleton.prototype.getAnimationRange = function (name) {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    return this._ranges[index];
+                }
+            }
+            return null;
+        };
+        Skeleton.prototype.beginAnimation = function (name, loop, speedRatio, onAnimationEnd) {
+            var range = this.getAnimationRange(name);
+            if (!range) {
+                return null;
+            }
+            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        };
         Skeleton.prototype._markAsDirty = function () {
             this._isDirty = true;
         };
@@ -69,6 +96,46 @@ var BABYLON;
                 BABYLON.Tools.DeepCopy(source.animations, bone.animations);
             }
             return result;
+        };
+        Skeleton.prototype.dispose = function () {
+            // Animations
+            this.getScene().stopAnimation(this);
+            // Remove from scene
+            this.getScene().removeSkeleton(this);
+        };
+        Skeleton.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.bones = [];
+            for (var index = 0; index < this.bones.length; index++) {
+                var bone = this.bones[index];
+                var serializedBone = {
+                    parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
+                    name: bone.name,
+                    matrix: bone.getLocalMatrix().toArray()
+                };
+                serializationObject.bones.push(serializedBone);
+                if (bone.animations && bone.animations.length > 0) {
+                    serializedBone.animation = bone.animations[0].serialize();
+                }
+            }
+            return serializationObject;
+        };
+        Skeleton.Parse = function (parsedSkeleton, scene) {
+            var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+            for (var index = 0; index < parsedSkeleton.bones.length; index++) {
+                var parsedBone = parsedSkeleton.bones[index];
+                var parentBone = null;
+                if (parsedBone.parentBoneIndex > -1) {
+                    parentBone = skeleton.bones[parsedBone.parentBoneIndex];
+                }
+                var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
+                if (parsedBone.animation) {
+                    bone.animations.push(BABYLON.Animation.Parse(parsedBone.animation));
+                }
+            }
+            return skeleton;
         };
         return Skeleton;
     })();

@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -30,6 +29,13 @@ var BABYLON;
                 this._worldMatrix = BABYLON.Matrix.Identity();
             }
             return this._worldMatrix;
+        };
+        HemisphericLight.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = 3;
+            serializationObject.direction = this.direction.asArray();
+            serializationObject.groundColor = this.groundColor.asArray();
+            return serializationObject;
         };
         return HemisphericLight;
     })(BABYLON.Light);

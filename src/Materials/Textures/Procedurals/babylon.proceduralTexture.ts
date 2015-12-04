@@ -2,6 +2,7 @@
     export class ProceduralTexture extends Texture {
         private _size: number;
         public _generateMipMaps: boolean;
+        public isEnabled = true;
         private _doNotChangeAspectRatio: boolean;
         private _currentRefreshId = -1;
         private _refreshRate = 1;
@@ -133,7 +134,7 @@
         }
 
         public _shouldRender(): boolean {
-            if (!this.isReady() || !this._texture) {
+            if (!this.isEnabled || !this.isReady() || !this._texture) {
                 return false;
             }
 

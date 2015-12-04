@@ -191,7 +191,7 @@
         }
 
         public _setReady(state: boolean): void {
-            if (state == this._isReady) {
+            if (state === this._isReady) {
                 return;
             }
 
@@ -204,6 +204,18 @@
             if (this.onReady) {
                 this.onReady(this);
             }
+        }
+
+        public getAnimationByName(name: string): Animation {
+            for (var i = 0; i < this.animations.length; i++) {
+                var animation = this.animations[i];
+
+                if (animation.name === name) {
+                    return animation;
+                }
+            }
+
+            return null;
         }
     }
 } 

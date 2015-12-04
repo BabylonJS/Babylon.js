@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -55,6 +54,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(InstancedMesh.prototype, "renderingGroupId", {
+            get: function () {
+                return this._sourceMesh.renderingGroupId;
+            },
+            enumerable: true,
+            configurable: true
+        });
         InstancedMesh.prototype.getTotalVertices = function () {
             return this._sourceMesh.getTotalVertices();
         };
@@ -65,8 +71,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        InstancedMesh.prototype.getVerticesData = function (kind) {
-            return this._sourceMesh.getVerticesData(kind);
+        InstancedMesh.prototype.getVerticesData = function (kind, copyWhenShared) {
+            return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         };
         InstancedMesh.prototype.isVerticesDataPresent = function (kind) {
             return this._sourceMesh.isVerticesDataPresent(kind);
@@ -82,11 +88,8 @@ var BABYLON;
             configurable: true
         });
         InstancedMesh.prototype.refreshBoundingInfo = function () {
-            var data = this._sourceMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-            if (data) {
-                var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this._sourceMesh.getTotalVertices());
-                this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
-            }
+            var meshBB = this._sourceMesh.getBoundingInfo();
+            this._boundingInfo = new BABYLON.BoundingInfo(meshBB.minimum.clone(), meshBB.maximum.clone());
             this._updateBoundingInfo();
         };
         InstancedMesh.prototype._preActivate = function () {

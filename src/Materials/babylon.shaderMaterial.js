@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -28,6 +27,7 @@ var BABYLON;
             options.attributes = options.attributes || ["position", "normal", "uv"];
             options.uniforms = options.uniforms || ["worldViewProjection"];
             options.samplers = options.samplers || [];
+            options.defines = options.defines || [];
             this._options = options;
         }
         ShaderMaterial.prototype.needAlphaBlending = function () {
@@ -112,12 +112,14 @@ var BABYLON;
             if (useInstances) {
                 defines.push("#define INSTANCES");
             }
+            for (var index = 0; index < this._options.defines.length; index++) {
+                defines.push(this._options.defines[index]);
+            }
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                defines.push("#define BONES");
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
-                defines.push("#define BONES4");
-                fallbacks.addFallback(0, "BONES4");
+                fallbacks.addCPUSkinningFallback(0, mesh);
             }
             // Alpha test
             if (engine.getAlphaTesting()) {

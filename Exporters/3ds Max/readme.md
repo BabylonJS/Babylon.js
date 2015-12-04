@@ -3,7 +3,7 @@
 
 This exporter is designed for 3ds Max 2013, 2015 and 2016 (Use 2015 version for 3dsMax 2016). You just have to unzip the content of the archive to [3ds max folder\bin\assemblies]
 
-**After unzipping DLLs, you may have to go through all files, right-click on them, select the Properties menu and click on Unblock button to remove security protection enforce by Windows**
+**Before extracting, please go to downloaded .zip properties and click Unblock button**
 
 If you right click on the scene, on a light, on a camera or on a mesh you fill have a [Babylon...] menu. 
 

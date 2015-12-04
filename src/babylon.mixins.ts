@@ -8,7 +8,6 @@ interface Window {
     IDBKeyRange(func: any): any;
     webkitIDBKeyRange(func: any): any;
     msIDBKeyRange(func: any): any;
-    URL: HTMLURL;
     webkitURL: HTMLURL;
     webkitRequestAnimationFrame(func: any): any;
     mozRequestAnimationFrame(func: any): any;
@@ -19,6 +18,7 @@ interface Window {
     SIMD: any;
     AudioContext: AudioContext;
     webkitAudioContext: AudioContext;
+    PointerEvent: any;
 }
 
 interface HTMLURL {
@@ -104,4 +104,8 @@ interface Navigator {
 interface Screen {
     orientation: string;
     mozOrientation: string;
+}
+
+interface HTMLMediaElement {
+    crossOrigin: string;
 }

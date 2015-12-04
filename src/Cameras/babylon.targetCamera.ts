@@ -29,6 +29,13 @@
             super(name, position, scene);
         }
 
+        public getFrontPosition(distance: number): Vector3 {
+            var direction = this.getTarget().subtract(this.position);
+            direction.normalize();
+            direction.scaleInPlace(distance);
+            return this.globalPosition.add(direction);
+        }
+
         public _getLockedTargetPosition(): Vector3 {
             if (!this.lockedTarget) {
                 return null;
@@ -288,6 +295,21 @@
             this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(Matrix.Translation(target.x, target.y, target.z));
 
             Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            serializationObject.speed = this.speed;
+
+            if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+
+            if (this.lockedTarget && this.lockedTarget.id) {
+                serializationObject.lockedTargetId = this.lockedTarget.id;
+            }
+
+            return serializationObject;
         }
     }
 } 

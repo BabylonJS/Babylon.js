@@ -1,5 +1,27 @@
 var BABYLON;
 (function (BABYLON) {
+    var AnimationRange = (function () {
+        function AnimationRange(name, from, to) {
+            this.name = name;
+            this.from = from;
+            this.to = to;
+        }
+        return AnimationRange;
+    })();
+    BABYLON.AnimationRange = AnimationRange;
+    /**
+     * Composed of a frame, and an action function
+     */
+    var AnimationEvent = (function () {
+        function AnimationEvent(frame, action, onlyOnce) {
+            this.frame = frame;
+            this.action = action;
+            this.onlyOnce = onlyOnce;
+            this.isDone = false;
+        }
+        return AnimationEvent;
+    })();
+    BABYLON.AnimationEvent = AnimationEvent;
     var Animation = (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode) {
             this.name = name;
@@ -10,11 +32,15 @@ var BABYLON;
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._stopped = false;
+            // The set of event that will be linked to this animation
+            this._events = new Array();
+            this.allowMatricesInterpolation = false;
+            this._ranges = new Array();
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
-        Animation.CreateAndStartAnimation = function (name, mesh, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction) {
+        Animation._PrepareAnimation = function (targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction) {
             var dataType = undefined;
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
                 dataType = Animation.ANIMATIONTYPE_FLOAT;
@@ -42,10 +68,55 @@ var BABYLON;
             if (easingFunction !== undefined) {
                 animation.setEasingFunction(easingFunction);
             }
-            mesh.animations.push(animation);
-            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
+            return animation;
         };
-        // Methods   
+        Animation.CreateAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
+            var animation = Animation._PrepareAnimation(targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        };
+        Animation.CreateMergeAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
+            var animation = Animation._PrepareAnimation(targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            node.animations.push(animation);
+            return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        };
+        // Methods
+        /**
+         * Add an event to this animation.
+         */
+        Animation.prototype.addEvent = function (event) {
+            this._events.push(event);
+        };
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        Animation.prototype.removeEvents = function (frame) {
+            for (var index = 0; index < this._events.length; index++) {
+                if (this._events[index].frame === frame) {
+                    this._events.splice(index, 1);
+                    index--;
+                }
+            }
+        };
+        Animation.prototype.createRange = function (name, from, to) {
+            this._ranges.push(new AnimationRange(name, from, to));
+        };
+        Animation.prototype.deleteRange = function (name) {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    this._ranges.splice(index, 1);
+                    return;
+                }
+            }
+        };
+        Animation.prototype.getRange = function (name) {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    return this._ranges[index];
+                }
+            }
+            return null;
+        };
         Animation.prototype.reset = function () {
             this._offsetsCache = {};
             this._highLimitsCache = {};
@@ -79,23 +150,13 @@ var BABYLON;
             return BABYLON.Color3.Lerp(startValue, endValue, gradient);
         };
         Animation.prototype.matrixInterpolateFunction = function (startValue, endValue, gradient) {
-            var startScale = new BABYLON.Vector3(0, 0, 0);
-            var startRotation = new BABYLON.Quaternion();
-            var startTranslation = new BABYLON.Vector3(0, 0, 0);
-            startValue.decompose(startScale, startRotation, startTranslation);
-            var endScale = new BABYLON.Vector3(0, 0, 0);
-            var endRotation = new BABYLON.Quaternion();
-            var endTranslation = new BABYLON.Vector3(0, 0, 0);
-            endValue.decompose(endScale, endRotation, endTranslation);
-            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
-            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
-            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
-            var result = BABYLON.Matrix.Compose(resultScale, resultRotation, resultTranslation);
-            return result;
+            return BABYLON.Matrix.Lerp(startValue, endValue, gradient);
         };
         Animation.prototype.clone = function () {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
-            clone.setKeys(this._keys);
+            if (this._keys) {
+                clone.setKeys(this._keys);
+            }
             return clone;
         };
         Animation.prototype.setKeys = function (values) {
@@ -187,7 +248,9 @@ var BABYLON;
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                // return this.matrixInterpolateFunction(startValue, endValue, gradient);
+                                    if (this.allowMatricesInterpolation) {
+                                        return this.matrixInterpolateFunction(startValue, endValue, gradient);
+                                    }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
                             }
@@ -198,6 +261,32 @@ var BABYLON;
                 }
             }
             return this._getKeyValue(this._keys[this._keys.length - 1].value);
+        };
+        Animation.prototype.setValue = function (currentValue) {
+            // Set value
+            if (this.targetPropertyPath.length > 1) {
+                var property = this._target[this.targetPropertyPath[0]];
+                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
+                    property = property[this.targetPropertyPath[index]];
+                }
+                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
+            }
+            else {
+                this._target[this.targetPropertyPath[0]] = currentValue;
+            }
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this.targetProperty);
+            }
+        };
+        Animation.prototype.goToFrame = function (frame) {
+            if (frame < this._keys[0].frame) {
+                frame = this._keys[0].frame;
+            }
+            else if (frame > this._keys[this._keys.length - 1].frame) {
+                frame = this._keys[this._keys.length - 1].frame;
+            }
+            var currentValue = this._interpolate(frame, 0, this.loopMode);
+            this.setValue(currentValue);
         };
         Animation.prototype.animate = function (delay, from, to, loop, speedRatio) {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
@@ -288,24 +377,59 @@ var BABYLON;
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
-            // Set value
-            if (this.targetPropertyPath.length > 1) {
-                var property = this._target[this.targetPropertyPath[0]];
-                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
-                    property = property[this.targetPropertyPath[index]];
+            // Check events
+            for (var index = 0; index < this._events.length; index++) {
+                if (currentFrame >= this._events[index].frame) {
+                    var event = this._events[index];
+                    if (!event.isDone) {
+                        // If event should be done only once, remove it.
+                        if (event.onlyOnce) {
+                            this._events.splice(index, 1);
+                            index--;
+                        }
+                        event.isDone = true;
+                        event.action();
+                    } // Don't do anything if the event has already be done.
                 }
-                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
+                else if (this._events[index].isDone && !this._events[index].onlyOnce) {
+                    // reset event, the animation is looping
+                    this._events[index].isDone = false;
+                }
             }
-            else {
-                this._target[this.targetPropertyPath[0]] = currentValue;
-            }
-            if (this._target.markAsDirty) {
-                this._target.markAsDirty(this.targetProperty);
-            }
+            // Set value
+            this.setValue(currentValue);
             if (!returnValue) {
                 this._stopped = true;
             }
             return returnValue;
+        };
+        Animation.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.property = this.targetProperty;
+            serializationObject.framePerSecond = this.framePerSecond;
+            serializationObject.dataType = this.dataType;
+            serializationObject.loopBehavior = this.loopMode;
+            var dataType = this.dataType;
+            serializationObject.keys = [];
+            var keys = this.getKeys();
+            for (var index = 0; index < keys.length; index++) {
+                var animationKey = keys[index];
+                var key = {};
+                key.frame = animationKey.frame;
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        key.values = [animationKey.value];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                        key.values = animationKey.value.asArray();
+                        break;
+                }
+                serializationObject.keys.push(key);
+            }
+            return serializationObject;
         };
         Object.defineProperty(Animation, "ANIMATIONTYPE_FLOAT", {
             get: function () {
@@ -370,6 +494,45 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Animation.Parse = function (parsedAnimation) {
+            var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+            var dataType = parsedAnimation.dataType;
+            var keys = [];
+            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+                var key = parsedAnimation.keys[index];
+                var data;
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        data = key.values[0];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        data = BABYLON.Quaternion.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                        data = BABYLON.Matrix.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    default:
+                        data = BABYLON.Vector3.FromArray(key.values);
+                        break;
+                }
+                keys.push({
+                    frame: key.frame,
+                    value: data
+                });
+            }
+            animation.setKeys(keys);
+            return animation;
+        };
+        Animation.AppendSerializedAnimations = function (source, destination) {
+            if (source.animations) {
+                destination.animations = [];
+                for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                    var animation = source.animations[animationIndex];
+                    destination.animations.push(animation.serialize());
+                }
+            }
+        };
         // Statics
         Animation._ANIMATIONTYPE_FLOAT = 0;
         Animation._ANIMATIONTYPE_VECTOR3 = 1;

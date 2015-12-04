@@ -8,6 +8,14 @@
 
         public shadowOrthoScale = 0.5;
 
+        public autoUpdateExtends = true;
+
+        // Cache
+        private _orthoLeft = Number.MAX_VALUE;
+        private _orthoRight = Number.MIN_VALUE;
+        private _orthoTop = Number.MIN_VALUE;
+        private _orthoBottom = Number.MAX_VALUE;
+
         constructor(name: string, public direction: Vector3, scene: Scene) {
             super(name, scene);
 
@@ -24,60 +32,70 @@
         }
 
         public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
-            var orthoLeft = Number.MAX_VALUE;
-            var orthoRight = Number.MIN_VALUE;
-            var orthoTop = Number.MIN_VALUE;
-            var orthoBottom = Number.MAX_VALUE;
-
-            var tempVector3 = Vector3.Zero();
-
             var activeCamera = this.getScene().activeCamera;
 
             // Check extends
-            for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
-                var mesh = renderList[meshIndex];
+            if (this.autoUpdateExtends || this._orthoLeft === Number.MAX_VALUE) {
+                var tempVector3 = Vector3.Zero();
 
-                if (!mesh) {
-                    continue;
-                }
+                this._orthoLeft = Number.MAX_VALUE;
+                this._orthoRight = Number.MIN_VALUE;
+                this._orthoTop = Number.MIN_VALUE;
+                this._orthoBottom = Number.MAX_VALUE;
 
-                var boundingInfo = mesh.getBoundingInfo();
+                for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
+                    var mesh = renderList[meshIndex];
 
-                if (!boundingInfo) {
-                    continue;
-                }
+                    if (!mesh) {
+                        continue;
+                    }
 
-                var boundingBox = boundingInfo.boundingBox;
+                    var boundingInfo = mesh.getBoundingInfo();
 
-                for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
-                    Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
+                    if (!boundingInfo) {
+                        continue;
+                    }
 
-                    if (tempVector3.x < orthoLeft)
-                        orthoLeft = tempVector3.x;
-                    if (tempVector3.y < orthoBottom)
-                        orthoBottom = tempVector3.y;
+                    var boundingBox = boundingInfo.boundingBox;
 
-                    if (tempVector3.x > orthoRight)
-                        orthoRight = tempVector3.x;
-                    if (tempVector3.y > orthoTop)
-                        orthoTop = tempVector3.y;
+                    for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
+                        Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
+
+                        if (tempVector3.x < this._orthoLeft)
+                            this._orthoLeft = tempVector3.x;
+                        if (tempVector3.y < this._orthoBottom)
+                            this._orthoBottom = tempVector3.y;
+
+                        if (tempVector3.x > this._orthoRight)
+                            this._orthoRight = tempVector3.x;
+                        if (tempVector3.y > this._orthoTop)
+                            this._orthoTop = tempVector3.y;
+                    }
                 }
             }
 
-            var xOffset = orthoRight - orthoLeft;
-            var yOffset = orthoTop - orthoBottom;
+            var xOffset = this._orthoRight - this._orthoLeft;
+            var yOffset = this._orthoTop - this._orthoBottom;
 
-            Matrix.OrthoOffCenterLHToRef(   orthoLeft - xOffset * this.shadowOrthoScale, orthoRight + xOffset * this.shadowOrthoScale,
-                                            orthoBottom - yOffset * this.shadowOrthoScale, orthoTop + yOffset * this.shadowOrthoScale,
-                                            -activeCamera.maxZ, activeCamera.maxZ, matrix);
+            Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
+                this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
+                -activeCamera.maxZ, activeCamera.maxZ, matrix);
         }
-        
+
         public supportsVSM(): boolean {
             return true;
         }
 
         public needRefreshPerFrame(): boolean {
             return true;
+        }
+
+        public needCube(): boolean {
+            return false;
+        }
+
+        public getShadowDirection(faceIndex?: number): Vector3 {
+            return this.direction;
         }
 
         public computeTransformedPosition(): boolean {
@@ -116,6 +134,15 @@
             Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
 
             return this._worldMatrix;
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            serializationObject.type = 1;
+            serializationObject.position = this.position.asArray();
+            serializationObject.direction = this.direction.asArray();
+
+            return serializationObject;
         }
     }
 }  

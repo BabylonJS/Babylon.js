@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -26,6 +25,12 @@ var BABYLON;
             this._lookAtTemp = BABYLON.Matrix.Zero();
             this._tempMatrix = BABYLON.Matrix.Zero();
         }
+        TargetCamera.prototype.getFrontPosition = function (distance) {
+            var direction = this.getTarget().subtract(this.position);
+            direction.normalize();
+            direction.scaleInPlace(distance);
+            return this.globalPosition.add(direction);
+        };
         TargetCamera.prototype._getLockedTargetPosition = function () {
             if (!this.lockedTarget) {
                 return null;
@@ -234,6 +239,17 @@ var BABYLON;
             BABYLON.Matrix.Translation(-target.x, -target.y, -target.z).multiplyToRef(BABYLON.Matrix.RotationY(halfSpace), this._rigCamTransformMatrix);
             this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
             BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
+        };
+        TargetCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.speed = this.speed;
+            if (this.rotation) {
+                serializationObject.rotation = this.rotation.asArray();
+            }
+            if (this.lockedTarget && this.lockedTarget.id) {
+                serializationObject.lockedTargetId = this.lockedTarget.id;
+            }
+            return serializationObject;
         };
         return TargetCamera;
     })(BABYLON.Camera);

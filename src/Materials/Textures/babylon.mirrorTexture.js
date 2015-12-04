@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -21,10 +20,12 @@ var BABYLON;
                 scene.setTransformMatrix(_this._transformMatrix, scene.getProjectionMatrix());
                 scene.clipPlane = _this.mirrorPlane;
                 scene.getEngine().cullBackFaces = false;
+                scene._mirroredCameraPosition = BABYLON.Vector3.TransformCoordinates(scene.activeCamera.position, _this._mirrorMatrix);
             };
             this.onAfterRender = function () {
                 scene.setTransformMatrix(_this._savedViewMatrix, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = true;
+                scene._mirroredCameraPosition = null;
                 delete scene.clipPlane;
             };
         }
@@ -38,6 +39,14 @@ var BABYLON;
             newTexture.mirrorPlane = this.mirrorPlane.clone();
             newTexture.renderList = this.renderList.slice(0);
             return newTexture;
+        };
+        MirrorTexture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.mirrorPlane = this.mirrorPlane.asArray();
+            return serializationObject;
         };
         return MirrorTexture;
     })(BABYLON.RenderTargetTexture);

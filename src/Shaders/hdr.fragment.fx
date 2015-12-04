@@ -1,6 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
+﻿precision highp float;
 
 uniform sampler2D textureSampler;
 varying vec2 vUV;
@@ -8,15 +6,16 @@ varying vec2 vUV;
 #if defined(GAUSSIAN_BLUR_H) || defined(GAUSSIAN_BLUR_V)
 uniform float blurOffsets[9];
 uniform float blurWeights[9];
+uniform float multiplier;
 
 void main(void) {
 	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
 
 	for (int i = 0; i < 9; i++) {
 		#ifdef GAUSSIAN_BLUR_H
-		color += (texture2D(textureSampler, vUV + vec2(blurOffsets[i], 0.0)) * blurWeights[i]);
+		color += (texture2D(textureSampler, vUV + vec2(blurOffsets[i] * multiplier, 0.0)) * blurWeights[i]);
 		#else
-		color += (texture2D(textureSampler, vUV + vec2(0.0, blurOffsets[i])) * blurWeights[i]);
+		color += (texture2D(textureSampler, vUV + vec2(0.0, blurOffsets[i] * multiplier)) * blurWeights[i]);
 		#endif
 	}
 
