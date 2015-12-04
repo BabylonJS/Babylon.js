@@ -175,6 +175,39 @@ namespace Unity3D2Babylon
                 ConvertUnityEmptyObjectToBabylon(gameObject);
             }
 
+            index = 0;
+            itemsCount = dicPrefabs.Count;
+
+            //Convert prefabs
+            foreach (KeyValuePair<GameObject, List<BabylonAbstractMesh>> pair in dicPrefabs)
+            {
+                var progress = ((float)index / itemsCount);
+                index++;
+
+                List<BabylonAbstractMesh> lstValue = pair.Value;
+                GameObject prefab = pair.Key;
+                BabylonAbstractMesh[] lstInstance = lstValue.ToArray();
+
+                // Static meshes
+                var meshFilter = prefab.GetComponent<MeshFilter>();
+                if (meshFilter != null)
+                {
+                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, prefab, progress, lstInstance);
+                    continue;
+                }
+
+                // Skinned meshes
+                var skinnedMesh = prefab.GetComponent<SkinnedMeshRenderer>();
+                if (skinnedMesh != null)
+                {
+                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, prefab, progress, lstInstance);
+                    continue;
+                }
+
+                // Empty
+                ConvertUnityEmptyObjectToBabylon(prefab, lstInstance);
+            }
+
             // Materials
             foreach (var mat in materialsDictionary)
             {
