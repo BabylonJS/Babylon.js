@@ -460,6 +460,8 @@
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
             serializationObject.maxSize = this.maxSize;
+            serializationObject.minEmitPower = this.minEmitPower;
+            serializationObject.maxEmitPower = this.maxEmitPower;
             serializationObject.minLifeTime = this.minLifeTime;
             serializationObject.maxLifeTime = this.maxLifeTime;
             serializationObject.emitRate = this.emitRate;
@@ -481,11 +483,17 @@
 
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
-
-            var particleSystem = new ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);
+            var name = "no-emitter";
+            if (emitter){
+                name = emitter.name;
+            }
+            var particleSystem = new ParticleSystem("particles#" + name, parsedParticleSystem.capacity, scene);
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
+            }
+            if (emitter) {
+                particleSystem.emitter = emitter;
             }
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
@@ -493,7 +501,8 @@
             particleSystem.maxSize = parsedParticleSystem.maxSize;
             particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
             particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
-            particleSystem.emitter = emitter;
+            particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;
+            particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
             particleSystem.emitRate = parsedParticleSystem.emitRate;
             particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
             particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
@@ -504,7 +513,7 @@
             particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
             particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
             particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
-            particleSystem.targetStopDuration = parsedParticleSystem.targetStopFrame;
+            particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
             particleSystem.start();
