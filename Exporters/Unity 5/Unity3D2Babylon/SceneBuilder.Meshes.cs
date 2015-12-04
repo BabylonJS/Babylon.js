@@ -6,6 +6,29 @@ namespace Unity3D2Babylon
 {
     partial class SceneBuilder
     {
+        private BabylonAbstractMesh ConvertUnityMeshToInstance(GameObject gameObject)
+        {
+            BabylonAbstractMesh babylonMesh = new BabylonAbstractMesh();
+
+            Transform transform = gameObject.transform;
+            babylonMesh.name = gameObject.name;
+            babylonMesh.position = new float[3];
+            babylonMesh.position[0] = transform.position.x;
+            babylonMesh.position[1] = transform.position.y;
+            babylonMesh.position[2] = transform.position.z;
+
+            babylonMesh.rotation = new float[3];
+            babylonMesh.rotation[0] = transform.rotation.eulerAngles.x * (float)Math.PI / 180;
+            babylonMesh.rotation[1] = transform.rotation.eulerAngles.y * (float)Math.PI / 180;
+            babylonMesh.rotation[2] = transform.rotation.eulerAngles.z * (float)Math.PI / 180;
+
+            babylonMesh.scaling = new float[3];
+            babylonMesh.scaling[0] = transform.localScale.x;
+            babylonMesh.scaling[1] = transform.localScale.y;
+            babylonMesh.scaling[2] = transform.localScale.z;
+            return babylonMesh;
+        }
+
         private void ConvertUnityEmptyObjectToBabylon(GameObject gameObject)
         {
             BabylonMesh babylonMesh = new BabylonMesh { name = gameObject.name, id = GetID(gameObject) };
