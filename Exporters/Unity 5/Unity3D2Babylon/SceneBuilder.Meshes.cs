@@ -43,6 +43,26 @@ namespace Unity3D2Babylon
                 babylonMesh.scaling = transform.localScale.ToFloat();
             };
 
+            Action SetTransformFromFirstInstance = () =>
+            {
+                BabylonAbstractMesh first = instances[0];
+
+                babylonMesh.position = new float[3];
+                babylonMesh.position[0] = first.position[0];
+                babylonMesh.position[1] = first.position[1];
+                babylonMesh.position[2] = first.position[2];
+
+                babylonMesh.rotation = new float[3];
+                babylonMesh.rotation[0] = first.rotation[0];
+                babylonMesh.rotation[1] = first.rotation[1];
+                babylonMesh.rotation[2] = first.rotation[2];
+
+                babylonMesh.scaling = new float[3];
+                babylonMesh.scaling[0] = first.scaling[0];
+                babylonMesh.scaling[1] = first.scaling[1];
+                babylonMesh.scaling[2] = first.scaling[2];
+            };
+
             //Check if this is a prefab
             if (instances != null)
             {
