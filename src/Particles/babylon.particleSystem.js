@@ -331,12 +331,16 @@ var BABYLON;
         };
         ParticleSystem.prototype.serialize = function () {
             var serializationObject = {};
-            serializationObject.emitterId = this.emitter.id;
+            serializationObject.name = this.name;
+            if (this.emittor.position) {
+                serializationObject.emitterId = this.emitter.id;
+            } else {
+                serializationObject.emitter = this.emitter.asArray();;
+            }
             serializationObject.capacity = this.getCapacity();
             if (this.particleTexture) {
                 serializationObject.textureName = this.particleTexture.name;
             }
-            serializationObject.name = this.name;
             serializationObject.minAngularSpeed = this.minAngularSpeed;
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
@@ -365,8 +369,11 @@ var BABYLON;
                 particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
-            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
-            particleSystem.emitter = emitter ? emitter : BABYLON.Vector3.Zero();
+            if (parsedParticleSystem.emitterId) {
+                particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            } else {
+                particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
+            }
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
