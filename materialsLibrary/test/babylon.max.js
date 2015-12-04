@@ -4034,10 +4034,10 @@ var BABYLON;
         // Misc.
         Tools.GetPointerPrefix = function () {
             var eventPrefix = "pointer";
-            // Check if hand.js is referenced or if the browser natively supports pointer events
-            //if (!navigator.pointerEnabled) {
-            //    eventPrefix = "mouse";
-            //}
+            // Check if pointer events are supported
+            if (!window.PointerEvent && !navigator.pointerEnabled) {
+                eventPrefix = "mouse";
+            }
             return eventPrefix;
         };
         Tools.QueueNewFrame = function (func) {
@@ -11275,7 +11275,7 @@ var BABYLON;
                     _this._previousPosition.copyFrom(_this.position);
                 }
                 else {
-                    _this.setPosition(_this.position);
+                    _this.setPosition(newPosition);
                     if (_this.onCollide) {
                         _this.onCollide(collidedMesh);
                     }
@@ -12818,6 +12818,38 @@ var BABYLON;
             return null;
         };
         /**
+         * get a bone using its id
+         * @param {string} the bone's id
+         * @return {BABYLON.Bone|null} the bone or null if not found
+         */
+        Scene.prototype.getBoneByID = function (id) {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].id === id) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+            return null;
+        };
+        /**
+        * get a bone using its id
+        * @param {string} the bone's name
+        * @return {BABYLON.Bone|null} the bone or null if not found
+        */
+        Scene.prototype.getBoneByName = function (name) {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].name === name) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+            return null;
+        };
+        /**
          * get a light node using its name
          * @param {string} the light's name
          * @return {BABYLON.Light|null} the light or null if none found.
@@ -12980,7 +13012,12 @@ var BABYLON;
             if (light) {
                 return light;
             }
-            return this.getCameraByID(id);
+            var camera = this.getCameraByID(id);
+            if (camera) {
+                return camera;
+            }
+            var bone = this.getBoneByID(id);
+            return bone;
         };
         Scene.prototype.getNodeByName = function (name) {
             var mesh = this.getMeshByName(name);
@@ -12991,7 +13028,12 @@ var BABYLON;
             if (light) {
                 return light;
             }
-            return this.getCameraByName(name);
+            var camera = this.getCameraByName(name);
+            if (camera) {
+                return camera;
+            }
+            var bone = this.getBoneByName(name);
+            return bone;
         };
         Scene.prototype.getMeshByName = function (name) {
             for (var index = 0; index < this.meshes.length; index++) {
@@ -14216,6 +14258,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(InstancedMesh.prototype, "renderingGroupId", {
+            get: function () {
+                return this._sourceMesh.renderingGroupId;
+            },
+            enumerable: true,
+            configurable: true
+        });
         InstancedMesh.prototype.getTotalVertices = function () {
             return this._sourceMesh.getTotalVertices();
         };
@@ -14226,8 +14275,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        InstancedMesh.prototype.getVerticesData = function (kind) {
-            return this._sourceMesh.getVerticesData(kind);
+        InstancedMesh.prototype.getVerticesData = function (kind, copyWhenShared) {
+            return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         };
         InstancedMesh.prototype.isVerticesDataPresent = function (kind) {
             return this._sourceMesh.isVerticesDataPresent(kind);
@@ -15572,6 +15621,14 @@ var BABYLON;
         };
         // Cylinder and cone
         Mesh.CreateCylinder = function (name, height, diameterTop, diameterBottom, tessellation, subdivisions, scene, updatable, sideOrientation) {
+            if (scene === undefined || !(scene instanceof BABYLON.Scene)) {
+                if (scene !== undefined) {
+                    sideOrientation = updatable || Mesh.DEFAULTSIDE;
+                    updatable = scene;
+                }
+                scene = subdivisions;
+                subdivisions = 1;
+            }
             var options = {
                 height: height,
                 diameterTop: diameterTop,
@@ -16891,6 +16948,8 @@ var BABYLON;
             if (this._texture === undefined) {
                 return;
             }
+            // Release
+            this.releaseInternalTexture();
             // Callback
             if (this.onDispose) {
                 this.onDispose();
@@ -17402,6 +17461,9 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+            }
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
@@ -17444,6 +17506,9 @@ var BABYLON;
             }
             if (this.onAfterUnbind) {
                 this.onAfterUnbind();
+            }
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
             scene.resetCachedMaterial();
         };
@@ -18755,6 +18820,8 @@ var BABYLON;
             serializationObject.id = this.id;
             serializationObject.tags = BABYLON.Tags.GetTags(this);
             serializationObject.backFaceCulling = this.backFaceCulling;
+            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
+            serializationObject.disableDepthWrite = this.disableDepthWrite;
             return serializationObject;
         };
         Material.ParseMultiMaterial = function (parsedMultiMaterial, scene) {
@@ -19490,51 +19557,53 @@ var BABYLON;
                         this._effect.setColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
                     }
                 }
-                // Textures        
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    this._effect.setTexture("diffuseSampler", this.diffuseTexture);
-                    this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                    this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
-                }
-                if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                    this._effect.setTexture("ambientSampler", this.ambientTexture);
-                    this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
-                    this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
-                }
-                if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                    this._effect.setTexture("opacitySampler", this.opacityTexture);
-                    this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
-                    this._effect.setMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
-                }
-                if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                    if (this.reflectionTexture.isCube) {
-                        this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
+                // Textures     
+                if (scene.texturesEnabled) {
+                    if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
+                        this._effect.setTexture("diffuseSampler", this.diffuseTexture);
+                        this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
+                        this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
                     }
-                    else {
-                        this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
+                    if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
+                        this._effect.setTexture("ambientSampler", this.ambientTexture);
+                        this._effect.setFloat2("vAmbientInfos", this.ambientTexture.coordinatesIndex, this.ambientTexture.level);
+                        this._effect.setMatrix("ambientMatrix", this.ambientTexture.getTextureMatrix());
                     }
-                    this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
-                    this._effect.setFloat2("vReflectionInfos", this.reflectionTexture.level, this.roughness);
-                }
-                if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                    this._effect.setTexture("emissiveSampler", this.emissiveTexture);
-                    this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
-                    this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
-                }
-                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
-                    this._effect.setTexture("lightmapSampler", this.lightmapTexture);
-                    this._effect.setFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
-                    this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
-                }
-                if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
-                    this._effect.setTexture("specularSampler", this.specularTexture);
-                    this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
-                    this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
-                }
-                if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
-                    this._effect.setTexture("bumpSampler", this.bumpTexture);
-                    this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
-                    this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+                    if (this.opacityTexture && StandardMaterial.OpacityTextureEnabled) {
+                        this._effect.setTexture("opacitySampler", this.opacityTexture);
+                        this._effect.setFloat2("vOpacityInfos", this.opacityTexture.coordinatesIndex, this.opacityTexture.level);
+                        this._effect.setMatrix("opacityMatrix", this.opacityTexture.getTextureMatrix());
+                    }
+                    if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        if (this.reflectionTexture.isCube) {
+                            this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
+                        }
+                        else {
+                            this._effect.setTexture("reflection2DSampler", this.reflectionTexture);
+                        }
+                        this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
+                        this._effect.setFloat2("vReflectionInfos", this.reflectionTexture.level, this.roughness);
+                    }
+                    if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
+                        this._effect.setTexture("emissiveSampler", this.emissiveTexture);
+                        this._effect.setFloat2("vEmissiveInfos", this.emissiveTexture.coordinatesIndex, this.emissiveTexture.level);
+                        this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
+                    }
+                    if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                        this._effect.setTexture("lightmapSampler", this.lightmapTexture);
+                        this._effect.setFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
+                        this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
+                    }
+                    if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
+                        this._effect.setTexture("specularSampler", this.specularTexture);
+                        this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
+                        this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
+                    }
+                    if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
+                        this._effect.setTexture("bumpSampler", this.bumpTexture);
+                        this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
+                        this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+                    }
                 }
                 // Clip plane
                 if (scene.clipPlane) {
@@ -19838,10 +19907,16 @@ var BABYLON;
             }
             return true;
         };
-        MultiMaterial.prototype.clone = function (name) {
+        MultiMaterial.prototype.clone = function (name, cloneChildren) {
             var newMultiMaterial = new MultiMaterial(name, this.getScene());
             for (var index = 0; index < this.subMaterials.length; index++) {
-                var subMaterial = this.subMaterials[index];
+                var subMaterial = null;
+                if (cloneChildren) {
+                    subMaterial = this.subMaterials[index].clone(name + "-" + this.subMaterials[index].name);
+                }
+                else {
+                    subMaterial = this.subMaterials[index];
+                }
                 newMultiMaterial.subMaterials.push(subMaterial);
             }
             return newMultiMaterial;
@@ -20050,7 +20125,7 @@ var BABYLON;
     var Internals;
     (function (Internals) {
         var parseMaterialById = function (id, parsedData, scene, rootUrl) {
-            for (var index = 0; index < parsedData.materials.length; index++) {
+            for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
                 var parsedMaterial = parsedData.materials[index];
                 if (parsedMaterial.id === id) {
                     return BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
@@ -20080,7 +20155,8 @@ var BABYLON;
                 var loadedMaterialsIds = [];
                 var hierarchyIds = [];
                 var index;
-                for (index = 0; index < parsedData.meshes.length; index++) {
+                var cache;
+                for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                     var parsedMesh = parsedData.meshes[index];
                     if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
                         if (meshesNames instanceof Array) {
@@ -20140,16 +20216,16 @@ var BABYLON;
                         if (parsedMesh.materialId) {
                             var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
                             if (!materialFound && parsedData.multiMaterials) {
-                                for (var multimatIndex = 0; multimatIndex < parsedData.multiMaterials.length; multimatIndex++) {
+                                for (var multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
                                     var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
                                     if (parsedMultiMaterial.id === parsedMesh.materialId) {
-                                        for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
+                                        for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
                                             var subMatId = parsedMultiMaterial.materials[matIndex];
                                             loadedMaterialsIds.push(subMatId);
                                             parseMaterialById(subMatId, parsedData, scene, rootUrl);
                                         }
                                         loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                        parsedMultiMaterial.Parse(parsedMultiMaterial, scene);
+                                        BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
                                         materialFound = true;
                                         break;
                                     }
@@ -20166,7 +20242,7 @@ var BABYLON;
                         if (parsedMesh.skeletonId > -1 && scene.skeletons) {
                             var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
                             if (!skeletonAlreadyLoaded) {
-                                for (var skeletonIndex = 0; skeletonIndex < parsedData.skeletons.length; skeletonIndex++) {
+                                for (var skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
                                     var parsedSkeleton = parsedData.skeletons[skeletonIndex];
                                     if (parsedSkeleton.id === parsedMesh.skeletonId) {
                                         skeletons.push(BABYLON.Skeleton.Parse(parsedSkeleton, scene));
@@ -20181,7 +20257,7 @@ var BABYLON;
                 }
                 // Connecting parents
                 var currentMesh;
-                for (index = 0; index < scene.meshes.length; index++) {
+                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
                         currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
@@ -20189,7 +20265,7 @@ var BABYLON;
                     }
                 }
                 // freeze world matrix application
-                for (index = 0; index < scene.meshes.length; index++) {
+                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingFreezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
@@ -20198,7 +20274,7 @@ var BABYLON;
                 }
                 // Particles
                 if (parsedData.particleSystems) {
-                    for (index = 0; index < parsedData.particleSystems.length; index++) {
+                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
                         if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
                             particleSystems.push(BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl));
@@ -20243,28 +20319,29 @@ var BABYLON;
                     scene.collisionsEnabled = parsedData.collisionsEnabled;
                 }
                 scene.workerCollisions = !!parsedData.workerCollisions;
-                // Lights
                 var index;
-                for (index = 0; index < parsedData.lights.length; index++) {
+                var cache;
+                // Lights
+                for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
                     var parsedLight = parsedData.lights[index];
                     BABYLON.Light.Parse(parsedLight, scene);
                 }
                 // Materials
                 if (parsedData.materials) {
-                    for (index = 0; index < parsedData.materials.length; index++) {
+                    for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
                         var parsedMaterial = parsedData.materials[index];
                         BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
                     }
                 }
                 if (parsedData.multiMaterials) {
-                    for (index = 0; index < parsedData.multiMaterials.length; index++) {
+                    for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
                         var parsedMultiMaterial = parsedData.multiMaterials[index];
                         BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
                     }
                 }
                 // Skeletons
                 if (parsedData.skeletons) {
-                    for (index = 0; index < parsedData.skeletons.length; index++) {
+                    for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
                         var parsedSkeleton = parsedData.skeletons[index];
                         BABYLON.Skeleton.Parse(parsedSkeleton, scene);
                     }
@@ -20275,7 +20352,7 @@ var BABYLON;
                     // Boxes
                     var boxes = geometries.boxes;
                     if (boxes) {
-                        for (index = 0; index < boxes.length; index++) {
+                        for (index = 0, cache = boxes.length; index < cache; index++) {
                             var parsedBox = boxes[index];
                             BABYLON.Geometry.Primitives.Box.Parse(parsedBox, scene);
                         }
@@ -20283,7 +20360,7 @@ var BABYLON;
                     // Spheres
                     var spheres = geometries.spheres;
                     if (spheres) {
-                        for (index = 0; index < spheres.length; index++) {
+                        for (index = 0, cache = spheres.length; index < cache; index++) {
                             var parsedSphere = spheres[index];
                             BABYLON.Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
                         }
@@ -20291,7 +20368,7 @@ var BABYLON;
                     // Cylinders
                     var cylinders = geometries.cylinders;
                     if (cylinders) {
-                        for (index = 0; index < cylinders.length; index++) {
+                        for (index = 0, cache = cylinders.length; index < cache; index++) {
                             var parsedCylinder = cylinders[index];
                             BABYLON.Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
                         }
@@ -20299,7 +20376,7 @@ var BABYLON;
                     // Toruses
                     var toruses = geometries.toruses;
                     if (toruses) {
-                        for (index = 0; index < toruses.length; index++) {
+                        for (index = 0, cache = toruses.length; index < cache; index++) {
                             var parsedTorus = toruses[index];
                             BABYLON.Geometry.Primitives.Torus.Parse(parsedTorus, scene);
                         }
@@ -20307,7 +20384,7 @@ var BABYLON;
                     // Grounds
                     var grounds = geometries.grounds;
                     if (grounds) {
-                        for (index = 0; index < grounds.length; index++) {
+                        for (index = 0, cache = grounds.length; index < cache; index++) {
                             var parsedGround = grounds[index];
                             BABYLON.Geometry.Primitives.Ground.Parse(parsedGround, scene);
                         }
@@ -20315,7 +20392,7 @@ var BABYLON;
                     // Planes
                     var planes = geometries.planes;
                     if (planes) {
-                        for (index = 0; index < planes.length; index++) {
+                        for (index = 0, cache = planes.length; index < cache; index++) {
                             var parsedPlane = planes[index];
                             BABYLON.Geometry.Primitives.Plane.Parse(parsedPlane, scene);
                         }
@@ -20323,7 +20400,7 @@ var BABYLON;
                     // TorusKnots
                     var torusKnots = geometries.torusKnots;
                     if (torusKnots) {
-                        for (index = 0; index < torusKnots.length; index++) {
+                        for (index = 0, cache = torusKnots.length; index < cache; index++) {
                             var parsedTorusKnot = torusKnots[index];
                             BABYLON.Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
                         }
@@ -20331,19 +20408,19 @@ var BABYLON;
                     // VertexData
                     var vertexData = geometries.vertexData;
                     if (vertexData) {
-                        for (index = 0; index < vertexData.length; index++) {
+                        for (index = 0, cache = vertexData.length; index < cache; index++) {
                             var parsedVertexData = vertexData[index];
                             BABYLON.Geometry.Parse(parsedVertexData, scene, rootUrl);
                         }
                     }
                 }
                 // Meshes
-                for (index = 0; index < parsedData.meshes.length; index++) {
+                for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                     var parsedMesh = parsedData.meshes[index];
                     BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
                 }
                 // Cameras
-                for (index = 0; index < parsedData.cameras.length; index++) {
+                for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
                     var parsedCamera = parsedData.cameras[index];
                     BABYLON.Camera.Parse(parsedCamera, scene);
                 }
@@ -20351,14 +20428,14 @@ var BABYLON;
                     scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
                 // Browsing all the graph to connect the dots
-                for (index = 0; index < scene.cameras.length; index++) {
+                for (index = 0, cache = scene.cameras.length; index < cache; index++) {
                     var camera = scene.cameras[index];
                     if (camera._waitingParentId) {
                         camera.parent = scene.getLastEntryByID(camera._waitingParentId);
                         camera._waitingParentId = undefined;
                     }
                 }
-                for (index = 0; index < scene.lights.length; index++) {
+                for (index = 0, cache = scene.lights.length; index < cache; index++) {
                     var light = scene.lights[index];
                     if (light._waitingParentId) {
                         light.parent = scene.getLastEntryByID(light._waitingParentId);
@@ -20367,7 +20444,7 @@ var BABYLON;
                 }
                 // Sounds
                 if (BABYLON.AudioEngine && parsedData.sounds) {
-                    for (index = 0; index < parsedData.sounds.length; index++) {
+                    for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                             BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
@@ -20378,7 +20455,7 @@ var BABYLON;
                     }
                 }
                 // Connect parents & children and parse actions
-                for (index = 0; index < scene.meshes.length; index++) {
+                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     var mesh = scene.meshes[index];
                     if (mesh._waitingParentId) {
                         mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
@@ -20390,7 +20467,7 @@ var BABYLON;
                     }
                 }
                 // freeze world matrix application
-                for (index = 0; index < scene.meshes.length; index++) {
+                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     var currentMesh = scene.meshes[index];
                     if (currentMesh._waitingFreezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
@@ -20399,21 +20476,21 @@ var BABYLON;
                 }
                 // Particles Systems
                 if (parsedData.particleSystems) {
-                    for (index = 0; index < parsedData.particleSystems.length; index++) {
+                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                         var parsedParticleSystem = parsedData.particleSystems[index];
                         BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
                     }
                 }
                 // Lens flares
                 if (parsedData.lensFlareSystems) {
-                    for (index = 0; index < parsedData.lensFlareSystems.length; index++) {
+                    for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
                         var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
                         BABYLON.LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
                     }
                 }
                 // Shadows
                 if (parsedData.shadowGenerators) {
-                    for (index = 0; index < parsedData.shadowGenerators.length; index++) {
+                    for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
                         var parsedShadowGenerator = parsedData.shadowGenerators[index];
                         BABYLON.ShadowGenerator.Parse(parsedShadowGenerator, scene);
                     }
@@ -30221,10 +30298,14 @@ var BABYLON;
             var serializationInstance = {
                 name: instance.name,
                 position: instance.position.asArray(),
-                rotation: instance.rotation.asArray(),
-                rotationQuaternion: instance.rotationQuaternion.asArray(),
                 scaling: instance.scaling.asArray()
             };
+            if (instance.rotationQuaternion) {
+                serializationInstance.rotationQuaternion = instance.rotationQuaternion.asArray();
+            }
+            else if (instance.rotation) {
+                serializationInstance.rotation = instance.rotation.asArray();
+            }
             serializationObject.instances.push(serializationInstance);
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(instance, serializationInstance);
@@ -36260,6 +36341,10 @@ var BABYLON;
             if (index !== -1) {
                 // Remove from the scene if found 
                 this._scene.reflectionProbes.splice(index, 1);
+            }
+            if (this._renderTargetTexture) {
+                this._renderTargetTexture.dispose();
+                this._renderTargetTexture = null;
             }
         };
         return ReflectionProbe;
