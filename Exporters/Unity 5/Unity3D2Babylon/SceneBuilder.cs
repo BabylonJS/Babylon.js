@@ -7,6 +7,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using JsonFx.Serialization;
 using JsonFx.Serialization.Resolvers;
+using UnityEditor;
 
 namespace Unity3D2Babylon
 {
