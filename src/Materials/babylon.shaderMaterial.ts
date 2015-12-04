@@ -9,7 +9,10 @@
         private _colors4 = new Array<Color4>();
         private _vectors2 = new Array<Vector2>();
         private _vectors3 = new Array<Vector3>();
+        private _vectors4 = new Array<Vector4>();
         private _matrices = new Array<Matrix>();
+        private _matrices3x3 = new Array<Float32Array>();
+        private _matrices2x2 = new Array<Float32Array>();
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
@@ -22,6 +25,7 @@
             options.attributes = options.attributes || ["position", "normal", "uv"];
             options.uniforms = options.uniforms || ["worldViewProjection"];
             options.samplers = options.samplers || [];
+            options.defines = options.defines || [];
 
             this._options = options;
         }
@@ -91,9 +95,30 @@
             return this;
         }
 
+        public setVector4(name: string, value: Vector4): ShaderMaterial {
+            this._checkUniform(name);
+            this._vectors4[name] = value;
+
+            return this;
+        }
+
         public setMatrix(name: string, value: Matrix): ShaderMaterial {
             this._checkUniform(name);
             this._matrices[name] = value;
+
+            return this;
+        }
+
+        public setMatrix3x3(name: string, value: Float32Array): ShaderMaterial {
+            this._checkUniform(name);
+            this._matrices3x3[name] = value;
+
+            return this;
+        }
+
+        public setMatrix2x2(name: string, value: Float32Array): ShaderMaterial {
+            this._checkUniform(name);
+            this._matrices2x2[name] = value;
 
             return this;
         }
@@ -115,12 +140,15 @@
                 defines.push("#define INSTANCES");
             }
 
+            for (var index = 0; index < this._options.defines.length; index++) {
+                defines.push(this._options.defines[index]);
+            }
+
             // Bones
-            if (mesh && mesh.useBones) {
-                defines.push("#define BONES");
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
-                defines.push("#define BONES4");
-                fallbacks.addFallback(0, "BONES4");
+                fallbacks.addCPUSkinningFallback(0, mesh);
             }
 
             // Alpha test
@@ -185,7 +213,7 @@
                 }
 
                 // Bones
-                if (mesh && mesh.useBones) {
+                if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                 }
 
@@ -225,9 +253,24 @@
                     this._effect.setVector3(name, this._vectors3[name]);
                 }
 
+                // Vector4        
+                for (name in this._vectors4) {
+                    this._effect.setVector4(name, this._vectors4[name]);
+                }
+
                 // Matrix      
                 for (name in this._matrices) {
                     this._effect.setMatrix(name, this._matrices[name]);
+                }
+
+                // Matrix 3x3
+                for (name in this._matrices3x3) {
+                    this._effect.setMatrix3x3(name, this._matrices3x3[name]);
+                }
+
+                // Matrix 2x2
+                for (name in this._matrices2x2) {
+                    this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
             }
 

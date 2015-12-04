@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -22,9 +21,16 @@ var BABYLON;
             this._rightjoystick.setJoystickSensibility(0.05);
             this._rightjoystick.setJoystickColor("yellow");
         }
+        VirtualJoysticksCamera.prototype.getLeftJoystick = function () {
+            return this._leftjoystick;
+        };
+        VirtualJoysticksCamera.prototype.getRightJoystick = function () {
+            return this._rightjoystick;
+        };
         VirtualJoysticksCamera.prototype._checkInputs = function () {
+            var speed = this._computeLocalCameraSpeed() * 50;
             var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(this._leftjoystick.deltaPosition, cameraTransform);
+            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
             this.cameraDirection = this.cameraDirection.add(deltaTransform);
             this.cameraRotation = this.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
             if (!this._leftjoystick.pressed) {
@@ -43,4 +49,3 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.virtualJoysticksCamera.js.map

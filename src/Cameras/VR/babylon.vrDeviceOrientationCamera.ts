@@ -7,11 +7,11 @@ module BABYLON {
         private _offsetOrientation: { yaw: number; pitch: number; roll: number };
         private _deviceOrientationHandler;
 
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistorsion = true) {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true) {
             super(name, position, scene);
 
             var metrics = VRCameraMetrics.GetDefault();
-            metrics.compensateDistorsion = compensateDistorsion;
+            metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
 
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);

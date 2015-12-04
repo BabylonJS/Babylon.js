@@ -11,6 +11,7 @@ var BABYLON;
             this.invertU = 0;
             this.invertV = 0;
             this.animations = new Array();
+            this.isPickable = false;
             this._animationStarted = false;
             this._loopAnimation = false;
             this._fromIndex = 0;
@@ -78,4 +79,3 @@ var BABYLON;
     })();
     BABYLON.Sprite = Sprite;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.sprite.js.map

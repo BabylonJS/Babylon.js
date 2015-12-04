@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -25,7 +24,8 @@ var BABYLON;
             this.upperBetaLimit = Math.PI;
             this.lowerRadiusLimit = null;
             this.upperRadiusLimit = null;
-            this.angularSensibility = 1000.0;
+            this.angularSensibilityX = 1000.0;
+            this.angularSensibilityY = 1000.0;
             this.wheelPrecision = 3.0;
             this.pinchPrecision = 2.0;
             this.panningSensibility = 50.0;
@@ -58,7 +58,7 @@ var BABYLON;
                     _this._previousPosition.copyFrom(_this.position);
                 }
                 else {
-                    _this.setPosition(_this.position);
+                    _this.setPosition(newPosition);
                     if (_this.onCollide) {
                         _this.onCollide(collidedMesh);
                     }
@@ -73,7 +73,7 @@ var BABYLON;
                 _this.position.copyFrom(_this._newPosition);
                 var up = _this.upVector;
                 if (_this.allowUpsideDown && _this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
                 BABYLON.Matrix.LookAtLHToRef(_this.position, target, up, _this._viewMatrix);
@@ -86,6 +86,21 @@ var BABYLON;
             }
             this.getViewMatrix();
         }
+        Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
+            //deprecated angularSensibility support
+            get: function () {
+                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+                return Math.max(this.angularSensibilityX, this.angularSensibilityY);
+            },
+            //deprecated angularSensibility support
+            set: function (value) {
+                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+                this.angularSensibilityX = value;
+                this.angularSensibilityY = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         ArcRotateCamera.prototype._getTargetPosition = function () {
             return this.target.position || this.target;
         };
@@ -96,7 +111,7 @@ var BABYLON;
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
-            this._cache.targetScreenOffset = undefined;
+            this._cache.targetScreenOffset = BABYLON.Vector2.Zero();
         };
         ArcRotateCamera.prototype._updateCache = function (ignoreParentClass) {
             if (!ignoreParentClass) {
@@ -106,7 +121,7 @@ var BABYLON;
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
-            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
+            this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
         };
         // Synchronized
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
@@ -133,7 +148,7 @@ var BABYLON;
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = function (evt) {
                     // Manage panning with right click
-                    _this._isRightClick = evt.button === 2 ? true : false;
+                    _this._isRightClick = evt.button === 2;
                     // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
                     cacheSoloPointer = pointers.item(evt.pointerId);
@@ -162,15 +177,15 @@ var BABYLON;
                     }
                     switch (pointers.count) {
                         case 1:
-                            if ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick)) {
+                            if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick))) {
                                 _this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
                                 _this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
                             }
                             else {
                                 var offsetX = evt.clientX - cacheSoloPointer.x;
                                 var offsetY = evt.clientY - cacheSoloPointer.y;
-                                _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
-                                _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
+                                _this.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                                _this.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                             }
                             cacheSoloPointer.x = evt.clientX;
                             cacheSoloPointer.y = evt.clientY;
@@ -188,7 +203,7 @@ var BABYLON;
                                 return;
                             }
                             if (pinchSquaredDistance !== previousPinchDistance) {
-                                _this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * _this.wheelPrecision * _this.angularSensibility * direction);
+                                _this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * _this.wheelPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
                                 previousPinchDistance = pinchSquaredDistance;
                             }
                             break;
@@ -205,8 +220,8 @@ var BABYLON;
                     }
                     var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                     var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    _this.inertialAlphaOffset -= offsetX / _this.angularSensibility;
-                    _this.inertialBetaOffset -= offsetY / _this.angularSensibility;
+                    _this.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                    _this.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -361,7 +376,7 @@ var BABYLON;
                 }
             }
             // Inertia
-            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;
@@ -431,6 +446,9 @@ var BABYLON;
             }
         };
         ArcRotateCamera.prototype.setPosition = function (position) {
+            if (this.position.equals(position)) {
+                return;
+            }
             var radiusv3 = position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
             // Alpha
@@ -441,6 +459,9 @@ var BABYLON;
             // Beta
             this.beta = Math.acos(radiusv3.y / this.radius);
             this._checkLimits();
+        };
+        ArcRotateCamera.prototype.setTarget = function (target) {
+            this.target = target;
         };
         ArcRotateCamera.prototype._getViewMatrix = function () {
             // Compute
@@ -460,7 +481,7 @@ var BABYLON;
                 this.position.copyFrom(this._newPosition);
                 var up = this.upVector;
                 if (this.allowUpsideDown && this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
                 BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
@@ -509,6 +530,7 @@ var BABYLON;
                     var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                     return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
             }
+            return null;
         };
         /**
          * @override
@@ -531,8 +553,21 @@ var BABYLON;
             }
             _super.prototype._updateRigCameras.call(this);
         };
+        ArcRotateCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            if (this.target instanceof BABYLON.Vector3) {
+                serializationObject.target = this.target.asArray();
+            }
+            if (this.target && this.target.id) {
+                serializationObject.lockedTargetId = this.target.id;
+            }
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.alpha = this.alpha;
+            serializationObject.beta = this.beta;
+            serializationObject.radius = this.radius;
+            return serializationObject;
+        };
         return ArcRotateCamera;
     })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.arcRotateCamera.js.map

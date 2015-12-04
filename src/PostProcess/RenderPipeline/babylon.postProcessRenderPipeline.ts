@@ -23,6 +23,16 @@ module BABYLON {
             this._cameras = [];
         }
 
+        public get isSupported(): boolean {
+            for (var renderEffectName in this._renderEffects) {
+                if (!this._renderEffects[renderEffectName].isSupported) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public addEffect(renderEffect: PostProcessRenderEffect): void {
             this._renderEffects[renderEffect._name] = renderEffect;
         }
@@ -59,8 +69,8 @@ module BABYLON {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
             var indicesToDelete = [];
-
-            for (var i = 0; i < _cam.length; i++) {
+            var i: number;
+            for (i = 0; i < _cam.length; i++) {
                 var camera = _cam[i];
                 var cameraName = camera.name;
 
@@ -72,7 +82,7 @@ module BABYLON {
                 }
             }
 
-            for (var i = 0; i < indicesToDelete.length; i++) {
+            for (i = 0; i < indicesToDelete.length; i++) {
                 cameras.splice(indicesToDelete[i], 1);
             }
 
@@ -101,8 +111,8 @@ module BABYLON {
             var _cam = Tools.MakeArray(cameras || this._cameras);
 
             var pass = null;
-
-            for (var renderEffectName in this._renderEffects) {
+            var renderEffectName;
+            for (renderEffectName in this._renderEffects) {
                 pass = this._renderEffects[renderEffectName].getPass(passName);
 
                 if (pass != null) {
@@ -114,7 +124,7 @@ module BABYLON {
                 return;
             }
 
-            for (var renderEffectName in this._renderEffects) {
+            for (renderEffectName in this._renderEffects) {
                 this._renderEffects[renderEffectName]._disable(_cam);
             }
 
@@ -162,6 +172,10 @@ module BABYLON {
                     this._renderEffectsForIsolatedPass[cameraName]._update();
                 }
             }
+        }
+
+        public dispose() {
+           // Must be implemented by children 
         }
     }
 }

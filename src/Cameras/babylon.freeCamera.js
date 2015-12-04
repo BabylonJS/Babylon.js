@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -149,7 +148,7 @@ var BABYLON;
             ]);
         };
         FreeCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
             element.removeEventListener("mousedown", this._onMouseDown);
@@ -176,11 +175,14 @@ var BABYLON;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
+            //no need for clone, as long as gravity is not on.
+            var actualVelocity = velocity;
             //add gravity to the velocity to prevent the dual-collision checking
             if (this.applyGravity) {
-                velocity.addInPlace(this.getScene().gravity);
+                //this prevents mending with cameraDirection, a global variable of the free camera class.
+                actualVelocity = velocity.add(this.getScene().gravity);
             }
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
@@ -220,8 +222,14 @@ var BABYLON;
                 this.position.addInPlace(this.cameraDirection);
             }
         };
+        FreeCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.applyGravity = this.applyGravity;
+            serializationObject.ellipsoid = this.ellipsoid.asArray();
+            return serializationObject;
+        };
         return FreeCamera;
     })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.freeCamera.js.map

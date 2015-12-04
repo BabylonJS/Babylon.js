@@ -4,13 +4,9 @@
         public alpha = 1;
 
         private _colorShader: ShaderMaterial;
-        private _ib: WebGLBuffer;
 
-        private _indicesLength: number;
-        private _indices = new Array<number>();
-
-        constructor(name: string, scene: Scene, updatable = false) {
-            super(name, scene);
+        constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean) {
+            super(name, scene, parent, source, doNotCloneChildren);
 
             this._colorShader = new ShaderMaterial("colorShader", scene, "color",
                 {
@@ -63,6 +59,10 @@
             this._colorShader.dispose();
 
             super.dispose(doNotRecurse);
+        }
+
+        public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
+            return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         }
     }
 } 

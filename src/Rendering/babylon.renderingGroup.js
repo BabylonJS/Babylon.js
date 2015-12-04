@@ -14,6 +14,9 @@ var BABYLON;
                 return true;
             }
             if (this._opaqueSubMeshes.length === 0 && this._alphaTestSubMeshes.length === 0 && this._transparentSubMeshes.length === 0) {
+                if (this.onBeforeTransparentRendering) {
+                    this.onBeforeTransparentRendering();
+                }
                 return false;
             }
             var engine = this._scene.getEngine();
@@ -31,6 +34,9 @@ var BABYLON;
                 submesh.render(false);
             }
             engine.setAlphaTesting(false);
+            if (this.onBeforeTransparentRendering) {
+                this.onBeforeTransparentRendering();
+            }
             // Transparent
             if (this._transparentSubMeshes.length) {
                 // Sorting
@@ -88,4 +94,3 @@ var BABYLON;
     })();
     BABYLON.RenderingGroup = RenderingGroup;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.renderingGroup.js.map

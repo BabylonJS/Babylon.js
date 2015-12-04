@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - "0.10"
+  - "4.1"
 before_script:
   - npm install -g gulp
   - cd ./Tools/Gulp

@@ -3,6 +3,7 @@ var BABYLON;
     var Layer = (function () {
         function Layer(name, imgUrl, scene, isBackground, color) {
             this.name = name;
+            this.alphaBlendingMode = BABYLON.Engine.ALPHA_COMBINE;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
             this.texture = imgUrl ? new BABYLON.Texture(imgUrl, scene, true) : null;
@@ -45,7 +46,7 @@ var BABYLON;
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
             // Draw order
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(this.alphaBlendingMode);
             engine.draw(true, 0, 6);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
         };
@@ -74,4 +75,3 @@ var BABYLON;
     })();
     BABYLON.Layer = Layer;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.layer.js.map

@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -83,7 +82,7 @@ var BABYLON;
             ]);
         };
         TouchCamera.prototype.detachControl = function (canvas) {
-            if (this._attachedCanvas != canvas) {
+            if (this._attachedCanvas !== canvas) {
                 return;
             }
             canvas.removeEventListener("pointerdown", this._onPointerDown);
@@ -114,4 +113,3 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.TouchCamera = TouchCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.touchCamera.js.map

@@ -5,6 +5,7 @@ var BABYLON;
             this.name = name;
             this.lensFlares = new Array();
             this.borderLimit = 300;
+            this.layerMask = 0x0FFFFFFF;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
             this._isEnabled = true;
@@ -46,6 +47,9 @@ var BABYLON;
         };
         LensFlareSystem.prototype.getEmitter = function () {
             return this._emitter;
+        };
+        LensFlareSystem.prototype.setEmitter = function (newEmitter) {
+            this._emitter = newEmitter;
         };
         LensFlareSystem.prototype.getEmitterPosition = function () {
             return this._emitter.getAbsolutePosition ? this._emitter.getAbsolutePosition() : this._emitter.position;
@@ -131,7 +135,7 @@ var BABYLON;
             engine.enableEffect(this._effect);
             engine.setState(false);
             engine.setDepthBuffer(false);
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_ADD);
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_ONEONE);
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
             // Flares
@@ -172,8 +176,33 @@ var BABYLON;
             var index = this._scene.lensFlareSystems.indexOf(this);
             this._scene.lensFlareSystems.splice(index, 1);
         };
+        LensFlareSystem.Parse = function (parsedLensFlareSystem, scene, rootUrl) {
+            var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
+            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
+            for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
+                var parsedFlare = parsedLensFlareSystem.flares[index];
+                var flare = new BABYLON.LensFlare(parsedFlare.size, parsedFlare.position, BABYLON.Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
+            }
+            return lensFlareSystem;
+        };
+        LensFlareSystem.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.emitterId = this.getEmitter().id;
+            serializationObject.borderLimit = this.borderLimit;
+            serializationObject.flares = [];
+            for (var index = 0; index < this.lensFlares.length; index++) {
+                var flare = this.lensFlares[index];
+                serializationObject.flares.push({
+                    size: flare.size,
+                    position: flare.position,
+                    color: flare.color.asArray(),
+                    textureName: BABYLON.Tools.GetFilename(flare.texture.name)
+                });
+            }
+            return serializationObject;
+        };
         return LensFlareSystem;
     })();
     BABYLON.LensFlareSystem = LensFlareSystem;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.lensFlareSystem.js.map

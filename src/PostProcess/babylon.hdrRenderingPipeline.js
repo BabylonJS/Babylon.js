@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -39,6 +38,11 @@ var BABYLON;
             * @type {number}
             */
             this.gaussStandDev = 0.8;
+            /**
+            * Gaussian blur multiplier. Multiplies the blur effect
+            * @type {number}
+            */
+            this.gaussMultiplier = 4.0;
             // HDR
             /**
             * Exposure, controls the overall intensity of the pipeline
@@ -323,12 +327,12 @@ var BABYLON;
             var blurOffsetsW = new Array(9);
             var blurOffsetsH = new Array(9);
             var blurWeights = new Array(9);
-            var uniforms = ["blurOffsets", "blurWeights"];
+            var uniforms = ["blurOffsets", "blurWeights", "multiplier"];
             // Utils for gaussian blur
             var calculateBlurOffsets = function (height) {
                 var lastOutputDimensions = {
-                    width: scene.getEngine().getRenderWidth() * (ratio / 4),
-                    height: scene.getEngine().getRenderHeight() * (ratio / 4)
+                    width: scene.getEngine().getRenderWidth(),
+                    height: scene.getEngine().getRenderHeight()
                 };
                 for (var i = 0; i < 9; i++) {
                     var value = (i - 4.0) * (1.0 / (height === true ? lastOutputDimensions.height : lastOutputDimensions.width));
@@ -356,6 +360,7 @@ var BABYLON;
                     }
                     effect.setArray("blurOffsets", height ? blurOffsetsH : blurOffsetsW);
                     effect.setArray("blurWeights", blurWeights);
+                    effect.setFloat("multiplier", _this.gaussMultiplier);
                 };
             };
             // Create horizontal gaussian blur post-processes
@@ -371,4 +376,3 @@ var BABYLON;
     })(BABYLON.PostProcessRenderPipeline);
     BABYLON.HDRRenderingPipeline = HDRRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.hdrRenderingPipeline.js.map

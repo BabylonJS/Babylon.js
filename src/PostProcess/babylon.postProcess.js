@@ -23,10 +23,15 @@ var BABYLON;
             this.renderTargetSamplingMode = samplingMode ? samplingMode : BABYLON.Texture.NEAREST_SAMPLINGMODE;
             this._reusable = reusable || false;
             this._textureType = textureType;
-            samplers = samplers || [];
-            samplers.push("textureSampler");
-            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl }, ["position"], parameters || [], samplers, defines !== undefined ? defines : "");
+            this._samplers = samplers || [];
+            this._samplers.push("textureSampler");
+            this._fragmentUrl = fragmentUrl;
+            this._parameters = parameters || [];
+            this.updateEffect(defines);
         }
+        PostProcess.prototype.updateEffect = function (defines) {
+            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl }, ["position"], this._parameters, this._samplers, defines !== undefined ? defines : "");
+        };
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
         };
@@ -36,8 +41,8 @@ var BABYLON;
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
             var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
             var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
-            desiredWidth = this._renderRatio.width || BABYLON.Tools.GetExponantOfTwo(desiredWidth, maxSize);
-            desiredHeight = this._renderRatio.height || BABYLON.Tools.GetExponantOfTwo(desiredHeight, maxSize);
+            desiredWidth = this._renderRatio.width || BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
+            desiredHeight = this._renderRatio.height || BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
@@ -70,6 +75,13 @@ var BABYLON;
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
             }
         };
+        Object.defineProperty(PostProcess.prototype, "isSupported", {
+            get: function () {
+                return this._effect.isSupported;
+            },
+            enumerable: true,
+            configurable: true
+        });
         PostProcess.prototype.apply = function () {
             // Check
             if (!this._effect.isReady())
@@ -109,4 +121,3 @@ var BABYLON;
     })();
     BABYLON.PostProcess = PostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.postProcess.js.map

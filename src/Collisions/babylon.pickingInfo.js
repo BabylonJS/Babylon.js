@@ -21,6 +21,7 @@ var BABYLON;
             this.bv = 0;
             this.faceId = -1;
             this.subMeshId = 0;
+            this.pickedSprite = null;
         }
         // Methods
         PickingInfo.prototype.getNormal = function (useWorldCoordinates, useVerticesNormals) {
@@ -73,4 +74,3 @@ var BABYLON;
     })();
     BABYLON.PickingInfo = PickingInfo;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.pickingInfo.js.map

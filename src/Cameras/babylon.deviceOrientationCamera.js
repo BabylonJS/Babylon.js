@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -45,7 +44,7 @@ var BABYLON;
             window.addEventListener("deviceorientation", this._orientationChanged);
         };
         DeviceOrientationCamera.prototype.detachControl = function (canvas) {
-            if (this._attachedCanvas != canvas) {
+            if (this._attachedCanvas !== canvas) {
                 return;
             }
             window.removeEventListener("deviceorientation", this._orientationChanged);
@@ -70,4 +69,3 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.deviceOrientationCamera.js.map

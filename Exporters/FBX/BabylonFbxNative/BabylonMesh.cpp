@@ -383,6 +383,12 @@ web::json::value BabylonMesh::toJson()
 		}
 		jobj[L"pivotMatrix"] = jpivot;
 	}
+
+	auto jinstances = web::json::value::array();
+	for (auto& instance : _instances) {
+		jinstances[jinstances.size()] = instance.toJson();
+	}
+	jobj[L"instances"] = jinstances;
 	return jobj;
 }
 
@@ -434,13 +440,13 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 	}
 	pivotMatrix = ConvertToBabylonCoordinateSystem( GetGeometryTransformation(fbxNode));
 
-	auto animStack = fbxNode->GetScene()->GetSrcObject<FbxAnimStack>(0);
+	auto animStack = fbxNode->GetScene()->GetCurrentAnimationStack();
 	FbxString animStackName = animStack->GetName();
-	FbxTakeInfo* takeInfo = fbxNode->GetScene()->GetTakeInfo(animStackName);
+	//FbxTakeInfo* takeInfo = node->GetScene()->GetTakeInfo(animStackName);
 	auto animTimeMode = GlobalSettings::Current().AnimationsTimeMode;
 	auto animFrameRate = GlobalSettings::Current().AnimationsFrameRate();
-	auto startFrame = takeInfo->mLocalTimeSpan.GetStart().GetFrameCount(animTimeMode);
-	auto endFrame = takeInfo->mLocalTimeSpan.GetStop().GetFrameCount(animTimeMode);
+	auto startFrame = animStack->GetLocalTimeSpan().GetStart().GetFrameCount(animTimeMode);
+	auto endFrame = animStack->GetLocalTimeSpan().GetStop().GetFrameCount(animTimeMode);
 	auto animLengthInFrame = endFrame - startFrame + 1;
 	_visibility = static_cast<float>(node->fbxNode()->Visibility.Get());
 	auto posAnim = std::make_shared<BabylonAnimation<babylon_vector3>>(BabylonAnimationBase::loopBehavior_Cycle, static_cast<int>(animFrameRate), L"position", L"position", true, 0, static_cast<int>(animLengthInFrame), true);
@@ -728,7 +734,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 			}
 			if (skinInfo.hasSkin()){
 				auto& skinData = skinInfo.controlPointBoneIndicesAndWeights(controlPointIndex);
-				for (auto boneix = 0; boneix < skinData.size()&&boneix<4; ++boneix){
+				for (std::size_t boneix = 0; boneix < skinData.size()&&boneix< (size_t)4; ++boneix){
 					v.boneIndices[boneix] = skinData[boneix].index;
 					v.boneWeights[boneix] = static_cast<float>(skinData[boneix].weight);
 				}
@@ -757,7 +763,7 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 			submesh.indices.push_back(t.indices[2]);
 		}
 		else {
-			std::cout << "duplicate triangle found" << std::endl;
+			std::cout << "duplicate triangle found (and eliminated) in " << fbxNode->GetName() << std::endl;
 		}
 
 	}
@@ -822,6 +828,55 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 
 }
 
+
+BabylonMesh::BabylonMesh(BabylonMesh && moved) : 
+	BabylonAbstractMesh(moved),
+	_id(std::move(moved._id)),
+	_parentId(std::move(moved._parentId)),
+	_materialId(std::move(moved._materialId)),
+	_isEnabled(std::move(moved._isEnabled)),
+	_isVisible(std::move(moved._isVisible)),
+	_pickable(std::move(moved._pickable)),
+	_positions(std::move(moved._positions)),
+	_normals(std::move(moved._normals)),
+	_uvs(std::move(moved._uvs)),
+	_uvs2(std::move(moved._uvs2)),
+	_uvs3(std::move(moved._uvs3)),
+	_uvs4(std::move(moved._uvs4)),
+	_uvs5(std::move(moved._uvs5)),
+	_uvs6(std::move(moved._uvs6)),
+	_colors(std::move(moved._colors)),
+	_hasVertexAlpha(std::move(moved._hasVertexAlpha)),
+	_boneIndices(std::move(moved._boneIndices)),
+	_boneWeights(std::move(moved._boneWeights)),
+	_indices(std::move(moved._indices)),
+	_checkCollision(std::move(moved._checkCollision)),
+	_receiveShadows(std::move(moved._receiveShadows)),
+	_infiniteDistance(std::move(moved._infiniteDistance)),
+	_billboardMode(std::move(moved._billboardMode)),
+	_visibility(std::move(moved._visibility)),
+	_submeshes(std::move(moved._submeshes)),
+	_instances(std::move(moved._instances)),
+	_skeletonId(std::move(moved._skeletonId)),
+	_autoAnimate(std::move(moved._autoAnimate)),
+	_autoAnimateFrom(std::move(moved._autoAnimateFrom)),
+	_autoAnimateTo(std::move(moved._autoAnimateTo)),
+	_autoAnimateLoop(std::move(moved._autoAnimateLoop)),
+	_showBoundingBox(std::move(moved._showBoundingBox)),
+	_showSubMeshesBoundingBox(std::move(moved._showSubMeshesBoundingBox)),
+	_applyFog(std::move(moved._applyFog)),
+	_alphaIndex(std::move(moved._alphaIndex)),
+	uvsets(std::move(moved.uvsets)),
+	associatedSkeleton(std::move(moved.associatedSkeleton)),
+	animations(std::move(moved.animations)),
+	pivotMatrix(std::move(moved.pivotMatrix))
+{
+}
+
+void BabylonMesh::addInstance(BabylonNode * node)
+{
+	_instances.emplace_back(node);
+}
 
 BabylonMesh::~BabylonMesh()
 {

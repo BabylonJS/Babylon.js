@@ -24,6 +24,8 @@ public:
 
 
 	explicit BabylonNode(FbxNode* fbxNode);
+	BabylonNode(const BabylonNode&) = default;
+	BabylonNode(BabylonNode&& moved);
 
 	std::vector<BabylonNode>& children(){
 		return _children;

@@ -65,6 +65,8 @@ public:
 
 	 BabylonTexture(FbxFileTexture* texture);
 
+	 BabylonTexture(const BabylonTexture&) = default;
+	 BabylonTexture(BabylonTexture&&);
 
 	 web::json::value toJson();
 	
@@ -107,6 +109,8 @@ public:
 	web::json::value toJson() const;
 	BabylonMaterial();
 	BabylonMaterial(FbxSurfaceMaterial* mat);
+	BabylonMaterial(const BabylonMaterial&) = default;
+	BabylonMaterial(BabylonMaterial&& moved);
 	~BabylonMaterial();
 };
 
@@ -115,6 +119,8 @@ public:
 	std::wstring name;
 	std::wstring id;
 	std::vector<std::wstring> materials;
-
+	BabylonMultiMaterial() = default;
+	BabylonMultiMaterial(const BabylonMultiMaterial&) = default;
+	BabylonMultiMaterial(BabylonMultiMaterial&& moved) ;
 	web::json::value toJson() const;
 };

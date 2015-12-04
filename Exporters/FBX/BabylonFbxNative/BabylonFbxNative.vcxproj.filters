@@ -33,19 +33,7 @@
     <ClInclude Include="FbxSceneLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FbxVertexKey.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BabylonVertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FbxMaterialHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FbxMeshLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Export.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BabylonNode.h">
@@ -87,6 +75,9 @@
     <ClInclude Include="MatrixDecomposition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -96,12 +87,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FbxSceneLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FbxVertexKey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FbxMaterialHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="babylon_boundingbox.cpp">

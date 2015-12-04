@@ -76,9 +76,12 @@ var BABYLON;
                             FilesInput.FilesToLoad[this._filesToLoad[i].name] = this._filesToLoad[i];
                             break;
                         default:
-                            if (this._filesToLoad[i].name.indexOf(".babylon") !== -1 && this._filesToLoad[i].name.indexOf(".manifest") === -1
+                            if ((this._filesToLoad[i].name.indexOf(".babylon") !== -1 || this._filesToLoad[i].name.indexOf(".stl") !== -1 ||
+                                this._filesToLoad[i].name.indexOf(".obj") !== -1 || this._filesToLoad[i].name.indexOf(".mtl") !== -1)
+                                && this._filesToLoad[i].name.indexOf(".manifest") === -1
                                 && this._filesToLoad[i].name.indexOf(".incremental") === -1 && this._filesToLoad[i].name.indexOf(".babylonmeshdata") === -1
-                                && this._filesToLoad[i].name.indexOf(".babylongeometrydata") === -1) {
+                                && this._filesToLoad[i].name.indexOf(".babylongeometrydata") === -1 && this._filesToLoad[i].name.indexOf(".babylonbinarymeshdata") === -1 &&
+                                this._filesToLoad[i].name.indexOf(".binary.babylon") === -1) {
                                 this._sceneFileToLoad = this._filesToLoad[i];
                             }
                             break;
@@ -93,6 +96,10 @@ var BABYLON;
             // If a ".babylon" file has been provided
             if (this._sceneFileToLoad) {
                 if (this._currentScene) {
+                    if (BABYLON.Tools.errorsCount > 0) {
+                        BABYLON.Tools.ClearLogCache();
+                        BABYLON.Tools.Log("Babylon.js engine (v" + BABYLON.Engine.Version + ") launched");
+                    }
                     this._engine.stopRenderLoop();
                     this._currentScene.dispose();
                 }
@@ -126,4 +133,3 @@ var BABYLON;
     })();
     BABYLON.FilesInput = FilesInput;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.filesInput.js.map

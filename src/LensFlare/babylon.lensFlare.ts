@@ -13,7 +13,7 @@
             system.lensFlares.push(this);
         }
 
-        public dispose = function (): void {
+        public dispose = function(): void {
             if (this.texture) {
                 this.texture.dispose();
             }

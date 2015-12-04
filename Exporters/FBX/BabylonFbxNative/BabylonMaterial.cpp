@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include "NodeHelpers.h"
 #include "GlobalSettings.h"
+#include "StringUtils.h"
 
 web::json::value BabylonMaterial::toJson() const
 {
@@ -61,13 +62,7 @@ alpha(1)
 {
 }
 
-std::wstring utf8ToWstring(const std::string& src){
-	auto size = MultiByteToWideChar(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), nullptr, 0);
-	std::wstring result;
-	result.resize(size, ' ');
-	MultiByteToWideChar(CP_UTF8, 0, src.c_str(), static_cast<int>(src.size()), &result[0], size);
-	return result;
-}
+
 
 
 FbxDouble3 GetMaterialProperty(const FbxSurfaceMaterial * pMaterial,
@@ -213,7 +208,35 @@ alpha(1){
 }
 
 
+BabylonMaterial::BabylonMaterial(BabylonMaterial && moved) : 
+	name(std::move(moved.name)),
+	id(std::move(moved.id)),
+	backFaceCulling(std::move(moved.backFaceCulling)),
+	wireframe(std::move(moved.wireframe)),
+	ambient(std::move(moved.ambient)),
+	diffuse(std::move(moved.diffuse)),
+	specular(std::move(moved.specular)),
+	emissive(std::move(moved.emissive)),
+	specularPower(std::move(moved.specularPower)),
+	alpha(std::move(moved.alpha)),
+	diffuseTexture(std::move(moved.diffuseTexture)),
+	ambientTexture(std::move(moved.ambientTexture)),
+	opacityTexture(std::move(moved.opacityTexture)),
+	reflectionTexture(std::move(moved.reflectionTexture)),
+	emissiveTexture(std::move(moved.emissiveTexture)),
+	specularTexture(std::move(moved.specularTexture)),
+	bumpTexture(std::move(moved.bumpTexture))
+{
+}
+
 BabylonMaterial::~BabylonMaterial()
+{
+}
+
+BabylonMultiMaterial::BabylonMultiMaterial(BabylonMultiMaterial && moved) :
+	name(std::move(moved.name)),
+	id(std::move(moved.id)),
+	materials(std::move(moved.materials))
 {
 }
 
@@ -231,6 +254,30 @@ web::json::value BabylonMultiMaterial::toJson() const
 	return jobj;
 }
 
+
+BabylonTexture::BabylonTexture(BabylonTexture && moved) : 
+	name(std::move(moved.name)),
+	fullPath(std::move(moved.fullPath)),
+	uvset(std::move(moved.uvset)),
+	level(std::move(moved.level)),
+	hasAlpha(std::move(moved.hasAlpha)),
+	getAlphaFromRGB(std::move(moved.getAlphaFromRGB)),
+	coordinatesMode(std::move(moved.coordinatesMode)),
+	isCube(std::move(moved.isCube)),
+	uOffset(std::move(moved.uOffset)),
+	vOffset(std::move(moved.vOffset)),
+	uScale(std::move(moved.uScale)),
+	vScale(std::move(moved.vScale)),
+	uAng(std::move(moved.uAng)),
+	vAng(std::move(moved.vAng)),
+	wAng(std::move(moved.wAng)),
+	wrapU(std::move(moved.wrapU)),
+	wrapV(std::move(moved.wrapV)),
+	coordinatesIndex(std::move(moved.coordinatesIndex)),
+	isRenderTarget(std::move(moved.isRenderTarget)),
+	animations(std::move(moved.animations))
+{
+}
 
 web::json::value BabylonTexture::toJson(){
 	auto jobj = web::json::value::object();

@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -20,9 +19,11 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        GroundMesh.prototype.optimize = function (chunksCount) {
+        GroundMesh.prototype.optimize = function (chunksCount, octreeBlocksSize) {
+            if (octreeBlocksSize === void 0) { octreeBlocksSize = 32; }
+            this._subdivisions = chunksCount;
             this.subdivide(this._subdivisions);
-            this.createOrUpdateSubmeshesOctree(32);
+            this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
         };
         GroundMesh.prototype.getHeightAtCoordinates = function (x, z) {
             var ray = new BABYLON.Ray(new BABYLON.Vector3(x, this.getBoundingInfo().boundingBox.maximumWorld.y + 1, z), new BABYLON.Vector3(0, -1, 0));
@@ -38,4 +39,3 @@ var BABYLON;
     })(BABYLON.Mesh);
     BABYLON.GroundMesh = GroundMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.groundMesh.js.map

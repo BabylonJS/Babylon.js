@@ -1,8 +1,11 @@
-var __extends = this.__extends || function (d, b) {
+// BABYLON.JS Chromatic Aberration GLSL Shader
+// Author: Olivier Guyot
+// Separates very slightly R, G and B colors on the edges of the screen
+// Inspired by Francois Tarlier & Martins Upitis
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -92,7 +95,7 @@ var BABYLON;
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, function () { return _this._chromaticAberrationPostProcess; }, true));
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, function () { return _this._highlightsPostProcess; }, true));
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, function () { return _this._depthOfFieldPostProcess; }, true));
-            if (this._highlightsGain == -1) {
+            if (this._highlightsGain === -1) {
                 this._disableEffect(this.HighlightsEnhancingEffect, null);
             }
             // Finish
@@ -114,15 +117,19 @@ var BABYLON;
         LensRenderingPipeline.prototype.disableDepthOfField = function () { this._dofDistance = -1; };
         LensRenderingPipeline.prototype.setAperture = function (amount) { this._dofAperture = amount; };
         LensRenderingPipeline.prototype.setDarkenOutOfFocus = function (amount) { this._dofDarken = amount; };
-        LensRenderingPipeline.prototype.enablePentagonBokeh = function () { this._dofPentagon = true; };
-        LensRenderingPipeline.prototype.disablePentagonBokeh = function () { this._dofPentagon = false; };
+        LensRenderingPipeline.prototype.enablePentagonBokeh = function () {
+            this._highlightsPostProcess.updateEffect("#define PENTAGON\n");
+        };
+        LensRenderingPipeline.prototype.disablePentagonBokeh = function () {
+            this._highlightsPostProcess.updateEffect();
+        };
         LensRenderingPipeline.prototype.enableNoiseBlur = function () { this._blurNoise = true; };
         LensRenderingPipeline.prototype.disableNoiseBlur = function () { this._blurNoise = false; };
         LensRenderingPipeline.prototype.setHighlightsGain = function (amount) {
             this._highlightsGain = amount;
         };
         LensRenderingPipeline.prototype.setHighlightsThreshold = function (amount) {
-            if (this._highlightsGain == -1) {
+            if (this._highlightsGain === -1) {
                 this._highlightsGain = 1.0;
             }
             this._highlightsThreshold = amount;
@@ -146,7 +153,9 @@ var BABYLON;
         // colors shifting and distortion
         LensRenderingPipeline.prototype._createChromaticAberrationPostProcess = function (ratio) {
             var _this = this;
-            this._chromaticAberrationPostProcess = new BABYLON.PostProcess("LensChromaticAberration", "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._chromaticAberrationPostProcess = new BABYLON.PostProcess("LensChromaticAberration", "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height"], // uniforms
+            [], // samplers
+            ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
             this._chromaticAberrationPostProcess.onApply = function (effect) {
                 effect.setFloat('chromatic_aberration', _this._chromaticAberration);
                 effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
@@ -156,11 +165,12 @@ var BABYLON;
         // highlights enhancing
         LensRenderingPipeline.prototype._createHighlightsPostProcess = function (ratio) {
             var _this = this;
-            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["pentagon", "gain", "threshold", "screen_width", "screen_height"], [], ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            this._highlightsPostProcess = new BABYLON.PostProcess("LensHighlights", "lensHighlights", ["gain", "threshold", "screen_width", "screen_height"], // uniforms
+            [], // samplers
+            ratio, null, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, this._dofPentagon ? "#define PENTAGON\n" : "");
             this._highlightsPostProcess.onApply = function (effect) {
                 effect.setFloat('gain', _this._highlightsGain);
                 effect.setFloat('threshold', _this._highlightsThreshold);
-                effect.setBool('pentagon', _this._dofPentagon);
                 effect.setTextureFromPostProcess("textureSampler", _this._chromaticAberrationPostProcess);
                 effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
                 effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
@@ -183,12 +193,12 @@ var BABYLON;
                 effect.setFloat('screen_width', _this._scene.getEngine().getRenderingCanvas().width);
                 effect.setFloat('screen_height', _this._scene.getEngine().getRenderingCanvas().height);
                 effect.setFloat('distortion', _this._distortion);
-                effect.setBool('dof_enabled', (_this._dofDistance != -1));
+                effect.setBool('dof_enabled', (_this._dofDistance !== -1));
                 effect.setFloat('screen_distance', 1.0 / (0.1 - 1.0 / _this._dofDistance));
                 effect.setFloat('aperture', _this._dofAperture);
                 effect.setFloat('darken', _this._dofDarken);
                 effect.setFloat('edge_blur', _this._edgeBlur);
-                effect.setBool('highlights', (_this._highlightsGain != -1));
+                effect.setBool('highlights', (_this._highlightsGain !== -1));
                 effect.setFloat('near', _this._scene.activeCamera.minZ);
                 effect.setFloat('far', _this._scene.activeCamera.maxZ);
             };
@@ -217,4 +227,3 @@ var BABYLON;
     })(BABYLON.PostProcessRenderPipeline);
     BABYLON.LensRenderingPipeline = LensRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.lensRenderingPipeline.js.map

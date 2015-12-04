@@ -180,7 +180,7 @@ var BABYLON;
                 geometryId = mesh.geometry ? mesh.geometry.id : null;
             }
             else if (mesh instanceof BABYLON.InstancedMesh) {
-                geometryId = mesh.sourceMesh.geometry ? mesh.sourceMesh.geometry.id : null;
+                geometryId = (mesh.sourceMesh && mesh.sourceMesh.geometry) ? mesh.sourceMesh.geometry.id : null;
             }
             return {
                 uniqueId: mesh.uniqueId,
@@ -271,4 +271,3 @@ var BABYLON;
     })();
     BABYLON.CollisionCoordinatorLegacy = CollisionCoordinatorLegacy;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.collisionCoordinator.js.map

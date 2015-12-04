@@ -35,15 +35,15 @@
         public totalStrength: number = 1.0;
 
         /**
-        * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0002
+        * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0006
         * @type {number}
         */
-        public radius: number = 0.0002;
+        public radius: number = 0.0001;
 
         /**
         * Related to fallOff, used to interpolate SSAO samples (first interpolate function input) based on the occlusion difference of each pixel
         * Must not be equal to fallOff and superior to fallOff.
-        * Default value is 0.0075
+        * Default value is 0.975
         * @type {number}
         */
         public area: number = 0.0075;
@@ -51,10 +51,17 @@
         /**
         * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
         * Must not be equal to area and inferior to area.
-        * Default value is 0.0002
+        * Default value is 0.0
         * @type {number}
         */
-        public fallOff: number = 0.0002;
+        public fallOff: number = 0.000001;
+
+        /**
+        * The base color of the SSAO post-process
+        * The final result is "base + ssao" between [0, 1]
+        * @type {number}
+        */
+        public base: number = 0.5;
 
         private _scene: Scene;
         private _depthTexture: RenderTargetTexture;
@@ -89,8 +96,8 @@
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(2.0, 0.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 2.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BlurPostProcess("SSAOBlurH", new Vector2(1.0, 0.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BlurPostProcess("SSAOBlurV", new Vector2(0.0, 1.0), 2.0, ssaoRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
 
             // Set up pipeline
@@ -143,6 +150,7 @@
 
         // Private Methods
         private _createSSAOPostProcess(ratio: number): void {
+            var numSamples = 16;
             var sampleSphere = [
                 0.5381, 0.1856, -0.4319,
                 0.1379, 0.2486, 0.4430,
@@ -161,18 +169,23 @@
                 0.0352, -0.0631, 0.5460,
                 -0.4776, 0.2847, -0.0271
             ];
-            var samplesFactor = 1.0 / 16.0;
+            var samplesFactor = 1.0 / numSamples;
 
-            this._ssaoPostProcess = new PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius", "area", "fallOff"],
+            this._ssaoPostProcess = new PostProcess("ssao", "ssao",
+                                                    [
+                                                        "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
+                                                        "area", "fallOff", "base"
+                                                    ],
                                                     ["randomSampler"],
                                                     ratio, null, Texture.BILINEAR_SAMPLINGMODE,
-                                                    this._scene.getEngine(), false);
+                                                    this._scene.getEngine(), false,
+                                                    "#define SAMPLES " + numSamples);
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
-                    effect.setFloat("randTextureTiles", 4.0 / ratio);
+                    effect.setFloat("randTextureTiles", 4.0);
                     this._firstUpdate = false;
                 }
 
@@ -180,6 +193,7 @@
                 effect.setFloat("radius", this.radius);
                 effect.setFloat("area", this.area);
                 effect.setFloat("fallOff", this.fallOff);
+                effect.setFloat("base", this.base);
 
                 effect.setTexture("textureSampler", this._depthTexture);
                 effect.setTexture("randomSampler", this._randomTexture);
@@ -209,13 +223,13 @@
                 return Math.random() * (max - min) + min;
             }
 
+            var randVector = Vector3.Zero();
+
             for (var x = 0; x < size; x++) {
                 for (var y = 0; y < size; y++) {
-                    var randVector = Vector3.Zero();
-
-                    randVector.x = Math.floor(rand(0.0, 1.0) * 255);
-                    randVector.y = Math.floor(rand(0.0, 1.0) * 255);
-                    randVector.z = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.x = Math.floor(rand(-1.0, 1.0) * 255);
+                    randVector.y = Math.floor(rand(-1.0, 1.0) * 255);
+                    randVector.z = Math.floor(rand(-1.0, 1.0) * 255);
 
                     context.fillStyle = 'rgb(' + randVector.x + ', ' + randVector.y + ', ' + randVector.z + ')';
                     context.fillRect(x, y, 1, 1);

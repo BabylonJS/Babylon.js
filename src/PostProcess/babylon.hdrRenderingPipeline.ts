@@ -21,6 +21,11 @@
         * @type {number}
         */
         public gaussStandDev: number = 0.8;
+        /**
+        * Gaussian blur multiplier. Multiplies the blur effect
+        * @type {number}
+        */
+        public gaussMultiplier: number = 4.0;
 
         // HDR
         /**
@@ -393,13 +398,13 @@
             var blurOffsetsW = new Array<number>(9);
             var blurOffsetsH = new Array<number>(9);
             var blurWeights = new Array<number>(9);
-            var uniforms: string[] = ["blurOffsets", "blurWeights"];
+            var uniforms: string[] = ["blurOffsets", "blurWeights", "multiplier"];
 
             // Utils for gaussian blur
             var calculateBlurOffsets = (height: boolean) => {
                 var lastOutputDimensions: any = {
-                    width: scene.getEngine().getRenderWidth() * (ratio / 4),
-                    height: scene.getEngine().getRenderHeight() * (ratio / 4)
+                    width: scene.getEngine().getRenderWidth(),
+                    height: scene.getEngine().getRenderHeight()
                 };
 
                 for (var i = 0; i < 9; i++) {
@@ -430,6 +435,7 @@
                     }
                     effect.setArray("blurOffsets", height ? blurOffsetsH : blurOffsetsW);
                     effect.setArray("blurWeights", blurWeights);
+                    effect.setFloat("multiplier", this.gaussMultiplier);
                 };
             };
 

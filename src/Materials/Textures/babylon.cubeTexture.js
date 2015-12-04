@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -15,6 +14,9 @@ var BABYLON;
             this.url = rootUrl;
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
+            if (!rootUrl) {
+                return;
+            }
             this._texture = this._getFromCache(rootUrl, noMipmap);
             if (!extensions) {
                 extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
@@ -55,8 +57,30 @@ var BABYLON;
         CubeTexture.prototype.getReflectionTextureMatrix = function () {
             return this._textureMatrix;
         };
+        CubeTexture.Parse = function (parsedTexture, scene, rootUrl) {
+            var texture = null;
+            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
+                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                texture.name = parsedTexture.name;
+                texture.hasAlpha = parsedTexture.hasAlpha;
+                texture.level = parsedTexture.level;
+                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            }
+            return texture;
+        };
+        CubeTexture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.hasAlpha = this.hasAlpha;
+            serializationObject.isCube = true;
+            serializationObject.level = this.level;
+            serializationObject.coordinatesMode = this.coordinatesMode;
+            return serializationObject;
+        };
         return CubeTexture;
     })(BABYLON.BaseTexture);
     BABYLON.CubeTexture = CubeTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.cubeTexture.js.map

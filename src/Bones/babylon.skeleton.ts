@@ -8,6 +8,8 @@
         private _animatables: IAnimatable[];
         private _identity = Matrix.Identity();
 
+        private _ranges = new Array<AnimationRange>();
+
         constructor(public name: string, public id: string, scene: Scene) {
             this.bones = [];
 
@@ -30,6 +32,39 @@
         }
 
         // Methods
+        public createAnimationRange(name: string, from: number, to: number): void {
+            this._ranges.push(new AnimationRange(name, from, to));
+        }
+
+        public deleteAnimationRange(name: string): void {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    this._ranges.splice(index, 1);
+                    return;
+                }
+            }
+        }
+
+        public getAnimationRange(name: string): AnimationRange {
+            for (var index = 0; index < this._ranges.length; index++) {
+                if (this._ranges[index].name === name) {
+                    return this._ranges[index];
+                }
+            }
+
+            return null;
+        }
+
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+            var range = this.getAnimationRange(name);
+
+            if (!range) {
+                return null;
+            }
+
+            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        }
+
         public _markAsDirty(): void {
             this._isDirty = true;
         }
@@ -53,7 +88,7 @@
                     bone.getWorldMatrix().copyFrom(bone.getLocalMatrix());
                 }
 
-                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);
+                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);                
             }
 
             this._identity.copyToArray(this._transformMatrices, this.bones.length * 16);
@@ -92,6 +127,61 @@
             }
 
             return result;
+        }
+
+        public dispose() {
+            // Animations
+            this.getScene().stopAnimation(this);
+
+            // Remove from scene
+            this.getScene().removeSkeleton(this);
+        }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+
+            serializationObject.bones = [];
+
+            for (var index = 0; index < this.bones.length; index++) {
+                var bone = this.bones[index];
+
+                var serializedBone: any = {
+                    parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
+                    name: bone.name,
+                    matrix: bone.getLocalMatrix().toArray()
+                };
+
+                serializationObject.bones.push(serializedBone);
+
+                if (bone.animations && bone.animations.length > 0) {
+                    serializedBone.animation = bone.animations[0].serialize();
+                }
+            }
+            return serializationObject;
+        }
+        
+        public static Parse(parsedSkeleton: any, scene: Scene) : Skeleton {
+            var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+
+            for (var index = 0; index < parsedSkeleton.bones.length; index++) {
+                var parsedBone = parsedSkeleton.bones[index];
+    
+                var parentBone = null;
+                if (parsedBone.parentBoneIndex > -1) {
+                    parentBone = skeleton.bones[parsedBone.parentBoneIndex];
+                }
+    
+                var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix));
+    
+                if (parsedBone.animation) {
+                    bone.animations.push(Animation.Parse(parsedBone.animation));
+                }
+            }
+    
+            return skeleton;
         }
     }
 }

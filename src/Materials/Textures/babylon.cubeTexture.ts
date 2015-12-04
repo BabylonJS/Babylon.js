@@ -15,6 +15,10 @@
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
 
+            if (!rootUrl) {
+                return;
+            }
+
             this._texture = this._getFromCache(rootUrl, noMipmap);
 
             if (!extensions) {
@@ -65,6 +69,33 @@
 
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
+        }
+        
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
+            var texture = null;
+            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
+                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                texture.name = parsedTexture.name;
+                texture.hasAlpha = parsedTexture.hasAlpha;
+                texture.level = parsedTexture.level;
+                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            }
+            return texture;
+        }
+
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject: any = {};
+            serializationObject.name = this.name;
+            serializationObject.hasAlpha = this.hasAlpha;
+            serializationObject.isCube = true;
+            serializationObject.level = this.level;
+            serializationObject.coordinatesMode = this.coordinatesMode;
+
+            return serializationObject;
         }
     }
 } 
