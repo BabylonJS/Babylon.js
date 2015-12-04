@@ -92,22 +92,14 @@ namespace Unity3D2Babylon
             }
         }
 
-        private void ConvertUnityEmptyObjectToBabylon(GameObject gameObject)
+        private void ConvertUnityEmptyObjectToBabylon(GameObject gameObject, BabylonAbstractMesh[] instances = null)
         {
             BabylonMesh babylonMesh = new BabylonMesh { name = gameObject.name, id = GetID(gameObject) };
 
             var transform = gameObject.transform;
 
             babylonMesh.parentId = GetParentID(transform);
-
-            babylonMesh.position = transform.localPosition.ToFloat();
-
-            babylonMesh.rotation = new float[3];
-            babylonMesh.rotation[0] = transform.localRotation.eulerAngles.x * (float)Math.PI / 180;
-            babylonMesh.rotation[1] = transform.localRotation.eulerAngles.y * (float)Math.PI / 180;
-            babylonMesh.rotation[2] = transform.localRotation.eulerAngles.z * (float)Math.PI / 180;
-
-            babylonMesh.scaling = transform.localScale.ToFloat();
+            ConvertTransform(babylonMesh, transform, gameObject, instances);
 
             babylonScene.MeshesList.Add(babylonMesh);
 
