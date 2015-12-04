@@ -29,6 +29,69 @@ namespace Unity3D2Babylon
             return babylonMesh;
         }
 
+        private void ConvertTransform(BabylonMesh babylonMesh, Transform transform, GameObject gameObject, BabylonAbstractMesh[] instances = null)
+        {
+            Action SetTransform = () =>
+            {
+                babylonMesh.position = transform.localPosition.ToFloat();
+
+                babylonMesh.rotation = new float[3];
+                babylonMesh.rotation[0] = transform.localRotation.eulerAngles.x * (float)Math.PI / 180;
+                babylonMesh.rotation[1] = transform.localRotation.eulerAngles.y * (float)Math.PI / 180;
+                babylonMesh.rotation[2] = transform.localRotation.eulerAngles.z * (float)Math.PI / 180;
+
+                babylonMesh.scaling = transform.localScale.ToFloat();
+            };
+
+            //Check if this is a prefab
+            if (instances != null)
+            {
+                /*
+                    Unity3D prefabs don't have transforms (position, rotation, scale) because they are just a template and are not drawn on screen          
+                    but Babylon.js meshes must have a transform because they are drawn on the screen
+                    so what we do is take the first instance
+                    copy its transform (position, rotation, scale) into the prefab mesh
+                    then remove that first instance
+                */
+
+                BabylonAbstractMesh first = instances[0];
+                babylonMesh.instances = new BabylonAbstractMesh[instances.Length - 1];
+
+                //Effectively remove first instance from list of all instances
+                for (int i = 0; i < instances.Length - 1; i++)
+                {
+                    babylonMesh.instances[i] = instances[i + 1];
+                }
+
+                //If this is the root object then copy values directly from first instance
+                if (GetParentID(transform) == null)
+                {
+                    babylonMesh.position = new float[3];
+                    babylonMesh.position[0] = first.position[0];
+                    babylonMesh.position[1] = first.position[1];
+                    babylonMesh.position[2] = first.position[2];
+
+                    babylonMesh.rotation = new float[3];
+                    babylonMesh.rotation[0] = first.rotation[0];
+                    babylonMesh.rotation[1] = first.rotation[1];
+                    babylonMesh.rotation[2] = first.rotation[2];
+
+                    babylonMesh.scaling = new float[3];
+                    babylonMesh.scaling[0] = first.scaling[0];
+                    babylonMesh.scaling[1] = first.scaling[1];
+                    babylonMesh.scaling[2] = first.scaling[2];
+                }
+                else
+                {
+                    SetTransform();
+                }
+            }
+            else
+            {
+                SetTransform();
+            }
+        }
+
         private void ConvertUnityEmptyObjectToBabylon(GameObject gameObject)
         {
             BabylonMesh babylonMesh = new BabylonMesh { name = gameObject.name, id = GetID(gameObject) };
