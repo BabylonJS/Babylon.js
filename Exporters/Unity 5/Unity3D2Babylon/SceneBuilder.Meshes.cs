@@ -74,7 +74,6 @@ namespace Unity3D2Babylon
                     then remove that first instance
                 */
 
-                BabylonAbstractMesh first = instances[0];
                 babylonMesh.instances = new BabylonAbstractMesh[instances.Length - 1];
 
                 //Effectively remove first instance from list of all instances
@@ -86,24 +85,18 @@ namespace Unity3D2Babylon
                 //If this is the root object then copy values directly from first instance
                 if (GetParentID(transform) == null)
                 {
-                    babylonMesh.position = new float[3];
-                    babylonMesh.position[0] = first.position[0];
-                    babylonMesh.position[1] = first.position[1];
-                    babylonMesh.position[2] = first.position[2];
-
-                    babylonMesh.rotation = new float[3];
-                    babylonMesh.rotation[0] = first.rotation[0];
-                    babylonMesh.rotation[1] = first.rotation[1];
-                    babylonMesh.rotation[2] = first.rotation[2];
-
-                    babylonMesh.scaling = new float[3];
-                    babylonMesh.scaling[0] = first.scaling[0];
-                    babylonMesh.scaling[1] = first.scaling[1];
-                    babylonMesh.scaling[2] = first.scaling[2];
+                    SetTransformFromFirstInstance();
                 }
                 else
                 {
-                    SetTransformFromGameobject();
+                    GameObject parent = gameObject.transform.parent.gameObject;
+                    if ((parent.GetComponent<Light>() == null) && (parent.GetComponent<Camera>() == null))
+                    {
+                        SetTransformFromGameobject();
+                    } else
+                    {
+                        SetTransformFromFirstInstance();
+                    }
                 }
             }
             else
