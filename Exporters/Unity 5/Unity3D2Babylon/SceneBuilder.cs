@@ -139,6 +139,22 @@ namespace Unity3D2Babylon
                     continue;
                 }
 
+                // Check if this is a prefab instance
+                GameObject gobjPrefab = (GameObject)PrefabUtility.GetPrefabParent(gameObject);
+                if (gobjPrefab != null)
+                {
+                    //Add prefab to dictionary if it doesn't already exist
+                    if (!dicPrefabs.ContainsKey(gobjPrefab))
+                    {
+                        dicPrefabs[gobjPrefab] = new List<BabylonAbstractMesh>();
+                    }
+
+                    List<BabylonAbstractMesh> lstInstances = dicPrefabs[gobjPrefab];
+                    BabylonAbstractMesh instance = ConvertUnityMeshToInstance(gameObject);
+                    lstInstances.Add(instance);
+                    continue;
+                }
+
                 // Static meshes
                 var meshFilter = gameObject.GetComponent<MeshFilter>();
                 if (meshFilter != null)
