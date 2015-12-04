@@ -108,6 +108,10 @@ namespace Unity3D2Babylon
             var itemsCount = gameObjects.Length;
 
             var index = 0;
+
+            //Dictionary to store prefabs and their instances
+            Dictionary<GameObject, List<BabylonAbstractMesh>> dicPrefabs = new Dictionary<GameObject, List<BabylonAbstractMesh>>();
+
             foreach (var gameObject in gameObjects)
             {
                 var progress = ((float)index / itemsCount);
