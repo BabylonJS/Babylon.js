@@ -331,7 +331,12 @@ var BABYLON;
         };
         ParticleSystem.prototype.serialize = function () {
             var serializationObject = {};
-            serializationObject.emitterId = this.emitter.id;
+            serializationObject.name = this.name;
+            if (this.emitter.position) {
+                serializationObject.emitterId = this.emitter.id;
+            } else {
+                serializationObject.emitter = this.emitter.asArray();
+            }
             serializationObject.capacity = this.getCapacity();
             if (this.particleTexture) {
                 serializationObject.textureName = this.particleTexture.name;
@@ -358,11 +363,16 @@ var BABYLON;
             return serializationObject;
         };
         ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
-            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
-            var particleSystem = new ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);
+            var name = parsedParticleSystem.name;
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
+            }
+            if (parsedParticleSystem.emitterId) {
+                particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            } else {
+                particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
             }
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
@@ -370,7 +380,6 @@ var BABYLON;
             particleSystem.maxSize = parsedParticleSystem.maxSize;
             particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
             particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
-            particleSystem.emitter = emitter;
             particleSystem.emitRate = parsedParticleSystem.emitRate;
             particleSystem.minEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.minEmitBox);
             particleSystem.maxEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.maxEmitBox);

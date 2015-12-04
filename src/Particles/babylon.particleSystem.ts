@@ -449,7 +449,12 @@
         public serialize(): any {
             var serializationObject: any = {};
 
-            serializationObject.emitterId = this.emitter.id;
+            serializationObject.name = this.name;
+            if (this.emitter.position) {
+                serializationObject.emitterId = this.emitter.id;
+            } else {
+                serializationObject.emitter = this.emitter.asArray();;
+            }
             serializationObject.capacity = this.getCapacity();
 
             if (this.particleTexture) {
@@ -482,18 +487,16 @@
         }
 
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
-            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
-            var name = "no-emitter";
-            if (emitter){
-                name = emitter.name;
-            }
-            var particleSystem = new ParticleSystem("particles#" + name, parsedParticleSystem.capacity, scene);
+            var name = parsedParticleSystem.name;
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
-            if (emitter) {
-                particleSystem.emitter = emitter;
+            if (parsedParticleSystem.emitterId) {
+                particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            } else {
+                particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
             }
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
