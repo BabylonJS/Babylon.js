@@ -31,7 +31,7 @@ namespace Unity3D2Babylon
 
         private void ConvertTransform(BabylonMesh babylonMesh, Transform transform, GameObject gameObject, BabylonAbstractMesh[] instances = null)
         {
-            Action SetTransform = () =>
+            Action SetTransformFromGameobject = () =>
             {
                 babylonMesh.position = transform.localPosition.ToFloat();
 
@@ -83,12 +83,12 @@ namespace Unity3D2Babylon
                 }
                 else
                 {
-                    SetTransform();
+                    SetTransformFromGameobject();
                 }
             }
             else
             {
-                SetTransform();
+                SetTransformFromGameobject();
             }
         }
 
