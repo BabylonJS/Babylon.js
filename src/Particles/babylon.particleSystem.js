@@ -332,7 +332,7 @@ var BABYLON;
         ParticleSystem.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.name = this.name;
-            if (this.emittor.position) {
+            if (this.emitter.position) {
                 serializationObject.emitterId = this.emitter.id;
             } else {
                 serializationObject.emitter = this.emitter.asArray();
