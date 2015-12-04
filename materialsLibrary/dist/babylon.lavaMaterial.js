@@ -455,7 +455,7 @@ var BABYLON;
         };
         LavaMaterial.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.customType = "lava";
+            serializationObject.customType = "BABYLON.LavaMaterial";
             serializationObject.diffuseColor = this.diffuseColor.asArray();
             serializationObject.fogColor = this.fogColor.asArray();
             serializationObject.speed = this.speed;
