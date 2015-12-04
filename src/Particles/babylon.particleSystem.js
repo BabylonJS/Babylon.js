@@ -336,6 +336,7 @@ var BABYLON;
             if (this.particleTexture) {
                 serializationObject.textureName = this.particleTexture.name;
             }
+            serializationObject.name = this.name;
             serializationObject.minAngularSpeed = this.minAngularSpeed;
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
@@ -358,19 +359,20 @@ var BABYLON;
             return serializationObject;
         };
         ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
-            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
-            var particleSystem = new ParticleSystem("particles#" + emitter.name, parsedParticleSystem.capacity, scene);
+            var name = parsedParticleSystem.name;
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
             if (parsedParticleSystem.textureName) {
-                particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
+            var emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            particleSystem.emitter = emitter ? emitter : BABYLON.Vector3.Zero();
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
             particleSystem.maxSize = parsedParticleSystem.maxSize;
             particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
             particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
-            particleSystem.emitter = emitter;
             particleSystem.emitRate = parsedParticleSystem.emitRate;
             particleSystem.minEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.minEmitBox);
             particleSystem.maxEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.maxEmitBox);
