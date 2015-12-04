@@ -23,12 +23,20 @@ module BABYLON {
             this._meshes[mesh.uniqueId] = mesh;
         }
 
+        public removeMesh(uniqueId: number) {
+            delete this._meshes[uniqueId];
+        }
+
         public getGeometry(id: string): SerializedGeometry {
             return this._geometries[id];
         }
 
         public addGeometry(geometry: SerializedGeometry) {
             this._geometries[geometry.id] = geometry;
+        }
+
+        public removeGeometry(id: string) {
+            delete this._geometries[id];
         }
     }
 
@@ -44,9 +52,7 @@ module BABYLON {
         public collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number) {
 
             //TODO CollisionsEpsilon should be defined here and not in the engine.
-            var closeDistance = /*Engine.CollisionsEpsilon * 10.0*/ 0.01;
-
-            //is initializing here correct? A quick look - looks like it is fine.
+            const closeDistance = 0.01; //is initializing here correct? A quick look - looks like it is fine.
             if (this.collider.retry >= maximumRetry) {
                 this.finalPosition.copyFrom(position);
                 return;
@@ -102,11 +108,7 @@ module BABYLON {
             //return colTransMat;
         }
 
-        private processCollisionsForSubMeshes(transformMatrix: Matrix, mesh: SerializedMesh): void {
-            var len: number;
-            var subMeshes;
-
-            // No Octrees for now
+        private processCollisionsForSubMeshes(transformMatrix: Matrix, mesh: SerializedMesh): void { // No Octrees for now
             //if (this._submeshesOctree && this.useOctreeForCollisions) {
             //    var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
             //    var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
@@ -114,8 +116,8 @@ module BABYLON {
             //    len = intersections.length;
             //    subMeshes = intersections.data;
             //} else {
-                subMeshes = mesh.subMeshes;
-                len = subMeshes.length;
+            var subMeshes = mesh.subMeshes;
+            var len = subMeshes.length;
             //}
 
             if (!mesh.geometryId) {
@@ -137,9 +139,9 @@ module BABYLON {
                     continue;
 
                 this.collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-				if (this.collider.collisionFound) {
-					this.collider.collidedMesh = <any> mesh.uniqueId;
-				}
+                if (this.collider.collisionFound) {
+                    this.collider.collidedMesh = <any>mesh.uniqueId;
+                }
             }
         }
 
@@ -151,7 +153,7 @@ module BABYLON {
                     meshGeometry['positionsArray'].push(p);
                 }
             }
-            
+
             if (!subMesh['_lastColliderWorldVertices'] || !subMesh['_lastColliderTransformMatrix'].equals(transformMatrix)) {
                 subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
                 subMesh['_lastColliderWorldVertices'] = [];
@@ -164,11 +166,11 @@ module BABYLON {
             }        
 
             // Collide
-            this.collider._collide(subMesh['_trianglePlanes'], subMesh['_lastColliderWorldVertices'], <any> meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
-			
+            this.collider._collide(subMesh['_trianglePlanes'], subMesh['_lastColliderWorldVertices'], <any>meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
+
         }
 
-        private checkSubmeshCollision(subMesh: SerializedSubMesh) : boolean {
+        private checkSubmeshCollision(subMesh: SerializedSubMesh): boolean {
             return this.collider._canDoCollision(Vector3.FromArray(subMesh.sphereCenter), subMesh.sphereRadius, Vector3.FromArray(subMesh.boxMinimum), Vector3.FromArray(subMesh.boxMaximum));
         }
     }
@@ -192,21 +194,36 @@ module BABYLON {
         }
 
         public onUpdate(payload: UpdatePayload) {
-            for (var id in payload.updatedGeometries) {
-                if (payload.updatedGeometries.hasOwnProperty(id)) {
-                    this._collisionCache.addGeometry(payload.updatedGeometries[id]);
-                }
-            }
-            for (var uniqueId in payload.updatedMeshes) {
-                if (payload.updatedMeshes.hasOwnProperty(uniqueId)) {
-                    this._collisionCache.addMesh(payload.updatedMeshes[uniqueId]);
-                }
-            }
-
             var replay: WorkerReply = {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.UPDATE
             }
+
+            try {
+                for (var id in payload.updatedGeometries) {
+                    if (payload.updatedGeometries.hasOwnProperty(id)) {
+                        this._collisionCache.addGeometry(payload.updatedGeometries[id]);
+                    }
+                }
+                for (var uniqueId in payload.updatedMeshes) {
+                    if (payload.updatedMeshes.hasOwnProperty(uniqueId)) {
+                        this._collisionCache.addMesh(payload.updatedMeshes[uniqueId]);
+                    }
+                }
+
+                payload.removedGeometries.forEach((id) => {
+                    this._collisionCache.removeGeometry(id);
+                });
+
+                payload.removedMeshes.forEach((uniqueId) => {
+                    this._collisionCache.removeMesh(uniqueId);
+                });
+
+            } catch (x) {
+                replay.error = WorkerReplyType.UNKNOWN_ERROR;
+            }
+
+
             postMessage(replay, undefined);
         }
 
@@ -219,7 +236,7 @@ module BABYLON {
             var colliderWorker = new CollideWorker(collider, this._collisionCache, finalPosition);
             colliderWorker.collideWithWorld(Vector3.FromArray(payload.collider.position), Vector3.FromArray(payload.collider.velocity), payload.maximumRetry, payload.excludedMeshUniqueId);
             var replyPayload: CollisionReplyPayload = {
-                collidedMeshUniqueId: <any> collider.collidedMesh,
+                collidedMeshUniqueId: <any>collider.collidedMesh,
                 collisionId: payload.collisionId,
                 newPosition: finalPosition.asArray()
             }
@@ -240,7 +257,7 @@ module BABYLON {
         if (self && self instanceof WorkerGlobalScope) {
 
             //Window hack to allow including babylonjs native code. the <any> is for typescript.
-            window = <any> {};
+            window = <any>{};
 
             //scripts were not included, standalone worker
             if (!BABYLON.Collider) {
@@ -251,18 +268,18 @@ module BABYLON {
 
             var collisionDetector: ICollisionDetector = new CollisionDetectorTransferable();
 
-            var onNewMessage = function (event: MessageEvent) {
-                var message = <BabylonMessage> event.data;
+            var onNewMessage = (event: MessageEvent) => {
+                var message = <BabylonMessage>event.data;
                 switch (message.taskType) {
-                    case WorkerTaskType.INIT:
-                        collisionDetector.onInit(<InitPayload> message.payload);
-                        break;
-                    case WorkerTaskType.COLLIDE:
-                        collisionDetector.onCollision(<CollidePayload> message.payload);
-                        break;
-                    case WorkerTaskType.UPDATE:
-                        collisionDetector.onUpdate(<UpdatePayload> message.payload);
-                        break;
+                case WorkerTaskType.INIT:
+                    collisionDetector.onInit(<InitPayload>message.payload);
+                    break;
+                case WorkerTaskType.COLLIDE:
+                    collisionDetector.onCollision(<CollidePayload>message.payload);
+                    break;
+                case WorkerTaskType.UPDATE:
+                    collisionDetector.onUpdate(<UpdatePayload>message.payload);
+                    break;
                 }
             }
 

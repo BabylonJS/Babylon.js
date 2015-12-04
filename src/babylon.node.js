@@ -144,7 +144,7 @@ var BABYLON;
             return results;
         };
         Node.prototype._setReady = function (state) {
-            if (state == this._isReady) {
+            if (state === this._isReady) {
                 return;
             }
             if (!state) {
@@ -155,6 +155,15 @@ var BABYLON;
             if (this.onReady) {
                 this.onReady(this);
             }
+        };
+        Node.prototype.getAnimationByName = function (name) {
+            for (var i = 0; i < this.animations.length; i++) {
+                var animation = this.animations[i];
+                if (animation.name === name) {
+                    return animation;
+                }
+            }
+            return null;
         };
         return Node;
     })();

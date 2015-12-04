@@ -19,6 +19,23 @@ var BABYLON;
     var Tools = (function () {
         function Tools() {
         }
+        Tools.Instantiate = function (className) {
+            var arr = className.split(".");
+            var fn = (window || this);
+            for (var i = 0, len = arr.length; i < len; i++) {
+                fn = fn[arr[i]];
+            }
+            if (typeof fn !== "function") {
+                return null;
+            }
+            return fn;
+        };
+        Tools.GetConstructorName = function (obj) {
+            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
+            var cname = str.match(/function\s(\w*)/)[1];
+            var aliases = ["", "anonymous", "Anonymous"];
+            return aliases.indexOf(cname) > -1 ? "Function" : cname;
+        };
         Tools.ToHex = function (i) {
             var str = i.toString(16);
             if (i <= 15) {
@@ -34,14 +51,14 @@ var BABYLON;
                 setTimeout(action, 1);
             }
         };
-        Tools.IsExponantOfTwo = function (value) {
+        Tools.IsExponentOfTwo = function (value) {
             var count = 1;
             do {
                 count *= 2;
             } while (count < value);
             return count === value;
         };
-        Tools.GetExponantOfTwo = function (value, max) {
+        Tools.GetExponentOfTwo = function (value, max) {
             var count = 1;
             do {
                 count *= 2;
@@ -72,6 +89,31 @@ var BABYLON;
         };
         Tools.ToRadians = function (angle) {
             return angle * Math.PI / 180;
+        };
+        Tools.EncodeArrayBufferTobase64 = function (buffer) {
+            var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            var output = "";
+            var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+            var i = 0;
+            var bytes = new Uint8Array(buffer);
+            while (i < bytes.length) {
+                chr1 = bytes[i++];
+                chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index 
+                chr3 = i < bytes.length ? bytes[i++] : Number.NaN; // checks are needed here
+                enc1 = chr1 >> 2;
+                enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                enc4 = chr3 & 63;
+                if (isNaN(chr2)) {
+                    enc3 = enc4 = 64;
+                }
+                else if (isNaN(chr3)) {
+                    enc4 = 64;
+                }
+                output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+                    keyStr.charAt(enc3) + keyStr.charAt(enc4);
+            }
+            return "data:image/png;base64," + output;
         };
         Tools.ExtractMinAndMaxIndexed = function (positions, indices, indexStart, indexCount) {
             var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -107,8 +149,8 @@ var BABYLON;
         // Misc.
         Tools.GetPointerPrefix = function () {
             var eventPrefix = "pointer";
-            // Check if hand.js is referenced or if the browser natively supports pointer events
-            if (!navigator.pointerEnabled) {
+            // Check if pointer events are supported
+            if (!window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
             return eventPrefix;
@@ -158,10 +200,27 @@ var BABYLON;
             return url;
         };
         Tools.LoadImage = function (url, onload, onerror, database) {
+            if (url instanceof ArrayBuffer) {
+                url = Tools.EncodeArrayBufferTobase64(url);
+            }
             url = Tools.CleanUrl(url);
             var img = new Image();
-            if (url.substr(0, 5) !== "data:")
-                img.crossOrigin = 'anonymous';
+            if (url.substr(0, 5) !== "data:") {
+                if (Tools.CorsBehavior) {
+                    switch (typeof (Tools.CorsBehavior)) {
+                        case "function":
+                            var result = Tools.CorsBehavior(url);
+                            if (result) {
+                                img.crossOrigin = result;
+                            }
+                            break;
+                        case "string":
+                        default:
+                            img.crossOrigin = Tools.CorsBehavior;
+                            break;
+                    }
+                }
+            }
             img.onload = function () {
                 onload(img);
             };
@@ -277,6 +336,13 @@ var BABYLON;
                 reader.readAsArrayBuffer(fileToLoad);
             }
         };
+        //returns a downloadable url to a file content.
+        Tools.FileAsURL = function (content) {
+            var fileBlob = new Blob([content]);
+            var url = window.URL || window.webkitURL;
+            var link = url.createObjectURL(fileBlob);
+            return link;
+        };
         // Misc.   
         Tools.Clamp = function (value, min, max) {
             if (min === void 0) { min = 0; }
@@ -385,7 +451,7 @@ var BABYLON;
                 }
             }
         };
-        Tools.DumpFramebuffer = function (width, height, engine) {
+        Tools.DumpFramebuffer = function (width, height, engine, successCallback) {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -416,35 +482,34 @@ var BABYLON;
             castData.set(data);
             context.putImageData(imageData, 0, 0);
             var base64Image = screenshotCanvas.toDataURL();
-            //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-            if (("download" in document.createElement("a"))) {
-                var a = window.document.createElement("a");
-                a.href = base64Image;
-                var date = new Date();
-                var stringDate = date.getFullYear() + "/" + date.getMonth() + "/" + date.getDate() + "-" + date.getHours() + ":" + date.getMinutes();
-                a.setAttribute("download", "screenshot-" + stringDate + ".png");
-                window.document.body.appendChild(a);
-                a.addEventListener("click", function () {
-                    a.parentElement.removeChild(a);
-                });
-                a.click();
+            if (successCallback) {
+                successCallback(base64Image);
             }
             else {
-                var newWindow = window.open("");
-                var img = newWindow.document.createElement("img");
-                img.src = base64Image;
-                newWindow.document.body.appendChild(img);
+                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                if (("download" in document.createElement("a"))) {
+                    var a = window.document.createElement("a");
+                    a.href = base64Image;
+                    var date = new Date();
+                    var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                    a.setAttribute("download", "screenshot_" + stringDate + ".png");
+                    window.document.body.appendChild(a);
+                    a.addEventListener("click", function () {
+                        a.parentElement.removeChild(a);
+                    });
+                    a.click();
+                }
+                else {
+                    var newWindow = window.open("");
+                    var img = newWindow.document.createElement("img");
+                    img.src = base64Image;
+                    newWindow.document.body.appendChild(img);
+                }
             }
         };
-        Tools.CreateScreenshot = function (engine, camera, size) {
+        Tools.CreateScreenshot = function (engine, camera, size, successCallback) {
             var width;
             var height;
-            var scene = camera.getScene();
-            var previousCamera = null;
-            if (scene.activeCamera !== camera) {
-                previousCamera = scene.activeCamera;
-                scene.activeCamera = camera;
-            }
             //If a precision value is specified
             if (size.precision) {
                 width = Math.round(engine.getRenderWidth() * size.precision);
@@ -473,11 +538,17 @@ var BABYLON;
                 Tools.Error("Invalid 'size' parameter !");
                 return;
             }
+            var scene = camera.getScene();
+            var previousCamera = null;
+            if (scene.activeCamera !== camera) {
+                previousCamera = scene.activeCamera;
+                scene.activeCamera = camera;
+            }
             //At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
             var texture = new BABYLON.RenderTargetTexture("screenShot", size, scene, false, false);
             texture.renderList = scene.meshes;
             texture.onAfterRender = function () {
-                Tools.DumpFramebuffer(width, height, engine);
+                Tools.DumpFramebuffer(width, height, engine, successCallback);
             };
             scene.incrementRenderId();
             texture.render(true);
@@ -721,12 +792,8 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        // Deprecated
-        Tools.GetFps = function () {
-            Tools.Warn("Tools.GetFps() is deprecated. Please use engine.getFps() instead");
-            return 0;
-        };
         Tools.BaseUrl = "";
+        Tools.CorsBehavior = "anonymous";
         // Logs
         Tools._NoneLogLevel = 0;
         Tools._MessageLogLevel = 1;

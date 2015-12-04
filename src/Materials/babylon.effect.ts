@@ -5,6 +5,9 @@
         private _currentRank = 32;
         private _maxRank = -1;
 
+        private _mesh : AbstractMesh;
+        private _meshRank : number;
+
         public addFallback(rank: number, define: string): void {
             if (!this._defines[rank]) {
                 if (rank < this._currentRank) {
@@ -21,6 +24,15 @@
             this._defines[rank].push(define);
         }
 
+            public addCPUSkinningFallback(rank: number, mesh : BABYLON.AbstractMesh){
+                this._meshRank = rank;
+                this._mesh = mesh;
+    
+                if (rank > this._maxRank) {
+                    this._maxRank = rank;
+                }
+            }
+
         public get isMoreFallbacks(): boolean {
             return this._currentRank <= this._maxRank;
         }
@@ -31,6 +43,12 @@
 
             for (var index = 0; index < currentFallbacks.length; index++) {
                 currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+            }
+
+            if (this._mesh && this._currentRank === this._meshRank){
+                this._mesh.computeBonesUsingShaders = false;
+                currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
+                Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
             }
 
             this._currentRank++;
@@ -201,6 +219,19 @@
             Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
+        private _dumpShadersName(): void {
+            if (this.name.vertexElement) {
+                Tools.Error("Vertex shader:" + this.name.vertexElement);
+                Tools.Error("Fragment shader:" + this.name.fragmentElement);
+            } else if (this.name.vertex) {
+                Tools.Error("Vertex shader:" + this.name.vertex);
+                Tools.Error("Fragment shader:" + this.name.fragment);
+            } else {
+                Tools.Error("Vertex shader:" + this.name);
+                Tools.Error("Fragment shader:" + this.name);
+            }
+        }
+
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
                 var engine = this._engine;
@@ -241,20 +272,13 @@
                 }
                 // Let's go through fallbacks then
                 if (fallbacks && fallbacks.isMoreFallbacks) {
+                    Tools.Error("Unable to compile effect with current defines. Trying next fallback.");
+                    this._dumpShadersName();
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 } else { // Sorry we did everything we can
                     Tools.Error("Unable to compile effect: ");
-                    if (this.name.vertexElement) {
-                        Tools.Error("Vertex shader:" + this.name.vertexElement);
-                        Tools.Error("Fragment shader:" + this.name.fragmentElement);
-                    } else if (this.name.vertex) {
-                        Tools.Error("Vertex shader:" + this.name.vertex);
-                        Tools.Error("Fragment shader:" + this.name.fragment);
-                    } else {
-                        Tools.Error("Vertex shader:" + this.name);
-                        Tools.Error("Fragment shader:" + this.name);
-                    }
+                    this._dumpShadersName();
                     Tools.Error("Defines: " + defines);
                     Tools.Error("Error: " + e.message);
                     this._compilationError = e.message;
@@ -264,6 +288,10 @@
                     }
                 }
             }
+        }
+
+        public get isSupported(): boolean {
+            return this._compilationError === "";
         }
 
         public _bindTexture(channel: string, texture: WebGLTexture): void {
@@ -278,15 +306,15 @@
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 
-        //public _cacheMatrix(uniformName, matrix) {
-        //    if (!this._valueCache[uniformName]) {
-        //        this._valueCache[uniformName] = new BABYLON.Matrix();
-        //    }
+        public _cacheMatrix(uniformName, matrix) {
+            if (!this._valueCache[uniformName]) {
+                this._valueCache[uniformName] = new Matrix();
+            }
 
-        //    for (var index = 0; index < 16; index++) {
-        //        this._valueCache[uniformName].m[index] = matrix.m[index];
-        //    }
-        //};
+            for (var index = 0; index < 16; index++) {
+                this._valueCache[uniformName].m[index] = matrix.m[index];
+            }
+        }
 
         public _cacheFloat2(uniformName: string, x: number, y: number): void {
             if (!this._valueCache[uniformName]) {
@@ -352,10 +380,10 @@
         }
 
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
-            //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-            //    return;
+            if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
+                return this;
 
-            //this._cacheMatrix(uniformName, matrix);
+            this._cacheMatrix(uniformName, matrix);
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
 
             return this;

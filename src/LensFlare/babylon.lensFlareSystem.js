@@ -5,6 +5,7 @@ var BABYLON;
             this.name = name;
             this.lensFlares = new Array();
             this.borderLimit = 300;
+            this.layerMask = 0x0FFFFFFF;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
             this._isEnabled = true;
@@ -174,6 +175,32 @@ var BABYLON;
             // Remove from scene
             var index = this._scene.lensFlareSystems.indexOf(this);
             this._scene.lensFlareSystems.splice(index, 1);
+        };
+        LensFlareSystem.Parse = function (parsedLensFlareSystem, scene, rootUrl) {
+            var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
+            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
+            for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
+                var parsedFlare = parsedLensFlareSystem.flares[index];
+                var flare = new BABYLON.LensFlare(parsedFlare.size, parsedFlare.position, BABYLON.Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
+            }
+            return lensFlareSystem;
+        };
+        LensFlareSystem.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.emitterId = this.getEmitter().id;
+            serializationObject.borderLimit = this.borderLimit;
+            serializationObject.flares = [];
+            for (var index = 0; index < this.lensFlares.length; index++) {
+                var flare = this.lensFlares[index];
+                serializationObject.flares.push({
+                    size: flare.size,
+                    position: flare.position,
+                    color: flare.color.asArray(),
+                    textureName: BABYLON.Tools.GetFilename(flare.texture.name)
+                });
+            }
+            return serializationObject;
         };
         return LensFlareSystem;
     })();

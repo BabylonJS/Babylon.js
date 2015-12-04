@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -72,14 +71,14 @@ var BABYLON;
             this.getScene().getEngine().updateTextureSamplingMode(samplingMode, this._texture);
         };
         Texture.prototype._prepareRowForTextureGeneration = function (x, y, z, t) {
-            x -= this.uOffset + 0.5;
-            y -= this.vOffset + 0.5;
+            x *= this.uScale;
+            y *= this.vScale;
+            x -= 0.5 * this.uScale;
+            y -= 0.5 * this.vScale;
             z -= 0.5;
             BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix, t);
-            t.x *= this.uScale;
-            t.y *= this.vScale;
-            t.x += 0.5;
-            t.y += 0.5;
+            t.x += 0.5 * this.uScale + this.uOffset;
+            t.y += 0.5 * this.vScale + this.vOffset;
             t.z += 0.5;
         };
         Texture.prototype.getTextureMatrix = function () {
@@ -138,13 +137,6 @@ var BABYLON;
             }
             this._cachedCoordinatesMode = this.coordinatesMode;
             switch (this.coordinatesMode) {
-                case Texture.SPHERICAL_MODE:
-                    BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
-                    this._cachedTextureMatrix[0] = -0.5 * this.uScale;
-                    this._cachedTextureMatrix[5] = -0.5 * this.vScale;
-                    this._cachedTextureMatrix[12] = 0.5 + this.uOffset;
-                    this._cachedTextureMatrix[13] = 0.5 + this.vOffset;
-                    break;
                 case Texture.PLANAR_MODE:
                     BABYLON.Matrix.IdentityToRef(this._cachedTextureMatrix);
                     this._cachedTextureMatrix[0] = this.uScale;
@@ -188,12 +180,75 @@ var BABYLON;
             newTexture.wAng = this.wAng;
             return newTexture;
         };
+        Texture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.uOffset = this.uOffset;
+            serializationObject.vOffset = this.vOffset;
+            serializationObject.uScale = this.uScale;
+            serializationObject.vScale = this.vScale;
+            serializationObject.uAng = this.uAng;
+            serializationObject.vAng = this.vAng;
+            serializationObject.wAng = this.wAng;
+            return serializationObject;
+        };
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
             if (samplingMode === void 0) { samplingMode = Texture.TRILINEAR_SAMPLINGMODE; }
             if (onLoad === void 0) { onLoad = null; }
             if (onError === void 0) { onError = null; }
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
+        };
+        Texture.Parse = function (parsedTexture, scene, rootUrl) {
+            if (parsedTexture.isCube) {
+                return BABYLON.CubeTexture.Parse(parsedTexture, scene, rootUrl);
+            }
+            if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+                return null;
+            }
+            var texture;
+            if (parsedTexture.mirrorPlane) {
+                texture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                texture._waitingRenderList = parsedTexture.renderList;
+                texture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
+            }
+            else if (parsedTexture.isRenderTarget) {
+                texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                texture._waitingRenderList = parsedTexture.renderList;
+            }
+            else {
+                if (parsedTexture.base64String) {
+                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                }
+                else {
+                    texture = new Texture(rootUrl + parsedTexture.name, scene);
+                }
+            }
+            texture.name = parsedTexture.name;
+            texture.hasAlpha = parsedTexture.hasAlpha;
+            texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
+            texture.level = parsedTexture.level;
+            texture.coordinatesIndex = parsedTexture.coordinatesIndex;
+            texture.coordinatesMode = parsedTexture.coordinatesMode;
+            texture.uOffset = parsedTexture.uOffset;
+            texture.vOffset = parsedTexture.vOffset;
+            texture.uScale = parsedTexture.uScale;
+            texture.vScale = parsedTexture.vScale;
+            texture.uAng = parsedTexture.uAng;
+            texture.vAng = parsedTexture.vAng;
+            texture.wAng = parsedTexture.wAng;
+            texture.wrapU = parsedTexture.wrapU;
+            texture.wrapV = parsedTexture.wrapV;
+            // Animations
+            if (parsedTexture.animations) {
+                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedTexture.animations[animationIndex];
+                    texture.animations.push(BABYLON.Animation.Parse(parsedAnimation));
+                }
+            }
+            return texture;
         };
         // Constants
         Texture.NEAREST_SAMPLINGMODE = 1;
@@ -205,6 +260,9 @@ var BABYLON;
         Texture.CUBIC_MODE = 3;
         Texture.PROJECTION_MODE = 4;
         Texture.SKYBOX_MODE = 5;
+        Texture.INVCUBIC_MODE = 6;
+        Texture.EQUIRECTANGULAR_MODE = 7;
+        Texture.FIXED_EQUIRECTANGULAR_MODE = 8;
         Texture.CLAMP_ADDRESSMODE = 0;
         Texture.WRAP_ADDRESSMODE = 1;
         Texture.MIRROR_ADDRESSMODE = 2;

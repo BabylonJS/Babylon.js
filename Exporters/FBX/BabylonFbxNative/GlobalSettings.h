@@ -1,5 +1,7 @@
 #pragma once
+#include <cstdint>
 #include <fbxsdk.h>
+
 class GlobalSettings
 {
 private:
@@ -10,5 +12,6 @@ public:
 	double AnimationsFrameRate(){
 		return FbxTime::GetFrameRate(AnimationsTimeMode);
 	}
+	std::uint32_t AnimStackIndex = 0;
 	static GlobalSettings& Current();
 };

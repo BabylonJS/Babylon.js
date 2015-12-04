@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -22,11 +21,17 @@ var BABYLON;
             var activeCamera = this.getScene().activeCamera;
             BABYLON.Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
         };
+        SpotLight.prototype.needCube = function () {
+            return false;
+        };
         SpotLight.prototype.supportsVSM = function () {
             return true;
         };
         SpotLight.prototype.needRefreshPerFrame = function () {
             return false;
+        };
+        SpotLight.prototype.getShadowDirection = function (faceIndex) {
+            return this.direction;
         };
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
@@ -65,6 +70,15 @@ var BABYLON;
             }
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
+        };
+        SpotLight.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = 2;
+            serializationObject.position = this.position.asArray();
+            serializationObject.direction = this.position.asArray();
+            serializationObject.angle = this.angle;
+            serializationObject.exponent = this.exponent;
+            return serializationObject;
         };
         return SpotLight;
     })(BABYLON.Light);

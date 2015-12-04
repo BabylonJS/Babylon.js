@@ -90,7 +90,7 @@
             engine.setDepthWrite(true);
         }
 
-        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture, postProcesses?: PostProcess[]): void {
+        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture, faceIndex?: number, postProcesses?: PostProcess[]): void {
             postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
@@ -103,7 +103,7 @@
                     postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
                 } else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture);
+                        engine.bindFramebuffer(targetTexture, faceIndex);
                     } else {
                         engine.restoreDefaultFramebuffer();
                     }

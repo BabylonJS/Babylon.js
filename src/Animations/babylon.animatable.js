@@ -22,6 +22,9 @@ var BABYLON;
             scene._activeAnimatables.push(this);
         }
         // Methods
+        Animatable.prototype.getAnimations = function () {
+            return this._animations;
+        };
         Animatable.prototype.appendAnimations = function (target, animations) {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
@@ -46,6 +49,12 @@ var BABYLON;
             this._localDelayOffset = null;
             this._pausedDelay = null;
         };
+        Animatable.prototype.goToFrame = function (frame) {
+            var animations = this._animations;
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].goToFrame(frame);
+            }
+        };
         Animatable.prototype.pause = function () {
             if (this._paused) {
                 return;
@@ -66,6 +75,7 @@ var BABYLON;
         };
         Animatable.prototype._animate = function (delay) {
             if (this._paused) {
+                this.animationStarted = false;
                 if (!this._pausedDelay) {
                     this._pausedDelay = delay;
                 }
@@ -81,11 +91,13 @@ var BABYLON;
             // Animating
             var running = false;
             var animations = this._animations;
-            for (var index = 0; index < animations.length; index++) {
+            var index;
+            for (index = 0; index < animations.length; index++) {
                 var animation = animations[index];
                 var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                 running = running || isRunning;
             }
+            this.animationStarted = running;
             if (!running) {
                 // Remove from active animatables
                 index = this._scene._activeAnimatables.indexOf(this);

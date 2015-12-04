@@ -10,7 +10,7 @@ FBX Exporter produces a babylon scene file from an FBX asset
 - animations (transforms / opacities / hierarchical) except on materials / textures
 
 ##Prerequisites
-To use this tool, you need to download the Visual C++ 2013 redistribuable package : http://www.microsoft.com/en-US/download/details.aspx?id=40784
+To use this tool, you need to download the Visual C++ 2015 redistribuable package : http://www.microsoft.com/en-us/download/details.aspx?id=48145
 ##Usage
 FbxExporter.exe "fbx file" "outdir" [/fps:60|30|24] [/skipemptynodes]
 - fbx file : path to the source FBX asset

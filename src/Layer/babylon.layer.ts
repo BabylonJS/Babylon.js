@@ -4,6 +4,7 @@
         public isBackground: boolean;
         public color: Color4;
         public onDispose: () => void;
+        public alphaBlendingMode = Engine.ALPHA_COMBINE;
 
         private _scene: Scene;
         private _vertexDeclaration = [2];
@@ -70,7 +71,7 @@
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
 
             // Draw order
-            engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            engine.setAlphaMode(this.alphaBlendingMode);
             engine.draw(true, 0, 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }

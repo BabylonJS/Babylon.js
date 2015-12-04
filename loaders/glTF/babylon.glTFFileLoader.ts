@@ -54,6 +54,38 @@
         LINEAR_MIPMAP_LINEAR = 9987
     }
 
+    export enum ETextureFormat {
+        ALPHA = 6406,
+        RGB = 6407,
+        RGBA = 6408,
+        LUMINANCE = 6409,
+        LUMINANCE_ALPHA = 6410 
+    }
+
+    export enum ECullingType {
+        FRONT = 1028,
+        BACK = 1029,
+        FRONT_AND_BACK = 1032
+    }
+
+    export enum EBlendingFunction {
+        ZERO = 0,
+        ONE = 1,
+        SRC_COLOR = 768,
+        ONE_MINUS_SRC_COLOR = 769,
+        DST_COLOR = 774,
+        ONE_MINUS_DST_COLOR = 775,
+        SRC_ALPHA = 770,
+        ONE_MINUS_SRC_ALPHA = 771,
+        DST_ALPHA = 772,
+        ONE_MINUS_DST_ALPHA = 773,
+        CONSTANT_COLOR = 32769,
+        ONE_MINUS_CONSTANT_COLOR = 32770,
+        CONSTANT_ALPHA = 32771,
+        ONE_MINUS_CONSTANT_ALPHA = 32772,
+        SRC_ALPHA_SATURATE = 776
+    }
+
     /**
     * Tokenizer. Used for shaders compatibility
     * Automatically map world, view, projection, worldViewProjection and attributes
@@ -121,8 +153,8 @@
     var glTFTransforms =    ["MODEL", "VIEW", "PROJECTION", "MODELVIEW", "MODELVIEWPROJECTION", "JOINTMATRIX"];
     var babylonTransforms = ["world", "view", "projection", "worldView", "worldViewProjection", "mBones"];
 
-    var glTFAnimationPaths =    ["translation", "scale"];
-    var babylonAnimationPaths = ["position",    "scaling"];
+    var glTFAnimationPaths =    ["translation", "rotation",           "scale"];
+    var babylonAnimationPaths = ["position",    "rotationQuaternion", "scaling"];
 
     /**
     * Parse
@@ -168,11 +200,17 @@
         }
     };
 
-    var setMatrix = (scene: Scene, source: Node, parameter: IGLTFTechniqueParameter, uniformName: string, shaderMaterial: ShaderMaterial) => {
+    var setMatrix = (scene: Scene, source: Node, parameter: IGLTFTechniqueParameter, uniformName: string, shaderMaterial: any) => {
         var mat: Matrix = null;
 
         if (parameter.semantic === "MODEL") {
             mat = source.getWorldMatrix();
+        }
+        else if (parameter.semantic === "PROJECTION") {
+            mat = scene.getProjectionMatrix();
+        }
+        else if (parameter.semantic === "VIEW") {
+            mat = scene.getViewMatrix();
         }
         else if (parameter.semantic === "MODELVIEWINVERSETRANSPOSE") {
             mat = Matrix.Transpose(source.getWorldMatrix().multiply(scene.getViewMatrix()).invert());
@@ -201,6 +239,9 @@
         else if (parameter.semantic === "MODELINVERSETRANSPOSE") {
             mat = Matrix.Transpose(source.getWorldMatrix().invert());
         }
+        else {
+            debugger;
+        }
 
         switch (parameter.type) {
             case EParameterType.FLOAT_MAT2: shaderMaterial.setMatrix2x2(uniformName, Matrix.GetAsMatrix2x2(mat)); break;
@@ -210,7 +251,17 @@
         }
     };
 
-    var getWrapMode = (mode: number): ETextureWrapMode => {
+    var setUniform = (shaderMaterial: any, uniform: string, value: any, type: number): boolean => {
+        switch (type) {
+            case EParameterType.FLOAT: shaderMaterial.setFloat(uniform, value); return true;
+            case EParameterType.FLOAT_VEC2: shaderMaterial.setVector2(uniform, Vector2.FromArray(value)); return true;
+            case EParameterType.FLOAT_VEC3: shaderMaterial.setVector3(uniform, Vector3.FromArray(value)); return true;
+            case EParameterType.FLOAT_VEC4: shaderMaterial.setVector4(uniform, Vector4.FromArray(value)); return true;
+            default: return false;
+        }
+    };
+
+    var getWrapMode = (mode: number): number => {
         switch (mode) {
             case ETextureWrapMode.CLAMP_TO_EDGE: return Texture.CLAMP_ADDRESSMODE;
             case ETextureWrapMode.MIRRORED_REPEAT: return Texture.MIRROR_ADDRESSMODE;
@@ -230,7 +281,7 @@
         }
     };
 
-    var getBufferFromAccessor = (gltfRuntime: IGLTFRuntime, accessor: IGLTFAccessor, scalar?: boolean): any => {
+    var getBufferFromAccessor = (gltfRuntime: IGLTFRuntime, accessor: IGLTFAccessor): any => {
         var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[accessor.bufferView];
         var arrayBuffer: ArrayBuffer = gltfRuntime.arrayBuffers[bufferView.buffer];
 
@@ -246,13 +297,11 @@
         }
     };
 
-    var normalizeBuffer = (buffer: any) => {
-        for (var i = 0; i < buffer.length; i++) {
-            buffer[i] *= -1;
-        }
-    };
-
     var normalizeUVs = (buffer: any) => {
+        if (!buffer) {
+            return;
+        }
+
         for (var i = 0; i < buffer.length / 2; i++) {
             buffer[i * 2 + 1] = 1.0 - buffer[i * 2 + 1];
         }
@@ -269,17 +318,15 @@
     var getAttribute = (attributeParameter: IGLTFTechniqueParameter) => {
         if (attributeParameter.semantic === "NORMAL") {
             return "normal";
-        }
-        else if (attributeParameter.semantic === "POSITION") {
+        } else if (attributeParameter.semantic === "POSITION") {
             return "position";
-        }
-        else if (attributeParameter.semantic === "JOINT") {
+        } else if (attributeParameter.semantic === "JOINT") {
             return "matricesIndices";
-        }
-        else if (attributeParameter.semantic === "WEIGHT") {
+        } else if (attributeParameter.semantic === "WEIGHT") {
             return "matricesWeights";
-        }
-        else if (attributeParameter.semantic.indexOf("TEXCOORD_") !== -1) {
+        } else if (attributeParameter.semantic === "COLOR") {
+            return "color";
+        } else if (attributeParameter.semantic.indexOf("TEXCOORD_") !== -1) {
             var channel = Number(attributeParameter.semantic.split("_")[1]);
             return "uv" + (channel === 0 ? "" : channel + 1);
         }
@@ -290,7 +337,7 @@
     };
 
     /**
-    * Load animations
+    * Returns the animation path (glTF -> Babylon)
     */
     var getAnimationPath = (path: string): string => {
         var index = glTFAnimationPaths.indexOf(path);
@@ -302,6 +349,9 @@
         return path;
     };
 
+    /**
+    * Loads and creates animations
+    */
     var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
         for (var anim in gltfRuntime.animations) {
             var animation: IGLTFAnimation = gltfRuntime.animations[anim];
@@ -322,62 +372,165 @@
                 var bufferOutput = getBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
 
                 var targetID = channel.target.id;
-                var targetNode = gltfRuntime.scene.getNodeByID(targetID);
-
-                if (targetNode === null) {
-                    targetNode = gltfRuntime.scene.getNodeByName(targetID);
-                }
+                var targetNode: any = gltfRuntime.scene.getNodeByID(targetID);
 
                 if (targetNode === null) {
                     Tools.Warn("Creating animation named " + anim + ". But cannot find node named " + targetID + " to attach to");
                     continue;
                 }
 
+                var isBone = targetNode instanceof Bone;
+
                 // Get target path (position, rotation or scaling)
                 var targetPath = channel.target.path;
                 var targetPathIndex = glTFAnimationPaths.indexOf(targetPath);
+
                 if (targetPathIndex !== -1) {
                     targetPath = babylonAnimationPaths[targetPathIndex];
                 }
 
-                // Create key frames and animation
-                var babylonAnimation = new Animation(anim, targetPath, 1, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
-                var keys = [];
+                // Determine animation type
+                var animationType = Animation.ANIMATIONTYPE_MATRIX;
 
-                for (var i = 0; i < bufferInput.length; i++) {
-                    var vector: Vector3 = null;
-                    if (targetPath === "rotation") { // VEC4
-                        vector = Vector3.FromArray([bufferOutput[i * 4 + 3], bufferOutput[i * 4 + 1], bufferOutput[i * 4 + 2]]);
+                if (!isBone) {
+                    if (targetPath === "rotationQuaternion") {
+                        animationType = Animation.ANIMATIONTYPE_QUATERNION;
+                        targetNode.rotationQuaternion = new Quaternion();
+                    }
+                    else {
+                        animationType = Animation.ANIMATIONTYPE_VECTOR3;
+                    }
+                }
+
+                // Create animation and key frames
+                var babylonAnimation = new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
+                var keys = [];
+                var arrayOffset = 0;
+
+                // For each frame
+                for (var j = 0; j < bufferInput.length; j++) {
+                    var value: any = null;
+
+                    if (targetPath === "rotationQuaternion") { // VEC4
+                        //value = Quaternion.RotationAxis(Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]).normalize(), bufferOutput[arrayOffset + 3]);
+                        value = Quaternion.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
+                        arrayOffset += 4;
                     }
                     else { // Position and scaling are VEC3
-                        vector = Vector3.FromArray([bufferOutput[i * 3], bufferOutput[i * 3 + 1], bufferOutput[i * 3 + 2]]);
-                        // Y is up
-                        vector.z *= -1;
+                        value = Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
+                        arrayOffset += 3;
+                    }
+
+                    if (isBone) {
+                        var bone = <Bone>targetNode;
+                        var translation = Vector3.Zero();
+                        var rotationQuaternion = new Quaternion();
+                        var scaling = Vector3.Zero();
+
+                        // Warning on decompose
+                        var mat = bone.getBaseMatrix();
+                        mat.decompose(scaling, rotationQuaternion, translation);
+
+                        if (targetPath === "position") {
+                            translation = value;
+                        }
+                        else if (targetPath === "rotationQuaternion") {
+                            rotationQuaternion = value;
+                        }
+                        else {
+                            scaling = value;
+                        }
+
+                        value = Matrix.Compose(scaling, rotationQuaternion, translation);
                     }
 
                     keys.push({
-                        frame: bufferInput[i],
-                        value: vector
+                        frame: bufferInput[j],
+                        value: value
                     });
                 }
                 
                 // Finish
                 babylonAnimation.setKeys(keys);
                 targetNode.animations.push(babylonAnimation);
-                gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true);
+
+                gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
             }
         }
     };
 
     /**
-    * Load geometries and nodes
+    * Returns the bones transformation matrix
     */
-    var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins): Skeleton => {
+    var configureBoneTransformation = (node: IGLTFNode): Matrix => {
+        var mat: Matrix = null;
+        if (node.translation && node.rotation && node.scale) {
+            var scale = Vector3.FromArray(node.scale);
+            var rotation = Quaternion.FromArray(node.rotation);
+            var position = Vector3.FromArray(node.translation);
+            
+            mat = Matrix.Compose(scale, rotation, position);
+        }
+        else {
+            mat = Matrix.FromArray(node.matrix);
+        }
+
+        return mat;
+    };
+
+    /**
+    * Returns the parent bone
+    */
+    var getParentBone = (jointName: string, newSkeleton: Skeleton): Bone => {
+        // Try to find
+        for (var i = 0; i < newSkeleton.bones.length; i++) {
+            if (newSkeleton.bones[i].id === jointName) {
+                return newSkeleton.bones[i];
+            }
+        }
+    }
+
+    /**
+    * Imports a skeleton
+    */
+    var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh): Skeleton => {
         var newSkeleton = new Skeleton(skins.name, "", gltfRuntime.scene);
 
         // Matrices
         var accessor = gltfRuntime.accessors[skins.inverseBindMatrices];
         var buffer = getBufferFromAccessor(gltfRuntime, accessor);
+        var bindShapeMatrix = Matrix.FromArray(skins.bindShapeMatrix);
+
+        (<any>newSkeleton)._identity = bindShapeMatrix;
+
+        // Find the root bone
+        var nodeToRoot: Bone = null;
+        for (var nde in gltfRuntime.nodes) {
+            var node: IGLTFNode = gltfRuntime.nodes[nde];
+
+            if (!node) {
+                continue;
+            }
+
+            if (node.jointName) {
+                var isInJoints = false;
+                for (var i = 0; i < skins.jointNames.length; i++) {
+                    if (skins.jointNames[i] === nde) {
+                        isInJoints = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isInJoints) {
+                var mat = configureBoneTransformation(node);
+                nodeToRoot = new Bone(node.name, newSkeleton, null, mat);
+                nodeToRoot.id = nde;
+                // Remove root from bones
+                newSkeleton.bones = [];
+                break;
+            }
+        }
 
         // Joints
         for (var i = 0; i < skins.jointNames.length; i++) {
@@ -387,131 +540,217 @@
                 continue;
             }
 
-            var mat = Matrix.Identity();
+            var id = skins.jointNames[i];
 
-            if (node.translation && node.rotation && node.scale) {
-                mat = Matrix.Compose(Vector3.FromArray(node.scale), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.translation));
+            // Check if node exists, should never happen
+            var foundBone = false;
+            for (var j = 0; j < newSkeleton.bones.length; j++) {
+                if (newSkeleton.bones[j].id === id) {
+                    foundBone = true;
+                    break;
+                }
             }
 
-            var bone = new Bone(node.name, newSkeleton, null, mat);
-            bone.id = skins.jointNames[i];
-            bone.getInvertedAbsoluteTransform().copyFrom(Matrix.FromArray(buffer.subarray(i * 16, i * 16 + 16)));
+            if (foundBone) {
+                continue;
+            }
+
+            // Search for parent bone
+            var parentBone = null;
+            for (var j = 0; j < i; j++) {
+                var joint: IGLTFNode = gltfRuntime.nodes[skins.jointNames[j]];
+
+                if (!joint) {
+                    Tools.Warn("Joint named " + skins.jointNames[j] + " does not exist when looking for parent");
+                    continue;
+                }
+
+                var children = joint.children;
+                foundBone = false;
+
+                for (var k = 0; k < children.length; k++) {
+                    if (children[k] === id) {
+                        parentBone = getParentBone(skins.jointNames[j], newSkeleton);
+                        foundBone = true;
+                        break;
+                    }
+                }
+
+                if (foundBone) {
+                    break;
+                }
+            }
+
+            // Create bone
+            var mat = configureBoneTransformation(node);
+
+            var bone = new Bone(node.name, newSkeleton, parentBone ? parentBone : nodeToRoot, mat);
+            bone.id = id;
+        }
+
+        newSkeleton.prepare();
+
+        if (nodeToRoot) {
+            newSkeleton.bones.push(nodeToRoot);
         }
 
         return newSkeleton;
     };
 
-    var importMesh = (gltfRuntime: IGLTFRuntime, mesh: IGLTFMesh, id: string): Mesh => {
-        var newMesh = new Mesh(mesh.name, gltfRuntime.scene);
+    /**
+    * Imports a mesh and its geometries
+    */
+    var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, skin?: IGLTFSkins): Mesh => {
+        var newMesh = new Mesh(node.name, gltfRuntime.scene);
         newMesh.id = id;
-        newMesh.material = null;
-        newMesh.layerMask = 0x0FFFFFFF;
-        newMesh.subMeshes = [];
 
         var multiMat = new MultiMaterial("multimat" + id, gltfRuntime.scene);
-        multiMat.backFaceCulling = false;
         newMesh.material = multiMat;
 
         var vertexData = new VertexData();
-        var geometry = new Geometry(id, gltfRuntime.scene, vertexData, true);
+        var geometry = new Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
 
         var verticesStarts = [];
         var verticesCounts = [];
         var indexStarts = [];
         var indexCounts = [];
 
-        // Positions, normals and UVs
-        for (var i = 0; i < mesh.primitives.length; i++) {
-            // Temporary vertex data
-            var tempVertexData = new VertexData();
-
-            var primitive = mesh.primitives[i];
-            var attributes = primitive.attributes;
-
-            var accessor: IGLTFAccessor = null;
-            var buffer: any = null;
-
-            var verticesCount = 0;
-
-            // Set positions, normal and uvs
-            for (var semantic in attributes) {
-
-                // Link accessor and buffer view
-                accessor = gltfRuntime.accessors[attributes[semantic]];
-                buffer = getBufferFromAccessor(gltfRuntime, accessor);
-
-                if (semantic === "NORMAL") {
-                    //normalizeBuffer(buffer);
-                    tempVertexData.set(buffer, VertexBuffer.NormalKind);
-                }
-                else if (semantic === "POSITION") {
-                    verticesCounts.push(buffer.length);
-                    normalizeBuffer(buffer);
-                    tempVertexData.set(buffer, VertexBuffer.PositionKind);
-                }
-                else if (semantic.indexOf("TEXCOORD_") !== -1) {
-                    var channel = Number(semantic.split("_")[1]);
-                    var uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
-                    normalizeUVs(buffer);
-                    tempVertexData.set(buffer, uvKind);
-                }
-                else if (semantic === "JOINT") {
-                    //normalizeBuffer(buffer);
-                    tempVertexData.set(buffer, VertexBuffer.MatricesIndicesKind);
-                }
-                else if (semantic === "WEIGHT") {
-                    //normalizeBuffer(buffer);
-                    tempVertexData.set(buffer, VertexBuffer.MatricesWeightsKind);
-                }
+        for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+            var meshID = meshes[meshIndex];
+            var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
+            
+            if (!mesh) {
+                continue;
             }
 
-            // Indices
-            accessor = gltfRuntime.accessors[primitive.indices];
-            buffer = getBufferFromAccessor(gltfRuntime, accessor, true);
-            tempVertexData.indices = buffer;
-            indexCounts.push(buffer.length);
+            // Positions, normals and UVs
+            for (var i = 0; i < mesh.primitives.length; i++) {
+                // Temporary vertex data
+                var tempVertexData = new VertexData();
 
-            vertexData.merge(tempVertexData);
-            tempVertexData = undefined;
+                var primitive = mesh.primitives[i];
+                if (primitive.primitive !== 4) {
+                    //continue;
+                }
 
-            // Sub material
-            var material = gltfRuntime.scene.getMaterialByID(primitive.material);
-            multiMat.subMaterials.push(material === null ? gltfRuntime.scene.defaultMaterial : material);
+                var attributes = primitive.attributes;
+                var accessor: IGLTFAccessor = null;
+                var buffer: any = null;
 
-            // Update vertices start and index start
-            verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 1]);
-            indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 1]);
+                // Set positions, normal and uvs
+                for (var semantic in attributes) {
+
+                    // Link accessor and buffer view
+                    accessor = gltfRuntime.accessors[attributes[semantic]];
+                    buffer = getBufferFromAccessor(gltfRuntime, accessor);
+
+                    if (semantic === "NORMAL") {
+                        tempVertexData.normals = [];
+                        for (var j = 0; j < buffer.length; j++) {
+                            (<number[]>tempVertexData.normals).push(buffer[j]);
+                        }
+                    }
+                    else if (semantic === "POSITION") {
+                        tempVertexData.positions = [];
+                        for (var j = 0; j < buffer.length; j++) {
+                            (<number[]>tempVertexData.positions).push(buffer[j]);
+                        }
+                        verticesCounts.push(tempVertexData.positions.length);
+                    }
+                    else if (semantic.indexOf("TEXCOORD_") !== -1) {
+                        var channel = Number(semantic.split("_")[1]);
+                        var uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : (channel + 1));
+                        var uvs = [];
+                        for (var j = 0; j < buffer.length; j++) {
+                            uvs.push(buffer[j]);
+                        }
+                        normalizeUVs(uvs);
+                        tempVertexData.set(uvs, uvKind);
+                    }
+                    else if (semantic === "JOINT") {
+                        tempVertexData.matricesIndices = [];
+                        for (var j = 0; j < buffer.length; j++) {
+                            (<number[]>tempVertexData.matricesIndices).push(buffer[j]);
+                        }
+                    }
+                    else if (semantic === "WEIGHT") {
+                        tempVertexData.matricesWeights = [];
+                        for (var j = 0; j < buffer.length; j++) {
+                            (<number[]>tempVertexData.matricesWeights).push(buffer[j]);
+                        }
+                    }
+                    else if (semantic === "COLOR") {
+                        tempVertexData.colors = [];
+                        for (var j = 0; j < buffer.length; j++) {
+                            (<number[]>tempVertexData.colors).push(buffer[j]);
+                        }
+                    }
+                }
+
+                // Indices
+                accessor = gltfRuntime.accessors[primitive.indices];
+                buffer = getBufferFromAccessor(gltfRuntime, accessor);
+
+                tempVertexData.indices = [];
+                for (var j = 0; j < buffer.length; j++) {
+                    (<number[]>tempVertexData.indices).push(buffer[j]);
+                }
+                indexCounts.push(buffer.length);
+
+                vertexData.merge(tempVertexData);
+                tempVertexData = undefined;
+
+                // Sub material
+                var material = gltfRuntime.scene.getMaterialByID(primitive.material);
+                multiMat.subMaterials.push(material === null ? gltfRuntime.scene.defaultMaterial : material);
+
+                // Update vertices start and index start
+                verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
+                indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
+            }
         }
 
         // Apply geometry
-        geometry.setAllVerticesData(vertexData);
-        geometry.applyToMesh(newMesh);
+        geometry.setAllVerticesData(vertexData, false);
+
+        newMesh.flipFaces(true);
+        newMesh.computeWorldMatrix(true);
 
         // Apply submeshes
         newMesh.subMeshes = [];
-        for (var i = 0; i < mesh.primitives.length; i++) {
-            var subMesh = new SubMesh(i, verticesStarts[i], verticesCounts[i], indexStarts[i], indexCounts[i], newMesh);
-        }
+        var index = 0;
+        for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+            var meshID = meshes[meshIndex];
+            var mesh: IGLTFMesh = gltfRuntime.meshes[meshID];
 
-        // Finish
-        newMesh._updateBoundingInfo();
+            if (!mesh) {
+                continue;
+            }
 
-        return newMesh;
-    };
+            for (var i = 0; i < mesh.primitives.length; i++) {
+                if (mesh.primitives[i].primitive !== 4) {
+                    //continue;
+                }
 
-    var configureNode = (newNode: any, position: Vector3, rotation: Quaternion, scaling: Vector3) => {
-        if (newNode.position) {
-            newNode.position = position;
-
-            if (newNode.rotation) {
-                newNode.position.x *= -1;
-                newNode.position.y *= -1;
-                newNode.position.z *= -1;
+                var subMesh = new SubMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
+                index++;
             }
         }
 
-        if (newNode.rotation) {
-            newNode.rotation = rotation.toEulerAngles().addInPlace(new Vector3(0, 0, Math.PI));
+        // Finish
+        return newMesh;
+    };
+
+    /**
+    * Configure node transformation from position, rotation and scaling
+    */
+    var configureNode = (newNode: any, position: Vector3, rotation: Quaternion, scaling: Vector3) => {
+        if (newNode.position) {
+            newNode.position = position;
+        }
+
+        if (newNode.rotationQuaternion || newNode.rotation) {
+            newNode.rotationQuaternion = rotation;
         }
 
         if (newNode.scaling) {
@@ -519,35 +758,49 @@
         }
     };
 
+    /**
+    * Configures node from transformation matrix
+    */
     var configureNodeFromMatrix = (newNode: any, node: IGLTFNode) => {
         if (node.matrix) {
             var position = new Vector3(0, 0, 0);
             var rotation = new Quaternion();
             var scaling = new Vector3(0, 0, 0);
-            Matrix.FromArray(node.matrix).decompose(scaling, rotation, position);
+            var mat = Matrix.FromArray(node.matrix);
+            mat.decompose(scaling, rotation, position);
             configureNode(newNode, position, rotation, scaling);
+
+            if (newNode instanceof TargetCamera) {
+                (<TargetCamera>newNode).setTarget(Vector3.Zero());
+            }
         }
         else {
+            //configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.RotationAxis(Vector3.FromArray(node.rotation), node.rotation[3]), Vector3.FromArray(node.scale));
             configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
         }
     };
 
-    var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode): Node => {
+    /**
+    * Imports a node
+    */
+    var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Node => {
         var lastNode: Node = null;
 
         // Meshes
-        if (node.instanceSkin) {
-            var instanceSkin = node.instanceSkin;
+        if (node.skin) {
+            if (node.meshes) {
+                var skin: IGLTFSkins = gltfRuntime.skins[node.skin];
 
-            for (var i = 0; i < instanceSkin.meshes.length; i++) {
-                var meshID = instanceSkin.meshes[i];
+                var newMesh = importMesh(gltfRuntime, node, node.meshes, id, skin);
+                newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
 
-                var newMesh = importMesh(gltfRuntime, gltfRuntime.meshes[meshID], meshID);
-                newMesh.material = null;
+                if (newMesh.skeleton === null) {
+                    newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh);
+                }
 
-                //newMesh.useBones = true;
-                //newMesh.computeBonesUsingShaders = true;
-                //newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(instanceSkin.skin);
+                if (newMesh.skeleton !== null) {
+                    newMesh.useBones = true;
+                }
 
                 lastNode = newMesh;
             }
@@ -556,12 +809,8 @@
             /**
             * Improve meshes property
             */
-            for (var i = 0; i < node.meshes.length; i++) {
-                var meshID = node.meshes[i];
-                var newMesh = importMesh(gltfRuntime, gltfRuntime.meshes[meshID], meshID);
-
-                lastNode = newMesh;
-            }
+            var newMesh = importMesh(gltfRuntime, node, node.mesh ? [node.mesh] : node.meshes, id);
+            lastNode = newMesh;
         }
         // Lights
         else if (node.light) {
@@ -644,8 +893,13 @@
                     persCamera.name = node.name;
                     persCamera.attachControl(gltfRuntime.scene.getEngine().getRenderingCanvas());
 
-                    if (perspectiveCamera.yfov && perspectiveCamera.aspectRatio && perspectiveCamera.znear && perspectiveCamera.zfar) {
-                        persCamera.getViewMatrix().copyFrom(Matrix.PerspectiveFovLH(perspectiveCamera.yfov, perspectiveCamera.aspectRatio, perspectiveCamera.znear, perspectiveCamera.zfar));
+                    if (!perspectiveCamera.aspectRatio) {
+                        perspectiveCamera.aspectRatio = gltfRuntime.scene.getEngine().getRenderWidth() / gltfRuntime.scene.getEngine().getRenderHeight();
+                    }
+
+                    if (perspectiveCamera.znear && perspectiveCamera.zfar) {
+                        persCamera.maxZ = perspectiveCamera.zfar;
+                        persCamera.minZ = perspectiveCamera.znear;
                     }
 
                     lastNode = persCamera;
@@ -655,7 +909,8 @@
 
         // Empty node
         if (lastNode === null && !node.jointName) {
-            lastNode = new Node(node.name, gltfRuntime.scene);
+            var dummy = new Mesh(node.name, gltfRuntime.scene);
+            lastNode = dummy;
         }
 
         if (lastNode !== null) {
@@ -663,7 +918,7 @@
                 configureNodeFromMatrix(lastNode, node);
             }
             else {
-                configureNode(lastNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
+                configureNode(lastNode, Vector3.FromArray(node.translation), Quaternion.RotationAxis(Vector3.FromArray(node.rotation).normalize(), node.rotation[3]), Vector3.FromArray(node.scale));
             }
 
             lastNode.updateCache(true);
@@ -672,58 +927,45 @@
         return lastNode;
     };
 
+    var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Node) => {
+        var node: IGLTFNode = gltfRuntime.nodes[id];
+
+        var newNode: Node = null;
+
+        if (!node.jointName) {
+            newNode = importNode(gltfRuntime, node, id);
+            newNode.id = id;
+            newNode.parent = parent;
+        }
+
+        for (var i = 0; i < node.children.length; i++) {
+            traverseNodes(gltfRuntime, node.children[i], newNode);
+        }
+    };
+
     /**
-    * Load buffers
+    * Buffers loaded, create nodes
     */
     var onBuffersLoaded = (gltfRuntime: IGLTFRuntime) => {
-        // Skins
-        /*
-        for (var skin in gltfRuntime.skins) {
-            var skins: IGLTFSkins = gltfRuntime.skins[skin];
-            var skeleton = importSkeleton(gltfRuntime, skins);
-            skeleton.id = skin;
-        }
-        */
-
         // Nodes
-        var parsedNodes = gltfRuntime.nodes;
         var currentScene: IGLTFScene = <IGLTFScene>gltfRuntime.currentScene;
 
-        for (var nde in parsedNodes) {
-            var node: IGLTFNode = parsedNodes[nde];
-            var newNode = importNode(gltfRuntime, node);
-
-            if (newNode !== null) {
-                newNode.id = nde;
-            }
-        }
-
-        // Resolve parenting once all nodes were created
-        for (var nde in parsedNodes) {
-            var node: IGLTFNode = parsedNodes[nde];
-            var parent = gltfRuntime.scene.getNodeByID(nde);
-
-            if (node.children && parent !== null) {
-                for (var i = 0; i < node.children.length; i++) {
-                    var child = gltfRuntime.scene.getNodeByID(node.children[i]);
-                    if (child === null) {
-                        child = gltfRuntime.scene.getNodeByName(node.children[i]);
-                    }
-
-                    if (child !== null) {
-                        child.parent = parent;
-                    }
-                    else {
-                        Tools.Warn("Node named " + node.name + " as a children named " + node.children[i] + " but does not exists");
-                    }
-                }
-            }
+        for (var i = 0; i < currentScene.nodes.length; i++) {
+            traverseNodes(gltfRuntime, currentScene.nodes[i], null);
         }
 
         // Set animations
         loadAnimations(gltfRuntime);
+
+        for (var i = 0; i < gltfRuntime.scene.skeletons.length; i++) {
+            var skeleton = gltfRuntime.scene.skeletons[i];
+            gltfRuntime.scene.beginAnimation(skeleton, 0, Number.MAX_VALUE, true, 1.0);
+        }
     };
 
+    /**
+    * On a buffer is loaded
+    */
     var onLoadBuffer = (gltfRuntime: IGLTFRuntime, buf: string) => {
         return (data: any) => {
             gltfRuntime.loadedBuffers++;
@@ -743,12 +985,18 @@
         };
     };
 
+    /**
+    * Error when loaded buffer
+    */
     var onLoadBufferError = (gltfRuntime: IGLTFRuntime, buf: string) => {
         return () => {
             Tools.Error("Error when loading buffer named " + buf + " located at " + gltfRuntime.buffers[buf].uri);
         };
     };
 
+    /**
+    * Decode array buffer from base64
+    */
     var decodeArrayBuffer = (base64: string): ArrayBuffer => {
         var decodedString = atob(base64);
         var bufferLength = decodedString.length;
@@ -761,6 +1009,9 @@
         return arraybuffer.buffer;
     };
 
+    /**
+    * Loads buffers (geometries)
+    */
     var loadBuffers = (gltfRuntime: IGLTFRuntime) => {
         for (var buf in gltfRuntime.buffers) {
             var buffer: IGLTFBuffer = gltfRuntime.buffers[buf];
@@ -781,33 +1032,58 @@
     };
 
     /**
-    * Load shaders
+    * onBind shaderrs callback to set uniforms and matrices
     */
-    var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: Object, shaderMaterial: ShaderMaterial) => {
+    var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: Object, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial) => {
         for (var unif in unTreatedUniforms) {
             var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
             var type = uniform.type;
 
-            if (uniform.semantic && !uniform.source && !uniform.node) {
-                setMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial);
-            }
-            else if (uniform.semantic && (uniform.source || uniform.node)) {
-                var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node);
-                if (source === null) {
-                    source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node);
+            if (type === EParameterType.FLOAT_MAT2 || type === EParameterType.FLOAT_MAT3 || type === EParameterType.FLOAT_MAT4) {
+                if (uniform.semantic && !uniform.source && !uniform.node) {
+                    setMatrix(gltfRuntime.scene, mesh, uniform, unif, shaderMaterial.getEffect());
                 }
-                if (source === null) {
+                else if (uniform.semantic && (uniform.source || uniform.node)) {
+                    var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node);
+                    if (source === null) {
+                        source = gltfRuntime.scene.getNodeByID(uniform.source || uniform.node);
+                    }
+                    if (source === null) {
+                        continue;
+                    }
+
+                    setMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial.getEffect());
+                }
+            }
+            else {
+                var value = material.values[technique.uniforms[unif]];
+                if (!value) {
                     continue;
                 }
 
-                setMatrix(gltfRuntime.scene, source, uniform, unif, shaderMaterial);
+                if (type === EParameterType.SAMPLER_2D) {
+                    var texture: Texture = gltfRuntime.textures[value].babylonTexture;
+
+                    if (texture === null) {
+                        continue;
+                    }
+
+                    shaderMaterial.getEffect().setTexture(unif, texture);
+                }
+                else {
+                    setUniform(shaderMaterial.getEffect(), unif, value, type);
+                }
             }
         }
     };
 
-    var prepareShaderMaterialUniforms = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, pass: IGLTFTechniquePass, material: IGLTFMaterial, unTreatedUniforms: Object) => {
-        var materialValues = material.instanceTechnique.values;
-        var instanceProgramUniforms = pass.instanceProgram.uniforms;
+    /**
+    * Prepare uniforms to send the only one time
+    * Loads the appropriate textures
+    */
+    var prepareShaderMaterialUniforms = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: Object) => {
+        var materialValues = material.values;
+        var techniqueUniforms = technique.uniforms;
 
         /**
         * Prepare values here (not matrices)
@@ -815,47 +1091,63 @@
         for (var unif in unTreatedUniforms) {
             var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
             var type = uniform.type;
-            var value = materialValues[instanceProgramUniforms[unif]] || uniform.value;
+            var value = materialValues[techniqueUniforms[unif]] || uniform.value;
 
-            if (value) {
-                // Texture (sampler2D)
-                if (type === EParameterType.SAMPLER_2D) {
-                    var texture: IGLTFTexture = gltfRuntime.textures[value];
-                    var sampler: IGLTFSampler = gltfRuntime.samplers[texture.sampler];
+            if (!value) {
+                continue;
+            }
 
-                    if (texture && texture.source) {
-                        var source: IGLTFImage = gltfRuntime.images[texture.source];
-                        var newTexture = null;
+            // Texture (sampler2D)
+            if (type === EParameterType.SAMPLER_2D) {
+                var texture: IGLTFTexture = gltfRuntime.textures[<string>value];
+                var sampler: IGLTFSampler = gltfRuntime.samplers[texture.sampler];
 
-                        if (isBase64(source.uri)) {
-                            newTexture = Texture.CreateFromBase64String(source.uri, gltfRuntime.rootUrl + source.name, gltfRuntime.scene);
-                        }
-                        else {
-                            newTexture = new Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene);
-                        }
-                        if (sampler) {
-                            newTexture.wrapU = getWrapMode(sampler.wrapS);
-                            newTexture.wrapV = getWrapMode(sampler.wrapT);
-                        }
-
-                        shaderMaterial.setTexture(unif, newTexture);
-                        delete unTreatedUniforms[unif];
-                    }
+                if (!texture || !texture.source) {
+                    continue;
                 }
-                // Others
+
+                var source: IGLTFImage = gltfRuntime.images[texture.source];
+                var newTexture: Texture = null;
+
+                var createMipMaps = (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_NEAREST) ||
+                    (sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_LINEAR) ||
+                    (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_NEAREST) ||
+                    (sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR); 
+
+                var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
+
+                if (isBase64(source.uri)) {
+                    newTexture = new Texture(source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode, null, null, source.uri, true);
+                }
                 else {
-                    switch (type) {
-                        case EParameterType.FLOAT: shaderMaterial.setFloat(unif, value); delete unTreatedUniforms[unif]; break;
-                        case EParameterType.FLOAT_VEC2: shaderMaterial.setVector2(unif, Vector2.FromArray(value)); delete unTreatedUniforms[unif]; break;
-                        case EParameterType.FLOAT_VEC3: shaderMaterial.setVector3(unif, Vector3.FromArray(value)); delete unTreatedUniforms[unif]; break;
-                        case EParameterType.FLOAT_VEC4: shaderMaterial.setVector4(unif, Vector4.FromArray(value)); delete unTreatedUniforms[unif]; break;
-                        default: break;
-                    }
+                    newTexture = new Texture(gltfRuntime.rootUrl + source.uri, gltfRuntime.scene, !createMipMaps, true, samplingMode);
+                }
+
+                newTexture.wrapU = getWrapMode(sampler.wrapS);
+                newTexture.wrapV = getWrapMode(sampler.wrapT);
+                newTexture.name = <string>value;
+
+                texture.babylonTexture = newTexture;
+
+                if (uniform.value) {
+                    // Static uniform
+                    shaderMaterial.setTexture(unif, newTexture);
+                    delete unTreatedUniforms[unif];
+                }
+            }
+            // Others
+            else {
+                if (uniform.value && setUniform(shaderMaterial, unif, value, type)) {
+                    // Static uniform
+                    delete unTreatedUniforms[unif];
                 }
             }
         }
     };
 
+    /**
+    * Shader compilation failed
+    */
     var onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMaterial) => {
         return (effect: Effect, error: string) => {
             Tools.Error("Cannot compile program named " + program.name + ". Error: " + error + ". Default material will be applied");
@@ -863,21 +1155,25 @@
         };
     };
 
-    var onShaderCompileSuccess = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, pass: IGLTFTechniquePass, material: IGLTFMaterial, unTreatedUniforms: Object) => {
+    /**
+    * Shader compilation success
+    */
+    var onShaderCompileSuccess = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: Object) => {
         return (_: Effect) => {
-            prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, pass, material, unTreatedUniforms);
+            prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
 
             shaderMaterial.onBind = (mat: Material, mesh: Mesh) => {
-                onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial);
+                onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material);
             };
         };
     };
 
-    var parseShaderUniforms = (tokenizer: Tokenizer, instanceProgram: IGLTFTechniquePassInstanceProgram, technique: IGLTFTechnique, unTreatedUniforms: Object): string => {
-        var foundUniform = false;
-
-        for (var unif in instanceProgram.uniforms) {
-            var uniform = instanceProgram.uniforms[unif];
+    /**
+    * Returns the appropriate uniform if already handled by babylon
+    */
+    var parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTreatedUniforms: Object): string => {
+        for (var unif in technique.uniforms) {
+            var uniform = technique.uniforms[unif];
             var uniformParameter: IGLTFTechniqueParameter = technique.parameters[uniform];
 
             if (tokenizer.currentIdentifier === unif) {
@@ -895,15 +1191,17 @@
         return tokenizer.currentIdentifier;
     };
 
+    /**
+    * All shaders loaded. Create materials one by one
+    */
     var onShadersLoaded = (gltfRuntime: IGLTFRuntime) => {
         // Create materials
         for (var mat in gltfRuntime.materials) {
             var material: IGLTFMaterial = gltfRuntime.materials[mat];
-            var instanceTechnique: IGLTFMaterialInstanceTechnique = material.instanceTechnique;
-            var technique: IGLTFTechnique = gltfRuntime.techniques[instanceTechnique.technique];
-            var pass: IGLTFTechniquePass = technique.passes[technique.pass];
-            var instanceProgram: IGLTFTechniquePassInstanceProgram = pass.instanceProgram;
-            var program: IGLTFProgram = gltfRuntime.programs[instanceProgram.program];
+            var technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
+
+            var program: IGLTFProgram = gltfRuntime.programs[technique.program];
+            var states: IGLTFTechniqueStates = technique.states;
 
             var vertexShader: string = Effect.ShadersStore[program.vertexShader + "VertexShader"];
             var pixelShader: string = Effect.ShadersStore[program.fragmentShader + "PixelShader"];
@@ -919,8 +1217,8 @@
             var samplers = [];
 
             // Fill uniform, sampler2D and attributes
-            for (var unif in instanceProgram.uniforms) {
-                var uniform = instanceProgram.uniforms[unif];
+            for (var unif in technique.uniforms) {
+                var uniform = technique.uniforms[unif];
                 var uniformParameter: IGLTFTechniqueParameter = technique.parameters[uniform];
 
                 unTreatedUniforms[unif] = uniformParameter;
@@ -929,6 +1227,7 @@
                     var transformIndex = glTFTransforms.indexOf(uniformParameter.semantic);
                     if (transformIndex !== -1) {
                         uniforms.push(babylonTransforms[transformIndex]);
+                        delete unTreatedUniforms[unif];
                     }
                     else {
                         uniforms.push(unif);
@@ -942,8 +1241,8 @@
                 }
             }
 
-            for (var attr in instanceProgram.attributes) {
-                var attribute = instanceProgram.attributes[attr];
+            for (var attr in technique.attributes) {
+                var attribute = technique.attributes[attr];
                 var attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
                 if (attributeParameter.semantic) {
@@ -962,8 +1261,8 @@
 
                 var foundAttribute = false;
 
-                for (var attr in instanceProgram.attributes) {
-                    var attribute = instanceProgram.attributes[attr];
+                for (var attr in technique.attributes) {
+                    var attribute = technique.attributes[attr];
                     var attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
                     if (vertexTokenizer.currentIdentifier === attr && attributeParameter.semantic) {
@@ -977,7 +1276,7 @@
                     continue;
                 }
 
-                newVertexShader += parseShaderUniforms(vertexTokenizer, instanceProgram, technique, unTreatedUniforms);
+                newVertexShader += parseShaderUniforms(vertexTokenizer, technique, unTreatedUniforms);
             }
 
             // Configure pixel shader
@@ -989,7 +1288,7 @@
                     continue;
                 }
 
-                newPixelShader += parseShaderUniforms(pixelTokenizer, instanceProgram, technique, unTreatedUniforms);
+                newPixelShader += parseShaderUniforms(pixelTokenizer, technique, unTreatedUniforms);
             }
 
             // Create shader material
@@ -1001,7 +1300,8 @@
             var options = {
                 attributes: attributes,
                 uniforms: uniforms,
-                samplers: samplers
+                samplers: samplers,
+                needAlphaBlending: states.functions && states.functions.blendEquationSeparate
             };
 
             Effect.ShadersStore[program.vertexShader + "VertexShader"] = newVertexShader;
@@ -1010,13 +1310,45 @@
             var shaderMaterial = new ShaderMaterial(material.name, gltfRuntime.scene, shaderPath, options);
             shaderMaterial.id = mat;
             shaderMaterial.onError = onShaderCompileError(program, shaderMaterial);
-            shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, pass, material, unTreatedUniforms);
+            shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
+            
+            if (states.functions) {
+                var functions = states.functions;
+                if (functions.cullFace && functions.cullFace[0] !== ECullingType.BACK) {
+                    shaderMaterial.backFaceCulling = false;
+                }
+
+                var blendFunc = functions.blendFuncSeparate;
+                if (blendFunc) {
+                    if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_ALPHA && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
+                        shaderMaterial.alphaMode = Engine.ALPHA_COMBINE;
+                    }
+                    else if (blendFunc[0] === EBlendingFunction.ONE && blendFunc[1] === EBlendingFunction.ONE && blendFunc[2] === EBlendingFunction.ZERO && blendFunc[3] === EBlendingFunction.ONE) {
+                        shaderMaterial.alphaMode = Engine.ALPHA_ONEONE;
+                    }
+                    else if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE && blendFunc[2] === EBlendingFunction.ZERO && blendFunc[3] === EBlendingFunction.ONE) {
+                        shaderMaterial.alphaMode = Engine.ALPHA_ADD;
+                    }
+                    else if (blendFunc[0] === EBlendingFunction.ZERO && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_COLOR && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
+                        shaderMaterial.alphaMode = Engine.ALPHA_SUBTRACT;
+                    }
+                    else if (blendFunc[0] === EBlendingFunction.DST_COLOR && blendFunc[1] === EBlendingFunction.ZERO && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
+                        shaderMaterial.alphaMode = Engine.ALPHA_MULTIPLY;
+                    }
+                    else if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_COLOR && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
+                        shaderMaterial.alphaMode = Engine.ALPHA_MAXIMIZED;
+                    }
+                }
+            }
         }
 
         // Finish
         loadBuffers(gltfRuntime);
     };
 
+    /**
+    * Shader loaded
+    */
     var onLoadShader = (gltfRuntime: IGLTFRuntime, sha: string) => {
         return (data: any) => {
             gltfRuntime.loadedShaders++;
@@ -1028,12 +1360,18 @@
         };
     };
 
+    /**
+    * Error callback when loading a shader
+    */
     var onLoadShaderError = (gltfRuntime: IGLTFRuntime, sha: string) => {
         return () => {
             Tools.Error("Error when loading shader program named " + sha + " located at " + gltfRuntime.shaders[sha].uri);
         };
     };
 
+    /**
+    * Load shaders
+    */
     var load = (gltfRuntime: IGLTFRuntime) => {
         // Begin with shaders
         for (var sha in gltfRuntime.shaders) {
@@ -1104,9 +1442,12 @@
                 shaderscount: 0,
 
                 scene: scene,
+                dummyNodes: [],
                 loadedBuffers: 0,
                 loadedShaders: 0,
                 rootUrl: rootUrl,
+
+                importOnlyMeshes: false,
 
                 arrayBuffers: []
             }
@@ -1180,7 +1521,7 @@
                 gltfRuntime.currentScene = parsedData.scenes[parsedData.scene];
             }
 
-            // Load buffers
+            // Load shaders and buffers
             load(gltfRuntime);
 
             // Finish

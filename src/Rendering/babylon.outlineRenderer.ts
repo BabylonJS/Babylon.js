@@ -68,8 +68,14 @@
             if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
-                defines.push("#define BONES");
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+                }
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+            } else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
 
             // Instances

@@ -1,8 +1,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
@@ -50,24 +49,30 @@ var BABYLON;
             */
             this.totalStrength = 1.0;
             /**
-            * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0002
+            * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0006
             * @type {number}
             */
-            this.radius = 0.0002;
+            this.radius = 0.0001;
             /**
             * Related to fallOff, used to interpolate SSAO samples (first interpolate function input) based on the occlusion difference of each pixel
             * Must not be equal to fallOff and superior to fallOff.
-            * Default value is 0.0075
+            * Default value is 0.975
             * @type {number}
             */
             this.area = 0.0075;
             /**
             * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
             * Must not be equal to area and inferior to area.
-            * Default value is 0.0002
+            * Default value is 0.0
             * @type {number}
             */
-            this.fallOff = 0.0002;
+            this.fallOff = 0.000001;
+            /**
+            * The base color of the SSAO post-process
+            * The final result is "base + ssao" between [0, 1]
+            * @type {number}
+            */
+            this.base = 0.5;
             this._firstUpdate = true;
             this._scene = scene;
             // Set up assets
@@ -77,8 +82,8 @@ var BABYLON;
             var combineRatio = ratio.combineRatio || ratio;
             this._originalColorPostProcess = new BABYLON.PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
-            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(2.0, 0.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
-            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 2.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurHPostProcess = new BABYLON.BlurPostProcess("SSAOBlurH", new BABYLON.Vector2(1.0, 0.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
+            this._blurVPostProcess = new BABYLON.BlurPostProcess("SSAOBlurV", new BABYLON.Vector2(0.0, 1.0), 2.0, ssaoRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOCombinePostProcess(combineRatio);
             // Set up pipeline
             this.addEffect(new BABYLON.PostProcessRenderEffect(scene.getEngine(), this.SSAOOriginalSceneColorEffect, function () { return _this._originalColorPostProcess; }, true));
@@ -124,6 +129,7 @@ var BABYLON;
         // Private Methods
         SSAORenderingPipeline.prototype._createSSAOPostProcess = function (ratio) {
             var _this = this;
+            var numSamples = 16;
             var sampleSphere = [
                 0.5381, 0.1856, -0.4319,
                 0.1379, 0.2486, 0.4430,
@@ -142,19 +148,23 @@ var BABYLON;
                 0.0352, -0.0631, 0.5460,
                 -0.4776, 0.2847, -0.0271
             ];
-            var samplesFactor = 1.0 / 16.0;
-            this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", ["sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius", "area", "fallOff"], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
+            var samplesFactor = 1.0 / numSamples;
+            this._ssaoPostProcess = new BABYLON.PostProcess("ssao", "ssao", [
+                "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
+                "area", "fallOff", "base"
+            ], ["randomSampler"], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define SAMPLES " + numSamples);
             this._ssaoPostProcess.onApply = function (effect) {
                 if (_this._firstUpdate) {
                     effect.setArray3("sampleSphere", sampleSphere);
                     effect.setFloat("samplesFactor", samplesFactor);
-                    effect.setFloat("randTextureTiles", 4.0 / ratio);
+                    effect.setFloat("randTextureTiles", 4.0);
                     _this._firstUpdate = false;
                 }
                 effect.setFloat("totalStrength", _this.totalStrength);
                 effect.setFloat("radius", _this.radius);
                 effect.setFloat("area", _this.area);
                 effect.setFloat("fallOff", _this.fallOff);
+                effect.setFloat("base", _this.base);
                 effect.setTexture("textureSampler", _this._depthTexture);
                 effect.setTexture("randomSampler", _this._randomTexture);
             };
@@ -175,12 +185,12 @@ var BABYLON;
             var rand = function (min, max) {
                 return Math.random() * (max - min) + min;
             };
+            var randVector = BABYLON.Vector3.Zero();
             for (var x = 0; x < size; x++) {
                 for (var y = 0; y < size; y++) {
-                    var randVector = BABYLON.Vector3.Zero();
-                    randVector.x = Math.floor(rand(0.0, 1.0) * 255);
-                    randVector.y = Math.floor(rand(0.0, 1.0) * 255);
-                    randVector.z = Math.floor(rand(0.0, 1.0) * 255);
+                    randVector.x = Math.floor(rand(-1.0, 1.0) * 255);
+                    randVector.y = Math.floor(rand(-1.0, 1.0) * 255);
+                    randVector.z = Math.floor(rand(-1.0, 1.0) * 255);
                     context.fillStyle = 'rgb(' + randVector.x + ', ' + randVector.y + ', ' + randVector.z + ')';
                     context.fillRect(x, y, 1, 1);
                 }

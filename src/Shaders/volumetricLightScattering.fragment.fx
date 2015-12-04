@@ -1,6 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
+﻿precision highp float;
 
 uniform sampler2D textureSampler;
 uniform sampler2D lightScatteringSampler;

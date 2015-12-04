@@ -1,14 +1,13 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var BABYLON;
 (function (BABYLON) {
     var VRCameraMetrics = (function () {
         function VRCameraMetrics() {
-            this.compensateDistorsion = true;
+            this.compensateDistortion = true;
         }
         Object.defineProperty(VRCameraMetrics.prototype, "aspectRatio", {
             get: function () {
@@ -291,9 +290,11 @@ var BABYLON;
                 return this._postProcesses.length - 1;
             }
             var add = 0;
+            var i;
+            var start;
             if (this._postProcesses[insertAt]) {
-                var start = this._postProcesses.length - 1;
-                for (var i = start; i >= insertAt + 1; --i) {
+                start = this._postProcesses.length - 1;
+                for (i = start; i >= insertAt + 1; --i) {
                     this._postProcesses[i + 1] = this._postProcesses[i];
                 }
                 add = 1;
@@ -309,7 +310,7 @@ var BABYLON;
                 this._postProcessesTakenIndices[i] = insertAt;
                 break;
             }
-            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) == -1) {
+            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) === -1) {
                 this._postProcessesTakenIndices.push(insertAt);
             }
             var result = insertAt + add;
@@ -319,14 +320,16 @@ var BABYLON;
         Camera.prototype.detachPostProcess = function (postProcess, atIndices) {
             if (atIndices === void 0) { atIndices = null; }
             var result = [];
+            var i;
+            var index;
             if (!atIndices) {
                 var length = this._postProcesses.length;
-                for (var i = 0; i < length; i++) {
+                for (i = 0; i < length; i++) {
                     if (this._postProcesses[i] !== postProcess) {
                         continue;
                     }
                     delete this._postProcesses[i];
-                    var index = this._postProcessesTakenIndices.indexOf(i);
+                    index = this._postProcessesTakenIndices.indexOf(i);
                     this._postProcessesTakenIndices.splice(index, 1);
                 }
             }
@@ -403,6 +406,8 @@ var BABYLON;
             return this._projectionMatrix;
         };
         Camera.prototype.dispose = function () {
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeCamera(this);
             while (this._rigCameras.length > 0) {
@@ -463,7 +468,7 @@ var BABYLON;
                     this._rigCameras[0]._cameraRigParams.vrHMatrix = metrics.leftHMatrix;
                     this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
                     this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
-                    if (metrics.compensateDistorsion) {
+                    if (metrics.compensateDistortion) {
                         postProcesses.push(new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics));
                     }
                     this._rigCameras[1]._cameraRigParams.vrMetrics = this._rigCameras[0]._cameraRigParams.vrMetrics;
@@ -472,7 +477,7 @@ var BABYLON;
                     this._rigCameras[1]._cameraRigParams.vrHMatrix = metrics.rightHMatrix;
                     this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
-                    if (metrics.compensateDistorsion) {
+                    if (metrics.compensateDistortion) {
                         postProcesses.push(new BABYLON.VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics));
                     }
                     break;
@@ -510,6 +515,135 @@ var BABYLON;
             if (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH) {
                 this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
+        };
+        Camera.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.tags = BABYLON.Tags.GetTags(this);
+            serializationObject.id = this.id;
+            serializationObject.position = this.position.asArray();
+            serializationObject.type = BABYLON.Tools.GetConstructorName(this);
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+            serializationObject.fov = this.fov;
+            serializationObject.minZ = this.minZ;
+            serializationObject.maxZ = this.maxZ;
+            serializationObject.inertia = this.inertia;
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            // Layer mask
+            serializationObject.layerMask = this.layerMask;
+            return serializationObject;
+        };
+        Camera.Parse = function (parsedCamera, scene) {
+            var camera;
+            var position = BABYLON.Vector3.FromArray(parsedCamera.position);
+            var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
+            var interaxial_distance;
+            if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
+                var alpha = parsedCamera.alpha;
+                var beta = parsedCamera.beta;
+                var radius = parsedCamera.radius;
+                if (parsedCamera.type === "AnaglyphArcRotateCamera") {
+                    interaxial_distance = parsedCamera.interaxial_distance;
+                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
+                }
+                else {
+                    camera = new BABYLON.ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
+                }
+            }
+            else if (parsedCamera.type === "AnaglyphFreeCamera") {
+                interaxial_distance = parsedCamera.interaxial_distance;
+                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, interaxial_distance, scene);
+            }
+            else if (parsedCamera.type === "DeviceOrientationCamera") {
+                camera = new BABYLON.DeviceOrientationCamera(parsedCamera.name, position, scene);
+            }
+            else if (parsedCamera.type === "FollowCamera") {
+                camera = new BABYLON.FollowCamera(parsedCamera.name, position, scene);
+                camera.heightOffset = parsedCamera.heightOffset;
+                camera.radius = parsedCamera.radius;
+                camera.rotationOffset = parsedCamera.rotationOffset;
+                if (lockedTargetMesh)
+                    camera.target = lockedTargetMesh;
+            }
+            else if (parsedCamera.type === "GamepadCamera") {
+                camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
+            }
+            else if (parsedCamera.type === "TouchCamera") {
+                camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
+            }
+            else if (parsedCamera.type === "VirtualJoysticksCamera") {
+                camera = new BABYLON.VirtualJoysticksCamera(parsedCamera.name, position, scene);
+            }
+            else if (parsedCamera.type === "WebVRFreeCamera") {
+                camera = new BABYLON.WebVRFreeCamera(parsedCamera.name, position, scene);
+            }
+            else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
+                camera = new BABYLON.VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
+            }
+            else {
+                // Free Camera is the default value
+                camera = new BABYLON.FreeCamera(parsedCamera.name, position, scene);
+            }
+            // apply 3d rig, when found
+            if (parsedCamera.cameraRigMode) {
+                var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+                camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
+            }
+            // Test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
+            if (lockedTargetMesh && camera instanceof BABYLON.FreeCamera) {
+                camera.lockedTarget = lockedTargetMesh;
+            }
+            camera.id = parsedCamera.id;
+            BABYLON.Tags.AddTagsTo(camera, parsedCamera.tags);
+            // Parent
+            if (parsedCamera.parentId) {
+                camera._waitingParentId = parsedCamera.parentId;
+            }
+            // Target
+            if (parsedCamera.target) {
+                if (camera.setTarget) {
+                    camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
+                }
+                else {
+                    //For ArcRotate
+                    camera.target = BABYLON.Vector3.FromArray(parsedCamera.target);
+                }
+            }
+            else {
+                camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
+            }
+            camera.fov = parsedCamera.fov;
+            camera.minZ = parsedCamera.minZ;
+            camera.maxZ = parsedCamera.maxZ;
+            camera.speed = parsedCamera.speed;
+            camera.inertia = parsedCamera.inertia;
+            camera.checkCollisions = parsedCamera.checkCollisions;
+            camera.applyGravity = parsedCamera.applyGravity;
+            if (parsedCamera.ellipsoid) {
+                camera.ellipsoid = BABYLON.Vector3.FromArray(parsedCamera.ellipsoid);
+            }
+            // Animations
+            if (parsedCamera.animations) {
+                for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedCamera.animations[animationIndex];
+                    camera.animations.push(BABYLON.Animation.Parse(parsedAnimation));
+                }
+            }
+            if (parsedCamera.autoAnimate) {
+                scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
+            }
+            // Layer Mask
+            if (parsedCamera.layerMask && (!isNaN(parsedCamera.layerMask))) {
+                camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
+            }
+            else {
+                camera.layerMask = 0x0FFFFFFF;
+            }
+            return camera;
         };
         // Statics
         Camera._PERSPECTIVE_CAMERA = 0;

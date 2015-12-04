@@ -20,11 +20,14 @@
                 scene.clipPlane = this.mirrorPlane;
 
                 scene.getEngine().cullBackFaces = false;
+
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.position, this._mirrorMatrix);
             }
 
             this.onAfterRender = () => {
                 scene.setTransformMatrix(this._savedViewMatrix, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = true;
+                scene._mirroredCameraPosition = null;
 
                 delete scene.clipPlane;
             }
@@ -43,6 +46,18 @@
             newTexture.renderList = this.renderList.slice(0);
 
             return newTexture;
+        }
+
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject = super.serialize();
+
+            serializationObject.mirrorPlane = this.mirrorPlane.asArray();
+
+            return serializationObject;
         }
     }
 } 

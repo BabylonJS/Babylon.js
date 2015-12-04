@@ -1,7 +1,9 @@
 ﻿module BABYLON {
     export interface IPhysicsEnginePlugin {
+        name: string;
         initialize(iterations?: number);
         setGravity(gravity: Vector3): void;
+        getGravity(): Vector3;
         runOneStep(delta: number): void;
         registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
         registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
@@ -11,6 +13,8 @@
         dispose(): void;
         isSupported(): boolean;
         updateBodyPosition(mesh: AbstractMesh): void;
+        getWorldObject(): any; //Will return the physics world object of the engine used.
+        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
     }
 
     export interface PhysicsBodyCreationOptions {
@@ -53,6 +57,10 @@
             this._currentPlugin.setGravity(this.gravity);
         }
 
+        public _getGravity(): Vector3 {
+            return this._currentPlugin.getGravity();
+        }
+
         public _registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any {
             return this._currentPlugin.registerMesh(mesh, impostor, options);
         }
@@ -85,6 +93,14 @@
             return this._currentPlugin.isSupported();
         }
 
+        public getPhysicsBodyOfMesh(mesh: AbstractMesh) {
+            return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
+        }
+
+        public getPhysicsPluginName(): string {
+            return this._currentPlugin.name;
+        }
+
         // Statics
         public static NoImpostor = 0;
         public static SphereImpostor = 1;
@@ -95,6 +111,7 @@
         public static ConeImpostor = 6;
         public static CylinderImpostor = 7;
         public static ConvexHullImpostor = 8;
+        public static HeightmapImpostor = 9;
         public static Epsilon = 0.001;
     }
 }

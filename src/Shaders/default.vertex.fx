@@ -1,6 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
+﻿precision highp float;
 
 // Attributes
 attribute vec3 position;
@@ -16,9 +14,16 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-#ifdef BONES
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
+
+#if NUM_BONE_INFLUENCERS > 0
+	uniform mat4 mBones[BonesPerMesh];
+
+	attribute vec4 matricesIndices;
+	attribute vec4 matricesWeights;
+	#if NUM_BONE_INFLUENCERS > 4
+		attribute vec4 matricesIndicesExtra;
+		attribute vec4 matricesWeightsExtra;
+	#endif
 #endif
 
 // Uniforms
@@ -59,6 +64,12 @@ uniform vec2 vEmissiveInfos;
 uniform mat4 emissiveMatrix;
 #endif
 
+#ifdef LIGHTMAP
+varying vec2 vLightmapUV;
+uniform vec2 vLightmapInfos;
+uniform mat4 lightmapMatrix;
+#endif
+
 #if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
@@ -69,10 +80,6 @@ uniform mat4 specularMatrix;
 varying vec2 vBumpUV;
 uniform vec2 vBumpInfos;
 uniform mat4 bumpMatrix;
-#endif
-
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
 #endif
 
 #ifdef POINTSIZE
@@ -99,53 +106,76 @@ varying float fFogDistance;
 #endif
 
 #ifdef SHADOWS
-#ifdef LIGHT0
+#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
 uniform mat4 lightMatrix0;
 varying vec4 vPositionFromLight0;
 #endif
-#ifdef LIGHT1
+#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
 uniform mat4 lightMatrix1;
 varying vec4 vPositionFromLight1;
 #endif
-#ifdef LIGHT2
+#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
 uniform mat4 lightMatrix2;
 varying vec4 vPositionFromLight2;
 #endif
-#ifdef LIGHT3
+#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
 uniform mat4 lightMatrix3;
 varying vec4 vPositionFromLight3;
 #endif
 #endif
 
-#ifdef REFLECTION
+#ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #endif
 
-void main(void) {
-	mat4 finalWorld;
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+varying vec3 vDirectionW;
+#endif
 
-#ifdef REFLECTION
+#ifdef LOGARITHMICDEPTH
+uniform float logarithmicDepthConstant;
+varying float vFragmentDepth;
+#endif
+
+void main(void) {
+#ifdef REFLECTIONMAP_SKYBOX
 	vPositionUVW = position;
 #endif 
 
 #ifdef INSTANCES
-	finalWorld = mat4(world0, world1, world2, world3);
+	mat4 finalWorld = mat4(world0, world1, world2, world3);
 #else
-	finalWorld = world;
+	mat4 finalWorld = world;
 #endif
 
-#ifdef BONES
-	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
-	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
-	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
+#if NUM_BONE_INFLUENCERS > 0
+	mat4 influence;
+	influence = mBones[int(matricesIndices[0])] * matricesWeights[0];
 
-#ifdef BONES4
-	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
-#else
-	finalWorld = finalWorld * (m0 + m1 + m2);
-#endif 
+	#if NUM_BONE_INFLUENCERS > 1
+		influence += mBones[int(matricesIndices[1])] * matricesWeights[1];
+	#endif 
+	#if NUM_BONE_INFLUENCERS > 2
+		influence += mBones[int(matricesIndices[2])] * matricesWeights[2];
+	#endif	
+	#if NUM_BONE_INFLUENCERS > 3
+		influence += mBones[int(matricesIndices[3])] * matricesWeights[3];
+	#endif	
 
+	#if NUM_BONE_INFLUENCERS > 4
+		influence += mBones[int(matricesIndicesExtra[0])] * matricesWeightsExtra[0];
+	#endif
+	#if NUM_BONE_INFLUENCERS > 5
+		influence += mBones[int(matricesIndicesExtra[1])] * matricesWeightsExtra[1];
+	#endif	
+	#if NUM_BONE_INFLUENCERS > 6
+		influence += mBones[int(matricesIndicesExtra[2])] * matricesWeightsExtra[2];
+	#endif	
+	#if NUM_BONE_INFLUENCERS > 7
+		influence += mBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
+	#endif	
+
+	finalWorld = finalWorld * influence;
 #endif
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
@@ -154,6 +184,10 @@ void main(void) {
 
 #ifdef NORMAL
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
+#endif
+
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+	vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
 #endif
 
 	// Texture coordinates
@@ -208,6 +242,17 @@ void main(void) {
 	}
 #endif
 
+#ifdef LIGHTMAP
+	if (vLightmapInfos.x == 0.)
+	{
+		vLightmapUV = vec2(lightmapMatrix * vec4(uv, 1.0, 0.0));
+	}
+	else
+	{
+		vLightmapUV = vec2(lightmapMatrix * vec4(uv2, 1.0, 0.0));
+	}
+#endif
+
 #if defined(SPECULAR) && defined(SPECULARTERM)
 	if (vSpecularInfos.x == 0.)
 	{
@@ -242,16 +287,16 @@ void main(void) {
 
 	// Shadows
 #ifdef SHADOWS
-#ifdef LIGHT0
+#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
 	vPositionFromLight0 = lightMatrix0 * worldPos;
 #endif
-#ifdef LIGHT1
+#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
 	vPositionFromLight1 = lightMatrix1 * worldPos;
 #endif
-#ifdef LIGHT2
+#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
 	vPositionFromLight2 = lightMatrix2 * worldPos;
 #endif
-#ifdef LIGHT3
+#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
 	vPositionFromLight3 = lightMatrix3 * worldPos;
 #endif
 #endif
@@ -264,5 +309,11 @@ void main(void) {
 	// Point size
 #ifdef POINTSIZE
 	gl_PointSize = pointSize;
+#endif
+
+	// Log. depth
+#ifdef LOGARITHMICDEPTH
+	vFragmentDepth = 1.0 + gl_Position.w;
+	gl_Position.z = log2(max(0.000001, vFragmentDepth)) * logarithmicDepthConstant;
 #endif
 }

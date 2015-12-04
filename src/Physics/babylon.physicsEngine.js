@@ -21,6 +21,9 @@ var BABYLON;
             this.gravity = gravity || new BABYLON.Vector3(0, -9.807, 0);
             this._currentPlugin.setGravity(this.gravity);
         };
+        PhysicsEngine.prototype._getGravity = function () {
+            return this._currentPlugin.getGravity();
+        };
         PhysicsEngine.prototype._registerMesh = function (mesh, impostor, options) {
             return this._currentPlugin.registerMesh(mesh, impostor, options);
         };
@@ -45,6 +48,12 @@ var BABYLON;
         PhysicsEngine.prototype.isSupported = function () {
             return this._currentPlugin.isSupported();
         };
+        PhysicsEngine.prototype.getPhysicsBodyOfMesh = function (mesh) {
+            return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
+        };
+        PhysicsEngine.prototype.getPhysicsPluginName = function () {
+            return this._currentPlugin.name;
+        };
         // Statics
         PhysicsEngine.NoImpostor = 0;
         PhysicsEngine.SphereImpostor = 1;
@@ -55,6 +64,7 @@ var BABYLON;
         PhysicsEngine.ConeImpostor = 6;
         PhysicsEngine.CylinderImpostor = 7;
         PhysicsEngine.ConvexHullImpostor = 8;
+        PhysicsEngine.HeightmapImpostor = 9;
         PhysicsEngine.Epsilon = 0.001;
         return PhysicsEngine;
     })();

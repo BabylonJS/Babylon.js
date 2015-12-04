@@ -15,17 +15,22 @@ var BABYLON;
             this._projectionMatrix = BABYLON.Matrix.Zero();
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._worldViewProjection = BABYLON.Matrix.Zero();
+            this._currentFaceIndex = 0;
+            this._currentFaceIndexCache = 0;
             this._light = light;
             this._scene = light.getScene();
             this._mapSize = mapSize;
             light._shadowGenerator = this;
             // Render target
-            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false);
+            this._shadowMap = new BABYLON.RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
             this._shadowMap.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(BABYLON.Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
+            this._shadowMap.onBeforeRender = function (faceIndex) {
+                _this._currentFaceIndex = faceIndex;
+            };
             this._shadowMap.onAfterUnbind = function () {
                 if (!_this.useBlurVarianceShadowMap) {
                     return;
@@ -171,7 +176,7 @@ var BABYLON;
                     return;
                 }
                 this._filter = value;
-                if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
+                if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap || this.usePoissonSampling) {
                     this._shadowMap.anisotropicFilteringLevel = 16;
                     this._shadowMap.updateSamplingMode(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 }
@@ -239,8 +244,15 @@ var BABYLON;
             if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-                defines.push("#define BONES");
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(BABYLON.VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
+                }
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+            }
+            else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
             // Instances
             if (useInstances) {
@@ -273,13 +285,14 @@ var BABYLON;
         // Methods
         ShadowGenerator.prototype.getTransformMatrix = function () {
             var scene = this._scene;
-            if (this._currentRenderID === scene.getRenderId()) {
+            if (this._currentRenderID === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
                 return this._transformMatrix;
             }
             this._currentRenderID = scene.getRenderId();
+            this._currentFaceIndexCache = this._currentFaceIndex;
             var lightPosition = this._light.position;
-            BABYLON.Vector3.NormalizeToRef(this._light.direction, this._lightDirection);
-            if (Math.abs(BABYLON.Vector3.Dot(this._lightDirection, BABYLON.Vector3.Up())) == 1.0) {
+            BABYLON.Vector3.NormalizeToRef(this._light.getShadowDirection(this._currentFaceIndex), this._lightDirection);
+            if (Math.abs(BABYLON.Vector3.Dot(this._lightDirection, BABYLON.Vector3.Up())) === 1.0) {
                 this._lightDirection.z = 0.0000000000001; // Need to avoid perfectly perpendicular light
             }
             if (this._light.computeTransformedPosition()) {
@@ -324,6 +337,47 @@ var BABYLON;
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
             }
+        };
+        ShadowGenerator.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.lightId = this._light.id;
+            serializationObject.mapSize = this.getShadowMap().getRenderSize();
+            serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
+            serializationObject.usePoissonSampling = this.usePoissonSampling;
+            serializationObject.renderList = [];
+            for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
+                var mesh = this.getShadowMap().renderList[meshIndex];
+                serializationObject.renderList.push(mesh.id);
+            }
+            return serializationObject;
+        };
+        ShadowGenerator.Parse = function (parsedShadowGenerator, scene) {
+            //casting to point light, as light is missing the position attr and typescript complains.
+            var light = scene.getLightByID(parsedShadowGenerator.lightId);
+            var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
+            for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
+                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
+                shadowGenerator.getShadowMap().renderList.push(mesh);
+            }
+            if (parsedShadowGenerator.usePoissonSampling) {
+                shadowGenerator.usePoissonSampling = true;
+            }
+            else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useVarianceShadowMap = true;
+            }
+            else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurVarianceShadowMap = true;
+                if (parsedShadowGenerator.blurScale) {
+                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
+                }
+                if (parsedShadowGenerator.blurBoxOffset) {
+                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
+                }
+            }
+            if (parsedShadowGenerator.bias !== undefined) {
+                shadowGenerator.bias = parsedShadowGenerator.bias;
+            }
+            return shadowGenerator;
         };
         ShadowGenerator._FILTER_NONE = 0;
         ShadowGenerator._FILTER_VARIANCESHADOWMAP = 1;
