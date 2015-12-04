@@ -116,21 +116,11 @@ namespace Unity3D2Babylon
             {
                 var progress = ((float)index / itemsCount);
                 index++;
-                // Static meshes
-                var meshFilter = gameObject.GetComponent<MeshFilter>();
-                if (meshFilter != null)
-                {                    
-                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, gameObject, progress);
-                    continue;
-                }
 
-                // Skinned meshes
-                var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
-                if (skinnedMesh != null)
-                {
-                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
-                    continue;
-                }
+                /* 
+                    The order of processing is important here.
+                    We will only check if this is a mesh prefab if it is not a light or camera
+                */
 
                 // Light
                 var light = gameObject.GetComponent<Light>();
@@ -145,6 +135,22 @@ namespace Unity3D2Babylon
                 if (camera != null)
                 {
                     ConvertUnityCameraToBabylon(camera, progress);
+                    continue;
+                }
+
+                // Static meshes
+                var meshFilter = gameObject.GetComponent<MeshFilter>();
+                if (meshFilter != null)
+                {                    
+                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, gameObject, progress);
+                    continue;
+                }
+
+                // Skinned meshes
+                var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
+                if (skinnedMesh != null)
+                {
+                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
                     continue;
                 }
 
