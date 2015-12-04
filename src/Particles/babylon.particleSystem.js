@@ -335,7 +335,7 @@ var BABYLON;
             if (this.emittor.position) {
                 serializationObject.emitterId = this.emitter.id;
             } else {
-                serializationObject.emitter = this.emitter.asArray();;
+                serializationObject.emitter = this.emitter.asArray();
             }
             serializationObject.capacity = this.getCapacity();
             if (this.particleTexture) {
