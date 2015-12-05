@@ -40,7 +40,7 @@ namespace Unity3D2Babylon
 
         void Initialize()
         {
-            title = "Babylon.js";
+            titleContent.text = "Babylon.js";
         }
 
         void OnGUI()
