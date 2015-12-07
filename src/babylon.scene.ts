@@ -2503,5 +2503,4 @@
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         }
     }
-} 
-
+}

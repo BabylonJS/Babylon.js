@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Int32Array |Float32Array;
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Int32Array | Float32Array;
         getIndices(copyWhenShared?: boolean): number[] | Int32Array;
         setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
@@ -244,43 +244,43 @@
             }
 
             this.positions = this._mergeElement(this.positions, other.positions);
-            this.normals   = this._mergeElement(this.normals  , other.normals  );
-            this.uvs       = this._mergeElement(this.uvs      , other.uvs      );
-            this.uvs2      = this._mergeElement(this.uvs2     , other.uvs2     );
-            this.uvs3      = this._mergeElement(this.uvs3     , other.uvs3     );
-            this.uvs4      = this._mergeElement(this.uvs4     , other.uvs4     );
-            this.uvs5      = this._mergeElement(this.uvs5     , other.uvs5     );
-            this.uvs6      = this._mergeElement(this.uvs6     , other.uvs6     );
-            this.colors    = this._mergeElement(this.colors   , other.colors   );
-            this.matricesIndices      = this._mergeElement(this.matricesIndices     , other.matricesIndices     );
-            this.matricesWeights      = this._mergeElement(this.matricesWeights     , other.matricesWeights     );
+            this.normals = this._mergeElement(this.normals, other.normals);
+            this.uvs = this._mergeElement(this.uvs, other.uvs);
+            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
+            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
+            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4);
+            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5);
+            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6);
+            this.colors = this._mergeElement(this.colors, other.colors);
+            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices);
+            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
             this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
             this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
         }
 
-        private _mergeElement(source : number[] | Float32Array, other : number[] | Float32Array) : number[] | Float32Array{
-            if (!other ) return source;
+        private _mergeElement(source: number[] | Float32Array, other: number[] | Float32Array): number[] | Float32Array {
+            if (!other) return source;
             if (!source) return other;
 
             var len = other.length + source.length;
             var isSrcTypedArray = source instanceof Float32Array;
-            var isOthTypedArray = other  instanceof Float32Array;
+            var isOthTypedArray = other instanceof Float32Array;
 
             // use non-loop method when the source is Float32Array
-            if(isSrcTypedArray) {
-               var ret32 = new Float32Array(len);
-               ret32.set(source);
-               ret32.set(other, source.length);
-               return ret32;
+            if (isSrcTypedArray) {
+                var ret32 = new Float32Array(len);
+                ret32.set(source);
+                ret32.set(other, source.length);
+                return ret32;
 
-            // source is number[], when other is also use concat
-            }else if (!isOthTypedArray) {
-                return (<number[]> source).concat(<number[]> other);
+                // source is number[], when other is also use concat
+            } else if (!isOthTypedArray) {
+                return (<number[]>source).concat(<number[]>other);
 
-            // source is a number[], but other is a Float32Array, loop required
+                // source is a number[], but other is a Float32Array, loop required
             } else {
-                var ret = (<number[]> source).slice(0); // copy source to a separate array
-                for (var i = 0, len = other.length; i < len; i++){
+                var ret = (<number[]>source).slice(0); // copy source to a separate array
+                for (var i = 0, len = other.length; i < len; i++) {
                     ret.push(other[i]);
                 }
                 return ret;
@@ -1493,7 +1493,7 @@
             // vertex for uv have aliased position, not for UV
             var vertices_unalias_id = [
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-            // vertex alias
+                // vertex alias
                 0,  // 12: 0 + 12
                 2,  // 13: 2 + 11
                 3,  // 14: 3 + 11
@@ -1514,7 +1514,7 @@
                 5, 1, 3, 1, 6, 4, 0, 0,  // v0-3
                 5, 3, 4, 2, 2, 2, 4, 0,  // v4-7
                 2, 0, 1, 1, 6, 0, 6, 2,  // v8-11
-            // vertex alias (for same vertex on different faces)
+                // vertex alias (for same vertex on different faces)
                 0, 4, // 12: 0 + 12
                 3, 3, // 13: 2 + 11
                 4, 4, // 14: 3 + 11
