@@ -259,10 +259,6 @@
             var material: Material;
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
-                //ShaderMaterial is not yet being serialized.
-                if(material instanceof ShaderMaterial) {
-                    continue;
-                }
                 serializationObject.materials.push(material.serialize());
             }
 
