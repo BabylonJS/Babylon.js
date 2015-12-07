@@ -297,6 +297,7 @@
             var serializationObject = super.serialize();
             serializationObject.options = this._options;
 			serializationObject.shaderPath = this._shaderPath;
+			serializationObject.customType      = "BABYLON.ShaderMaterial";
 			
 			// Texture
 			serializationObject.textures = {};
