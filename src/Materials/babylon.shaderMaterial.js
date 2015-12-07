@@ -287,6 +287,54 @@ var BABYLON;
             }
             return serializationObject;
         };
+        ShaderMaterial.Parse = function (source, scene, rootUrl) {
+            var material = new ShaderMaterial(source.name, scene, source.shaderPath, source.options);
+            // Texture
+            for (var name in source.textures) {
+                material.setTexture(name, BABYLON.Texture.Parse(source.textures[name], scene, rootUrl));
+            }
+            // Float    
+            for (name in source.floats) {
+                material.setFloat(name, source.floats[name]);
+            }
+            // Float s   
+            for (name in source.floatsArrays) {
+                material.setFloats(name, source.floatsArrays[name]);
+            }
+            // Color3        
+            for (name in source.colors3) {
+                material.setColor3(name, BABYLON.Color3.FromArray(source.colors3[name]));
+            }
+            // Color4      
+            for (name in source.colors4) {
+                material.setColor4(name, BABYLON.Color4.FromArray(source.colors4[name]));
+            }
+            // Vector2        
+            for (name in source.vectors2) {
+                material.setVector2(name, BABYLON.Vector2.FromArray(source.vectors2[name]));
+            }
+            // Vector3        
+            for (name in source.vectors3) {
+                material.setVector3(name, BABYLON.Vector3.FromArray(source.vectors3[name]));
+            }
+            // Vector4        
+            for (name in source.vectors4) {
+                material.setVector4(name, BABYLON.Vector4.FromArray(source.vectors4[name]));
+            }
+            // Matrix      
+            for (name in source.matrices) {
+                material.setMatrix(name, BABYLON.Matrix.FromArray(source.matrices[name]));
+            }
+            // Matrix 3x3
+            for (name in source.matrices3x3) {
+                material.setMatrix3x3(name, source.matrices3x3[name]);
+            }
+            // Matrix 2x2
+            for (name in source.matrices2x2) {
+                material.setMatrix2x2(name, source.matrices2x2[name]);
+            }
+            return material;
+        };
         return ShaderMaterial;
     })(BABYLON.Material);
     BABYLON.ShaderMaterial = ShaderMaterial;
