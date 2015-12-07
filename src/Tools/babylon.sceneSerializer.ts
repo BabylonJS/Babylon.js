@@ -269,11 +269,6 @@
                 serializationObject.multiMaterials.push(multiMaterial.serialize());
             }
 
-            for (index = 0; index < scene.materials.length; index++) {
-                material = scene.materials[index];
-                serializationObject.materials.push(material.serialize());
-            }
-
             // Skeletons
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
