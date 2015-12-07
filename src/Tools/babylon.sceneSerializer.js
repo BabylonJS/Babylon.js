@@ -228,6 +228,10 @@ var BABYLON;
             var material;
             for (index = 0; index < scene.materials.length; index++) {
                 material = scene.materials[index];
+                //ShaderMaterial is not yet being serialized.
+                if (material instanceof BABYLON.ShaderMaterial) {
+                    continue;
+                }
                 serializationObject.materials.push(material.serialize());
             }
             // MultiMaterials
@@ -235,10 +239,6 @@ var BABYLON;
             for (index = 0; index < scene.multiMaterials.length; index++) {
                 var multiMaterial = scene.multiMaterials[index];
                 serializationObject.multiMaterials.push(multiMaterial.serialize());
-            }
-            for (index = 0; index < scene.materials.length; index++) {
-                material = scene.materials[index];
-                serializationObject.materials.push(material.serialize());
             }
             // Skeletons
             serializationObject.skeletons = [];

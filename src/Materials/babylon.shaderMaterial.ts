@@ -2,17 +2,17 @@
     export class ShaderMaterial extends Material {
         private _shaderPath: any;
         private _options: any;
-        private _textures = new Array<Texture>();
-        private _floats = new Array<number>();
-        private _floatsArrays = {};
-        private _colors3 = new Array<Color3>();
-        private _colors4 = new Array<Color4>();
-        private _vectors2 = new Array<Vector2>();
-        private _vectors3 = new Array<Vector3>();
-        private _vectors4 = new Array<Vector4>();
-        private _matrices = new Array<Matrix>();
-        private _matrices3x3 = new Array<Float32Array>();
-        private _matrices2x2 = new Array<Float32Array>();
+        private _textures : { [name: string]: Texture } = {};
+        private _floats : { [name: string]: number }= {};
+        private _floatsArrays : { [name: string]: number[] } = {};
+        private _colors3 : { [name: string]: Color3 } = {};
+        private _colors4 : { [name: string]: Color4 } = {};
+        private _vectors2 : { [name: string]: Vector2 } = {};
+        private _vectors3 : { [name: string]: Vector3 } = {};
+        private _vectors4 : { [name: string]: Vector4 } = {};
+        private _matrices : { [name: string]: Matrix } = {};
+        private _matrices3x3 : { [name: string]: Float32Array } = {};
+        private _matrices2x2 : { [name: string]: Float32Array } = {};
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
@@ -288,9 +288,83 @@
                 this._textures[name].dispose();
             }
 
-            this._textures = [];
+            this._textures = {};
 
             super.dispose(forceDisposeEffect);
         }
+		
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            serializationObject.options = this._options;
+			serializationObject.shaderPath = this._shaderPath;
+			
+			// Texture
+			serializationObject.textures = {};
+			for (var name in this._textures) {
+				serializationObject.textures[name] = this._textures[name].serialize();
+			}
+
+			// Float    
+			serializationObject.floats = {};
+			for (name in this._floats) {
+				serializationObject.floats[name] = this._floats[name];
+			}
+
+			// Float s   
+			serializationObject.floatArrays = {};
+			for (name in this._floatsArrays) {
+				serializationObject.floatArrays[name] = this._floatsArrays[name];
+			}
+
+			// Color3    
+			serializationObject.colors3 = {};		
+			for (name in this._colors3) {
+				serializationObject.colors3[name] = this._colors3[name].asArray();
+			}
+
+			// Color4  
+			serializationObject.colors4 = {};		
+			for (name in this._colors4) {
+				serializationObject.colors4[name] = this._colors4[name].asArray();
+			}
+
+			// Vector2  
+			serializationObject.vectors2 = {};		
+			for (name in this._vectors2) {
+				serializationObject.vectors2[name] = this._vectors2[name].asArray();
+			}
+
+			// Vector3        
+			serializationObject.vectors3 = {};		
+			for (name in this._vectors3) {
+				serializationObject.vectors3[name] = this._vectors3[name].asArray();
+			}
+
+			// Vector4        
+			serializationObject.vectors4 = {};		
+			for (name in this._vectors4) {
+				serializationObject.vectors4[name] = this._vectors4[name].asArray();
+			}
+
+			// Matrix      
+			serializationObject.matrices = {};
+			for (name in this._matrices) {
+				serializationObject.matrices[name] = this._matrices[name].asArray();
+			}
+
+			// Matrix 3x3
+			serializationObject.matrices3x3 = {};
+			for (name in this._matrices3x3) {
+				serializationObject.matrices3x3[name] = this._matrices3x3[name];
+			}
+
+			// Matrix 2x2
+			serializationObject.matrices2x2 = {};
+			for (name in this._matrices2x2) {
+				serializationObject.matrices2x2[name] = this._matrices2x2[name];
+			}
+			
+			return serializationObject;
+		}
     }
 } 

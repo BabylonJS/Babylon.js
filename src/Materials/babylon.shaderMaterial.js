@@ -9,17 +9,17 @@ var BABYLON;
         __extends(ShaderMaterial, _super);
         function ShaderMaterial(name, scene, shaderPath, options) {
             _super.call(this, name, scene);
-            this._textures = new Array();
-            this._floats = new Array();
+            this._textures = {};
+            this._floats = {};
             this._floatsArrays = {};
-            this._colors3 = new Array();
-            this._colors4 = new Array();
-            this._vectors2 = new Array();
-            this._vectors3 = new Array();
-            this._vectors4 = new Array();
-            this._matrices = new Array();
-            this._matrices3x3 = new Array();
-            this._matrices2x2 = new Array();
+            this._colors3 = {};
+            this._colors4 = {};
+            this._vectors2 = {};
+            this._vectors3 = {};
+            this._vectors4 = {};
+            this._matrices = {};
+            this._matrices3x3 = {};
+            this._matrices2x2 = {};
             this._cachedWorldViewMatrix = new BABYLON.Matrix();
             this._shaderPath = shaderPath;
             options.needAlphaBlending = options.needAlphaBlending || false;
@@ -223,8 +223,69 @@ var BABYLON;
             for (var name in this._textures) {
                 this._textures[name].dispose();
             }
-            this._textures = [];
+            this._textures = {};
             _super.prototype.dispose.call(this, forceDisposeEffect);
+        };
+        ShaderMaterial.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.options = this._options;
+            serializationObject.shaderPath = this._shaderPath;
+            // Texture
+            serializationObject.textures = {};
+            for (var name in this._textures) {
+                serializationObject.textures[name] = this._textures[name].serialize();
+            }
+            // Float    
+            serializationObject.floats = {};
+            for (name in this._floats) {
+                serializationObject.floats[name] = this._floats[name];
+            }
+            // Float s   
+            serializationObject.floatArrays = {};
+            for (name in this._floatsArrays) {
+                serializationObject.floatArrays[name] = this._floatsArrays[name];
+            }
+            // Color3    
+            serializationObject.colors3 = {};
+            for (name in this._colors3) {
+                serializationObject.colors3[name] = this._colors3[name].asArray();
+            }
+            // Color4  
+            serializationObject.colors4 = {};
+            for (name in this._colors4) {
+                serializationObject.colors4[name] = this._colors4[name].asArray();
+            }
+            // Vector2  
+            serializationObject.vectors2 = {};
+            for (name in this._vectors2) {
+                serializationObject.vectors2[name] = this._vectors2[name].asArray();
+            }
+            // Vector3        
+            serializationObject.vectors3 = {};
+            for (name in this._vectors3) {
+                serializationObject.vectors3[name] = this._vectors3[name].asArray();
+            }
+            // Vector4        
+            serializationObject.vectors4 = {};
+            for (name in this._vectors4) {
+                serializationObject.vectors4[name] = this._vectors4[name].asArray();
+            }
+            // Matrix      
+            serializationObject.matrices = {};
+            for (name in this._matrices) {
+                serializationObject.matrices[name] = this._matrices[name].asArray();
+            }
+            // Matrix 3x3
+            serializationObject.matrices3x3 = {};
+            for (name in this._matrices3x3) {
+                serializationObject.matrices3x3[name] = this._matrices3x3[name];
+            }
+            // Matrix 2x2
+            serializationObject.matrices2x2 = {};
+            for (name in this._matrices2x2) {
+                serializationObject.matrices2x2[name] = this._matrices2x2[name];
+            }
+            return serializationObject;
         };
         return ShaderMaterial;
     })(BABYLON.Material);
