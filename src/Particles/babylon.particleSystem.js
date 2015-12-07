@@ -432,12 +432,6 @@ var BABYLON;
                 });
                 a.click();
             }
-            else {
-                var newWindow = window.open("");
-                var img = newWindow.document.createElement("img");
-                img.src = file;
-                newWindow.document.body.appendChild(img);
-            }
         };
         ParticleSystem.CreateFromFile = function (fileUrl, scene, callback) {
             BABYLON.Tools.LoadFile(fileUrl, function (data) {

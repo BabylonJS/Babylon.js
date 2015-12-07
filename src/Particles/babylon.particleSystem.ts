@@ -550,12 +550,6 @@
                 });
                 a.click();
             }
-            else {
-                var newWindow = window.open("");
-                var img = newWindow.document.createElement("img");
-                img.src = file;
-                newWindow.document.body.appendChild(img);
-            }
         }
 
         public static CreateFromFile = function(fileUrl: string, scene: Scene, callback: (data: any) => void){
