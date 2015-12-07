@@ -523,5 +523,57 @@
 
             return particleSystem;
         }
+
+        public static CreateParticleFile = function(particles: Array<ParticleSystem>) {
+            var json;
+            if(particles.length === 0){
+                return;
+            }
+            else if(particles.length === 1){
+                json = particles[0].serialize();
+            }
+            else{
+                for(var i = 0; i < particles.length; i++) {
+                    json[i] = particles[i].serialize();
+                }
+            }
+            var str = JSON.stringify(json);
+            var file = Tools.FileAsURL(str);
+            if (("download" in document.createElement("a"))) {
+                var a = window.document.createElement("a");
+                a.href = file;
+                var date = new Date();
+                a.setAttribute("download", "particle.particle");
+                window.document.body.appendChild(a);
+                a.addEventListener("click", function () {
+                    a.parentElement.removeChild(a);
+                });
+                a.click();
+            }
+        }
+
+        public static CreateFromFile = function(fileUrl: string, scene: Scene, callback: (data: any) => void){
+            Tools.LoadFile(fileUrl, data => {
+                var json = JSON.parse(data);
+                if(json.emitRate !== undefined){
+                    var particle = ParticleSystem.Parse(json, scene, "");
+                    if(callback)
+                        callback(particle);
+                }
+                else{
+                    for(var id in json){
+                        if(!json[id].emitRate){
+                            Tools.Error(fileUrl+" is not a particle file.");
+                            return;
+                        }
+                    }
+                    for(var id in json){
+                        var particle = ParticleSystem.Parse(json[id], scene, "");
+                        if(callback)
+                            callback(particle);
+                    }
+                }
+            });
+        }
     }
 }  
