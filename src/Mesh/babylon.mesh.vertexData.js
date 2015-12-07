@@ -171,120 +171,54 @@ var BABYLON;
             }
         };
         VertexData.prototype.merge = function (other) {
-            var index;
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
                 }
                 var offset = this.positions ? this.positions.length / 3 : 0;
-                for (index = 0; index < other.indices.length; index++) {
+                for (var index = 0; index < other.indices.length; index++) {
                     //TODO check type - if Int32Array!
                     this.indices.push(other.indices[index] + offset);
                 }
             }
-            if (other.positions) {
-                if (!this.positions) {
-                    this.positions = [];
-                }
-                for (index = 0; index < other.positions.length; index++) {
-                    this.positions.push(other.positions[index]);
-                }
+            this.positions = this._mergeElement(this.positions, other.positions);
+            this.normals = this._mergeElement(this.normals, other.normals);
+            this.uvs = this._mergeElement(this.uvs, other.uvs);
+            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
+            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
+            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4);
+            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5);
+            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6);
+            this.colors = this._mergeElement(this.colors, other.colors);
+            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices);
+            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
+            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
+            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
+        };
+        VertexData.prototype._mergeElement = function (source, other) {
+            if (!other)
+                return source;
+            if (!source)
+                return other;
+            var len = other.length + source.length;
+            var isSrcTypedArray = source instanceof Float32Array;
+            var isOthTypedArray = other instanceof Float32Array;
+            // use non-loop method when the source is Float32Array
+            if (isSrcTypedArray) {
+                var ret32 = new Float32Array(len);
+                ret32.set(source);
+                ret32.set(other, source.length);
+                return ret32;
             }
-            if (other.normals) {
-                if (!this.normals) {
-                    this.normals = [];
-                }
-                for (index = 0; index < other.normals.length; index++) {
-                    this.normals.push(other.normals[index]);
-                }
+            else if (!isOthTypedArray) {
+                return source.concat(other);
             }
-            if (other.uvs) {
-                if (!this.uvs) {
-                    this.uvs = [];
+            else {
+                var ret = source.slice(0); // copy source to a separate array
+                for (var i = 0, len = other.length; i < len; i++) {
+                    ret.push(other[i]);
                 }
-                for (index = 0; index < other.uvs.length; index++) {
-                    this.uvs.push(other.uvs[index]);
-                }
-            }
-            if (other.uvs2) {
-                if (!this.uvs2) {
-                    this.uvs2 = [];
-                }
-                for (index = 0; index < other.uvs2.length; index++) {
-                    this.uvs2.push(other.uvs2[index]);
-                }
-            }
-            if (other.uvs3) {
-                if (!this.uvs3) {
-                    this.uvs3 = [];
-                }
-                for (index = 0; index < other.uvs3.length; index++) {
-                    this.uvs3.push(other.uvs3[index]);
-                }
-            }
-            if (other.uvs4) {
-                if (!this.uvs4) {
-                    this.uvs4 = [];
-                }
-                for (index = 0; index < other.uvs4.length; index++) {
-                    this.uvs4.push(other.uvs4[index]);
-                }
-            }
-            if (other.uvs5) {
-                if (!this.uvs5) {
-                    this.uvs5 = [];
-                }
-                for (index = 0; index < other.uvs5.length; index++) {
-                    this.uvs5.push(other.uvs5[index]);
-                }
-            }
-            if (other.uvs6) {
-                if (!this.uvs6) {
-                    this.uvs6 = [];
-                }
-                for (index = 0; index < other.uvs6.length; index++) {
-                    this.uvs6.push(other.uvs6[index]);
-                }
-            }
-            if (other.matricesIndices) {
-                if (!this.matricesIndices) {
-                    this.matricesIndices = [];
-                }
-                for (index = 0; index < other.matricesIndices.length; index++) {
-                    this.matricesIndices.push(other.matricesIndices[index]);
-                }
-            }
-            if (other.matricesWeights) {
-                if (!this.matricesWeights) {
-                    this.matricesWeights = [];
-                }
-                for (index = 0; index < other.matricesWeights.length; index++) {
-                    this.matricesWeights.push(other.matricesWeights[index]);
-                }
-            }
-            if (other.matricesIndicesExtra) {
-                if (!this.matricesIndicesExtra) {
-                    this.matricesIndicesExtra = [];
-                }
-                for (index = 0; index < other.matricesIndicesExtra.length; index++) {
-                    this.matricesIndicesExtra.push(other.matricesIndicesExtra[index]);
-                }
-            }
-            if (other.matricesWeightsExtra) {
-                if (!this.matricesWeightsExtra) {
-                    this.matricesWeightsExtra = [];
-                }
-                for (index = 0; index < other.matricesWeightsExtra.length; index++) {
-                    this.matricesWeightsExtra.push(other.matricesWeightsExtra[index]);
-                }
-            }
-            if (other.colors) {
-                if (!this.colors) {
-                    this.colors = [];
-                }
-                for (index = 0; index < other.colors.length; index++) {
-                    this.colors.push(other.colors[index]);
-                }
+                return ret;
             }
         };
         VertexData.prototype.serialize = function () {
@@ -322,6 +256,13 @@ var BABYLON;
             }
             if (this.matricesWeights) {
                 serializationObject.matricesWeights = this.matricesWeights;
+            }
+            if (this.matricesIndicesExtra) {
+                serializationObject.matricesIndicesExtra = this.matricesIndicesExtra;
+                serializationObject.matricesIndicesExtra._isExpanded = true;
+            }
+            if (this.matricesWeightsExtra) {
+                serializationObject.matricesWeightsExtra = this.matricesWeightsExtra;
             }
             serializationObject.indices = this.indices;
             return serializationObject;
@@ -481,7 +422,7 @@ var BABYLON;
                     vTotalDistance[i] = dist;
                 }
             }
-            // uvs            
+            // uvs
             var u;
             var v;
             for (p = 0; p < pathArray.length; p++) {
@@ -497,7 +438,7 @@ var BABYLON;
             var l1 = lg[p] - 1; // path1 length
             var l2 = lg[p + 1] - 1; // path2 length
             var min = (l1 < l2) ? l1 : l2; // current path stop index
-            var shft = idx[1] - idx[0]; // shift 
+            var shft = idx[1] - idx[0]; // shift
             var path1nb = closeArray ? lg.length : lg.length - 1; // number of path1 to iterate	on
             while (pi <= min && p < path1nb) {
                 // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
@@ -695,7 +636,7 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        // Cylinder and cone 
+        // Cylinder and cone
         VertexData.CreateCylinder = function (options) {
             var height = options.height || 2;
             var diameterTop = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
@@ -1783,7 +1724,7 @@ var BABYLON;
                     }
                     break;
                 case BABYLON.Mesh.DOUBLESIDE:
-                    // positions 
+                    // positions
                     var lp = positions.length;
                     var l = lp / 3;
                     for (var p = 0; p < lp; p++) {

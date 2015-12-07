@@ -334,8 +334,10 @@ var BABYLON;
             serializationObject.name = this.name;
             if (this.emitter.position) {
                 serializationObject.emitterId = this.emitter.id;
-            } else {
+            }
+            else {
                 serializationObject.emitter = this.emitter.asArray();
+                ;
             }
             serializationObject.capacity = this.getCapacity();
             if (this.particleTexture) {
@@ -345,6 +347,8 @@ var BABYLON;
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
             serializationObject.maxSize = this.maxSize;
+            serializationObject.minEmitPower = this.minEmitPower;
+            serializationObject.maxEmitPower = this.maxEmitPower;
             serializationObject.minLifeTime = this.minLifeTime;
             serializationObject.maxLifeTime = this.maxLifeTime;
             serializationObject.emitRate = this.emitRate;
@@ -371,8 +375,9 @@ var BABYLON;
             }
             if (parsedParticleSystem.emitterId) {
                 particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
-            } else {
-                particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
+            }
+            else {
+                particleSystem.emitter = BABYLON.Vector3.FromArray(parsedParticleSystem.emitter);
             }
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
@@ -380,6 +385,8 @@ var BABYLON;
             particleSystem.maxSize = parsedParticleSystem.maxSize;
             particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
             particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
+            particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;
+            particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
             particleSystem.emitRate = parsedParticleSystem.emitRate;
             particleSystem.minEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.minEmitBox);
             particleSystem.maxEmitBox = BABYLON.Vector3.FromArray(parsedParticleSystem.maxEmitBox);
@@ -390,7 +397,7 @@ var BABYLON;
             particleSystem.color2 = BABYLON.Color4.FromArray(parsedParticleSystem.color2);
             particleSystem.colorDead = BABYLON.Color4.FromArray(parsedParticleSystem.colorDead);
             particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
-            particleSystem.targetStopDuration = parsedParticleSystem.targetStopFrame;
+            particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
             particleSystem.start();
