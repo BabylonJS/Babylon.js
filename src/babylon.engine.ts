@@ -727,21 +727,21 @@
             }
         }
 
-        public getAspectRatio(camera: Camera): number {
+        public getAspectRatio(camera: Camera, useScreen = false): number {
             var viewport = camera.viewport;
-            return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
+            return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
         }
 
-        public getRenderWidth(): number {
-            if (this._currentRenderTarget) {
+        public getRenderWidth(useScreen = false): number {
+            if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._width;
             }
 
             return this._renderingCanvas.width;
         }
 
-        public getRenderHeight(): number {
-            if (this._currentRenderTarget) {
+        public getRenderHeight(useScreen = false): number {
+            if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._height;
             }
 

@@ -2234,6 +2234,11 @@ var BABYLON;
             var height = engine.getRenderHeight();
             return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
         };
+        Viewport.prototype.toScreenGlobal = function (engine) {
+            var width = engine.getRenderWidth(true);
+            var height = engine.getRenderHeight(true);
+            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
+        };
         return Viewport;
     })();
     BABYLON.Viewport = Viewport;

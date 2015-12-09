@@ -118,7 +118,7 @@
 
             var engine = this._scene.getEngine();
             var viewport = this._scene.activeCamera.viewport;
-            var globalViewport = viewport.toGlobal(engine);
+            var globalViewport = viewport.toScreenGlobal(engine);
 
             // Position
             if (!this.computeEffectivePosition(globalViewport)) {
@@ -187,7 +187,7 @@
                 var y = centerY - (distY * flare.position);
 
                 var cw = flare.size;
-                var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera);
+                var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
                 var cx = 2 * (x / globalViewport.width) - 1.0;
                 var cy = 1.0 - 2 * (y / globalViewport.height);
 
