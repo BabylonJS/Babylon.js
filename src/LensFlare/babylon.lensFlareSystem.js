@@ -85,7 +85,7 @@ var BABYLON;
                 return false;
             var engine = this._scene.getEngine();
             var viewport = this._scene.activeCamera.viewport;
-            var globalViewport = viewport.toGlobal(engine);
+            var globalViewport = viewport.toScreenGlobal(engine);
             // Position
             if (!this.computeEffectivePosition(globalViewport)) {
                 return false;
@@ -144,7 +144,7 @@ var BABYLON;
                 var x = centerX - (distX * flare.position);
                 var y = centerY - (distY * flare.position);
                 var cw = flare.size;
-                var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera);
+                var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
                 var cx = 2 * (x / globalViewport.width) - 1.0;
                 var cy = 1.0 - 2 * (y / globalViewport.height);
                 var viewportMatrix = BABYLON.Matrix.FromValues(cw / 2, 0, 0, 0, 0, ch / 2, 0, 0, 0, 0, 1, 0, cx, cy, 0, 1);

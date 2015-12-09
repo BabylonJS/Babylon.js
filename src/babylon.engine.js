@@ -646,18 +646,21 @@ var BABYLON;
                 version: this._glVersion
             };
         };
-        Engine.prototype.getAspectRatio = function (camera) {
+        Engine.prototype.getAspectRatio = function (camera, useScreen) {
+            if (useScreen === void 0) { useScreen = false; }
             var viewport = camera.viewport;
-            return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
+            return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
         };
-        Engine.prototype.getRenderWidth = function () {
-            if (this._currentRenderTarget) {
+        Engine.prototype.getRenderWidth = function (useScreen) {
+            if (useScreen === void 0) { useScreen = false; }
+            if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._width;
             }
             return this._renderingCanvas.width;
         };
-        Engine.prototype.getRenderHeight = function () {
-            if (this._currentRenderTarget) {
+        Engine.prototype.getRenderHeight = function (useScreen) {
+            if (useScreen === void 0) { useScreen = false; }
+            if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._height;
             }
             return this._renderingCanvas.height;
