@@ -18,6 +18,7 @@
     - New `Mesh.CreateIcoSphere()` method. [Demo here](http://www.babylonjs-playground.com/#24DUYD) (G'kar)
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+	- Unity3D exporter will recognise instances of prefabs ([ozRocker](https://github.com/punkoffice))
     - New parse mechanism (for loading .babylon file) ([deltakosh](https://github.com/deltakosh))   
     - New button to log the camera position in the debug layer ([temechon](https://github.com/temechon))
     - Added `Animatable.goToFrame()` ([deltakosh](https://github.com/deltakosh))   
