@@ -2797,9 +2797,15 @@
         constructor(public x: number, public y: number, public width: number, public height: number) {
         }
 
-        public toGlobal(engine): Viewport {
+        public toGlobal(engine: Engine): Viewport {
             var width = engine.getRenderWidth();
             var height = engine.getRenderHeight();
+            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
+        }
+
+        public toScreenGlobal(engine: Engine): Viewport {
+            var width = engine.getRenderWidth(true);
+            var height = engine.getRenderHeight(true);
             return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
         }
     }
