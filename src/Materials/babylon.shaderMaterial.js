@@ -230,6 +230,7 @@ var BABYLON;
             var serializationObject = _super.prototype.serialize.call(this);
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;
+            serializationObject.customType = "BABYLON.ShaderMaterial";
             // Texture
             serializationObject.textures = {};
             for (var name in this._textures) {
