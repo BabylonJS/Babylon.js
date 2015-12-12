@@ -162,7 +162,7 @@
             return 0;
         }
 
-        public getIndices(): number[] {
+        public getIndices(): number[] | Int32Array {
             return null;
         }
 

@@ -403,6 +403,34 @@ var BABYLON;
             }
             return returnValue;
         };
+        Animation.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.name = this.name;
+            serializationObject.property = this.targetProperty;
+            serializationObject.framePerSecond = this.framePerSecond;
+            serializationObject.dataType = this.dataType;
+            serializationObject.loopBehavior = this.loopMode;
+            var dataType = this.dataType;
+            serializationObject.keys = [];
+            var keys = this.getKeys();
+            for (var index = 0; index < keys.length; index++) {
+                var animationKey = keys[index];
+                var key = {};
+                key.frame = animationKey.frame;
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        key.values = [animationKey.value];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                        key.values = animationKey.value.asArray();
+                        break;
+                }
+                serializationObject.keys.push(key);
+            }
+            return serializationObject;
+        };
         Object.defineProperty(Animation, "ANIMATIONTYPE_FLOAT", {
             get: function () {
                 return Animation._ANIMATIONTYPE_FLOAT;
@@ -466,6 +494,45 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Animation.Parse = function (parsedAnimation) {
+            var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+            var dataType = parsedAnimation.dataType;
+            var keys = [];
+            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+                var key = parsedAnimation.keys[index];
+                var data;
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        data = key.values[0];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        data = BABYLON.Quaternion.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                        data = BABYLON.Matrix.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    default:
+                        data = BABYLON.Vector3.FromArray(key.values);
+                        break;
+                }
+                keys.push({
+                    frame: key.frame,
+                    value: data
+                });
+            }
+            animation.setKeys(keys);
+            return animation;
+        };
+        Animation.AppendSerializedAnimations = function (source, destination) {
+            if (source.animations) {
+                destination.animations = [];
+                for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                    var animation = source.animations[animationIndex];
+                    destination.animations.push(animation.serialize());
+                }
+            }
+        };
         // Statics
         Animation._ANIMATIONTYPE_FLOAT = 0;
         Animation._ANIMATIONTYPE_VECTOR3 = 1;

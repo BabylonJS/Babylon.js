@@ -727,21 +727,21 @@
             }
         }
 
-        public getAspectRatio(camera: Camera): number {
+        public getAspectRatio(camera: Camera, useScreen = false): number {
             var viewport = camera.viewport;
-            return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
+            return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
         }
 
-        public getRenderWidth(): number {
-            if (this._currentRenderTarget) {
+        public getRenderWidth(useScreen = false): number {
+            if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._width;
             }
 
             return this._renderingCanvas.width;
         }
 
-        public getRenderHeight(): number {
-            if (this._currentRenderTarget) {
+        public getRenderHeight(useScreen = false): number {
+            if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._height;
             }
 
@@ -881,17 +881,22 @@
         public clear(color: any, backBuffer: boolean, depthStencil: boolean): void {
             this.applyStates();
 
-            this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            if (this._depthCullingState.depthMask) {
+            if (backBuffer) {
+                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+            }
+
+            if (depthStencil && this._depthCullingState.depthMask) {
                 this._gl.clearDepth(1.0);
             }
             var mode = 0;
 
-            if (backBuffer)
+            if (backBuffer) {
                 mode |= this._gl.COLOR_BUFFER_BIT;
+            }
 
-            if (depthStencil && this._depthCullingState.depthMask)
+            if (depthStencil && this._depthCullingState.depthMask) {
                 mode |= this._gl.DEPTH_BUFFER_BIT;
+            }
 
             this._gl.clear(mode);
         }
@@ -1070,7 +1075,7 @@
             this._cachedIndexBuffer = null;
         }
 
-        public createIndexBuffer(indices: number[]): WebGLBuffer {
+        public createIndexBuffer(indices: number[] | Int32Array): WebGLBuffer {
             var vbo = this._gl.createBuffer();
             this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, vbo);
 

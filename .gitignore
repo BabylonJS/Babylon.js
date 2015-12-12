@@ -120,3 +120,6 @@ UpgradeLog*.XML
 # Do not ignore loaders/obj
 !loaders/*
 node_modules
+
+# for JetBrains IDE
+.idea

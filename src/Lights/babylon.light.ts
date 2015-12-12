@@ -1,6 +1,7 @@
 ﻿module BABYLON {
 
     export interface IShadowLight {
+        id: string;
         position: Vector3;
         transformedPosition: Vector3;
         name: string;
@@ -111,6 +112,88 @@
 
             // Remove from scene
             this.getScene().removeLight(this);
+        }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+            serializationObject.tags = Tags.GetTags(this);
+
+            if (this.intensity) {
+                serializationObject.intensity = this.intensity;
+            }
+
+            serializationObject.range = this.range;
+
+            serializationObject.diffuse = this.diffuse.asArray();
+            serializationObject.specular = this.specular.asArray();
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedLight: any, scene: Scene): Light {
+            var light;
+
+            switch (parsedLight.type) {
+                case 0:
+                    light = new PointLight(parsedLight.name, Vector3.FromArray(parsedLight.position), scene);
+                    break;
+                case 1:
+                    light = new DirectionalLight(parsedLight.name, Vector3.FromArray(parsedLight.direction), scene);
+                    light.position = Vector3.FromArray(parsedLight.position);
+                    break;
+                case 2:
+                    light = new SpotLight(parsedLight.name, Vector3.FromArray(parsedLight.position), Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
+                    break;
+                case 3:
+                    light = new HemisphericLight(parsedLight.name, Vector3.FromArray(parsedLight.direction), scene);
+                    light.groundColor = Color3.FromArray(parsedLight.groundColor);
+                    break;
+            }
+
+            light.id = parsedLight.id;
+
+            Tags.AddTagsTo(light, parsedLight.tags);
+
+            if (parsedLight.intensity !== undefined) {
+                light.intensity = parsedLight.intensity;
+            }
+
+            if (parsedLight.range) {
+                light.range = parsedLight.range;
+            }
+
+            light.diffuse = Color3.FromArray(parsedLight.diffuse);
+            light.specular = Color3.FromArray(parsedLight.specular);
+
+            if (parsedLight.excludedMeshesIds) {
+                light._excludedMeshesIds = parsedLight.excludedMeshesIds;
+            }
+
+            // Parent
+            if (parsedLight.parentId) {
+                light._waitingParentId = parsedLight.parentId;
+            }
+
+            if (parsedLight.includedOnlyMeshesIds) {
+                light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
+            }
+
+            // Animations
+            if (parsedLight.animations) {
+                for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedLight.animations[animationIndex];
+
+                    light.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
+            if (parsedLight.autoAnimate) {
+                scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
+            }
+            
+            return light;
         }
     }
 } 

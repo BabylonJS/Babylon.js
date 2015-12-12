@@ -1,7 +1,7 @@
 ﻿precision highp float;
 // Inputs
 uniform float time;
-uniform float speed;
+uniform float lowFrequencySpeed;
 // Varying
 varying float noise;
 
@@ -18,10 +18,6 @@ attribute vec2 uv2;
 #endif
 #ifdef VERTEXCOLOR
 attribute vec4 color;
-#endif
-#ifdef BONES
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
 #endif
 
 // Uniforms
@@ -44,8 +40,15 @@ uniform mat4 diffuseMatrix;
 uniform vec2 vDiffuseInfos;
 #endif
 
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
+#if NUM_BONE_INFLUENCERS > 0
+	uniform mat4 mBones[BonesPerMesh];
+
+	attribute vec4 matricesIndices;
+	attribute vec4 matricesWeights;
+	#if NUM_BONE_INFLUENCERS > 4
+		attribute vec4 matricesIndicesExtra;
+		attribute vec4 matricesWeightsExtra;
+	#endif
 #endif
 
 #ifdef POINTSIZE
@@ -207,25 +210,41 @@ void main(void) {
 	finalWorld = world;
 #endif
 
-#ifdef BONES
-	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
-	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
-	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
+#if NUM_BONE_INFLUENCERS > 0
+	mat4 influence;
+	influence = mBones[int(matricesIndices[0])] * matricesWeights[0];
 
-#ifdef BONES4
-	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
-#else
-	finalWorld = finalWorld * (m0 + m1 + m2);
-#endif 
+	#if NUM_BONE_INFLUENCERS > 1
+		influence += mBones[int(matricesIndices[1])] * matricesWeights[1];
+	#endif 
+	#if NUM_BONE_INFLUENCERS > 2
+		influence += mBones[int(matricesIndices[2])] * matricesWeights[2];
+	#endif	
+	#if NUM_BONE_INFLUENCERS > 3
+		influence += mBones[int(matricesIndices[3])] * matricesWeights[3];
+	#endif	
 
+	#if NUM_BONE_INFLUENCERS > 4
+		influence += mBones[int(matricesIndicesExtra[0])] * matricesWeightsExtra[0];
+	#endif
+	#if NUM_BONE_INFLUENCERS > 5
+		influence += mBones[int(matricesIndicesExtra[1])] * matricesWeightsExtra[1];
+	#endif	
+	#if NUM_BONE_INFLUENCERS > 6
+		influence += mBones[int(matricesIndicesExtra[2])] * matricesWeightsExtra[2];
+	#endif	
+	#if NUM_BONE_INFLUENCERS > 7
+		influence += mBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
+	#endif	
+
+	finalWorld = finalWorld * influence;
 #endif
 
 
     // get a turbulent 3d noise using the normal, normal to high freq
     noise = 10.0 *  -.10 * turbulence( .5 * normal + time*1.15 );
     // get a 3d noise using the position, low frequency
-    float b = 5.0 * pnoise( 0.05 * position +vec3(time*1.025), vec3( 100.0 ) );
+    float b = lowFrequencySpeed * 5.0 * pnoise( 0.05 * position +vec3(time*1.025), vec3( 100.0 ) );
     // compose both noises
     float displacement = - 1.5 * noise + b;
 

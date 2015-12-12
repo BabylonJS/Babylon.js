@@ -160,89 +160,76 @@
 				
 				// Create shaders
 				var std = new BABYLON.StandardMaterial("std", scene);
-				std.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
-				std.diffuseTexture.uScale = 5;
-				std.diffuseTexture.vScale = 5;
+				std.specularColor = new BABYLON.Color3(0, 0, 0);
+				
+				var diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+				diffuseTexture.uScale = 5;
+				diffuseTexture.vScale = 5;
 
                 // Fire Procedural Texture
                 var firePT = addFirePT();
-				var fireMaterial =  new BABYLON.StandardMaterial("fire", scene);
-				fireMaterial.diffuseTexture = firePT;
 				
 				// Wood Procedural Texture
                 var woodPT = addWoodPT();
-				var woodMaterial =  new BABYLON.StandardMaterial("wood", scene);
-				woodMaterial.diffuseTexture = woodPT;
 				
 				// Cloud Procedural Texture
                 var cloudPT = addCloudPT();
-				var cloudMaterial =  new BABYLON.StandardMaterial("cloud", scene);
-				cloudMaterial.diffuseTexture = cloudPT;
 				
 				// Grass Procedural Texture
                 var grassPT = addGrassPT();
-				var grassMaterial =  new BABYLON.StandardMaterial("grass", scene);
-				grassMaterial.diffuseTexture = grassPT;
 				
 				// Road Procedural Texture
                 var roadPT = addRoadPT();
-				var roadMaterial =  new BABYLON.StandardMaterial("road", scene);
-				roadMaterial.diffuseTexture = roadPT;
 				
 				// Brick Procedural Texture
                 var brickPT = addBrickPT();
-				var brickMaterial =  new BABYLON.StandardMaterial("brick", scene);
-				brickMaterial.diffuseTexture = brickPT;
 				
 				// Marble Procedural Texture
                 var marblePT = addMarblePT();
-				var marbleMaterial =  new BABYLON.StandardMaterial("marble", scene);
-				marbleMaterial.diffuseTexture = marblePT;
 				
 				// Starfield Procedural Texture
                 var starfieldPT = addStarfieldPT();
-				var starfieldMaterial =  new BABYLON.StandardMaterial("starfield", scene);
-			 	starfieldMaterial.diffuseTexture = starfieldPT;
 								
 				// Default to std
-				var currentMaterial = std;
+				var currentTexture = diffuseTexture;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
+				std.diffuseTexture = currentTexture;
 
-				gui.add(options, 'material', ['none', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield']).onFinishChange(function () {
-					switch (options.material) {
+				gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield']).onFinishChange(function () {
+					switch (options.texture) {
 						case "fire":
-							currentMaterial = fireMaterial;
+							currentTexture = firePT;
 							break;
 						case "wood":
-							currentMaterial = woodMaterial;
+							currentTexture = woodPT;
 							break;
 						case "cloud":
-							currentMaterial = cloudMaterial;
+							currentTexture = cloudPT;
 							break;
 						case "grass":
-							currentMaterial = grassMaterial;
+							currentTexture = grassPT;
 							break;
 						case "road":
-							currentMaterial = roadMaterial;
+							currentTexture = roadPT;
 							break;
 						case "brick":
-							currentMaterial = brickMaterial;
+							currentTexture = brickPT;
 							break;
 						case "marble":
-							currentMaterial = marbleMaterial;
+							currentTexture = marblePT;
 							break;
 						case "starfield":
-							currentMaterial = starfieldMaterial;
+							currentTexture = starfieldPT;
 							break;
 						case "none":
 						default:
-							currentMaterial = std;
+							currentTexture = diffuseTexture;
 							break;
 					}
 
-					currentMesh.material = currentMaterial;
-					window.enableMaterial(options.material);
+					std.diffuseTexture = currentTexture;
+					window.enableTexture(options.texture);
 				});
 
 				gui.add(options, 'mesh', ['sphere', 'knot', 'plane', 'ground', 'rabbit']).onFinishChange(function () {
@@ -266,7 +253,7 @@
 					}
 					currentMesh.setEnabled(true);
 					currentMesh.receiveShadows = true;
-					currentMesh.material = currentMaterial;
+					currentMesh.material = std;
 				});
 
 				var f1 = gui.addFolder('lights');

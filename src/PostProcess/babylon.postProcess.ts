@@ -43,7 +43,7 @@
             this._samplers.push("textureSampler");
 
             this._fragmentUrl = fragmentUrl;
-            this._parameters = parameters || []
+            this._parameters = parameters || [];
 
             this.updateEffect(defines);
         }

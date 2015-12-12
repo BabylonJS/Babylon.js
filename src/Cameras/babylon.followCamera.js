@@ -55,6 +55,13 @@ var BABYLON;
             _super.prototype._checkInputs.call(this);
             this.follow(this.target);
         };
+        FollowCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.radius = this.radius;
+            serializationObject.heightOffset = this.heightOffset;
+            serializationObject.rotationOffset = this.rotationOffset;
+            return serializationObject;
+        };
         return FollowCamera;
     })(BABYLON.TargetCamera);
     BABYLON.FollowCamera = FollowCamera;
@@ -79,6 +86,11 @@ var BABYLON;
         ArcFollowCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
             this.follow();
+        };
+        ArcFollowCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.radius = this.radius;
+            return serializationObject;
         };
         return ArcFollowCamera;
     })(BABYLON.TargetCamera);
