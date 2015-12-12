@@ -220,14 +220,14 @@
             } else {
                 worldMatrix = Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
             }
-
+            var particle: Particle;
             for (var index = 0; index < newParticles; index++) {
                 if (this.particles.length === this._capacity) {
                     break;
                 }
 
                 if (this._stockParticles.length !== 0) {
-                    var particle = this._stockParticles.pop();
+                    particle = this._stockParticles.pop();
                     particle.age = 0;
                 } else {
                     particle = new Particle();
@@ -445,5 +445,84 @@
 
             return result;
         }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            if (this.emitter.position) {
+                serializationObject.emitterId = this.emitter.id;
+            } else {
+                serializationObject.emitter = this.emitter.asArray();;
+            }
+            serializationObject.capacity = this.getCapacity();
+
+            if (this.particleTexture) {
+                serializationObject.textureName = this.particleTexture.name;
+            }
+
+            serializationObject.minAngularSpeed = this.minAngularSpeed;
+            serializationObject.maxAngularSpeed = this.maxAngularSpeed;
+            serializationObject.minSize = this.minSize;
+            serializationObject.maxSize = this.maxSize;
+            serializationObject.minEmitPower = this.minEmitPower;
+            serializationObject.maxEmitPower = this.maxEmitPower;
+            serializationObject.minLifeTime = this.minLifeTime;
+            serializationObject.maxLifeTime = this.maxLifeTime;
+            serializationObject.emitRate = this.emitRate;
+            serializationObject.minEmitBox = this.minEmitBox.asArray();
+            serializationObject.maxEmitBox = this.maxEmitBox.asArray();
+            serializationObject.gravity = this.gravity.asArray();
+            serializationObject.direction1 = this.direction1.asArray();
+            serializationObject.direction2 = this.direction2.asArray();
+            serializationObject.color1 = this.color1.asArray();
+            serializationObject.color2 = this.color2.asArray();
+            serializationObject.colorDead = this.colorDead.asArray();
+            serializationObject.updateSpeed = this.updateSpeed;
+            serializationObject.targetStopDuration = this.targetStopDuration;
+            serializationObject.textureMask = this.textureMask.asArray();
+            serializationObject.blendMode = this.blendMode;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
+            var name = parsedParticleSystem.name;
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+            if (parsedParticleSystem.textureName) {
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture.name = parsedParticleSystem.textureName;
+            }
+            if (parsedParticleSystem.emitterId) {
+                particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            } else {
+                particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
+            }
+            particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
+            particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
+            particleSystem.minSize = parsedParticleSystem.minSize;
+            particleSystem.maxSize = parsedParticleSystem.maxSize;
+            particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
+            particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
+            particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;
+            particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
+            particleSystem.emitRate = parsedParticleSystem.emitRate;
+            particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
+            particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
+            particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
+            particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
+            particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
+            particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
+            particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
+            particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
+            particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
+            particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
+            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
+            particleSystem.blendMode = parsedParticleSystem.blendMode;
+            particleSystem.start();
+
+            return particleSystem;
+        }
     }
 }  
+

@@ -127,6 +127,10 @@
         public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
             var scene = this.getScene();
 
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+            }
+
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
@@ -167,7 +171,7 @@
                     }
                 }
             }
-            
+
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
                     this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
@@ -178,6 +182,10 @@
 
             if (this.onAfterUnbind) {
                 this.onAfterUnbind();
+            }
+
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
 
             scene.resetCachedMaterial();
@@ -258,5 +266,22 @@
 
             return newTexture;
         }
+
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject = super.serialize();
+
+            serializationObject.renderTargetSize = this.getRenderSize();
+            serializationObject.renderList = [];
+
+            for (var index = 0; index < this.renderList.length; index++) {
+                serializationObject.renderList.push(this.renderList[index].id);
+            }
+
+            return serializationObject;
+        }
     }
-} 
+}

@@ -104,7 +104,7 @@
                             this._htmlAudioElement.src = urlOrArrayBuffer;
                             this._htmlAudioElement.controls = false;
                             this._htmlAudioElement.loop = this.loop;
-                            this._htmlAudioElement.crossOrigin = "anonymous"; 
+                            this._htmlAudioElement.crossOrigin = "anonymous";
                             this._isReadyToPlay = true;
                             document.body.appendChild(this._htmlAudioElement);
                             // Simulating a ready to play event for consistent behavior with non streamed audio source
@@ -173,7 +173,7 @@
                     this._htmlAudioElement.src = "";
                     document.body.removeChild(this._htmlAudioElement);
                 }
-                
+
                 if (this._connectedMesh) {
                     this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                     this._connectedMesh = null;
@@ -188,7 +188,7 @@
                 this._isReadyToPlay = true;
                 if (this.autoplay) { this.play(); }
                 if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
-            },() => { Tools.Error("Error while decoding audio data for: " + this.name); });
+            }, () => { Tools.Error("Error while decoding audio data for: " + this.name); });
         }
 
         public setAudioBuffer(audioBuffer: AudioBuffer): void {
@@ -253,7 +253,7 @@
 
         public switchPanningModelToHRTF() {
             this._panningModel = "HRTF";
-            this._switchPanningModel();    
+            this._switchPanningModel();
         }
 
         public switchPanningModelToEqualPower() {
@@ -423,7 +423,7 @@
                     this.stop(0);
                     this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
                 }
-                this.isPaused = true;  
+                this.isPaused = true;
             }
         }
 
@@ -476,6 +476,43 @@
             if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
+        }
+
+        public static Parse(parsedSound: any, scene: Scene, rootUrl: string): Sound {
+            var soundName = parsedSound.name;
+            var soundUrl = rootUrl + soundName;
+
+            var options = {
+                autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
+                spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
+                rolloffFactor: parsedSound.rolloffFactor,
+                refDistance: parsedSound.refDistance,
+                distanceModel: parsedSound.distanceModel,
+                playbackRate: parsedSound.playbackRate
+            };
+
+            var newSound = new Sound(soundName, soundUrl, scene, () => { scene._removePendingData(newSound); }, options);
+            scene._addPendingData(newSound);
+
+            if (parsedSound.position) {
+                var soundPosition = Vector3.FromArray(parsedSound.position);
+                newSound.setPosition(soundPosition);
+            }
+            if (parsedSound.isDirectional) {
+                newSound.setDirectionalCone(parsedSound.coneInnerAngle || 360, parsedSound.coneOuterAngle || 360, parsedSound.coneOuterGain || 0);
+                if (parsedSound.localDirectionToMesh) {
+                    var localDirectionToMesh = Vector3.FromArray(parsedSound.localDirectionToMesh);
+                    newSound.setLocalDirectionToMesh(localDirectionToMesh);
+                }
+            }
+            if (parsedSound.connectedMeshId) {
+                var connectedMesh = scene.getMeshByID(parsedSound.connectedMeshId);
+                if (connectedMesh) {
+                    newSound.attachToMesh(connectedMesh);
+                }
+            }
+            
+            return newSound;
         }
     }
 }

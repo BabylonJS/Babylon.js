@@ -44,7 +44,7 @@ var BABYLON;
             window.addEventListener("deviceorientation", this._orientationChanged);
         };
         DeviceOrientationCamera.prototype.detachControl = function (canvas) {
-            if (this._attachedCanvas != canvas) {
+            if (this._attachedCanvas !== canvas) {
                 return;
             }
             window.removeEventListener("deviceorientation", this._orientationChanged);

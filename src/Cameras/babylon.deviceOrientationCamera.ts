@@ -47,7 +47,7 @@ module BABYLON {
         }
 
         public detachControl(canvas: HTMLCanvasElement): void {
-            if (this._attachedCanvas != canvas) {
+            if (this._attachedCanvas !== canvas) {
                 return;
             }
 

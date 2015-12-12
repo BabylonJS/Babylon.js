@@ -58,7 +58,7 @@ var BABYLON;
                     _this._previousPosition.copyFrom(_this.position);
                 }
                 else {
-                    _this.setPosition(_this.position);
+                    _this.setPosition(newPosition);
                     if (_this.onCollide) {
                         _this.onCollide(collidedMesh);
                     }
@@ -552,6 +552,20 @@ var BABYLON;
                     break;
             }
             _super.prototype._updateRigCameras.call(this);
+        };
+        ArcRotateCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            if (this.target instanceof BABYLON.Vector3) {
+                serializationObject.target = this.target.asArray();
+            }
+            if (this.target && this.target.id) {
+                serializationObject.lockedTargetId = this.target.id;
+            }
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.alpha = this.alpha;
+            serializationObject.beta = this.beta;
+            serializationObject.radius = this.radius;
+            return serializationObject;
         };
         return ArcRotateCamera;
     })(BABYLON.TargetCamera);

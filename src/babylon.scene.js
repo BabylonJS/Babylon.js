@@ -319,6 +319,9 @@ var BABYLON;
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPickTriggers;
             };
             this._onPointerMove = function (evt) {
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
+                }
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
                 // Meshes
@@ -351,6 +354,9 @@ var BABYLON;
                 }
             };
             this._onPointerDown = function (evt) {
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
+                }
                 _this._updatePointerPosition(evt);
                 var predicate = null;
                 // Meshes
@@ -401,6 +407,9 @@ var BABYLON;
                 }
             };
             this._onPointerUp = function (evt) {
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
+                }
                 var predicate = null;
                 _this._updatePointerPosition(evt);
                 if (!_this.onPointerUp) {
@@ -812,6 +821,38 @@ var BABYLON;
             return null;
         };
         /**
+         * get a bone using its id
+         * @param {string} the bone's id
+         * @return {BABYLON.Bone|null} the bone or null if not found
+         */
+        Scene.prototype.getBoneByID = function (id) {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].id === id) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+            return null;
+        };
+        /**
+        * get a bone using its id
+        * @param {string} the bone's name
+        * @return {BABYLON.Bone|null} the bone or null if not found
+        */
+        Scene.prototype.getBoneByName = function (name) {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].name === name) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+            return null;
+        };
+        /**
          * get a light node using its name
          * @param {string} the light's name
          * @return {BABYLON.Light|null} the light or null if none found.
@@ -846,6 +887,19 @@ var BABYLON;
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].uniqueId === uniqueId) {
                     return this.lights[index];
+                }
+            }
+            return null;
+        };
+        /**
+         * get a particle system by id
+         * @param id {number} the particle system id
+         * @return {BABYLON.ParticleSystem|null} the corresponding system or null if none found.
+         */
+        Scene.prototype.getParticleSystemByID = function (id) {
+            for (var index = 0; index < this.particleSystems.length; index++) {
+                if (this.particleSystems[index].id === id) {
+                    return this.particleSystems[index];
                 }
             }
             return null;
@@ -974,7 +1028,12 @@ var BABYLON;
             if (light) {
                 return light;
             }
-            return this.getCameraByID(id);
+            var camera = this.getCameraByID(id);
+            if (camera) {
+                return camera;
+            }
+            var bone = this.getBoneByID(id);
+            return bone;
         };
         Scene.prototype.getNodeByName = function (name) {
             var mesh = this.getMeshByName(name);
@@ -985,7 +1044,12 @@ var BABYLON;
             if (light) {
                 return light;
             }
-            return this.getCameraByName(name);
+            var camera = this.getCameraByName(name);
+            if (camera) {
+                return camera;
+            }
+            var bone = this.getBoneByName(name);
+            return bone;
         };
         Scene.prototype.getMeshByName = function (name) {
             for (var index = 0; index < this.meshes.length; index++) {

@@ -102,6 +102,13 @@ var BABYLON;
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
         };
+        DirectionalLight.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = 1;
+            serializationObject.position = this.position.asArray();
+            serializationObject.direction = this.direction.asArray();
+            return serializationObject;
+        };
         return DirectionalLight;
     })(BABYLON.Light);
     BABYLON.DirectionalLight = DirectionalLight;

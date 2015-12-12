@@ -2,17 +2,17 @@
     export class ShaderMaterial extends Material {
         private _shaderPath: any;
         private _options: any;
-        private _textures = new Array<Texture>();
-        private _floats = new Array<number>();
-        private _floatsArrays = {};
-        private _colors3 = new Array<Color3>();
-        private _colors4 = new Array<Color4>();
-        private _vectors2 = new Array<Vector2>();
-        private _vectors3 = new Array<Vector3>();
-        private _vectors4 = new Array<Vector4>();
-        private _matrices = new Array<Matrix>();
-        private _matrices3x3 = new Array<Float32Array>();
-        private _matrices2x2 = new Array<Float32Array>();
+        private _textures: { [name: string]: Texture } = {};
+        private _floats: { [name: string]: number } = {};
+        private _floatsArrays: { [name: string]: number[] } = {};
+        private _colors3: { [name: string]: Color3 } = {};
+        private _colors4: { [name: string]: Color4 } = {};
+        private _vectors2: { [name: string]: Vector2 } = {};
+        private _vectors3: { [name: string]: Vector3 } = {};
+        private _vectors4: { [name: string]: Vector4 } = {};
+        private _matrices: { [name: string]: Matrix } = {};
+        private _matrices3x3: { [name: string]: Float32Array } = {};
+        private _matrices2x2: { [name: string]: Float32Array } = {};
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
 
@@ -281,16 +281,152 @@
             var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
 
             return newShaderMaterial;
-        }        
+        }
 
         public dispose(forceDisposeEffect?: boolean): void {
             for (var name in this._textures) {
                 this._textures[name].dispose();
             }
 
-            this._textures = [];
+            this._textures = {};
 
             super.dispose(forceDisposeEffect);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            serializationObject.options = this._options;
+            serializationObject.shaderPath = this._shaderPath;
+            serializationObject.customType = "BABYLON.ShaderMaterial";
+			
+            // Texture
+            serializationObject.textures = {};
+            for (var name in this._textures) {
+                serializationObject.textures[name] = this._textures[name].serialize();
+            }
+
+            // Float    
+            serializationObject.floats = {};
+            for (name in this._floats) {
+                serializationObject.floats[name] = this._floats[name];
+            }
+
+            // Float s   
+            serializationObject.floatArrays = {};
+            for (name in this._floatsArrays) {
+                serializationObject.floatArrays[name] = this._floatsArrays[name];
+            }
+
+            // Color3    
+            serializationObject.colors3 = {};
+            for (name in this._colors3) {
+                serializationObject.colors3[name] = this._colors3[name].asArray();
+            }
+
+            // Color4  
+            serializationObject.colors4 = {};
+            for (name in this._colors4) {
+                serializationObject.colors4[name] = this._colors4[name].asArray();
+            }
+
+            // Vector2  
+            serializationObject.vectors2 = {};
+            for (name in this._vectors2) {
+                serializationObject.vectors2[name] = this._vectors2[name].asArray();
+            }
+
+            // Vector3        
+            serializationObject.vectors3 = {};
+            for (name in this._vectors3) {
+                serializationObject.vectors3[name] = this._vectors3[name].asArray();
+            }
+
+            // Vector4        
+            serializationObject.vectors4 = {};
+            for (name in this._vectors4) {
+                serializationObject.vectors4[name] = this._vectors4[name].asArray();
+            }
+
+            // Matrix      
+            serializationObject.matrices = {};
+            for (name in this._matrices) {
+                serializationObject.matrices[name] = this._matrices[name].asArray();
+            }
+
+            // Matrix 3x3
+            serializationObject.matrices3x3 = {};
+            for (name in this._matrices3x3) {
+                serializationObject.matrices3x3[name] = this._matrices3x3[name];
+            }
+
+            // Matrix 2x2
+            serializationObject.matrices2x2 = {};
+            for (name in this._matrices2x2) {
+                serializationObject.matrices2x2[name] = this._matrices2x2[name];
+            }
+
+            return serializationObject;
+        }
+
+        public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
+            var material = new ShaderMaterial(source.name, scene, source.shaderPath, source.options);
+			
+            // Texture
+            for (var name in source.textures) {
+                material.setTexture(name, <Texture>Texture.Parse(source.textures[name], scene, rootUrl));
+            }
+
+            // Float    
+            for (name in source.floats) {
+                material.setFloat(name, source.floats[name]);
+            }
+
+            // Float s   
+            for (name in source.floatsArrays) {
+                material.setFloats(name, source.floatsArrays[name]);
+            }
+
+            // Color3        
+            for (name in source.colors3) {
+                material.setColor3(name, Color3.FromArray(source.colors3[name]));
+            }
+
+            // Color4      
+            for (name in source.colors4) {
+                material.setColor4(name, Color4.FromArray(source.colors4[name]));
+            }
+
+            // Vector2        
+            for (name in source.vectors2) {
+                material.setVector2(name, Vector2.FromArray(source.vectors2[name]));
+            }
+
+            // Vector3        
+            for (name in source.vectors3) {
+                material.setVector3(name, Vector3.FromArray(source.vectors3[name]));
+            }
+
+            // Vector4        
+            for (name in source.vectors4) {
+                material.setVector4(name, Vector4.FromArray(source.vectors4[name]));
+            }
+
+            // Matrix      
+            for (name in source.matrices) {
+                material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
+            }
+
+            // Matrix 3x3
+            for (name in source.matrices3x3) {
+                material.setMatrix3x3(name, source.matrices3x3[name]);
+            }
+
+            // Matrix 2x2
+            for (name in source.matrices2x2) {
+                material.setMatrix2x2(name, source.matrices2x2[name]);
+            }
+
+            return material;
         }
     }
 } 

@@ -135,5 +135,14 @@
 
             return this._worldMatrix;
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            serializationObject.type = 1;
+            serializationObject.position = this.position.asArray();
+            serializationObject.direction = this.direction.asArray();
+
+            return serializationObject;
+        }
     }
 }  

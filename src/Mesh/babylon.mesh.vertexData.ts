@@ -1,11 +1,11 @@
 ﻿module BABYLON {
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
-        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array;
-        getIndices(copyWhenShared?: boolean): number[];
+        getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Int32Array | Float32Array;
+        getIndices(copyWhenShared?: boolean): number[] | Int32Array;
         setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void;
         updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void;
-        setIndices(indices: number[] | Float32Array): void;
+        setIndices(indices: number[] | Int32Array): void;
     }
 
     export class VertexData {
@@ -22,7 +22,7 @@
         public matricesWeights: number[] | Float32Array;
         public matricesIndicesExtra: number[] | Float32Array;
         public matricesWeightsExtra: number[] | Float32Array;
-        public indices: number[];
+        public indices: number[] | Int32Array;
 
         public set(data: number[] | Float32Array, kind: string) {
             switch (kind) {
@@ -231,135 +231,122 @@
         }
 
         public merge(other: VertexData): void {
-            var index: number;
             if (other.indices) {
                 if (!this.indices) {
                     this.indices = [];
                 }
 
                 var offset = this.positions ? this.positions.length / 3 : 0;
-                for (index = 0; index < other.indices.length; index++) {
-                    this.indices.push(other.indices[index] + offset);
+                for (var index = 0; index < other.indices.length; index++) {
+                    //TODO check type - if Int32Array!
+                    (<number[]>this.indices).push(other.indices[index] + offset);
                 }
             }
 
-            if (other.positions) {
-                if (!this.positions) {
-                    this.positions = [];
-                }
+            this.positions = this._mergeElement(this.positions, other.positions);
+            this.normals = this._mergeElement(this.normals, other.normals);
+            this.uvs = this._mergeElement(this.uvs, other.uvs);
+            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
+            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
+            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4);
+            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5);
+            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6);
+            this.colors = this._mergeElement(this.colors, other.colors);
+            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices);
+            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
+            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
+            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
+        }
 
-                for (index = 0; index < other.positions.length; index++) {
-                    (<number[]>this.positions).push(other.positions[index]);
+        private _mergeElement(source: number[] | Float32Array, other: number[] | Float32Array): number[] | Float32Array {
+            if (!other) return source;
+            if (!source) return other;
+
+            var len = other.length + source.length;
+            var isSrcTypedArray = source instanceof Float32Array;
+            var isOthTypedArray = other instanceof Float32Array;
+
+            // use non-loop method when the source is Float32Array
+            if (isSrcTypedArray) {
+                var ret32 = new Float32Array(len);
+                ret32.set(source);
+                ret32.set(other, source.length);
+                return ret32;
+
+                // source is number[], when other is also use concat
+            } else if (!isOthTypedArray) {
+                return (<number[]>source).concat(<number[]>other);
+
+                // source is a number[], but other is a Float32Array, loop required
+            } else {
+                var ret = (<number[]>source).slice(0); // copy source to a separate array
+                for (var i = 0, len = other.length; i < len; i++) {
+                    ret.push(other[i]);
                 }
+                return ret;
+            }
+        }
+
+        public serialize(): any {
+            var serializationObject = this.serialize();
+
+            if (this.positions) {
+                serializationObject.positions = this.positions;
             }
 
-            if (other.normals) {
-                if (!this.normals) {
-                    this.normals = [];
-                }
-                for (index = 0; index < other.normals.length; index++) {
-                    (<number[]>this.normals).push(other.normals[index]);
-                }
+            if (this.normals) {
+                serializationObject.normals = this.normals;
             }
 
-            if (other.uvs) {
-                if (!this.uvs) {
-                    this.uvs = [];
-                }
-                for (index = 0; index < other.uvs.length; index++) {
-                    (<number[]>this.uvs).push(other.uvs[index]);
-                }
+            if (this.uvs) {
+                serializationObject.uvs = this.uvs;
             }
 
-            if (other.uvs2) {
-                if (!this.uvs2) {
-                    this.uvs2 = [];
-                }
-                for (index = 0; index < other.uvs2.length; index++) {
-                    (<number[]>this.uvs2).push(other.uvs2[index]);
-                }
+            if (this.uvs2) {
+                serializationObject.uvs2 = this.uvs2;
             }
 
-            if (other.uvs3) {
-                if (!this.uvs3) {
-                    this.uvs3 = [];
-                }
-                for (index = 0; index < other.uvs3.length; index++) {
-                    (<number[]>this.uvs3).push(other.uvs3[index]);
-                }
+            if (this.uvs3) {
+                serializationObject.uvs3 = this.uvs3;
             }
 
-            if (other.uvs4) {
-                if (!this.uvs4) {
-                    this.uvs4 = [];
-                }
-                for (index = 0; index < other.uvs4.length; index++) {
-                    (<number[]>this.uvs4).push(other.uvs4[index]);
-                }
+            if (this.uvs4) {
+                serializationObject.uvs4 = this.uvs4;
             }
 
-            if (other.uvs5) {
-                if (!this.uvs5) {
-                    this.uvs5 = [];
-                }
-                for (index = 0; index < other.uvs5.length; index++) {
-                    (<number[]>this.uvs5).push(other.uvs5[index]);
-                }
+            if (this.uvs5) {
+                serializationObject.uvs5 = this.uvs5;
             }
 
-            if (other.uvs6) {
-                if (!this.uvs6) {
-                    this.uvs6 = [];
-                }
-                for (index = 0; index < other.uvs6.length; index++) {
-                    (<number[]>this.uvs6).push(other.uvs6[index]);
-                }
+            if (this.uvs6) {
+                serializationObject.uvs6 = this.uvs6;
             }
 
-            if (other.matricesIndices) {
-                if (!this.matricesIndices) {
-                    this.matricesIndices = [];
-                }
-                for (index = 0; index < other.matricesIndices.length; index++) {
-                    (<number[]>this.matricesIndices).push(other.matricesIndices[index]);
-                }
+            if (this.colors) {
+                serializationObject.colors = this.colors;
             }
 
-            if (other.matricesWeights) {
-                if (!this.matricesWeights) {
-                    this.matricesWeights = [];
-                }
-                for (index = 0; index < other.matricesWeights.length; index++) {
-                    (<number[]>this.matricesWeights).push(other.matricesWeights[index]);
-                }
+            if (this.matricesIndices) {
+                serializationObject.matricesIndices = this.matricesIndices;
+                serializationObject.matricesIndices._isExpanded = true;
             }
 
-            if (other.matricesIndicesExtra) {
-                if (!this.matricesIndicesExtra) {
-                    this.matricesIndicesExtra = [];
-                }
-                for (index = 0; index < other.matricesIndicesExtra.length; index++) {
-                    (<number[]>this.matricesIndicesExtra).push(other.matricesIndicesExtra[index]);
-                }
+            if (this.matricesWeights) {
+                serializationObject.matricesWeights = this.matricesWeights;
             }
 
-            if (other.matricesWeightsExtra) {
-                if (!this.matricesWeightsExtra) {
-                    this.matricesWeightsExtra = [];
-                }
-                for (index = 0; index < other.matricesWeightsExtra.length; index++) {
-                    (<number[]>this.matricesWeightsExtra).push(other.matricesWeightsExtra[index]);
-                }
+            if (this.matricesIndicesExtra) {
+                serializationObject.matricesIndicesExtra = this.matricesIndicesExtra;
+                serializationObject.matricesIndicesExtra._isExpanded = true;
             }
 
-            if (other.colors) {
-                if (!this.colors) {
-                    this.colors = [];
-                }
-                for (index = 0; index < other.colors.length; index++) {
-                    (<number[]>this.colors).push(other.colors[index]);
-                }
+            if (this.matricesWeightsExtra) {
+                serializationObject.matricesWeightsExtra = this.matricesWeightsExtra;
             }
+
+            serializationObject.indices = this.indices;
+
+            return serializationObject;
         }
 
         // Statics
@@ -545,7 +532,7 @@
             }
 
 
-            // uvs            
+            // uvs
             var u: number;
             var v: number;
             for (p = 0; p < pathArray.length; p++) {
@@ -562,7 +549,7 @@
             var l1: number = lg[p] - 1;           		// path1 length
             var l2: number = lg[p + 1] - 1;         	// path2 length
             var min: number = (l1 < l2) ? l1 : l2;   	// current path stop index
-            var shft: number = idx[1] - idx[0];         // shift 
+            var shft: number = idx[1] - idx[0];         // shift
             var path1nb: number = closeArray ? lg.length : lg.length - 1;     // number of path1 to iterate	on
 
             while (pi <= min && p < path1nb) {       	//  stay under min and don't go over next to last path
@@ -610,7 +597,7 @@
                     normals[indexLast + 2] = normals[indexFirst + 2];
                 }
             }
-            
+
             // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
 
@@ -804,7 +791,7 @@
             return vertexData;
         }
 
-        // Cylinder and cone 
+        // Cylinder and cone
         public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number }): VertexData {
             var height: number = options.height || 2;
             var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
@@ -817,7 +804,7 @@
             var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
             var faceColors: Color4[] = options.faceColors;
-    
+
             // default face colors and UV if undefined
             var quadNb: number = (arc !== 1 && enclose) ? 2 : 0;
             var ringNb: number = (hasRings) ? subdivisions : 1;
@@ -1031,7 +1018,7 @@
                     }
                 }
             };
-            
+
             // add caps to geometry
             createCylinderCap(false);
             createCylinderCap(true);
@@ -1506,7 +1493,7 @@
             // vertex for uv have aliased position, not for UV
             var vertices_unalias_id = [
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-            // vertex alias
+                // vertex alias
                 0,  // 12: 0 + 12
                 2,  // 13: 2 + 11
                 3,  // 14: 3 + 11
@@ -1527,7 +1514,7 @@
                 5, 1, 3, 1, 6, 4, 0, 0,  // v0-3
                 5, 3, 4, 2, 2, 2, 4, 0,  // v4-7
                 2, 0, 1, 1, 6, 0, 6, 2,  // v8-11
-            // vertex alias (for same vertex on different faces)
+                // vertex alias (for same vertex on different faces)
                 0, 4, // 12: 0 + 12
                 3, 3, // 13: 2 + 11
                 4, 4, // 14: 3 + 11
@@ -2026,7 +2013,7 @@
                 normals[i3 * 3 + 1] += faceNormaly;
                 normals[i3 * 3 + 2] += faceNormalz;
             }
-            
+
             // last normalization of each normal
             for (index = 0; index < normals.length / 3; index++) {
                 faceNormalx = normals[index * 3];
@@ -2073,7 +2060,7 @@
                     break;
 
                 case Mesh.DOUBLESIDE:
-                    // positions 
+                    // positions
                     var lp: number = positions.length;
                     var l: number = lp / 3;
                     for (var p = 0; p < lp; p++) {
@@ -2098,5 +2085,84 @@
                     break;
             }
         }
+
+        public static ImportVertexData(parsedVertexData: any, geometry: Geometry) {
+            var vertexData = new VertexData();
+
+            // positions
+            var positions = parsedVertexData.positions;
+            if (positions) {
+                vertexData.set(positions, VertexBuffer.PositionKind);
+            }
+
+            // normals
+            var normals = parsedVertexData.normals;
+            if (normals) {
+                vertexData.set(normals, VertexBuffer.NormalKind);
+            }
+
+            // uvs
+            var uvs = parsedVertexData.uvs;
+            if (uvs) {
+                vertexData.set(uvs, VertexBuffer.UVKind);
+            }
+
+            // uv2s
+            var uv2s = parsedVertexData.uv2s;
+            if (uv2s) {
+                vertexData.set(uv2s, VertexBuffer.UV2Kind);
+            }
+
+            // uv3s
+            var uv3s = parsedVertexData.uv3s;
+            if (uv3s) {
+                vertexData.set(uv3s, VertexBuffer.UV3Kind);
+            }
+
+            // uv4s
+            var uv4s = parsedVertexData.uv4s;
+            if (uv4s) {
+                vertexData.set(uv4s, VertexBuffer.UV4Kind);
+            }
+
+            // uv5s
+            var uv5s = parsedVertexData.uv5s;
+            if (uv5s) {
+                vertexData.set(uv5s, VertexBuffer.UV5Kind);
+            }
+
+            // uv6s
+            var uv6s = parsedVertexData.uv6s;
+            if (uv6s) {
+                vertexData.set(uv6s, VertexBuffer.UV6Kind);
+            }
+
+            // colors
+            var colors = parsedVertexData.colors;
+            if (colors) {
+                vertexData.set(Color4.CheckColors4(colors, positions.length / 3), VertexBuffer.ColorKind);
+            }
+
+            // matricesIndices
+            var matricesIndices = parsedVertexData.matricesIndices;
+            if (matricesIndices) {
+                vertexData.set(matricesIndices, VertexBuffer.MatricesIndicesKind);
+            }
+
+            // matricesWeights
+            var matricesWeights = parsedVertexData.matricesWeights;
+            if (matricesWeights) {
+                vertexData.set(matricesWeights, VertexBuffer.MatricesWeightsKind);
+            }
+
+            // indices
+            var indices = parsedVertexData.indices;
+            if (indices) {
+                vertexData.indices = indices;
+            }
+
+            geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
+        }
     }
 }
+

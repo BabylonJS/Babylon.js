@@ -9,6 +9,7 @@ var BABYLON;
         __extends(AnaglyphFreeCamera, _super);
         function AnaglyphFreeCamera(name, position, interaxialDistance, scene) {
             _super.call(this, name, position, scene);
+            this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
         return AnaglyphFreeCamera;

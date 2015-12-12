@@ -18,6 +18,7 @@ interface Window {
     SIMD: any;
     AudioContext: AudioContext;
     webkitAudioContext: AudioContext;
+    PointerEvent: any;
 }
 
 interface HTMLURL {
