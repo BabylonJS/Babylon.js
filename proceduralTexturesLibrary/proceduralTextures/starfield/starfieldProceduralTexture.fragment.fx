@@ -1,17 +1,8 @@
 precision highp float;
 
-#define iterations 15
-#define formuparam 0.53
-
+//defined as const as fragment shaders does not support uniforms in loops
 #define volsteps 20
-#define stepsize 0.1
-
-#define tile 0.850
-
-#define brightness 0.0015
-#define darkmatter 0.400
-#define distfading 0.730
-#define saturation 0.850
+#define iterations 15
 
 varying vec2 vPosition;
 varying vec2 vUV;
@@ -20,6 +11,13 @@ uniform float time;
 uniform float alpha;
 uniform float beta;
 uniform float zoom;
+uniform float formuparam;
+uniform float stepsize;
+uniform float tile;
+uniform float brightness;
+uniform float darkmatter;
+uniform float distfading;
+uniform float saturation;
 
 void main()
 {
