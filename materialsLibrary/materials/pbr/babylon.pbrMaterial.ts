@@ -4,18 +4,18 @@ module BABYLON {
     var maxSimultaneousLights = 4;
 
     class PBRMaterialDefines extends MaterialDefines {
-        public DIFFUSE = false;
+        public ALBEDO = false;
         public AMBIENT = false;
         public OPACITY = false;
         public OPACITYRGB = false;
         public REFLECTION = false;
         public EMISSIVE = false;
-        public SPECULAR = false;
+        public REFLECTIVITY = false;
         public BUMP = false;
         public SPECULAROVERALPHA = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
-        public ALPHAFROMDIFFUSE = false;
+        public ALPHAFROMALBEDO = false;
         public POINTSIZE = false;
         public FOG = false;
         public LIGHT0 = false;
@@ -63,9 +63,9 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
-        public GLOSSINESSFROMSPECULARMAP = false;
+        public MICROSURFACEFROMREFLECTIVITYMAP = false;
         public EMISSIVEASILLUMINATION = false;
-        public LINKEMISSIVEWITHDIFFUSE = false;
+        public LINKEMISSIVEWITHALBEDO = false;
         public LIGHTMAP = false;
         public USELIGHTMAPASSHADOWMAP = false;
         public REFLECTIONMAP_3D = false;
@@ -94,7 +94,9 @@ module BABYLON {
         public directIntensity: number = 1.0;
         public emissiveIntensity: number = 1.0;
         public environmentIntensity: number = 1.0;
-        private _lightingInfos: Vector4 = new Vector4(this.directIntensity, this.emissiveIntensity, this.environmentIntensity, 0.0);
+        public specularIntensity: number = 1.0;
+
+        private _lightingInfos: Vector4 = new Vector4(this.directIntensity, this.emissiveIntensity, this.environmentIntensity, this.specularIntensity);
 
         public overloadedShadowIntensity: number = 1.0;
         public overloadedShadeIntensity: number = 1.0;
@@ -105,42 +107,42 @@ module BABYLON {
         private _cameraInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
 
         public overloadedAmbientIntensity: number = 0.0;
-        public overloadedDiffuseIntensity: number = 0.0;
-        public overloadedSpecularIntensity: number = 0.0;
+        public overloadedAlbedoIntensity: number = 0.0;
+        public overloadedReflectivityIntensity: number = 0.0;
         public overloadedEmissiveIntensity: number = 0.0;
-        private _overloadedIntensity: Vector4 = new Vector4(this.overloadedAmbientIntensity, this.overloadedDiffuseIntensity, this.overloadedSpecularIntensity, this.overloadedEmissiveIntensity);
+        private _overloadedIntensity: Vector4 = new Vector4(this.overloadedAmbientIntensity, this.overloadedAlbedoIntensity, this.overloadedReflectivityIntensity, this.overloadedEmissiveIntensity);
 
         public overloadedAmbient: Color3 = BABYLON.Color3.White();
-        public overloadedDiffuse: Color3 = BABYLON.Color3.White();
-        public overloadedSpecular: Color3 = BABYLON.Color3.White();
+        public overloadedAlbedo: Color3 = BABYLON.Color3.White();
+        public overloadedReflectivity: Color3 = BABYLON.Color3.White();
         public overloadedEmissive: Color3 = BABYLON.Color3.White();
         public overloadedReflection: Color3 = BABYLON.Color3.White();
 
-        public overloadedGlossiness: number = 0.0;
-        public overloadedGlossinessIntensity: number = 0.0;
+        public overloadedMicroSurface: number = 0.0;
+        public overloadedMicroSurfaceIntensity: number = 0.0;
         public overloadedReflectionIntensity: number = 0.0;
-        private _overloadedGlossiness: Vector3 = new Vector3(this.overloadedGlossiness, this.overloadedGlossinessIntensity, this.overloadedReflectionIntensity);
+        private _overloadedMicroSurface: Vector3 = new Vector3(this.overloadedMicroSurface, this.overloadedMicroSurfaceIntensity, this.overloadedReflectionIntensity);
        
         public disableBumpMap: boolean = false;
 
-        public diffuseTexture: BaseTexture;
+        public albedoTexture: BaseTexture;
         public ambientTexture: BaseTexture;
         public opacityTexture: BaseTexture;
         public reflectionTexture: BaseTexture;
         public emissiveTexture: BaseTexture;
-        public specularTexture: BaseTexture;
+        public reflectivityTexture: BaseTexture;
         public bumpTexture: BaseTexture;
         public lightmapTexture: BaseTexture;
 
         public ambientColor = new Color3(0, 0, 0);
-        public diffuseColor = new Color3(1, 1, 1);
-        public specularColor = new Color3(1, 1, 1);
+        public albedoColor = new Color3(1, 1, 1);
+        public reflectivityColor = new Color3(1, 1, 1);
         public reflectionColor = new Color3(0.5, 0.5, 0.5);
-        public glossiness = 0.5;
+        public microSurface = 0.5;
         public emissiveColor = new Color3(0, 0, 0);
-        public useAlphaFromDiffuseTexture = false;
+        public useAlphaFromAlbedoTexture = false;
         public useEmissiveAsIllumination = false;
-        public linkEmissiveWithDiffuse = false;
+        public linkEmissiveWithAlbedo = false;
         public useSpecularOverAlpha = true;
         public disableLighting = false;
 
@@ -149,7 +151,7 @@ module BABYLON {
         public opacityFresnelParameters: FresnelParameters;
         public emissiveFresnelParameters: FresnelParameters;
 
-        public useGlossinessFromSpecularMapAlpha = false;
+        public useMicroSurfaceFromReflectivityMapAlpha = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -188,19 +190,19 @@ module BABYLON {
         }
 
         public needAlphaBlending(): boolean {
-            return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
+            return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
         }
 
         public needAlphaTesting(): boolean {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha;
+            return this.albedoTexture != null && this.albedoTexture.hasAlpha;
         }
 
-        private _shouldUseAlphaFromDiffuseTexture(): boolean {
-            return this.diffuseTexture != null && this.diffuseTexture.hasAlpha && this.useAlphaFromDiffuseTexture;
+        private _shouldUseAlphaFromAlbedoTexture(): boolean {
+            return this.albedoTexture != null && this.albedoTexture.hasAlpha && this.useAlphaFromAlbedoTexture;
         }
 
         public getAlphaTestTexture(): BaseTexture {
-            return this.diffuseTexture;
+            return this.albedoTexture;
         }
 
         private _checkCache(scene: Scene, mesh?: AbstractMesh, useInstances?: boolean): boolean {
@@ -305,8 +307,8 @@ module BABYLON {
             return needNormals;
         }
 
-        private static _scaledDiffuse = new Color3();
-        private static _scaledSpecular = new Color3();
+        private static _scaledAlbedo = new Color3();
+        private static _scaledReflectivity = new Color3();
         private static _scaledEmissive = new Color3();
         private static _scaledReflection = new Color3();
 
@@ -338,15 +340,15 @@ module BABYLON {
                 }
 
                 // GAMMA CORRECTION.
-                light.diffuse.toLinearSpaceToRef(PBRMaterial._scaledDiffuse);
-                PBRMaterial._scaledDiffuse.scaleToRef(light.intensity, PBRMaterial._scaledDiffuse);
+                light.diffuse.toLinearSpaceToRef(PBRMaterial._scaledAlbedo);
+                PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
 
-                light.diffuse.scaleToRef(light.intensity, PBRMaterial._scaledDiffuse);
-                effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledDiffuse, light.range);
+                light.diffuse.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
+                effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, light.range);
                 if (defines["SPECULARTERM"]) {
-                    light.specular.toLinearSpaceToRef(PBRMaterial._scaledSpecular);
-                    PBRMaterial._scaledSpecular.scaleToRef(light.intensity, PBRMaterial._scaledSpecular);
-                    effect.setColor3("vLightSpecular" + lightIndex, PBRMaterial._scaledSpecular);
+                    light.specular.toLinearSpaceToRef(PBRMaterial._scaledReflectivity);
+                    PBRMaterial._scaledReflectivity.scaleToRef(light.intensity, PBRMaterial._scaledReflectivity);
+                    effect.setColor3("vLightSpecular" + lightIndex, PBRMaterial._scaledReflectivity);
                 }
 
                 // Shadows
@@ -394,12 +396,12 @@ module BABYLON {
 
             // Textures
             if (scene.texturesEnabled) {
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    if (!this.diffuseTexture.isReady()) {
+                if (this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    if (!this.albedoTexture.isReady()) {
                         return false;
                     } else {
                         needUVs = true;
-                        this._defines.DIFFUSE = true;
+                        this._defines.ALBEDO = true;
                     }
                 }
 
@@ -484,13 +486,13 @@ module BABYLON {
                     }
                 }
 
-                if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
-                    if (!this.specularTexture.isReady()) {
+                if (this.reflectivityTexture && StandardMaterial.SpecularTextureEnabled) {
+                    if (!this.reflectivityTexture.isReady()) {
                         return false;
                     } else {
                         needUVs = true;
-                        this._defines.SPECULAR = true;
-                        this._defines.GLOSSINESSFROMSPECULARMAP = this.useGlossinessFromSpecularMapAlpha;
+                        this._defines.REFLECTIVITY = true;
+                        this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
                     }
                 }
             }
@@ -513,16 +515,16 @@ module BABYLON {
                 this._defines.ALPHATEST = true;
             }
 
-            if (this._shouldUseAlphaFromDiffuseTexture()) {
-                this._defines.ALPHAFROMDIFFUSE = true;
+            if (this._shouldUseAlphaFromAlbedoTexture()) {
+                this._defines.ALPHAFROMALBEDO = true;
             }
 
             if (this.useEmissiveAsIllumination) {
                 this._defines.EMISSIVEASILLUMINATION = true;
             }
 
-            if (this.linkEmissiveWithDiffuse) {
-                this._defines.LINKEMISSIVEWITHDIFFUSE = true;
+            if (this.linkEmissiveWithAlbedo) {
+                this._defines.LINKEMISSIVEWITHALBEDO = true;
             }
 
             if (this.useLogarithmicDepth) {
@@ -542,10 +544,10 @@ module BABYLON {
                 this._defines.OVERLOADEDSHADOWVALUES = true;
             }
 
-            if (this.overloadedGlossinessIntensity > 0 ||
+            if (this.overloadedMicroSurfaceIntensity > 0 ||
                 this.overloadedEmissiveIntensity > 0 ||
-                this.overloadedSpecularIntensity > 0 ||
-                this.overloadedDiffuseIntensity > 0 ||
+                this.overloadedReflectivityIntensity > 0 ||
+                this.overloadedAlbedoIntensity > 0 ||
                 this.overloadedAmbientIntensity > 0 ||
                 this.overloadedReflectionIntensity > 0) {
                 this._defines.OVERLOADEDVALUES = true;
@@ -630,8 +632,8 @@ module BABYLON {
                     fallbacks.addFallback(0, "REFLECTION");
                 }
 
-                if (this._defines.SPECULAR) {
-                    fallbacks.addFallback(0, "SPECULAR");
+                if (this._defines.REFLECTIVITY) {
+                    fallbacks.addFallback(0, "REFLECTIVITY");
                 }
 
                 if (this._defines.BUMP) {
@@ -739,21 +741,21 @@ module BABYLON {
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor", "vReflectionColor",
+                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
                         "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
                         "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
                         "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                         "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                         "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos",
+                        "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vBumpInfos", "vLightmapInfos",
                         "mBones",
-                        "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
+                        "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "bumpMatrix", "lightmapMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
-                        "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vCameraInfos", "vOverloadedDiffuse", "vOverloadedReflection", "vOverloadedSpecular", "vOverloadedEmissive", "vOverloadedGlossiness",
+                        "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vCameraInfos", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
                         "logarithmicDepthConstant"
                     ],
-                    ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
+                    ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                     ],
                     join, fallbacks, this.onCompiled, this.onError);
@@ -818,11 +820,11 @@ module BABYLON {
                 }
 
                 // Textures        
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    this._effect.setTexture("diffuseSampler", this.diffuseTexture);
+                if (this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
+                    this._effect.setTexture("albedoSampler", this.albedoTexture);
 
-                    this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                    this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
+                    this._effect.setFloat2("vAlbedoInfos", this.albedoTexture.coordinatesIndex, this.albedoTexture.level);
+                    this._effect.setMatrix("albedoMatrix", this.albedoTexture.getTextureMatrix());
                 }
 
                 if (this.ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -864,11 +866,11 @@ module BABYLON {
                     this._effect.setMatrix("lightmapMatrix", this.lightmapTexture.getTextureMatrix());
                 }
 
-                if (this.specularTexture && StandardMaterial.SpecularTextureEnabled) {
-                    this._effect.setTexture("specularSampler", this.specularTexture);
+                if (this.reflectivityTexture && StandardMaterial.SpecularTextureEnabled) {
+                    this._effect.setTexture("reflectivitySampler", this.reflectivityTexture);
 
-                    this._effect.setFloat2("vSpecularInfos", this.specularTexture.coordinatesIndex, this.specularTexture.level);
-                    this._effect.setMatrix("specularMatrix", this.specularTexture.getTextureMatrix());
+                    this._effect.setFloat2("vReflectivityInfos", this.reflectivityTexture.coordinatesIndex, this.reflectivityTexture.level);
+                    this._effect.setMatrix("reflectivityMatrix", this.reflectivityTexture.getTextureMatrix());
                 }
 
                 if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
@@ -895,14 +897,11 @@ module BABYLON {
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
                 
                 // GAMMA CORRECTION.
-                this.specularColor.toLinearSpaceToRef(PBRMaterial._scaledSpecular);
+                this.reflectivityColor.toLinearSpaceToRef(PBRMaterial._scaledReflectivity);
 
                 this._effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
-
-                if (this._defines.SPECULARTERM) {
-                    this._effect.setColor4("vSpecularColor", PBRMaterial._scaledSpecular, this.glossiness);
-                }
+                this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
 
                 // GAMMA CORRECTION.
                 this.emissiveColor.toLinearSpaceToRef(PBRMaterial._scaledEmissive); 
@@ -914,8 +913,8 @@ module BABYLON {
             }
 
             // GAMMA CORRECTION.
-            this.diffuseColor.toLinearSpaceToRef(PBRMaterial._scaledDiffuse);
-            this._effect.setColor4("vDiffuseColor", PBRMaterial._scaledDiffuse, this.alpha * mesh.visibility);
+            this.albedoColor.toLinearSpaceToRef(PBRMaterial._scaledAlbedo);
+            this._effect.setColor4("vAlbedoColor", PBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
 
             // Lights
             if (this._myScene.lightsEnabled && !this.disableLighting) {
@@ -936,6 +935,8 @@ module BABYLON {
             this._lightingInfos.x = this.directIntensity;
             this._lightingInfos.y = this.emissiveIntensity;
             this._lightingInfos.z = this.environmentIntensity;
+            this._lightingInfos.w = this.specularIntensity;
+
             this._effect.setVector4("vLightingIntensity", this._lightingInfos);
 
             this._overloadedShadowInfos.x = this.overloadedShadowIntensity;
@@ -947,26 +948,26 @@ module BABYLON {
             this._effect.setVector4("vCameraInfos", this._cameraInfos);
 
             this._overloadedIntensity.x = this.overloadedAmbientIntensity;
-            this._overloadedIntensity.y = this.overloadedDiffuseIntensity;
-            this._overloadedIntensity.z = this.overloadedSpecularIntensity;
+            this._overloadedIntensity.y = this.overloadedAlbedoIntensity;
+            this._overloadedIntensity.z = this.overloadedReflectivityIntensity;
             this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
             this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
 
             this.overloadedAmbient.toLinearSpaceToRef(this._tempColor);
             this._effect.setColor3("vOverloadedAmbient", this._tempColor);
-            this.overloadedDiffuse.toLinearSpaceToRef(this._tempColor);
-            this._effect.setColor3("vOverloadedDiffuse", this._tempColor);
-            this.overloadedSpecular.toLinearSpaceToRef(this._tempColor);
-            this._effect.setColor3("vOverloadedSpecular", this._tempColor);
+            this.overloadedAlbedo.toLinearSpaceToRef(this._tempColor);
+            this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
+            this.overloadedReflectivity.toLinearSpaceToRef(this._tempColor);
+            this._effect.setColor3("vOverloadedReflectivity", this._tempColor);
             this.overloadedEmissive.toLinearSpaceToRef(this._tempColor);
             this._effect.setColor3("vOverloadedEmissive", this._tempColor);
             this.overloadedReflection.toLinearSpaceToRef(this._tempColor);
             this._effect.setColor3("vOverloadedReflection", this._tempColor);
 
-            this._overloadedGlossiness.x = this.overloadedGlossiness;
-            this._overloadedGlossiness.y = this.overloadedGlossinessIntensity;
-            this._overloadedGlossiness.z = this.overloadedReflectionIntensity;
-            this._effect.setVector3("vOverloadedGlossiness", this._overloadedGlossiness);
+            this._overloadedMicroSurface.x = this.overloadedMicroSurface;
+            this._overloadedMicroSurface.y = this.overloadedMicroSurfaceIntensity;
+            this._overloadedMicroSurface.z = this.overloadedReflectionIntensity;
+            this._effect.setVector3("vOverloadedMicroSurface", this._overloadedMicroSurface);
 
             // Log. depth
             if (this._defines.LOGARITHMICDEPTH) {
@@ -981,8 +982,8 @@ module BABYLON {
         public getAnimatables(): IAnimatable[] {
             var results = [];
 
-            if (this.diffuseTexture && this.diffuseTexture.animations && this.diffuseTexture.animations.length > 0) {
-                results.push(this.diffuseTexture);
+            if (this.albedoTexture && this.albedoTexture.animations && this.albedoTexture.animations.length > 0) {
+                results.push(this.albedoTexture);
             }
 
             if (this.ambientTexture && this.ambientTexture.animations && this.ambientTexture.animations.length > 0) {
@@ -1001,8 +1002,8 @@ module BABYLON {
                 results.push(this.emissiveTexture);
             }
 
-            if (this.specularTexture && this.specularTexture.animations && this.specularTexture.animations.length > 0) {
-                results.push(this.specularTexture);
+            if (this.reflectivityTexture && this.reflectivityTexture.animations && this.reflectivityTexture.animations.length > 0) {
+                results.push(this.reflectivityTexture);
             }
 
             if (this.bumpTexture && this.bumpTexture.animations && this.bumpTexture.animations.length > 0) {
@@ -1013,8 +1014,8 @@ module BABYLON {
         }
 
         public dispose(forceDisposeEffect?: boolean): void {
-            if (this.diffuseTexture) {
-                this.diffuseTexture.dispose();
+            if (this.albedoTexture) {
+                this.albedoTexture.dispose();
             }
 
             if (this.ambientTexture) {
@@ -1033,8 +1034,8 @@ module BABYLON {
                 this.emissiveTexture.dispose();
             }
 
-            if (this.specularTexture) {
-                this.specularTexture.dispose();
+            if (this.reflectivityTexture) {
+                this.reflectivityTexture.dispose();
             }
 
             if (this.bumpTexture) {
@@ -1053,6 +1054,7 @@ module BABYLON {
             newPBRMaterial.directIntensity = this.directIntensity;
             newPBRMaterial.emissiveIntensity = this.emissiveIntensity;
             newPBRMaterial.environmentIntensity = this.environmentIntensity;
+            newPBRMaterial.specularIntensity = this.specularIntensity;
         
             newPBRMaterial.cameraExposure = this.cameraExposure;
             newPBRMaterial.cameraContrast = this.cameraContrast;
@@ -1061,24 +1063,24 @@ module BABYLON {
             newPBRMaterial.overloadedShadeIntensity = this.overloadedShadeIntensity;
         
             newPBRMaterial.overloadedAmbientIntensity = this.overloadedAmbientIntensity;
-            newPBRMaterial.overloadedDiffuseIntensity = this.overloadedDiffuseIntensity;
-            newPBRMaterial.overloadedSpecularIntensity = this.overloadedSpecularIntensity;
+            newPBRMaterial.overloadedAlbedoIntensity = this.overloadedAlbedoIntensity;
+            newPBRMaterial.overloadedReflectivityIntensity = this.overloadedReflectivityIntensity;
             newPBRMaterial.overloadedEmissiveIntensity = this.overloadedEmissiveIntensity;
             newPBRMaterial.overloadedAmbient = this.overloadedAmbient;
-            newPBRMaterial.overloadedDiffuse = this.overloadedDiffuse;
-            newPBRMaterial.overloadedSpecular = this.overloadedSpecular;
+            newPBRMaterial.overloadedAlbedo = this.overloadedAlbedo;
+            newPBRMaterial.overloadedReflectivity = this.overloadedReflectivity;
             newPBRMaterial.overloadedEmissive = this.overloadedEmissive;
             newPBRMaterial.overloadedReflection = this.overloadedReflection;
 
-            newPBRMaterial.overloadedGlossiness = this.overloadedGlossiness;
-            newPBRMaterial.overloadedGlossinessIntensity = this.overloadedGlossinessIntensity;
+            newPBRMaterial.overloadedMicroSurface = this.overloadedMicroSurface;
+            newPBRMaterial.overloadedMicroSurfaceIntensity = this.overloadedMicroSurfaceIntensity;
             newPBRMaterial.overloadedReflectionIntensity = this.overloadedReflectionIntensity;
         
             newPBRMaterial.disableBumpMap = this.disableBumpMap;
 
             // Standard material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newPBRMaterial.diffuseTexture = this.diffuseTexture.clone();
+            if (this.albedoTexture && this.albedoTexture.clone) {
+                newPBRMaterial.albedoTexture = this.albedoTexture.clone();
             }
             if (this.ambientTexture && this.ambientTexture.clone) {
                 newPBRMaterial.ambientTexture = this.ambientTexture.clone();
@@ -1092,8 +1094,8 @@ module BABYLON {
             if (this.emissiveTexture && this.emissiveTexture.clone) {
                 newPBRMaterial.emissiveTexture = this.emissiveTexture.clone();
             }
-            if (this.specularTexture && this.specularTexture.clone) {
-                newPBRMaterial.specularTexture = this.specularTexture.clone();
+            if (this.reflectivityTexture && this.reflectivityTexture.clone) {
+                newPBRMaterial.reflectivityTexture = this.reflectivityTexture.clone();
             }
             if (this.bumpTexture && this.bumpTexture.clone) {
                 newPBRMaterial.bumpTexture = this.bumpTexture.clone();
@@ -1104,14 +1106,14 @@ module BABYLON {
             }
 
             newPBRMaterial.ambientColor = this.ambientColor.clone();
-            newPBRMaterial.diffuseColor = this.diffuseColor.clone();
-            newPBRMaterial.specularColor = this.specularColor.clone();
+            newPBRMaterial.albedoColor = this.albedoColor.clone();
+            newPBRMaterial.reflectivityColor = this.reflectivityColor.clone();
             newPBRMaterial.reflectionColor = this.reflectionColor.clone();
-            newPBRMaterial.glossiness = this.glossiness;
+            newPBRMaterial.microSurface = this.microSurface;
             newPBRMaterial.emissiveColor = this.emissiveColor.clone();
-            newPBRMaterial.useAlphaFromDiffuseTexture = this.useAlphaFromDiffuseTexture;
+            newPBRMaterial.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
             newPBRMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            newPBRMaterial.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
+            newPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
             newPBRMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             
             newPBRMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
@@ -1128,6 +1130,7 @@ module BABYLON {
             serializationObject.directIntensity = this.directIntensity;
             serializationObject.emissiveIntensity = this.emissiveIntensity;
             serializationObject.environmentIntensity = this.environmentIntensity;
+            serializationObject.specularIntensity = this.specularIntensity;
         
             serializationObject.cameraExposure = this.cameraExposure;
             serializationObject.cameraContrast = this.cameraContrast;
@@ -1136,24 +1139,24 @@ module BABYLON {
             serializationObject.overloadedShadeIntensity = this.overloadedShadeIntensity;
         
             serializationObject.overloadedAmbientIntensity = this.overloadedAmbientIntensity;
-            serializationObject.overloadedDiffuseIntensity = this.overloadedDiffuseIntensity;
-            serializationObject.overloadedSpecularIntensity = this.overloadedSpecularIntensity;
+            serializationObject.overloadedAlbedoIntensity = this.overloadedAlbedoIntensity;
+            serializationObject.overloadedReflectivityIntensity = this.overloadedReflectivityIntensity;
             serializationObject.overloadedEmissiveIntensity = this.overloadedEmissiveIntensity;
             serializationObject.overloadedAmbient = this.overloadedAmbient.asArray();
-            serializationObject.overloadedDiffuse = this.overloadedDiffuse.asArray();
-            serializationObject.overloadedSpecular = this.overloadedSpecular.asArray();
+            serializationObject.overloadedAlbedo = this.overloadedAlbedo.asArray();
+            serializationObject.overloadedReflectivity = this.overloadedReflectivity.asArray();
             serializationObject.overloadedEmissive = this.overloadedEmissive.asArray();
             serializationObject.overloadedReflection = this.overloadedReflection.asArray();
 
-            serializationObject.overloadedGlossiness = this.overloadedGlossiness;
-            serializationObject.overloadedGlossinessIntensity = this.overloadedGlossinessIntensity;
+            serializationObject.overloadedMicroSurface = this.overloadedMicroSurface;
+            serializationObject.overloadedMicroSurfaceIntensity = this.overloadedMicroSurfaceIntensity;
             serializationObject.overloadedReflectionIntensity = this.overloadedReflectionIntensity;
         
             serializationObject.disableBumpMap = this.disableBumpMap;
 
             // Standard material
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            if (this.albedoTexture) {
+                serializationObject.albedoTexture = this.albedoTexture.serialize();
             }
             if (this.ambientTexture) {
                 serializationObject.ambientTexture = this.ambientTexture.serialize();
@@ -1167,8 +1170,8 @@ module BABYLON {
             if (this.emissiveTexture) {
                 serializationObject.emissiveTexture = this.emissiveTexture.serialize();
             }
-            if (this.specularTexture) {
-                serializationObject.specularTexture = this.specularTexture.serialize();
+            if (this.reflectivityTexture) {
+                serializationObject.reflectivityTexture = this.reflectivityTexture.serialize();
             }
             if (this.bumpTexture) {
                 serializationObject.bumpTexture = this.bumpTexture.serialize();
@@ -1179,14 +1182,14 @@ module BABYLON {
             }
 
             serializationObject.ambientColor = this.ambientColor.asArray();
-            serializationObject.diffuseColor = this.diffuseColor.asArray();
-            serializationObject.specularColor = this.specularColor.asArray();
+            serializationObject.albedoColor = this.albedoColor.asArray();
+            serializationObject.reflectivityColor = this.reflectivityColor.asArray();
             serializationObject.reflectionColor = this.reflectionColor.asArray();
-            serializationObject.glossiness = this.glossiness;
+            serializationObject.microSurface = this.microSurface;
             serializationObject.emissiveColor = this.emissiveColor.asArray();
-            serializationObject.useAlphaFromDiffuseTexture = this.useAlphaFromDiffuseTexture;
+            serializationObject.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
             serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            serializationObject.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
+            serializationObject.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
             serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
             
             serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
@@ -1216,6 +1219,7 @@ module BABYLON {
             material.directIntensity = source.directIntensity;
             material.emissiveIntensity = source.emissiveIntensity;
             material.environmentIntensity = source.environmentIntensity;
+            material.specularIntensity = source.specularIntensity;
         
             material.cameraExposure = source.cameraExposure;
             material.cameraContrast = source.cameraContrast;
@@ -1224,24 +1228,24 @@ module BABYLON {
             material.overloadedShadeIntensity = source.overloadedShadeIntensity;
         
             material.overloadedAmbientIntensity = source.overloadedAmbientIntensity;
-            material.overloadedDiffuseIntensity = source.overloadedDiffuseIntensity;
-            material.overloadedSpecularIntensity = source.overloadedSpecularIntensity;
+            material.overloadedAlbedoIntensity = source.overloadedAlbedoIntensity;
+            material.overloadedReflectivityIntensity = source.overloadedReflectivityIntensity;
             material.overloadedEmissiveIntensity = source.overloadedEmissiveIntensity;
             material.overloadedAmbient = Color3.FromArray(source.overloadedAmbient);
-            material.overloadedDiffuse = Color3.FromArray(source.overloadedDiffuse);
-            material.overloadedSpecular = Color3.FromArray(source.overloadedSpecular);
+            material.overloadedAlbedo = Color3.FromArray(source.overloadedAlbedo);
+            material.overloadedReflectivity = Color3.FromArray(source.overloadedReflectivity);
             material.overloadedEmissive = Color3.FromArray(source.overloadedEmissive);
             material.overloadedReflection = Color3.FromArray(source.overloadedReflection);
 
-            material.overloadedGlossiness = source.overloadedGlossiness;
-            material.overloadedGlossinessIntensity = source.overloadedGlossinessIntensity;
+            material.overloadedMicroSurface = source.overloadedMicroSurface;
+            material.overloadedMicroSurfaceIntensity = source.overloadedMicroSurfaceIntensity;
             material.overloadedReflectionIntensity = source.overloadedReflectionIntensity;
         
             material.disableBumpMap = source.disableBumpMap;
 
             // Standard material
-            if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            if (source.albedoTexture) {
+                material.albedoTexture = Texture.Parse(source.albedoTexture, scene, rootUrl);
             }
             if (source.ambientTexture) {
                 material.ambientTexture = Texture.Parse(source.ambientTexture, scene, rootUrl);
@@ -1255,8 +1259,8 @@ module BABYLON {
             if (source.emissiveTexture) {
                 material.emissiveTexture = Texture.Parse(source.emissiveTexture, scene, rootUrl);
             }
-            if (source.specularTexture) {
-                material.specularTexture = Texture.Parse(source.specularTexture, scene, rootUrl);
+            if (source.reflectivityTexture) {
+                material.reflectivityTexture = Texture.Parse(source.reflectivityTexture, scene, rootUrl);
             }
             if (source.bumpTexture) {
                 material.bumpTexture = Texture.Parse(source.bumpTexture, scene, rootUrl);
@@ -1267,14 +1271,14 @@ module BABYLON {
             }
 
             material.ambientColor = Color3.FromArray(source.ambient);
-            material.diffuseColor = Color3.FromArray(source.diffuse);
-            material.specularColor = Color3.FromArray(source.specular);
+            material.albedoColor = Color3.FromArray(source.albedo);
+            material.reflectivityColor = Color3.FromArray(source.reflectivity);
             material.reflectionColor = Color3.FromArray(source.reflectionColor);
-            material.glossiness = source.glossiness;
+            material.microSurface = source.microSurface;
             material.emissiveColor = Color3.FromArray(source.emissive);
-            material.useAlphaFromDiffuseTexture = source.useAlphaFromDiffuseTexture;
+            material.useAlphaFromAlbedoTexture = source.useAlphaFromAlbedoTexture;
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
-            material.useGlossinessFromSpecularMapAlpha = source.useGlossinessFromSpecularMapAlpha;
+            material.useMicroSurfaceFromReflectivityMapAlpha = source.useMicroSurfaceFromReflectivityMapAlpha;
             material.useSpecularOverAlpha = source.useSpecularOverAlpha;
             
             material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);

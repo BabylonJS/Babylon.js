@@ -39,10 +39,10 @@ uniform mat4 world;
 uniform mat4 view;
 uniform mat4 viewProjection;
 
-#ifdef DIFFUSE
-varying vec2 vDiffuseUV;
-uniform mat4 diffuseMatrix;
-uniform vec2 vDiffuseInfos;
+#ifdef ALBEDO
+varying vec2 vAlbedoUV;
+uniform mat4 albedoMatrix;
+uniform vec2 vAlbedoInfos;
 #endif
 
 #ifdef AMBIENT
@@ -69,10 +69,10 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#if defined(SPECULAR) && defined(SPECULARTERM)
-varying vec2 vSpecularUV;
-uniform vec2 vSpecularInfos;
-uniform mat4 specularMatrix;
+#if defined(REFLECTIVITY)
+varying vec2 vReflectivityUV;
+uniform vec2 vReflectivityInfos;
+uniform mat4 reflectivityMatrix;
 #endif
 
 #ifdef BUMP
@@ -199,14 +199,14 @@ void main(void) {
     vec2 uv2 = vec2(0., 0.);
 #endif
 
-#ifdef DIFFUSE
-    if (vDiffuseInfos.x == 0.)
+#ifdef ALBEDO
+    if (vAlbedoInfos.x == 0.)
     {
-        vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
+        vAlbedoUV = vec2(albedoMatrix * vec4(uv, 1.0, 0.0));
     }
     else
     {
-        vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+        vAlbedoUV = vec2(albedoMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 
@@ -254,14 +254,14 @@ void main(void) {
     }
 #endif
 
-#if defined(SPECULAR) && defined(SPECULARTERM)
-    if (vSpecularInfos.x == 0.)
+#if defined(REFLECTIVITY)
+    if (vReflectivityInfos.x == 0.)
     {
-        vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));
+        vReflectivityUV = vec2(reflectivityMatrix * vec4(uv, 1.0, 0.0));
     }
     else
     {
-        vSpecularUV = vec2(specularMatrix * vec4(uv2, 1.0, 0.0));
+        vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 
