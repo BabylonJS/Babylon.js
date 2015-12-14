@@ -303,6 +303,9 @@
         }
 
         public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string) {
+            // could have been loaded already from another .babylon. Assume user wishes to share
+            if (scene.getMaterialByID(parsedMaterial.id)) return scene.getMaterialByID(parsedMaterial.id);
+            
             if (!parsedMaterial.customType) {
                 return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
