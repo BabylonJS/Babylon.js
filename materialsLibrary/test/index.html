@@ -12,6 +12,7 @@
 	<script src="../dist/babylon.terrainMaterial.js"></script>
 	<script src="../dist/babylon.pbrMaterial.js"></script>
 	<script src="../dist/babylon.furMaterial.js"></script>
+	<script src="../dist/babylon.triPlanarMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -53,6 +54,7 @@
 	<script src="add/addfur.js"></script>
 	<script src="add/addterrain.js"></script>
 	<script src="add/addfire.js"></script>
+	<script src="add/addtriplanar.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -190,13 +192,15 @@
 				var terrain = prepareTerrain();
 				
 				var pbr = preparePBR();
-								
+				
+				var triPlanar = prepareTriPlanar();
+				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					
 					switch (options.material) {
@@ -225,7 +229,10 @@
 							break;
 						case "fur":
 							currentMaterial = fur;
-							break;														
+							break;
+						case "triPlanar":
+							currentMaterial = triPlanar;
+							break;
 						default:
 							currentMaterial = std;
 							break;
