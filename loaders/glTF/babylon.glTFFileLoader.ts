@@ -493,8 +493,15 @@
     /**
     * Imports a skeleton
     */
-    var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh): Skeleton => {
-        var newSkeleton = new Skeleton(skins.name, "", gltfRuntime.scene);
+    var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton): Skeleton => {
+
+        if (!newSkeleton) {
+            newSkeleton = new Skeleton(skins.name, "", gltfRuntime.scene);
+        }
+
+        if (!skins.babylonSkeleton) {
+            return newSkeleton;
+        }
 
         // Matrices
         var accessor = gltfRuntime.accessors[skins.inverseBindMatrices];
@@ -600,9 +607,15 @@
     /**
     * Imports a mesh and its geometries
     */
-    var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, skin?: IGLTFSkins): Mesh => {
-        var newMesh = new Mesh(node.name, gltfRuntime.scene);
-        newMesh.id = id;
+    var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
+        if (!newMesh) {
+            newMesh = new Mesh(node.name, gltfRuntime.scene);
+            newMesh.id = id;
+        }
+
+        if (!node.babylonNode) {
+            return newMesh;
+        }
 
         var multiMat = new MultiMaterial("multimat" + id, gltfRuntime.scene);
         newMesh.material = multiMat;
@@ -629,7 +642,7 @@
                 var tempVertexData = new VertexData();
 
                 var primitive = mesh.primitives[i];
-                if (primitive.primitive !== 4) {
+                if (primitive.mode !== 4) {
                     //continue;
                 }
 
@@ -728,7 +741,7 @@
             }
 
             for (var i = 0; i < mesh.primitives.length; i++) {
-                if (mesh.primitives[i].primitive !== 4) {
+                if (mesh.primitives[i].mode !== 4) {
                     //continue;
                 }
 
@@ -786,16 +799,26 @@
     var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Node => {
         var lastNode: Node = null;
 
+        if (gltfRuntime.importOnlyMeshes && (node.skin || node.meshes)) {
+            if (gltfRuntime.importMeshesNames.length > 0 && gltfRuntime.importMeshesNames.indexOf(node.name) === -1) {
+                return null;
+            }
+        }
+
         // Meshes
         if (node.skin) {
             if (node.meshes) {
                 var skin: IGLTFSkins = gltfRuntime.skins[node.skin];
 
-                var newMesh = importMesh(gltfRuntime, node, node.meshes, id, skin);
+                var newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
                 newMesh.skeleton = gltfRuntime.scene.getLastSkeletonByID(node.skin);
 
                 if (newMesh.skeleton === null) {
-                    newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh);
+                    newMesh.skeleton = importSkeleton(gltfRuntime, skin, newMesh, skin.babylonSkeleton);
+
+                    if (!skin.babylonSkeleton) {
+                        skin.babylonSkeleton = newMesh.skeleton;
+                    }
                 }
 
                 if (newMesh.skeleton !== null) {
@@ -809,11 +832,11 @@
             /**
             * Improve meshes property
             */
-            var newMesh = importMesh(gltfRuntime, node, node.mesh ? [node.mesh] : node.meshes, id);
+            var newMesh = importMesh(gltfRuntime, node, node.mesh ? [node.mesh] : node.meshes, id, <Mesh>node.babylonNode);
             lastNode = newMesh;
         }
         // Lights
-        else if (node.light) {
+        else if (node.light && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
             var light = gltfRuntime.lights[node.light];
 
             if (light) {
@@ -872,7 +895,7 @@
             }
         }
         // Cameras
-        else if (node.camera) {
+        else if (node.camera && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
             var camera: IGLTFCamera = gltfRuntime.cameras[node.camera];
 
             if (camera) {
@@ -908,9 +931,15 @@
         }
 
         // Empty node
-        if (lastNode === null && !node.jointName) {
-            var dummy = new Mesh(node.name, gltfRuntime.scene);
-            lastNode = dummy;
+        if (!node.jointName) {
+            if (node.babylonNode) {
+                return node.babylonNode;
+            }
+            else if (lastNode === null) {
+                var dummy = new Mesh(node.name, gltfRuntime.scene);
+                node.babylonNode = dummy;
+                lastNode = dummy;
+            }
         }
 
         if (lastNode !== null) {
@@ -922,24 +951,59 @@
             }
 
             lastNode.updateCache(true);
+
+            node.babylonNode = lastNode;
         }
 
         return lastNode;
     };
 
-    var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Node) => {
-        var node: IGLTFNode = gltfRuntime.nodes[id];
+    /**
+    * Util for ImportMesh function, checks if a given node
+    * is a descendant of the included mesh(es)
+    */
+    var nodeIsDescendantOf = (node: IGLTFRuntime, gltfRuntime: IGLTFRuntime): boolean => {
+        for (var nde in gltfRuntime.nodes) {
+            var n: IGLTFNode = gltfRuntime.nodes[nde];
 
+            for (var i = 0; i < n.children.length; i++) {
+
+            }
+        }
+
+        return false;
+    }
+
+    /**
+    * Traverses nodes and creates them
+    */
+    var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Node, meshIncluded?: boolean) => {
+        var node: IGLTFNode = gltfRuntime.nodes[id];
         var newNode: Node = null;
 
-        if (!node.jointName) {
+        if (gltfRuntime.importOnlyMeshes && !meshIncluded) {
+            if (gltfRuntime.importMeshesNames.indexOf(node.name) !== -1 || gltfRuntime.importMeshesNames.length === 0) {
+                meshIncluded = true;
+            }
+            else {
+                meshIncluded = false;
+            }
+        }
+        else {
+            meshIncluded = true;
+        }
+
+        if (!node.jointName && meshIncluded) {
             newNode = importNode(gltfRuntime, node, id);
-            newNode.id = id;
-            newNode.parent = parent;
+
+            if (newNode !== null) {
+                newNode.id = id;
+                newNode.parent = parent;
+            }
         }
 
         for (var i = 0; i < node.children.length; i++) {
-            traverseNodes(gltfRuntime, node.children[i], newNode);
+            traverseNodes(gltfRuntime, node.children[i], newNode, meshIncluded);
         }
     };
 
@@ -1410,6 +1474,47 @@
         * Import meshes
         */
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
+            var parsedData = JSON.parse(data);
+            var gltfRuntime = this._createGlTFRuntime(parsedData, scene, rootUrl);
+            gltfRuntime.importOnlyMeshes = true;
+
+            if (meshesNames === "") {
+                gltfRuntime.importMeshesNames = [];
+            }
+            else if (typeof meshesNames === "string") {
+                gltfRuntime.importMeshesNames = [meshesNames];
+            }
+            else if (meshesNames && !(meshesNames instanceof Array)) {
+                gltfRuntime.importMeshesNames = [meshesNames];
+            }
+            else {
+                gltfRuntime.importMeshesNames = [];
+                Tools.Warn("Argument meshesNames must be of type string or string[]");
+            }
+
+            // Create nodes
+            this._createNodes(gltfRuntime);
+
+            // Fill arrays of meshes and skeletons
+            for (var nde in gltfRuntime.nodes) {
+                var node: IGLTFNode = gltfRuntime.nodes[nde];
+
+                if (node.babylonNode instanceof AbstractMesh) {
+                    meshes.push(<AbstractMesh>node.babylonNode);
+                }
+            }
+
+            for (var skl in gltfRuntime.skins) {
+                var skin: IGLTFSkins = gltfRuntime.skins[skl];
+
+                if (skin.babylonSkeleton instanceof Skeleton) {
+                    skeletons.push(skin.babylonSkeleton);
+                }
+            }
+
+            // Load shaders and buffers to apply
+            load(gltfRuntime);
+
             return true;
         }
 
@@ -1418,7 +1523,29 @@
         */
         public load(scene: Scene, data: string, rootUrl: string): boolean {
             var parsedData = JSON.parse(data);
+            var gltfRuntime = this._createGlTFRuntime(parsedData, scene, rootUrl);
 
+            // Create nodes
+            this._createNodes(gltfRuntime);
+
+            // Load shaders and buffers to apply
+            load(gltfRuntime);
+
+            // Finish
+            return true;
+        }
+
+        // Creates nodes before loading buffers and shaders
+        private _createNodes(gltfRuntime: IGLTFRuntime): void {
+            var currentScene: IGLTFScene = <IGLTFScene>gltfRuntime.currentScene;
+
+            for (var i = 0; i < currentScene.nodes.length; i++) {
+                traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+            }
+        }
+
+        // Creates the gltfRuntime
+        private _createGlTFRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime {
             var gltfRuntime: IGLTFRuntime = {
                 accessors: {},
                 buffers: {},
@@ -1521,11 +1648,7 @@
                 gltfRuntime.currentScene = parsedData.scenes[parsedData.scene];
             }
 
-            // Load shaders and buffers
-            load(gltfRuntime);
-
-            // Finish
-            return true;
+            return gltfRuntime;
         }
     };
 
