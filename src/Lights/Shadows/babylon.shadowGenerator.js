@@ -9,6 +9,7 @@ var BABYLON;
             this._blurBoxOffset = 0;
             this._bias = 0.00005;
             this._lightDirection = BABYLON.Vector3.Zero();
+            this.forceBackFacesOnly = false;
             this._darkness = 0;
             this._transparencyShadow = false;
             this._viewMatrix = BABYLON.Matrix.Zero();
@@ -80,8 +81,14 @@ var BABYLON;
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
                         _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
+                    if (_this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, true);
+                    }
                     // Draw
                     mesh._processRendering(subMesh, _this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._effect.setMatrix("world", world); });
+                    if (_this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, false);
+                    }
                 }
                 else {
                     // Need to reset refresh rate of the shadowMap
@@ -351,6 +358,7 @@ var BABYLON;
             serializationObject.mapSize = this.getShadowMap().getRenderSize();
             serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
+            serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
                 var mesh = this.getShadowMap().renderList[meshIndex];
@@ -384,6 +392,7 @@ var BABYLON;
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
             }
+            shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;
             return shadowGenerator;
         };
         ShadowGenerator._FILTER_NONE = 0;
