@@ -167,6 +167,12 @@ namespace Max2Babylon
             return true;
         }
 
+        private static void ExportColor3Animation(string property, List<BabylonAnimation> animations,
+            Func<int, float[]> extractValueFunc)
+        {
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Color3);
+        }
+
         private static void ExportVector3Animation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {

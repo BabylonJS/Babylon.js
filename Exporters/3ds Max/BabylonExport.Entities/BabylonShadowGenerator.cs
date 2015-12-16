@@ -32,5 +32,8 @@ namespace BabylonExport.Entities
         [DataMember]
         public string[] renderList { get; set; }
 
+        [DataMember]
+        public bool forceBackFacesOnly { get; set; }
+
     }
 }

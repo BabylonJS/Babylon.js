@@ -58,6 +58,11 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonTexture emissiveTexture { get; set; }
         [DataMember]
+        public BabylonTexture lightmapTexture { get; set; }
+        [DataMember]
+        public bool useLightmapAsShadowmap { get; set; }
+
+        [DataMember]
         public BabylonFresnelParameters emissiveFresnelParameters { get; set; }
 
         [DataMember]
