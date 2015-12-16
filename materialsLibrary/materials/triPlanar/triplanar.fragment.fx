@@ -1,4 +1,4 @@
-precision highp float;
+﻿precision highp float;
 
 // Constants
 uniform vec3 vEyePosition;
@@ -10,10 +10,6 @@ uniform vec4 vSpecularColor;
 
 // Input
 varying vec3 vPositionW;
-
-#ifdef NORMAL
-varying vec3 vNormalW;
-#endif
 
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
@@ -113,29 +109,33 @@ uniform vec3 vLightGround3;
 #endif
 
 // Samplers
-#ifdef BUMP
-varying vec2 vNormalUV;
-uniform sampler2D normalSampler;
-uniform vec2 vNormalInfos;
+#ifdef DIFFUSEX
+varying vec2 vTextureUVX;
+uniform sampler2D diffuseSamplerX;
+#ifdef BUMPX
+uniform sampler2D normalSamplerX;
+#endif
 #endif
 
-uniform sampler2D refractionSampler;
-uniform sampler2D reflectionSampler;
+#ifdef DIFFUSEY
+varying vec2 vTextureUVY;
+uniform sampler2D diffuseSamplerY;
+#ifdef BUMPY
+uniform sampler2D normalSamplerY;
+#endif
+#endif
 
-// Water uniforms
-const float LOG2 = 1.442695;
+#ifdef DIFFUSEZ
+varying vec2 vTextureUVZ;
+uniform sampler2D diffuseSamplerZ;
+#ifdef BUMPZ
+uniform sampler2D normalSamplerZ;
+#endif
+#endif
 
-uniform vec3 cameraPosition;
-
-uniform vec4 waterColor;
-uniform float colorBlendFactor;
-
-uniform float bumpHeight;
-
-// Water varyings
-varying vec3 vRefractionMapTexCoord;
-varying vec3 vReflectionMapTexCoord;
-varying vec3 vPosition;
+#ifdef NORMAL
+varying mat3 tangentSpace;
+#endif
 
 // Shadows
 #ifdef SHADOWS
@@ -165,7 +165,7 @@ float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float dar
 	return 1.0;
 }
 
-float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float bias, float darkness, float mapSize)
+float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float bias, float darkness)
 {
 	vec3 directionToLight = vPositionW - lightPosition;
 	float depth = length(directionToLight);
@@ -179,18 +179,18 @@ float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, fl
 	float visibility = 1.;
 
 	vec3 poissonDisk[4];
-	poissonDisk[0] = vec3(-0.094201624, 0.04, -0.039906216);
-	poissonDisk[1] = vec3(0.094558609, -0.04, -0.076890725);
-	poissonDisk[2] = vec3(-0.094184101, 0.01, -0.092938870);
-	poissonDisk[3] = vec3(0.034495938, -0.01, 0.029387760);
+	poissonDisk[0] = vec3(-1.0, 1.0, -1.0);
+	poissonDisk[1] = vec3(1.0, -1.0, -1.0);
+	poissonDisk[2] = vec3(-1.0, -1.0, -1.0);
+	poissonDisk[3] = vec3(1.0, -1.0, 1.0);
 
 	// Poisson Sampling
 	float biasedDepth = depth - bias;
 
-	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0])) < biasedDepth) visibility -= 0.25;
-	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1])) < biasedDepth) visibility -= 0.25;
-	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2])) < biasedDepth) visibility -= 0.25;
-	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3])) < biasedDepth) visibility -= 0.25;
+	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * diskScale)) < biasedDepth) visibility -= 0.25;
+	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * diskScale)) < biasedDepth) visibility -= 0.25;
+	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * diskScale)) < biasedDepth) visibility -= 0.25;
+	if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * diskScale)) < biasedDepth) visibility -= 0.25;
 
 	return  min(1.0, visibility + darkness);
 }
@@ -286,6 +286,7 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 #endif
 #endif
 
+
 #ifdef CLIPPLANE
 varying float fClipDistance;
 #endif
@@ -336,7 +337,7 @@ struct lightingInfo
 #endif
 };
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float glossiness, vec3 bumpColor) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
 	lightingInfo result;
 
 	vec3 lightVectorW;
@@ -357,22 +358,18 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 	float ndl = max(0., dot(vNormal, lightVectorW));
 	result.diffuse = ndl * diffuseColor * attenuation;
 
-	// Specular
 #ifdef SPECULARTERM
+	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
-	vec3 perturbation = bumpHeight * (bumpColor.rgb - 0.5);
-	vec3 halfvec = normalize(angleW + lightVectorW + vec3(perturbation.x, perturbation.y, perturbation.z));
-	
-	float temp = max(0., dot(vNormal, halfvec));
-	temp = pow(temp, max(1., glossiness));
-	
-	result.specular = temp * specularColor * attenuation;
-#endif
+	float specComp = max(0., dot(vNormal, angleW));
+	specComp = pow(specComp, max(1., glossiness));
 
+	result.specular = specComp * specularColor * attenuation;
+#endif
 	return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 specularColor, vec3 diffuseColor, float range, float glossiness, vec3 bumpColor) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
 	lightingInfo result;
 
 	vec3 direction = lightData.xyz - vPositionW;
@@ -392,17 +389,15 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 		float ndl = max(0., dot(vNormal, -lightDirection.xyz));
 		result.diffuse = ndl * spotAtten * diffuseColor * attenuation;
 
+#ifdef SPECULARTERM
 		// Specular
-#ifdef SPECULARTERM		
 		vec3 angleW = normalize(viewDirectionW - lightDirection.xyz);
-		vec3 perturbation = bumpHeight * (bumpColor.rgb - 0.5);
-		vec3 halfvec = normalize(angleW + vec3(perturbation.x, perturbation.y, perturbation.z));
-		
-		float temp = max(0., dot(vNormal, halfvec));
-		temp = pow(temp, max(1., glossiness));
-		
-		result.specular = specularColor * temp * spotAtten * attenuation;
+		float specComp = max(0., dot(vNormal, angleW));
+		specComp = pow(specComp, max(1., glossiness));
+
+		result.specular = specComp * specularColor * spotAtten * attenuation;
 #endif
+
 		return result;
 	}
 
@@ -414,23 +409,20 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 	return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float glossiness, vec3 bumpColor) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float glossiness) {
 	lightingInfo result;
 
 	// Diffuse
 	float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
 	result.diffuse = mix(groundColor, diffuseColor, ndl);
-	
-	// Specular
+
 #ifdef SPECULARTERM
+	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightData.xyz);
-	vec3 perturbation = bumpHeight * (bumpColor.rgb - 0.5);
-	vec3 halfvec = normalize(angleW + vec3(perturbation.x, perturbation.y, perturbation.z));
-	
-	float temp = max(0.0, dot(vNormal, halfvec));
-	temp = pow(temp, max(1.0, glossiness));
-	
-	result.specular = temp * specularColor;
+	float specComp = max(0., dot(vNormal, angleW));
+	specComp = pow(specComp, max(1., glossiness));
+
+	result.specular = specComp * specularColor;
 #endif
 
 	return result;
@@ -446,7 +438,7 @@ void main(void) {
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
 	// Base color
-	vec4 baseColor = vec4(1., 1., 1., 1.);
+	vec4 baseColor = vec4(0., 0., 0., 1.);
 	vec3 diffuseColor = vDiffuseColor.rgb;
 	
 #ifdef SPECULARTERM
@@ -458,51 +450,49 @@ void main(void) {
 
 	// Alpha
 	float alpha = vDiffuseColor.a;
+	
+	// Bump
+#ifdef NORMAL
+	vec3 normalW = tangentSpace[2];
+#else
+	vec3 normalW = vec3(1.0, 1.0, 1.0);
+#endif
 
-#ifdef BUMP
-	baseColor = texture2D(normalSampler, vNormalUV);
-	vec3 bumpColor = baseColor.rgb;
+	vec4 baseNormal = vec4(0.0, 0.0, 0.0, 1.0);
+	normalW *= normalW;
+
+#ifdef DIFFUSEX
+	baseColor += texture2D(diffuseSamplerX, vTextureUVX) * normalW.x;
+#ifdef BUMPX
+	baseNormal += texture2D(normalSamplerX, vTextureUVX) * normalW.x;
+#endif
+#endif
+
+#ifdef DIFFUSEY
+	baseColor += texture2D(diffuseSamplerY, vTextureUVY) * normalW.y;
+#ifdef BUMPY
+	baseNormal += texture2D(normalSamplerY, vTextureUVY) * normalW.y;
+#endif
+#endif
+
+#ifdef DIFFUSEZ
+	baseColor += texture2D(diffuseSamplerZ, vTextureUVZ) * normalW.z;
+#ifdef BUMPZ
+	baseNormal += texture2D(normalSamplerZ, vTextureUVZ) * normalW.z;
+#endif
+#endif
+
+#ifdef NORMAL
+	normalW = normalize((2.0 * baseNormal.xyz - 1.0) * tangentSpace);
+#endif
 
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
 		discard;
 #endif
 
-	baseColor.rgb *= vNormalInfos.y;
-#else
-	vec3 bumpColor = vec3(1.0);
-#endif
-
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
-#endif
-
-	// Bump
-#ifdef NORMAL
-	vec3 normalW = normalize(vNormalW);
-	vec2 perturbation = bumpHeight * (baseColor.rg - 0.5);
-#else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
-	vec2 perturbation = bumpHeight * (vec2(1.0, 1.0) - 0.5);
-#endif
-
-#ifdef REFLECTION
-	// Water
-	vec3 eyeVector = normalize(vEyePosition - vPosition);
-	
-	vec2 projectedRefractionTexCoords = clamp(vRefractionMapTexCoord.xy / vRefractionMapTexCoord.z + perturbation, 0.0, 1.0);
-	vec4 refractiveColor = texture2D(refractionSampler, projectedRefractionTexCoords);
-	
-	vec2 projectedReflectionTexCoords = clamp(vReflectionMapTexCoord.xy / vReflectionMapTexCoord.z + perturbation, 0.0, 1.0);
-	vec4 reflectiveColor = texture2D(reflectionSampler, projectedReflectionTexCoords);
-	
-	vec3 upVector = vec3(0.0, 1.0, 0.0);
-	
-	float fresnelTerm = max(dot(eyeVector, upVector), 0.0);
-	
-	vec4 combinedColor = refractiveColor * fresnelTerm + reflectiveColor * (1.0 - fresnelTerm);
-	
-	baseColor = colorBlendFactor * waterColor + (1.0 - colorBlendFactor) * combinedColor;
 #endif
 
 	// Lighting
@@ -517,30 +507,30 @@ void main(void) {
 	vec3 vLightSpecular0 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT0
-	lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, glossiness, bumpColor);
+	lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, glossiness);
 #endif
 #ifdef HEMILIGHT0
-	lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, glossiness, bumpColor);
+	lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, glossiness);
 #endif
 #if defined(POINTLIGHT0) || defined(DIRLIGHT0)
-	lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, glossiness, bumpColor);
+	lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, glossiness);
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
 	shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x);
 #else
 #ifdef SHADOWPCF0
-	#if defined(POINTLIGHT0)
-	shadow = computeShadowWithPCFCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x, shadowsInfo0.y);
-	#else
-	shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
-	#endif
+#if defined(POINTLIGHT0)
+	shadow = computeShadowWithPCFCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
 #else
-	#if defined(POINTLIGHT0)
+	shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
+#endif
+#else
+#if defined(POINTLIGHT0)
 	shadow = computeShadowCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
-	#else
+#else
 	shadow = computeShadow(vPositionFromLight0, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
-	#endif
+#endif
 #endif
 #endif
 #else
@@ -557,13 +547,13 @@ void main(void) {
 	vec3 vLightSpecular1 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT1
-	info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, glossiness, bumpColor);
+	info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, glossiness);
 #endif
 #ifdef HEMILIGHT1
-	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1.a, glossiness, bumpColor);
+	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, glossiness);
 #endif
 #if defined(POINTLIGHT1) || defined(DIRLIGHT1)
-	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, glossiness, bumpColor);
+	info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, glossiness);
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
@@ -571,16 +561,16 @@ void main(void) {
 #else
 #ifdef SHADOWPCF1
 #if defined(POINTLIGHT1)
-	shadow = computeShadowWithPCFCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.z, shadowsInfo1.x, shadowsInfo1.y);
+	shadow = computeShadowWithPCFCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
 #endif
 #else
-	#if defined(POINTLIGHT1)
+#if defined(POINTLIGHT1)
 	shadow = computeShadowCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
-	#else
+#else
 	shadow = computeShadow(vPositionFromLight1, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
-	#endif
+#endif
 #endif
 #endif
 #else
@@ -597,13 +587,13 @@ void main(void) {
 	vec3 vLightSpecular2 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT2
-	info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, glossiness, bumpColor);
+	info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, glossiness);
 #endif
 #ifdef HEMILIGHT2
-	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, glossiness, bumpColor);
+	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, glossiness);
 #endif
 #if defined(POINTLIGHT2) || defined(DIRLIGHT2)
-	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, glossiness, bumpColor);
+	info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, glossiness);
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
@@ -611,16 +601,16 @@ void main(void) {
 #else
 #ifdef SHADOWPCF2
 #if defined(POINTLIGHT2)
-	shadow = computeShadowWithPCFCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.z, shadowsInfo2.x, shadowsInfo2.y);
+	shadow = computeShadowWithPCFCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
 #endif
 #else
-	#if defined(POINTLIGHT2)
+#if defined(POINTLIGHT2)
 	shadow = computeShadowCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
-	#else
+#else
 	shadow = computeShadow(vPositionFromLight2, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
-	#endif
+#endif
 #endif	
 #endif	
 #else
@@ -637,30 +627,30 @@ void main(void) {
 	vec3 vLightSpecular3 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT3
-	info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, glossiness, bumpColor);
+	info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, glossiness);
 #endif
 #ifdef HEMILIGHT3
-	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, glossiness, bumpColor);
+	info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, glossiness);
 #endif
 #if defined(POINTLIGHT3) || defined(DIRLIGHT3)
-	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, glossiness, bumpColor);
+	info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, glossiness);
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
-		shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
+	shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
 #else
 #ifdef SHADOWPCF3
 #if defined(POINTLIGHT3)
-	shadow = computeShadowWithPCFCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x, shadowsInfo3.y);
+	shadow = computeShadowWithPCFCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 #endif
 #else
-	#if defined(POINTLIGHT3)
+#if defined(POINTLIGHT3)
 	shadow = computeShadowCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
-	#else
+#else
 	shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
-	#endif
+#endif
 #endif	
 #endif	
 #else
@@ -691,6 +681,6 @@ void main(void) {
 	float fog = CalcFogFactor();
 	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
 #endif
-	
+
 	gl_FragColor = color;
 }

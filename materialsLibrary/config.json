@@ -65,6 +65,14 @@
         "materials/terrain/terrain.fragment.fx"
       ],
       "output": "babylon.terrainMaterial.js"
+    },
+    {
+      "file": "materials/triPlanar/babylon.triPlanarMaterial.ts",
+      "shaderFiles": [
+        "materials/triPlanar/triplanar.vertex.fx",
+        "materials/triPlanar/triplanar.fragment.fx"
+      ],
+      "output": "babylon.triPlanarMaterial.js"
     }
   ],
   "build": {

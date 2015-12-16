@@ -353,7 +353,7 @@ module BABYLON {
                         "vDiffuseInfos", 
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3"
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -420,6 +420,7 @@ module BABYLON {
 
             if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
+                var depthValuesAlreadySet = false;
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];
 
@@ -452,7 +453,14 @@ module BABYLON {
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh.receiveShadows && shadowGenerator) {
-                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            if (!(<any>light).needCube()) {
+                                this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            } else {
+                                if (!depthValuesAlreadySet) {
+                                    depthValuesAlreadySet = true;
+                                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                                }
+                            }
                             this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
                             this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                         }
