@@ -29,6 +29,8 @@
         private _bias = 0.00005;
         private _lightDirection = Vector3.Zero();
 
+        public forceBackFacesOnly = false;
+
         public get bias(): number {
             return this._bias;
         }
@@ -208,9 +210,17 @@
                         this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
 
+                    if (this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, true);
+                    }
+
                     // Draw
                     mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                         (isInstance, world) => this._effect.setMatrix("world", world));
+
+                    if (this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, false);
+                    }
                 } else {
                     // Need to reset refresh rate of the shadowMap
                     this._shadowMap.resetRefreshCounter();
@@ -408,6 +418,7 @@
             serializationObject.mapSize = this.getShadowMap().getRenderSize();
             serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
+            serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
 
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
@@ -449,6 +460,8 @@
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
             }
+
+            shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;
 
             return shadowGenerator;
         }
