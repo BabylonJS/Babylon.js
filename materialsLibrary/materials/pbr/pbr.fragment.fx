@@ -436,16 +436,18 @@ float unpack(vec4 color)
 }
 
 #if defined(POINTLIGHT0) || defined(POINTLIGHT1) || defined(POINTLIGHT2) || defined(POINTLIGHT3)
+uniform vec2 depthValues;
+
 float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float bias)
 {
-    vec3 directionToLight = vPositionW - lightPosition;
-    float depth = length(directionToLight);
+	vec3 directionToLight = vPositionW - lightPosition;
+	float depth = length(directionToLight);
+	depth = clamp(depth, 0., 1.0);
 
-    depth = clamp(depth, 0., 1.);
+	directionToLight = normalize(directionToLight);
+	directionToLight.y = - directionToLight.y;
 
-    directionToLight.y = 1.0 - directionToLight.y;
-
-    float shadow = unpack(textureCube(shadowSampler, directionToLight)) + bias;
+	float shadow = unpack(textureCube(shadowSampler, directionToLight)) + bias;
 
     if (depth > shadow)
     {
@@ -460,13 +462,14 @@ float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float dar
 
 float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float bias, float darkness)
 {
-    vec3 directionToLight = vPositionW - lightPosition;
-    float depth = length(directionToLight);
-    float diskScale = (1.0 - (1.0 + depth * 3.0)) / mapSize;
+	vec3 directionToLight = vPositionW - lightPosition;
+	float depth = length(directionToLight);
 
-    depth = clamp(depth, 0., 1.);
+	depth = clamp(depth, 0., 1.0);
+	float diskScale = 2.0 / mapSize;
 
-    directionToLight.y = 1.0 - directionToLight.y;
+	directionToLight = normalize(directionToLight);
+	directionToLight.y = -directionToLight.y;
 
     float visibility = 1.;
 
