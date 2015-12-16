@@ -314,6 +314,7 @@ module BABYLON {
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
             var lightIndex = 0;
+            var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
 
@@ -357,6 +358,11 @@ module BABYLON {
                     if (mesh.receiveShadows && shadowGenerator) {
                         if (!(<any>light).needCube()) {
                             effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                        } else {
+                            if (!depthValuesAlreadySet) {
+                                depthValuesAlreadySet = true;
+                                effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                            }
                         }
                         effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
                         effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
@@ -750,7 +756,7 @@ module BABYLON {
                         "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vBumpInfos", "vLightmapInfos",
                         "mBones",
                         "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "bumpMatrix", "lightmapMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
                         "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vCameraInfos", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
                         "logarithmicDepthConstant"

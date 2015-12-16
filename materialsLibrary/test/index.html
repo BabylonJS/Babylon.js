@@ -66,6 +66,7 @@
 
 			var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 6, 50, BABYLON.Vector3.Zero(), scene);
 			camera.attachControl(canvas, true);
+			camera.minZ = 0.1;
 
 			// Lights
 			var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
@@ -77,7 +78,7 @@
 			spotLight.setEnabled(false);
 
 			// Create meshes
-			var sphere = BABYLON.Mesh.CreateSphere("sphere", 32, 30.0, scene);
+			var sphere = BABYLON.Mesh.CreateSphere("sphere", 48, 30.0, scene);
 			
 			var plane = BABYLON.MeshBuilder.CreateBox("plane", { width: 30, height: 1, depth:30 }, scene);
 			plane.setEnabled(false);
@@ -137,7 +138,8 @@
 				
 				var shadowGenerator3 = new BABYLON.ShadowGenerator(1024, pointLight);
 				shadowGenerator3.getShadowMap().renderList.push(shadowCaster3);
-				shadowGenerator3.usePoissonSampling = true;
+				shadowGenerator3.usePoissonSampling = false;
+				shadowGenerator3.bias = 0;
 
 				// Register a render loop to repeatedly render the scene
 				engine.runRenderLoop(function () {
