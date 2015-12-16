@@ -424,6 +424,7 @@ var BABYLON;
                     case Animation.ANIMATIONTYPE_QUATERNION:
                     case Animation.ANIMATIONTYPE_MATRIX:
                     case Animation.ANIMATIONTYPE_VECTOR3:
+                    case Animation.ANIMATIONTYPE_COLOR3:
                         key.values = animationKey.value.asArray();
                         break;
                 }
@@ -510,6 +511,9 @@ var BABYLON;
                         break;
                     case Animation.ANIMATIONTYPE_MATRIX:
                         data = BABYLON.Matrix.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        data = BABYLON.Color3.FromArray(key.values);
                         break;
                     case Animation.ANIMATIONTYPE_VECTOR3:
                     default:

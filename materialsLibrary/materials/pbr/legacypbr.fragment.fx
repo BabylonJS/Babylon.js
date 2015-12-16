@@ -6,7 +6,7 @@
 
 uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
-uniform vec4 vDiffuseColor;
+uniform vec4 vAlbedoColor;
 uniform vec3 vReflectionColor;
 
 // CUSTOM CONTROLS
@@ -16,11 +16,11 @@ uniform vec4 vCameraInfos;
 #ifdef OVERLOADEDVALUES
 uniform vec4 vOverloadedIntensity;
 uniform vec3 vOverloadedAmbient;
-uniform vec3 vOverloadedDiffuse;
-uniform vec3 vOverloadedSpecular;
+uniform vec3 vOverloadedAlbedo;
+uniform vec3 vOverloadedReflectivity;
 uniform vec3 vOverloadedEmissive;
 uniform vec3 vOverloadedReflection;
-uniform vec3 vOverloadedGlossiness;
+uniform vec3 vOverloadedMicroSurface;
 #endif
 
 #ifdef OVERLOADEDSHADOWVALUES
@@ -113,17 +113,17 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
     return diffuseFresnelTerm * NdotL;
 }
 
-float computeDefaultGlossiness(float glossiness, vec3 specularColor)
+float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
 {
-    if (glossiness == 0.)
+    if (microSurface == 0.)
     {
-        float kSpecularNoAlphaWorkflow_SmoothnessMax = 0.95;
+        float kReflectivityNoAlphaWorkflow_SmoothnessMax = 0.95;
 
-        float specularLuminance = getLuminance(specularColor);
-        float specularLuma = sqrt(specularLuminance);
-        glossiness = specularLuma * kSpecularNoAlphaWorkflow_SmoothnessMax;
+        float reflectivityLuminance = getLuminance(reflectivityColor);
+        float reflectivityLuma = sqrt(reflectivityLuminance);
+        microSurface = reflectivityLuma * kReflectivityNoAlphaWorkflow_SmoothnessMax;
     }
-    return glossiness;
+    return microSurface;
 }
 
 vec3 toLinearSpace(vec3 color)
@@ -174,9 +174,7 @@ vec3 toGammaSpace(vec3 color)
 #endif
 // END PBR HELPER METHODS
 
-#ifdef SPECULARTERM
-uniform vec4 vSpecularColor;
-#endif
+uniform vec4 vReflectivityColor;
 uniform vec3 vEmissiveColor;
 
 // Input
@@ -284,10 +282,10 @@ uniform vec3 vLightGround3;
 #endif
 
 // Samplers
-#ifdef DIFFUSE
-varying vec2 vDiffuseUV;
-uniform sampler2D diffuseSampler;
-uniform vec2 vDiffuseInfos;
+#ifdef ALBEDO
+varying vec2 vAlbedoUV;
+uniform sampler2D albedoSampler;
+uniform vec2 vAlbedoInfos;
 #endif
 
 #ifdef AMBIENT
@@ -314,10 +312,10 @@ uniform vec2 vLightmapInfos;
 uniform sampler2D lightmapSampler;
 #endif
 
-#if defined(SPECULAR) && defined(SPECULARTERM)
-varying vec2 vSpecularUV;
-uniform vec2 vSpecularInfos;
-uniform sampler2D specularSampler;
+#if defined(REFLECTIVITY)
+varying vec2 vReflectivityUV;
+uniform vec2 vReflectivityInfos;
+uniform sampler2D reflectivitySampler;
 #endif
 
 #ifdef CLIPPLANE
@@ -446,13 +444,13 @@ void main(void) {
 
     // Base color
     vec4 baseColor = vec4(1., 1., 1., 1.);
-    vec3 diffuseColor = vDiffuseColor.rgb;
+    vec3 diffuseColor = vAlbedoColor.rgb;
     
     // Alpha
-    float alpha = vDiffuseColor.a;
+    float alpha = vAlbedoColor.a;
 
-#ifdef DIFFUSE
-    baseColor = texture2D(diffuseSampler, vDiffuseUV);
+#ifdef ALBEDO
+    baseColor = texture2D(diffuseSampler, vAlbedoUV);
     baseColor = vec4(toLinearSpace(baseColor.rgb), baseColor.a);
 
 #ifdef ALPHATEST
@@ -460,11 +458,11 @@ void main(void) {
         discard;
 #endif
 
-#ifdef ALPHAFROMDIFFUSE
+#ifdef ALPHAFROMALBEDO
     alpha *= baseColor.a;
 #endif
 
-    baseColor.rgb *= vDiffuseInfos.y;
+    baseColor.rgb *= vAlbedoInfos.y;
 #endif
 
 #ifdef VERTEXCOLOR
@@ -472,8 +470,8 @@ void main(void) {
 #endif
 
 #ifdef OVERLOADEDVALUES
-    baseColor.rgb = mix(baseColor.rgb, vOverloadedDiffuse, vOverloadedIntensity.y);
-    diffuseColor.rgb = mix(diffuseColor.rgb, vOverloadedDiffuse, vOverloadedIntensity.y);
+    baseColor.rgb = mix(baseColor.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
+    albedoColor.rgb = mix(albedoColor.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
 #endif
 
     // Bump
@@ -493,57 +491,45 @@ void main(void) {
     #endif
 #endif
 
-    // Specular map
-#ifdef SPECULARTERM
-    float glossiness = vSpecularColor.a;
-    vec3 specularColor = vSpecularColor.rgb;
+    // Reflectivity map
+    float microSurface = vReflectivityColor.a;
+    vec3 reflectivityColor = vReflectivityColor.rgb;
 
     #ifdef OVERLOADEDVALUES
-        specularColor.rgb = mix(specularColor.rgb, vOverloadedSpecular, vOverloadedIntensity.z);
+        reflectivityColor.rgb = mix(reflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
     #endif
 
-    #ifdef SPECULAR
-            vec4 specularMapColor = texture2D(specularSampler, vSpecularUV);
-            specularColor = toLinearSpace(specularMapColor.rgb);
+    #ifdef REFLECTIVITY
+            vec4 reflectivityMapColor = texture2D(reflectivitySampler, vReflectivityUV);
+            reflectivityColor = toLinearSpace(reflectivityMapColor.rgb);
 
         #ifdef OVERLOADEDVALUES
-                specularColor.rgb = mix(specularColor.rgb, vOverloadedSpecular, vOverloadedIntensity.z);
+                reflectivityColor.rgb = mix(reflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
         #endif
 
-        #ifdef GLOSSINESSFROMSPECULARMAP
-            glossiness = specularMapColor.a;
+        #ifdef MICROSURFACEFROMREFLECTIVITYMAP
+            microSurface = reflectivityMapColor.a;
         #else
-            glossiness = computeDefaultGlossiness(glossiness, specularColor);
+            microSurface = computeDefaultMicroSurface(microSurface, reflectivityColor);
         #endif
     #endif
 
     #ifdef OVERLOADEDVALUES
-        glossiness = mix(glossiness, vOverloadedGlossiness.x, vOverloadedGlossiness.y);
+        microSurface = mix(microSurface, vOverloadedMicroSurface.x, vOverloadedMicroSurface.y);
     #endif
-#else
-    float glossiness = 0.;
-    #ifdef OVERLOADEDVALUES
-        glossiness = mix(glossiness, vOverloadedGlossiness.x, vOverloadedGlossiness.y);
-    #endif
-
-    vec3 specularColor = vec3(0., 0., 0);
-    #ifdef OVERLOADEDVALUES
-            specularColor.rgb = mix(specularColor.rgb, vOverloadedSpecular, vOverloadedIntensity.z);
-    #endif
-#endif
 
     // Apply Energy Conservation taking in account the environment level only if the environment is present.
-    float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
+    float reflectance = max(max(reflectivityColor.r, reflectivityColor.g), reflectivityColor.b);
     baseColor.rgb = (1. - reflectance) * baseColor.rgb;
 
     // Compute Specular Fresnel + Reflectance.
     float NdotV = max(0.00000000001, dot(normalW, viewDirectionW));
 
-    // Adapt glossiness.
-    glossiness = clamp(glossiness, 0., 1.) * 0.98;
+    // Adapt microSurface.
+    microSurface = clamp(microSurface, 0., 1.) * 0.98;
 
     // Call rough to not conflict with previous one.
-    float rough = clamp(1. - glossiness, 0.000001, 1.0);
+    float rough = clamp(1. - microSurface, 0.000001, 1.0);
 
     // Lighting
     vec3 diffuseBase = vec3(0., 0., 0.);
@@ -664,15 +650,15 @@ vec3 ambientReflectionColor = vReflectionColor.rgb;
 reflectionColor *= vLightingIntensity.z;
 ambientReflectionColor *= vLightingIntensity.z;
 
-// Compute reflection specular fresnel
-vec3 specularEnvironmentR0 = specularColor.rgb;
-vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
-vec3 specularEnvironmentReflectanceViewer = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), specularEnvironmentR0, specularEnvironmentR90, sqrt(glossiness));
-reflectionColor *= specularEnvironmentReflectanceViewer;
+// Compute reflection reflectivity fresnel
+vec3 reflectivityEnvironmentR0 = reflectivityColor.rgb;
+vec3 reflectivityEnvironmentR90 = vec3(1.0, 1.0, 1.0);
+vec3 reflectivityEnvironmentReflectanceViewer = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), reflectivityEnvironmentR0, reflectivityEnvironmentR90, sqrt(microSurface));
+reflectionColor *= reflectivityEnvironmentReflectanceViewer;
 
 #ifdef OVERLOADEDVALUES
-    ambientReflectionColor = mix(ambientReflectionColor, vOverloadedReflection, vOverloadedGlossiness.z);
-    reflectionColor = mix(reflectionColor, vOverloadedReflection, vOverloadedGlossiness.z);
+    ambientReflectionColor = mix(ambientReflectionColor, vOverloadedReflection, vOverloadedMicroSurface.z);
+    reflectionColor = mix(reflectionColor, vOverloadedReflection, vOverloadedMicroSurface.z);
 #endif
 
 #ifdef OPACITY
@@ -704,21 +690,21 @@ reflectionColor *= specularEnvironmentReflectanceViewer;
 
     // Composition
 #ifdef EMISSIVEASILLUMINATION
-    vec3 finalDiffuse = max(diffuseBase * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+    vec3 finalDiffuse = max(diffuseBase * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
 
     #ifdef OVERLOADEDSHADOWVALUES
-        shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+        shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
     #endif
 #else
-    #ifdef LINKEMISSIVEWITHDIFFUSE
-        vec3 finalDiffuse = max((diffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+    #ifdef LINKEMISSIVEWITHALBEDO
+        vec3 finalDiffuse = max((diffuseBase + emissiveColor) * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
         #ifdef OVERLOADEDSHADOWVALUES
-                shadowedOnlyDiffuseBase = max((shadowedOnlyDiffuseBase + emissiveColor) * diffuseColor + vAmbientColor, 0.0) * baseColor.rgb;
+                shadowedOnlyDiffuseBase = max((shadowedOnlyDiffuseBase + emissiveColor) * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
         #endif
     #else
-        vec3 finalDiffuse = max(diffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+        vec3 finalDiffuse = max(diffuseBase * albedoColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
         #ifdef OVERLOADEDSHADOWVALUES
-            shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * diffuseColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+            shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * albedoColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
         #endif
     #endif
 #endif
@@ -732,7 +718,7 @@ reflectionColor *= specularEnvironmentReflectanceViewer;
 finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
 
 #ifdef SPECULARTERM
-    vec3 finalSpecular = specularBase * specularColor;
+    vec3 finalSpecular = specularBase * reflectivityColor * vLightingIntensity.w;
 #else
     vec3 finalSpecular = vec3(0.0);
 #endif

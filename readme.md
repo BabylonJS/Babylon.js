@@ -35,7 +35,7 @@ You can help by testing or contributing to the next version.
  - FBX command line [exporter](https://github.com/BabylonJS/Babylon.js/tree/master/Exporters/FBX) can be used to generate a .babylon file from .FBX file (animations are supported)
 
 ## Features
-To get a complete list of supported features, please visit our [website](babylonjs.com/#specifications).
+To get a complete list of supported features, please visit our [website](http://www.babylonjs.com/#specifications).
 
 ## Apache License 2.0 (Apache)
 

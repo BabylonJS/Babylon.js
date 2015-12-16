@@ -96,7 +96,7 @@
         indices: string;
         material: string;
 
-        primitive?: number;
+        mode?: number;
     }
 
     export interface IGLTFMesh extends IGLTFChildRootProperty {
@@ -206,6 +206,8 @@
         bindShapeMatrix: number[];
         inverseBindMatrices: string;
         jointNames: string[];
+
+        babylonSkeleton?: Skeleton;
     }
 
     export interface IGLTFNode extends IGLTFChildRootProperty {
@@ -220,6 +222,9 @@
         rotation?: number[];
         scale?: number[];
         translation?: number[];
+
+        // Babylon.js values (optimize)
+        babylonNode?: Node;
     }
 
     export interface IGLTFScene extends IGLTFChildRootProperty {
@@ -258,6 +263,7 @@
         arrayBuffers: Object;
 
         importOnlyMeshes: boolean;
+        importMeshesNames?: string[];
 
         dummyNodes: Node[];
     }

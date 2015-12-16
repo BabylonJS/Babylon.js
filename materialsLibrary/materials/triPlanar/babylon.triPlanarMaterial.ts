@@ -3,8 +3,15 @@
 module BABYLON {
     var maxSimultaneousLights = 4;
 
-    class SimpleMaterialDefines extends MaterialDefines {
-        public DIFFUSE = false;
+    class TriPlanarMaterialDefines extends MaterialDefines {
+        public DIFFUSEX = false;
+        public DIFFUSEY = false;
+        public DIFFUSEZ = false;
+        
+        public BUMPX = false;
+        public BUMPY = false;
+        public BUMPZ = false;
+        
         public CLIPPLANE = false;
         public ALPHATEST = false;
         public POINTSIZE = false;
@@ -42,9 +49,8 @@ module BABYLON {
         public SHADOWPCF1 = false;
         public SHADOWPCF2 = false;
         public SHADOWPCF3 = false;
+        public SPECULARTERM = false;
         public NORMAL = false;
-        public UV1 = false;
-        public UV2 = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
         public BONES = false;
@@ -58,18 +64,31 @@ module BABYLON {
         }
     }
 
-    export class SimpleMaterial extends Material {
-        public diffuseTexture: BaseTexture;
-
+    export class TriPlanarMaterial extends Material {
+        public mixTexture: BaseTexture;
+        
+        public diffuseTextureX: Texture;
+        public diffuseTextureY: Texture;
+        public diffuseTextureZ: Texture;
+        
+        public normalTextureX: Texture;
+        public normalTextureY: Texture;
+        public normalTextureZ: Texture;
+        
+        public tileSize: number = 1;
+        
         public diffuseColor = new Color3(1, 1, 1);
+        public specularColor = new Color3(0.2, 0.2, 0.2);
+        public specularPower = 64;
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3();
+        private _scaledSpecular = new Color3();
         private _renderId: number;
 
-        private _defines = new SimpleMaterialDefines();
-        private _cachedDefines = new SimpleMaterialDefines();
+        private _defines = new TriPlanarMaterialDefines();
+        private _cachedDefines = new TriPlanarMaterialDefines();
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -125,20 +144,39 @@ module BABYLON {
 
             var engine = scene.getEngine();
             var needNormals = false;
-            var needUVs = false;
 
             this._defines.reset();
 
             // Textures
             if (scene.texturesEnabled) {
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    if (!this.diffuseTexture.isReady()) {
-                        return false;
-                    } else {
-                        needUVs = true;
-                        this._defines.DIFFUSE = true;
+                if (StandardMaterial.DiffuseTextureEnabled) {
+                    var textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
+                    var textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
+                    
+                    for (var i=0; i < textures.length; i++) {
+                        if (textures[i]) {
+                            if (!textures[i].isReady()) {
+                                return false;
+                            } else {
+                                this._defines[textureDefines[i]] = true;
+                            }
+                        }
                     }
-                }                
+                }
+                if (StandardMaterial.BumpTextureEnabled) {
+                    var textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
+                    var textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
+                    
+                    for (var i=0; i < textures.length; i++) {
+                        if (textures[i]) {
+                            if (!textures[i].isReady()) {
+                                return false;
+                            } else {
+                                this._defines[textureDefines[i]] = true;
+                            }
+                        }
+                    }
+                }
             }
 
             // Effect
@@ -213,6 +251,11 @@ module BABYLON {
                     }
 
                     this._defines[type] = true;
+                    
+                    // Specular
+                    if (!light.specular.equalsFloats(0, 0, 0)) {
+                        this._defines.SPECULARTERM = true;
+                    }
 
                     // Shadows
                     if (scene.shadowsEnabled) {
@@ -242,14 +285,6 @@ module BABYLON {
             if (mesh) {
                 if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                     this._defines.NORMAL = true;
-                }
-                if (needUVs) {
-                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                        this._defines.UV1 = true;
-                    }
-                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                        this._defines.UV2 = true;
-                    }
                 }
                 if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                     this._defines.VERTEXCOLOR = true;
@@ -315,14 +350,6 @@ module BABYLON {
                     attribs.push(VertexBuffer.NormalKind);
                 }
 
-                if (this._defines.UV1) {
-                    attribs.push(VertexBuffer.UVKind);
-                }
-
-                if (this._defines.UV2) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                }
-
                 if (this._defines.VERTEXCOLOR) {
                     attribs.push(VertexBuffer.ColorKind);
                 }
@@ -340,22 +367,23 @@ module BABYLON {
                 }
 
                 // Legacy browser patch
-                var shaderName = "simple";
+                var shaderName = "triplanar";
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
+                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                         "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
                         "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
                         "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                         "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                         "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", 
                         "mBones",
-                        "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues"
+                        "vClipPlane",
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
+                        "tileSize"
                     ],
-                    ["diffuseSampler",
+                    ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",
+                        "normalSamplerX", "normalSamplerY", "normalSamplerZ",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                     ],
                     join, fallbacks, this.onCompiled, this.onError);
@@ -369,7 +397,7 @@ module BABYLON {
 
             if (mesh) {
                 if (!mesh._materialDefines) {
-                    mesh._materialDefines = new SimpleMaterialDefines();
+                    mesh._materialDefines = new TriPlanarMaterialDefines();
                 }
 
                 this._defines.cloneTo(mesh._materialDefines);
@@ -393,14 +421,28 @@ module BABYLON {
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                 this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
             }
+            
+            this._effect.setFloat("tileSize", this.tileSize);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
-                if (this.diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                    this._effect.setTexture("diffuseSampler", this.diffuseTexture);
-
-                    this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
-                    this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
+                if (this.diffuseTextureX) {
+                    this._effect.setTexture("diffuseSamplerX", this.diffuseTextureX);
+                }
+                if (this.diffuseTextureY) {
+                    this._effect.setTexture("diffuseSamplerY", this.diffuseTextureY);
+                }
+                if (this.diffuseTextureZ) {
+                    this._effect.setTexture("diffuseSamplerZ", this.diffuseTextureZ);
+                }
+                if (this.normalTextureX) {
+                    this._effect.setTexture("normalSamplerX", this.normalTextureX);
+                }
+                if (this.normalTextureY) {
+                    this._effect.setTexture("normalSamplerY", this.normalTextureY);
+                }
+                if (this.normalTextureZ) {
+                    this._effect.setTexture("normalSamplerZ", this.normalTextureZ);
                 }
                 // Clip plane
                 if (scene.clipPlane) {
@@ -417,10 +459,13 @@ module BABYLON {
             }
 
             this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            
+            if (this._defines.SPECULARTERM) {
+                this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
+            }
 
             if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
-                var depthValuesAlreadySet = false;
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];
 
@@ -448,19 +493,17 @@ module BABYLON {
 
                     light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
                     this._effect.setColor4("vLightDiffuse" + lightIndex, this._scaledDiffuse, light.range);
+                    
+                    if (this._defines.SPECULARTERM) {
+                        light.specular.scaleToRef(light.intensity, this._scaledSpecular);
+                        this._effect.setColor3("vLightSpecular" + lightIndex, this._scaledSpecular);
+                    }
 
                     // Shadows
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh.receiveShadows && shadowGenerator) {
-                            if (!(<any>light).needCube()) {
-                                this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                            } else {
-                                if (!depthValuesAlreadySet) {
-                                    depthValuesAlreadySet = true;
-                                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                                }
-                            }
+                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
                             this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
                             this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                         }
@@ -490,53 +533,66 @@ module BABYLON {
         public getAnimatables(): IAnimatable[] {
             var results = [];
 
-            if (this.diffuseTexture && this.diffuseTexture.animations && this.diffuseTexture.animations.length > 0) {
-                results.push(this.diffuseTexture);
+            if (this.mixTexture && this.mixTexture.animations && this.mixTexture.animations.length > 0) {
+                results.push(this.mixTexture);
             }
 
             return results;
         }
 
         public dispose(forceDisposeEffect?: boolean): void {
-            if (this.diffuseTexture) {
-                this.diffuseTexture.dispose();
+            if (this.mixTexture) {
+                this.mixTexture.dispose();
             }
 
             super.dispose(forceDisposeEffect);
         }
 
-        public clone(name: string): SimpleMaterial {
-            var newMaterial = new SimpleMaterial(name, this.getScene());
+        public clone(name: string): TriPlanarMaterial {
+            var newMaterial = new TriPlanarMaterial(name, this.getScene());
 
             // Base material
             this.copyTo(newMaterial);
 
             // Simple material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
+            if (this.mixTexture && this.mixTexture.clone) {
+                newMaterial.mixTexture = this.mixTexture.clone();
             }
 
             newMaterial.diffuseColor = this.diffuseColor.clone();
             return newMaterial;
         }
-        
-        public serialize(): any {		
+		
+		public serialize(): any {
+		
             var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.SimpleMaterial";
+            serializationObject.customType      = "BABYLON.TerrainMaterial";
             serializationObject.diffuseColor    = this.diffuseColor.asArray();
+			serializationObject.specularColor   = this.specularColor.asArray();
+            serializationObject.specularPower   = this.specularPower;
             serializationObject.disableLighting = this.disableLighting;
-            
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+
+            if (this.diffuseTextureX) {
+                serializationObject.diffuseTextureX = this.diffuseTextureX.serialize();
+            }
+			
+			if (this.diffuseTextureY) {
+                serializationObject.diffuseTextureY = this.diffuseTextureY.serialize();
+            }
+			
+			if (this.diffuseTextureZ) {
+                serializationObject.diffuseTextureZ = this.diffuseTextureZ.serialize();
             }
 
             return serializationObject;
         }
 
-        public static Parse(source: any, scene: Scene, rootUrl: string): SimpleMaterial {
-            var material = new SimpleMaterial(source.name, scene);
+        public static Parse(source: any, scene: Scene, rootUrl: string): TriPlanarMaterial {
+            var material = new TriPlanarMaterial(source.name, scene);
 
-            material.diffuseColor       = Color3.FromArray(source.diffuseColor);
+            material.diffuseColor   = Color3.FromArray(source.diffuseColor);
+			material.specularColor   = Color3.FromArray(source.specularColor);
+            material.specularPower          = source.specularPower;
             material.disableLighting    = source.disableLighting;
 
             material.alpha          = source.alpha;
@@ -547,12 +603,16 @@ module BABYLON {
             material.backFaceCulling = source.backFaceCulling;
             material.wireframe = source.wireframe;
 
-            if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            if (source.diffuseTextureX) {
+                material.diffuseTextureX = <Texture>Texture.Parse(source.diffuseTextureX, scene, rootUrl);
+            }
+			
+			if (source.diffuseTextureY) {
+                material.diffuseTextureY = <Texture>Texture.Parse(source.diffuseTextureY, scene, rootUrl);
             }
 
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+			if (source.diffuseTextureZ) {
+                material.diffuseTextureZ = <Texture>Texture.Parse(source.diffuseTextureZ, scene, rootUrl);
             }
 
             return material;

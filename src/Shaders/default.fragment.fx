@@ -287,14 +287,17 @@ float unpack(vec4 color)
 }
 
 #if defined(POINTLIGHT0) || defined(POINTLIGHT1) || defined(POINTLIGHT2) || defined(POINTLIGHT3)
+uniform vec2 depthValues;
+
 float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float bias)
 {
 	vec3 directionToLight = vPositionW - lightPosition;
 	float depth = length(directionToLight);
+	depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+	depth = clamp(depth, 0., 1.0);
 
-	depth = clamp(depth, 0., 1.);
-
-	directionToLight.y = 1.0 - directionToLight.y;
+	directionToLight = normalize(directionToLight);
+	directionToLight.y = - directionToLight.y;
 
 	float shadow = unpack(textureCube(shadowSampler, directionToLight)) + bias;
 
