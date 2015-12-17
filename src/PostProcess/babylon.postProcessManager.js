@@ -80,7 +80,7 @@ var BABYLON;
             var engine = this._scene.getEngine();
             for (var index = 0; index < postProcessesTakenIndices.length; index++) {
                 if (index < postProcessesTakenIndices.length - 1) {
-                    postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
+                    postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera, targetTexture);
                 }
                 else {
                     if (targetTexture) {
