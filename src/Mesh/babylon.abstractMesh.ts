@@ -74,7 +74,7 @@
         public _physicsMass: number;
         public _physicsFriction: number;
         public _physicRestitution: number;
-        public onPhysicsCollide: (collidedMesh: AbstractMesh) => void; 
+        public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void; 
 
         // Collisions
         private _checkCollisions = false;
