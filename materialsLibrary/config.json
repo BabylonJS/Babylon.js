@@ -51,15 +51,32 @@
       "output": "babylon.fireMaterial.js"
     },
     {
+      "file": "materials/fur/babylon.furMaterial.ts",
+      "shaderFiles": [
+        "materials/fur/fur.vertex.fx",
+        "materials/fur/fur.fragment.fx"
+      ],
+      "output": "babylon.furMaterial.js"
+    },
+    {
       "file": "materials/terrain/babylon.terrainMaterial.ts",
       "shaderFiles": [
         "materials/terrain/terrain.vertex.fx",
         "materials/terrain/terrain.fragment.fx"
       ],
       "output": "babylon.terrainMaterial.js"
+    },
+    {
+      "file": "materials/triPlanar/babylon.triPlanarMaterial.ts",
+      "shaderFiles": [
+        "materials/triPlanar/triplanar.vertex.fx",
+        "materials/triPlanar/triplanar.fragment.fx"
+      ],
+      "output": "babylon.triPlanarMaterial.js"
     }
   ],
   "build": {
-    "distOutputDirectory": "dist/"
+    "distOutputDirectory": "dist/",
+    "dtsOutputDirectory": "dist/dts/"
   }
 }

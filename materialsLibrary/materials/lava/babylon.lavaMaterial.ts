@@ -28,7 +28,7 @@ module BABYLON {
         public POINTLIGHT0 = false;
         public POINTLIGHT1 = false;
         public POINTLIGHT2 = false;
-        public POINTLIGHT3 = false;        
+        public POINTLIGHT3 = false;
         public SHADOW0 = false;
         public SHADOW1 = false;
         public SHADOW2 = false;
@@ -47,8 +47,7 @@ module BABYLON {
         public UV2 = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public BONES = false;
-        public BONES4 = false;
+        public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
 
@@ -63,6 +62,9 @@ module BABYLON {
         public noiseTexture: BaseTexture;
         public fogColor: Color3;
         public speed : number = 1;
+        public movingSpeed : number = 1;
+        public lowFrequencySpeed : number = 1;
+        public fogDensity : number = 0.15;
 
         private _lastTime : number = 0;
 
@@ -143,7 +145,7 @@ module BABYLON {
                         needUVs = true;
                         this._defines.DIFFUSE = true;
                     }
-                }                
+                }
             }
 
             // Effect
@@ -263,10 +265,10 @@ module BABYLON {
                         this._defines.VERTEXALPHA = true;
                     }
                 }
+
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.BONES = true;
+                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                    this._defines.BONES4 = true;
                 }
 
                 // Instances
@@ -282,7 +284,7 @@ module BABYLON {
                 scene.resetCachedMaterial();
 
                 // Fallbacks
-                var fallbacks = new EffectFallbacks();             
+                var fallbacks = new EffectFallbacks();
                 if (this._defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
@@ -308,9 +310,9 @@ module BABYLON {
                         fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
                     }
                 }
-             
-                if (this._defines.BONES4) {
-                    fallbacks.addFallback(0, "BONES4");
+
+                if (this._defines.NUM_BONE_INFLUENCERS > 0){
+                    fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
@@ -332,9 +334,13 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.BONES) {
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
                     attribs.push(VertexBuffer.MatricesIndicesKind);
                     attribs.push(VertexBuffer.MatricesWeightsKind);
+                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
+                        attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                        attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+                    }
                 }
 
                 if (this._defines.INSTANCES) {
@@ -355,10 +361,12 @@ module BABYLON {
                         "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                         "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                         "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", 
+                        "vDiffuseInfos",
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3","time", "speed", "fogColor"
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
+                        "time", "speed","movingSpeed",
+                        "fogColor","fogDensity", "lowFrequencySpeed"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3", "noiseTexture"
@@ -423,13 +431,14 @@ module BABYLON {
                     this._effect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
             }
 
             this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
 
             if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
+                var depthValuesAlreadySet = false;
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];
 
@@ -462,7 +471,14 @@ module BABYLON {
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh.receiveShadows && shadowGenerator) {
-                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            if (!(<any>light).needCube()) {
+                                this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            } else {
+                                if (!depthValuesAlreadySet) {
+                                    depthValuesAlreadySet = true;
+                                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                                }
+                            }
                             this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
                             this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                         }
@@ -494,6 +510,10 @@ module BABYLON {
                 this.fogColor = Color3.Black();
             }
             this._effect.setColor3("fogColor", this.fogColor);
+            this._effect.setFloat("fogDensity", this.fogDensity);
+
+            this._effect.setFloat("lowFrequencySpeed", this.lowFrequencySpeed);
+            this._effect.setFloat("movingSpeed", this.movingSpeed);
 
 
             super.bind(world, mesh);
@@ -543,6 +563,60 @@ module BABYLON {
 
             return newMaterial;
         }
+
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+            serializationObject.customType      = "BABYLON.LavaMaterial";
+            serializationObject.diffuseColor    = this.diffuseColor.asArray();
+            serializationObject.fogColor        = this.fogColor.asArray();
+            serializationObject.speed           = this.speed;
+            serializationObject.movingSpeed     = this.movingSpeed;
+            serializationObject.lowFrequencySpeed = this.lowFrequencySpeed;
+            serializationObject.fogDensity      = this.fogDensity;
+            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
+
+            if (this.diffuseTexture) {
+                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            }
+            if (this.noiseTexture) {
+                serializationObject.noiseTexture = this.noiseTexture.serialize();
+            }
+
+            return serializationObject;
+        }
+
+        public static Parse(source: any, scene: Scene, rootUrl: string): LavaMaterial {
+            var material = new LavaMaterial(source.name, scene);
+
+            material.diffuseColor   = Color3.FromArray(source.diffuseColor);
+            material.speed          = source.speed;
+            material.fogColor       = Color3.FromArray(source.fogColor);
+            material.movingSpeed    = source.movingSpeed;
+            material.lowFrequencySpeed = source.lowFrequencySpeed;
+            material.fogDensity     =  source.lowFrequencySpeed;
+
+            material.alpha          = source.alpha;
+
+            material.id             = source.id;
+
+            Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+
+            if (source.diffuseTexture) {
+                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            }
+
+            if (source.noiseTexture) {
+                material.noiseTexture = Texture.Parse(source.noiseTexture, scene, rootUrl);
+            }
+
+            if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+
+            return material;
+        }
     }
 } 
-

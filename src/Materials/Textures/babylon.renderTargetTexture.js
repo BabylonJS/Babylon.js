@@ -120,6 +120,9 @@ var BABYLON;
         };
         RenderTargetTexture.prototype.render = function (useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+            }
             if (this._waitingRenderList) {
                 this.renderList = [];
                 for (var index = 0; index < this._waitingRenderList.length; index++) {
@@ -162,6 +165,9 @@ var BABYLON;
             }
             if (this.onAfterUnbind) {
                 this.onAfterUnbind();
+            }
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
             scene.resetCachedMaterial();
         };
@@ -225,6 +231,18 @@ var BABYLON;
             newTexture.coordinatesMode = this.coordinatesMode;
             newTexture.renderList = this.renderList.slice(0);
             return newTexture;
+        };
+        RenderTargetTexture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.renderTargetSize = this.getRenderSize();
+            serializationObject.renderList = [];
+            for (var index = 0; index < this.renderList.length; index++) {
+                serializationObject.renderList.push(this.renderList[index].id);
+            }
+            return serializationObject;
         };
         RenderTargetTexture._REFRESHRATE_RENDER_ONCE = 0;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;

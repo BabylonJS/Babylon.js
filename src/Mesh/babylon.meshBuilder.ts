@@ -690,7 +690,8 @@
                 for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
                     var vertex = faceVertices[vIndex];
 
-                    vertexData.indices.push(currentVertexDataIndex);
+                    //TODO check for Int32Array
+                    (<number[]>vertexData.indices).push(currentVertexDataIndex);
                     vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
                     vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
                     (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);

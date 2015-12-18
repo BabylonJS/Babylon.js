@@ -11,6 +11,8 @@
     <script src="../dist/babylon.lavaMaterial.js"></script>
 	<script src="../dist/babylon.terrainMaterial.js"></script>
 	<script src="../dist/babylon.pbrMaterial.js"></script>
+	<script src="../dist/babylon.furMaterial.js"></script>
+	<script src="../dist/babylon.triPlanarMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -45,8 +47,14 @@
 	<canvas id="renderCanvas"></canvas>
 
 	<script src="index.js"></script>
-	<script src="add/addpbr.js"></script>
+    <script src="add/addpbr.js"></script>
+    <script src="add/addlava.js"></script>
+    <script src="add/addnormal.js"></script>
 	<script src="add/addwater.js"></script>
+	<script src="add/addfur.js"></script>
+	<script src="add/addterrain.js"></script>
+	<script src="add/addfire.js"></script>
+	<script src="add/addtriplanar.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -58,6 +66,7 @@
 
 			var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 6, 50, BABYLON.Vector3.Zero(), scene);
 			camera.attachControl(canvas, true);
+			camera.minZ = 0.1;
 
 			// Lights
 			var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
@@ -69,7 +78,7 @@
 			spotLight.setEnabled(false);
 
 			// Create meshes
-			var sphere = BABYLON.Mesh.CreateSphere("sphere", 32, 30.0, scene);
+			var sphere = BABYLON.Mesh.CreateSphere("sphere", 48, 30.0, scene);
 			
 			var plane = BABYLON.MeshBuilder.CreateBox("plane", { width: 30, height: 1, depth:30 }, scene);
 			plane.setEnabled(false);
@@ -80,6 +89,9 @@
 			
 			var knot = BABYLON.Mesh.CreateTorusKnot("knot", 10, 3, 128, 64, 2, 3, scene);
 			knot.setEnabled(false);
+			
+			var heightMap = BABYLON.Mesh.CreateGroundFromHeightMap("heightMap", "textures/heightMap.png", 100, 100, 100, 0, 10, scene, false);
+			heightMap.setEnabled(false);
 			
 			// Skybox
 			var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
@@ -126,7 +138,8 @@
 				
 				var shadowGenerator3 = new BABYLON.ShadowGenerator(1024, pointLight);
 				shadowGenerator3.getShadowMap().renderList.push(shadowCaster3);
-				shadowGenerator3.usePoissonSampling = true;
+				shadowGenerator3.usePoissonSampling = false;
+				shadowGenerator3.bias = 0;
 
 				// Register a render loop to repeatedly render the scene
 				engine.runRenderLoop(function () {
@@ -159,20 +172,16 @@
 				std.diffuseTexture.vScale = 5;
 
                 // Lava
-                var lava = new BABYLON.LavaMaterial("lava", scene);
-                lava.diffuseTexture = new BABYLON.Texture("textures/lava/lavatile.jpg", scene);
-                lava.diffuseTexture.uScale = 0.5;
-                lava.diffuseTexture.vScale = 0.5;
-				lava.noiseTexture = new BABYLON.Texture("textures/lava/cloud.png", scene);
-				lava.fogColor = BABYLON.Color3.Black();
-				lava.speed = 2.5;
+                var lava = prepareLava();
 
 				var simple = new BABYLON.SimpleMaterial("simple", scene);
 				simple.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
 				simple.diffuseTexture.uScale = 5;
 				simple.diffuseTexture.vScale = 5;
 
-				var normal = new BABYLON.NormalMaterial("normal", scene);
+				var normal = prepareNormal();
+				
+				var fur = prepareFur();
 				
 				var water = prepareWater();
 				water.addToRenderList(skybox);
@@ -180,35 +189,20 @@
 				water.addToRenderList(shadowCaster2);
 				water.addToRenderList(shadowCaster3);
 				
-				var fire = new BABYLON.FireMaterial("fire", scene);
-				fire.diffuseTexture = new BABYLON.Texture("textures/fire/diffuse.png", scene);
-				fire.distortionTexture = new BABYLON.Texture("textures/fire/distortion.png", scene);
-				fire.opacityTexture = new BABYLON.Texture("textures/fire/opacity.png", scene);
+				var fire = prepareFire();
 				
-				var terrain = new BABYLON.TerrainMaterial("terrain", scene);
-				terrain.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-				terrain.specularPower = 64;
-				terrain.mixTexture = new BABYLON.Texture("textures/mixMap.png", scene);
-				terrain.diffuseTexture1 = new BABYLON.Texture("textures/grass.png", scene);
-				terrain.diffuseTexture2 = new BABYLON.Texture("textures/rock.png", scene);
-				terrain.diffuseTexture3 = new BABYLON.Texture("textures/floor.png", scene);
-				
-				terrain.bumpTexture1 = new BABYLON.Texture("textures/grassn.png", scene);
-				terrain.bumpTexture2 = new BABYLON.Texture("textures/rockn.png", scene);
-				terrain.bumpTexture3 = new BABYLON.Texture("textures/floor_bump.png", scene);
-				
-				terrain.diffuseTexture1.uScale = terrain.diffuseTexture1.vScale = 10;
-				terrain.diffuseTexture2.uScale = terrain.diffuseTexture2.vScale = 10;
-				terrain.diffuseTexture3.uScale = terrain.diffuseTexture3.vScale = 10;
+				var terrain = prepareTerrain();
 				
 				var pbr = preparePBR();
-								
+				
+				var triPlanar = prepareTriPlanar();
+				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					
 					switch (options.material) {
@@ -234,7 +228,13 @@
 							break;
 						case "pbr":
 							currentMaterial = pbr;
-							break;													
+							break;
+						case "fur":
+							currentMaterial = fur;
+							break;
+						case "triPlanar":
+							currentMaterial = triPlanar;
+							break;
 						default:
 							currentMaterial = std;
 							break;
@@ -245,7 +245,7 @@
 					window.enableMaterial(options.material);
 				});
 
-				gui.add(options, 'mesh', ['sphere', 'knot', 'plane', 'ground', 'rabbit']).onFinishChange(function () {
+				gui.add(options, 'mesh', ['sphere', 'knot', 'plane', 'ground', 'heightMap', 'rabbit']).onFinishChange(function () {
 					currentMesh.setEnabled(false);
 					switch (options.mesh) {
 						case "sphere":
@@ -259,6 +259,9 @@
 							break;
 						case "ground":
 							currentMesh = ground;
+							break;
+						case "heightMap":
+							currentMesh = heightMap;
 							break;
 						case "rabbit":
 							currentMesh = rabbit;

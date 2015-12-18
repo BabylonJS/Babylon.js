@@ -156,7 +156,7 @@
         }
 
         public detachControl(element: HTMLElement): void {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
 
@@ -263,6 +263,16 @@
             } else {
                 this.position.addInPlace(this.cameraDirection);
             }
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.applyGravity = this.applyGravity;
+            serializationObject.ellipsoid = this.ellipsoid.asArray();
+
+            return serializationObject;
         }
     }
 } 

@@ -26,11 +26,11 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                if (typeof(this[prop]) === "number") {
+                if (typeof (this[prop]) === "number") {
                     this[prop] = 0;
-                
-                }else { 
-                    this[prop] = false; 
+
+                } else {
+                    this[prop] = false;
                 }
             }
         }
@@ -40,10 +40,10 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
-                if (typeof(this[prop]) === "number") {
-                    result += "#define "  + prop + " " + this[prop] + "\n";
-                
-                }else if (this[prop]) {
+                if (typeof (this[prop]) === "number") {
+                    result += "#define " + prop + " " + this[prop] + "\n";
+
+                } else if (this[prop]) {
                     result += "#define " + prop + "\n";
                 }
             }
@@ -265,6 +265,50 @@
             other.disableDepthWrite = this.disableDepthWrite;
             other.pointSize = this.pointSize;
             other.pointsCloud = this.pointsCloud;
+        }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.alpha = this.alpha;
+
+            serializationObject.id = this.id;
+            serializationObject.tags = Tags.GetTags(this);
+            serializationObject.backFaceCulling = this.backFaceCulling;
+            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
+            serializationObject.disableDepthWrite = this.disableDepthWrite;
+
+            return serializationObject;
+        }
+
+        public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
+            var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
+
+            multiMaterial.id = parsedMultiMaterial.id;
+
+            Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
+
+            for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
+                var subMatId = parsedMultiMaterial.materials[matIndex];
+
+                if (subMatId) {
+                    multiMaterial.subMaterials.push(scene.getMaterialByID(subMatId));
+                } else {
+                    multiMaterial.subMaterials.push(null);
+                }
+            }
+
+            return multiMaterial;
+        }
+
+        public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string) {
+            if (!parsedMaterial.customType) {
+                return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
+            }
+
+            var materialType = Tools.Instantiate(parsedMaterial.customType);
+            return materialType.Parse(parsedMaterial, scene, rootUrl);;
         }
     }
 } 

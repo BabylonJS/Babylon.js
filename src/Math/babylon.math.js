@@ -260,6 +260,21 @@ var BABYLON;
         Color4.FromInts = function (r, g, b, a) {
             return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
         };
+        Color4.CheckColors4 = function (colors, count) {
+            // Check if color3 was used
+            if (colors.length === count * 3) {
+                var colors4 = [];
+                for (var index = 0; index < colors.length; index += 3) {
+                    var newIndex = (index / 3) * 4;
+                    colors4[newIndex] = colors[index];
+                    colors4[newIndex + 1] = colors[index + 1];
+                    colors4[newIndex + 2] = colors[index + 2];
+                    colors4[newIndex + 3] = 1.0;
+                }
+                return colors4;
+            }
+            return colors;
+        };
         return Color4;
     })();
     BABYLON.Color4 = Color4;
@@ -2217,6 +2232,11 @@ var BABYLON;
         Viewport.prototype.toGlobal = function (engine) {
             var width = engine.getRenderWidth();
             var height = engine.getRenderHeight();
+            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
+        };
+        Viewport.prototype.toScreenGlobal = function (engine) {
+            var width = engine.getRenderWidth(true);
+            var height = engine.getRenderHeight(true);
             return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
         };
         return Viewport;

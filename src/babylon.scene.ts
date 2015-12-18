@@ -458,6 +458,10 @@
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
+                if (!this.cameraToUseForPointers && !this.activeCamera) {
+                    return;
+                }
+
                 var canvas = this._engine.getRenderingCanvas();
 
                 this._updatePointerPosition(evt);
@@ -499,6 +503,9 @@
             };
 
             this._onPointerDown = (evt: PointerEvent) => {
+                if (!this.cameraToUseForPointers && !this.activeCamera) {
+                    return;
+                }
 
                 this._updatePointerPosition(evt);
 
@@ -556,6 +563,9 @@
                 }
             };
             this._onPointerUp = (evt: PointerEvent) => {
+                if (!this.cameraToUseForPointers && !this.activeCamera) {
+                    return;
+                }
 
                 var predicate = null;
 
@@ -1056,6 +1066,42 @@
         }
 
         /**
+         * get a bone using its id
+         * @param {string} the bone's id
+         * @return {BABYLON.Bone|null} the bone or null if not found
+         */
+        public getBoneByID(id: string): Bone {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].id === id) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+        * get a bone using its id
+        * @param {string} the bone's name
+        * @return {BABYLON.Bone|null} the bone or null if not found
+        */
+        public getBoneByName(name: string): Bone {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].name === name) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
          * get a light node using its name
          * @param {string} the light's name
          * @return {BABYLON.Light|null} the light or null if none found.
@@ -1094,6 +1140,22 @@
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].uniqueId === uniqueId) {
                     return this.lights[index];
+                }
+            }
+
+            return null;
+        }
+
+
+        /**
+         * get a particle system by id
+         * @param id {number} the particle system id
+         * @return {BABYLON.ParticleSystem|null} the corresponding system or null if none found.
+         */
+        public getParticleSystemByID(id: string): ParticleSystem {
+            for (var index = 0; index < this.particleSystems.length; index++) {
+                if (this.particleSystems[index].id === id) {
+                    return this.particleSystems[index];
                 }
             }
 
@@ -1250,7 +1312,15 @@
                 return light;
             }
 
-            return this.getCameraByID(id);
+            var camera = this.getCameraByID(id);
+
+            if (camera) {
+                return camera;
+            }
+
+            var bone = this.getBoneByID(id);
+
+            return bone;
         }
 
         public getNodeByName(name: string): Node {
@@ -1266,7 +1336,15 @@
                 return light;
             }
 
-            return this.getCameraByName(name);
+            var camera = this.getCameraByName(name);
+
+            if (camera) {
+                return camera;
+            }
+
+            var bone = this.getBoneByName(name);
+
+            return bone;
         }
 
         public getMeshByName(name: string): AbstractMesh {
@@ -2425,5 +2503,4 @@
             return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
         }
     }
-} 
-
+}

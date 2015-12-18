@@ -536,7 +536,7 @@
             var submeshesArray = this._reconstructedMesh.subMeshes;
             this._reconstructedMesh.subMeshes = [];
 
-            var newIndicesArray: Array<number> = this._reconstructedMesh.getIndices(); //[];
+            var newIndicesArray: number[] = <number[]>this._reconstructedMesh.getIndices(); //[];
             var originalIndices = this._mesh.getIndices();
             for (i = 0; i < newTriangles.length; ++i) {
                 t = newTriangles[i]; //now get the new referencing point for each vertex

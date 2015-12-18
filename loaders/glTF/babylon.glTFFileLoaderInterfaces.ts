@@ -57,56 +57,38 @@
         babylonValue?: any;
     }
 
-    export interface IGLTFTechniquePassCommonProfile {
+    export interface IGLTFTechniqueCommonProfile {
         lightingModel: string;
         texcoordBindings: Object;
 
         parameters?: Array<any>;
     }
 
-    export interface IGLTFTechniquePassInstanceProgram {
-        program: string;
-
-        attributes?: Object;
-        uniforms: Object;
-    }
-
-    export interface IGLTFTechniquePassStatesFunctions {
+    export interface IGLTFTechniqueStatesFunctions {
         blendColor?: number[];
         blendEquationSeparate?: number[];
         blendFuncSeparate?: number[];
+        colorMask: boolean[];
+        cullFace: number[];
     }
 
-    export interface IGLTFTechniquePassStates {
+    export interface IGLTFTechniqueStates {
         enable: number[];
-        functions: IGLTFTechniquePassStatesFunctions;
-    }
-
-    export interface IGLTFTechniquePassDetails {
-        commonProfile: IGLTFTechniquePassCommonProfile;
-        type: string;
-    }
-
-    export interface IGLTFTechniquePass {
-        details: IGLTFTechniquePassDetails;
-        instanceProgram: IGLTFTechniquePassInstanceProgram;
-        states: IGLTFTechniquePassStates;
+        functions: IGLTFTechniqueStatesFunctions;
     }
 
     export interface IGLTFTechnique extends IGLTFChildRootProperty {
         parameters: Object;
-        pass: string;
-        passes: Object;
-    }
+        program: string;
 
-    export interface IGLTFMaterialInstanceTechnique {
-        technique: string;
-
-        values?: Object;
+        attributes: Object;
+        uniforms: Object;
+        states: IGLTFTechniqueStates;
     }
 
     export interface IGLTFMaterial extends IGLTFChildRootProperty {
-        instanceTechnique: IGLTFMaterialInstanceTechnique;
+        technique?: string;
+        values: string[];
     }
 
     export interface IGLTFMeshPrimitive {
@@ -114,7 +96,7 @@
         indices: string;
         material: string;
 
-        primitive?: number;
+        mode?: number;
     }
 
     export interface IGLTFMesh extends IGLTFChildRootProperty {
@@ -224,12 +206,14 @@
         bindShapeMatrix: number[];
         inverseBindMatrices: string;
         jointNames: string[];
+
+        babylonSkeleton?: Skeleton;
     }
 
     export interface IGLTFNode extends IGLTFChildRootProperty {
         camera?: string;
         children: string[];
-        instanceSkin?: IGLTFNodeInstanceSkin;
+        skin?: string;
         jointName?: string;
         light?: string;
         matrix: number[];
@@ -238,6 +222,9 @@
         rotation?: number[];
         scale?: number[];
         translation?: number[];
+
+        // Babylon.js values (optimize)
+        babylonNode?: Node;
     }
 
     export interface IGLTFScene extends IGLTFChildRootProperty {
@@ -274,6 +261,9 @@
         loadedBuffers: number;
         loadedShaders: number;
         arrayBuffers: Object;
+
+        importOnlyMeshes: boolean;
+        importMeshesNames?: string[];
 
         dummyNodes: Node[];
     }

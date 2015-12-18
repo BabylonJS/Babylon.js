@@ -89,7 +89,7 @@
                 (!this._light.supportsVSM() && (
                     this.filter === ShadowGenerator.FILTER_VARIANCESHADOWMAP ||
                     this.filter === ShadowGenerator.FILTER_BLURVARIANCESHADOWMAP
-                    ));
+                ));
         }
         public set usePoissonSampling(value: boolean) {
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
@@ -135,11 +135,11 @@
             this._shadowMap = new RenderTargetTexture(light.name + "_shadowMap", mapSize, this._scene, false, true, Engine.TEXTURETYPE_UNSIGNED_INT, light.needCube());
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
-            this._shadowMap.anisotropicFilteringLevel = 1;        
+            this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
 
-            
+
             this._shadowMap.onBeforeRender = (faceIndex: number) => {
                 this._currentFaceIndex = faceIndex;
             }
@@ -190,6 +190,11 @@
                     var material = subMesh.getMaterial();
 
                     this._effect.setMatrix("viewProjection", this.getTransformMatrix());
+                    this._effect.setVector3("lightPosition", this.getLight().position);
+
+                    if (this.getLight().needCube()) {
+                        this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                    }
 
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
@@ -246,6 +251,10 @@
                 defines.push("#define VSM");
             }
 
+            if (this.getLight().needCube()) {
+                defines.push("#define CUBEMAP");
+            }
+
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
@@ -293,7 +302,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues"],
                     ["diffuseSampler"], join);
             }
 
@@ -330,9 +339,9 @@
             Vector3.NormalizeToRef(this._light.getShadowDirection(this._currentFaceIndex), this._lightDirection);
 
             if (Math.abs(Vector3.Dot(this._lightDirection, Vector3.Up())) === 1.0) {
-                this._lightDirection.z = 0.0000000000001; // Need to avoid perfectly perpendicular light
+                this._lightDirection.z = 0.0000000000001; // Required to avoid perfectly perpendicular light
             }
-                
+
             if (this._light.computeTransformedPosition()) {
                 lightPosition = this._light.transformedPosition;
             }
@@ -342,7 +351,7 @@
                 this._cachedPosition = lightPosition.clone();
                 this._cachedDirection = this._lightDirection.clone();
 
-                Matrix.LookAtLHToRef(lightPosition, this._light.position.add(this._lightDirection), Vector3.Up(), this._viewMatrix);
+                Matrix.LookAtLHToRef(lightPosition, lightPosition.add(this._lightDirection), Vector3.Up(), this._viewMatrix);
 
                 this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
 
@@ -390,6 +399,58 @@
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
             }
+        }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.lightId = this._light.id;
+            serializationObject.mapSize = this.getShadowMap().getRenderSize();
+            serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
+            serializationObject.usePoissonSampling = this.usePoissonSampling;
+
+            serializationObject.renderList = [];
+            for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
+                var mesh = this.getShadowMap().renderList[meshIndex];
+
+                serializationObject.renderList.push(mesh.id);
+            }
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
+            //casting to point light, as light is missing the position attr and typescript complains.
+            var light = <PointLight>scene.getLightByID(parsedShadowGenerator.lightId);
+            var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
+
+            for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
+                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
+
+                shadowGenerator.getShadowMap().renderList.push(mesh);
+            }
+
+            if (parsedShadowGenerator.usePoissonSampling) {
+                shadowGenerator.usePoissonSampling = true;
+            } else if (parsedShadowGenerator.useVarianceShadowMap) {
+                shadowGenerator.useVarianceShadowMap = true;
+            } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
+                shadowGenerator.useBlurVarianceShadowMap = true;
+
+                if (parsedShadowGenerator.blurScale) {
+                    shadowGenerator.blurScale = parsedShadowGenerator.blurScale;
+                }
+
+                if (parsedShadowGenerator.blurBoxOffset) {
+                    shadowGenerator.blurBoxOffset = parsedShadowGenerator.blurBoxOffset;
+                }
+            }
+
+            if (parsedShadowGenerator.bias !== undefined) {
+                shadowGenerator.bias = parsedShadowGenerator.bias;
+            }
+
+            return shadowGenerator;
         }
     }
 } 

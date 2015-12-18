@@ -118,7 +118,7 @@
 
             var engine = this._scene.getEngine();
             var viewport = this._scene.activeCamera.viewport;
-            var globalViewport = viewport.toGlobal(engine);
+            var globalViewport = viewport.toScreenGlobal(engine);
 
             // Position
             if (!this.computeEffectivePosition(globalViewport)) {
@@ -187,7 +187,7 @@
                 var y = centerY - (distY * flare.position);
 
                 var cw = flare.size;
-                var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera);
+                var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
                 var cx = 2 * (x / globalViewport.width) - 1.0;
                 var cy = 1.0 - 2 * (y / globalViewport.height);
 
@@ -232,6 +232,41 @@
             // Remove from scene
             var index = this._scene.lensFlareSystems.indexOf(this);
             this._scene.lensFlareSystems.splice(index, 1);
+        }
+        
+        public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
+            var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
+
+            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
+
+            for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
+                var parsedFlare = parsedLensFlareSystem.flares[index];
+                var flare = new LensFlare(parsedFlare.size, parsedFlare.position, Color3.FromArray(parsedFlare.color), rootUrl + parsedFlare.textureName, lensFlareSystem);
+            }
+
+            return lensFlareSystem;
+        }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.emitterId = this.getEmitter().id;
+            serializationObject.borderLimit = this.borderLimit;
+
+            serializationObject.flares = [];
+            for (var index = 0; index < this.lensFlares.length; index++) {
+                var flare = this.lensFlares[index];
+
+                serializationObject.flares.push({
+                    size: flare.size,
+                    position: flare.position,
+                    color: flare.color.asArray(),
+                    textureName: Tools.GetFilename(flare.texture.name)
+                });
+            }
+
+            return serializationObject;
         }
     }
 } 

@@ -98,7 +98,7 @@
             this._renderingMesh.render(this, enableAlphaMode);
         }
 
-        public getLinesIndexBuffer(indices: number[], engine): WebGLBuffer {
+        public getLinesIndexBuffer(indices: number[] | Int32Array, engine): WebGLBuffer {
             if (!this._linesIndexBuffer) {
                 var linesIndices = [];
 
@@ -118,7 +118,7 @@
             return ray.intersectsBox(this._boundingInfo.boundingBox);
         }
 
-        public intersects(ray: Ray, positions: Vector3[], indices: number[], fastCheck?: boolean): IntersectionInfo {
+        public intersects(ray: Ray, positions: Vector3[], indices: number[] | Int32Array, fastCheck?: boolean): IntersectionInfo {
             var intersectInfo: IntersectionInfo = null;
 
             // Triangles test

@@ -34,7 +34,7 @@
         public getShadowDirection(faceIndex?: number): Vector3 {
             return this.direction;
         }
-
+        
         public setDirectionToTarget(target: Vector3): Vector3 {
             this.direction = Vector3.Normalize(target.subtract(this.position));
             return this.direction;
@@ -83,6 +83,18 @@
             Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
 
             return this._worldMatrix;
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.type = 2;
+            serializationObject.position = this.position.asArray();
+            serializationObject.direction = this.position.asArray();
+            serializationObject.angle = this.angle;
+            serializationObject.exponent = this.exponent;
+
+            return serializationObject;
         }
     }
 }
