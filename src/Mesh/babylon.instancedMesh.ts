@@ -47,6 +47,10 @@
             return this._sourceMesh.skeleton;
         }
 
+        public get renderingGroupId(): number {
+            return this._sourceMesh.renderingGroupId;
+        }
+
         public getTotalVertices(): number {
             return this._sourceMesh.getTotalVertices();
         }
@@ -55,15 +59,15 @@
             return this._sourceMesh;
         }
 
-        public getVerticesData(kind: string): number[] | Float32Array {
-            return this._sourceMesh.getVerticesData(kind);
+        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+            return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         }
 
         public isVerticesDataPresent(kind: string): boolean {
             return this._sourceMesh.isVerticesDataPresent(kind);
         }
 
-        public getIndices(): number[] {
+        public getIndices(): number[] | Int32Array {
             return this._sourceMesh.getIndices();
         }
 

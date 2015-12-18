@@ -10,8 +10,10 @@ varying vec3 vPositionW;
 // MAGMAAAA
 uniform float time;
 uniform float speed;
+uniform float movingSpeed;
 uniform vec3 fogColor;
 uniform sampler2D noiseTexture;
+uniform float fogDensity;
 
 // Varying
 varying float noise;
@@ -122,14 +124,16 @@ float unpack(vec4 color)
 }
 
 #if defined(POINTLIGHT0) || defined(POINTLIGHT1) || defined(POINTLIGHT2) || defined(POINTLIGHT3)
+uniform vec2 depthValues;
+
 float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float bias)
 {
 	vec3 directionToLight = vPositionW - lightPosition;
 	float depth = length(directionToLight);
+	depth = clamp(depth, 0., 1.0);
 
-	depth = clamp(depth, 0., 1.);
-
-	directionToLight.y = 1.0 - directionToLight.y;
+	directionToLight = normalize(directionToLight);
+	directionToLight.y = - directionToLight.y;
 
 	float shadow = unpack(textureCube(shadowSampler, directionToLight)) + bias;
 
@@ -140,14 +144,16 @@ float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float dar
 	return 1.0;
 }
 
-float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float bias, float darkness)
+float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float bias, float darkness, float mapSize)
 {
 	vec3 directionToLight = vPositionW - lightPosition;
 	float depth = length(directionToLight);
 
-	depth = clamp(depth, 0., 1.);
+	depth = clamp(depth, 0., 1.0);
+	float diskScale = 2.0 / mapSize;
 
-	directionToLight.y = 1.0 - directionToLight.y;
+	directionToLight = normalize(directionToLight);
+	directionToLight.y = -directionToLight.y;
 
 	float visibility = 1.;
 
@@ -402,17 +408,16 @@ void main(void) {
 
 	T1.x += noiseTex.x * 2.0;
 	T1.y += noiseTex.y * 2.0;
-	T2.x -= noiseTex.y * 0.2;
-	T2.y += noiseTex.z * 0.2;
+	T2.x -= noiseTex.y * 0.2 + time*0.001*movingSpeed;
+	T2.y += noiseTex.z * 0.2 + time*0.002*movingSpeed;
 
 	float p = texture2D( noiseTexture, T1 * 3.0 ).a;
 
 	vec4 lavaColor = texture2D( diffuseSampler, T2 * 4.0);
-	vec4 temp = lavaColor * ( vec4( p, p, p, p ) * 2.0 ) + ( lavaColor * lavaColor - 0.1 );
+	vec4 temp = lavaColor * ( vec4( p, p, p, p ) * 2. ) + ( lavaColor * lavaColor - 0.1 );
 
 	baseColor = temp;
 
-	float fogDensity = 0.15;
 	float depth = gl_FragCoord.z * 4.0;
 	const float LOG2 = 1.442695;
     float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );
@@ -465,7 +470,7 @@ void main(void) {
 #else
 #ifdef SHADOWPCF0
 	#if defined(POINTLIGHT0)
-	shadow = computeShadowWithPCFCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x);
+	shadow = computeShadowWithPCFCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x, shadowsInfo0.y);
 	#else
 	shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
 	#endif
@@ -499,7 +504,7 @@ void main(void) {
 #else
 #ifdef SHADOWPCF1
 #if defined(POINTLIGHT1)
-	shadow = computeShadowWithPCFCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.z, shadowsInfo1.x);
+	shadow = computeShadowWithPCFCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.z, shadowsInfo1.x, shadowsInfo1.y);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
 #endif
@@ -533,7 +538,7 @@ void main(void) {
 #else
 #ifdef SHADOWPCF2
 #if defined(POINTLIGHT2)
-	shadow = computeShadowWithPCFCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.z, shadowsInfo2.x);
+	shadow = computeShadowWithPCFCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.z, shadowsInfo2.x, shadowsInfo2.y);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
 #endif
@@ -567,7 +572,7 @@ void main(void) {
 #else
 #ifdef SHADOWPCF3
 #if defined(POINTLIGHT3)
-	shadow = computeShadowWithPCFCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
+	shadow = computeShadowWithPCFCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x, shadowsInfo3.y);
 #else
 	shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 #endif

@@ -353,7 +353,7 @@ module BABYLON {
                         "vDiffuseInfos", 
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3"
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -420,6 +420,7 @@ module BABYLON {
 
             if (scene.lightsEnabled && !this.disableLighting) {
                 var lightIndex = 0;
+                var depthValuesAlreadySet = false;
                 for (var index = 0; index < scene.lights.length; index++) {
                     var light = scene.lights[index];
 
@@ -452,7 +453,14 @@ module BABYLON {
                     if (scene.shadowsEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
                         if (mesh.receiveShadows && shadowGenerator) {
-                            this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            if (!(<any>light).needCube()) {
+                                this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                            } else {
+                                if (!depthValuesAlreadySet) {
+                                    depthValuesAlreadySet = true;
+                                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                                }
+                            }
                             this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
                             this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                         }
@@ -510,6 +518,44 @@ module BABYLON {
 
             newMaterial.diffuseColor = this.diffuseColor.clone();
             return newMaterial;
+        }
+        
+        public serialize(): any {		
+            var serializationObject = super.serialize();
+            serializationObject.customType      = "BABYLON.SimpleMaterial";
+            serializationObject.diffuseColor    = this.diffuseColor.asArray();
+            serializationObject.disableLighting = this.disableLighting;
+            
+            if (this.diffuseTexture) {
+                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            }
+
+            return serializationObject;
+        }
+
+        public static Parse(source: any, scene: Scene, rootUrl: string): SimpleMaterial {
+            var material = new SimpleMaterial(source.name, scene);
+
+            material.diffuseColor       = Color3.FromArray(source.diffuseColor);
+            material.disableLighting    = source.disableLighting;
+
+            material.alpha          = source.alpha;
+
+            material.id             = source.id;
+
+            Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+
+            if (source.diffuseTexture) {
+                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            }
+
+            if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+
+            return material;
         }
     }
 } 

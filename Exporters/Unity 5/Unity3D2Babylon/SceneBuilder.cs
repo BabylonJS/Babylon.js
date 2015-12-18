@@ -7,6 +7,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using JsonFx.Serialization;
 using JsonFx.Serialization.Resolvers;
+using UnityEditor;
 
 namespace Unity3D2Babylon
 {
@@ -108,25 +109,19 @@ namespace Unity3D2Babylon
             var itemsCount = gameObjects.Length;
 
             var index = 0;
+
+            //Dictionary to store prefabs and their instances
+            Dictionary<GameObject, List<BabylonAbstractMesh>> dicPrefabs = new Dictionary<GameObject, List<BabylonAbstractMesh>>();
+
             foreach (var gameObject in gameObjects)
             {
                 var progress = ((float)index / itemsCount);
                 index++;
-                // Static meshes
-                var meshFilter = gameObject.GetComponent<MeshFilter>();
-                if (meshFilter != null)
-                {                    
-                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, gameObject, progress);
-                    continue;
-                }
 
-                // Skinned meshes
-                var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
-                if (skinnedMesh != null)
-                {
-                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
-                    continue;
-                }
+                /* 
+                    The order of processing is important here.
+                    We will only check if this is a mesh prefab if it is not a light or camera
+                */
 
                 // Light
                 var light = gameObject.GetComponent<Light>();
@@ -144,8 +139,73 @@ namespace Unity3D2Babylon
                     continue;
                 }
 
+                // Check if this is a prefab instance
+                GameObject gobjPrefab = (GameObject)PrefabUtility.GetPrefabParent(gameObject);
+                if (gobjPrefab != null)
+                {
+                    //Add prefab to dictionary if it doesn't already exist
+                    if (!dicPrefabs.ContainsKey(gobjPrefab))
+                    {
+                        dicPrefabs[gobjPrefab] = new List<BabylonAbstractMesh>();
+                    }
+
+                    List<BabylonAbstractMesh> lstInstances = dicPrefabs[gobjPrefab];
+                    BabylonAbstractMesh instance = ConvertUnityMeshToInstance(gameObject);
+                    lstInstances.Add(instance);
+                    continue;
+                }
+
+                // Static meshes
+                var meshFilter = gameObject.GetComponent<MeshFilter>();
+                if (meshFilter != null)
+                {                    
+                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, gameObject, progress);
+                    continue;
+                }
+
+                // Skinned meshes
+                var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
+                if (skinnedMesh != null)
+                {
+                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, gameObject, progress);
+                    continue;
+                }
+
                 // Empty
                 ConvertUnityEmptyObjectToBabylon(gameObject);
+            }
+
+            index = 0;
+            itemsCount = dicPrefabs.Count;
+
+            //Convert prefabs
+            foreach (KeyValuePair<GameObject, List<BabylonAbstractMesh>> pair in dicPrefabs)
+            {
+                var progress = ((float)index / itemsCount);
+                index++;
+
+                List<BabylonAbstractMesh> lstValue = pair.Value;
+                GameObject prefab = pair.Key;
+                BabylonAbstractMesh[] lstInstance = lstValue.ToArray();
+
+                // Static meshes
+                var meshFilter = prefab.GetComponent<MeshFilter>();
+                if (meshFilter != null)
+                {
+                    ConvertUnityMeshToBabylon(meshFilter.sharedMesh, meshFilter.transform, prefab, progress, lstInstance);
+                    continue;
+                }
+
+                // Skinned meshes
+                var skinnedMesh = prefab.GetComponent<SkinnedMeshRenderer>();
+                if (skinnedMesh != null)
+                {
+                    ConvertUnityMeshToBabylon(skinnedMesh.sharedMesh, skinnedMesh.transform, prefab, progress, lstInstance);
+                    continue;
+                }
+
+                // Empty
+                ConvertUnityEmptyObjectToBabylon(prefab, lstInstance);
             }
 
             // Materials

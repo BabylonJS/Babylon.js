@@ -148,7 +148,7 @@ var BABYLON;
             ]);
         };
         FreeCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
             element.removeEventListener("mousedown", this._onMouseDown);
@@ -221,6 +221,13 @@ var BABYLON;
             else {
                 this.position.addInPlace(this.cameraDirection);
             }
+        };
+        FreeCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.checkCollisions = this.checkCollisions;
+            serializationObject.applyGravity = this.applyGravity;
+            serializationObject.ellipsoid = this.ellipsoid.asArray();
+            return serializationObject;
         };
         return FreeCamera;
     })(BABYLON.TargetCamera);

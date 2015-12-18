@@ -466,7 +466,41 @@
             return returnValue;
         }
 
+        public serialize(): any {
+            var serializationObject: any = {};
 
+            serializationObject.name = this.name;
+            serializationObject.property = this.targetProperty;
+            serializationObject.framePerSecond = this.framePerSecond;
+            serializationObject.dataType = this.dataType;
+            serializationObject.loopBehavior = this.loopMode;
+
+            var dataType = this.dataType;
+            serializationObject.keys = [];
+            var keys = this.getKeys();
+            for (var index = 0; index < keys.length; index++) {
+                var animationKey = keys[index];
+
+                var key: any = {};
+                key.frame = animationKey.frame;
+
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        key.values = [animationKey.value];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        key.values = animationKey.value.asArray();
+                        break;
+                }
+
+                serializationObject.keys.push(key);
+            }
+
+            return serializationObject;
+        }
 
         // Statics
         private static _ANIMATIONTYPE_FLOAT = 0;
@@ -513,6 +547,57 @@
 
         public static get ANIMATIONLOOPMODE_CONSTANT(): number {
             return Animation._ANIMATIONLOOPMODE_CONSTANT;
+        }
+
+        public static Parse(parsedAnimation: any): Animation {
+            var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+
+            var dataType = parsedAnimation.dataType;
+            var keys = [];
+            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+                var key = parsedAnimation.keys[index];
+
+                var data;
+
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        data = key.values[0];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        data = Quaternion.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                        data = Matrix.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        data = Color3.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    default:
+                        data = Vector3.FromArray(key.values);
+                        break;
+                }
+
+                keys.push({
+                    frame: key.frame,
+                    value: data
+                });
+            }
+
+            animation.setKeys(keys);
+
+            return animation;
+        }
+
+        public static AppendSerializedAnimations(source: IAnimatable, destination: any): any {
+            if (source.animations) {
+                destination.animations = [];
+                for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                    var animation = source.animations[animationIndex];
+
+                    destination.animations.push(animation.serialize());
+                }
+            }
         }
     }
 } 

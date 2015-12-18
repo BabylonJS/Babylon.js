@@ -19,6 +19,23 @@ var BABYLON;
     var Tools = (function () {
         function Tools() {
         }
+        Tools.Instantiate = function (className) {
+            var arr = className.split(".");
+            var fn = (window || this);
+            for (var i = 0, len = arr.length; i < len; i++) {
+                fn = fn[arr[i]];
+            }
+            if (typeof fn !== "function") {
+                return null;
+            }
+            return fn;
+        };
+        Tools.GetConstructorName = function (obj) {
+            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
+            var cname = str.match(/function\s(\w*)/)[1];
+            var aliases = ["", "anonymous", "Anonymous"];
+            return aliases.indexOf(cname) > -1 ? "Function" : cname;
+        };
         Tools.ToHex = function (i) {
             var str = i.toString(16);
             if (i <= 15) {
@@ -132,8 +149,8 @@ var BABYLON;
         // Misc.
         Tools.GetPointerPrefix = function () {
             var eventPrefix = "pointer";
-            // Check if hand.js is referenced or if the browser natively supports pointer events
-            if (!navigator.pointerEnabled) {
+            // Check if pointer events are supported
+            if (!window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
             return eventPrefix;

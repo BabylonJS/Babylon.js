@@ -31,6 +31,28 @@
         public static BaseUrl = "";
         public static CorsBehavior: any = "anonymous";
 
+        public static Instantiate(className: string): any {
+            var arr = className.split(".");
+
+            var fn = (window || this);
+            for (var i = 0, len = arr.length; i < len; i++) {
+                fn = fn[arr[i]];
+            }
+
+            if (typeof fn !== "function") {
+                return null;
+            }
+
+            return fn;
+        }
+
+        public static GetConstructorName(obj) {
+            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
+            var cname = str.match(/function\s(\w*)/)[1];
+            var aliases = ["", "anonymous", "Anonymous"];
+            return aliases.indexOf(cname) > -1 ? "Function" : cname;
+        }
+
         public static ToHex(i: number): string {
             var str = i.toString(16);
 
@@ -131,7 +153,7 @@
             return "data:image/png;base64," + output;
         }
 
-        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[], indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[] | Int32Array, indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -176,8 +198,8 @@
         public static GetPointerPrefix(): string {
             var eventPrefix = "pointer";
 
-            // Check if hand.js is referenced or if the browser natively supports pointer events
-            if (!navigator.pointerEnabled) {
+            // Check if pointer events are supported
+            if (!window.PointerEvent && !navigator.pointerEnabled) {
                 eventPrefix = "mouse";
             }
 

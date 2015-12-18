@@ -277,6 +277,47 @@ var BABYLON;
             newMaterial.diffuseColor = this.diffuseColor.clone();
             return newMaterial;
         };
+        FireMaterial.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.customType = "BABYLON.FireMaterial";
+            serializationObject.diffuseColor = this.diffuseColor.asArray();
+            serializationObject.speed = this.speed;
+            serializationObject.disableLighting = this.disableLighting;
+            if (this.diffuseTexture) {
+                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
+            }
+            if (this.distortionTexture) {
+                serializationObject.distortionTexture = this.distortionTexture.serialize();
+            }
+            if (this.opacityTexture) {
+                serializationObject.opacityTexture = this.opacityTexture.serialize();
+            }
+            return serializationObject;
+        };
+        FireMaterial.Parse = function (source, scene, rootUrl) {
+            var material = new FireMaterial(source.name, scene);
+            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
+            material.speed = source.speed;
+            material.disableLighting = source.disableLighting;
+            material.alpha = source.alpha;
+            material.id = source.id;
+            BABYLON.Tags.AddTagsTo(material, source.tags);
+            material.backFaceCulling = source.backFaceCulling;
+            material.wireframe = source.wireframe;
+            if (source.diffuseTexture) {
+                material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
+            }
+            if (source.distortionTexture) {
+                material.distortionTexture = BABYLON.Texture.Parse(source.distortionTexture, scene, rootUrl);
+            }
+            if (source.opacityTexture) {
+                material.opacityTexture = BABYLON.Texture.Parse(source.opacityTexture, scene, rootUrl);
+            }
+            if (source.checkReadyOnlyOnce) {
+                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
+            }
+            return material;
+        };
         return FireMaterial;
     })(BABYLON.Material);
     BABYLON.FireMaterial = FireMaterial;

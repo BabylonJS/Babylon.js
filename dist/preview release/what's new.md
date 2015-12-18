@@ -18,6 +18,8 @@
     - New `Mesh.CreateIcoSphere()` method. [Demo here](http://www.babylonjs-playground.com/#24DUYD) (G'kar)
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+	- Unity3D exporter will recognise instances of prefabs ([ozRocker](https://github.com/punkoffice))
+    - New parse mechanism (for loading .babylon file) ([deltakosh](https://github.com/deltakosh))   
     - New button to log the camera position in the debug layer ([temechon](https://github.com/temechon))
     - Added `Animatable.goToFrame()` ([deltakosh](https://github.com/deltakosh))   
     - Fixed behavior or `Animation.CreateAndStartAnimation` and added `Animation.CreateMergeAndStartAnimation` to reproduce previous behavior ([deltakosh](https://github.com/deltakosh))
@@ -64,6 +66,7 @@
     - Fixed tube and extruded shape cap light artifact  ([jerome](https://github.com/jbousquie))
     - Fixed a bug calculating velocity during collision with gravity enabled. [PR](https://github.com/BabylonJS/Babylon.js/pull/738) ([RaananW](https://github.com/RaananW))
     - Fixed a bug in instance serialization. [PR](https://github.com/BabylonJS/Babylon.js/pull/726) ([RaananW](https://github.com/RaananW))
+    - Fixed a memory leak with textures ([deltakosh](https://github.com/deltakosh)) 
   - **Breaking changes**
     - `VertexData.CreateCylinder()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
     - `VertexData.CreateRibbon()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))

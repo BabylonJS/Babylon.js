@@ -148,10 +148,10 @@ float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float dar
 {
 	vec3 directionToLight = vPositionW - lightPosition;
 	float depth = length(directionToLight);
+	depth = clamp(depth, 0., 1.0);
 
-	depth = clamp(depth, 0., 1.);
-
-	directionToLight.y = 1.0 - directionToLight.y;
+	directionToLight = normalize(directionToLight);
+	directionToLight.y = - directionToLight.y;
 
 	float shadow = unpack(textureCube(shadowSampler, directionToLight)) + bias;
 
@@ -166,11 +166,12 @@ float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, fl
 {
 	vec3 directionToLight = vPositionW - lightPosition;
 	float depth = length(directionToLight);
-	float diskScale = (1.0 - (1.0 + depth * 3.0)) / mapSize;
 
-	depth = clamp(depth, 0., 1.);
+	depth = clamp(depth, 0., 1.0);
+	float diskScale = 2.0 / mapSize;
 
-	directionToLight.y = 1.0 - directionToLight.y;
+	directionToLight = normalize(directionToLight);
+	directionToLight.y = -directionToLight.y;
 
 	float visibility = 1.;
 

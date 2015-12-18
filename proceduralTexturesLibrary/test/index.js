@@ -1,7 +1,7 @@
 //UI
 var gui = new dat.GUI();
 var options = {
-	material: "standard",
+	texture: "standard",
 	mesh: "sphere",
 	hemisphericLight: true,
 	pointLight: false,
@@ -13,14 +13,14 @@ var options = {
 }
 
 var registeredUIs = {};
-var materialgui;
+var textureui;
 
-window.registerColorPicker = function(material, name, color, onChange, onSet) {
-    if (!registeredUIs[material]) {
-        registeredUIs[material] = [];
+window.registerColorPicker = function(texture, name, color, onChange, onSet) {
+    if (!registeredUIs[texture]) {
+        registeredUIs[texture] = [];
     }
 
-    registeredUIs[material].push({
+    registeredUIs[texture].push({
         name: name,
         color: "#ff0000",
         onChange: onChange,
@@ -29,12 +29,12 @@ window.registerColorPicker = function(material, name, color, onChange, onSet) {
 };
 
 
-window.registerRangeUI = function(material, name, minValue, maxValue, onChange, onSet) {
-	if (!registeredUIs[material]) {
-		registeredUIs[material] = [];
+window.registerRangeUI = function(texture, name, minValue, maxValue, onChange, onSet) {
+	if (!registeredUIs[texture]) {
+		registeredUIs[texture] = [];
 	}
 	
-	registeredUIs[material].push({
+	registeredUIs[texture].push({
 		name: name,
 		minValue: minValue,
 		maxValue: maxValue,
@@ -47,26 +47,26 @@ var setUi = function(ui) {
 	options[ui.name] = ui.onSet();
 
     if (ui.color) {
-        materialgui.addColor(options, ui.name).onChange(function(value) {
+        textureui.addColor(options, ui.name).onChange(function(value) {
             ui.onChange(value);
         });
     } else {
-        materialgui.add(options, ui.name, ui.minValue, ui.maxValue).onChange(function(value) {
+        textureui.add(options, ui.name, ui.minValue, ui.maxValue).onChange(function(value) {
             ui.onChange(value);
         });
     }
 }
 
-window.enableMaterial = function(material) {
-	if (materialgui) {
-		materialgui.domElement.parentElement.removeChild(materialgui.domElement);	
-		materialgui = null;
+window.enableTexture = function(texture) {
+	if (textureui) {
+		textureui.domElement.parentElement.removeChild(textureui.domElement);	
+		textureui = null;
 	}
 	
-	if (registeredUIs[material]) {
-		materialgui = new dat.GUI();
-		for (var index = 0; index < registeredUIs[material].length; index++) {
-			var ui = registeredUIs[material][index];
+	if (registeredUIs[texture]) {
+		textureui = new dat.GUI();
+		for (var index = 0; index < registeredUIs[texture].length; index++) {
+			var ui = registeredUIs[texture][index];
 			
 			setUi(ui);
 		}	
