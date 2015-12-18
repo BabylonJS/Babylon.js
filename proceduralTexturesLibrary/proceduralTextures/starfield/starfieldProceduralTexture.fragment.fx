@@ -33,7 +33,7 @@ void main()
 	dir.xz *= rot1;
 	dir.xy *= rot2;
 	vec3 from = vec3(1., .5, 0.5);
-	from += vec3(localTime*2., localTime, -2.);
+	from += vec3(-2., localTime*2., localTime);
 	from.xz *= rot1;
 	from.xy *= rot2;
 
