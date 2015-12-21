@@ -342,6 +342,10 @@
         public play(time?: number) {
             if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
+                    if (this._startOffset < 0) {
+                        time = -this._startOffset;
+                        this._startOffset = 0;
+                    }
                     var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound) {
