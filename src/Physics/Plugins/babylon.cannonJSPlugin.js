@@ -74,7 +74,7 @@ var BABYLON;
                             //find the mesh that collided with the registered mesh
                             for (var idx = 0; idx < _this._registeredMeshes.length; idx++) {
                                 if (_this._registeredMeshes[idx].body == e.body) {
-                                    registeredMesh.mesh.onPhysicsCollide(_this._registeredMeshes[idx].mesh);
+                                    registeredMesh.mesh.onPhysicsCollide(_this._registeredMeshes[idx].mesh, e.contact);
                                 }
                             }
                         };
