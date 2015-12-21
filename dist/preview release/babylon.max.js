@@ -5147,7 +5147,7 @@ var BABYLON;
          */
         function Engine(canvas, antialias, options, adaptToDeviceRatio) {
             var _this = this;
-            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = true; }
+            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
             // Public members
             this.isFullscreen = false;
             this.isPointerLock = false;
@@ -20491,17 +20491,26 @@ var BABYLON;
                     }
                 }
                 // Sounds
+                var loadedSounds = [];
+                var loadedSound;
                 if (BABYLON.AudioEngine && parsedData.sounds) {
                     for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
+                            if (!loadedSounds[parsedSound.name]) {
+                                loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
+                                loadedSounds[loadedSound.name] = loadedSound;
+                            }
+                            else {
+                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.name]);
+                            }
                         }
                         else {
                             var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
                         }
                     }
                 }
+                loadedSounds = [];
                 // Connect parents & children and parse actions
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     var mesh = scene.meshes[index];
@@ -28992,7 +29001,7 @@ var BABYLON;
                             //find the mesh that collided with the registered mesh
                             for (var idx = 0; idx < _this._registeredMeshes.length; idx++) {
                                 if (_this._registeredMeshes[idx].body == e.body) {
-                                    registeredMesh.mesh.onPhysicsCollide(_this._registeredMeshes[idx].mesh);
+                                    registeredMesh.mesh.onPhysicsCollide(_this._registeredMeshes[idx].mesh, e.contact);
                                 }
                             }
                         };
@@ -29611,7 +29620,7 @@ var BABYLON;
                             //get the mesh and execute the callback
                             var otherMesh = mesh.getScene().getMeshByUniqueID(otherUniqueId);
                             if (otherMesh)
-                                mesh.onPhysicsCollide(otherMesh);
+                                mesh.onPhysicsCollide(otherMesh, contact);
                         }
                         contact = contact.next;
                     }
@@ -34136,7 +34145,7 @@ var BABYLON;
         * @param name Name of your sound
         * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
         */
         function Sound(name, urlOrArrayBuffer, scene, readyToPlayCallback, options) {
             var _this = this;
@@ -34233,7 +34242,9 @@ var BABYLON;
                     }
                     else {
                         if (urlOrArrayBuffer instanceof ArrayBuffer) {
-                            this._soundLoaded(urlOrArrayBuffer);
+                            if (urlOrArrayBuffer.byteLength > 0) {
+                                this._soundLoaded(urlOrArrayBuffer);
+                            }
                         }
                         else {
                             BABYLON.Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
@@ -34550,6 +34561,10 @@ var BABYLON;
         };
         Sound.prototype.attachToMesh = function (meshToConnectTo) {
             var _this = this;
+            if (this._connectedMesh) {
+                this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+                this._registerFunc = null;
+            }
             this._connectedMesh = meshToConnectTo;
             if (!this.spatialSound) {
                 this.spatialSound = true;
@@ -34569,7 +34584,44 @@ var BABYLON;
                 this._updateDirection();
             }
         };
-        Sound.Parse = function (parsedSound, scene, rootUrl) {
+        Sound.prototype.clone = function () {
+            var _this = this;
+            if (!this._streaming) {
+                var setBufferAndRun = function () {
+                    if (_this._isReadyToPlay) {
+                        clonedSound._audioBuffer = _this.getAudioBuffer();
+                        clonedSound._isReadyToPlay = true;
+                        if (clonedSound.autoplay) {
+                            clonedSound.play();
+                        }
+                    }
+                    else {
+                        window.setTimeout(setBufferAndRun, 300);
+                    }
+                };
+                var currentOptions = {
+                    autoplay: this.autoplay, loop: this.loop,
+                    volume: this._volume, spatialSound: this.spatialSound, maxDistance: this.maxDistance,
+                    useCustomAttenuation: this.useCustomAttenuation, rolloffFactor: this.rolloffFactor,
+                    refDistance: this.refDistance, distanceModel: this.distanceModel
+                };
+                var clonedSound = new Sound(this.name + "_cloned", new ArrayBuffer(0), this._scene, null, currentOptions);
+                if (this.useCustomAttenuation) {
+                    clonedSound.setAttenuationFunction(this._customAttenuationFunction);
+                }
+                clonedSound.setPosition(this._position);
+                clonedSound.setPlaybackRate(this._playbackRate);
+                setBufferAndRun();
+                return clonedSound;
+            }
+            else {
+                return null;
+            }
+        };
+        Sound.prototype.getAudioBuffer = function () {
+            return this._audioBuffer;
+        };
+        Sound.Parse = function (parsedSound, scene, rootUrl, sourceSound) {
             var soundName = parsedSound.name;
             var soundUrl = rootUrl + soundName;
             var options = {
@@ -34580,8 +34632,27 @@ var BABYLON;
                 distanceModel: parsedSound.distanceModel,
                 playbackRate: parsedSound.playbackRate
             };
-            var newSound = new Sound(soundName, soundUrl, scene, function () { scene._removePendingData(newSound); }, options);
-            scene._addPendingData(newSound);
+            var newSound;
+            if (!sourceSound) {
+                newSound = new Sound(soundName, soundUrl, scene, function () { scene._removePendingData(newSound); }, options);
+                scene._addPendingData(newSound);
+            }
+            else {
+                var setBufferAndRun = function () {
+                    if (sourceSound._isReadyToPlay) {
+                        newSound._audioBuffer = sourceSound.getAudioBuffer();
+                        newSound._isReadyToPlay = true;
+                        if (newSound.autoplay) {
+                            newSound.play();
+                        }
+                    }
+                    else {
+                        window.setTimeout(setBufferAndRun, 300);
+                    }
+                };
+                newSound = new Sound(soundName, new ArrayBuffer(0), scene, null, options);
+                setBufferAndRun();
+            }
             if (parsedSound.position) {
                 var soundPosition = BABYLON.Vector3.FromArray(parsedSound.position);
                 newSound.setPosition(soundPosition);

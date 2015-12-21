@@ -402,7 +402,7 @@ module BABYLON {
                             //get the mesh and execute the callback
                             var otherMesh = mesh.getScene().getMeshByUniqueID(otherUniqueId);
                             if (otherMesh)
-                                mesh.onPhysicsCollide(otherMesh, contact);
+                                mesh.onPhysicsCollide(otherMesh, contact); 
                         }
                         contact = contact.next;
                     }

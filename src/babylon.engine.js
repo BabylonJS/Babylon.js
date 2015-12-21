@@ -355,7 +355,7 @@ var BABYLON;
          */
         function Engine(canvas, antialias, options, adaptToDeviceRatio) {
             var _this = this;
-            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = true; }
+            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
             // Public members
             this.isFullscreen = false;
             this.isPointerLock = false;
