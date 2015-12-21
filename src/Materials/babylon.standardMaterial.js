@@ -268,6 +268,7 @@ var BABYLON;
         };
         StandardMaterial.BindLights = function (scene, mesh, effect, defines) {
             var lightIndex = 0;
+            var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
                 if (!light.isEnabled()) {
@@ -305,8 +306,14 @@ var BABYLON;
                         if (!light.needCube()) {
                             effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
                         }
+                        else {
+                            if (!depthValuesAlreadySet) {
+                                depthValuesAlreadySet = true;
+                                effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                            }
+                        }
                         effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                        effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
+                        effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
                     }
                 }
                 lightIndex++;
@@ -640,7 +647,7 @@ var BABYLON;
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
-                    "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
+                    "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
                     "logarithmicDepthConstant"
                 ], ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",

@@ -29,6 +29,8 @@
         private _bias = 0.00005;
         private _lightDirection = Vector3.Zero();
 
+        public forceBackFacesOnly = false;
+
         public get bias(): number {
             return this._bias;
         }
@@ -190,6 +192,11 @@
                     var material = subMesh.getMaterial();
 
                     this._effect.setMatrix("viewProjection", this.getTransformMatrix());
+                    this._effect.setVector3("lightPosition", this.getLight().position);
+
+                    if (this.getLight().needCube()) {
+                        this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                    }
 
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
@@ -203,9 +210,17 @@
                         this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
                     }
 
+                    if (this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, true);
+                    }
+
                     // Draw
                     mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                         (isInstance, world) => this._effect.setMatrix("world", world));
+
+                    if (this.forceBackFacesOnly) {
+                        engine.setState(true, 0, false, false);
+                    }
                 } else {
                     // Need to reset refresh rate of the shadowMap
                     this._shadowMap.resetRefreshCounter();
@@ -244,6 +259,10 @@
 
             if (this.useVarianceShadowMap || this.useBlurVarianceShadowMap) {
                 defines.push("#define VSM");
+            }
+
+            if (this.getLight().needCube()) {
+                defines.push("#define CUBEMAP");
             }
 
             var attribs = [VertexBuffer.PositionKind];
@@ -293,7 +312,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues"],
                     ["diffuseSampler"], join);
             }
 
@@ -330,7 +349,7 @@
             Vector3.NormalizeToRef(this._light.getShadowDirection(this._currentFaceIndex), this._lightDirection);
 
             if (Math.abs(Vector3.Dot(this._lightDirection, Vector3.Up())) === 1.0) {
-                this._lightDirection.z = 0.0000000000001; // Need to avoid perfectly perpendicular light
+                this._lightDirection.z = 0.0000000000001; // Required to avoid perfectly perpendicular light
             }
 
             if (this._light.computeTransformedPosition()) {
@@ -342,7 +361,7 @@
                 this._cachedPosition = lightPosition.clone();
                 this._cachedDirection = this._lightDirection.clone();
 
-                Matrix.LookAtLHToRef(lightPosition, this._light.position.add(this._lightDirection), Vector3.Up(), this._viewMatrix);
+                Matrix.LookAtLHToRef(lightPosition, lightPosition.add(this._lightDirection), Vector3.Up(), this._viewMatrix);
 
                 this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
 
@@ -399,6 +418,7 @@
             serializationObject.mapSize = this.getShadowMap().getRenderSize();
             serializationObject.useVarianceShadowMap = this.useVarianceShadowMap;
             serializationObject.usePoissonSampling = this.usePoissonSampling;
+            serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
 
             serializationObject.renderList = [];
             for (var meshIndex = 0; meshIndex < this.getShadowMap().renderList.length; meshIndex++) {
@@ -440,6 +460,8 @@
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
             }
+
+            shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;
 
             return shadowGenerator;
         }

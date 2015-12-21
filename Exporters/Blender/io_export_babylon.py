@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (3, 0, 6),
+    'version': (4, 0, 0),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -38,9 +38,9 @@ if __name__ == '__main__':
 # output related constants
 MAX_VERTEX_ELEMENTS = 65535
 MAX_VERTEX_ELEMENTS_32Bit = 16777216
-VERTEX_OUTPUT_PER_LINE = 1000
+VERTEX_OUTPUT_PER_LINE = 100
 MAX_FLOAT_PRECISION = '%.4f'
-MAX_INFLUENCERS_PER_VERTEX = 4
+COMPRESS_MATRIX_INDICES = True # this is True for .babylon exporter & False for TOB
 
 # used in World constructor, defined in BABYLON.Scene
 #FOGMODE_NONE = 0
@@ -110,6 +110,8 @@ CUBIC_MODE = 3
 #PROJECTION_MODE = 4
 #SKYBOX_MODE = 5
 
+DEFAULT_MATERIAL_NAMESPACE = 'Same as Filename'
+
 # passed to Animation constructor from animatable objects, defined in BABYLON.Animation
 #ANIMATIONTYPE_FLOAT = 0
 ANIMATIONTYPE_VECTOR3 = 1
@@ -134,9 +136,9 @@ class ExporterSettingsPanel(bpy.types.Panel):
         description="Export only selected layers",
         default = False,
         )
-    bpy.types.Scene.export_noVertexOpt = bpy.props.BoolProperty(
-        name="No vertex sharing",
-        description="Turns off an optimization which reduces vertices",
+    bpy.types.Scene.export_flatshadeScene = bpy.props.BoolProperty(
+        name="Flat shade entire scene",
+        description="Use face normals on all meshes.  Increases vertices.",
         default = False,
         )        
     bpy.types.Scene.attachedSound = bpy.props.StringProperty(
@@ -165,7 +167,7 @@ class ExporterSettingsPanel(bpy.types.Panel):
 
         scene = context.scene
         layout.prop(scene, "export_onlySelectedLayer")
-        layout.prop(scene, "export_noVertexOpt")
+        layout.prop(scene, "export_flatshadeScene")
         layout.prop(scene, "inlineTextures")
 
         box = layout.box()
@@ -238,6 +240,10 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                 bpy.ops.object.mode_set(mode = 'OBJECT')
 
             Main.log('========= Conversion from Blender to Babylon.js =========', 0)
+            Main.log('Scene settings used:', 1)
+            Main.log('selected layers only:  ' + format_bool(scene.export_onlySelectedLayer), 2)
+            Main.log('flat shading entire scene:  ' + format_bool(scene.export_flatshadeScene), 2)
+            Main.log('inline textures:  ' + format_bool(scene.inlineTextures), 2)
             self.world = World(scene)
 
             bpy.ops.screen.animation_cancel()
@@ -591,8 +597,8 @@ class Mesh(FCurveAnimatable):
         self.name = object.name + str(nameID)
         Main.log('processing begun of mesh:  ' + self.name)
         self.isVisible = not object.hide_render
-        self.isEnabled = True
-        self.useFlatShading = object.data.useFlatShading
+        self.isEnabled = not object.data.loadDisabled
+        useFlatShading = scene.export_flatshadeScene or object.data.useFlatShading
         self.checkCollisions = object.data.checkCollisions
         self.receiveShadows = object.data.receiveShadows
         self.castShadows = object.data.castShadows
@@ -701,7 +707,6 @@ class Mesh(FCurveAnimatable):
                 # None will be returned when either the first encounter or must be unique due to baked textures
                 material = exporter.getMaterial(slot.name)
                 if (material != None):
-                    material.numOfUsers = material.numOfUsers + 1
                     Main.log('registered as also a user of material:  ' + slot.name, 2)
                 else:
                     material = StdMaterial(slot, exporter, object)
@@ -749,8 +754,10 @@ class Mesh(FCurveAnimatable):
             Colormap = mesh.tessface_vertex_colors.active.data
 
         if hasSkeleton:
-            self.skeletonWeights = []
-            self.skeletonIndicesCompressed = []
+            weightsPerVertex = []
+            indicesPerVertex = []
+            influenceCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0] # 9, so accessed orign 1
+            highestInfluenceObserved = 0
 
         # used tracking of vertices as they are received
         alreadySavedVertices = []
@@ -759,6 +766,8 @@ class Mesh(FCurveAnimatable):
         vertices_UV2s = []
         vertices_Colors = []
         vertices_indices = []
+        vertices_sk_weights = []
+        vertices_sk_indices = []
 
         self.offsetFace = 0
 
@@ -769,11 +778,12 @@ class Mesh(FCurveAnimatable):
             vertices_UV2s.append([])
             vertices_Colors.append([])
             vertices_indices.append([])
+            vertices_sk_weights.append([])
+            vertices_sk_indices.append([])
 
         materialsCount = 1 if recipe.needsBaking else max(1, len(object.material_slots))
         verticesCount = 0
         indicesCount = 0
-        maxInfluencersExceeded = 0
 
         for materialIndex in range(materialsCount):
             if self.offsetFace != 0:
@@ -797,38 +807,22 @@ class Mesh(FCurveAnimatable):
 
                     vertex = mesh.vertices[vertex_index]
                     position = vertex.co
+                    normal = face.normal if useFlatShading else vertex.normal
                     
-                    if (scene.export_noVertexOpt):
-                        normal = face.normal
-                    else:
-                        normal = vertex.normal
-
                     #skeletons
                     if hasSkeleton:
                         matricesWeights = []
-                        matricesWeights.append(0.0)
-                        matricesWeights.append(0.0)
-                        matricesWeights.append(0.0)
-                        matricesWeights.append(0.0)
-                        matricesIndicesCompressed = 0
+                        matricesIndices = []
 
                         # Getting influences
-                        i = 0
-                        offset = 0
                         for group in vertex.groups:
                             index = group.group
                             weight = group.weight
 
                             for boneIndex, bone in enumerate(objArmature.pose.bones):
                                 if object.vertex_groups[index].name == bone.name:
-                                    if (i == MAX_INFLUENCERS_PER_VERTEX):
-                                        maxInfluencersExceeded += 1
-                                        break
-                                    matricesWeights[i] = weight
-                                    matricesIndicesCompressed += boneIndex << offset
-                                    offset = offset + 8
-
-                                    i = i + 1
+                                    matricesWeights.append(weight)
+                                    matricesIndices.append(boneIndex)
 
                     # Texture coordinates
                     if hasUV:
@@ -847,7 +841,7 @@ class Mesh(FCurveAnimatable):
                             vertex_Color = Colormap[face.index].color3
 
                     # Check if the current vertex is already saved
-                    alreadySaved = alreadySavedVertices[vertex_index] and not (hasSkeleton or scene.export_noVertexOpt)
+                    alreadySaved = alreadySavedVertices[vertex_index] and not useFlatShading
                     if alreadySaved:
                         alreadySaved = False
 
@@ -872,6 +866,12 @@ class Mesh(FCurveAnimatable):
                                 vColor = vertices_Colors[vertex_index][index_UV]
                                 if (vColor.r != vertex_Color.r or vColor.g != vertex_Color.g or vColor.b != vertex_Color.b):
                                     continue
+
+                            if hasSkeleton:
+                                vSkWeight = vertices_sk_weights[vertex_index]
+                                vSkIndices = vertices_sk_indices[vertex_index]
+                                if not same_array(vSkWeight[index_UV], matricesWeights) or not same_array(vSkIndices[index_UV], matricesIndices):
+                                    continue 
 
                             if vertices_indices[vertex_index][index_UV] >= subMeshVerticesStart:
                                 alreadySaved = True
@@ -905,11 +905,13 @@ class Mesh(FCurveAnimatable):
                             self.colors.append(vertex_Color.b)
                             self.colors.append(1.0)
                         if hasSkeleton:
-                            self.skeletonWeights.append(matricesWeights[0])
-                            self.skeletonWeights.append(matricesWeights[1])
-                            self.skeletonWeights.append(matricesWeights[2])
-                            self.skeletonWeights.append(matricesWeights[3])
-                            self.skeletonIndicesCompressed.append(matricesIndicesCompressed)
+                            vertices_sk_weights[vertex_index].append(matricesWeights)
+                            vertices_sk_indices[vertex_index].append(matricesIndices)
+                            nInfluencers = len(matricesWeights)
+                            influenceCounts[nInfluencers] += 1
+                            highestInfluenceObserved = nInfluencers if nInfluencers > highestInfluenceObserved else highestInfluenceObserved
+                            weightsPerVertex.append(matricesWeights)
+                            indicesPerVertex.append(matricesIndices)
 
                         vertices_indices[vertex_index].append(index)
 
@@ -922,11 +924,8 @@ class Mesh(FCurveAnimatable):
             self.subMeshes.append(SubMesh(materialIndex, subMeshVerticesStart, subMeshIndexStart, verticesCount - subMeshVerticesStart, indicesCount - subMeshIndexStart))
 
         if verticesCount > MAX_VERTEX_ELEMENTS:
-            Main.warn('Due to multi-materials & this meshes size, 32bit indices must be used.  This may not run on all hardware.', 2)
+            Main.warn('Due to multi-materials / Shapekeys & this meshes size, 32bit indices must be used.  This may not run on all hardware.', 2)
 
-        if maxInfluencersExceeded > 0:
-            Main.warn('Maximum # of influencers exceeded for ' + format_int(maxInfluencersExceeded) + ' vertices, extras ignored', 2)
-            
         BakedMaterial.meshBakingClean(object)
 
         Main.log('num positions      :  ' + str(len(self.positions)), 2)
@@ -935,9 +934,29 @@ class Mesh(FCurveAnimatable):
         Main.log('num uvs2           :  ' + str(len(self.uvs2     )), 2)
         Main.log('num colors         :  ' + str(len(self.colors   )), 2)
         Main.log('num indices        :  ' + str(len(self.indices  )), 2)
-        if hasattr(self, 'skeletonWeights'):
-            Main.log('num skeletonWeights:  ' + str(len(self.skeletonWeights)), 2)
-            Main.log('num skeletonIndices:  ' + str(len(self.skeletonIndicesCompressed * 4)), 2)
+        if hasSkeleton:
+            Main.log('Skeleton stats:  ', 2)
+            self.toFixedInfluencers(weightsPerVertex, indicesPerVertex, object.data.maxInfluencers, highestInfluenceObserved)
+
+            if (COMPRESS_MATRIX_INDICES):
+                self.skeletonIndices = Mesh.packSkeletonIndices(self.skeletonIndices)
+                if (self.numBoneInfluencers > 4):
+                    self.skeletonIndicesExtra = Mesh.packSkeletonIndices(self.skeletonIndicesExtra)
+                
+            totalInfluencers  = influenceCounts[1]
+            totalInfluencers += influenceCounts[2] * 2
+            totalInfluencers += influenceCounts[3] * 3
+            totalInfluencers += influenceCounts[4] * 4
+            totalInfluencers += influenceCounts[5] * 5
+            totalInfluencers += influenceCounts[6] * 6
+            totalInfluencers += influenceCounts[7] * 7
+            totalInfluencers += influenceCounts[8] * 8
+            Main.log('Total Influencers:  ' + format_f(totalInfluencers), 3)
+            Main.log('Avg # of influencers per vertex:  ' + format_f(totalInfluencers / len(self.positions)), 3)
+            Main.log('Highest # of influencers observed:  ' + str(highestInfluenceObserved) + ', num vertices with this:  ' + format_int(influenceCounts[highestInfluenceObserved]), 3)
+            Main.log('exported as ' + str(self.numBoneInfluencers) + ' influencers', 3)
+            nWeights = len(self.skeletonWeights) + len(self.skeletonWeightsExtra) if hasattr(self, 'skeletonWeightsExtra') else 0
+            Main.log('num skeletonWeights and skeletonIndices:  ' + str(nWeights), 3)
 
         numZeroAreaFaces = self.find_zero_area_faces()
         if numZeroAreaFaces > 0:
@@ -969,6 +988,85 @@ class Mesh(FCurveAnimatable):
         except:
             pass
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def toFixedInfluencers(self, weightsPerVertex, indicesPerVertex, maxInfluencers, highestObserved):
+        if (maxInfluencers > 8 or maxInfluencers < 1):
+            maxInfluencers = 8
+            Main.warn('Maximum # of influencers invalid, set to 8', 3)
+            
+        self.numBoneInfluencers = maxInfluencers if maxInfluencers < highestObserved else highestObserved
+        needExtras = self.numBoneInfluencers > 4
+        
+        maxInfluencersExceeded = 0
+        
+        fixedWeights = []
+        fixedIndices = []
+        
+        fixedWeightsExtra = []
+        fixedIndicesExtra = []
+        
+        for i in range(len(weightsPerVertex)):
+            weights = weightsPerVertex[i]
+            indices = indicesPerVertex[i]
+            nInfluencers = len(weights)
+            
+            if (nInfluencers > self.numBoneInfluencers):
+                maxInfluencersExceeded += 1
+                Mesh.sortByDescendingInfluence(weights, indices)
+                
+            for j in range(4):
+                fixedWeights.append(weights[j] if nInfluencers > j else 0.0)
+                fixedIndices.append(indices[j] if nInfluencers > j else 0  )
+                
+            if needExtras:
+                for j in range(4, 8):
+                    fixedWeightsExtra.append(weights[j] if nInfluencers > j else 0.0)
+                    fixedIndicesExtra.append(indices[j] if nInfluencers > j else 0  )
+                            
+        self.skeletonWeights = fixedWeights
+        self.skeletonIndices = fixedIndices
+        
+        if needExtras:
+            self.skeletonWeightsExtra = fixedWeightsExtra
+            self.skeletonIndicesExtra = fixedIndicesExtra
+            
+        if maxInfluencersExceeded > 0:
+            Main.warn('Maximum # of influencers exceeded for ' + format_int(maxInfluencersExceeded) + ' vertices, extras ignored', 3)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # sorts one set of weights & indices by descending weight, by reference
+    # not shown to help with MakeHuman, but did not hurt.  In just so it is not lost for future.
+    @staticmethod
+    def sortByDescendingInfluence(weights, indices):
+        notSorted = True
+        while(notSorted):
+            notSorted = False
+            for idx in range(1, len(weights)):
+                if weights[idx - 1] < weights[idx]:
+                    tmp = weights[idx]
+                    weights[idx    ] = weights[idx - 1]
+                    weights[idx - 1] = tmp
+                    
+                    tmp = indices[idx]
+                    indices[idx    ] = indices[idx - 1]
+                    indices[idx - 1] = tmp
+                    
+                    notSorted = True    
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # assume that toFixedInfluencers has already run, which ensures indices length is a multiple of 4
+    @staticmethod
+    def packSkeletonIndices(indices):
+        compressedIndices = []
+
+        for i in range(math.floor(len(indices) / 4)):
+            idx = i * 4
+            matricesIndicesCompressed  = indices[idx    ]
+            matricesIndicesCompressed += indices[idx + 1] <<  8
+            matricesIndicesCompressed += indices[idx + 2] << 16
+            matricesIndicesCompressed += indices[idx + 3] << 24
+            
+            compressedIndices.append(matricesIndicesCompressed)
+            
+        return compressedIndices
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('{')
         write_string(file_handler, 'name', self.name, True)
@@ -988,7 +1086,6 @@ class Mesh(FCurveAnimatable):
         write_bool(file_handler, 'isVisible', self.isVisible)
         write_bool(file_handler, 'freezeWorldMatrix', self.freezeWorldMatrix)
         write_bool(file_handler, 'isEnabled', self.isEnabled)
-        write_bool(file_handler, 'useFlatShading', self.useFlatShading)
         write_bool(file_handler, 'checkCollisions', self.checkCollisions)
         write_bool(file_handler, 'receiveShadows', self.receiveShadows)
 
@@ -999,7 +1096,10 @@ class Mesh(FCurveAnimatable):
             write_float(file_handler, 'physicsRestitution', self.physicsRestitution)
 
         # Geometry
-        if hasattr(self, 'skeletonId'): write_int(file_handler, 'skeletonId', self.skeletonId)
+        if hasattr(self, 'skeletonId'): 
+            write_int(file_handler, 'skeletonId', self.skeletonId)
+            write_int(file_handler, 'numBoneInfluencers', self.numBoneInfluencers)
+
         write_vector_array(file_handler, 'positions', self.positions)
         write_vector_array(file_handler, 'normals'  , self.normals  )
 
@@ -1014,7 +1114,11 @@ class Mesh(FCurveAnimatable):
 
         if hasattr(self, 'skeletonWeights'):
             write_array(file_handler, 'matricesWeights', self.skeletonWeights)
-            write_array(file_handler, 'matricesIndices', self.skeletonIndicesCompressed)
+            write_array(file_handler, 'matricesIndices', self.skeletonIndices)
+
+        if hasattr(self, 'skeletonWeightsExtra'):
+            write_array(file_handler, 'matricesWeightsExtra', self.skeletonWeightsExtra)
+            write_array(file_handler, 'matricesIndicesExtra', self.skeletonIndicesExtra)
 
         write_array(file_handler, 'indices', self.indices)
 
@@ -1135,7 +1239,7 @@ class SubMesh:
 #===============================================================================
 class Bone:
     def __init__(self, bone, skeleton, scene, index):
-        Main.log('processing begun of bone:  ' + bone.name + ', index:  '+ str(index))
+        Main.log('processing begun of bone:  ' + bone.name + ', index:  '+ str(index), 2)
         self.name = bone.name
         self.index = index
 
@@ -1153,7 +1257,7 @@ class Bone:
 
         #animation
         if (skeleton.animation_data):
-            Main.log('animation begun of bone:  ' + self.name)
+            Main.log('animation begun of bone:  ' + self.name, 3)
             self.animation = Animation(ANIMATIONTYPE_MATRIX, scene.render.fps, ANIMATIONLOOPMODE_CYCLE, 'anim', '_matrix')
 
             start_frame = scene.frame_start
@@ -1668,7 +1772,7 @@ class BakingRecipe:
                         continue
                     
                     # for images, just need to make sure there is only 1 per type
-                    if mtex.texture.type == 'IMAGE':
+                    if mtex.texture.type == 'IMAGE' and not forceBaking:
                         if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
                             if mtex.texture_coords == 'REFLECTION':
                                 nReflectionImages += 1
@@ -1739,10 +1843,8 @@ class BakingRecipe:
 #===============================================================================
 # Not intended to be instanced directly
 class Material:
-    def __init__(self):
-        # the number of users == 1 will cause the checkReadyOnlyOnce attribute to be set to true
-        self.numOfUsers = 1
-
+    def __init__(self, checkReadyOnlyOnce):
+        self.checkReadyOnlyOnce = checkReadyOnlyOnce
         # first pass of textures, either appending image type or recording types of bakes to do
         self.textures = []
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1757,8 +1859,7 @@ class Material:
         write_float(file_handler, 'specularPower', self.specularPower)
         write_float(file_handler, 'alpha', self.alpha)
         write_bool(file_handler, 'backFaceCulling', self.backFaceCulling)
-        if self.numOfUsers == 1:
-             write_bool(file_handler, 'checkReadyOnlyOnce', True)
+        write_bool(file_handler, 'checkReadyOnlyOnce', self.checkReadyOnlyOnce)
         for texSlot in self.textures:
             texSlot.to_scene_file(file_handler)
 
@@ -1766,8 +1867,10 @@ class Material:
 #===============================================================================
 class StdMaterial(Material):
     def __init__(self, material_slot, exporter, mesh):
-        super().__init__()
-        self.name = Main.nameSpace + '.' + material_slot.name
+        super().__init__(mesh.data.checkReadyOnlyOnce)
+        nameSpace = Main.nameSpace if mesh.data.materialNameSpace == DEFAULT_MATERIAL_NAMESPACE else mesh.data.materialNameSpace 
+        self.name = nameSpace + '.' + material_slot.name
+                
         Main.log('processing begun of Standard material:  ' +  material_slot.name, 2)
 
         # a material slot is not a reference to an actual material; need to look up
@@ -1796,36 +1899,41 @@ class StdMaterial(Material):
 
             if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
                 if mtex.texture_coords == 'REFLECTION':
-                    Main.log('Reflection texture found', 2)
+                    Main.log('Reflection texture found"' + mtex.name + '"', 2)
                     self.textures.append(Texture('reflectionTexture', mtex.diffuse_color_factor, mtex, mesh, exporter))
                 else:
-                    Main.log('Diffuse texture found', 2)
+                    Main.log('Diffuse texture found"' + mtex.name + '"', 2)
                     self.textures.append(Texture('diffuseTexture', mtex.diffuse_color_factor, mtex, mesh, exporter))
 
             if mtex.use_map_ambient:
-                Main.log('Ambient texture found', 2)
+                Main.log('Ambient texture found"' + mtex.name + '"', 2)
                 self.textures.append(Texture('ambientTexture', mtex.ambient_factor, mtex, mesh, exporter))
 
             if mtex.use_map_alpha:
-                Main.log('Opacity texture found', 2)
-                self.textures.append(Texture('opacityTexture', mtex.alpha_factor, mtex, mesh, exporter))
+                if self.alpha > 0:
+                    Main.log('Opacity texture found"' + mtex.name + '"', 2)
+                    self.textures.append(Texture('opacityTexture', mtex.alpha_factor, mtex, mesh, exporter))
+                else:
+                    Main.warn('Opacity non-std way to indicate opacity, use material alpha to also use Opacity texture', 2)
+                    self.alpha = 1
 
             if mtex.use_map_emit:
-                Main.log('Emissive texture found', 2)
+                Main.log('Emissive texture found"' + mtex.name + '"', 2)
                 self.textures.append(Texture('emissiveTexture', mtex.emit_factor, mtex, mesh, exporter))
 
             if mtex.use_map_normal:
-                Main.log('Bump texture found', 2)
+                Main.log('Bump texture found"' + mtex.name + '"', 2)
                 self.textures.append(Texture('bumpTexture', 1.0 / mtex.normal_factor, mtex, mesh, exporter))
 
             if mtex.use_map_color_spec:
-                Main.log('Specular texture found', 2)
+                Main.log('Specular texture found"' + mtex.name + '"', 2)
                 self.textures.append(Texture('specularTexture', mtex.specular_color_factor, mtex, mesh, exporter))
 #===============================================================================
 class BakedMaterial(Material):
     def __init__(self, exporter, mesh, recipe):
-        super().__init__()
-        self.name = Main.nameSpace + '.' + mesh.name
+        super().__init__(mesh.data.checkReadyOnlyOnce)
+        nameSpace = Main.nameSpace if mesh.data.materialNameSpace == DEFAULT_MATERIAL_NAMESPACE else mesh.data.materialNameSpace 
+        self.name = nameSpace + '.' + mesh.name
         Main.log('processing begun of baked material:  ' +  mesh.name, 2)
 
         # any baking already took in the values. Do not want to apply them again, but want shadows to show.
@@ -1851,11 +1959,7 @@ class BakedMaterial(Material):
 
         # you need UV on a mesh in order to bake image.  This is not reqd for procedural textures, so may not exist
         # need to look if it might already be created, as for a mesh with multi-materials
-        uv = None
-        for uvMap in mesh.data.uv_textures:
-            if uvMap.name == 'BakingUV':
-                uv = uvMap
-                break
+        uv = mesh.data.uv_textures[0] if len(mesh.data.uv_textures) > 0 else None
 
         if uv == None:
             mesh.data.uv_textures.new('BakingUV')
@@ -1883,25 +1987,25 @@ class BakedMaterial(Material):
 
         # now go thru all the textures that need to be baked
         if recipe.diffuseBaking:
-            self.bake('diffuseTexture', 'DIFFUSE_COLOR', 'TEXTURE', image, mesh, exporter, recipe)
+            self.bake('diffuseTexture', 'DIFFUSE_COLOR', 'TEXTURE', image, mesh, uv, exporter, recipe)
 
         if recipe.ambientBaking:
-            self.bake('ambientTexture', 'AO', 'AO', image, mesh, exporter, recipe)
+            self.bake('ambientTexture', 'AO', 'AO', image, mesh, uv, exporter, recipe)
 
         if recipe.opacityBaking:  # no eqivalent found for cycles
-            self.bake('opacityTexture', None, 'ALPHA', image, mesh, exporter, recipe)
+            self.bake('opacityTexture', None, 'ALPHA', image, mesh, uv, exporter, recipe)
 
         if recipe.reflectionBaking:
-            self.bake('reflectionTexture', 'REFLECTION', 'MIRROR_COLOR', image, mesh, exporter, recipe)
+            self.bake('reflectionTexture', 'REFLECTION', 'MIRROR_COLOR', image, mesh, uv, exporter, recipe)
 
         if recipe.emissiveBaking:
-            self.bake('emissiveTexture', 'EMIT', 'EMIT', image, mesh, exporter, recipe)
+            self.bake('emissiveTexture', 'EMIT', 'EMIT', image, mesh, uv, exporter, recipe)
 
         if recipe.bumpBaking:
-            self.bake('bumpTexture', 'NORMAL', 'NORMALS', image, mesh, exporter, recipe)
+            self.bake('bumpTexture', 'NORMAL', 'NORMALS', image, mesh, uv, exporter, recipe)
 
         if recipe.specularBaking:
-            self.bake('specularTexture', 'SPECULAR', 'SPEC_COLOR', image, mesh, exporter, recipe)
+            self.bake('specularTexture', 'SPECULAR', 'SPEC_COLOR', image, mesh, uv, exporter, recipe)
 
         # Toggle vertex selection & mode, if setting changed their value
         bpy.ops.mesh.select_all(action='TOGGLE')  # still in edit mode toggle select back to previous
@@ -1911,19 +2015,21 @@ class BakedMaterial(Material):
 
         exporter.scene.render.engine = engine
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bake(self, bjs_type, cycles_type, internal_type, image, mesh, exporter, recipe):
+    def bake(self, bjs_type, cycles_type, internal_type, image, mesh, uv, exporter, recipe):
         if recipe.cyclesRender:
             if cycles_type is None:
                 return
-            self.bakeCycles(cycles_type, image, recipe.nodeTrees)
+            self.bakeCycles(cycles_type, image, uv, recipe.nodeTrees)
         else:
-            self.bakeInternal(internal_type, image)
+            self.bakeInternal(internal_type, image, uv)
 
         self.textures.append(Texture(bjs_type, 1.0, image, mesh, exporter))
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bakeInternal(self, bake_type, image):
-        Main.log('Internal baking texture, type: ' + bake_type + ', mapped using: BakingUV', 3)
-        image.filepath = self.name + '_' + bake_type + '.jpg'
+    def bakeInternal(self, bake_type, image, uv):
+        Main.log('Internal baking texture, type: ' + bake_type + ', mapped using: ' + uv.name, 3)
+        # need to use the legal name, since this will become the file name, chars like ':' not legal
+        legalName = legal_js_identifier(self.name)
+        image.filepath = legalName + '_' + bake_type + '.jpg'
 
         scene = bpy.context.scene
         scene.render.engine = 'BLENDER_RENDER'
@@ -1946,9 +2052,10 @@ class BakedMaterial(Material):
 
         bpy.ops.object.bake_image()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bakeCycles(self, bake_type, image, nodeTrees):
-        Main.log('Cycles baking texture, type: ' + bake_type + ', mapped using: BakingUV', 3)
-        image.filepath = self.name + '_' + bake_type + '.jpg'
+    def bakeCycles(self, bake_type, image, uv, nodeTrees):
+        Main.log('Cycles baking texture, type: ' + bake_type + ', mapped using: ' + uv.name, 3)
+        legalName = legal_js_identifier(self.name)
+        image.filepath = legalName + '_' + bake_type + '.jpg'
 
         scene = bpy.context.scene
         scene.render.engine = 'CYCLES'
@@ -2199,6 +2306,13 @@ def scale_vector(vector, mult, xOffset = 0):
 
 def same_vertex(vertA, vertB):
     return vertA.x == vertB.x and vertA.y == vertB.y and vertA.z == vertB.z
+
+def same_array(arrayA, arrayB):
+    if len(arrayA) != len(arrayB): return False
+    for i in range(len(arrayA)):
+        if arrayA[i] != arrayB[i] : return False
+        
+    return True
 #===============================================================================
 # module level methods for writing JSON (.babylon) files
 #===============================================================================
@@ -2250,7 +2364,7 @@ bpy.types.Mesh.autoAnimate = bpy.props.BoolProperty(
 )
 bpy.types.Mesh.useFlatShading = bpy.props.BoolProperty(
     name='Use Flat Shading',
-    description='',
+    description='Use face normals.  Increases vertices.',
     default = False
 )
 bpy.types.Mesh.checkCollisions = bpy.props.BoolProperty(
@@ -2276,11 +2390,26 @@ bpy.types.Mesh.bakeSize = bpy.props.IntProperty(
 bpy.types.Mesh.bakeQuality = bpy.props.IntProperty(
     name='Quality 1-100',
     description='The trade-off between Quality - File size(100 highest quality)',
-    default = 50
+    default = 50, min = 1, max = 100
+)
+bpy.types.Mesh.materialNameSpace = bpy.props.StringProperty(
+    name='Name Space',
+    description='Prefix to use for materials for sharing across .blends.',
+    default = DEFAULT_MATERIAL_NAMESPACE
+)
+bpy.types.Mesh.checkReadyOnlyOnce = bpy.props.BoolProperty(
+    name='Check Ready Only Once',
+    description='When checked better CPU utilization.  Advanced user option.',
+    default = False
 )
 bpy.types.Mesh.freezeWorldMatrix = bpy.props.BoolProperty(
     name='Freeze World Matrix',
     description='Indicate the position, rotation, & scale do not change for performance reasons',
+    default = False
+)
+bpy.types.Mesh.loadDisabled = bpy.props.BoolProperty(
+    name='Load Disabled',
+    description='Indicate this mesh & children should not be active until enabled by code.',
     default = False
 )
 bpy.types.Mesh.attachedSound = bpy.props.StringProperty(
@@ -2302,6 +2431,11 @@ bpy.types.Mesh.maxSoundDistance = bpy.props.FloatProperty(
     name='Max sound distance',
     description='',
     default = 100
+)
+bpy.types.Mesh.maxInfluencers = bpy.props.IntProperty(
+    name='Max bone Influencers / Vertex',
+    description='When fewer than this are observed, the lower value is used.',
+    default = 8, min = 1, max = 8
 )
 #===============================================================================
 bpy.types.Camera.autoAnimate = bpy.props.BoolProperty(
@@ -2417,21 +2551,30 @@ class ObjectPanel(bpy.types.Panel):
         isLight = isinstance(ob.data, bpy.types.Lamp)
 
         if isMesh:
-            layout.prop(ob.data, 'useFlatShading')
-            layout.prop(ob.data, 'checkCollisions')
-            layout.prop(ob.data, 'castShadows')
-            layout.prop(ob.data, 'receiveShadows')
-
-            layout.separator()
-
-            layout.prop(ob.data, 'autoAnimate')
+            row = layout.row()
+            row.prop(ob.data, 'useFlatShading')
+            row.prop(ob.data, 'checkCollisions')
+            
+            row = layout.row()
+            row.prop(ob.data, 'castShadows')
+            row.prop(ob.data, 'receiveShadows')
+            
+            row = layout.row()
+            row.prop(ob.data, 'freezeWorldMatrix')
+            row.prop(ob.data, 'loadDisabled')
+            
+            layout.prop(ob.data, 'autoAnimate')            
+            layout.prop(ob.data, 'maxInfluencers')
 
             box = layout.box()
-            box.label(text="Procedural Texture / Cycles Baking")
+            box.label('Materials')
+            box.prop(ob.data, 'materialNameSpace')
+            box.prop(ob.data, 'checkReadyOnlyOnce')
+            
+            box = layout.box()
+            box.label(text='Procedural Texture / Cycles Baking')
             box.prop(ob.data, 'bakeSize')
             box.prop(ob.data, 'bakeQuality')
-
-            layout.prop(ob.data, 'freezeWorldMatrix')
 
             box = layout.box()
             box.prop(ob.data, 'attachedSound')
@@ -2463,4 +2606,3 @@ class ObjectPanel(bpy.types.Panel):
             box.prop(ob.data, 'shadowBlurBoxOffset')
 
             layout.prop(ob.data, 'autoAnimate')
-

@@ -44,12 +44,13 @@
             this.grpBlurInfo = new System.Windows.Forms.GroupBox();
             this.nupBlurBoxOffset = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.nupBlurScale = new System.Windows.Forms.NumericUpDown();
-            this.cbCameraType = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.nupBias = new System.Windows.Forms.NumericUpDown();
+            this.label6 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.cbCameraType = new System.Windows.Forms.ComboBox();
+            this.ckForceBackFaces = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             this.grpAutoAnimate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).BeginInit();
@@ -67,7 +68,7 @@
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 454);
+            this.butOK.Location = new System.Drawing.Point(93, 484);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 1;
@@ -80,7 +81,7 @@
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 454);
+            this.butCancel.Location = new System.Drawing.Point(174, 484);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 2;
@@ -92,7 +93,7 @@
             this.groupBox3.Controls.Add(this.grpAutoAnimate);
             this.groupBox3.Controls.Add(this.chkAutoAnimate);
             this.groupBox3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox3.Location = new System.Drawing.Point(12, 284);
+            this.groupBox3.Location = new System.Drawing.Point(12, 319);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(319, 156);
             this.groupBox3.TabIndex = 5;
@@ -205,6 +206,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.ckForceBackFaces);
             this.groupBox1.Controls.Add(this.grpBlurInfo);
             this.groupBox1.Controls.Add(this.nupBias);
             this.groupBox1.Controls.Add(this.label6);
@@ -213,7 +215,7 @@
             this.groupBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox1.Location = new System.Drawing.Point(12, 77);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(319, 201);
+            this.groupBox1.Size = new System.Drawing.Size(319, 236);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Shadows";
@@ -226,7 +228,7 @@
             this.grpBlurInfo.Controls.Add(this.label2);
             this.grpBlurInfo.Enabled = false;
             this.grpBlurInfo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.grpBlurInfo.Location = new System.Drawing.Point(21, 108);
+            this.grpBlurInfo.Location = new System.Drawing.Point(18, 144);
             this.grpBlurInfo.Name = "grpBlurInfo";
             this.grpBlurInfo.Size = new System.Drawing.Size(292, 87);
             this.grpBlurInfo.TabIndex = 13;
@@ -264,15 +266,6 @@
             this.label3.TabIndex = 14;
             this.label3.Text = "Blur box offset:";
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(21, 55);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(34, 13);
-            this.label6.TabIndex = 8;
-            this.label6.Text = "Type:";
-            // 
             // nupBlurScale
             // 
             this.nupBlurScale.Location = new System.Drawing.Point(89, 24);
@@ -294,22 +287,6 @@
             0,
             0,
             0});
-            // 
-            // cbCameraType
-            // 
-            this.cbCameraType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbCameraType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.cbCameraType.FormattingEnabled = true;
-            this.cbCameraType.Items.AddRange(new object[] {
-            "Hard shadows",
-            "Poisson Sampling",
-            "Variance",
-            "Blurred Variance"});
-            this.cbCameraType.Location = new System.Drawing.Point(24, 71);
-            this.cbCameraType.Name = "cbCameraType";
-            this.cbCameraType.Size = new System.Drawing.Size(289, 21);
-            this.cbCameraType.TabIndex = 7;
-            this.cbCameraType.SelectedIndexChanged += new System.EventHandler(this.cbCameraType_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -333,6 +310,15 @@
             this.nupBias.Size = new System.Drawing.Size(120, 20);
             this.nupBias.TabIndex = 9;
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(18, 92);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(34, 13);
+            this.label6.TabIndex = 8;
+            this.label6.Text = "Type:";
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -342,13 +328,40 @@
             this.label1.TabIndex = 10;
             this.label1.Text = "Bias:";
             // 
+            // cbCameraType
+            // 
+            this.cbCameraType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbCameraType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cbCameraType.FormattingEnabled = true;
+            this.cbCameraType.Items.AddRange(new object[] {
+            "Hard shadows",
+            "Poisson Sampling",
+            "Variance",
+            "Blurred Variance"});
+            this.cbCameraType.Location = new System.Drawing.Point(21, 108);
+            this.cbCameraType.Name = "cbCameraType";
+            this.cbCameraType.Size = new System.Drawing.Size(289, 21);
+            this.cbCameraType.TabIndex = 7;
+            this.cbCameraType.SelectedIndexChanged += new System.EventHandler(this.cbCameraType_SelectedIndexChanged);
+            // 
+            // ckForceBackFaces
+            // 
+            this.ckForceBackFaces.AutoSize = true;
+            this.ckForceBackFaces.Location = new System.Drawing.Point(24, 61);
+            this.ckForceBackFaces.Name = "ckForceBackFaces";
+            this.ckForceBackFaces.Size = new System.Drawing.Size(135, 17);
+            this.ckForceBackFaces.TabIndex = 14;
+            this.ckForceBackFaces.Text = "Force Back Faces only";
+            this.ckForceBackFaces.ThreeState = true;
+            this.ckForceBackFaces.UseVisualStyleBackColor = true;
+            // 
             // LightPropertiesForm
             // 
             this.AcceptButton = this.butOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 489);
+            this.ClientSize = new System.Drawing.Size(343, 519);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -402,5 +415,6 @@
         private System.Windows.Forms.GroupBox grpBlurInfo;
         private System.Windows.Forms.NumericUpDown nupBlurBoxOffset;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox ckForceBackFaces;
     }
 }

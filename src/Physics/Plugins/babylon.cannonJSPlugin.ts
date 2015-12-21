@@ -57,7 +57,7 @@
                             //find the mesh that collided with the registered mesh
                             for (var idx = 0; idx < this._registeredMeshes.length; idx++) {
                                 if (this._registeredMeshes[idx].body == e.body) {
-                                    registeredMesh.mesh.onPhysicsCollide(this._registeredMeshes[idx].mesh);
+                                    registeredMesh.mesh.onPhysicsCollide(this._registeredMeshes[idx].mesh, e.contact);
                                 }
                             }
                         }

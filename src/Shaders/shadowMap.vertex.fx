@@ -77,8 +77,14 @@ void main(void)
 
 	finalWorld = finalWorld * influence;
 #endif
+
+#ifdef CUBEMAP
+	vPosition = finalWorld * vec4(position, 1.0);
+	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
+#else
 	vPosition = viewProjection * finalWorld * vec4(position, 1.0);
 	gl_Position = vPosition;
+#endif
 
 #ifdef ALPHATEST
 #ifdef UV1

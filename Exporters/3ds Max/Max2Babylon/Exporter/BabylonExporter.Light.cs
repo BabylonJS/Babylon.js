@@ -73,13 +73,13 @@ namespace Max2Babylon
             // Shadows 
             if (maxLight.ShadowMethod == 1)
             {
-                if (lightState.Type == LightType.DirectLgt || lightState.Type == LightType.SpotLgt)
+                if (lightState.Type == LightType.DirectLgt || lightState.Type == LightType.SpotLgt || lightState.Type == LightType.OmniLgt)
                 {
                     ExportShadowGenerator(lightNode.MaxNode, babylonScene);
                 }
                 else
                 {
-                    RaiseWarning("Shadows maps are only supported for directional and spot lights", 2);
+                    RaiseWarning("Shadows maps are only supported for point, directional and spot lights", 2);
                 }
             }
 
@@ -155,7 +155,7 @@ namespace Max2Babylon
 
             if (maxLight.UseAtten)
             {
-                babylonLight.range = maxLight.GetAtten(0, 1, Tools.Forever);
+                babylonLight.range = maxLight.GetAtten(0, 3, Tools.Forever);
             }
 
 
@@ -201,6 +201,11 @@ namespace Max2Babylon
             });
 
             ExportFloatAnimation("intensity", animations, key => new[] { maxLight.GetIntensity(key, Tools.Forever) });
+
+            ExportColor3Animation("diffuse", animations, key =>
+            {
+                return lightState.AffectDiffuse? maxLight.GetRGBColor(key, Tools.Forever).ToArray() : new float[] { 0, 0, 0 };
+            });
 
             babylonLight.animations = animations.ToArray();
 
