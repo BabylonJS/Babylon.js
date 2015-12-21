@@ -7,7 +7,7 @@
         material: any;
         delta: Vector3;
         deltaRotation: Quaternion;
-        heightmap: boolean;
+        type: any;
         collisionFunction?: (event: any) => void;
 
     }
@@ -131,8 +131,8 @@
                 case PhysicsEngine.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
-
-                    returnValue = this._createConvexPolyhedron(rawVerts, rawFaces, mesh);
+                    Tools.Warn("MeshImpostor only collides against spheres.");
+                    returnValue = new CANNON.Trimesh(rawVerts, rawFaces); //this._createConvexPolyhedron(rawVerts, rawFaces, mesh);
                     break;
                 case PhysicsEngine.HeightmapImpostor:
                     returnValue = this._createHeightmap(mesh);
@@ -312,6 +312,8 @@
 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
+            } else if (shape.type === CANNON.Shape.types.TRIMESH) {
+                deltaPosition = Vector3.Zero();
             }
             
             //add the shape
@@ -319,7 +321,7 @@
 
             this._world.add(body);
 
-            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition, deltaRotation: deltaRotation, heightmap: shape.type === CANNON.Shape.types.HEIGHTFIELD });
+            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition, deltaRotation: deltaRotation, type: shape.type });
 
             return body;
         }
@@ -390,14 +392,13 @@
             }
         }
 
-        public updateBodyPosition = function (mesh: AbstractMesh): void {
+        public updateBodyPosition = function(mesh: AbstractMesh): void {
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                     var body = registeredMesh.body;
 
-                    var center = mesh.getBoundingInfo().boundingBox.center;
-                    body.position.set(center.x, center.y, center.z);
+                    var center = mesh.getBoundingInfo().boundingBox.center.clone();
 
                     body.quaternion.copy(mesh.rotationQuaternion);
 
@@ -406,7 +407,7 @@
                         body.quaternion = body.quaternion.mult(tmpQ);
                     }
 
-                    if (registeredMesh.heightmap) {
+                    if (registeredMesh.type === CANNON.Shape.types.HEIGHTFIELD) {
                         //calculate the correct body position:
                         var rotationQuaternion = mesh.rotationQuaternion;
                         mesh.rotationQuaternion = new BABYLON.Quaternion();
@@ -428,14 +429,19 @@
                         //calculate the translation
                         var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
 
-                        body.position = new CANNON.Vec3(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
+                        center.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
                         //add it inverted to the delta 
                         registeredMesh.delta = mesh.getBoundingInfo().boundingBox.center.subtract(center);
                         registeredMesh.delta.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
 
                         mesh.setPivotMatrix(oldPivot);
                         mesh.computeWorldMatrix(true);
+                    } else if (registeredMesh.type === CANNON.Shape.types.TRIMESH) {
+                        center.copyFromFloats(mesh.position.x, mesh.position.y, mesh.position.z);
                     }
+                    
+                    body.position.set(center.x, center.y, center.z);
+                    
                     return;
                 }
             }
