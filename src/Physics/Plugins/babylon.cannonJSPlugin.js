@@ -139,6 +139,7 @@ var BABYLON;
                 case BABYLON.PhysicsEngine.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
+                    BABYLON.Tools.Warn("MeshImpostor only collides against spheres.");
                     returnValue = new CANNON.Trimesh(rawVerts, rawFaces); //this._createConvexPolyhedron(rawVerts, rawFaces, mesh);
                     break;
                 case BABYLON.PhysicsEngine.HeightmapImpostor:
