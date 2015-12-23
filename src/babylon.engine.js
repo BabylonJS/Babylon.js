@@ -355,7 +355,7 @@ var BABYLON;
          */
         function Engine(canvas, antialias, options, adaptToDeviceRatio) {
             var _this = this;
-            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
+            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = true; }
             // Public members
             this.isFullscreen = false;
             this.isPointerLock = false;
@@ -1065,6 +1065,16 @@ var BABYLON;
                 return;
             }
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
+        };
+        Engine.prototype.drawUnIndexed = function (useTriangles, verticesStart, verticesCount, instancesCount) {
+            // Apply states
+            this.applyStates();
+            this._drawCalls++;
+            if (instancesCount) {
+                this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
+                return;
+            }
+            this._gl.drawArrays(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount);
         };
         // Shaders
         Engine.prototype._releaseEffect = function (effect) {

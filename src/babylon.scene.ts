@@ -2066,6 +2066,18 @@
             this._depthRenderer = null;
         }
 
+        public freezeMaterials(): void {
+            for (var i = 0; i < this.materials.length; i++) {
+                this.materials[i].freeze();
+            }
+        }
+
+        public unfreezeMaterials(): void {
+            for (var i = 0; i < this.materials.length; i++) {
+                this.materials[i].unfreeze();
+            }
+        }
+
         public dispose(): void {
             this.beforeRender = null;
             this.afterRender = null;

@@ -5,8 +5,8 @@
         private _currentRank = 32;
         private _maxRank = -1;
 
-        private _mesh : AbstractMesh;
-        private _meshRank : number;
+        private _mesh: AbstractMesh;
+        private _meshRank: number;
 
         public addFallback(rank: number, define: string): void {
             if (!this._defines[rank]) {
@@ -24,14 +24,14 @@
             this._defines[rank].push(define);
         }
 
-            public addCPUSkinningFallback(rank: number, mesh : BABYLON.AbstractMesh){
-                this._meshRank = rank;
-                this._mesh = mesh;
-    
-                if (rank > this._maxRank) {
-                    this._maxRank = rank;
-                }
+        public addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh) {
+            this._meshRank = rank;
+            this._mesh = mesh;
+
+            if (rank > this._maxRank) {
+                this._maxRank = rank;
             }
+        }
 
         public get isMoreFallbacks(): boolean {
             return this._currentRank <= this._maxRank;
@@ -45,7 +45,7 @@
                 currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
             }
 
-            if (this._mesh && this._currentRank === this._meshRank){
+            if (this._mesh && this._currentRank === this._meshRank) {
                 this._mesh.computeBonesUsingShaders = false;
                 currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
                 Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
@@ -380,10 +380,10 @@
         }
 
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-                return this;
+            //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
+            //    return this;
 
-            this._cacheMatrix(uniformName, matrix);
+           // this._cacheMatrix(uniformName, matrix);
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
 
             return this;

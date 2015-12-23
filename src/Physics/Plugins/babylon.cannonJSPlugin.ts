@@ -392,7 +392,7 @@
             }
         }
 
-        public updateBodyPosition = function(mesh: AbstractMesh): void {
+        public updateBodyPosition = function (mesh: AbstractMesh): void {
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
@@ -439,9 +439,9 @@
                     } else if (registeredMesh.type === CANNON.Shape.types.TRIMESH) {
                         center.copyFromFloats(mesh.position.x, mesh.position.y, mesh.position.z);
                     }
-                    
+
                     body.position.set(center.x, center.y, center.z);
-                    
+
                     return;
                 }
             }
