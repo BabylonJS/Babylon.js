@@ -898,7 +898,6 @@ void main(void) {
 #endif
 #endif
 
-
 #ifdef OPACITY
 	vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
 

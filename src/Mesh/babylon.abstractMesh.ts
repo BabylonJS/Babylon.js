@@ -127,6 +127,8 @@
 
         private _isWorldMatrixFrozen = false;
 
+        public _unIndexed = false;
+
         // Loading properties
         public _waitingActions: any;
         public _waitingFreezeWorldMatrix: boolean;
@@ -439,7 +441,9 @@
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(matrix);
+                if (!subMesh.IsGlobal) {
+                    subMesh.updateBoundingInfo(matrix);
+                }
             }
         }
 

@@ -305,9 +305,9 @@ var BABYLON;
             return this;
         };
         Effect.prototype.setMatrix = function (uniformName, matrix) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-                return this;
-            this._cacheMatrix(uniformName, matrix);
+            //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
+            //    return this;
+            // this._cacheMatrix(uniformName, matrix);
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
             return this;
         };

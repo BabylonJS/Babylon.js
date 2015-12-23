@@ -460,17 +460,22 @@ var BABYLON;
             var engine = this.getScene().getEngine();
             // Wireframe
             var indexToBind;
-            switch (fillMode) {
-                case BABYLON.Material.PointFillMode:
-                    indexToBind = null;
-                    break;
-                case BABYLON.Material.WireFrameFillMode:
-                    indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
-                    break;
-                default:
-                case BABYLON.Material.TriangleFillMode:
-                    indexToBind = this._geometry.getIndexBuffer();
-                    break;
+            if (this._unIndexed) {
+                indexToBind = null;
+            }
+            else {
+                switch (fillMode) {
+                    case BABYLON.Material.PointFillMode:
+                        indexToBind = null;
+                        break;
+                    case BABYLON.Material.WireFrameFillMode:
+                        indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
+                        break;
+                    default:
+                    case BABYLON.Material.TriangleFillMode:
+                        indexToBind = this._unIndexed ? null : this._geometry.getIndexBuffer();
+                        break;
+                }
             }
             // VBOs
             engine.bindMultiBuffers(this._geometry.getVertexBuffers(), indexToBind, effect);
@@ -486,10 +491,20 @@ var BABYLON;
                     engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
                     break;
                 case BABYLON.Material.WireFrameFillMode:
-                    engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                    if (this._unIndexed) {
+                        engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+                    }
+                    else {
+                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                    }
                     break;
                 default:
-                    engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
+                    if (this._unIndexed) {
+                        engine.drawUnIndexed(true, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+                    }
+                    else {
+                        engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
+                    }
             }
         };
         Mesh.prototype.registerBeforeRender = function (func) {
@@ -970,6 +985,60 @@ var BABYLON;
                 var previousOne = previousSubmeshes[submeshIndex];
                 var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
             }
+            this.synchronizeInstances();
+        };
+        Mesh.prototype.convertToUnIndexedMesh = function () {
+            /// <summary>Remove indices by unfolding faces into buffers</summary>
+            /// <summary>Warning: This implies adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
+            var kinds = this.getVerticesDataKinds();
+            var vbs = [];
+            var data = [];
+            var newdata = [];
+            var updatableNormals = false;
+            var kindIndex;
+            var kind;
+            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                kind = kinds[kindIndex];
+                var vertexBuffer = this.getVertexBuffer(kind);
+                vbs[kind] = vertexBuffer;
+                data[kind] = vbs[kind].getData();
+                newdata[kind] = [];
+            }
+            // Save previous submeshes
+            var previousSubmeshes = this.subMeshes.slice(0);
+            var indices = this.getIndices();
+            var totalIndices = this.getTotalIndices();
+            // Generating unique vertices per face
+            var index;
+            for (index = 0; index < totalIndices; index++) {
+                var vertexIndex = indices[index];
+                for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                    kind = kinds[kindIndex];
+                    var stride = vbs[kind].getStrideSize();
+                    for (var offset = 0; offset < stride; offset++) {
+                        newdata[kind].push(data[kind][vertexIndex * stride + offset]);
+                    }
+                }
+            }
+            // Updating indices
+            for (index = 0; index < totalIndices; index += 3) {
+                indices[index] = index;
+                indices[index + 1] = index + 1;
+                indices[index + 2] = index + 2;
+            }
+            this.setIndices(indices);
+            // Updating vertex buffers
+            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                kind = kinds[kindIndex];
+                this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
+            }
+            // Updating submeshes
+            this.releaseSubMeshes();
+            for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
+                var previousOne = previousSubmeshes[submeshIndex];
+                var subMesh = new BABYLON.SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+            }
+            this._unIndexed = true;
             this.synchronizeInstances();
         };
         // will inverse faces orientations, and invert normals too if specified
