@@ -414,6 +414,7 @@ var BABYLON;
                 return this._worldMatrix;
             }
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
+                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
             this._cache.position.copyFrom(this.position);
