@@ -245,9 +245,7 @@
 
                 this.startPositionFunction(worldMatrix, particle.position, particle);
 
-                var step = randomNumber(0, 1.0);
-
-                Color4.LerpToRef(this.color1, this.color2, step, particle.color);
+                Color4.RandomLerpToRef(this.color1, this.color2, particle.color);
 
                 this.colorDead.subtractToRef(particle.color, this._colorDiff);
                 this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
