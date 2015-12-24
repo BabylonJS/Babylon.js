@@ -1615,7 +1615,7 @@
 
             // Render targets
             var beforeRenderTargetDate = Tools.Now;
-            if (this.renderTargetsEnabled) {
+            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
@@ -1628,9 +1628,7 @@
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
                 this._renderId++;
-            }
-            if (this._renderTargets.length > 0) { // Restore back buffer
-                engine.restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
             this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
 

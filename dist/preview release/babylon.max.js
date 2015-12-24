@@ -5414,7 +5414,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.3.0-alpha";
+                return "2.3.0-beta";
             },
             enumerable: true,
             configurable: true
@@ -7962,6 +7962,7 @@ var BABYLON;
                 return this._worldMatrix;
             }
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
+                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
             this._cache.position.copyFrom(this.position);
@@ -13303,7 +13304,7 @@ var BABYLON;
             }
             // Render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
-            if (this.renderTargetsEnabled) {
+            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 BABYLON.Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
@@ -13315,9 +13316,7 @@ var BABYLON;
                 }
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._renderId++;
-            }
-            if (this._renderTargets.length > 0) {
-                engine.restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
             this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
             // Prepare Frame
