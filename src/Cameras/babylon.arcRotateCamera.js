@@ -102,7 +102,7 @@ var BABYLON;
             configurable: true
         });
         ArcRotateCamera.prototype._getTargetPosition = function () {
-            return this.target.getAbsolutePosition() || this.target;
+            return this.target.getAbsolutePosition ? this.target.getAbsolutePosition() : this.target;
         };
         // Cache
         ArcRotateCamera.prototype._initCache = function () {
