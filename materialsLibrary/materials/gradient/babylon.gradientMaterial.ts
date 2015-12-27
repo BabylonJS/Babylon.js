@@ -499,6 +499,7 @@ module BABYLON {
             // Gradient material
             newMaterial.topColor = this.topColor.clone();
             newMaterial.bottomColor = this.bottomColor.clone();
+            newMaterial.offset = this.offset;
             return newMaterial;
         }
         
@@ -507,6 +508,7 @@ module BABYLON {
             serializationObject.customType      = "BABYLON.GradientMaterial";
             serializationObject.topColor        = this.topColor.asArray();
             serializationObject.bottomColor     = this.bottomColor.asArray();
+            serializationObject.offset          = this.offset;
             serializationObject.disableLighting = this.disableLighting;
 
             return serializationObject;
@@ -517,6 +519,7 @@ module BABYLON {
 
             material.topColor               = Color3.FromArray(source.topColor);
             material.bottomColor            = Color3.FromArray(source.bottomColor);
+            material.offset                 = source.offset;
             material.disableLighting        = source.disableLighting;
 
             material.alpha          = source.alpha;

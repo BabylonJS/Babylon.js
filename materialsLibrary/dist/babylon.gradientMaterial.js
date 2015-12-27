@@ -411,6 +411,7 @@ var BABYLON;
             // Gradient material
             newMaterial.topColor = this.topColor.clone();
             newMaterial.bottomColor = this.bottomColor.clone();
+            newMaterial.offset = this.offset;
             return newMaterial;
         };
         GradientMaterial.prototype.serialize = function () {
@@ -418,6 +419,7 @@ var BABYLON;
             serializationObject.customType = "BABYLON.GradientMaterial";
             serializationObject.topColor = this.topColor.asArray();
             serializationObject.bottomColor = this.bottomColor.asArray();
+            serializationObject.offset = this.offset;
             serializationObject.disableLighting = this.disableLighting;
             return serializationObject;
         };
@@ -425,6 +427,7 @@ var BABYLON;
             var material = new GradientMaterial(source.name, scene);
             material.topColor = BABYLON.Color3.FromArray(source.topColor);
             material.bottomColor = BABYLON.Color3.FromArray(source.bottomColor);
+            material.offset = source.offset;
             material.disableLighting = source.disableLighting;
             material.alpha = source.alpha;
             material.id = source.id;
