@@ -6,6 +6,7 @@ uniform vec3 vEyePosition;
 // Gradient variables
 uniform vec3 topColor;
 uniform vec3 bottomColor;
+uniform float offset;
 varying vec2 vUV;
 
 // Input
@@ -379,7 +380,7 @@ void main(void) {
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
 	// Base color
-	vec4  baseColor = vec4(mix(topColor, bottomColor, vUV.y), 1.0);
+	vec4  baseColor = vec4(mix(topColor, bottomColor, vUV.y +offset), 1.0);
 	vec3 diffuseColor = vec3(1,1,1);
 
 	// Alpha

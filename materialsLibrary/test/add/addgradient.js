@@ -15,5 +15,12 @@ window.prepareGradient = function() {
         return grad.bottomColor.toHexString();
     });
 
+    // offset
+    registerRangeUI("gradient", "offset", -1, 1, function(value) {
+        grad.offset = value;
+    }, function() {
+        return grad.offset;
+    });
+
     return grad;
 };

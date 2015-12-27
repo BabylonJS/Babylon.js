@@ -66,6 +66,9 @@ module BABYLON {
         // The gradient top color, blue by default
         public bottomColor = new Color3(0, 0, 1);
 
+        // Gradient offset
+        public offset = 0;
+
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -347,7 +350,7 @@ module BABYLON {
                         "vDiffuseInfos", 
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues", "topColor", "bottomColor"
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues", "topColor", "bottomColor", "offset"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -473,6 +476,7 @@ module BABYLON {
 
             this._effect.setColor3("topColor", this.topColor);
             this._effect.setColor3("bottomColor", this.bottomColor);
+            this._effect.setFloat("offset", this.offset);
 
             super.bind(world, mesh);
         }
