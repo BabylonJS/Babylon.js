@@ -89,7 +89,7 @@
         }
 
         public _getTargetPosition(): Vector3 {
-            return this.target.position || this.target;
+            return this.target.getAbsolutePosition() || this.target;
         }
 
         // Cache
