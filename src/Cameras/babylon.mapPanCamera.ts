@@ -7,7 +7,7 @@ module BABYLON {
         public upperRadiusLimit = null;
         public wheelPrecision = 3.0;
         public pinchPrecision = 2.0;
-        public panningSensibility: number = 50.0;
+        public panningSensibility: number = 500.0;
         public inertialPanningX: number = 0;
         public inertialPanningZ: number = 0;
         public keysUp = [38];

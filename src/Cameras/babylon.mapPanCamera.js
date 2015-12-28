@@ -18,7 +18,7 @@ var BABYLON;
             this.upperRadiusLimit = null;
             this.wheelPrecision = 3.0;
             this.pinchPrecision = 2.0;
-            this.panningSensibility = 50.0;
+            this.panningSensibility = 500.0;
             this.inertialPanningX = 0;
             this.inertialPanningZ = 0;
             this.keysUp = [38];
