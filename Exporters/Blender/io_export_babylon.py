@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 0, 0),
+    'version': (4, 0, 1),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -1957,22 +1957,24 @@ class BakedMaterial(Material):
         # mode_set's only work when there is an active object
         exporter.scene.objects.active = mesh
 
+         # UV unwrap operates on mesh in only edit mode, procedurals can also give error of 'no images to be found' when not done
+         # select all verticies of mesh, since smart_project works only with selected verticies
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT') 
+        
         # you need UV on a mesh in order to bake image.  This is not reqd for procedural textures, so may not exist
-        # need to look if it might already be created, as for a mesh with multi-materials
+        # need to look if it might already be created, if so use the first one
         uv = mesh.data.uv_textures[0] if len(mesh.data.uv_textures) > 0 else None
 
         if uv == None:
             mesh.data.uv_textures.new('BakingUV')
             uv = mesh.data.uv_textures['BakingUV']
-
-        uv.active = True
-        uv.active_render = True
-
-        # UV unwrap operates on mesh in only edit mode
-        # select all verticies of mesh, since smart_project works only with selected verticies
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.uv.smart_project(angle_limit = 66.0, island_margin = 0.0, user_area_weight = 1.0, use_aspect = True)
+            uv.active = True
+            uv.active_render = True
+            bpy.ops.uv.smart_project(angle_limit = 66.0, island_margin = 0.0, user_area_weight = 1.0, use_aspect = True)
+            uvName = 'BakingUV'  # issues with cycles when not done this way
+        else:
+            uvName = uv.name
 
         # create a temporary image & link it to the UV/Image Editor so bake_image works
         bpy.data.images.new(name = mesh.name + '_BJS_BAKE', width = recipe.bakeSize, height = recipe.bakeSize, alpha = False, float_buffer = False)
@@ -1987,25 +1989,25 @@ class BakedMaterial(Material):
 
         # now go thru all the textures that need to be baked
         if recipe.diffuseBaking:
-            self.bake('diffuseTexture', 'DIFFUSE_COLOR', 'TEXTURE', image, mesh, uv, exporter, recipe)
+            self.bake('diffuseTexture', 'DIFFUSE_COLOR', 'TEXTURE', image, mesh, uvName, exporter, recipe)
 
         if recipe.ambientBaking:
-            self.bake('ambientTexture', 'AO', 'AO', image, mesh, uv, exporter, recipe)
+            self.bake('ambientTexture', 'AO', 'AO', image, mesh, uvName, exporter, recipe)
 
         if recipe.opacityBaking:  # no eqivalent found for cycles
-            self.bake('opacityTexture', None, 'ALPHA', image, mesh, uv, exporter, recipe)
+            self.bake('opacityTexture', None, 'ALPHA', image, mesh, uvName, exporter, recipe)
 
         if recipe.reflectionBaking:
-            self.bake('reflectionTexture', 'REFLECTION', 'MIRROR_COLOR', image, mesh, uv, exporter, recipe)
+            self.bake('reflectionTexture', 'REFLECTION', 'MIRROR_COLOR', image, mesh, uvName, exporter, recipe)
 
         if recipe.emissiveBaking:
-            self.bake('emissiveTexture', 'EMIT', 'EMIT', image, mesh, uv, exporter, recipe)
+            self.bake('emissiveTexture', 'EMIT', 'EMIT', image, mesh, uvName, exporter, recipe)
 
         if recipe.bumpBaking:
-            self.bake('bumpTexture', 'NORMAL', 'NORMALS', image, mesh, uv, exporter, recipe)
+            self.bake('bumpTexture', 'NORMAL', 'NORMALS', image, mesh, uvName, exporter, recipe)
 
         if recipe.specularBaking:
-            self.bake('specularTexture', 'SPECULAR', 'SPEC_COLOR', image, mesh, uv, exporter, recipe)
+            self.bake('specularTexture', 'SPECULAR', 'SPEC_COLOR', image, mesh, uvName, exporter, recipe)
 
         # Toggle vertex selection & mode, if setting changed their value
         bpy.ops.mesh.select_all(action='TOGGLE')  # still in edit mode toggle select back to previous
@@ -2015,18 +2017,18 @@ class BakedMaterial(Material):
 
         exporter.scene.render.engine = engine
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bake(self, bjs_type, cycles_type, internal_type, image, mesh, uv, exporter, recipe):
+    def bake(self, bjs_type, cycles_type, internal_type, image, mesh, uvName, exporter, recipe):
         if recipe.cyclesRender:
             if cycles_type is None:
                 return
-            self.bakeCycles(cycles_type, image, uv, recipe.nodeTrees)
+            self.bakeCycles(cycles_type, image, uvName, recipe.nodeTrees)
         else:
-            self.bakeInternal(internal_type, image, uv)
+            self.bakeInternal(internal_type, image, uvName)
 
         self.textures.append(Texture(bjs_type, 1.0, image, mesh, exporter))
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bakeInternal(self, bake_type, image, uv):
-        Main.log('Internal baking texture, type: ' + bake_type + ', mapped using: ' + uv.name, 3)
+    def bakeInternal(self, bake_type, image, uvName):
+        Main.log('Internal baking texture, type: ' + bake_type + ', mapped using: ' + uvName, 3)
         # need to use the legal name, since this will become the file name, chars like ':' not legal
         legalName = legal_js_identifier(self.name)
         image.filepath = legalName + '_' + bake_type + '.jpg'
@@ -2052,8 +2054,8 @@ class BakedMaterial(Material):
 
         bpy.ops.object.bake_image()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bakeCycles(self, bake_type, image, uv, nodeTrees):
-        Main.log('Cycles baking texture, type: ' + bake_type + ', mapped using: ' + uv.name, 3)
+    def bakeCycles(self, bake_type, image, uvName, nodeTrees):
+        Main.log('Cycles baking texture, type: ' + bake_type + ', mapped using: ' + uvName, 3)
         legalName = legal_js_identifier(self.name)
         image.filepath = legalName + '_' + bake_type + '.jpg'
 
