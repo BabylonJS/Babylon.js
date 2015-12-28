@@ -62,12 +62,15 @@ module BABYLON {
 
         // The gradient top color, red by default
         public topColor = new Color3(1, 0, 0);
+        public topColorAlpha = 1.0;
 
         // The gradient top color, blue by default
         public bottomColor = new Color3(0, 0, 1);
+        public bottomColorAlpha = 1.0;
 
         // Gradient offset
         public offset = 0;
+        public smoothness = 1.0;
 
         public disableLighting = false;
 
@@ -85,11 +88,11 @@ module BABYLON {
         }
 
         public needAlphaBlending(): boolean {
-            return (this.alpha < 1.0);
+            return (this.alpha < 1.0 || this.topColorAlpha < 1.0 || this.bottomColorAlpha < 1.0);
         }
 
         public needAlphaTesting(): boolean {
-            return false;
+            return true;
         }
 
         public getAlphaTestTexture(): BaseTexture {
@@ -132,7 +135,7 @@ module BABYLON {
 
             var engine = scene.getEngine();
             var needNormals = false;
-            var needUVs = true;
+            var needUVs = false;
 
             this._defines.reset();
 
@@ -350,7 +353,7 @@ module BABYLON {
                         "vDiffuseInfos", 
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues", "topColor", "bottomColor", "offset"
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues", "topColor", "bottomColor", "offset", "smoothness"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -474,9 +477,10 @@ module BABYLON {
                 this._effect.setColor3("vFogColor", scene.fogColor);
             }
 
-            this._effect.setColor3("topColor", this.topColor);
-            this._effect.setColor3("bottomColor", this.bottomColor);
+            this._effect.setColor4("topColor", this.topColor, this.topColorAlpha);
+            this._effect.setColor4("bottomColor", this.bottomColor, this.bottomColorAlpha);
             this._effect.setFloat("offset", this.offset);
+            this._effect.setFloat("smoothness", this.smoothness);
 
             super.bind(world, mesh);
         }
