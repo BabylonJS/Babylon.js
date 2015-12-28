@@ -1,7 +1,5 @@
 ﻿precision highp float;
 
-// Gradient variables
-varying vec2 vUV;
 
 // Attributes
 attribute vec3 position;
@@ -122,8 +120,6 @@ void main(void) {
 	// Texture coordinates
 #ifndef UV1
 	vec2 uv = vec2(0., 0.);
-#else
-	vUV = uv;
 #endif
 #ifndef UV2
 	vec2 uv2 = vec2(0., 0.);
