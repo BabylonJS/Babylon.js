@@ -2,12 +2,13 @@
 
 // Constants
 uniform vec3 vEyePosition;
+uniform vec4 vDiffuseColor;
 
 // Gradient variables
-uniform vec3 topColor;
-uniform vec3 bottomColor;
+uniform vec4 topColor;
+uniform vec4 bottomColor;
 uniform float offset;
-varying vec2 vUV;
+uniform float smoothness;
 
 // Input
 varying vec3 vPositionW;
@@ -379,12 +380,16 @@ void main(void) {
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
+    float h = normalize(vPositionW).y + offset;
+    float mysmoothness = clamp(smoothness, 0.01, max(smoothness, 10.));
+
+    vec4 baseColor = mix(bottomColor, topColor, max(pow(max(h, 0.0), mysmoothness), 0.0));
+
 	// Base color
-	vec4  baseColor = vec4(mix(topColor, bottomColor, vUV.y +offset), 1.0);
-	vec3 diffuseColor = vec3(1,1,1);
+	vec3 diffuseColor = vDiffuseColor.rgb;
 
 	// Alpha
-	float alpha = 1.0;
+	float alpha = baseColor.a;
 
 
 #ifdef ALPHATEST

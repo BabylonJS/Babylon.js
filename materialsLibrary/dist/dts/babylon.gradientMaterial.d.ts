@@ -2,8 +2,11 @@
 declare module BABYLON {
     class GradientMaterial extends Material {
         topColor: Color3;
+        topColorAlpha: number;
         bottomColor: Color3;
+        bottomColorAlpha: number;
         offset: number;
+        smoothness: number;
         disableLighting: boolean;
         private _worldViewProjectionMatrix;
         private _scaledDiffuse;
