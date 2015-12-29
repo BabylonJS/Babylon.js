@@ -11361,7 +11361,7 @@ var BABYLON;
             configurable: true
         });
         ArcRotateCamera.prototype._getTargetPosition = function () {
-            return this.target.position || this.target;
+            return this.target.getAbsolutePosition ? this.target.getAbsolutePosition() : this.target;
         };
         // Cache
         ArcRotateCamera.prototype._initCache = function () {
@@ -17646,6 +17646,7 @@ var BABYLON;
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
                     this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
+                    scene.incrementRenderId();
                 }
             }
             else {

@@ -158,6 +158,7 @@ var BABYLON;
             if (this.isCube) {
                 for (var face = 0; face < 6; face++) {
                     this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
+                    scene.incrementRenderId();
                 }
             }
             else {
