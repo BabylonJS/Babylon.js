@@ -56,16 +56,7 @@
     <script src="add/addStarfieldPT.js"></script>
 	<script>
 		
-		dat.GUI.prototype.removeFolder = function(name) {
-			var folder = this.__folders[name];
-			if (!folder) {
-				return;
-			}
-			folder.close();
-			this.__ul.removeChild(folder.domElement.parentNode);
-			delete this.__folders[name];
-			this.onResize();
-		}
+		
 		
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
@@ -211,50 +202,106 @@
 				//placeholder for current texture options			
 				var currentPTOptions = gui.addFolder('Texture Options');
 				var PTOptions = [];
+				
+				dat.GUI.prototype.removeFolder = function(name) {
+					var folder = this.__folders[name];
+					if (!folder) {
+						return;
+					}
+					folder.close();
+					this.__ul.removeChild(folder.domElement.parentNode);
+					delete this.__folders[name];
+					this.onResize();
+				}
+				
 				var resetPTOptions = function(){
 					//empty options
 					while(PTOptions.length > 0){
-						currentPTOptions.remove(PTOptions.pop());
+						var option = PTOptions.pop()
+						if(option.optionType === "Folder"){
+							currentPTOptions.removeFolder(option.optionValue);
+						}
+						else {
+							currentPTOptions.remove(option.optionValue);
+						}
 					}
+				}
+				
+				var addFloatSubOption = function(guiElement, field, propertyName, proxy, initvalue){
+					proxy[propertyName] = initvalue;
+					guiElement.add(proxy, propertyName).onChange(function () {
+						try {
+							var xvalue = parseFloat(proxy[propertyName]);
+							eval('field.' + propertyName + ' = xvalue');
+						} catch (e) {
+							
+						}
+					});	
 				}
 				
 				var addPToptions = function(pt, fieldNames){
 					for(var fieldid = 0; fieldid < fieldNames.length; fieldid++){
 						var field = fieldNames[fieldid]
-						var added;
+						var added = {};
 						if(typeof pt[field] != 'object' && pt[field] != 'undefined') {
-							added = currentPTOptions.add(pt, fieldNames[fieldid]);
+							added.optionType = "Value";
+							added.optionValue = currentPTOptions.add(pt, fieldNames[fieldid]);
 						}
 						else {
 							var proxy = {};
 							
 							if(pt[field] instanceof BABYLON.Vector2){
-								proxy[field] = 'new BABYLON.Vector2(0.5, 0.5)';								
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'x', proxy, pt[field].x);
+								addFloatSubOption(folder, pt[field], 'y', proxy, pt[field].y);
 							}
+							
 							else if(pt[field] instanceof BABYLON.Vector3){
-								proxy[field] = 'new BABYLON.Vector3(0.5, 0.5, 0.5)';								
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'x', proxy, pt[field].x);
+								addFloatSubOption(folder, pt[field], 'y', proxy, pt[field].y);								
+								addFloatSubOption(folder, pt[field], 'z', proxy, pt[field].z);								
 							}
 							else if(pt[field] instanceof BABYLON.Vector4){
-								proxy[field] = 'new BABYLON.Vector4(0.5, 0.5, 0.5, 0.5)';								
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'x', proxy, pt[field].x);
+								addFloatSubOption(folder, pt[field], 'y', proxy, pt[field].y);								
+								addFloatSubOption(folder, pt[field], 'z', proxy, pt[field].z);									
+								addFloatSubOption(folder, pt[field], 'w', proxy, pt[field].w);									
 							}
 							else if(pt[field] instanceof BABYLON.Color3){
-								proxy[field] = 'new BABYLON.Color3(0.5, 0.5, 0.5)';								
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'r', proxy, pt[field].r);
+								addFloatSubOption(folder, pt[field], 'g', proxy, pt[field].g);								
+								addFloatSubOption(folder, pt[field], 'b', proxy, pt[field].b);									
 							}
 							else if(pt[field] instanceof BABYLON.Color4){
-								proxy[field] = 'new BABYLON.Color4(0.5, 0.5, 0.5, 0.5)';								
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'r', proxy, pt[field].r);
+								addFloatSubOption(folder, pt[field], 'g', proxy, pt[field].g);								
+								addFloatSubOption(folder, pt[field], 'b', proxy, pt[field].b);									
+								addFloatSubOption(folder, pt[field], 'a', proxy, pt[field].a);									
 							}
 							else {
 								proxy[field] = 'Object (' + pt[field].constructor.name +')';
+								added.optionType = "Value";
+								added.optionValue = currentPTOptions.add(proxy, field).onChange(function () {
+									try {
+										var res = eval(proxy[field]);
+										pt[field] = res; 
+									} catch (e) { }
+								});
 							}
-							
-							added = currentPTOptions.add(proxy, field).onChange(function () {
-								try {
-									var res = eval(proxy[field]);
-									pt[field] = res; 
-								} catch (e) {
-									
-								}
-							});
 						}
 						PTOptions.push(added);
 					}
@@ -289,7 +336,7 @@
 							break;
 						case "marble":
 							currentTexture = marblePT;
-							addPToptions(marblePT, ['numberOfTilesHeight', 'numberOfTilesWidth', 'amplitude', 'marbleColor', 'jointColor']);
+							addPToptions(marblePT, ['numberOfTilesHeight', 'numberOfTilesWidth', 'amplitude', 'jointColor']);
 							break;
 						case "starfield":
 							currentTexture = starfieldPT;
