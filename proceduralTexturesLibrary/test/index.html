@@ -55,6 +55,18 @@
     <script src="add/addMarblePT.js"></script>
     <script src="add/addStarfieldPT.js"></script>
 	<script>
+		
+		dat.GUI.prototype.removeFolder = function(name) {
+			var folder = this.__folders[name];
+			if (!folder) {
+				return;
+			}
+			folder.close();
+			this.__ul.removeChild(folder.domElement.parentNode);
+			delete this.__folders[name];
+			this.onResize();
+		}
+		
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
 			var engine = new BABYLON.Engine(canvas, true);
@@ -195,32 +207,93 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 				std.diffuseTexture = currentTexture;
-
+	
+				//placeholder for current texture options			
+				var currentPTOptions = gui.addFolder('Texture Options');
+				var PTOptions = [];
+				var resetPTOptions = function(){
+					//empty options
+					while(PTOptions.length > 0){
+						currentPTOptions.remove(PTOptions.pop());
+					}
+				}
+				
+				var addPToptions = function(pt, fieldNames){
+					for(var fieldid = 0; fieldid < fieldNames.length; fieldid++){
+						var field = fieldNames[fieldid]
+						var added;
+						if(typeof pt[field] != 'object' && pt[field] != 'undefined') {
+							added = currentPTOptions.add(pt, fieldNames[fieldid]);
+						}
+						else {
+							var proxy = {};
+							
+							if(pt[field] instanceof BABYLON.Vector2){
+								proxy[field] = 'new BABYLON.Vector2(0.5, 0.5)';								
+							}
+							else if(pt[field] instanceof BABYLON.Vector3){
+								proxy[field] = 'new BABYLON.Vector3(0.5, 0.5, 0.5)';								
+							}
+							else if(pt[field] instanceof BABYLON.Vector4){
+								proxy[field] = 'new BABYLON.Vector4(0.5, 0.5, 0.5, 0.5)';								
+							}
+							else if(pt[field] instanceof BABYLON.Color3){
+								proxy[field] = 'new BABYLON.Color3(0.5, 0.5, 0.5)';								
+							}
+							else if(pt[field] instanceof BABYLON.Color4){
+								proxy[field] = 'new BABYLON.Color4(0.5, 0.5, 0.5, 0.5)';								
+							}
+							else {
+								proxy[field] = 'Object (' + pt[field].constructor.name +')';
+							}
+							
+							added = currentPTOptions.add(proxy, field).onChange(function () {
+								try {
+									var res = eval(proxy[field]);
+									pt[field] = res; 
+								} catch (e) {
+									
+								}
+							});
+						}
+						PTOptions.push(added);
+					}
+				}
+				
 				gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield']).onFinishChange(function () {
+					resetPTOptions();
 					switch (options.texture) {
 						case "fire":
 							currentTexture = firePT;
+							addPToptions(firePT, ['time', 'alphaThreshold', 'speed', ]);
 							break;
 						case "wood":
 							currentTexture = woodPT;
+							addPToptions(woodPT, ['ampScale', 'woodColor']);
 							break;
 						case "cloud":
 							currentTexture = cloudPT;
+							addPToptions(cloudPT, ['skyColor', 'cloudColor']);
 							break;
 						case "grass":
 							currentTexture = grassPT;
+							addPToptions(grassPT, ['groundColor']);
 							break;
 						case "road":
 							currentTexture = roadPT;
+							addPToptions(roadPT, ['roadColor']);
 							break;
 						case "brick":
 							currentTexture = brickPT;
+							addPToptions(brickPT, ['numberOfBricksHeight', 'numberOfBricksWidth', 'brickColor', 'jointColor']);
 							break;
 						case "marble":
 							currentTexture = marblePT;
+							addPToptions(marblePT, ['numberOfTilesHeight', 'numberOfTilesWidth', 'amplitude', 'marbleColor', 'jointColor']);
 							break;
 						case "starfield":
 							currentTexture = starfieldPT;
+							addPToptions(starfieldPT, ['saturation', 'distfading', 'darkmatter', 'alpha', 'time', 'beta', 'zoom', 'formuparam', 'stepsize', 'tile', 'brightness']);
 							break;
 						case "none":
 						default:
