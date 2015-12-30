@@ -11,7 +11,6 @@ module BABYLON {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "marbleProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
-            this.refreshRate = 0;
         }
 
         public updateShaderUniforms() {
@@ -28,6 +27,15 @@ module BABYLON {
 
         public set numberOfTilesHeight(value: number) {
             this._numberOfTilesHeight = value;
+            this.updateShaderUniforms();
+        }
+        
+        public get amplitude(): number {
+            return this._amplitude;
+        }
+
+        public set amplitude(value: number) {
+            this._amplitude = value;
             this.updateShaderUniforms();
         }
 

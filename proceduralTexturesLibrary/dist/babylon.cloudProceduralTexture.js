@@ -9,7 +9,6 @@ var BABYLON;
             this._skyColor = new BABYLON.Color4(0.15, 0.68, 1.0, 1.0);
             this._cloudColor = new BABYLON.Color4(1, 1, 1, 1.0);
             this.updateShaderUniforms();
-            this.refreshRate = 0;
         }
         CloudProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setColor4("skyColor", this._skyColor);

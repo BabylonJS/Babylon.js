@@ -12,7 +12,6 @@ var BABYLON;
             this._marbleColor = new BABYLON.Color3(0.77, 0.47, 0.40);
             this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
             this.updateShaderUniforms();
-            this.refreshRate = 0;
         }
         MarbleProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("numberOfTilesHeight", this._numberOfTilesHeight);
@@ -27,6 +26,17 @@ var BABYLON;
             },
             set: function (value) {
                 this._numberOfTilesHeight = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MarbleProceduralTexture.prototype, "amplitude", {
+            get: function () {
+                return this._amplitude;
+            },
+            set: function (value) {
+                this._amplitude = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,

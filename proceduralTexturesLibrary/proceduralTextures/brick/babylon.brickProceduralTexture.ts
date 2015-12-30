@@ -10,7 +10,6 @@ module BABYLON {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
             super(name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this.updateShaderUniforms();
-            this.refreshRate = 0;
         }
 
         public updateShaderUniforms() {

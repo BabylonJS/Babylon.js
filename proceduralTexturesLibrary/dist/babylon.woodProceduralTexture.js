@@ -9,7 +9,6 @@ var BABYLON;
             this._ampScale = 100.0;
             this._woodColor = new BABYLON.Color3(0.32, 0.17, 0.09);
             this.updateShaderUniforms();
-            this.refreshRate = 0;
         }
         WoodProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("ampScale", this._ampScale);

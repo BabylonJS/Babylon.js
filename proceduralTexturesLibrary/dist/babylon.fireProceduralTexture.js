@@ -12,7 +12,6 @@ var BABYLON;
             this._alphaThreshold = 0.5;
             this._fireColors = FireProceduralTexture.RedFireColors;
             this.updateShaderUniforms();
-            this.refreshRate = 1;
         }
         FireProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("time", this._time);

@@ -16,7 +16,6 @@ var BABYLON;
                 new BABYLON.Color3(0.51, 0.6, 0.28)
             ];
             this.updateShaderUniforms();
-            this.refreshRate = 0;
         }
         GrassProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setColor3("herb1Color", this._grassColors[0]);

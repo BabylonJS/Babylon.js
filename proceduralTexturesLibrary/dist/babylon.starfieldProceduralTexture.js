@@ -87,6 +87,17 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(StarfieldProceduralTexture.prototype, "zoom", {
+            get: function () {
+                return this._zoom;
+            },
+            set: function (value) {
+                this._zoom = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(StarfieldProceduralTexture.prototype, "tile", {
             get: function () {
                 return this._tile;

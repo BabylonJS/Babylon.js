@@ -18,7 +18,6 @@ module BABYLON {
             ];
 
             this.updateShaderUniforms();
-            this.refreshRate = 0;
         }
 
         public updateShaderUniforms() {

@@ -11,7 +11,6 @@ var BABYLON;
             this._jointColor = new BABYLON.Color3(0.72, 0.72, 0.72);
             this._brickColor = new BABYLON.Color3(0.77, 0.47, 0.40);
             this.updateShaderUniforms();
-            this.refreshRate = 0;
         }
         BrickProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("numberOfBricksHeight", this._numberOfBricksHeight);
