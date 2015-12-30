@@ -5,7 +5,6 @@ module BABYLON {
         private _numberOfTilesHeight: number = 3;
         private _numberOfTilesWidth: number = 3;
         private _amplitude: number = 9.0;
-        private _marbleColor = new Color3(0.77, 0.47, 0.40);
         private _jointColor = new Color3(0.72, 0.72, 0.72);
 
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
@@ -17,7 +16,6 @@ module BABYLON {
             this.setFloat("numberOfTilesHeight", this._numberOfTilesHeight);
             this.setFloat("numberOfTilesWidth", this._numberOfTilesWidth);
             this.setFloat("amplitude", this._amplitude);
-            this.setColor3("marbleColor", this._marbleColor);
             this.setColor3("jointColor", this._jointColor);
         }
 
@@ -54,15 +52,6 @@ module BABYLON {
 
         public set jointColor(value: Color3) {
             this._jointColor = value;
-            this.updateShaderUniforms();
-        }
-
-        public get marbleColor(): Color3 {
-            return this._marbleColor;
-        }
-
-        public set marbleColor(value: Color3) {
-            this._marbleColor = value;
             this.updateShaderUniforms();
         }
     }

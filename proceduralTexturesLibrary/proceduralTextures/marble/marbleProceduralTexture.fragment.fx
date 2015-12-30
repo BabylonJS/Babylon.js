@@ -6,7 +6,7 @@ varying vec2 vUV;
 uniform float numberOfTilesHeight;
 uniform float numberOfTilesWidth;
 uniform float amplitude;
-uniform vec3 brickColor;
+uniform vec3 marbleColor;
 uniform vec3 jointColor;
 
 const vec3 tileSize = vec3(1.1, 1.0, 1.1);
@@ -56,7 +56,7 @@ void main()
 	float brickH = 1.0 / numberOfTilesHeight;
 	float jointWPercentage = 0.01;
 	float jointHPercentage = 0.01;
-	vec3 color = brickColor;
+	vec3 color = marbleColor;
 	float yi = vUV.y / brickH;
 	float nyi = round(yi);
 	float xi = vUV.x / brickW;
