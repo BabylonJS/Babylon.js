@@ -10,6 +10,7 @@
         public invertV = 0;
         public disposeWhenFinishedAnimating: boolean;
         public animations = new Array<Animation>();
+        public isVisible = false;
         public isPickable = false;
         public actionManager: ActionManager;
 

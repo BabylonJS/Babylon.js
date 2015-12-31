@@ -114,7 +114,7 @@
                     if (!predicate(sprite)) {
                         continue;
                     }
-                } else if (!sprite.isPickable) {
+                } else if (!sprite.isPickable || !sprite.isVisible) {
                     continue;
                 }
 
@@ -166,7 +166,7 @@
             var offset = 0;
             for (var index = 0; index < max; index++) {
                 var sprite = this.sprites[index];
-                if (!sprite) {
+                if (!sprite || !sprite.isVisible) {
                     continue;
                 }
 
