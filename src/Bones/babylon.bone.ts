@@ -2,6 +2,7 @@
     export class Bone extends Node {
         public children = new Array<Bone>();
         public animations = new Array<Animation>();
+        public length : number;
 
         private _skeleton: Skeleton;
         private _matrix: Matrix;
