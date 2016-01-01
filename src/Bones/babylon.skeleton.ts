@@ -155,6 +155,10 @@
                 };
 
                 serializationObject.bones.push(serializedBone);
+                
+                if (bone.length){
+                    serializedBone.length = bone.length;
+                }
 
                 if (bone.animations && bone.animations.length > 0) {
                     serializedBone.animation = bone.animations[0].serialize();
@@ -175,7 +179,11 @@
                 }
     
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix));
-    
+                
+                if (parsedBone.length){
+                    bone.length = parsedBone.length;
+                }
+                
                 if (parsedBone.animation) {
                     bone.animations.push(Animation.Parse(parsedBone.animation));
                 }
