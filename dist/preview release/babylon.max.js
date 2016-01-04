@@ -12659,10 +12659,13 @@ var BABYLON;
             }
         };
         Scene.prototype._animate = function () {
-            if (!this.animationsEnabled) {
+            if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
             }
             if (!this._animationStartDate) {
+                if (this._pendingData.length > 0) {
+                    return;
+                }
                 this._animationStartDate = BABYLON.Tools.Now;
             }
             // Getting time
@@ -36319,6 +36322,8 @@ var BABYLON;
         function EdgesRenderer(source, epsilon, checkVerticesInsteadOfIndices) {
             if (epsilon === void 0) { epsilon = 0.95; }
             if (checkVerticesInsteadOfIndices === void 0) { checkVerticesInsteadOfIndices = false; }
+            this.edgesWidthScalerForOrthographic = 1000.0;
+            this.edgesWidthScalerForPerspective = 50.0;
             this._linesPositions = new Array();
             this._linesNormals = new Array();
             this._linesIndices = new Array();
@@ -36531,7 +36536,12 @@ var BABYLON;
             engine.bindMultiBuffers(this._buffers, this._ib, this._lineShader.getEffect());
             scene.resetCachedMaterial();
             this._lineShader.setColor4("color", this._source.edgesColor);
-            this._lineShader.setFloat("width", this._source.edgesWidth / 50.0);
+            if (scene.activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
+                this._lineShader.setFloat("width", this._source.edgesWidth / this.edgesWidthScalerForOrthographic);
+            }
+            else {
+                this._lineShader.setFloat("width", this._source.edgesWidth / this.edgesWidthScalerForPerspective);
+            }
             this._lineShader.setFloat("aspectRatio", engine.getAspectRatio(scene.activeCamera));
             this._lineShader.bind(this._source.getWorldMatrix());
             // Draw order

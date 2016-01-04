@@ -619,10 +619,13 @@ var BABYLON;
             }
         };
         Scene.prototype._animate = function () {
-            if (!this.animationsEnabled) {
+            if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
             }
             if (!this._animationStartDate) {
+                if (this._pendingData.length > 0) {
+                    return;
+                }
                 this._animationStartDate = BABYLON.Tools.Now;
             }
             // Getting time
