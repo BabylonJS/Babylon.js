@@ -66,7 +66,7 @@ module BABYLON {
         private _w: number = 0.0;
 
 
-        constructor(name: string, scene: Scene, options?: { updatable?: boolean, isPickable?: boolean }) {
+        constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean }) {
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -104,7 +104,7 @@ module BABYLON {
             if (this._colors32) {
                 vertexData.set(this._colors32, VertexBuffer.ColorKind);
             }
-            var mesh = new Mesh(name, this._scene);
+            var mesh = new Mesh(this.name, this._scene);
             vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
             this.mesh.isPickable = this._pickable;
