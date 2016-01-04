@@ -77,6 +77,7 @@ var BABYLON;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
             this._isWorldMatrixFrozen = false;
+            this._unIndexed = false;
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
                 //TODO move this to the collision coordinator!
@@ -403,7 +404,9 @@ var BABYLON;
             }
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
-                subMesh.updateBoundingInfo(matrix);
+                if (!subMesh.IsGlobal) {
+                    subMesh.updateBoundingInfo(matrix);
+                }
             }
         };
         AbstractMesh.prototype.computeWorldMatrix = function (force) {
@@ -411,6 +414,7 @@ var BABYLON;
                 return this._worldMatrix;
             }
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
+                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
             this._cache.position.copyFrom(this.position);

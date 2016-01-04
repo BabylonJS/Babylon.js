@@ -140,6 +140,18 @@
             }
         }
 
+        public get isFrozen(): boolean {
+            return this.checkReadyOnlyOnce;
+        }
+
+        public freeze(): void {
+            this.checkReadyOnlyOnce = true;
+        }
+
+        public unfreeze(): void {
+            this.checkReadyOnlyOnce = false;
+        }
+
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             return true;
         }

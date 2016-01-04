@@ -147,7 +147,7 @@
                     enc4 = 64;
                 }
                 output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
-                keyStr.charAt(enc3) + keyStr.charAt(enc4);
+                    keyStr.charAt(enc3) + keyStr.charAt(enc4);
             }
 
             return "data:image/png;base64," + output;
@@ -540,7 +540,7 @@
             }
         }
 
-        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: String) => void): void {
+        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void): void {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -606,7 +606,7 @@
             }
         }
 
-        public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: String) => void): void {
+        public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void): void {
             var width: number;
             var height: number;
 
@@ -665,6 +665,8 @@
             if (previousCamera) {
                 scene.activeCamera = previousCamera;
             }
+
+            camera.getProjectionMatrix(true); // Force cache refresh;
         }
 
         // XHR response validator for local file scenario
@@ -1003,4 +1005,5 @@
         }
     }
 } 
+
 

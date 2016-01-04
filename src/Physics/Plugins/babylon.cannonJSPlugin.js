@@ -10,14 +10,13 @@ var BABYLON;
                     var registeredMesh = this._registeredMeshes[index];
                     if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
                         var body = registeredMesh.body;
-                        var center = mesh.getBoundingInfo().boundingBox.center;
-                        body.position.set(center.x, center.y, center.z);
+                        var center = mesh.getBoundingInfo().boundingBox.center.clone();
                         body.quaternion.copy(mesh.rotationQuaternion);
                         if (registeredMesh.deltaRotation) {
                             var tmpQ = new CANNON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
                             body.quaternion = body.quaternion.mult(tmpQ);
                         }
-                        if (registeredMesh.heightmap) {
+                        if (registeredMesh.type === CANNON.Shape.types.HEIGHTFIELD) {
                             //calculate the correct body position:
                             var rotationQuaternion = mesh.rotationQuaternion;
                             mesh.rotationQuaternion = new BABYLON.Quaternion();
@@ -33,13 +32,17 @@ var BABYLON;
                             mesh.computeWorldMatrix(true);
                             //calculate the translation
                             var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
-                            body.position = new CANNON.Vec3(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
+                            center.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
                             //add it inverted to the delta 
                             registeredMesh.delta = mesh.getBoundingInfo().boundingBox.center.subtract(center);
                             registeredMesh.delta.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
                             mesh.setPivotMatrix(oldPivot);
                             mesh.computeWorldMatrix(true);
                         }
+                        else if (registeredMesh.type === CANNON.Shape.types.TRIMESH) {
+                            center.copyFromFloats(mesh.position.x, mesh.position.y, mesh.position.z);
+                        }
+                        body.position.set(center.x, center.y, center.z);
                         return;
                     }
                 }
@@ -74,7 +77,7 @@ var BABYLON;
                             //find the mesh that collided with the registered mesh
                             for (var idx = 0; idx < _this._registeredMeshes.length; idx++) {
                                 if (_this._registeredMeshes[idx].body == e.body) {
-                                    registeredMesh.mesh.onPhysicsCollide(_this._registeredMeshes[idx].mesh);
+                                    registeredMesh.mesh.onPhysicsCollide(_this._registeredMeshes[idx].mesh, e.contact);
                                 }
                             }
                         };
@@ -136,7 +139,8 @@ var BABYLON;
                 case BABYLON.PhysicsEngine.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
-                    returnValue = this._createConvexPolyhedron(rawVerts, rawFaces, mesh);
+                    BABYLON.Tools.Warn("MeshImpostor only collides against spheres.");
+                    returnValue = new CANNON.Trimesh(rawVerts, rawFaces); //this._createConvexPolyhedron(rawVerts, rawFaces, mesh);
                     break;
                 case BABYLON.PhysicsEngine.HeightmapImpostor:
                     returnValue = this._createHeightmap(mesh);
@@ -274,10 +278,13 @@ var BABYLON;
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             }
+            else if (shape.type === CANNON.Shape.types.TRIMESH) {
+                deltaPosition = BABYLON.Vector3.Zero();
+            }
             //add the shape
             body.addShape(shape);
             this._world.add(body);
-            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition, deltaRotation: deltaRotation, heightmap: shape.type === CANNON.Shape.types.HEIGHTFIELD });
+            this._registeredMeshes.push({ mesh: mesh, body: body, material: material, delta: deltaPosition, deltaRotation: deltaRotation, type: shape.type });
             return body;
         };
         CannonJSPlugin.prototype.registerMeshesAsCompound = function (parts, options) {

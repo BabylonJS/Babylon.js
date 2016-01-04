@@ -61,7 +61,7 @@ var BABYLON;
                 if (batch.mustReturn) {
                     return;
                 }
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
                 if (_this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(_this._effect);
                     mesh._bind(subMesh, _this._effect, BABYLON.Material.TriangleFillMode);

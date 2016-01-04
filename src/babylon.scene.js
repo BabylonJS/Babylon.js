@@ -1265,7 +1265,7 @@ var BABYLON;
             }
             // Render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
-            if (this.renderTargetsEnabled) {
+            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 BABYLON.Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
@@ -1277,9 +1277,7 @@ var BABYLON;
                 }
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._renderId++;
-            }
-            if (this._renderTargets.length > 0) {
-                engine.restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
             this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
             // Prepare Frame
@@ -1650,6 +1648,16 @@ var BABYLON;
             }
             this._depthRenderer.dispose();
             this._depthRenderer = null;
+        };
+        Scene.prototype.freezeMaterials = function () {
+            for (var i = 0; i < this.materials.length; i++) {
+                this.materials[i].freeze();
+            }
+        };
+        Scene.prototype.unfreezeMaterials = function () {
+            for (var i = 0; i < this.materials.length; i++) {
+                this.materials[i].unfreeze();
+            }
         };
         Scene.prototype.dispose = function () {
             this.beforeRender = null;

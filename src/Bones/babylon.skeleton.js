@@ -92,7 +92,7 @@ var BABYLON;
                     var parentIndex = this.bones.indexOf(source.getParent());
                     parentBone = result.bones[parentIndex];
                 }
-                var bone = new BABYLON.Bone(source.name, result, parentBone, source.getBaseMatrix());
+                var bone = new BABYLON.Bone(source.name, result, parentBone, source.getBaseMatrix().clone());
                 BABYLON.Tools.DeepCopy(source.animations, bone.animations);
             }
             return result;
@@ -116,6 +116,9 @@ var BABYLON;
                     matrix: bone.getLocalMatrix().toArray()
                 };
                 serializationObject.bones.push(serializedBone);
+                if (bone.length) {
+                    serializedBone.length = bone.length;
+                }
                 if (bone.animations && bone.animations.length > 0) {
                     serializedBone.animation = bone.animations[0].serialize();
                 }
@@ -131,6 +134,9 @@ var BABYLON;
                     parentBone = skeleton.bones[parsedBone.parentBoneIndex];
                 }
                 var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
+                if (parsedBone.length) {
+                    bone.length = parsedBone.length;
+                }
                 if (parsedBone.animation) {
                     bone.animations.push(BABYLON.Animation.Parse(parsedBone.animation));
                 }

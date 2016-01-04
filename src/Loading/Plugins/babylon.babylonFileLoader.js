@@ -321,17 +321,26 @@ var BABYLON;
                     }
                 }
                 // Sounds
+                var loadedSounds = [];
+                var loadedSound;
                 if (BABYLON.AudioEngine && parsedData.sounds) {
                     for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
+                            if (!loadedSounds[parsedSound.name]) {
+                                loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
+                                loadedSounds[loadedSound.name] = loadedSound;
+                            }
+                            else {
+                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.name]);
+                            }
                         }
                         else {
                             var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
                         }
                     }
                 }
+                loadedSounds = [];
                 // Connect parents & children and parse actions
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     var mesh = scene.meshes[index];

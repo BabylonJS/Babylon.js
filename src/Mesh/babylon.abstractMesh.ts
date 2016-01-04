@@ -74,7 +74,7 @@
         public _physicsMass: number;
         public _physicsFriction: number;
         public _physicRestitution: number;
-        public onPhysicsCollide: (collidedMesh: AbstractMesh) => void; 
+        public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void; 
 
         // Collisions
         private _checkCollisions = false;
@@ -126,6 +126,8 @@
         private _onAfterWorldMatrixUpdate = new Array<(mesh: AbstractMesh) => void>();
 
         private _isWorldMatrixFrozen = false;
+
+        public _unIndexed = false;
 
         // Loading properties
         public _waitingActions: any;
@@ -439,7 +441,9 @@
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(matrix);
+                if (!subMesh.IsGlobal) {
+                    subMesh.updateBoundingInfo(matrix);
+                }
             }
         }
 
@@ -449,6 +453,7 @@
             }
 
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
+                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
 

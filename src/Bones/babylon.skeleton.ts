@@ -88,7 +88,7 @@
                     bone.getWorldMatrix().copyFrom(bone.getLocalMatrix());
                 }
 
-                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);                
+                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);
             }
 
             this._identity.copyToArray(this._transformMatrices, this.bones.length * 16);
@@ -122,7 +122,7 @@
                     parentBone = result.bones[parentIndex];
                 }
 
-                var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix());
+                var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone());
                 Tools.DeepCopy(source.animations, bone.animations);
             }
 
@@ -156,31 +156,39 @@
 
                 serializationObject.bones.push(serializedBone);
 
+                if (bone.length) {
+                    serializedBone.length = bone.length;
+                }
+
                 if (bone.animations && bone.animations.length > 0) {
                     serializedBone.animation = bone.animations[0].serialize();
                 }
             }
             return serializationObject;
         }
-        
-        public static Parse(parsedSkeleton: any, scene: Scene) : Skeleton {
+
+        public static Parse(parsedSkeleton: any, scene: Scene): Skeleton {
             var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
 
             for (var index = 0; index < parsedSkeleton.bones.length; index++) {
                 var parsedBone = parsedSkeleton.bones[index];
-    
+
                 var parentBone = null;
                 if (parsedBone.parentBoneIndex > -1) {
                     parentBone = skeleton.bones[parsedBone.parentBoneIndex];
                 }
-    
+
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix));
-    
+
+                if (parsedBone.length) {
+                    bone.length = parsedBone.length;
+                }
+
                 if (parsedBone.animation) {
                     bone.animations.push(Animation.Parse(parsedBone.animation));
                 }
             }
-    
+
             return skeleton;
         }
     }
