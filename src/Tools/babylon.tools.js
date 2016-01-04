@@ -556,6 +556,7 @@ var BABYLON;
             if (previousCamera) {
                 scene.activeCamera = previousCamera;
             }
+            camera.getProjectionMatrix(true); // Force cache refresh;
         };
         // XHR response validator for local file scenario
         Tools.ValidateXHRData = function (xhr, dataType) {

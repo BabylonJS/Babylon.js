@@ -352,16 +352,26 @@
             }
 
             // Sounds
+            var loadedSounds: Sound[] = [];
+            var loadedSound: Sound;
             if (AudioEngine && parsedData.sounds) {
                 for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                     var parsedSound = parsedData.sounds[index];
                     if (Engine.audioEngine.canUseWebAudio) {
-                        Sound.Parse(parsedSound, scene, rootUrl);
+                        if (!loadedSounds[parsedSound.name]) {
+                            loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
+                            loadedSounds[loadedSound.name] = loadedSound;
+                        }
+                        else {
+                            Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.name]);
+                        }
                     } else {
                         var emptySound = new Sound(parsedSound.name, null, scene);
                     }
                 }
             }
+
+            loadedSounds = [];
 
             // Connect parents & children and parse actions
             for (index = 0, cache = scene.meshes.length; index < cache; index++) {

@@ -19,6 +19,7 @@
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
+        public _softwareSkinningRenderId: number;
 
         constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
             this.id = id;

@@ -88,7 +88,7 @@ var BABYLON;
             if (this._colors32) {
                 vertexData.set(this._colors32, BABYLON.VertexBuffer.ColorKind);
             }
-            var mesh = new BABYLON.Mesh(name, this._scene);
+            var mesh = new BABYLON.Mesh(this.name, this._scene);
             vertexData.applyToMesh(mesh, this._updatable);
             this.mesh = mesh;
             this.mesh.isPickable = this._pickable;

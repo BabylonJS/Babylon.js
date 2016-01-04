@@ -49,7 +49,7 @@
         * @param name Name of your sound 
         * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer 
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel
+        * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
         */
         constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?) {
             this.name = name;
@@ -118,7 +118,9 @@
                     }
                     else {
                         if (urlOrArrayBuffer instanceof ArrayBuffer) {
-                            this._soundLoaded(urlOrArrayBuffer);
+                            if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
+                                this._soundLoaded(urlOrArrayBuffer);
+                            }
                         }
                         else {
                             Tools.Error("Parameter must be a URL to the sound or an ArrayBuffer of the sound.");
@@ -457,6 +459,10 @@
         }
 
         public attachToMesh(meshToConnectTo: AbstractMesh) {
+            if (this._connectedMesh) {
+                this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
+                this._registerFunc = null;
+            }
             this._connectedMesh = meshToConnectTo;
             if (!this.spatialSound) {
                 this.spatialSound = true;
@@ -478,7 +484,47 @@
             }
         }
 
-        public static Parse(parsedSound: any, scene: Scene, rootUrl: string): Sound {
+        public clone(): Sound {
+            if (!this._streaming) {
+                var setBufferAndRun = () => {
+                    if (this._isReadyToPlay) {
+                        clonedSound._audioBuffer = this.getAudioBuffer();
+                        clonedSound._isReadyToPlay = true;
+                        if (clonedSound.autoplay) { clonedSound.play(); }
+                    }
+                    else {
+                        window.setTimeout(setBufferAndRun, 300);
+                    }
+                };
+
+                var currentOptions = {
+                    autoplay: this.autoplay, loop: this.loop,
+                    volume: this._volume, spatialSound: this.spatialSound, maxDistance: this.maxDistance,
+                    useCustomAttenuation: this.useCustomAttenuation, rolloffFactor: this.rolloffFactor,
+                    refDistance: this.refDistance, distanceModel: this.distanceModel
+                };
+
+                var clonedSound = new Sound(this.name + "_cloned", new ArrayBuffer(0), this._scene, null, currentOptions);
+                if (this.useCustomAttenuation) {
+                    clonedSound.setAttenuationFunction(this._customAttenuationFunction);
+                }
+                clonedSound.setPosition(this._position);
+                clonedSound.setPlaybackRate(this._playbackRate);
+                setBufferAndRun();
+
+                return clonedSound;
+            }
+            // Can't clone a streaming sound
+            else {
+                return null;
+            } 
+        }
+
+        public getAudioBuffer() {
+            return this._audioBuffer;
+        }
+
+        public static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound {
             var soundName = parsedSound.name;
             var soundUrl = rootUrl + soundName;
 
@@ -491,8 +537,27 @@
                 playbackRate: parsedSound.playbackRate
             };
 
-            var newSound = new Sound(soundName, soundUrl, scene, () => { scene._removePendingData(newSound); }, options);
-            scene._addPendingData(newSound);
+            var newSound: Sound;
+
+            if (!sourceSound) {
+                newSound = new Sound(soundName, soundUrl, scene, () => { scene._removePendingData(newSound); }, options);
+                scene._addPendingData(newSound);
+            }
+            else {
+                var setBufferAndRun = () => {
+                    if (sourceSound._isReadyToPlay) {
+                        newSound._audioBuffer = sourceSound.getAudioBuffer();
+                        newSound._isReadyToPlay = true;
+                        if (newSound.autoplay) { newSound.play(); }
+                    }
+                    else {
+                        window.setTimeout(setBufferAndRun, 300);
+                    }
+                }
+
+                newSound = new Sound(soundName, new ArrayBuffer(0), scene, null, options);
+                setBufferAndRun();
+            }
 
             if (parsedSound.position) {
                 var soundPosition = Vector3.FromArray(parsedSound.position);

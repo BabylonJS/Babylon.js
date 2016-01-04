@@ -30,7 +30,15 @@
             }
         }
 
+        public get IsGlobal(): boolean {
+            return (this.verticesStart === 0 && this.verticesCount == this._mesh.getTotalVertices());
+        }
+
         public getBoundingInfo(): BoundingInfo {
+            if (this.IsGlobal) {
+                return this._mesh.getBoundingInfo();
+            }
+
             return this._boundingInfo;
         }
 
@@ -59,6 +67,9 @@
 
         // Methods
         public refreshBoundingInfo(): void {
+            if (this.IsGlobal) {
+                return;
+            }
             var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
 
             if (!data) {
@@ -80,18 +91,18 @@
         }
 
         public _checkCollision(collider: Collider): boolean {
-            return this._boundingInfo._checkCollision(collider);
+            return this.getBoundingInfo()._checkCollision(collider);
         }
 
         public updateBoundingInfo(world: Matrix): void {
-            if (!this._boundingInfo) {
+            if (!this.getBoundingInfo()) {
                 this.refreshBoundingInfo();
             }
-            this._boundingInfo._update(world);
+            this.getBoundingInfo()._update(world);
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            return this._boundingInfo.isInFrustum(frustumPlanes);
+            return this.getBoundingInfo().isInFrustum(frustumPlanes);
         }
 
         public render(enableAlphaMode: boolean): void {
@@ -115,7 +126,7 @@
         }
 
         public canIntersects(ray: Ray): boolean {
-            return ray.intersectsBox(this._boundingInfo.boundingBox);
+            return ray.intersectsBox(this.getBoundingInfo().boundingBox);
         }
 
         public intersects(ray: Ray, positions: Vector3[], indices: number[] | Int32Array, fastCheck?: boolean): IntersectionInfo {
@@ -152,7 +163,9 @@
         public clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh {
             var result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
 
-            result._boundingInfo = new BoundingInfo(this._boundingInfo.minimum, this._boundingInfo.maximum);
+            if (!this.IsGlobal) {
+                result._boundingInfo = new BoundingInfo(this.getBoundingInfo().minimum, this.getBoundingInfo().maximum);
+            }
 
             return result;
         }
