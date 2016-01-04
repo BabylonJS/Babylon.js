@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 0, 0),
+    'version': (4, 1, 0),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -39,7 +39,8 @@ if __name__ == '__main__':
 MAX_VERTEX_ELEMENTS = 65535
 MAX_VERTEX_ELEMENTS_32Bit = 16777216
 VERTEX_OUTPUT_PER_LINE = 100
-MAX_FLOAT_PRECISION = '%.4f'
+MAX_FLOAT_PRECISION_INT = 4
+MAX_FLOAT_PRECISION = '%.' + str(MAX_FLOAT_PRECISION_INT) + 'f'
 COMPRESS_MATRIX_INDICES = True # this is True for .babylon exporter & False for TOB
 
 # used in World constructor, defined in BABYLON.Scene
@@ -756,7 +757,8 @@ class Mesh(FCurveAnimatable):
         if hasSkeleton:
             weightsPerVertex = []
             indicesPerVertex = []
-            influenceCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0] # 9, so accessed orign 1
+            influenceCounts = [0, 0, 0, 0, 0, 0, 0, 0, 0] # 9, so accessed orign 1; 0 used for all those greater than 8
+            totalInfluencers = 0
             highestInfluenceObserved = 0
 
         # used tracking of vertices as they are received
@@ -908,7 +910,11 @@ class Mesh(FCurveAnimatable):
                             vertices_sk_weights[vertex_index].append(matricesWeights)
                             vertices_sk_indices[vertex_index].append(matricesIndices)
                             nInfluencers = len(matricesWeights)
-                            influenceCounts[nInfluencers] += 1
+                            totalInfluencers += nInfluencers
+                            if nInfluencers <= 8:
+                                influenceCounts[nInfluencers] += 1
+                            else:
+                                influenceCounts[0] += 1
                             highestInfluenceObserved = nInfluencers if nInfluencers > highestInfluenceObserved else highestInfluenceObserved
                             weightsPerVertex.append(matricesWeights)
                             indicesPerVertex.append(matricesIndices)
@@ -943,17 +949,9 @@ class Mesh(FCurveAnimatable):
                 if (self.numBoneInfluencers > 4):
                     self.skeletonIndicesExtra = Mesh.packSkeletonIndices(self.skeletonIndicesExtra)
                 
-            totalInfluencers  = influenceCounts[1]
-            totalInfluencers += influenceCounts[2] * 2
-            totalInfluencers += influenceCounts[3] * 3
-            totalInfluencers += influenceCounts[4] * 4
-            totalInfluencers += influenceCounts[5] * 5
-            totalInfluencers += influenceCounts[6] * 6
-            totalInfluencers += influenceCounts[7] * 7
-            totalInfluencers += influenceCounts[8] * 8
             Main.log('Total Influencers:  ' + format_f(totalInfluencers), 3)
             Main.log('Avg # of influencers per vertex:  ' + format_f(totalInfluencers / len(self.positions)), 3)
-            Main.log('Highest # of influencers observed:  ' + str(highestInfluenceObserved) + ', num vertices with this:  ' + format_int(influenceCounts[highestInfluenceObserved]), 3)
+            Main.log('Highest # of influencers observed:  ' + str(highestInfluenceObserved) + ', num vertices with this:  ' + format_int(influenceCounts[highestInfluenceObserved if highestInfluenceObserved < 9 else 0]), 3)
             Main.log('exported as ' + str(self.numBoneInfluencers) + ' influencers', 3)
             nWeights = len(self.skeletonWeights) + len(self.skeletonWeightsExtra) if hasattr(self, 'skeletonWeightsExtra') else 0
             Main.log('num skeletonWeights and skeletonIndices:  ' + str(nWeights), 3)
@@ -1241,6 +1239,7 @@ class Bone:
     def __init__(self, bone, skeleton, scene, index):
         Main.log('processing begun of bone:  ' + bone.name + ', index:  '+ str(index), 2)
         self.name = bone.name
+        self.length = bone.length
         self.index = index
 
         matrix_world = skeleton.matrix_world
@@ -1267,7 +1266,7 @@ class Bone:
                 bpy.context.scene.frame_set(frame)
                 currentBoneMatrix = Bone.get_matrix(bone, matrix_world)
 
-                if (frame != end_frame and currentBoneMatrix == previousBoneMatrix):
+                if (frame != end_frame and same_matrix4(currentBoneMatrix, previousBoneMatrix)):
                     continue
 
                 self.animation.frames.append(frame)
@@ -1291,6 +1290,7 @@ class Bone:
         write_int(file_handler, 'index', self.index)
         write_matrix4(file_handler, 'matrix', self.matrix)
         write_int(file_handler, 'parentBoneIndex', self.parentBoneIndex)
+        write_float(file_handler, 'length', self.length)
 
         #animation
         if hasattr(self, 'animation'):
@@ -1957,22 +1957,24 @@ class BakedMaterial(Material):
         # mode_set's only work when there is an active object
         exporter.scene.objects.active = mesh
 
+         # UV unwrap operates on mesh in only edit mode, procedurals can also give error of 'no images to be found' when not done
+         # select all verticies of mesh, since smart_project works only with selected verticies
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT') 
+        
         # you need UV on a mesh in order to bake image.  This is not reqd for procedural textures, so may not exist
-        # need to look if it might already be created, as for a mesh with multi-materials
+        # need to look if it might already be created, if so use the first one
         uv = mesh.data.uv_textures[0] if len(mesh.data.uv_textures) > 0 else None
 
         if uv == None:
             mesh.data.uv_textures.new('BakingUV')
             uv = mesh.data.uv_textures['BakingUV']
-
-        uv.active = True
-        uv.active_render = True
-
-        # UV unwrap operates on mesh in only edit mode
-        # select all verticies of mesh, since smart_project works only with selected verticies
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.uv.smart_project(angle_limit = 66.0, island_margin = 0.0, user_area_weight = 1.0, use_aspect = True)
+            uv.active = True
+            uv.active_render = True
+            bpy.ops.uv.smart_project(angle_limit = 66.0, island_margin = 0.0, user_area_weight = 1.0, use_aspect = True)
+            uvName = 'BakingUV'  # issues with cycles when not done this way
+        else:
+            uvName = uv.name
 
         # create a temporary image & link it to the UV/Image Editor so bake_image works
         bpy.data.images.new(name = mesh.name + '_BJS_BAKE', width = recipe.bakeSize, height = recipe.bakeSize, alpha = False, float_buffer = False)
@@ -1987,25 +1989,25 @@ class BakedMaterial(Material):
 
         # now go thru all the textures that need to be baked
         if recipe.diffuseBaking:
-            self.bake('diffuseTexture', 'DIFFUSE_COLOR', 'TEXTURE', image, mesh, uv, exporter, recipe)
+            self.bake('diffuseTexture', 'DIFFUSE_COLOR', 'TEXTURE', image, mesh, uvName, exporter, recipe)
 
         if recipe.ambientBaking:
-            self.bake('ambientTexture', 'AO', 'AO', image, mesh, uv, exporter, recipe)
+            self.bake('ambientTexture', 'AO', 'AO', image, mesh, uvName, exporter, recipe)
 
         if recipe.opacityBaking:  # no eqivalent found for cycles
-            self.bake('opacityTexture', None, 'ALPHA', image, mesh, uv, exporter, recipe)
+            self.bake('opacityTexture', None, 'ALPHA', image, mesh, uvName, exporter, recipe)
 
         if recipe.reflectionBaking:
-            self.bake('reflectionTexture', 'REFLECTION', 'MIRROR_COLOR', image, mesh, uv, exporter, recipe)
+            self.bake('reflectionTexture', 'REFLECTION', 'MIRROR_COLOR', image, mesh, uvName, exporter, recipe)
 
         if recipe.emissiveBaking:
-            self.bake('emissiveTexture', 'EMIT', 'EMIT', image, mesh, uv, exporter, recipe)
+            self.bake('emissiveTexture', 'EMIT', 'EMIT', image, mesh, uvName, exporter, recipe)
 
         if recipe.bumpBaking:
-            self.bake('bumpTexture', 'NORMAL', 'NORMALS', image, mesh, uv, exporter, recipe)
+            self.bake('bumpTexture', 'NORMAL', 'NORMALS', image, mesh, uvName, exporter, recipe)
 
         if recipe.specularBaking:
-            self.bake('specularTexture', 'SPECULAR', 'SPEC_COLOR', image, mesh, uv, exporter, recipe)
+            self.bake('specularTexture', 'SPECULAR', 'SPEC_COLOR', image, mesh, uvName, exporter, recipe)
 
         # Toggle vertex selection & mode, if setting changed their value
         bpy.ops.mesh.select_all(action='TOGGLE')  # still in edit mode toggle select back to previous
@@ -2015,18 +2017,18 @@ class BakedMaterial(Material):
 
         exporter.scene.render.engine = engine
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bake(self, bjs_type, cycles_type, internal_type, image, mesh, uv, exporter, recipe):
+    def bake(self, bjs_type, cycles_type, internal_type, image, mesh, uvName, exporter, recipe):
         if recipe.cyclesRender:
             if cycles_type is None:
                 return
-            self.bakeCycles(cycles_type, image, uv, recipe.nodeTrees)
+            self.bakeCycles(cycles_type, image, uvName, recipe.nodeTrees)
         else:
-            self.bakeInternal(internal_type, image, uv)
+            self.bakeInternal(internal_type, image, uvName)
 
         self.textures.append(Texture(bjs_type, 1.0, image, mesh, exporter))
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bakeInternal(self, bake_type, image, uv):
-        Main.log('Internal baking texture, type: ' + bake_type + ', mapped using: ' + uv.name, 3)
+    def bakeInternal(self, bake_type, image, uvName):
+        Main.log('Internal baking texture, type: ' + bake_type + ', mapped using: ' + uvName, 3)
         # need to use the legal name, since this will become the file name, chars like ':' not legal
         legalName = legal_js_identifier(self.name)
         image.filepath = legalName + '_' + bake_type + '.jpg'
@@ -2052,8 +2054,8 @@ class BakedMaterial(Material):
 
         bpy.ops.object.bake_image()
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def bakeCycles(self, bake_type, image, uv, nodeTrees):
-        Main.log('Cycles baking texture, type: ' + bake_type + ', mapped using: ' + uv.name, 3)
+    def bakeCycles(self, bake_type, image, uvName, nodeTrees):
+        Main.log('Cycles baking texture, type: ' + bake_type + ', mapped using: ' + uvName, 3)
         legalName = legal_js_identifier(self.name)
         image.filepath = legalName + '_' + bake_type + '.jpg'
 
@@ -2304,10 +2306,24 @@ def scale_vector(vector, mult, xOffset = 0):
     ret.y *= mult
     return ret
 
+def same_matrix4(matA, matB):
+    if(matA is None or matB is None): return False
+    if (len(matA) != len(matB)): return False
+    for i in range(len(matA)):
+        if (round(matA[i][0], MAX_FLOAT_PRECISION_INT) != round(matB[i][0], MAX_FLOAT_PRECISION_INT) or 
+            round(matA[i][1], MAX_FLOAT_PRECISION_INT) != round(matB[i][1], MAX_FLOAT_PRECISION_INT) or 
+            round(matA[i][2], MAX_FLOAT_PRECISION_INT) != round(matB[i][2], MAX_FLOAT_PRECISION_INT) or 
+            round(matA[i][3], MAX_FLOAT_PRECISION_INT) != round(matB[i][3], MAX_FLOAT_PRECISION_INT)): 
+            return False
+        
+    return True
+
 def same_vertex(vertA, vertB):
+    if(vertA is None or vertB is None): return False
     return vertA.x == vertB.x and vertA.y == vertB.y and vertA.z == vertB.z
 
 def same_array(arrayA, arrayB):
+    if(arrayA is None or arrayB is None): return False
     if len(arrayA) != len(arrayB): return False
     for i in range(len(arrayA)):
         if arrayA[i] != arrayB[i] : return False

@@ -13,6 +13,7 @@
 	<script src="../dist/babylon.pbrMaterial.js"></script>
 	<script src="../dist/babylon.furMaterial.js"></script>
 	<script src="../dist/babylon.triPlanarMaterial.js"></script>
+	<script src="../dist/babylon.gradientMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -55,6 +56,7 @@
 	<script src="add/addterrain.js"></script>
 	<script src="add/addfire.js"></script>
 	<script src="add/addtriplanar.js"></script>
+	<script src="add/addgradient.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -180,6 +182,8 @@
 				simple.diffuseTexture.vScale = 5;
 
 				var normal = prepareNormal();
+
+				var gradient = prepareGradient();
 				
 				var fur = prepareFur();
 				
@@ -202,7 +206,7 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					
 					switch (options.material) {
@@ -234,6 +238,9 @@
 							break;
 						case "triPlanar":
 							currentMaterial = triPlanar;
+							break;
+						case "gradient":
+							currentMaterial = gradient;
 							break;
 						default:
 							currentMaterial = std;
