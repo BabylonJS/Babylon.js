@@ -673,7 +673,6 @@
                         return false;
                     }
                 }
-
             }
 
             return true;
@@ -827,11 +826,15 @@
         }
 
         private _animate(): void {
-            if (!this.animationsEnabled) {
+            if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
             }
 
             if (!this._animationStartDate) {
+                if (this._pendingData.length > 0) {
+                    return;
+                }
+
                 this._animationStartDate = Tools.Now;
             }
             // Getting time
