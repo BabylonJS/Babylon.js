@@ -65,6 +65,7 @@
     - Fixed morphing on capped tubes  ([jerome](https://github.com/jbousquie))
     - Fixed morphing on extruded shapes  ([jerome](https://github.com/jbousquie))
     - Fixed tube and extruded shape cap light artifact  ([jerome](https://github.com/jbousquie))
+    - Fixed lathe light artifact with dedicated new geometry  ([jerome](https://github.com/jbousquie))
     - Fixed a bug calculating velocity during collision with gravity enabled. [PR](https://github.com/BabylonJS/Babylon.js/pull/738) ([RaananW](https://github.com/RaananW))
     - Fixed a bug in instance serialization. [PR](https://github.com/BabylonJS/Babylon.js/pull/726) ([RaananW](https://github.com/RaananW))
     - Fixed a memory leak with textures ([deltakosh](https://github.com/deltakosh)) 
