@@ -274,34 +274,24 @@
             var updatable = options.updatable;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
             var pi2 = Math.PI * 2;
-            var shapeLathe = new Array<Vector3>();
+            var paths = new Array();
 
-            // first rotatable point
             var i = 0;
-            while (shape[i].x === 0) {
-                i++;
-            }
-            var pt = shape[i];
-            for (i = 0; i < shape.length; i++) {
-                shapeLathe.push(shape[i].subtract(pt));
-            }
-
-            // circle path
+            var p = 0;
             var step = pi2 / tessellation * arc;
             var rotated;
             var path = new Array<Vector3>();;
             for (i = 0; i <= tessellation; i++) {
-                rotated = new Vector3(Math.cos(i * step) * radius, 0, Math.sin(i * step) * radius);
-                path.push(rotated);
-            }
-            if (closed) {
-                path.push(path[0]);
+                var path: Vector3[] = [];
+                for (p = 0; p < shape.length; p++) {
+                    rotated = new Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y , Math.sin(i * step) * shape[p].x * radius);
+                    path.push(rotated);
+                }
+                paths.push(path);
             }
 
-            // extrusion
-            var scaleFunction = () => { return 1; };
-            var rotateFunction = () => { return 0; };
-            var lathe = Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, closed, false, Mesh.NO_CAP, scene, updatable, sideOrientation);
+            // lathe ribbon
+            var lathe = MeshBuilder.CreateRibbon(name, {pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable}, scene);
             return lathe;
         }
 
@@ -514,7 +504,7 @@
             var normal = options.normal || Vector3.Up();
             var size = options.size || new Vector3(1, 1, 1);
             var angle = options.angle || 0;
-            
+
             // Getting correct rotation
             if (!normal) {
                 var target = new Vector3(0, 0, 1);
