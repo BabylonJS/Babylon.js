@@ -318,6 +318,12 @@
             var ground = new GroundMesh(name, scene);
             ground._setReady(false);
             ground._subdivisions = options.subdivisions || 1;
+            ground._width = options.width || 1;
+            ground._height = options.height || 1;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
 
             var vertexData = VertexData.CreateGround(options);
 
@@ -349,6 +355,12 @@
 
             var ground = new GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
+            ground._width = width;
+            ground._height = height;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
 
             ground._setReady(false);
 
