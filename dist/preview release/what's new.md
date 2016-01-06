@@ -18,10 +18,13 @@
     - New `Mesh.CreateIcoSphere()` method. [Demo here](http://www.babylonjs-playground.com/#24DUYD) (G'kar)
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+    - Added ability to skip current prepared Action to next active Action (chained by Action.then(Action)) ([vouskprod](http://www.github.com/vousk)) 
+    - Added new event triggers `ActionManager.OnLongPressTrigger` and `ActionManager.OnPickDownTrigger` ([vouskprod](http://www.github.com/vousk)) 
     - new `Mesh.convertToUnIndexedMesh()` to create meshes with no indices (which could be faster when vertex reuse is low and vertex structure is small) ([deltakosh](https://github.com/deltakosh)) 
-	- Unity3D exporter will recognise instances of prefabs ([ozRocker](https://github.com/punkoffice))
+    - Unity3D exporter will recognise instances of prefabs ([ozRocker](https://github.com/punkoffice))
     - New parse mechanism (for loading .babylon file) ([deltakosh](https://github.com/deltakosh))   
     - New button to log the camera position in the debug layer ([temechon](https://github.com/temechon))
+    - Shader files (fragment and vertex) can now be specified via direct URL ([vouskprod](http://www.github.com/vousk)) 
     - Added `Animatable.goToFrame()` ([deltakosh](https://github.com/deltakosh))   
     - Fixed behavior or `Animation.CreateAndStartAnimation` and added `Animation.CreateMergeAndStartAnimation` to reproduce previous behavior ([deltakosh](https://github.com/deltakosh))
     - Adding `StandardMaterial.linkEmissiveWithDiffuse` to, well, link emissive with diffuse value. (With)[http://www.babylonjs-playground.com/#2FPUCS#2] and (without)[http://www.babylonjs-playground.com/#2FPUCS#1] ([deltakosh](https://github.com/deltakosh))
@@ -69,6 +72,7 @@
     - Fixed a bug in instance serialization. [PR](https://github.com/BabylonJS/Babylon.js/pull/726) ([RaananW](https://github.com/RaananW))
     - Fixed a memory leak with textures ([deltakosh](https://github.com/deltakosh)) 
   - **Breaking changes**
+    - `ActionManager.OnPickTrigger` now acts as a single click/tap and is not raised on drag or swipe anymore. To get the old behavior, `ActionManager.OnPickDownTrigger` should be used instead ([vouskprod](http://www.github.com/vousk)) 
     - `VertexData.CreateCylinder()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
     - `VertexData.CreateRibbon()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
     - `VertexData.CreateBox()` now supports only the single _options_ parameter ([jerome](https://github.com/jbousquie))
