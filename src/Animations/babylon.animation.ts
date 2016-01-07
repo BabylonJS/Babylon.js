@@ -29,7 +29,7 @@
 
         public allowMatricesInterpolation = false;
 
-        private _ranges = new Array<AnimationRange>();
+        private _ranges : { [name: string] : AnimationRange; } = {};
 
         static _PrepareAnimation(targetProperty: string, framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation {
@@ -113,26 +113,31 @@
         }
 
         public createRange(name: string, from: number, to: number): void {
-            this._ranges.push(new AnimationRange(name, from, to));
+            // check name not already in use; could happen for bones after serialized
+            if (! this._ranges[name]){
+                this._ranges[name] = new AnimationRange(name, from, to);
+            }
         }
 
-        public deleteRange(name: string): void {
-            for (var index = 0; index < this._ranges.length; index++) {
-                if (this._ranges[index].name === name) {
-                    this._ranges.splice(index, 1);
-                    return;
+        public deleteRange(name: string, deleteFrames = true): void {
+            if (this._ranges[name]){
+                if (deleteFrames) {
+                    var from = this._ranges[name].from;
+                    var to = this._ranges[name].to;
+ 
+                    // this loop MUST go high to low for multiple splices to work
+                    for (var key = this._keys.length - 1; key >= 0; key--) {
+                        if (this._keys[key].frame >= from  && this._keys[key].frame <= to) {
+                           this._keys.splice(key, 1); 
+                        }
+                    }
                 }
+                this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
             }
         }
 
         public getRange(name: string): AnimationRange {
-            for (var index = 0; index < this._ranges.length; index++) {
-                if (this._ranges[index].name === name) {
-                    return this._ranges[index];
-                }
-            }
-
-            return null;
+            return this._ranges[name];
         }
 
         public reset(): void {
@@ -147,6 +152,17 @@
 
         public getKeys(): any[] {
             return this._keys;
+        }
+        
+        public getHighestFrame() : number {
+            var ret = 0; 
+        
+            for (var key = 0, nKeys = this._keys.length; key < nKeys; key++) {
+                if (ret < this._keys[key].frame) {
+                    ret = this._keys[key].frame; 
+                }
+            }
+            return ret;
         }
 
         public getEasingFunction() {
@@ -498,6 +514,15 @@
 
                 serializationObject.keys.push(key);
             }
+            
+            serializationObject.ranges = [];
+            for (var name in this._ranges) {
+                var range: any = {};
+                range.name = name;
+                range.from = this._ranges[name].from;
+                range.to   = this._ranges[name].to;
+                serializationObject.ranges.push(range);
+            }
 
             return serializationObject;
         }
@@ -585,6 +610,13 @@
             }
 
             animation.setKeys(keys);
+            
+            if (parsedAnimation.ranges){
+               for (var index = 0; index < parsedAnimation.ranges.length; index++) {
+                   data = parsedAnimation.ranges[index];
+                   animation.createRange(data.name, data.from, data.to);
+               }
+            }
 
             return animation;
         }
