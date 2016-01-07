@@ -265,7 +265,7 @@
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance);
         }
 
-        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number }, scene: Scene): Mesh {
+        public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, cap?: number }, scene: Scene): Mesh {
             var arc: number = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var closed: boolean = (options.closed === undefined) ? true : options.closed;
             var shape = options.shape;
@@ -273,6 +273,7 @@
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || Mesh.DEFAULTSIDE;
+            var cap = options.cap || Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
             var paths = new Array();
 
@@ -283,15 +284,23 @@
             var path = new Array<Vector3>();;
             for (i = 0; i <= tessellation; i++) {
                 var path: Vector3[] = [];
+                if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
+                    path.push(new Vector3(0, shape[0].y, 0));
+                    path.push(new Vector3(shape[0].x, shape[0].y, shape[0].x));
+                }
                 for (p = 0; p < shape.length; p++) {
-                    rotated = new Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y , Math.sin(i * step) * shape[p].x * radius);
+                    rotated = new Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y, Math.sin(i * step) * shape[p].x * radius);
                     path.push(rotated);
+                }
+                if (cap == Mesh.CAP_END || cap == Mesh.CAP_ALL) {
+                    path.push(new Vector3(Math.cos(i * step) * shape[shape.length - 1].x * radius, shape[shape.length - 1].y, Math.sin(i * step) * shape[shape.length - 1].x * radius));
+                    path.push(new Vector3(0, shape[shape.length - 1].y, 0));
                 }
                 paths.push(path);
             }
 
             // lathe ribbon
-            var lathe = MeshBuilder.CreateRibbon(name, {pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable}, scene);
+            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable }, scene);
             return lathe;
         }
 
@@ -318,6 +327,12 @@
             var ground = new GroundMesh(name, scene);
             ground._setReady(false);
             ground._subdivisions = options.subdivisions || 1;
+            ground._width = options.width || 1;
+            ground._height = options.height || 1;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
 
             var vertexData = VertexData.CreateGround(options);
 
@@ -349,6 +364,12 @@
 
             var ground = new GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
+            ground._width = width;
+            ground._height = height;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
 
             ground._setReady(false);
 
@@ -791,3 +812,4 @@
         }
     }
 }
+

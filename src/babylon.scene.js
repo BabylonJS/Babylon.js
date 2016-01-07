@@ -20,6 +20,8 @@ var BABYLON;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
+            this._startingPointerPosition = new BABYLON.Vector2(0, 0);
+            this._startingPointerTime = 0;
             // Fog
             /**
             * is fog enabled on this scene.
@@ -358,6 +360,9 @@ var BABYLON;
                     return;
                 }
                 _this._updatePointerPosition(evt);
+                _this._startingPointerPosition.x = _this._pointerX;
+                _this._startingPointerPosition.y = _this._pointerY;
+                _this._startingPointerTime = new Date().getTime();
                 var predicate = null;
                 // Meshes
                 if (!_this.onPointerDown) {
@@ -379,7 +384,7 @@ var BABYLON;
                                 pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
                 if (_this.onPointerDown) {
@@ -401,7 +406,7 @@ var BABYLON;
                                     pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
                                     break;
                             }
-                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
                         }
                     }
                 }
@@ -414,7 +419,7 @@ var BABYLON;
                 _this._updatePointerPosition(evt);
                 if (!_this.onPointerUp) {
                     predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickUpTrigger);
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger));
                     };
                 }
                 // Meshes
@@ -422,6 +427,13 @@ var BABYLON;
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < BABYLON.ActionManager.DragMovementThreshold) {
+                            pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                            if ((new Date().getTime() - _this._startingPointerTime) > BABYLON.ActionManager.LongPressDelay) {
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                ;
+                            }
+                        }
                     }
                 }
                 if (_this.onPointerUp) {

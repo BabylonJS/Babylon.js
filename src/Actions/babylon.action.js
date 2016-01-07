@@ -39,6 +39,11 @@ var BABYLON;
                 }
             }
             this._nextActiveAction.execute(evt);
+            this.skipToNextActiveAction();
+        };
+        Action.prototype.execute = function (evt) {
+        };
+        Action.prototype.skipToNextActiveAction = function () {
             if (this._nextActiveAction._child) {
                 if (!this._nextActiveAction._child._actionManager) {
                     this._nextActiveAction._child._actionManager = this._actionManager;
@@ -48,8 +53,6 @@ var BABYLON;
             else {
                 this._nextActiveAction = this;
             }
-        };
-        Action.prototype.execute = function (evt) {
         };
         Action.prototype.then = function (action) {
             this._child = action;

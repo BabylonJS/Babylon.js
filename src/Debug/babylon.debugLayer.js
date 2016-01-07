@@ -596,6 +596,7 @@ var BABYLON;
                 + "Render: <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
                 + "Frame: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
                 + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
+                + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br><br>"
                 + "</div>"
                 + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Extensions</b><br>"

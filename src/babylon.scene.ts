@@ -72,7 +72,8 @@
         private _pointerX: number;
         private _pointerY: number;
         private _meshUnderPointer: AbstractMesh;
-
+        private _startingPointerPosition = new Vector2(0, 0);
+        private _startingPointerTime = 0;
         // Mirror
         public _mirroredCameraPosition: Vector3;
 
@@ -509,6 +510,10 @@
 
                 this._updatePointerPosition(evt);
 
+                this._startingPointerPosition.x = this._pointerX;
+                this._startingPointerPosition.y = this._pointerY;
+                this._startingPointerTime = new Date().getTime();
+
                 var predicate = null;
 
                 // Meshes
@@ -532,7 +537,7 @@
                                 pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
 
@@ -557,11 +562,12 @@
                                     pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
                                     break;
                             }
-                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
                         }
                     }
                 }
             };
+
             this._onPointerUp = (evt: PointerEvent) => {
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
@@ -573,7 +579,7 @@
 
                 if (!this.onPointerUp) {
                     predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnPickUpTrigger);
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger));
                     };
                 }
 
@@ -583,6 +589,15 @@
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+
+                        if (Math.abs(this._startingPointerPosition.x - this._pointerX) < ActionManager.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < ActionManager.DragMovementThreshold) {
+                            pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+
+                            if ((new Date().getTime() - this._startingPointerTime) > ActionManager.LongPressDelay) {
+                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));;
+                            }
+                        }
+
                     }
                 }
 
