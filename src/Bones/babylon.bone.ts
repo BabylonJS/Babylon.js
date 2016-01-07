@@ -89,5 +89,49 @@
             this._currentRenderId++;
             this._skeleton._markAsDirty();
         }
+        
+        public copyAnimationRange(source : Bone, rangeName : string, frameOffset : number, rescaleAsRequired = false) : boolean{
+            // all animation may be coming from a library skeleton, so may need to create animation
+            if (this.animations.length === 0){
+                this.animations.push(new Animation(this.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0) ); 
+            }
+
+            // get animation info / verify there is such a range from the source bone
+            var sourceRange = source.animations[0].getRange(rangeName);
+            if (!sourceRange) return false;
+            var from = sourceRange.from;
+            var to = sourceRange.to;
+            var sourceKeys = source.animations[0].getKeys();
+            
+            // rescaling prep
+            var sourceBoneLength = source.length;
+            var scalingReqd = rescaleAsRequired && sourceBoneLength && this.length && sourceBoneLength !== this.length;
+            var ratio = scalingReqd ? this.length / sourceBoneLength : null;
+            
+            var destKeys = this.animations[0].getKeys();
+            
+            // loop vars declaration / initialization
+            var orig : {frame : number, value : Matrix};
+            var origScale = scalingReqd ? BABYLON.Vector3.Zero() : null;
+            var origRotation = scalingReqd ? new BABYLON.Quaternion() : null;
+            var origTranslation = scalingReqd ? BABYLON.Vector3.Zero() : null;
+            var mat : Matrix;
+
+            for (var key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
+                orig = sourceKeys[key];
+                if (orig.frame >= from  && orig.frame <= to) {
+                    if (scalingReqd) {
+                        orig.value.decompose(origScale, origRotation, origTranslation);
+                        origTranslation.scaleInPlace(ratio);
+                        mat = Matrix.Compose(origScale, origRotation, origTranslation);
+                    }else {
+                        mat = orig.value;
+                    }
+                    destKeys.push({frame: orig.frame + frameOffset, value: mat});
+                }
+            }
+            this.animations[0].createRange(rangeName, from + frameOffset, to + frameOffset);
+            return true;
+        }
     }
 } 
