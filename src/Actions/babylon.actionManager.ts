@@ -57,14 +57,16 @@
         private static _OnLeftPickTrigger = 2;
         private static _OnRightPickTrigger = 3;
         private static _OnCenterPickTrigger = 4;
-        private static _OnPointerOverTrigger = 5;
-        private static _OnPointerOutTrigger = 6;
-        private static _OnEveryFrameTrigger = 7;
-        private static _OnIntersectionEnterTrigger = 8;
-        private static _OnIntersectionExitTrigger = 9;
-        private static _OnKeyDownTrigger = 10;
-        private static _OnKeyUpTrigger = 11;
-        private static _OnPickUpTrigger = 12;
+        private static _OnPickDownTrigger = 5;
+        private static _OnPickUpTrigger = 6;
+        private static _OnLongPressTrigger = 7;
+        private static _OnPointerOverTrigger = 8;
+        private static _OnPointerOutTrigger = 9;
+        private static _OnEveryFrameTrigger = 10;
+        private static _OnIntersectionEnterTrigger = 11;
+        private static _OnIntersectionExitTrigger = 12;
+        private static _OnKeyDownTrigger = 13;
+        private static _OnKeyUpTrigger = 14;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -86,6 +88,18 @@
             return ActionManager._OnCenterPickTrigger;
         }
 
+        public static get OnPickDownTrigger(): number {
+            return ActionManager._OnPickDownTrigger;
+        }
+
+        public static get OnPickUpTrigger(): number {
+            return ActionManager._OnPickUpTrigger;
+        }
+
+        public static get OnLongPressTrigger(): number {
+            return ActionManager._OnLongPressTrigger;
+        }
+        
         public static get OnPointerOverTrigger(): number {
             return ActionManager._OnPointerOverTrigger;
         }
@@ -113,9 +127,10 @@
         public static get OnKeyUpTrigger(): number {
             return ActionManager._OnKeyUpTrigger;
         }
-        public static get OnPickUpTrigger(): number {
-            return ActionManager._OnPickUpTrigger;
-        }
+        
+        public static DragMovementThreshold = 10; // in pixels
+        public static LongPressDelay = 500; // in milliseconds
+        
         // Members
         public actions = new Array<Action>();
 
@@ -185,9 +200,6 @@
                 if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
                     return true;
                 }
-                if (action.trigger === ActionManager._OnPickUpTrigger) {
-                    return true;
-                }
             }
 
             return false;
@@ -201,10 +213,7 @@
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
-                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
-                    return true;
-                }
-                if (action.trigger === ActionManager._OnPickUpTrigger) {
+                if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPickUpTrigger) {
                     return true;
                 }
             }
@@ -224,7 +233,6 @@
                     return null;
                 }
             }
-
 
             this.actions.push(action);
 
