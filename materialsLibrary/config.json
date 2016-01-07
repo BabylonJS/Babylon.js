@@ -82,6 +82,14 @@
         "materials/triPlanar/triplanar.fragment.fx"
       ],
       "output": "babylon.triPlanarMaterial.js"
+    },
+    {
+      "file": "materials/sky/babylon.skyMaterial.ts",
+      "shaderFiles": [
+        "materials/sky/sky.vertex.fx",
+        "materials/sky/sky.fragment.fx"
+      ],
+      "output": "babylon.skyMaterial.js"
     }
   ],
   "build": {
