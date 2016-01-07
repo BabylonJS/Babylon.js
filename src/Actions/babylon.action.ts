@@ -53,6 +53,14 @@
 
             this._nextActiveAction.execute(evt);
 
+            this.skipToNextActiveAction();
+        }
+
+        public execute(evt: ActionEvent): void {
+
+        }
+
+        public skipToNextActiveAction(): void {
             if (this._nextActiveAction._child) {
 
                 if (!this._nextActiveAction._child._actionManager) {
@@ -64,11 +72,7 @@
                 this._nextActiveAction = this;
             }
         }
-
-        public execute(evt: ActionEvent): void {
-
-        }
-
+        
         public then(action: Action): Action {
             this._child = action;
 
