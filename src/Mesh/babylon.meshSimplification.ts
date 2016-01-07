@@ -574,7 +574,7 @@
             this._reconstructedMesh.material = this._mesh.material;
             this._reconstructedMesh.parent = this._mesh.parent;
             this._reconstructedMesh.isVisible = false;
-            this._reconstructedMesh.renderingGroupId = this._mesh.renderingGroupId;
+            this._reconstructedMesh.renderingGroupId = this._mesh.renderingGroupId; 
         }
 
         private isFlipped(vertex1: DecimationVertex, vertex2: DecimationVertex, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {

@@ -741,6 +741,7 @@
             + "Render: <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
             + "Frame: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
             + "Potential FPS: " + Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
+            + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br><br>"
             + "</div>"
             + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
             + "<b>Extensions</b><br>"
