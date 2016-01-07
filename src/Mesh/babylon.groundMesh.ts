@@ -3,7 +3,7 @@
         public generateOctree = false;
 
         private _worldInverse = new Matrix();
-        private _heightQuads: {slope: Vector2; facet1: Vector4; facet2: Vector4}[];
+        private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
         public _subdivisions: number;
         public _width: number;
         public _height: number;
@@ -91,8 +91,8 @@
             var d1 = 0;     // facet plane equation : ax + by + cz + d = 0
             var d2 = 0;
 
-            for (var row = 0; row < this._subdivisions; row ++) {
-                for (var col = 0; col < this._subdivisions; col ++) {
+            for (var row = 0; row < this._subdivisions; row++) {
+                for (var col = 0; col < this._subdivisions; col++) {
                     i = col * 3;
                     j = row * (this._subdivisions + 1) * 3;
                     k = (row + 1) * (this._subdivisions + 1) * 3;
@@ -131,12 +131,11 @@
                     var facet1 = new BABYLON.Vector4(norm1.x, norm1.y, norm1.z, d1);
                     var facet2 = new BABYLON.Vector4(norm2.x, norm2.y, norm2.z, d2);
 
-                    var quad = {slope: slope, facet1: facet1, facet2: facet2};
+                    var quad = { slope: slope, facet1: facet1, facet2: facet2 };
                     this._heightQuads.push(quad);
                 }
             }
-
-
         }
     }
 }
+

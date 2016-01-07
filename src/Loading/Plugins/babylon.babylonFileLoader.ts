@@ -358,12 +358,13 @@
                 for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                     var parsedSound = parsedData.sounds[index];
                     if (Engine.audioEngine.canUseWebAudio) {
-                        if (!loadedSounds[parsedSound.name]) {
+                        if (!parsedSound.url) parsedSound.url = parsedSound.name;
+                        if (!loadedSounds[parsedSound.url]) {
                             loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
-                            loadedSounds[loadedSound.name] = loadedSound;
+                            loadedSounds[parsedSound.url] = loadedSound;
                         }
                         else {
-                            Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.name]);
+                            Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
                         }
                     } else {
                         var emptySound = new Sound(parsedSound.name, null, scene);

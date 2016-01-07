@@ -99,7 +99,7 @@
         public static get OnLongPressTrigger(): number {
             return ActionManager._OnLongPressTrigger;
         }
-        
+
         public static get OnPointerOverTrigger(): number {
             return ActionManager._OnPointerOverTrigger;
         }
@@ -127,7 +127,7 @@
         public static get OnKeyUpTrigger(): number {
             return ActionManager._OnKeyUpTrigger;
         }
-        
+
         public static DragMovementThreshold = 10; // in pixels
         public static LongPressDelay = 500; // in milliseconds
         

@@ -299,17 +299,16 @@
             this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
 
             // determine the number of particles we need to create   
-            var emitCout;
+            var newParticles;
 
             if (this.manualEmitCount > -1) {
-                emitCout = this.manualEmitCount;
+                newParticles = this.manualEmitCount;
+                this._newPartsExcess = 0;
                 this.manualEmitCount = 0;
             } else {
-                emitCout = this.emitRate;
+                newParticles = ((this.emitRate * this._scaledUpdateSpeed) >> 0);
+                this._newPartsExcess += this.emitRate * this._scaledUpdateSpeed - newParticles;
             }
-
-            var newParticles = ((emitCout * this._scaledUpdateSpeed) >> 0);
-            this._newPartsExcess += emitCout * this._scaledUpdateSpeed - newParticles;
 
             if (this._newPartsExcess > 1.0) {
                 newParticles += this._newPartsExcess >> 0;
