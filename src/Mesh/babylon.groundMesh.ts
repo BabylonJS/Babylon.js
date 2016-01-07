@@ -33,6 +33,31 @@
             if (!this._heightQuads || this._heightQuads.length == 0) {
                 this._computeHeightQuads();
             }
+            var facet = this._getFacetAt(x, z);
+            var y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
+            return y;
+        }
+
+        public getNormalAtCoordinates(x: number, z: number): Vector3 {
+            var normal = new Vector3(0, 1, 0);
+            this.getNormalAtCoordinatesToRef(x, z, normal);
+            return normal;
+        }
+
+        public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): void {
+            if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
+                return;
+            }
+            if (!this._heightQuads || this._heightQuads.length == 0) {
+                this._computeHeightQuads();
+            }
+            var facet = this._getFacetAt(x, z);
+            ref.x = facet.x;
+            ref.y = facet.y;
+            ref.z = facet.z;
+        }
+
+        private _getFacetAt(x: number, z: number): Vector4 {
             // retrieve col and row from x, z coordinates
             var col = Math.floor((x + this._maxX) * this._subdivisions / this._width);
             var row = Math.floor(-(z + this._maxZ) * this._subdivisions / this._height + this._subdivisions);
@@ -43,8 +68,7 @@
             } else {
                 facet = quad.facet2;
             }
-            var y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
-            return y;
+            return facet;
         }
 
         private _computeHeightQuads(): void {
@@ -98,8 +122,10 @@
                     v2.subtractToRef(v1, v1v2);
                     v3.subtractToRef(v1, v1v3);
                     v4.subtractToRef(v1, v1v4);
-                    Vector3.CrossToRef(v1v3, v1v4, norm1);
-                    Vector3.CrossToRef(v1v4, v1v2, norm2);
+                    Vector3.CrossToRef(v1v4, v1v3, norm1);
+                    Vector3.CrossToRef(v1v2, v1v4, norm2);
+                    norm1.normalize();
+                    norm2.normalize();
                     d1 = -(norm1.x * v1.x + norm1.y * v1.y + norm1.z * v1.z);
                     d2 = -(norm2.x * v2.x + norm2.y * v2.y + norm2.z * v2.z);
                     var facet1 = new BABYLON.Vector4(norm1.x, norm1.y, norm1.z, d1);
