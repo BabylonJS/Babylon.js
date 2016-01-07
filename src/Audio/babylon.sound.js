@@ -484,7 +484,13 @@ var BABYLON;
         };
         Sound.Parse = function (parsedSound, scene, rootUrl, sourceSound) {
             var soundName = parsedSound.name;
-            var soundUrl = rootUrl + soundName;
+            var soundUrl;
+            if (parsedSound.url) {
+                soundUrl = rootUrl + parsedSound.url;
+            }
+            else {
+                soundUrl = rootUrl + soundName;
+            }
             var options = {
                 autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
                 spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,

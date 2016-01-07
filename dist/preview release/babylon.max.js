@@ -12060,6 +12060,8 @@ var BABYLON;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
+            this._startingPointerPosition = new BABYLON.Vector2(0, 0);
+            this._startingPointerTime = 0;
             // Fog
             /**
             * is fog enabled on this scene.
@@ -12398,6 +12400,9 @@ var BABYLON;
                     return;
                 }
                 _this._updatePointerPosition(evt);
+                _this._startingPointerPosition.x = _this._pointerX;
+                _this._startingPointerPosition.y = _this._pointerY;
+                _this._startingPointerTime = new Date().getTime();
                 var predicate = null;
                 // Meshes
                 if (!_this.onPointerDown) {
@@ -12419,7 +12424,7 @@ var BABYLON;
                                 pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                                 break;
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                     }
                 }
                 if (_this.onPointerDown) {
@@ -12441,7 +12446,7 @@ var BABYLON;
                                     pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
                                     break;
                             }
-                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
                         }
                     }
                 }
@@ -12454,7 +12459,7 @@ var BABYLON;
                 _this._updatePointerPosition(evt);
                 if (!_this.onPointerUp) {
                     predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickUpTrigger);
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger));
                     };
                 }
                 // Meshes
@@ -12462,6 +12467,13 @@ var BABYLON;
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < BABYLON.ActionManager.DragMovementThreshold) {
+                            pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                            if ((new Date().getTime() - _this._startingPointerTime) > BABYLON.ActionManager.LongPressDelay) {
+                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                ;
+                            }
+                        }
                     }
                 }
                 if (_this.onPointerUp) {
@@ -16546,33 +16558,33 @@ var BABYLON;
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
-            var shapeLathe = new Array();
-            // first rotatable point
+            var paths = new Array();
             var i = 0;
-            while (shape[i].x === 0) {
-                i++;
-            }
-            var pt = shape[i];
-            for (i = 0; i < shape.length; i++) {
-                shapeLathe.push(shape[i].subtract(pt));
-            }
-            // circle path
+            var p = 0;
             var step = pi2 / tessellation * arc;
             var rotated;
             var path = new Array();
             ;
             for (i = 0; i <= tessellation; i++) {
-                rotated = new BABYLON.Vector3(Math.cos(i * step) * radius, 0, Math.sin(i * step) * radius);
-                path.push(rotated);
+                var path = [];
+                if (cap == BABYLON.Mesh.CAP_START || cap == BABYLON.Mesh.CAP_ALL) {
+                    path.push(new BABYLON.Vector3(0, shape[0].y, 0));
+                    path.push(new BABYLON.Vector3(shape[0].x, shape[0].y, shape[0].x));
+                }
+                for (p = 0; p < shape.length; p++) {
+                    rotated = new BABYLON.Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y, Math.sin(i * step) * shape[p].x * radius);
+                    path.push(rotated);
+                }
+                if (cap == BABYLON.Mesh.CAP_END || cap == BABYLON.Mesh.CAP_ALL) {
+                    path.push(new BABYLON.Vector3(Math.cos(i * step) * shape[shape.length - 1].x * radius, shape[shape.length - 1].y, Math.sin(i * step) * shape[shape.length - 1].x * radius));
+                    path.push(new BABYLON.Vector3(0, shape[shape.length - 1].y, 0));
+                }
+                paths.push(path);
             }
-            if (closed) {
-                path.push(path[0]);
-            }
-            // extrusion
-            var scaleFunction = function () { return 1; };
-            var rotateFunction = function () { return 0; };
-            var lathe = BABYLON.Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, closed, false, BABYLON.Mesh.NO_CAP, scene, updatable, sideOrientation);
+            // lathe ribbon
+            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable }, scene);
             return lathe;
         };
         MeshBuilder.CreatePlane = function (name, options, scene) {
@@ -16591,6 +16603,12 @@ var BABYLON;
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._setReady(false);
             ground._subdivisions = options.subdivisions || 1;
+            ground._width = options.width || 1;
+            ground._height = options.height || 1;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
             var vertexData = BABYLON.VertexData.CreateGround(options);
             vertexData.applyToMesh(ground, options.updatable);
             ground._setReady(true);
@@ -16612,6 +16630,12 @@ var BABYLON;
             var onReady = options.onReady;
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
+            ground._width = width;
+            ground._height = height;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
             ground._setReady(false);
             var onload = function (img) {
                 // Getting height map data
@@ -20630,12 +20654,14 @@ var BABYLON;
                     for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            if (!loadedSounds[parsedSound.name]) {
+                            if (!parsedSound.url)
+                                parsedSound.url = parsedSound.name;
+                            if (!loadedSounds[parsedSound.url]) {
                                 loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
-                                loadedSounds[loadedSound.name] = loadedSound;
+                                loadedSounds[parsedSound.url] = loadedSound;
                             }
                             else {
-                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.name]);
+                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
                             }
                         }
                         else {
@@ -21291,16 +21317,16 @@ var BABYLON;
             this._currentRenderId = this._scene.getRenderId();
             this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
             // determine the number of particles we need to create   
-            var emitCout;
+            var newParticles;
             if (this.manualEmitCount > -1) {
-                emitCout = this.manualEmitCount;
+                newParticles = this.manualEmitCount;
+                this._newPartsExcess = 0;
                 this.manualEmitCount = 0;
             }
             else {
-                emitCout = this.emitRate;
+                newParticles = ((this.emitRate * this._scaledUpdateSpeed) >> 0);
+                this._newPartsExcess += this.emitRate * this._scaledUpdateSpeed - newParticles;
             }
-            var newParticles = ((emitCout * this._scaledUpdateSpeed) >> 0);
-            this._newPartsExcess += emitCout * this._scaledUpdateSpeed - newParticles;
             if (this._newPartsExcess > 1.0) {
                 newParticles += this._newPartsExcess >> 0;
                 this._newPartsExcess -= this._newPartsExcess >> 0;
@@ -25630,6 +25656,11 @@ var BABYLON;
                 }
             }
             this._nextActiveAction.execute(evt);
+            this.skipToNextActiveAction();
+        };
+        Action.prototype.execute = function (evt) {
+        };
+        Action.prototype.skipToNextActiveAction = function () {
             if (this._nextActiveAction._child) {
                 if (!this._nextActiveAction._child._actionManager) {
                     this._nextActiveAction._child._actionManager = this._actionManager;
@@ -25639,8 +25670,6 @@ var BABYLON;
             else {
                 this._nextActiveAction = this;
             }
-        };
-        Action.prototype.execute = function (evt) {
         };
         Action.prototype.then = function (action) {
             this._child = action;
@@ -25756,6 +25785,27 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "OnPickDownTrigger", {
+            get: function () {
+                return ActionManager._OnPickDownTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
+            get: function () {
+                return ActionManager._OnPickUpTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "OnLongPressTrigger", {
+            get: function () {
+                return ActionManager._OnLongPressTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ActionManager, "OnPointerOverTrigger", {
             get: function () {
                 return ActionManager._OnPointerOverTrigger;
@@ -25801,13 +25851,6 @@ var BABYLON;
         Object.defineProperty(ActionManager, "OnKeyUpTrigger", {
             get: function () {
                 return ActionManager._OnKeyUpTrigger;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
-            get: function () {
-                return ActionManager._OnPickUpTrigger;
             },
             enumerable: true,
             configurable: true
@@ -25861,9 +25904,6 @@ var BABYLON;
                     if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
                         return true;
                     }
-                    if (action.trigger === ActionManager._OnPickUpTrigger) {
-                        return true;
-                    }
                 }
                 return false;
             },
@@ -25878,10 +25918,7 @@ var BABYLON;
             get: function () {
                 for (var index = 0; index < this.actions.length; index++) {
                     var action = this.actions[index];
-                    if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
-                        return true;
-                    }
-                    if (action.trigger === ActionManager._OnPickUpTrigger) {
+                    if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPickUpTrigger) {
                         return true;
                     }
                 }
@@ -26099,14 +26136,18 @@ var BABYLON;
         ActionManager._OnLeftPickTrigger = 2;
         ActionManager._OnRightPickTrigger = 3;
         ActionManager._OnCenterPickTrigger = 4;
-        ActionManager._OnPointerOverTrigger = 5;
-        ActionManager._OnPointerOutTrigger = 6;
-        ActionManager._OnEveryFrameTrigger = 7;
-        ActionManager._OnIntersectionEnterTrigger = 8;
-        ActionManager._OnIntersectionExitTrigger = 9;
-        ActionManager._OnKeyDownTrigger = 10;
-        ActionManager._OnKeyUpTrigger = 11;
-        ActionManager._OnPickUpTrigger = 12;
+        ActionManager._OnPickDownTrigger = 5;
+        ActionManager._OnPickUpTrigger = 6;
+        ActionManager._OnLongPressTrigger = 7;
+        ActionManager._OnPointerOverTrigger = 8;
+        ActionManager._OnPointerOutTrigger = 9;
+        ActionManager._OnEveryFrameTrigger = 10;
+        ActionManager._OnIntersectionEnterTrigger = 11;
+        ActionManager._OnIntersectionExitTrigger = 12;
+        ActionManager._OnKeyDownTrigger = 13;
+        ActionManager._OnKeyUpTrigger = 14;
+        ActionManager.DragMovementThreshold = 10; // in pixels
+        ActionManager.LongPressDelay = 500; // in milliseconds
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;
@@ -27429,14 +27470,107 @@ var BABYLON;
             this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
         };
         GroundMesh.prototype.getHeightAtCoordinates = function (x, z) {
-            var ray = new BABYLON.Ray(new BABYLON.Vector3(x, this.getBoundingInfo().boundingBox.maximumWorld.y + 1, z), new BABYLON.Vector3(0, -1, 0));
-            this.getWorldMatrix().invertToRef(this._worldInverse);
-            ray = BABYLON.Ray.Transform(ray, this._worldInverse);
-            var pickInfo = this.intersects(ray);
-            if (pickInfo.hit) {
-                return pickInfo.pickedPoint.y;
+            if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
+                return 0;
             }
-            return 0;
+            if (!this._heightQuads || this._heightQuads.length == 0) {
+                this._computeHeightQuads();
+            }
+            var facet = this._getFacetAt(x, z);
+            var y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
+            return y;
+        };
+        GroundMesh.prototype.getNormalAtCoordinates = function (x, z) {
+            var normal = new BABYLON.Vector3(0, 1, 0);
+            this.getNormalAtCoordinatesToRef(x, z, normal);
+            return normal;
+        };
+        GroundMesh.prototype.getNormalAtCoordinatesToRef = function (x, z, ref) {
+            if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
+                return;
+            }
+            if (!this._heightQuads || this._heightQuads.length == 0) {
+                this._computeHeightQuads();
+            }
+            var facet = this._getFacetAt(x, z);
+            ref.x = facet.x;
+            ref.y = facet.y;
+            ref.z = facet.z;
+        };
+        GroundMesh.prototype._getFacetAt = function (x, z) {
+            // retrieve col and row from x, z coordinates
+            var col = Math.floor((x + this._maxX) * this._subdivisions / this._width);
+            var row = Math.floor(-(z + this._maxZ) * this._subdivisions / this._height + this._subdivisions);
+            var quad = this._heightQuads[row * this._subdivisions + col];
+            var facet;
+            if (z < quad.slope.x * x + quad.slope.y) {
+                facet = quad.facet1;
+            }
+            else {
+                facet = quad.facet2;
+            }
+            return facet;
+        };
+        GroundMesh.prototype._computeHeightQuads = function () {
+            this._heightQuads = new Array();
+            var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var v1 = BABYLON.Vector3.Zero();
+            var v2 = BABYLON.Vector3.Zero();
+            var v3 = BABYLON.Vector3.Zero();
+            var v4 = BABYLON.Vector3.Zero();
+            var v1v2 = BABYLON.Vector3.Zero();
+            var v1v3 = BABYLON.Vector3.Zero();
+            var v1v4 = BABYLON.Vector3.Zero();
+            var norm1 = BABYLON.Vector3.Zero();
+            var norm2 = BABYLON.Vector3.Zero();
+            var i = 0;
+            var j = 0;
+            var k = 0;
+            var cd = 0; // 2D slope coefficient : z = cd * x + h
+            var h = 0;
+            var d1 = 0; // facet plane equation : ax + by + cz + d = 0
+            var d2 = 0;
+            for (var row = 0; row < this._subdivisions; row++) {
+                for (var col = 0; col < this._subdivisions; col++) {
+                    i = col * 3;
+                    j = row * (this._subdivisions + 1) * 3;
+                    k = (row + 1) * (this._subdivisions + 1) * 3;
+                    v1.x = positions[j + i];
+                    v1.y = positions[j + i + 1];
+                    v1.z = positions[j + i + 2];
+                    v2.x = positions[j + i + 3];
+                    v2.y = positions[j + i + 4];
+                    v2.z = positions[j + i + 5];
+                    v3.x = positions[k + i];
+                    v3.y = positions[k + i + 1];
+                    v3.z = positions[k + i + 2];
+                    v4.x = positions[k + i + 3];
+                    v4.y = positions[k + i + 4];
+                    v4.z = positions[k + i + 5];
+                    // 2D slope V1V4
+                    cd = (v4.z - v1.z) / (v4.x - v1.x);
+                    h = v1.z - cd * v1.x; // v1 belongs to the slope
+                    var slope = new BABYLON.Vector2(cd, h);
+                    // facet equations :
+                    // we compute each facet normal vector
+                    // the equation of the facet plane is : norm.x * x + norm.y * y + norm.z * z + d = 0
+                    // we compute the value d by applying the equation to v1 which belongs to the plane
+                    // then we store the facet equation in a Vector4
+                    v2.subtractToRef(v1, v1v2);
+                    v3.subtractToRef(v1, v1v3);
+                    v4.subtractToRef(v1, v1v4);
+                    BABYLON.Vector3.CrossToRef(v1v4, v1v3, norm1);
+                    BABYLON.Vector3.CrossToRef(v1v2, v1v4, norm2);
+                    norm1.normalize();
+                    norm2.normalize();
+                    d1 = -(norm1.x * v1.x + norm1.y * v1.y + norm1.z * v1.z);
+                    d2 = -(norm2.x * v2.x + norm2.y * v2.y + norm2.z * v2.z);
+                    var facet1 = new BABYLON.Vector4(norm1.x, norm1.y, norm1.z, d1);
+                    var facet2 = new BABYLON.Vector4(norm2.x, norm2.y, norm2.z, d2);
+                    var quad = { slope: slope, facet1: facet1, facet2: facet2 };
+                    this._heightQuads.push(quad);
+                }
+            }
         };
         return GroundMesh;
     })(BABYLON.Mesh);
@@ -28114,6 +28248,7 @@ var BABYLON;
                 + "Render: <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
                 + "Frame: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
                 + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
+                + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br><br>"
                 + "</div>"
                 + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Extensions</b><br>"
@@ -30273,6 +30408,7 @@ var BABYLON;
             this._reconstructedMesh.material = this._mesh.material;
             this._reconstructedMesh.parent = this._mesh.parent;
             this._reconstructedMesh.isVisible = false;
+            this._reconstructedMesh.renderingGroupId = this._mesh.renderingGroupId;
         };
         QuadraticErrorSimplification.prototype.isFlipped = function (vertex1, vertex2, point, deletedArray, borderFactor, delTr) {
             for (var i = 0; i < vertex1.triangleCount; ++i) {
@@ -34769,7 +34905,13 @@ var BABYLON;
         };
         Sound.Parse = function (parsedSound, scene, rootUrl, sourceSound) {
             var soundName = parsedSound.name;
-            var soundUrl = rootUrl + soundName;
+            var soundUrl;
+            if (parsedSound.url) {
+                soundUrl = rootUrl + parsedSound.url;
+            }
+            else {
+                soundUrl = rootUrl + soundName;
+            }
             var options = {
                 autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
                 spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,

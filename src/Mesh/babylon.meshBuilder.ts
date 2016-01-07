@@ -285,22 +285,22 @@
             for (i = 0; i <= tessellation; i++) {
                 var path: Vector3[] = [];
                 if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
-                    path.push(new Vector3(0, shape[0].y ,0));
+                    path.push(new Vector3(0, shape[0].y, 0));
                     path.push(new Vector3(shape[0].x, shape[0].y, shape[0].x));
                 }
                 for (p = 0; p < shape.length; p++) {
-                    rotated = new Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y , Math.sin(i * step) * shape[p].x * radius);
+                    rotated = new Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y, Math.sin(i * step) * shape[p].x * radius);
                     path.push(rotated);
                 }
                 if (cap == Mesh.CAP_END || cap == Mesh.CAP_ALL) {
                     path.push(new Vector3(Math.cos(i * step) * shape[shape.length - 1].x * radius, shape[shape.length - 1].y, Math.sin(i * step) * shape[shape.length - 1].x * radius));
-                    path.push(new Vector3(0, shape[shape.length - 1].y ,0));
+                    path.push(new Vector3(0, shape[shape.length - 1].y, 0));
                 }
                 paths.push(path);
             }
 
             // lathe ribbon
-            var lathe = MeshBuilder.CreateRibbon(name, {pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable}, scene);
+            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable }, scene);
             return lathe;
         }
 
@@ -812,3 +812,4 @@
         }
     }
 }
+

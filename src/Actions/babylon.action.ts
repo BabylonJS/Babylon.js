@@ -72,7 +72,7 @@
                 this._nextActiveAction = this;
             }
         }
-        
+
         public then(action: Action): Action {
             this._child = action;
 

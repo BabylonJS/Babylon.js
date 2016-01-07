@@ -509,11 +509,11 @@
                 }
 
                 this._updatePointerPosition(evt);
-                
+
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = new Date().getTime();
-                
+
                 var predicate = null;
 
                 // Meshes
@@ -567,7 +567,7 @@
                     }
                 }
             };
-            
+
             this._onPointerUp = (evt: PointerEvent) => {
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
@@ -593,11 +593,11 @@
                         if (Math.abs(this._startingPointerPosition.x - this._pointerX) < ActionManager.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < ActionManager.DragMovementThreshold) {
                             pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
 
-                            if ((new Date().getTime() - this._startingPointerTime) > ActionManager.LongPressDelay ) {
+                            if ((new Date().getTime() - this._startingPointerTime) > ActionManager.LongPressDelay) {
                                 pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));;
                             }
                         }
-                        
+
                     }
                 }
 

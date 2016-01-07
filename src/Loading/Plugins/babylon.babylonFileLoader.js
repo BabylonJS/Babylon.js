@@ -327,12 +327,14 @@ var BABYLON;
                     for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            if (!loadedSounds[parsedSound.name]) {
+                            if (!parsedSound.url)
+                                parsedSound.url = parsedSound.name;
+                            if (!loadedSounds[parsedSound.url]) {
                                 loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
-                                loadedSounds[loadedSound.name] = loadedSound;
+                                loadedSounds[parsedSound.url] = loadedSound;
                             }
                             else {
-                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.name]);
+                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
                             }
                         }
                         else {

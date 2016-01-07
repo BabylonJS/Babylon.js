@@ -239,33 +239,33 @@ var BABYLON;
             var tessellation = options.tessellation || 64;
             var updatable = options.updatable;
             var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || BABYLON.Mesh.DEFAULTSIDE;
+            var cap = options.cap || BABYLON.Mesh.NO_CAP;
             var pi2 = Math.PI * 2;
-            var shapeLathe = new Array();
-            // first rotatable point
+            var paths = new Array();
             var i = 0;
-            while (shape[i].x === 0) {
-                i++;
-            }
-            var pt = shape[i];
-            for (i = 0; i < shape.length; i++) {
-                shapeLathe.push(shape[i].subtract(pt));
-            }
-            // circle path
+            var p = 0;
             var step = pi2 / tessellation * arc;
             var rotated;
             var path = new Array();
             ;
             for (i = 0; i <= tessellation; i++) {
-                rotated = new BABYLON.Vector3(Math.cos(i * step) * radius, 0, Math.sin(i * step) * radius);
-                path.push(rotated);
+                var path = [];
+                if (cap == BABYLON.Mesh.CAP_START || cap == BABYLON.Mesh.CAP_ALL) {
+                    path.push(new BABYLON.Vector3(0, shape[0].y, 0));
+                    path.push(new BABYLON.Vector3(shape[0].x, shape[0].y, shape[0].x));
+                }
+                for (p = 0; p < shape.length; p++) {
+                    rotated = new BABYLON.Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y, Math.sin(i * step) * shape[p].x * radius);
+                    path.push(rotated);
+                }
+                if (cap == BABYLON.Mesh.CAP_END || cap == BABYLON.Mesh.CAP_ALL) {
+                    path.push(new BABYLON.Vector3(Math.cos(i * step) * shape[shape.length - 1].x * radius, shape[shape.length - 1].y, Math.sin(i * step) * shape[shape.length - 1].x * radius));
+                    path.push(new BABYLON.Vector3(0, shape[shape.length - 1].y, 0));
+                }
+                paths.push(path);
             }
-            if (closed) {
-                path.push(path[0]);
-            }
-            // extrusion
-            var scaleFunction = function () { return 1; };
-            var rotateFunction = function () { return 0; };
-            var lathe = BABYLON.Mesh.ExtrudeShapeCustom(name, shapeLathe, path, scaleFunction, rotateFunction, closed, false, BABYLON.Mesh.NO_CAP, scene, updatable, sideOrientation);
+            // lathe ribbon
+            var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable }, scene);
             return lathe;
         };
         MeshBuilder.CreatePlane = function (name, options, scene) {
@@ -284,6 +284,12 @@ var BABYLON;
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._setReady(false);
             ground._subdivisions = options.subdivisions || 1;
+            ground._width = options.width || 1;
+            ground._height = options.height || 1;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
             var vertexData = BABYLON.VertexData.CreateGround(options);
             vertexData.applyToMesh(ground, options.updatable);
             ground._setReady(true);
@@ -305,6 +311,12 @@ var BABYLON;
             var onReady = options.onReady;
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._subdivisions = subdivisions;
+            ground._width = width;
+            ground._height = height;
+            ground._maxX = ground._width / 2;
+            ground._maxZ = ground._height / 2;
+            ground._minX = -ground._maxX;
+            ground._minZ = -ground._maxZ;
             ground._setReady(false);
             var onload = function (img) {
                 // Getting height map data

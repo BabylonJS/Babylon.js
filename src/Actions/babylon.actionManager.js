@@ -95,6 +95,27 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "OnPickDownTrigger", {
+            get: function () {
+                return ActionManager._OnPickDownTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
+            get: function () {
+                return ActionManager._OnPickUpTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ActionManager, "OnLongPressTrigger", {
+            get: function () {
+                return ActionManager._OnLongPressTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ActionManager, "OnPointerOverTrigger", {
             get: function () {
                 return ActionManager._OnPointerOverTrigger;
@@ -140,13 +161,6 @@ var BABYLON;
         Object.defineProperty(ActionManager, "OnKeyUpTrigger", {
             get: function () {
                 return ActionManager._OnKeyUpTrigger;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ActionManager, "OnPickUpTrigger", {
-            get: function () {
-                return ActionManager._OnPickUpTrigger;
             },
             enumerable: true,
             configurable: true
@@ -200,9 +214,6 @@ var BABYLON;
                     if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPointerOutTrigger) {
                         return true;
                     }
-                    if (action.trigger === ActionManager._OnPickUpTrigger) {
-                        return true;
-                    }
                 }
                 return false;
             },
@@ -217,10 +228,7 @@ var BABYLON;
             get: function () {
                 for (var index = 0; index < this.actions.length; index++) {
                     var action = this.actions[index];
-                    if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnCenterPickTrigger) {
-                        return true;
-                    }
-                    if (action.trigger === ActionManager._OnPickUpTrigger) {
+                    if (action.trigger >= ActionManager._OnPickTrigger && action.trigger <= ActionManager._OnPickUpTrigger) {
                         return true;
                     }
                 }
@@ -438,14 +446,18 @@ var BABYLON;
         ActionManager._OnLeftPickTrigger = 2;
         ActionManager._OnRightPickTrigger = 3;
         ActionManager._OnCenterPickTrigger = 4;
-        ActionManager._OnPointerOverTrigger = 5;
-        ActionManager._OnPointerOutTrigger = 6;
-        ActionManager._OnEveryFrameTrigger = 7;
-        ActionManager._OnIntersectionEnterTrigger = 8;
-        ActionManager._OnIntersectionExitTrigger = 9;
-        ActionManager._OnKeyDownTrigger = 10;
-        ActionManager._OnKeyUpTrigger = 11;
-        ActionManager._OnPickUpTrigger = 12;
+        ActionManager._OnPickDownTrigger = 5;
+        ActionManager._OnPickUpTrigger = 6;
+        ActionManager._OnLongPressTrigger = 7;
+        ActionManager._OnPointerOverTrigger = 8;
+        ActionManager._OnPointerOutTrigger = 9;
+        ActionManager._OnEveryFrameTrigger = 10;
+        ActionManager._OnIntersectionEnterTrigger = 11;
+        ActionManager._OnIntersectionExitTrigger = 12;
+        ActionManager._OnKeyDownTrigger = 13;
+        ActionManager._OnKeyUpTrigger = 14;
+        ActionManager.DragMovementThreshold = 10; // in pixels
+        ActionManager.LongPressDelay = 500; // in milliseconds
         return ActionManager;
     })();
     BABYLON.ActionManager = ActionManager;
