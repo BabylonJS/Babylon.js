@@ -286,7 +286,7 @@
                 var path: Vector3[] = [];
                 if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
                     path.push(new Vector3(0, shape[0].y, 0));
-                    path.push(new Vector3(shape[0].x, shape[0].y, shape[0].x));
+                    path.push(new Vector3(Math.cos(i * step) * shape[0].x * radius, shape[0].y, Math.sin(i * step) * shape[0].x * radius));
                 }
                 for (p = 0; p < shape.length; p++) {
                     rotated = new Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y, Math.sin(i * step) * shape[p].x * radius);
@@ -812,4 +812,3 @@
         }
     }
 }
-
