@@ -90,7 +90,7 @@ var BABYLON;
                 }
             }
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
+            if (!this._defines.isEqual(this._cachedDefines) || !this._effect) {
                 this._defines.cloneTo(this._cachedDefines);
                 scene.resetCachedMaterial();
                 // Fallbacks
