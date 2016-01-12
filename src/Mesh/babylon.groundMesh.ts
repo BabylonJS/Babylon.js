@@ -36,6 +36,8 @@
             // express x and y in the ground local system
             x -= this.position.x;
             z -= this.position.z;
+            x /= this.scaling.x;
+            z /= this.scaling.z;
             if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
                 return this.position.y;
             }
@@ -45,7 +47,7 @@
             var facet = this._getFacetAt(x, z);
             var y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
             // return y in the World system
-            return y + this.position.y;
+            return y * this.scaling.y + this.position.y;
         }
 
         /**
@@ -70,6 +72,8 @@
             // express x and y in the ground local system
             x -= this.position.x;
             z -= this.position.z;
+            x /= this.scaling.x;
+            z /= this.scaling.z;
             if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
                 return;
             }
