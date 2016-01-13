@@ -186,6 +186,7 @@
 
                     light.animations.push(Animation.Parse(parsedAnimation));
                 }
+                Node.ParseAnimationRanges(light, parsedLight, scene);
             }
 
             if (parsedLight.autoAnimate) {

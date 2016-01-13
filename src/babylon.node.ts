@@ -11,6 +11,7 @@
         public state = "";
 
         public animations = new Array<Animation>();
+        private _ranges : { [name: string] : AnimationRange; } = {};
 
         public onReady: (node: Node) => void;
 
@@ -216,6 +217,62 @@
             }
 
             return null;
+        }
+        
+        public createAnimationRange(name: string, from: number, to: number): void {
+            // check name not already in use
+            if (! this._ranges[name]){
+                this._ranges[name] = new AnimationRange(name, from, to);
+                for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+                    if (this.animations[i]) {
+                        this.animations[i].createRange(name, from, to);
+                    }
+                }
+            }
+        }
+
+        public deleteAnimationRange(name: string, deleteFrames = true): void {
+            for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+                if (this.animations[i]) {
+                    this.animations[i].deleteRange(name, deleteFrames);
+                }
+            }
+            this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+        }
+
+        public getAnimationRange(name: string): AnimationRange {
+            return this._ranges[name];
+        }
+
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+            var range = this.getAnimationRange(name);
+
+            if (!range) {
+                return null;
+            }
+
+            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        }
+        
+        public serializeAnimationRanges(): any {
+            var serializationRanges = [];
+            for (var name in this._ranges) {
+                var range: any = {};
+                range.name = name;
+                range.from = this._ranges[name].from;
+                range.to   = this._ranges[name].to;
+                serializationRanges.push(range);
+            }
+            return serializationRanges;
+        }
+        
+        public static ParseAnimationRanges(node : Node, parsedNode: any, scene: Scene): void {
+            if (parsedNode.ranges){
+               for (var index = 0; index < parsedNode.ranges.length; index++) {
+                   var data = parsedNode.ranges[index];
+                   node.createAnimationRange(data.name, data.from, data.to);
+               }
+            }
         }
     }
 } 
