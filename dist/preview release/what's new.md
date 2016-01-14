@@ -7,7 +7,7 @@
       - Normal material: http://doc.babylonjs.com/extensions/normal ([temechon](https://github.com/temechon))
       - Lava Material: http://doc.babylonjs.com/extensions/lava ([temechon](https://github.com/temechon))
       - PBR Material: http://doc.babylonjs.com/extensions/pbr ([deltakosh](https://github.com/deltakosh))
-    - New cache mecanism for StandardMaterial ([deltakosh](https://github.com/deltakosh))
+    - New cache mechanism for StandardMaterial ([deltakosh](https://github.com/deltakosh))
     - New Solid Particle System ([jerome](https://github.com/jbousquie))
     - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.useLightmapAsShadowMap` ([deltakosh](https://github.com/deltakosh))
     - Support for reflection probes. [See documentation here](http://doc.babylonjs.com/tutorials/How_to_use_Reflection_probes) ([deltakosh](https://github.com/deltakosh))
@@ -17,6 +17,10 @@
     - New `Mesh.CreatePolyhedron()` method ([jerome](https://github.com/jbousquie))
     - New `Mesh.CreateIcoSphere()` method. [Demo here](http://www.babylonjs-playground.com/#24DUYD) (G'kar)
     - Introducing [babylon.core.js](http://doc.babylonjs.com/generals/Framework_versions) ([deltakosh](https://github.com/deltakosh))
+    - Introducing AnimationRanges for Skeletons and Animations ([deltakosh](https://github.com/deltakosh))
+      - Added parsing / serialization, copying between similar skeletons, &amp; better deletion ([Palmer-JC](https://github.com/Palmer-JC))
+      - Expanded AnimationRanges for Nodes (Mesh, Lights, &amp; Cameras) ([Palmer-JC](https://github.com/Palmer-JC))
+      - Support for added to Blender Exporter ([Palmer-JC](https://github.com/Palmer-JC))
   - **Updates**
     - Added ability to skip current prepared Action to next active Action (chained by Action.then(Action)) ([vouskprod](http://www.github.com/vousk)) 
     - Added new event triggers `ActionManager.OnLongPressTrigger` and `ActionManager.OnPickDownTrigger` ([vouskprod](http://www.github.com/vousk)) 
@@ -56,6 +60,10 @@
     - Added scene onPointerMove public callback. [PR](https://github.com/BabylonJS/Babylon.js/pull/810) ([RaananW](https://github.com/RaananW))
     - Added streaming support for BABYLON.Sound ([davrous](https://github.com/davrous))
     - Added collisionsEnabled and workerCollisions for serialization [PR](https://github.com/BabylonJS/Babylon.js/pull/830) ([Dad72](https://github.com/dad72))
+    - Changed from a fixed maximum of bone influencers, 4, to variable, 1-8 ([Palmer-JC](https://github.com/Palmer-JC))
+      - Support for added to Blender Exporter ([Palmer-JC](https://github.com/Palmer-JC))
+    - Float32Arrays can now directly be specified for vertex data attributes, `Mesh.updateVerticesDataDirectly` deprecated ([Palmer-JC](https://github.com/Palmer-JC))
+    
   - **Bug fixes**
     - Fixed a bug with spherical mapping ([deltakosh](https://github.com/deltakosh)) 
     - Fixed a bug with clone and createInstance which was forcing the recomputation of bounding boxes ([deltakosh](https://github.com/deltakosh)) 
