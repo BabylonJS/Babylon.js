@@ -80,11 +80,11 @@
                 if (sourceBone){
                     ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired);
                 }else{
-                    BABYLON.Tools.Warn("copyAnimationRange: not same rig, missing source bone " + name);
+                    BABYLON.Tools.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);
                     ret = false;
                 }
             }
-            // do not call createRange(), since it also is done to bones, which was already done
+            // do not call createAnimationRange(), since it also is done to bones, which was already done
             var range = source.getAnimationRange(name);
             this._ranges[name] = new AnimationRange(name, range.from + frameOffset, range.to + frameOffset);
             return ret;

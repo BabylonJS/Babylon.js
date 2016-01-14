@@ -1477,6 +1477,7 @@
 
                     mesh.animations.push(Animation.Parse(parsedAnimation));
                 }
+                Node.ParseAnimationRanges(mesh, parsedMesh, scene);
             }
 
             if (parsedMesh.autoAnimate) {
@@ -1516,6 +1517,7 @@
 
                             instance.animations.push(Animation.Parse(parsedAnimation));
                         }
+                        Node.ParseAnimationRanges(instance, parsedMesh, scene);
                     }
                 }
             }
