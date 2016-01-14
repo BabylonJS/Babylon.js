@@ -607,6 +607,7 @@
             
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
 
             // Layer mask
             serializationObject.layerMask = this.layerMask;
@@ -718,6 +719,7 @@
 
                     camera.animations.push(Animation.Parse(parsedAnimation));
                 }
+                Node.ParseAnimationRanges(camera, parsedCamera, scene);
             }
 
             if (parsedCamera.autoAnimate) {
