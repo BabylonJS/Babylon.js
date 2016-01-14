@@ -192,8 +192,9 @@
             if (parsedLight.autoAnimate) {
                 scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
             }
-            
+
             return light;
         }
     }
 } 
+

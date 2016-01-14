@@ -35,7 +35,7 @@ var BABYLON;
             // The set of event that will be linked to this animation
             this._events = new Array();
             this.allowMatricesInterpolation = false;
-            this._ranges = new Array();
+            this._ranges = {};
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
@@ -99,23 +99,29 @@ var BABYLON;
             }
         };
         Animation.prototype.createRange = function (name, from, to) {
-            this._ranges.push(new AnimationRange(name, from, to));
+            // check name not already in use; could happen for bones after serialized
+            if (!this._ranges[name]) {
+                this._ranges[name] = new AnimationRange(name, from, to);
+            }
         };
-        Animation.prototype.deleteRange = function (name) {
-            for (var index = 0; index < this._ranges.length; index++) {
-                if (this._ranges[index].name === name) {
-                    this._ranges.splice(index, 1);
-                    return;
+        Animation.prototype.deleteRange = function (name, deleteFrames) {
+            if (deleteFrames === void 0) { deleteFrames = true; }
+            if (this._ranges[name]) {
+                if (deleteFrames) {
+                    var from = this._ranges[name].from;
+                    var to = this._ranges[name].to;
+                    // this loop MUST go high to low for multiple splices to work
+                    for (var key = this._keys.length - 1; key >= 0; key--) {
+                        if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
+                            this._keys.splice(key, 1);
+                        }
+                    }
                 }
+                this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
             }
         };
         Animation.prototype.getRange = function (name) {
-            for (var index = 0; index < this._ranges.length; index++) {
-                if (this._ranges[index].name === name) {
-                    return this._ranges[index];
-                }
-            }
-            return null;
+            return this._ranges[name];
         };
         Animation.prototype.reset = function () {
             this._offsetsCache = {};
@@ -127,6 +133,15 @@ var BABYLON;
         };
         Animation.prototype.getKeys = function () {
             return this._keys;
+        };
+        Animation.prototype.getHighestFrame = function () {
+            var ret = 0;
+            for (var key = 0, nKeys = this._keys.length; key < nKeys; key++) {
+                if (ret < this._keys[key].frame) {
+                    ret = this._keys[key].frame;
+                }
+            }
+            return ret;
         };
         Animation.prototype.getEasingFunction = function () {
             return this._easingFunction;
@@ -430,6 +445,14 @@ var BABYLON;
                 }
                 serializationObject.keys.push(key);
             }
+            serializationObject.ranges = [];
+            for (var name in this._ranges) {
+                var range = {};
+                range.name = name;
+                range.from = this._ranges[name].from;
+                range.to = this._ranges[name].to;
+                serializationObject.ranges.push(range);
+            }
             return serializationObject;
         };
         Object.defineProperty(Animation, "ANIMATIONTYPE_FLOAT", {
@@ -526,6 +549,12 @@ var BABYLON;
                 });
             }
             animation.setKeys(keys);
+            if (parsedAnimation.ranges) {
+                for (var index = 0; index < parsedAnimation.ranges.length; index++) {
+                    data = parsedAnimation.ranges[index];
+                    animation.createRange(data.name, data.from, data.to);
+                }
+            }
             return animation;
         };
         Animation.AppendSerializedAnimations = function (source, destination) {

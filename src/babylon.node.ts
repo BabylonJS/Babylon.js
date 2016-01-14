@@ -11,7 +11,7 @@
         public state = "";
 
         public animations = new Array<Animation>();
-        private _ranges : { [name: string] : AnimationRange; } = {};
+        private _ranges: { [name: string]: AnimationRange; } = {};
 
         public onReady: (node: Node) => void;
 
@@ -80,7 +80,7 @@
         public _markSyncedWithParent() {
             this._parentRenderId = this.parent._currentRenderId;
         }
-        
+
         public isSynchronizedWithParent(): boolean {
             if (!this.parent) {
                 return true;
@@ -218,10 +218,10 @@
 
             return null;
         }
-        
+
         public createAnimationRange(name: string, from: number, to: number): void {
             // check name not already in use
-            if (! this._ranges[name]){
+            if (!this._ranges[name]) {
                 this._ranges[name] = new AnimationRange(name, from, to);
                 for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
                     if (this.animations[i]) {
@@ -253,25 +253,25 @@
 
             this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
         }
-        
+
         public serializeAnimationRanges(): any {
             var serializationRanges = [];
             for (var name in this._ranges) {
                 var range: any = {};
                 range.name = name;
                 range.from = this._ranges[name].from;
-                range.to   = this._ranges[name].to;
+                range.to = this._ranges[name].to;
                 serializationRanges.push(range);
             }
             return serializationRanges;
         }
-        
-        public static ParseAnimationRanges(node : Node, parsedNode: any, scene: Scene): void {
-            if (parsedNode.ranges){
-               for (var index = 0; index < parsedNode.ranges.length; index++) {
-                   var data = parsedNode.ranges[index];
-                   node.createAnimationRange(data.name, data.from, data.to);
-               }
+
+        public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
+            if (parsedNode.ranges) {
+                for (var index = 0; index < parsedNode.ranges.length; index++) {
+                    var data = parsedNode.ranges[index];
+                    node.createAnimationRange(data.name, data.from, data.to);
+                }
             }
         }
     }

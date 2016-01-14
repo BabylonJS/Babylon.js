@@ -8,7 +8,7 @@
         private _animatables: IAnimatable[];
         private _identity = Matrix.Identity();
 
-        private _ranges : { [name: string] : AnimationRange; } = {};
+        private _ranges: { [name: string]: AnimationRange; } = {};
 
         constructor(public name: string, public id: string, scene: Scene) {
             this.bones = [];
@@ -34,7 +34,7 @@
         // Methods
         public createAnimationRange(name: string, from: number, to: number): void {
             // check name not already in use
-            if (! this._ranges[name]){
+            if (!this._ranges[name]) {
                 this._ranges[name] = new AnimationRange(name, from, to);
                 for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
                     if (this.bones[i].animations[0]) {
@@ -60,9 +60,9 @@
         /** 
          *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
          */
-        public copyAnimationRange(source : Skeleton, name : string, rescaleAsRequired = false) : boolean {
-            if (this._ranges[name] || !source.getAnimationRange(name) ){
-               return false; 
+        public copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired = false): boolean {
+            if (this._ranges[name] || !source.getAnimationRange(name)) {
+                return false;
             }
             var ret = true;
             var frameOffset = this._getHighestAnimationFrame() + 1;
@@ -77,9 +77,9 @@
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
                 var boneName = this.bones[i].name;
                 var sourceBone = boneDict[boneName];
-                if (sourceBone){
+                if (sourceBone) {
                     ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired);
-                }else{
+                } else {
                     BABYLON.Tools.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);
                     ret = false;
                 }
@@ -89,14 +89,14 @@
             this._ranges[name] = new AnimationRange(name, range.from + frameOffset, range.to + frameOffset);
             return ret;
         }
-        
-        private _getHighestAnimationFrame() : number {
-            var ret = 0; 
+
+        private _getHighestAnimationFrame(): number {
+            var ret = 0;
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
                 if (this.bones[i].animations[0]) {
                     var highest = this.bones[i].animations[0].getHighestFrame();
                     if (ret < highest) {
-                        ret = highest; 
+                        ret = highest;
                     }
                 }
             }
@@ -157,7 +157,7 @@
 
             return this._animatables;
         }
-        
+
         public clone(name: string, id: string): Skeleton {
             var result = new Skeleton(name, id || name, this._scene);
 
@@ -211,13 +211,13 @@
                 if (bone.animations && bone.animations.length > 0) {
                     serializedBone.animation = bone.animations[0].serialize();
                 }
-                
+
                 serializationObject.ranges = [];
                 for (var name in this._ranges) {
                     var range: any = {};
                     range.name = name;
                     range.from = this._ranges[name].from;
-                    range.to   = this._ranges[name].to;
+                    range.to = this._ranges[name].to;
                     serializationObject.ranges.push(range);
                 }
             }
@@ -247,13 +247,14 @@
             }
             
             // placed after bones, so createAnimationRange can cascade down
-            if (parsedSkeleton.ranges){
-               for (var index = 0; index < parsedSkeleton.ranges.length; index++) {
-                   var data = parsedSkeleton.ranges[index];
-                   skeleton.createAnimationRange(data.name, data.from, data.to);
-               }
+            if (parsedSkeleton.ranges) {
+                for (var index = 0; index < parsedSkeleton.ranges.length; index++) {
+                    var data = parsedSkeleton.ranges[index];
+                    skeleton.createAnimationRange(data.name, data.from, data.to);
+                }
             }
             return skeleton;
         }
     }
 }
+

@@ -533,6 +533,7 @@ var BABYLON;
             serializationObject.inertia = this.inertia;
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
             // Layer mask
             serializationObject.layerMask = this.layerMask;
             return serializationObject;
@@ -632,6 +633,7 @@ var BABYLON;
                     var parsedAnimation = parsedCamera.animations[animationIndex];
                     camera.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
+                BABYLON.Node.ParseAnimationRanges(camera, parsedCamera, scene);
             }
             if (parsedCamera.autoAnimate) {
                 scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);

@@ -1506,6 +1506,9 @@ var BABYLON;
                 var currentRenderId = this._renderId;
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     this._renderId = currentRenderId;
+                    if (cameraIndex > 0) {
+                        this._engine.clear(0, false, true);
+                    }
                     this._processSubCameras(this.activeCameras[cameraIndex]);
                 }
             }
