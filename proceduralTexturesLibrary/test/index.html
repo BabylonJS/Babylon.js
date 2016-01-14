@@ -55,6 +55,9 @@
     <script src="add/addMarblePT.js"></script>
     <script src="add/addStarfieldPT.js"></script>
 	<script>
+		
+		
+		
 		if (BABYLON.Engine.isSupported()) {
 			var canvas = document.getElementById("renderCanvas");
 			var engine = new BABYLON.Engine(canvas, true);
@@ -195,32 +198,149 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 				std.diffuseTexture = currentTexture;
-
+	
+				//placeholder for current texture options			
+				var currentPTOptions = gui.addFolder('Texture Options');
+				var PTOptions = [];
+				
+				dat.GUI.prototype.removeFolder = function(name) {
+					var folder = this.__folders[name];
+					if (!folder) {
+						return;
+					}
+					folder.close();
+					this.__ul.removeChild(folder.domElement.parentNode);
+					delete this.__folders[name];
+					this.onResize();
+				}
+				
+				var resetPTOptions = function(){
+					//empty options
+					while(PTOptions.length > 0){
+						var option = PTOptions.pop()
+						if(option.optionType === "Folder"){
+							currentPTOptions.removeFolder(option.optionValue);
+						}
+						else {
+							currentPTOptions.remove(option.optionValue);
+						}
+					}
+				}
+				
+				var addFloatSubOption = function(guiElement, field, propertyName, proxy, initvalue){
+					proxy[propertyName] = initvalue;
+					guiElement.add(proxy, propertyName).onChange(function () {
+						try {
+							var xvalue = parseFloat(proxy[propertyName]);
+							eval('field.' + propertyName + ' = xvalue');
+						} catch (e) {
+							
+						}
+					});	
+				}
+				
+				var addPToptions = function(pt, fieldNames){
+					for(var fieldid = 0; fieldid < fieldNames.length; fieldid++){
+						var field = fieldNames[fieldid]
+						var added = {};
+						if(typeof pt[field] != 'object' && pt[field] != 'undefined') {
+							added.optionType = "Value";
+							added.optionValue = currentPTOptions.add(pt, fieldNames[fieldid]);
+						}
+						else {
+							var proxy = {};
+							
+							if(pt[field] instanceof BABYLON.Vector2){
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'x', proxy, pt[field].x);
+								addFloatSubOption(folder, pt[field], 'y', proxy, pt[field].y);
+							}
+							
+							else if(pt[field] instanceof BABYLON.Vector3){
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'x', proxy, pt[field].x);
+								addFloatSubOption(folder, pt[field], 'y', proxy, pt[field].y);								
+								addFloatSubOption(folder, pt[field], 'z', proxy, pt[field].z);								
+							}
+							else if(pt[field] instanceof BABYLON.Vector4){
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'x', proxy, pt[field].x);
+								addFloatSubOption(folder, pt[field], 'y', proxy, pt[field].y);								
+								addFloatSubOption(folder, pt[field], 'z', proxy, pt[field].z);									
+								addFloatSubOption(folder, pt[field], 'w', proxy, pt[field].w);									
+							}
+							else if(pt[field] instanceof BABYLON.Color3){
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'r', proxy, pt[field].r);
+								addFloatSubOption(folder, pt[field], 'g', proxy, pt[field].g);								
+								addFloatSubOption(folder, pt[field], 'b', proxy, pt[field].b);									
+							}
+							else if(pt[field] instanceof BABYLON.Color4){
+								added.optionType = 'Folder';
+								added.optionValue = field + ' ('+  pt[field].constructor.name +')';
+								var folder = currentPTOptions.addFolder(added.optionValue);
+								addFloatSubOption(folder, pt[field], 'r', proxy, pt[field].r);
+								addFloatSubOption(folder, pt[field], 'g', proxy, pt[field].g);								
+								addFloatSubOption(folder, pt[field], 'b', proxy, pt[field].b);									
+								addFloatSubOption(folder, pt[field], 'a', proxy, pt[field].a);									
+							}
+							else {
+								proxy[field] = 'Object (' + pt[field].constructor.name +')';
+								added.optionType = "Value";
+								added.optionValue = currentPTOptions.add(proxy, field).onChange(function () {
+									try {
+										var res = eval(proxy[field]);
+										pt[field] = res; 
+									} catch (e) { }
+								});
+							}
+						}
+						PTOptions.push(added);
+					}
+				}
+				
 				gui.add(options, 'texture', ['default', 'fire', 'wood', 'cloud', 'grass', 'road', 'brick', 'marble', 'starfield']).onFinishChange(function () {
+					resetPTOptions();
 					switch (options.texture) {
 						case "fire":
 							currentTexture = firePT;
+							addPToptions(firePT, ['time', 'alphaThreshold', 'speed', ]);
 							break;
 						case "wood":
 							currentTexture = woodPT;
+							addPToptions(woodPT, ['ampScale', 'woodColor']);
 							break;
 						case "cloud":
 							currentTexture = cloudPT;
+							addPToptions(cloudPT, ['skyColor', 'cloudColor']);
 							break;
 						case "grass":
 							currentTexture = grassPT;
+							addPToptions(grassPT, ['groundColor']);
 							break;
 						case "road":
 							currentTexture = roadPT;
+							addPToptions(roadPT, ['roadColor']);
 							break;
 						case "brick":
 							currentTexture = brickPT;
+							addPToptions(brickPT, ['numberOfBricksHeight', 'numberOfBricksWidth', 'brickColor', 'jointColor']);
 							break;
 						case "marble":
 							currentTexture = marblePT;
+							addPToptions(marblePT, ['numberOfTilesHeight', 'numberOfTilesWidth', 'amplitude', 'jointColor']);
 							break;
 						case "starfield":
 							currentTexture = starfieldPT;
+							addPToptions(starfieldPT, ['saturation', 'distfading', 'darkmatter', 'alpha', 'time', 'beta', 'zoom', 'formuparam', 'stepsize', 'tile', 'brightness']);
 							break;
 						case "none":
 						default:

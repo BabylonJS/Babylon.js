@@ -87,6 +87,17 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(StarfieldProceduralTexture.prototype, "zoom", {
+            get: function () {
+                return this._zoom;
+            },
+            set: function (value) {
+                this._zoom = value;
+                this.updateShaderUniforms();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(StarfieldProceduralTexture.prototype, "tile", {
             get: function () {
                 return this._tile;
@@ -147,4 +158,4 @@ var BABYLON;
     BABYLON.StarfieldProceduralTexture = StarfieldProceduralTexture;
 })(BABYLON || (BABYLON = {}));
 
-BABYLON.Effect.ShadersStore['starfieldProceduralTexturePixelShader'] = "precision highp float;\n\n//defined as const as fragment shaders does not support uniforms in loops\n#define volsteps 20\n#define iterations 15\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float time;\nuniform float alpha;\nuniform float beta;\nuniform float zoom;\nuniform float formuparam;\nuniform float stepsize;\nuniform float tile;\nuniform float brightness;\nuniform float darkmatter;\nuniform float distfading;\nuniform float saturation;\n\nvoid main()\n{\n\tvec3 dir = vec3(vUV * zoom, 1.);\n\n\tfloat localTime = time * 0.0001;\n\n\t// Rotation\n\tmat2 rot1 = mat2(cos(alpha), sin(alpha), -sin(alpha), cos(alpha));\n\tmat2 rot2 = mat2(cos(beta), sin(beta), -sin(beta), cos(beta));\n\tdir.xz *= rot1;\n\tdir.xy *= rot2;\n\tvec3 from = vec3(1., .5, 0.5);\n\tfrom += vec3(localTime*2., localTime, -2.);\n\tfrom.xz *= rot1;\n\tfrom.xy *= rot2;\n\n\t//volumetric rendering\n\tfloat s = 0.1, fade = 1.;\n\tvec3 v = vec3(0.);\n\tfor (int r = 0; r < volsteps; r++) {\n\t\tvec3 p = from + s*dir*.5;\n\t\tp = abs(vec3(tile) - mod(p, vec3(tile*2.))); // tiling fold\n\t\tfloat pa, a = pa = 0.;\n\t\tfor (int i = 0; i < iterations; i++) {\n\t\t\tp = abs(p) / dot(p, p) - formuparam; // the magic formula\n\t\t\ta += abs(length(p) - pa); // absolute sum of average change\n\t\t\tpa = length(p);\n\t\t}\n\t\tfloat dm = max(0., darkmatter - a*a*.001); //dark matter\n\t\ta *= a*a; // add contrast\n\t\tif (r > 6) fade *= 1. - dm; // dark matter, don't render near\n\t\t\t\t\t\t\t\t  //v+=vec3(dm,dm*.5,0.);\n\t\tv += fade;\n\t\tv += vec3(s, s*s, s*s*s*s)*a*brightness*fade; // coloring based on distance\n\t\tfade *= distfading; // distance fading\n\t\ts += stepsize;\n\t}\n\tv = mix(vec3(length(v)), v, saturation); //color adjust\n\tgl_FragColor = vec4(v*.01, 1.);\n}";
+BABYLON.Effect.ShadersStore['starfieldProceduralTexturePixelShader'] = "precision highp float;\n\n//defined as const as fragment shaders does not support uniforms in loops\n#define volsteps 20\n#define iterations 15\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\n\nuniform float time;\nuniform float alpha;\nuniform float beta;\nuniform float zoom;\nuniform float formuparam;\nuniform float stepsize;\nuniform float tile;\nuniform float brightness;\nuniform float darkmatter;\nuniform float distfading;\nuniform float saturation;\n\nvoid main()\n{\n\tvec3 dir = vec3(vUV * zoom, 1.);\n\n\tfloat localTime = time * 0.0001;\n\n\t// Rotation\n\tmat2 rot1 = mat2(cos(alpha), sin(alpha), -sin(alpha), cos(alpha));\n\tmat2 rot2 = mat2(cos(beta), sin(beta), -sin(beta), cos(beta));\n\tdir.xz *= rot1;\n\tdir.xy *= rot2;\n\tvec3 from = vec3(1., .5, 0.5);\n\tfrom += vec3(-2., localTime*2., localTime);\n\tfrom.xz *= rot1;\n\tfrom.xy *= rot2;\n\n\t//volumetric rendering\n\tfloat s = 0.1, fade = 1.;\n\tvec3 v = vec3(0.);\n\tfor (int r = 0; r < volsteps; r++) {\n\t\tvec3 p = from + s*dir*.5;\n\t\tp = abs(vec3(tile) - mod(p, vec3(tile*2.))); // tiling fold\n\t\tfloat pa, a = pa = 0.;\n\t\tfor (int i = 0; i < iterations; i++) {\n\t\t\tp = abs(p) / dot(p, p) - formuparam; // the magic formula\n\t\t\ta += abs(length(p) - pa); // absolute sum of average change\n\t\t\tpa = length(p);\n\t\t}\n\t\tfloat dm = max(0., darkmatter - a*a*.001); //dark matter\n\t\ta *= a*a; // add contrast\n\t\tif (r > 6) fade *= 1. - dm; // dark matter, don't render near\n\t\t\t\t\t\t\t\t  //v+=vec3(dm,dm*.5,0.);\n\t\tv += fade;\n\t\tv += vec3(s, s*s, s*s*s*s)*a*brightness*fade; // coloring based on distance\n\t\tfade *= distfading; // distance fading\n\t\ts += stepsize;\n\t}\n\tv = mix(vec3(length(v)), v, saturation); //color adjust\n\tgl_FragColor = vec4(v*.01, 1.);\n}";
