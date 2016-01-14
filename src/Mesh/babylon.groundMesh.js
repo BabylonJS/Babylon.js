@@ -25,23 +25,52 @@ var BABYLON;
             this.subdivide(this._subdivisions);
             this.createOrUpdateSubmeshesOctree(octreeBlocksSize);
         };
+        /**
+         * Returns a height (y) value in the Worl system :
+         * the ground altitude at the coordinates (x, z) expressed in the World system.
+         * Returns the ground y position if (x, z) are outside the ground surface.
+         * Not pertinent if the ground is rotated.
+         */
         GroundMesh.prototype.getHeightAtCoordinates = function (x, z) {
+            // express x and y in the ground local system
+            x -= this.position.x;
+            z -= this.position.z;
+            x /= this.scaling.x;
+            z /= this.scaling.z;
             if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
-                return 0;
+                return this.position.y;
             }
             if (!this._heightQuads || this._heightQuads.length == 0) {
                 this._computeHeightQuads();
             }
             var facet = this._getFacetAt(x, z);
             var y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
-            return y;
+            // return y in the World system
+            return y * this.scaling.y + this.position.y;
         };
+        /**
+         * Returns a normalized vector (Vector3) orthogonal to the ground
+         * at the ground coordinates (x, z) expressed in the World system.
+         * Returns Vector3(0, 1, 0) if (x, z) are outside the ground surface.
+         * Not pertinent if the ground is rotated.
+         */
         GroundMesh.prototype.getNormalAtCoordinates = function (x, z) {
             var normal = new BABYLON.Vector3(0, 1, 0);
             this.getNormalAtCoordinatesToRef(x, z, normal);
             return normal;
         };
+        /**
+         * Updates the Vector3 passed a reference with a normalized vector orthogonal to the ground
+         * at the ground coordinates (x, z) expressed in the World system.
+         * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.
+         * Not pertinent if the ground is rotated.
+         */
         GroundMesh.prototype.getNormalAtCoordinatesToRef = function (x, z, ref) {
+            // express x and y in the ground local system
+            x -= this.position.x;
+            z -= this.position.z;
+            x /= this.scaling.x;
+            z /= this.scaling.z;
             if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
                 return;
             }
@@ -53,8 +82,9 @@ var BABYLON;
             ref.y = facet.y;
             ref.z = facet.z;
         };
+        // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
         GroundMesh.prototype._getFacetAt = function (x, z) {
-            // retrieve col and row from x, z coordinates
+            // retrieve col and row from x, z coordinates in the ground local system
             var col = Math.floor((x + this._maxX) * this._subdivisions / this._width);
             var row = Math.floor(-(z + this._maxZ) * this._subdivisions / this._height + this._subdivisions);
             var quad = this._heightQuads[row * this._subdivisions + col];
@@ -67,6 +97,11 @@ var BABYLON;
             }
             return facet;
         };
+        // Populates the heightMap array with "facet" elements :
+        // a quad is two triangular facets separated by a slope, so a "facet" element is 1 slope + 2 facets
+        // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
+        // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
+        // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
         GroundMesh.prototype._computeHeightQuads = function () {
             this._heightQuads = new Array();
             var positions = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);

@@ -12,6 +12,7 @@ var BABYLON;
         function Node(name, scene) {
             this.state = "";
             this.animations = new Array();
+            this._ranges = {};
             this._childrenFlag = -1;
             this._isEnabled = true;
             this._isReady = true;
@@ -164,6 +165,55 @@ var BABYLON;
                 }
             }
             return null;
+        };
+        Node.prototype.createAnimationRange = function (name, from, to) {
+            // check name not already in use
+            if (!this._ranges[name]) {
+                this._ranges[name] = new BABYLON.AnimationRange(name, from, to);
+                for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+                    if (this.animations[i]) {
+                        this.animations[i].createRange(name, from, to);
+                    }
+                }
+            }
+        };
+        Node.prototype.deleteAnimationRange = function (name, deleteFrames) {
+            if (deleteFrames === void 0) { deleteFrames = true; }
+            for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+                if (this.animations[i]) {
+                    this.animations[i].deleteRange(name, deleteFrames);
+                }
+            }
+            this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+        };
+        Node.prototype.getAnimationRange = function (name) {
+            return this._ranges[name];
+        };
+        Node.prototype.beginAnimation = function (name, loop, speedRatio, onAnimationEnd) {
+            var range = this.getAnimationRange(name);
+            if (!range) {
+                return null;
+            }
+            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        };
+        Node.prototype.serializeAnimationRanges = function () {
+            var serializationRanges = [];
+            for (var name in this._ranges) {
+                var range = {};
+                range.name = name;
+                range.from = this._ranges[name].from;
+                range.to = this._ranges[name].to;
+                serializationRanges.push(range);
+            }
+            return serializationRanges;
+        };
+        Node.ParseAnimationRanges = function (node, parsedNode, scene) {
+            if (parsedNode.ranges) {
+                for (var index = 0; index < parsedNode.ranges.length; index++) {
+                    var data = parsedNode.ranges[index];
+                    node.createAnimationRange(data.name, data.from, data.to);
+                }
+            }
         };
         return Node;
     })();

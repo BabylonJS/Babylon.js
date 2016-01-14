@@ -1251,6 +1251,7 @@ var BABYLON;
                     var parsedAnimation = parsedMesh.animations[animationIndex];
                     mesh.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
+                BABYLON.Node.ParseAnimationRanges(mesh, parsedMesh, scene);
             }
             if (parsedMesh.autoAnimate) {
                 scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
@@ -1282,6 +1283,7 @@ var BABYLON;
                             parsedAnimation = parsedMesh.animations[animationIndex];
                             instance.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                         }
+                        BABYLON.Node.ParseAnimationRanges(instance, parsedMesh, scene);
                     }
                 }
             }

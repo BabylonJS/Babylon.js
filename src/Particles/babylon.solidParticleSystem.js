@@ -1,8 +1,17 @@
 var BABYLON;
 (function (BABYLON) {
+    /**
+    * Full documentation here : http://doc.babylonjs.com/tutorials/Solid_Particle_System
+    */
     var SolidParticleSystem = (function () {
+        /**
+        * Creates a SPS (Solid Particle System) object.
+        * @param name the SPS name, this will be the underlying mesh name
+        * @param updatable (default true) if the SPS must be updatable or immutable
+        * @param isPickable (default false) if the solid particles must be pickable
+        */
         function SolidParticleSystem(name, scene, options) {
-            // public members  
+            // public members
             this.particles = new Array();
             this.nbParticles = 0;
             this.billboard = false;
@@ -64,7 +73,10 @@ var BABYLON;
                 this.pickedParticles = [];
             }
         }
-        // build the SPS mesh : returns the mesh
+        /**
+        * Builds the SPS underlying mesh. Returns a standard Mesh.
+        * If no model shape was added to the SPS, the return mesh is only a single triangular plane.
+        */
         SolidParticleSystem.prototype.buildMesh = function () {
             if (this.nbParticles === 0) {
                 var triangle = BABYLON.MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
@@ -207,7 +219,14 @@ var BABYLON;
         SolidParticleSystem.prototype._addParticle = function (idx, idxpos, model, shapeId, idxInShape) {
             this.particles.push(new BABYLON.SolidParticle(idx, idxpos, model, shapeId, idxInShape));
         };
-        // add solid particles from a shape model in the particles array
+        /**
+        * Adds some particles to the SPS from the model shape.
+        * Please read the doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#create-an-immutable-sps
+        * @param mesh any Mesh object that will be used as a model for the solid particles.
+        * @param nb the number of particles to be created from this model
+        * @param positionFunction an optional javascript function to called for each particle on SPS creation
+        * @param vertexFunction an optional javascript function to called for each vertex of each particle on SPS creation
+        */
         SolidParticleSystem.prototype.addShape = function (mesh, nb, options) {
             var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
@@ -278,14 +297,23 @@ var BABYLON;
             particle.scale.y = 1;
             particle.scale.z = 1;
         };
-        // rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed
+        /**
+        * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+        */
         SolidParticleSystem.prototype.rebuildMesh = function () {
             for (var p = 0; p < this.particles.length; p++) {
                 this._rebuildParticle(this.particles[p]);
             }
             this.mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, this._positions32, false, false);
         };
-        // sets all the particles : updates the VBO
+        /**
+        *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
+        *  This method calls updateParticle() for each particles of the SPS.
+        *  For an animated SPS, it is usually called within the render loop.
+        * @param start (default 0) the particle index in the particle array where to start to compute the particle property values
+        * @param end (default nbParticle - 1)  the particle index in the particle array where to stop to compute the particle property values
+        * @param update (default true) if the mesh must be finally updated on this call after all the particle computations.
+        */
         SolidParticleSystem.prototype.setParticles = function (start, end, update) {
             if (start === void 0) { start = 0; }
             if (end === void 0) { end = this.nbParticles - 1; }
@@ -460,7 +488,9 @@ var BABYLON;
             this._rotMatrix.m[14] = 0;
             this._rotMatrix.m[15] = 1.0;
         };
-        // dispose the SPS
+        /**
+        * Disposes the SPS
+        */
         SolidParticleSystem.prototype.dispose = function () {
             this.mesh.dispose();
             this.vars = null;
@@ -477,15 +507,25 @@ var BABYLON;
             this._colors32 = null;
             this.pickedParticles = null;
         };
-        // Visibilty helpers
+        /**
+        *  Visibilty helper : Recomputes the visible size according to the mesh bounding box
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
+        */
         SolidParticleSystem.prototype.refreshVisibleSize = function () {
             this.mesh.refreshBoundingInfo();
         };
         Object.defineProperty(SolidParticleSystem.prototype, "isAlwaysVisible", {
             // getter and setter
+            /**
+            * True if the SPS is set as always visible
+            */
             get: function () {
                 return this._alwaysVisible;
             },
+            /**
+            * Sets the SPS as always visible or not
+            * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
+            */
             set: function (val) {
                 this._alwaysVisible = val;
                 this.mesh.alwaysSelectAsActiveMesh = val;
@@ -499,6 +539,11 @@ var BABYLON;
                 return this._computeParticleRotation;
             },
             // Optimizer setters
+            /**
+            * Tells to setParticle() to compute the particle rotations or not.
+            * Default value : true. The SPS is faster when it's set to false.
+            * Note : the particle rotations aren't stored values, so setting computeParticleRotation to false will prevents the particle to rotate.
+            */
             set: function (val) {
                 this._computeParticleRotation = val;
             },
@@ -509,6 +554,11 @@ var BABYLON;
             get: function () {
                 return this._computeParticleColor;
             },
+            /**
+            * Tells to setParticle() to compute the particle colors or not.
+            * Default value : true. The SPS is faster when it's set to false.
+            * Note : the particle colors are stored values, so setting computeParticleColor to false will keep yet the last colors set.
+            */
             set: function (val) {
                 this._computeParticleColor = val;
             },
@@ -519,6 +569,11 @@ var BABYLON;
             get: function () {
                 return this._computeParticleTexture;
             },
+            /**
+            * Tells to setParticle() to compute the particle textures or not.
+            * Default value : true. The SPS is faster when it's set to false.
+            * Note : the particle textures are stored values, so setting computeParticleTexture to false will keep yet the last colors set.
+            */
             set: function (val) {
                 this._computeParticleTexture = val;
             },
@@ -529,6 +584,11 @@ var BABYLON;
             get: function () {
                 return this._computeParticleVertex;
             },
+            /**
+            * Tells to setParticle() to call the vertex function for each vertex of each particle, or not.
+            * Default value : false. The SPS is faster when it's set to false.
+            * Note : the particle custom vertex positions aren't stored values.
+            */
             set: function (val) {
                 this._computeParticleVertex = val;
             },
@@ -538,33 +598,59 @@ var BABYLON;
         // =======================================================================
         // Particle behavior logic
         // these following methods may be overwritten by the user to fit his needs
-        // init : sets all particles first values and calls updateParticle to set them in space
-        // can be overwritten by the user
+        /**
+        * This function does nothing. It may be overwritten to set all the particles first values.
+        * The SPS doesn't call this function, you may have to call it by your own.
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#particle-management
+        */
         SolidParticleSystem.prototype.initParticles = function () {
         };
-        // recycles a particle : can by overwritten by the user
+        /**
+        * This function does nothing. It may be overwritten to recycle a particle.
+        * The SPS doesn't call this function, you may have to call it by your own.
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#particle-management
+        */
         SolidParticleSystem.prototype.recycleParticle = function (particle) {
             return particle;
         };
-        // updates a particle : can be overwritten by the user
-        // will be called on each particle by setParticles() :
-        // ex : just set a particle position or velocity and recycle conditions
+        /**
+        * Updates a particle : this function should  be overwritten by the user.
+        * It is called on each particle by setParticles(). This is the place to code each particle behavior.
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#particle-management
+        * ex : just set a particle position or velocity and recycle conditions
+        */
         SolidParticleSystem.prototype.updateParticle = function (particle) {
             return particle;
         };
-        // updates a vertex of a particle : can be overwritten by the user
-        // will be called on each vertex particle by setParticles() :
-        // particle : the current particle
-        // vertex : the current index of the current particle
-        // pt : the index of the current vertex in the particle shape
-        // ex : just set a vertex particle position
+        /**
+        * Updates a vertex of a particle : it can be overwritten by the user.
+        * This will be called on each vertex particle by setParticles() if computeParticleVertex is set to true only.
+        * @param particle the current particle
+        * @param vertex the current index of the current particle
+        * @param pt the index of the current vertex in the particle shape
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#update-each-particle-shape
+        * ex : just set a vertex particle position
+        */
         SolidParticleSystem.prototype.updateParticleVertex = function (particle, vertex, pt) {
             return vertex;
         };
-        // will be called before any other treatment by setParticles()
+        /**
+        * This will be called before any other treatment by setParticles() and will be passed three parameters.
+        * This does nothing and may be overwritten by the user.
+        * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+        * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+        * @param update the boolean update value actually passed to setParticles()
+        */
         SolidParticleSystem.prototype.beforeUpdateParticles = function (start, stop, update) {
         };
-        // will be called after all setParticles() treatments
+        /**
+        * This will be called  by setParticles() after all the other treatments and just before the actual mesh update.
+        * This will be passed three parameters.
+        * This does nothing and may be overwritten by the user.
+        * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+        * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+        * @param update the boolean update value actually passed to setParticles()
+        */
         SolidParticleSystem.prototype.afterUpdateParticles = function (start, stop, update) {
         };
         return SolidParticleSystem;
