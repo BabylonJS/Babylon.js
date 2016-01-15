@@ -41,6 +41,8 @@ var BABYLON;
             this.allowUpsideDown = true;
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
+            // Panning
+            this.panningAxis = new BABYLON.Vector3(1, 0, 1);
             this._isRightClick = false;
             this._isCtrlPushed = false;
             this.checkCollisions = false;
@@ -402,9 +404,10 @@ var BABYLON;
                     this.inertialPanningX = 0;
                 if (Math.abs(this.inertialPanningY) < BABYLON.Engine.Epsilon)
                     this.inertialPanningY = 0;
-                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, 0);
+                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
                 BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                this._transformedDirection.multiplyInPlace(this.panningAxis);
                 this.target.addInPlace(this._transformedDirection);
             }
             // Limits
