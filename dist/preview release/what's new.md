@@ -63,6 +63,7 @@
     - Changed from a fixed maximum of bone influencers, 4, to variable, 1-8 ([Palmer-JC](https://github.com/Palmer-JC))
       - Support for added to Blender Exporter ([Palmer-JC](https://github.com/Palmer-JC))
     - Float32Arrays can now directly be specified for vertex data attributes, `Mesh.updateVerticesDataDirectly` deprecated ([Palmer-JC](https://github.com/Palmer-JC))
+    - Added panning axis to the ArcRotateCamera [PR](https://github.com/BabylonJS/Babylon.js/pull/913) ([mstdokumaci](https://github.com/mstdokumaci), [RaananW](https://github.com/RaananW))
     
   - **Bug fixes**
     - Fixed a bug with spherical mapping ([deltakosh](https://github.com/deltakosh)) 
