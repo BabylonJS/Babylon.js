@@ -96,13 +96,6 @@
         public _edgesRenderer: EdgesRenderer;
 
         // Cache
-        private _localScaling = Matrix.Zero();
-        private _localRotation = Matrix.Zero();
-        private _localTranslation = Matrix.Zero();
-        private _localBillboard = Matrix.Zero();
-        private _localPivotScaling = Matrix.Zero();
-        private _localPivotScalingRotation = Matrix.Zero();
-        private _localMeshReferalTransform: Matrix;
         private _localWorld = Matrix.Zero();
         public _worldMatrix = Matrix.Zero();
         private _rotateYByPI = Matrix.RotationY(Math.PI);
@@ -465,14 +458,14 @@
             this._isDirty = false;
 
             // Scaling
-            Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, this._localScaling);
+            Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
 
             // Rotation
             if (this.rotationQuaternion) {
-                this.rotationQuaternion.toRotationMatrix(this._localRotation);
+                this.rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
             } else {
-                Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
+                Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, Tmp.Matrix[0]);
                 this._cache.rotation.copyFrom(this.rotation);
             }
 
@@ -485,15 +478,15 @@
                     var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
                     Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
-                        this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                        this.position.z + cameraGlobalPosition.z, Tmp.Matrix[2]);
                 }
             } else {
-                Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
+                Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, Tmp.Matrix[2]);
             }
 
             // Composing transformations
-            this._pivotMatrix.multiplyToRef(this._localScaling, this._localPivotScaling);
-            this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
+            this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
+            Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
 
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
@@ -502,7 +495,7 @@
 
                 if (this.parent && (<any>this.parent).position) {
                     localPosition.addInPlace((<any>this.parent).position);
-                    Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
+                    Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, Tmp.Matrix[2]);
                 }
 
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
@@ -514,29 +507,25 @@
                         zero.z = localPosition.z + 0.001;
                 }
 
-                Matrix.LookAtLHToRef(localPosition, zero, Vector3.Up(), this._localBillboard);
-                this._localBillboard.m[12] = this._localBillboard.m[13] = this._localBillboard.m[14] = 0;
+                Matrix.LookAtLHToRef(localPosition, zero, Vector3.Up(), Tmp.Matrix[3]);
+                Tmp.Matrix[3].m[12] = Tmp.Matrix[3].m[13] = Tmp.Matrix[3].m[14] = 0;
 
-                this._localBillboard.invert();
+                Tmp.Matrix[3].invert();
 
-                this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
-                this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
+                Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[3], this._localWorld);
+                this._rotateYByPI.multiplyToRef(this._localWorld, Tmp.Matrix[5]);
             }
 
             // Local world
-            this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
+            Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localWorld);
 
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
                 this._markSyncedWithParent();
 
                 if (this._meshToBoneReferal) {
-                    if (!this._localMeshReferalTransform) {
-                        this._localMeshReferalTransform = Matrix.Zero();
-                    }
-
-                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._localMeshReferalTransform);
-                    this._localMeshReferalTransform.multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
+                    Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
                 } else {
                     this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
                 }

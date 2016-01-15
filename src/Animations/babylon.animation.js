@@ -392,6 +392,8 @@ var BABYLON;
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
+            // Set value
+            this.setValue(currentValue);
             // Check events
             for (var index = 0; index < this._events.length; index++) {
                 if (currentFrame >= this._events[index].frame) {
@@ -411,8 +413,6 @@ var BABYLON;
                     this._events[index].isDone = false;
                 }
             }
-            // Set value
-            this.setValue(currentValue);
             if (!returnValue) {
                 this._stopped = true;
             }

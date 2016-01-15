@@ -2939,4 +2939,24 @@ var BABYLON;
         return PositionNormalTextureVertex;
     })();
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
+    // Temporary pre-allocated objects for engine internal use
+    // usage in any internal function :
+    // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
+    // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
+    var Tmp = (function () {
+        function Tmp() {
+        }
+        Tmp.Int = [0, 0, 0, 0, 0, 0]; // 6 temp integers at once should be enough
+        Tmp.Float = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; // 6 temp floats at once should be enough
+        Tmp.Vector2 = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()]; // 3 temp Vector2 at once should be enough
+        Tmp.Vector3 = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()]; // 3 temp Vector3 at once should be enough
+        Tmp.Vector4 = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()]; // 3 temp Vector4 at once should be enough
+        Tmp.Quaternion = [new Quaternion(0, 0, 0, 0)]; // 1 temp Quaternion at once should be enough
+        Tmp.Matrix = [Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero()]; // 6 temp Matrices at once should be enough
+        return Tmp;
+    })();
+    BABYLON.Tmp = Tmp;
 })(BABYLON || (BABYLON = {}));
