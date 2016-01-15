@@ -43,6 +43,7 @@
       "../../src/Cameras/babylon.followCamera.js",
       "../../src/Cameras/babylon.touchCamera.js",
       "../../src/Cameras/babylon.arcRotateCamera.js",
+      "../../src/Cameras/babylon.mapPanCamera.js",
       "../../src/Rendering/babylon.renderingManager.js",
       "../../src/Rendering/babylon.renderingGroup.js",
       "../../src/babylon.scene.js",
