@@ -46,6 +46,7 @@
         private _MSGestureHandler: MSGesture;
 
         // Panning
+        public panningAxis: Vector3 = new Vector3(1, 0, 1);
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
         private _isRightClick: boolean = false;
@@ -438,9 +439,10 @@
                 if (Math.abs(this.inertialPanningY) < Engine.Epsilon)
                     this.inertialPanningY = 0;
 
-                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, 0);
+                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
                 Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                this._transformedDirection.multiplyInPlace(this.panningAxis);
                 this.target.addInPlace(this._transformedDirection);
             }
 
