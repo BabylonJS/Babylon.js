@@ -467,7 +467,7 @@
         public normalize(): Vector2 {
             var len = this.length();
 
-            if (len  === 0)
+            if (len === 0)
                 return this;
 
             var num = 1.0 / len;
