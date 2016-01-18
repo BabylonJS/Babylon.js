@@ -32,16 +32,19 @@ BABYLON.SceneLoader.ImportMesh(["myMesh1", "myMesh2", "..."], "./", "duck.gltf",
     * From base64 buffers
 * Import lights
 * Import cameras
-* Import and set custom shaders (if no shaders, the Babylon.js default material is applied)
+* Import and set custom shaders (BETA) (if no shaders, the Babylon.js default material is applied)
     * Automatically bind attributes
     * Automatically bind matrices
     * Set uniforms
 * Import and set animations
-* Skinning
+* Skinning (BETA)
     * Skeletons
     * Hardware skinning (shaders support)
     * Bones import
 * Handle dummy nodes (empty nodes)
 
 ## To improve
-* Test on more models
+* Test on more geometries
+* Test on more animated models
+* Test on more skinned models
+* Improve shaders support (glitches with samplers can appear in particular configurations)

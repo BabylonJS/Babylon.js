@@ -267,4 +267,18 @@
 
         dummyNodes: Node[];
     }
+
+    /**
+    * Bones
+    */
+    export interface INodeToRoot {
+        bone: Bone;
+        node: IGLTFNode;
+        id: string;
+    }
+
+    export interface IJointNode {
+        node: IGLTFNode;
+        id: string;
+    }
 }
