@@ -89,7 +89,7 @@ var BABYLON;
     var EBlendingFunction = BABYLON.EBlendingFunction;
     /**
     * Tokenizer. Used for shaders compatibility
-    * Automatically map world, view, projection, worldViewProjection and attributes
+    * Automatically map world, view, projection, worldViewProjection, attributes and so on
     */
     var ETokenType;
     (function (ETokenType) {
@@ -436,11 +436,118 @@ var BABYLON;
     /**
     * Returns the parent bone
     */
-    var getParentBone = function (jointName, newSkeleton) {
+    var getParentBone = function (gltfRuntime, skins, jointName, newSkeleton) {
         // Try to find
         for (var i = 0; i < newSkeleton.bones.length; i++) {
             if (newSkeleton.bones[i].id === jointName) {
                 return newSkeleton.bones[i];
+            }
+        }
+        // Not found, search in gltf nodes
+        var nodes = gltfRuntime.nodes;
+        for (var nde in nodes) {
+            var node = nodes[nde];
+            if (!node.jointName) {
+                continue;
+            }
+            var children = node.children;
+            for (var i = 0; i < children.length; i++) {
+                var child = gltfRuntime.nodes[children[i]];
+                if (!child.jointName) {
+                    continue;
+                }
+                if (child.jointName === jointName) {
+                    var mat = configureBoneTransformation(node);
+                    var bone = new BABYLON.Bone(node.name, newSkeleton, getParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
+                    bone.id = nde;
+                    return bone;
+                }
+            }
+        }
+        return null;
+    };
+    /**
+    * Returns the appropriate root node
+    */
+    var getNodeToRoot = function (nodesToRoot, id) {
+        for (var i = 0; i < nodesToRoot.length; i++) {
+            var nodeToRoot = nodesToRoot[i];
+            for (var j = 0; j < nodeToRoot.node.children.length; j++) {
+                var child = nodeToRoot.node.children[j];
+                if (child === id) {
+                    return nodeToRoot.bone;
+                }
+            }
+        }
+        return null;
+    };
+    /**
+    * Returns the node with the joint name
+    */
+    var getJointNode = function (gltfRuntime, jointName) {
+        var nodes = gltfRuntime.nodes;
+        var node = nodes[jointName];
+        if (node) {
+            return {
+                node: node,
+                id: jointName
+            };
+        }
+        for (var nde in nodes) {
+            node = nodes[nde];
+            if (node.jointName === jointName) {
+                return {
+                    node: node,
+                    id: nde
+                };
+            }
+        }
+        return null;
+    };
+    /**
+    * Checks if a nodes is in joints
+    */
+    var nodeIsInJoints = function (skins, id) {
+        for (var i = 0; i < skins.jointNames.length; i++) {
+            if (skins.jointNames[i] === id) {
+                return true;
+            }
+        }
+        return false;
+    };
+    /**
+    * Fills the nodes to root for bones and builds hierarchy
+    */
+    var getNodesToRoot = function (gltfRuntime, newSkeleton, skins, nodesToRoot) {
+        // Creates nodes for root
+        for (var nde in gltfRuntime.nodes) {
+            var node = gltfRuntime.nodes[nde];
+            var id = nde;
+            if (!node.jointName || nodeIsInJoints(skins, node.jointName)) {
+                continue;
+            }
+            // Create node to root bone
+            var mat = configureBoneTransformation(node);
+            var bone = new BABYLON.Bone(node.name, newSkeleton, null, mat);
+            bone.id = id;
+            nodesToRoot.push({ bone: bone, node: node, id: id });
+        }
+        // Parenting
+        for (var i = 0; i < nodesToRoot.length; i++) {
+            var nodeToRoot = nodesToRoot[i];
+            var children = nodeToRoot.node.children;
+            for (var j = 0; j < children.length; j++) {
+                var child = null;
+                for (var k = 0; k < nodesToRoot.length; k++) {
+                    if (nodesToRoot[k].id === children[j]) {
+                        child = nodesToRoot[k];
+                        break;
+                    }
+                }
+                if (child) {
+                    child.bone._parent = nodeToRoot.bone;
+                    nodeToRoot.bone.children.push(child.bone);
+                }
             }
         }
     };
@@ -459,40 +566,21 @@ var BABYLON;
         var buffer = getBufferFromAccessor(gltfRuntime, accessor);
         var bindShapeMatrix = BABYLON.Matrix.FromArray(skins.bindShapeMatrix);
         newSkeleton._identity = bindShapeMatrix;
-        // Find the root bone
-        var nodeToRoot = null;
-        for (var nde in gltfRuntime.nodes) {
-            var node = gltfRuntime.nodes[nde];
-            if (!node) {
-                continue;
-            }
-            if (node.jointName) {
-                var isInJoints = false;
-                for (var i = 0; i < skins.jointNames.length; i++) {
-                    if (skins.jointNames[i] === nde) {
-                        isInJoints = true;
-                        break;
-                    }
-                }
-            }
-            if (!isInJoints) {
-                var mat = configureBoneTransformation(node);
-                nodeToRoot = new BABYLON.Bone(node.name, newSkeleton, null, mat);
-                nodeToRoot.id = nde;
-                // Remove root from bones
-                newSkeleton.bones = [];
-                break;
-            }
-        }
+        // Find the root bones
+        var nodesToRoot = [];
+        var nodesToRootToAdd = [];
+        getNodesToRoot(gltfRuntime, newSkeleton, skins, nodesToRoot);
+        newSkeleton.bones = [];
         // Joints
         for (var i = 0; i < skins.jointNames.length; i++) {
-            var node = gltfRuntime.nodes[skins.jointNames[i]];
+            var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
+            var node = jointNode.node;
             if (!node) {
                 BABYLON.Tools.Warn("Joint named " + skins.jointNames[i] + " does not exist");
                 continue;
             }
-            var id = skins.jointNames[i];
-            // Check if node exists, should never happen
+            var id = jointNode.id;
+            // Check if node already exists
             var foundBone = false;
             for (var j = 0; j < newSkeleton.bones.length; j++) {
                 if (newSkeleton.bones[j].id === id) {
@@ -506,7 +594,7 @@ var BABYLON;
             // Search for parent bone
             var parentBone = null;
             for (var j = 0; j < i; j++) {
-                var joint = gltfRuntime.nodes[skins.jointNames[j]];
+                var joint = getJointNode(gltfRuntime, skins.jointNames[j]).node;
                 if (!joint) {
                     BABYLON.Tools.Warn("Joint named " + skins.jointNames[j] + " does not exist when looking for parent");
                     continue;
@@ -515,7 +603,7 @@ var BABYLON;
                 foundBone = false;
                 for (var k = 0; k < children.length; k++) {
                     if (children[k] === id) {
-                        parentBone = getParentBone(skins.jointNames[j], newSkeleton);
+                        parentBone = getParentBone(gltfRuntime, skins, skins.jointNames[j], newSkeleton);
                         foundBone = true;
                         break;
                     }
@@ -526,12 +614,36 @@ var BABYLON;
             }
             // Create bone
             var mat = configureBoneTransformation(node);
-            var bone = new BABYLON.Bone(node.name, newSkeleton, parentBone ? parentBone : nodeToRoot, mat);
+            if (!parentBone) {
+                parentBone = getNodeToRoot(nodesToRoot, id);
+                if (parentBone) {
+                    if (nodesToRootToAdd.indexOf(parentBone) === -1) {
+                        nodesToRootToAdd.push(parentBone);
+                    }
+                }
+            }
+            var bone = new BABYLON.Bone(node.name, newSkeleton, parentBone, mat);
             bone.id = id;
         }
+        // Polish
+        var bones = newSkeleton.bones;
+        newSkeleton.bones = [];
+        for (var i = 0; i < skins.jointNames.length; i++) {
+            var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
+            if (!jointNode) {
+                continue;
+            }
+            for (var j = 0; j < bones.length; j++) {
+                if (bones[j].id === jointNode.id) {
+                    newSkeleton.bones.push(bones[j]);
+                    break;
+                }
+            }
+        }
+        // Finish
         newSkeleton.prepare();
-        if (nodeToRoot) {
-            newSkeleton.bones.push(nodeToRoot);
+        for (var i = 0; i < nodesToRootToAdd.length; i++) {
+            newSkeleton.bones.push(nodesToRootToAdd[i]);
         }
         return newSkeleton;
     };
@@ -823,18 +935,6 @@ var BABYLON;
             node.babylonNode = lastNode;
         }
         return lastNode;
-    };
-    /**
-    * Util for ImportMesh function, checks if a given node
-    * is a descendant of the included mesh(es)
-    */
-    var nodeIsDescendantOf = function (node, gltfRuntime) {
-        for (var nde in gltfRuntime.nodes) {
-            var n = gltfRuntime.nodes[nde];
-            for (var i = 0; i < n.children.length; i++) {
-            }
-        }
-        return false;
     };
     /**
     * Traverses nodes and creates them
@@ -1404,4 +1504,3 @@ var BABYLON;
     ;
     BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.glTFFileLoader.js.map
