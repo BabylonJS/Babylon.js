@@ -472,8 +472,8 @@
 
             var num = 1.0 / len;
 
-            this.x *= len;
-            this.y *= len;
+            this.x *= num;
+            this.y *= num;
 
             return this;
         }
@@ -786,7 +786,7 @@
                 return this;
 
             var num = 1.0 / len;
-            
+
             this.x *= num;
             this.y *= num;
             this.z *= num;
