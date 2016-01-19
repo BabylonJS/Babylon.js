@@ -434,7 +434,7 @@
                 var rad: number;
                 var normal: Vector3;
                 var rotated: Vector3;
-                var rotationMatrix: Matrix = Matrix.Zero();
+                var rotationMatrix: Matrix = Tmp.Matrix[0];
                 var index = (cap === Mesh._NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
@@ -442,8 +442,10 @@
                     normal = normals[i];                        // current normal
                     for (var t = 0; t < tessellation; t++) {
                         Matrix.RotationAxisToRef(tangents[i], step * t, rotationMatrix);
-                        rotated = Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
-                        circlePath.push(rotated);
+                        rotated = circlePath[t] ? circlePath[t] : Vector3.Zero();
+                        Vector3.TransformCoordinatesToRef(normal, rotationMatrix, rotated);
+                        rotated.scaleInPlace(rad).addInPlace(path[i]);
+                        circlePath[t] = rotated;
                     }
                     circlePaths[index] = circlePath;
                     index++;
@@ -737,7 +739,7 @@
                 var rotate: { (i: number, distance: number): number; } = custom ? rotateFunction : returnRotation;
                 var scl: { (i: number, distance: number): number; } = custom ? scaleFunction : returnScale;
                 var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
-                var rotationMatrix: Matrix = Matrix.Zero();
+                var rotationMatrix: Matrix = Tmp.Matrix[0];
 
                 for (var i = 0; i < curve.length; i++) {
                     var shapePath = new Array<Vector3>();
@@ -746,8 +748,10 @@
                     for (var p = 0; p < shape.length; p++) {
                         Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
                         var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
-                        var rotated = Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
-                        shapePath.push(rotated);
+                        var rotated = shapePath[p] ? shapePath[p] : Vector3.Zero();
+                        Vector3.TransformCoordinatesToRef(planed, rotationMatrix, rotated);
+                        rotated.scaleInPlace(scaleRatio).addInPlace(curve[i]);
+                        shapePath[p] = rotated;
                     }
                     shapePaths[index] = shapePath;
                     angle += angleStep;
@@ -812,4 +816,3 @@
         }
     }
 }
-
