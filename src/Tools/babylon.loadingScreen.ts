@@ -19,6 +19,10 @@ module BABYLON {
 		}
 		
 		public displayLoadingUI(): void {
+            if (this._loadingDiv) {
+                // Do not add a loading screen if there is already one
+                return;
+            }
 			this._loadingDiv = document.createElement("div");
 
 		    this._loadingDiv.id = "babylonjsLoadingDiv";
