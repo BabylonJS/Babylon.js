@@ -52,6 +52,7 @@ module BABYLON {
         public BONES4 = false;
         public BonesPerMesh = 0;
         public INSTANCES = false;
+        public HIGHLEVEL = false;
 
         constructor() {
             super();
@@ -63,14 +64,25 @@ module BABYLON {
         public diffuseTexture: BaseTexture;
         public heightTexture: BaseTexture;
         public diffuseColor = new Color3(1, 1, 1);
+        
         public furLength: number = 1;
         public furAngle: number = 0;
         public furColor = new Color3(0.44,0.21,0.02);
+        
+        public furOffset: number = 0.9;
+        public furSpacing: number = 12;
+        public furGravity = new Vector3(0, 0, 0);
+        public furSpeed: number = 100;
+        public furTexture: DynamicTexture;
+        
         public disableLighting = false;
+        public highLevelFur: boolean = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3(1.,1.,1.);
         private _renderId: number;
+        
+        private _furTime: number = 0;
 
         private _defines = new FurMaterialDefines();
         private _cachedDefines = new FurMaterialDefines();
@@ -170,6 +182,11 @@ module BABYLON {
             // Fog
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
+            }
+            
+            // High level
+            if (this.highLevelFur) {
+                this._defines.HIGHLEVEL = true;
             }
 
             var lightIndex = 0;
@@ -366,11 +383,11 @@ module BABYLON {
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                        "furLength", "furAngle", "furColor"
+                        "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
-                        "heightTexture"
+                        "heightTexture", "furTexture"
                     ],
                     join, fallbacks, this.onCompiled, this.onError);
             }
@@ -498,7 +515,17 @@ module BABYLON {
             this._effect.setFloat("furLength", this.furLength);
             this._effect.setFloat("furAngle", this.furAngle);
             this._effect.setColor4("furColor", this.furColor, 1.0);
-
+            
+            if (this.highLevelFur) {
+                this._effect.setVector3("furGravity", this.furGravity);
+                this._effect.setFloat("furOffset", this.furOffset);
+                this._effect.setFloat("furSpacing", this.furSpacing);
+                
+                this._furTime += this.getScene().getEngine().getDeltaTime() / this.furSpeed;
+                this._effect.setFloat("furTime", this._furTime);
+                
+                this._effect.setTexture("furTexture", this.furTexture);
+            }
  
             super.bind(world, mesh);
         }
@@ -595,6 +622,23 @@ module BABYLON {
             }
 
             return material;
+        }
+        
+        public static GenerateTexture(name: string, scene: Scene): DynamicTexture {
+            // Generate fur textures
+            var texture = new DynamicTexture("FurTexture " + name, 256, scene, true);
+            var context = texture.getContext();
+            
+            for ( var i = 0; i < 20000; ++i ) {
+                context.fillStyle = "rgba(255, " + Math.floor(Math.random() * 255) + ", " + Math.floor(Math.random() * 255) + ", 1)";
+                context.fillRect((Math.random() * texture.getSize().width), (Math.random() * texture.getSize().height), 2, 2);
+            }
+            
+            texture.update(false);
+            texture.wrapU = Texture.WRAP_ADDRESSMODE;
+            texture.wrapV = Texture.WRAP_ADDRESSMODE;
+            
+            return texture;
         }
     }
 } 

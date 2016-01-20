@@ -22,8 +22,18 @@ attribute vec4 matricesWeights;
 // Uniforms
 uniform float furLength;
 uniform float furAngle;
+#ifdef HIGHLEVEL
+uniform float furOffset;
+uniform vec3 furGravity;
+uniform float furTime;
+uniform float furSpacing;
+#endif
 #ifdef HEIGHTMAP
 uniform sampler2D heightTexture;
+#endif
+
+#ifdef HIGHLEVEL
+varying vec2 vFurUV;
 #endif
 
 #ifdef INSTANCES
@@ -118,6 +128,7 @@ void main(void) {
 #endif 
 
 #endif
+
 //FUR
 float r = Rand(position);
 #ifdef HEIGHTMAP	
@@ -127,23 +138,46 @@ float r = Rand(position);
 #endif
 	vec3 tangent1 = vec3(normal.y, -normal.x, 0);
 	vec3 tangent2 = vec3(-normal.z, 0, normal.x);
-	r = Rand(tangent1*r);
-	float J = (2.0 + 4.0* r);
+	r = Rand(tangent1 * r);
+	float J = (2.0 + 4.0 * r);
 	r = Rand(tangent2*r);
-	float K = (2.0 + 2.0* r);
-	tangent1 = tangent1*J + tangent2*K;
+	float K = (2.0 + 2.0 * r);
+	tangent1 = tangent1*J + tangent2 * K;
 	tangent1 = normalize(tangent1);
-    vec3 newPosition = position + normal * vfur_length*cos(furAngle) + tangent1*vfur_length*sin(furAngle);
+	
+    vec3 newPosition = position + normal * vfur_length*cos(furAngle) + tangent1 * vfur_length * sin(furAngle);
+	
+	#ifdef HIGHLEVEL
+	// Compute fur data passed to the pixel shader
+	vec3 forceDirection = vec3(0.0, 0.0, 0.0);
+	forceDirection.x = sin(furTime + position.x * 0.05) * 0.2;
+	forceDirection.y = cos(furTime * 0.7 + position.y * 0.04) * 0.2;
+	forceDirection.z = sin(furTime * 0.7 + position.z * 0.04) * 0.2;
+	
+	vec3 displacement = vec3(0.0, 0.0, 0.0);
+	displacement = furGravity + forceDirection;
+	
+	float displacementFactor = pow(furOffset, 3.0);
+	
+	vec3 aNormal = normal;
+	aNormal.xyz += displacement * displacementFactor;
+	
+	newPosition = vec3(newPosition.x, newPosition.y, newPosition.z) + (normalize(aNormal) * furOffset * furSpacing);
+	#endif
+	
+	#ifdef NORMAL
+	#ifdef HIGHLEVEL
+	vNormalW = normalize(normal * aNormal);
+	#else
+	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
+	#endif
+	#endif
 	
 //END FUR
 	gl_Position = viewProjection * finalWorld * vec4(newPosition, 1.0);
 
 	vec4 worldPos = finalWorld * vec4(newPosition, 1.0);
 	vPositionW = vec3(worldPos);
-
-#ifdef NORMAL
-	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
-#endif
 
 	// Texture coordinates
 #ifndef UV1
@@ -152,6 +186,10 @@ float r = Rand(position);
 #ifndef UV2
 	vec2 uv2 = vec2(0., 0.);
 #endif
+
+	#ifdef HIGHLEVEL
+	vFurUV = uv * 20.0;
+	#endif
 
 #ifdef DIFFUSE
 	if (vDiffuseInfos.x == 0.)
