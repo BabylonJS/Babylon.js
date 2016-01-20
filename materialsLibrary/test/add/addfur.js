@@ -1,20 +1,84 @@
 window.prepareFur = function() {
-	var fur = new BABYLON.FurMaterial("fur", scene);
-	fur.furLength = 1;
+	var shells = 30;
+	
+	var materials = [];
+	var meshes = [];
+	
+	var diffuseTexture = new BABYLON.Texture("textures/leopard_fur.jpg", scene);
+	var heightTexture = new BABYLON.Texture("textures/speckles.jpg", scene);
+	var furTexture = BABYLON.FurMaterial.GenerateTexture("furTexture", scene);
+	
+	var fur = new BABYLON.FurMaterial("fur0", scene);
+	fur.furLength = 4;
 	fur.furAngle = 0;
-    fur.furColor = new BABYLON.Color3(0.44,0.21,0.02);
+	fur.furColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+	fur.diffuseTexture = diffuseTexture;
+	fur.furOffset = 0;
+	fur.furTexture = furTexture;
+	
+	var setValue = function(property, value) {
+		for (var i=0; i < materials.length; i++) {
+			materials[i][property] = value;
+		}
+	}
+	
+	var resetFur = function() {
+		for (var i=1; i < materials.length; i++) {
+			materials[i].dispose();
+		}
+		for (var i=1; i < meshes.length; i++) {
+			meshes[i].dispose();
+		}
+		
+		materials = [];
+		meshes = [];
+	};
+	
+	var setMeshesVisible = function(visible) {
+		for (var i=1; i < meshes.length; i++) {
+			meshes[i].isVisible = visible;
+		}
+	}
+	
+	var configureFur = function(mesh, apply) {
+		meshes = [mesh];
+		materials = [fur];
+		
+		mesh.material = fur;
+		
+		for (var i = 1; i < shells; i++) {
+			var offsetFur = new BABYLON.FurMaterial("fur" + i, scene);
+			offsetFur.furLength = 4;
+			offsetFur.furAngle = 0;
+			offsetFur.furColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+			offsetFur.diffuseTexture = diffuseTexture;
+			offsetFur.furOffset = i / shells;
+			offsetFur.furTexture = furTexture;
+			offsetFur.highLevelFur = fur.highLevelFur;
+			materials.push(offsetFur);
+			
+			var offsetMesh = mesh.clone(mesh.name + i);
+			offsetMesh.isVisible = fur.highLevelFur && apply;
+			offsetMesh.material = offsetFur;
+			offsetMesh.skeleton = mesh.skeleton;
+			meshes.push(offsetMesh);
+		}
+		
+		for (var i=0; i < scene.skeletons.length; i++) {
+			scene.beginAnimation(scene.skeletons[i], 0, 100, true, 0.8);
+		}
+	}
 
-
-// fur length
-    registerRangeUI("fur", "Fur length", 0, 15, function(value) {
-        fur.furLength = value;
+	// fur length
+    registerRangeUI("fur", "Fur length", 0, 45, function(value) {
+		setValue("furLength", value);
     }, function() {
         return fur.furLength;
     });
 	
 	// fur angle
     registerRangeUI("fur", "Fur angle", 0, Math.PI/2, function(value) {
-        fur.furAngle = value;
+		setValue("furAngle", value);
     }, function() {
         return fur.furAngle;
     });
@@ -31,24 +95,53 @@ window.prepareFur = function() {
 	var DTON = false;
 	registerButtonUI("fur", "Tgl Diffuse Tex", function() {
 		DTON = !DTON;
-		if(DTON) {
-			fur.diffuseTexture = new BABYLON.Texture("textures/leopard_fur.jpg", scene);
-		}
-		else {
-			fur.diffuseTexture = null;
-		}
-	})
+		setValue("diffuseTexture", DTON ? diffuseTexture : null);
+	});
 	
 	var HTON = false;
 	registerButtonUI("fur", "Tgl Height Tex", function() {
 		HTON = !HTON;
-		if(HTON) {
-			fur.heightTexture = new BABYLON.Texture("textures/speckles.jpg", scene);
-		}
-		else {
-			fur.heightTexture = null;
-		}
-	})
+		setValue("heightTexture", HTON ? heightTexture : null);
+	});
+	
+	registerRangeUI("fur", "Hight Level fur", false, true, function(value) {
+		setValue("highLevelFur", value);
+		setMeshesVisible(value);
+    }, function() {
+        return fur.highLevelFur;
+    });
+	
+	registerRangeUI("fur", "Fur Gravity", 0, 1, function(value) {
+		setValue("furGravity", new BABYLON.Vector3(value, value,value));
+    }, function() {
+        return fur.furGravity.x;
+    });
+	
+	// fur animation speed
+    registerRangeUI("fur", "Fur speed", 1, 1000, function(value) {
+		setValue("furSpeed", value);
+    }, function() {
+        return fur.furSpeed;
+    });
+	
+	// fur animation speed
+    registerRangeUI("fur", "Fur Spacing", 0, 20, function(value) {
+		setValue("furSpacing", value);
+    }, function() {
+        return fur.furSpacing;
+    });
     
-    return fur;
+    return {
+		/*
+		materials: furs,
+		meshes: meshes
+		*/
+		material: fur,
+		resetFur: function() {
+			resetFur();
+		},
+		configureFur: function(mesh, apply) {
+			configureFur(mesh, apply);
+		}
+	};
 };

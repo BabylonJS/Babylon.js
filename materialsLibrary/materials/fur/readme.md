@@ -1,6 +1,6 @@
 # Fur material
 
-## Using the fur material
+# Using the fur material
 
 The fur material needs a high number of the triangular facets that make up a mesh to work well.
 The number of facets needed also depends on the size of the mesh.
@@ -15,12 +15,11 @@ The fur material is created using
 
 ```
 var furMaterial = new BABYLON.furMaterial("fur_material", scene);
-waterMaterial.bumpTexture = new BABYLON.Texture("bump.png", scene); // Set the bump texture
 
-ground.material = waterMaterial;
+ground.material = furMaterial;
 ```
 
-## Customize the fur material
+# Customize the fur material
 
 You can customise three properties of the fur material:
 
@@ -30,9 +29,9 @@ furMaterial.furAngle = Math.PI/6; // Represents the angle the fur lies on the me
 furMaterial.furColor = new BABYLON.Color3(0.44, 0.21, 0.02); // is the default color if furColor is not set.
 ```
 
-## Using textures
+# Using textures
 
-#heightTexture
+##heightTexture
 
 A greyscale image can be used to set the fur length. 
 A speckled greyscale image can produce fur like results.
@@ -41,7 +40,7 @@ Any greyscale image with affect the fur length producing a heightMap type effect
 ```
 furMaterial.heightTexture = new BABYLON.Texture("speckles.jpg", scene); // Set the fur length with a texture.
 ```
-#diffuseTexture
+##diffuseTexture
 A texture can also be used to paint the mesh. 
 The leopard fur texture used in the test is by Martin Wegmann from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Leopard_fur.JPG)
 under the [license](https://creativecommons.org/licenses/by-sa/3.0/deed.en)
@@ -50,7 +49,57 @@ under the [license](https://creativecommons.org/licenses/by-sa/3.0/deed.en)
 furMaterial.diffuseTexture = new BABYLON.Texture("leopard_fur.jpg", scene); // Set the fur length with a texture.
 ```
 
-## Meshes where the number of facets is not user controlled on creation.
+# Using the High Level mode
+Fur materials have always been subjects of a lot of theories and conferences with multiple implementations thanks to multiple technologies.
+Here, with WebGL, we decided to choose one of these implementations, not hard to use and pretty smart (with performances) with simple models
+
+First, activate the high level:
+```
+furMaterial.highLevelFur = true;
+```
+
+That's all. Now, the most difficult part should be to configure the shells and create the fur effect.
+Indeed, you'll have to draw several times the same mesh with an offset (computed in the effect) to create the illusion of fur:
+
+```
+furMaterial.furOffset = 0;
+myMesh.material = furMaterial;
+
+var shells = 30; // Works as the quality
+
+// Generate a fur texture (internally used), working like a noise texture, that will be shared between all the shells
+var furTexture = BABYLON.FurMaterial.GenerateTexture("furTexture", scene);
+
+for (var i = 1; i < shells; i++) {
+	var offsetFur = new BABYLON.FurMaterial("fur" + i, scene);
+	offsetFur.diffuseTexture = myDiffuseTexture;
+	
+	offsetFur.furOffset = i / shells; // Create the offset
+	offsetFur.furTexture = furTexture; // Assign the fur texture (previously generated)
+	offsetFur.highLevelFur = fur.highLevelFur; // Set as high level
+	
+	var offsetMesh = myMesh.clone(mesh.name + i); // Clone the mesh. For more performances, you can use LOD system of cloned meshes
+	offsetMesh.material = offsetFur; // Assign the material with appropriate offset
+	offsetMesh.skeleton = mesh.skeleton; // If the mesh is animated, keep the skeleton reference
+}
+```
+
+It is now working! You can customize the high level fur rendering thanks to some properties:
+```
+allFurMaterials.furSpacing = 2; // Computes the space between shells. In others words, works as the fur density 
+```
+
+```
+allFurMaterials.furSpeed = 1; // Divides the animation of fur in time according to the gravity
+```
+
+```
+// Compute the gravity followed by the fur
+// In range [-1, 1] for X, Y and Z
+allFurMaterials.furGravity = new BABYLON.Vector3(0, -1, 0);
+```
+
+# Meshes where the number of facets is not user controlled on creation.
 
 Unlike the ground mesh where you can supply the number of subdivisions or the sphere mesh where you can supply the number of segments the majority of meshes are created using a minimum number of facets.
 To apply the fur material to these the number of facets per face of the mesh needs to be increased.

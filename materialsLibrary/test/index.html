@@ -186,7 +186,7 @@
 				var normal = prepareNormal();
 
 				var gradient = prepareGradient();
-				
+								
 				var fur = prepareFur();
 				
 				var water = prepareWater();
@@ -213,6 +213,8 @@
 				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
+					currentMesh.isVisible = true;
+					fur.resetFur();
 					
 					switch (options.material) {
 						case "simple":
@@ -239,7 +241,8 @@
 							currentMaterial = pbr;
 							break;
 						case "fur":
-							currentMaterial = fur;
+							currentMaterial = fur.material;
+							fur.configureFur(currentMesh, true);
 							break;
 						case "triPlanar":
 							currentMaterial = triPlanar;
@@ -288,6 +291,11 @@
 					currentMesh.material = currentMaterial;
 					
 					water.mesh = currentMesh;
+					
+					if (currentMaterial === fur.material) {
+						fur.resetFur();
+						fur.configureFur(currentMesh, currentMaterial === fur.material);
+					}
 				});
 
 				var f1 = gui.addFolder('lights');
