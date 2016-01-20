@@ -663,8 +663,8 @@
                 camera = new VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
 
             } else {
-                // Free Camera is the default value
-                camera = new FreeCamera(parsedCamera.name, position, scene);
+                // Touch Camera is the default value
+                camera = new TouchCamera(parsedCamera.name, position, scene);
             }
 
             // apply 3d rig, when found

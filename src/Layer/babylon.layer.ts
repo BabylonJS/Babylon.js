@@ -3,6 +3,8 @@
         public texture: Texture;
         public isBackground: boolean;
         public color: Color4;
+        public scale = new Vector2(1, 1);
+        public offset = new Vector2(0, 0);
         public onDispose: () => void;
         public alphaBlendingMode = Engine.ALPHA_COMBINE;
 
@@ -45,7 +47,7 @@
             // Effects
             this._effect = this._scene.getEngine().createEffect("layer",
                 ["position"],
-                ["textureMatrix", "color"],
+                ["textureMatrix", "color", "scale", "offset"],
                 ["textureSampler"], "");
         }
 
@@ -66,6 +68,10 @@
 
             // Color
             this._effect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
+
+            // Scale / offset
+            this._effect.setVector2("offset", this.offset);
+            this._effect.setVector2("scale", this.scale);
 
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
