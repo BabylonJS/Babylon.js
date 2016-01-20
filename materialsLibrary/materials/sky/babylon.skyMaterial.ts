@@ -13,7 +13,7 @@ module BABYLON {
             this._keys = Object.keys(this);
         }
     }
-
+    
     export class SkyMaterial extends Material {
         // Public members
         public luminance: number = 1.0;
@@ -120,7 +120,7 @@ module BABYLON {
                 if (this._defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-
+                
                 //Attributes
                 var attribs = [VertexBuffer.PositionKind];
 

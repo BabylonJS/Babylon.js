@@ -7,10 +7,17 @@ declare module BABYLON {
         furLength: number;
         furAngle: number;
         furColor: Color3;
+        furOffset: number;
+        furSpacing: number;
+        furGravity: Vector3;
+        furSpeed: number;
+        furTexture: DynamicTexture;
         disableLighting: boolean;
+        highLevelFur: boolean;
         private _worldViewProjectionMatrix;
         private _scaledDiffuse;
         private _renderId;
+        private _furTime;
         private _defines;
         private _cachedDefines;
         constructor(name: string, scene: Scene);
@@ -26,5 +33,6 @@ declare module BABYLON {
         clone(name: string): FurMaterial;
         serialize(): any;
         static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial;
+        static GenerateTexture(name: string, scene: Scene): DynamicTexture;
     }
 }
