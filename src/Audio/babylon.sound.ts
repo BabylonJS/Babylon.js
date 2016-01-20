@@ -432,8 +432,9 @@
         public setVolume(newVolume: number, time?: number) {
             if (Engine.audioEngine.canUseWebAudio) {
                 if (time) {
-                    this._soundGain.gain.linearRampToValueAtTime(this._volume, Engine.audioEngine.audioContext.currentTime);
-                    this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
+                    this._soundGain.gain.cancelScheduledValues(Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.linearRampToValueAtTime(newVolume, Engine.audioEngine.audioContext.currentTime + time);
                 }
                 else {
                     this._soundGain.gain.value = newVolume;

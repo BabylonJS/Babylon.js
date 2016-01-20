@@ -827,6 +827,10 @@
             return null;
         }
 
+        public get Animatables(): Animatable[] {
+            return this._activeAnimatables;
+        }
+
         /**
          * Will stop the animation of the given target
          * @param target - the target 

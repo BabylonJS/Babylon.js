@@ -43,6 +43,9 @@ var BABYLON;
                 updatePosition(newPosition);
             };
         }
+        FreeCamera.prototype._onLostFocus = function (e) {
+            this._keys = [];
+        };
         // Controls
         FreeCamera.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -126,9 +129,6 @@ var BABYLON;
                             evt.preventDefault();
                         }
                     }
-                };
-                this._onLostFocus = function () {
-                    _this._keys = [];
                 };
                 this._reset = function () {
                     _this._keys = [];

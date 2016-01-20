@@ -619,6 +619,13 @@ var BABYLON;
             }
             return null;
         };
+        Object.defineProperty(Scene.prototype, "Animatables", {
+            get: function () {
+                return this._activeAnimatables;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Will stop the animation of the given target
          * @param target - the target
