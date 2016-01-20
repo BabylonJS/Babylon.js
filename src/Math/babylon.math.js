@@ -875,12 +875,12 @@ var BABYLON;
             var t = 0.0;
             var sign = -1.0;
             var nbRevert = 0;
-            var cross = Vector3.Zero();
+            var cross = Tmp.Vector3[0];
             var dot = 0.0;
             // step 1  : rotation around w
             // Rv3(u) = u1, and u1 belongs to plane xOz
             // Rv3(w) = w1 = w invariant
-            var u1;
+            var u1 = Tmp.Vector3[1];
             if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 z = 1.0;
             }
@@ -892,7 +892,9 @@ var BABYLON;
                 x = -t * Math.sqrt(1 / (1 + t * t));
                 z = Math.sqrt(1 / (1 + t * t));
             }
-            u1 = new Vector3(x, y, z);
+            u1.x = x;
+            u1.y = y;
+            u1.z = z;
             u1.normalize();
             Vector3.CrossToRef(u, u1, cross); // returns same direction as w (=local z) if positive angle : cross(source, image)
             cross.normalize();
@@ -910,8 +912,8 @@ var BABYLON;
             // step 2 : rotate around u1
             // Ru1(w1) = Ru1(w) = w2, and w2 belongs to plane xOz
             // u1 is yet in xOz and invariant by Ru1, so after this step u1 and w2 will be in xOz
-            var w2;
-            var v2;
+            var w2 = Tmp.Vector3[2];
+            var v2 = Tmp.Vector3[3];
             x = 0.0;
             y = 0.0;
             z = 0.0;
@@ -924,9 +926,11 @@ var BABYLON;
                 x = -t * Math.sqrt(1 / (1 + t * t));
                 z = Math.sqrt(1 / (1 + t * t));
             }
-            w2 = new Vector3(x, y, z);
+            w2.x = x;
+            w2.y = y;
+            w2.z = z;
             w2.normalize();
-            v2 = Vector3.Cross(w2, u1); // v2 image of v1 through rotation around u1
+            Vector3.CrossToRef(w2, u1, v2); // v2 image of v1 through rotation around u1
             v2.normalize();
             Vector3.CrossToRef(w, w2, cross); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
             cross.normalize();
@@ -2946,10 +2950,9 @@ var BABYLON;
     var Tmp = (function () {
         function Tmp() {
         }
-        Tmp.Int = [0, 0, 0, 0, 0, 0]; // 6 temp integers at once should be enough
-        Tmp.Float = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; // 6 temp floats at once should be enough
         Tmp.Vector2 = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()]; // 3 temp Vector2 at once should be enough
-        Tmp.Vector3 = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()]; // 3 temp Vector3 at once should be enough
+        Tmp.Vector3 = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
+            Vector3.Zero(), Vector3.Zero(), Vector3.Zero()]; // 6 temp Vector3 at once should be enough
         Tmp.Vector4 = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()]; // 3 temp Vector4 at once should be enough
         Tmp.Quaternion = [new Quaternion(0, 0, 0, 0)]; // 1 temp Quaternion at once should be enough
         Tmp.Matrix = [Matrix.Zero(), Matrix.Zero(),

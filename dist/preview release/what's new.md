@@ -22,6 +22,7 @@
       - Expanded AnimationRanges for Nodes (Mesh, Lights, &amp; Cameras) ([Palmer-JC](https://github.com/Palmer-JC))
       - Support for added to Blender Exporter ([Palmer-JC](https://github.com/Palmer-JC))
   - **Updates**
+    - TouchCamera can now fallback to regular mouse/keyboard controls ([deltakosh](https://github.com/deltakosh))
     - Added ability to skip current prepared Action to next active Action (chained by Action.then(Action)) ([vouskprod](http://www.github.com/vousk)) 
     - Added new event triggers `ActionManager.OnLongPressTrigger` and `ActionManager.OnPickDownTrigger` ([vouskprod](http://www.github.com/vousk)) 
     - new `Mesh.convertToUnIndexedMesh()` to create meshes with no indices (which could be faster when vertex reuse is low and vertex structure is small) ([deltakosh](https://github.com/deltakosh)) 

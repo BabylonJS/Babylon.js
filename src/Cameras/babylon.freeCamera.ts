@@ -25,13 +25,16 @@
         private _onMouseOut: (e: MouseEvent) => any;
         private _onMouseMove: (e: MouseEvent) => any;
         private _onKeyDown: (e: KeyboardEvent) => any;
-        private _onKeyUp: (e: KeyboardEvent) => any;
-        public _onLostFocus: (e: FocusEvent) => any;
+        private _onKeyUp: (e: KeyboardEvent) => any;        
 
         public _waitingLockedTargetId: string;
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
+        }
+
+        public _onLostFocus(e: FocusEvent): void {
+            this._keys = [];
         }
 
         // Controls
@@ -129,10 +132,6 @@
                             evt.preventDefault();
                         }
                     }
-                };
-
-                this._onLostFocus = () => {
-                    this._keys = [];
                 };
 
                 this._reset = () => {

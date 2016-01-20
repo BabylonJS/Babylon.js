@@ -397,8 +397,9 @@ var BABYLON;
         Sound.prototype.setVolume = function (newVolume, time) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 if (time) {
-                    this._soundGain.gain.linearRampToValueAtTime(this._volume, BABYLON.Engine.audioEngine.audioContext.currentTime);
-                    this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
+                    this._soundGain.gain.cancelScheduledValues(BABYLON.Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, BABYLON.Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.linearRampToValueAtTime(newVolume, BABYLON.Engine.audioEngine.audioContext.currentTime + time);
                 }
                 else {
                     this._soundGain.gain.value = newVolume;

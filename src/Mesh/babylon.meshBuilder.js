@@ -369,7 +369,7 @@ var BABYLON;
                 var rad;
                 var normal;
                 var rotated;
-                var rotationMatrix = BABYLON.Matrix.Zero();
+                var rotationMatrix = BABYLON.Tmp.Matrix[0];
                 var index = (cap === BABYLON.Mesh._NO_CAP || cap === BABYLON.Mesh.CAP_END) ? 0 : 2;
                 for (var i = 0; i < path.length; i++) {
                     rad = radiusFunctionFinal(i, distances[i]); // current radius
@@ -377,8 +377,10 @@ var BABYLON;
                     normal = normals[i]; // current normal
                     for (var t = 0; t < tessellation; t++) {
                         BABYLON.Matrix.RotationAxisToRef(tangents[i], step * t, rotationMatrix);
-                        rotated = BABYLON.Vector3.TransformCoordinates(normal, rotationMatrix).scaleInPlace(rad).add(path[i]);
-                        circlePath.push(rotated);
+                        rotated = circlePath[t] ? circlePath[t] : BABYLON.Vector3.Zero();
+                        BABYLON.Vector3.TransformCoordinatesToRef(normal, rotationMatrix, rotated);
+                        rotated.scaleInPlace(rad).addInPlace(path[i]);
+                        circlePath[t] = rotated;
                     }
                     circlePaths[index] = circlePath;
                     index++;
@@ -625,7 +627,7 @@ var BABYLON;
                 var rotate = custom ? rotateFunction : returnRotation;
                 var scl = custom ? scaleFunction : returnScale;
                 var index = (cap === BABYLON.Mesh.NO_CAP || cap === BABYLON.Mesh.CAP_END) ? 0 : 2;
-                var rotationMatrix = BABYLON.Matrix.Zero();
+                var rotationMatrix = BABYLON.Tmp.Matrix[0];
                 for (var i = 0; i < curve.length; i++) {
                     var shapePath = new Array();
                     var angleStep = rotate(i, distances[i]);
@@ -633,8 +635,10 @@ var BABYLON;
                     for (var p = 0; p < shape.length; p++) {
                         BABYLON.Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
                         var planed = ((tangents[i].scale(shape[p].z)).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y)));
-                        var rotated = BABYLON.Vector3.TransformCoordinates(planed, rotationMatrix).scaleInPlace(scaleRatio).add(curve[i]);
-                        shapePath.push(rotated);
+                        var rotated = shapePath[p] ? shapePath[p] : BABYLON.Vector3.Zero();
+                        BABYLON.Vector3.TransformCoordinatesToRef(planed, rotationMatrix, rotated);
+                        rotated.scaleInPlace(scaleRatio).addInPlace(curve[i]);
+                        shapePath[p] = rotated;
                     }
                     shapePaths[index] = shapePath;
                     angle += angleStep;

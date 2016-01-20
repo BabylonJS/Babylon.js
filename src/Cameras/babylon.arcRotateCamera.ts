@@ -90,7 +90,7 @@
         }
 
         public _getTargetPosition(): Vector3 {
-            return this.target.getAbsolutePosition ? this.target.getAbsolutePosition() : this.target; 
+            return this.target.getAbsolutePosition ? this.target.getAbsolutePosition() : this.target;
         }
 
         // Cache
@@ -551,7 +551,7 @@
             if (!collidedMesh) {
                 this._previousPosition.copyFrom(this.position);
             } else {
-                this.setPosition(newPosition); 
+                this.setPosition(newPosition);
 
                 if (this.onCollide) {
                     this.onCollide(collidedMesh);
