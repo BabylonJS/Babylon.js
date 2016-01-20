@@ -540,13 +540,13 @@
                             }
                             pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                         }
-                        
+
                         if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
                             var that = this;
-                            window.setTimeout( function() {
-                                var pickResult = that.pick(that._pointerX, that._pointerY, 
-                                (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
-                                false, that.cameraToUseForPointers);
+                            window.setTimeout(function () {
+                                var pickResult = that.pick(that._pointerX, that._pointerY,
+                                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
+                                    false, that.cameraToUseForPointers);
 
                                 if (pickResult.hit && pickResult.pickedMesh) {
                                     if (pickResult.pickedMesh.actionManager) {
@@ -2557,3 +2557,4 @@
         }
     }
 }
+

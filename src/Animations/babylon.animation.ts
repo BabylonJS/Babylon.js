@@ -455,7 +455,6 @@
 
             // Set value
             this.setValue(currentValue);
-
             // Check events
             for (var index = 0; index < this._events.length; index++) {
                 if (currentFrame >= this._events[index].frame) {
@@ -474,7 +473,6 @@
                     this._events[index].isDone = false;
                 }
             }
-
             if (!returnValue) {
                 this._stopped = true;
             }
@@ -633,3 +631,6 @@
         }
     }
 } 
+
+
+
