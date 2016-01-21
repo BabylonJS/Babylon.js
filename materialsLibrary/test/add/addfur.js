@@ -104,7 +104,7 @@ window.prepareFur = function() {
 		setValue("heightTexture", HTON ? heightTexture : null);
 	});
 	
-	registerRangeUI("fur", "Hight Level fur", false, true, function(value) {
+	registerRangeUI("fur", "High Level fur", false, true, function(value) {
 		setValue("highLevelFur", value);
 		setMeshesVisible(value);
     }, function() {
