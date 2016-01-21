@@ -241,7 +241,7 @@
                 if (parsedBone.parentBoneIndex > -1) {
                     parentBone = skeleton.bones[parsedBone.parentBoneIndex];
                 }
-                var rest : Matrix = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
+                var rest: Matrix = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
 
                 if (parsedBone.length) {
@@ -264,4 +264,3 @@
         }
     }
 }
-

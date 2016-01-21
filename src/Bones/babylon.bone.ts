@@ -13,7 +13,7 @@
         private _invertedAbsoluteTransform = new Matrix();
         private _parent: Bone;
 
-        constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose? : Matrix) {
+        constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
             this._matrix = matrix;
@@ -48,7 +48,7 @@
         public getRestPose(): Matrix {
             return this._restPose;
         }
-        
+
         public returnToRest(): void {
             this.updateMatrix(this._restPose.clone());
         }
