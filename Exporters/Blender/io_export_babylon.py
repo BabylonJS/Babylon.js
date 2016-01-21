@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 2, 0),
+    'version': (4, 2, 1),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -169,7 +169,7 @@ class ExporterSettingsPanel(bpy.types.Panel):
         )
     bpy.types.Scene.ignoreIKBones = bpy.props.BoolProperty(
         name="Ignore IK Bones",
-        description="Do not export bones with '.ik' in the name",
+        description="Do not export bones with either '.ik' or 'ik.'(not case sensitive) in the name",
         default = False,
         )
 
@@ -531,7 +531,6 @@ class World:
             write_float(file_handler, 'fogStart', self.fogStart)
             write_float(file_handler, 'fogEnd', self.fogEnd)
             write_float(file_handler, 'fogDensity', self.fogDensity)
-
 #===============================================================================
 class Sound:
     def __init__(self, name, autoplay, loop, connectedMesh = None):
@@ -1239,7 +1238,7 @@ class MeshInstance:
 class Node(FCurveAnimatable):
     def __init__(self, node):
         Main.log('processing begun of node:  ' + node.name)
-        self.define_animations(object, True, True, True)  #Should animations be done when forcedParent
+        self.define_animations(node, True, True, True)  #Should animations be done when forcedParent
         self.name = node.name
 
         if node.parent and node.parent.type != 'ARMATURE':
@@ -1304,11 +1303,11 @@ class Bone:
         self.name = bone.name
         self.length = bone.length
         self.index = index
-        self.blenderBoneObj = bone # record so can be used by get_matrix, called by append_animation_pose
+        self.posedBone = bone # record so can be used by get_matrix, called by append_animation_pose
         self.parentBone = bone.parent
 
         self.matrix_world = skeleton.matrix_world
-        self.matrix = self.get_matrix()
+        self.matrix = self.get_bone_matrix()
 
         parentId = -1
         if (bone.parent):
@@ -1325,32 +1324,40 @@ class Bone:
             self.previousBoneMatrix = None
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def append_animation_pose(self, frame, force = False):
-        currentBoneMatrix = self.get_matrix()
+        currentBoneMatrix = self.get_bone_matrix()
 
         if (force or not same_matrix4(currentBoneMatrix, self.previousBoneMatrix)):
             self.animation.frames.append(frame)
             self.animation.values.append(currentBoneMatrix)
             self.previousBoneMatrix = currentBoneMatrix
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def get_matrix(self):
+    def set_rest_pose(self, editBone, matrix_world):
+        self.rest = Bone.get_matrix(editBone, self.matrix_world)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def get_bone_matrix(self):
+        return Bone.get_matrix(self.posedBone, self.matrix_world)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    @staticmethod
+    def get_matrix(bone, matrix_world):
         SystemMatrix = mathutils.Matrix.Scale(-1, 4, mathutils.Vector((0, 0, 1))) * mathutils.Matrix.Rotation(math.radians(-90), 4, 'X')
 
-        if (self.parentBone):
-            return (SystemMatrix * self.matrix_world * self.parentBone.matrix).inverted() * (SystemMatrix * self.matrix_world * self.blenderBoneObj.matrix)
+        if (bone.parent):
+            return (SystemMatrix * matrix_world * bone.parent.matrix).inverted() * (SystemMatrix * matrix_world * bone.matrix)
         else:
-            return  SystemMatrix * self.matrix_world * self.blenderBoneObj.matrix
+            return SystemMatrix * matrix_world * bone.matrix
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('\n{')
         write_string(file_handler, 'name', self.name, True)
         write_int(file_handler, 'index', self.index)
         write_matrix4(file_handler, 'matrix', self.matrix)
+        write_matrix4(file_handler, 'rest', self.rest)
         write_int(file_handler, 'parentBoneIndex', self.parentBoneIndex)
         write_float(file_handler, 'length', self.length)
 
         #animation
         if hasattr(self, 'animation'):
-            file_handler.write(',"animation":')
+            file_handler.write('\n,"animation":')
             self.animation.to_scene_file(file_handler)
 
         file_handler.write('}')
@@ -1363,7 +1370,7 @@ class Skeleton:
         self.bones = []
 
         for bone in skeleton.pose.bones:
-            if scene.ignoreIKBones and '.ik' in bone.name:
+            if scene.ignoreIKBones and ('.ik' in bone.name.lower() or 'ik.' in bone.name.lower() ):
                 Main.log('Ignoring IK bone:  ' + bone.name, 2)
                 continue
 
@@ -1388,6 +1395,20 @@ class Skeleton:
                         bone.append_animation_pose(frame + frameOffset, frame == animationRange.highest_frame)
 
                 frameOffset = animationRange.frame_end + 1
+                
+        # mode_set's only work when there is an active object, switch bones to edit mode to rest position
+        scene.objects.active = skeleton
+        bpy.ops.object.mode_set(mode='EDIT')
+        matrix_world = skeleton.matrix_world
+
+        # you need to access edit_bones from skeleton.data not skeleton.pose when in edit mode
+        for editBone in skeleton.data.edit_bones:
+            for myBoneObj in self.bones:
+                if editBone.name == myBoneObj.name:
+                    myBoneObj.set_rest_pose(editBone, matrix_world)
+                    break
+           
+        bpy.ops.object.mode_set(mode='OBJECT')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Since IK bones could be being skipped, looking up index of bone in second pass of mesh required
     def get_index_of_bone(self, boneName):

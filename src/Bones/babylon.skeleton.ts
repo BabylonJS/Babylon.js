@@ -90,6 +90,12 @@
             return ret;
         }
 
+        public returnToRest(): void {
+            for (var index = 0; index < this.bones.length; index++) {
+                this.bones[index].returnToRest();
+            }
+        }
+
         private _getHighestAnimationFrame(): number {
             var ret = 0;
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
@@ -170,7 +176,7 @@
                     parentBone = result.bones[parentIndex];
                 }
 
-                var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone());
+                var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
                 Tools.DeepCopy(source.animations, bone.animations);
             }
 
@@ -199,7 +205,8 @@
                 var serializedBone: any = {
                     parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
                     name: bone.name,
-                    matrix: bone.getLocalMatrix().toArray()
+                    matrix: bone.getLocalMatrix().toArray(),
+                    rest: bone.getRestPose().toArray()
                 };
 
                 serializationObject.bones.push(serializedBone);
@@ -234,8 +241,8 @@
                 if (parsedBone.parentBoneIndex > -1) {
                     parentBone = skeleton.bones[parsedBone.parentBoneIndex];
                 }
-
-                var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix));
+                var rest : Matrix = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
+                var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
 
                 if (parsedBone.length) {
                     bone.length = parsedBone.length;
