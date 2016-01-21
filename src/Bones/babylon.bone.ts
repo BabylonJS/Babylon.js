@@ -6,17 +6,19 @@
 
         private _skeleton: Skeleton;
         private _matrix: Matrix;
+        private _restPose: Matrix;
         private _baseMatrix: Matrix;
         private _worldTransform = new Matrix();
         private _absoluteTransform = new Matrix();
         private _invertedAbsoluteTransform = new Matrix();
         private _parent: Bone;
 
-        constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix) {
+        constructor(public name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose? : Matrix) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
             this._matrix = matrix;
             this._baseMatrix = matrix;
+            this._restPose = restPose ? restPose : matrix.clone();
 
             skeleton.bones.push(this);
 
@@ -41,6 +43,14 @@
 
         public getBaseMatrix(): Matrix {
             return this._baseMatrix;
+        }
+
+        public getRestPose(): Matrix {
+            return this._restPose;
+        }
+        
+        public returnToRest(): void {
+            this.updateMatrix(this._restPose.clone());
         }
 
         public getWorldMatrix(): Matrix {
