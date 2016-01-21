@@ -78,6 +78,11 @@ var BABYLON;
             this._ranges[name] = new BABYLON.AnimationRange(name, range.from + frameOffset, range.to + frameOffset);
             return ret;
         };
+        Skeleton.prototype.returnToRest = function () {
+            for (var index = 0; index < this.bones.length; index++) {
+                this.bones[index].returnToRest();
+            }
+        };
         Skeleton.prototype._getHighestAnimationFrame = function () {
             var ret = 0;
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
@@ -140,7 +145,7 @@ var BABYLON;
                     var parentIndex = this.bones.indexOf(source.getParent());
                     parentBone = result.bones[parentIndex];
                 }
-                var bone = new BABYLON.Bone(source.name, result, parentBone, source.getBaseMatrix().clone());
+                var bone = new BABYLON.Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
                 BABYLON.Tools.DeepCopy(source.animations, bone.animations);
             }
             return result;
@@ -161,7 +166,8 @@ var BABYLON;
                 var serializedBone = {
                     parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
                     name: bone.name,
-                    matrix: bone.getLocalMatrix().toArray()
+                    matrix: bone.getLocalMatrix().toArray(),
+                    rest: bone.getRestPose().toArray()
                 };
                 serializationObject.bones.push(serializedBone);
                 if (bone.length) {
@@ -189,7 +195,8 @@ var BABYLON;
                 if (parsedBone.parentBoneIndex > -1) {
                     parentBone = skeleton.bones[parsedBone.parentBoneIndex];
                 }
-                var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
+                var rest = parsedBone.rest ? BABYLON.Matrix.FromArray(parsedBone.rest) : null;
+                var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix), rest);
                 if (parsedBone.length) {
                     bone.length = parsedBone.length;
                 }

@@ -22585,7 +22585,7 @@ var BABYLON;
 (function (BABYLON) {
     var Bone = (function (_super) {
         __extends(Bone, _super);
-        function Bone(name, skeleton, parentBone, matrix) {
+        function Bone(name, skeleton, parentBone, matrix, restPose) {
             _super.call(this, name, skeleton.getScene());
             this.name = name;
             this.children = new Array();
@@ -22596,6 +22596,7 @@ var BABYLON;
             this._skeleton = skeleton;
             this._matrix = matrix;
             this._baseMatrix = matrix;
+            this._restPose = restPose ? restPose : matrix.clone();
             skeleton.bones.push(this);
             if (parentBone) {
                 this._parent = parentBone;
@@ -22615,6 +22616,12 @@ var BABYLON;
         };
         Bone.prototype.getBaseMatrix = function () {
             return this._baseMatrix;
+        };
+        Bone.prototype.getRestPose = function () {
+            return this._restPose;
+        };
+        Bone.prototype.returnToRest = function () {
+            this.updateMatrix(this._restPose.clone());
         };
         Bone.prototype.getWorldMatrix = function () {
             return this._worldTransform;
@@ -22780,6 +22787,11 @@ var BABYLON;
             this._ranges[name] = new BABYLON.AnimationRange(name, range.from + frameOffset, range.to + frameOffset);
             return ret;
         };
+        Skeleton.prototype.returnToRest = function () {
+            for (var index = 0; index < this.bones.length; index++) {
+                this.bones[index].returnToRest();
+            }
+        };
         Skeleton.prototype._getHighestAnimationFrame = function () {
             var ret = 0;
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
@@ -22842,7 +22854,7 @@ var BABYLON;
                     var parentIndex = this.bones.indexOf(source.getParent());
                     parentBone = result.bones[parentIndex];
                 }
-                var bone = new BABYLON.Bone(source.name, result, parentBone, source.getBaseMatrix().clone());
+                var bone = new BABYLON.Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
                 BABYLON.Tools.DeepCopy(source.animations, bone.animations);
             }
             return result;
@@ -22863,7 +22875,8 @@ var BABYLON;
                 var serializedBone = {
                     parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
                     name: bone.name,
-                    matrix: bone.getLocalMatrix().toArray()
+                    matrix: bone.getLocalMatrix().toArray(),
+                    rest: bone.getRestPose().toArray()
                 };
                 serializationObject.bones.push(serializedBone);
                 if (bone.length) {
@@ -22891,7 +22904,8 @@ var BABYLON;
                 if (parsedBone.parentBoneIndex > -1) {
                     parentBone = skeleton.bones[parsedBone.parentBoneIndex];
                 }
-                var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix));
+                var rest = parsedBone.rest ? BABYLON.Matrix.FromArray(parsedBone.rest) : null;
+                var bone = new BABYLON.Bone(parsedBone.name, skeleton, parentBone, BABYLON.Matrix.FromArray(parsedBone.matrix), rest);
                 if (parsedBone.length) {
                     bone.length = parsedBone.length;
                 }

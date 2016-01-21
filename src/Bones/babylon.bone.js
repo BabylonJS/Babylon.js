@@ -7,7 +7,7 @@ var BABYLON;
 (function (BABYLON) {
     var Bone = (function (_super) {
         __extends(Bone, _super);
-        function Bone(name, skeleton, parentBone, matrix) {
+        function Bone(name, skeleton, parentBone, matrix, restPose) {
             _super.call(this, name, skeleton.getScene());
             this.name = name;
             this.children = new Array();
@@ -18,6 +18,7 @@ var BABYLON;
             this._skeleton = skeleton;
             this._matrix = matrix;
             this._baseMatrix = matrix;
+            this._restPose = restPose ? restPose : matrix.clone();
             skeleton.bones.push(this);
             if (parentBone) {
                 this._parent = parentBone;
@@ -37,6 +38,12 @@ var BABYLON;
         };
         Bone.prototype.getBaseMatrix = function () {
             return this._baseMatrix;
+        };
+        Bone.prototype.getRestPose = function () {
+            return this._restPose;
+        };
+        Bone.prototype.returnToRest = function () {
+            this.updateMatrix(this._restPose.clone());
         };
         Bone.prototype.getWorldMatrix = function () {
             return this._worldTransform;
