@@ -1607,7 +1607,7 @@
             return this;
         }
 
-        public toEulerAngles(): Vector3 {
+        public toEulerAngles(order = "YZX"): Vector3 {
             var result = Vector3.Zero();
 
             this.toEulerAnglesToRef(result);
@@ -1615,43 +1615,43 @@
             return result;
         }
 
-        public toEulerAnglesToRef(result: Vector3): Quaternion {
-            //result is an EulerAngles in the in the z-x-z convention
-            var qx = this.x;
-            var qy = this.y;
-            var qz = this.z;
-            var qw = this.w;
-            var qxy = qx * qy;
-            var qxz = qx * qz;
-            var qwy = qw * qy;
-            var qwz = qw * qz;
-            var qwx = qw * qx;
-            var qyz = qy * qz;
-            var sqx = qx * qx;
-            var sqy = qy * qy;
+        public toEulerAnglesToRef(result: Vector3, order = "YZX"): Quaternion {
+            var heading: number, attitude: number, bank: number;
+            var x = this.x, y = this.y, z = this.z, w = this.w;
 
-            var determinant = sqx + sqy;
-
-            if (determinant !== 0.000 && determinant !== 1.000) {
-                result.x = Math.atan2(qxz + qwy, qwx - qyz);
-                result.y = Math.acos(1 - 2 * determinant);
-                result.z = Math.atan2(qxz - qwy, qwx + qyz);
-            } else {
-                if (determinant === 0.0) {
-                    result.x = 0.0;
-                    result.y = 0.0;
-                    result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                } else //determinant == 1.000
-                {
-                    result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x-z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                    result.y = Math.PI;
-                    result.z = 0.0;
-                }
+            switch (order) {
+                case "YZX":
+                    var test = x * y + z * w;
+                    if (test > 0.499) { // singularity at north pole
+                        heading = 2 * Math.atan2(x, w);
+                        attitude = Math.PI / 2;
+                        bank = 0;
+                    }
+                    if (test < -0.499) { // singularity at south pole
+                        heading = -2 * Math.atan2(x, w);
+                        attitude = - Math.PI / 2;
+                        bank = 0;
+                    }
+                    if (isNaN(heading)) {
+                        var sqx = x * x;
+                        var sqy = y * y;
+                        var sqz = z * z;
+                        heading = Math.atan2(2 * y * w - 2 * x * z, 1 - 2 * sqy - 2 * sqz); // Heading
+                        attitude = Math.asin(2 * test); // attitude
+                        bank = Math.atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz); // bank
+                    }
+                    break;
+                default:
+                    throw new Error("Euler order " + order + " not supported yet.");
             }
 
-            return this;
-        }
+            result.y = heading;
+            result.z = attitude;
+            result.x = bank;
 
+            return this;
+        };
+        
         public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
