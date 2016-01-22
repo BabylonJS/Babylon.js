@@ -585,6 +585,9 @@ var BABYLON;
             else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
                 camera = new BABYLON.VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
             }
+            else if (parsedCamera.type === "FreeCamera") {
+                camera = new BABYLON.FreeCamera(parsedCamera.name, position, scene);
+            }
             else {
                 // Touch Camera is the default value
                 camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
