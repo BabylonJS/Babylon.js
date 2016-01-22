@@ -1299,7 +1299,7 @@ var BABYLON;
         Quaternion.prototype.toEulerAngles = function (order) {
             if (order === void 0) { order = "YZX"; }
             var result = Vector3.Zero();
-            this.toEulerAnglesToRef(result);
+            this.toEulerAnglesToRef(result, order);
             return result;
         };
         Quaternion.prototype.toEulerAnglesToRef = function (result, order) {
