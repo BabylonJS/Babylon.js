@@ -1610,7 +1610,7 @@
         public toEulerAngles(order = "YZX"): Vector3 {
             var result = Vector3.Zero();
 
-            this.toEulerAnglesToRef(result);
+            this.toEulerAnglesToRef(result, order);
 
             return result;
         }
