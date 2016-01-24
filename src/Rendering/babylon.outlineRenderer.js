@@ -21,7 +21,7 @@ var BABYLON;
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
             if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
             mesh._bind(subMesh, this._effect, BABYLON.Material.TriangleFillMode);
             // Alpha test

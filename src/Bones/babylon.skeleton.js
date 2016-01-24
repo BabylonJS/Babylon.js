@@ -5,7 +5,9 @@ var BABYLON;
             this.name = name;
             this.id = id;
             this.bones = new Array();
+            this.needInitialSkinMatrix = false;
             this._isDirty = true;
+            this._meshesWithPoseMatrix = new Array();
             this._identity = BABYLON.Matrix.Identity();
             this._ranges = {};
             this.bones = [];
@@ -16,7 +18,10 @@ var BABYLON;
             this._isDirty = true;
         }
         // Members
-        Skeleton.prototype.getTransformMatrices = function () {
+        Skeleton.prototype.getTransformMatrices = function (mesh) {
+            if (this.needInitialSkinMatrix && mesh._bonesTransformMatrices) {
+                return mesh._bonesTransformMatrices;
+            }
             return this._transformMatrices;
         };
         Skeleton.prototype.getScene = function () {
@@ -105,13 +110,16 @@ var BABYLON;
         Skeleton.prototype._markAsDirty = function () {
             this._isDirty = true;
         };
-        Skeleton.prototype.prepare = function () {
-            if (!this._isDirty) {
-                return;
+        Skeleton.prototype._registerMeshWithPoseMatrix = function (mesh) {
+            this._meshesWithPoseMatrix.push(mesh);
+        };
+        Skeleton.prototype._unregisterMeshWithPoseMatrix = function (mesh) {
+            var index = this._meshesWithPoseMatrix.indexOf(mesh);
+            if (index > -1) {
+                this._meshesWithPoseMatrix.splice(index, 1);
             }
-            if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
-                this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
-            }
+        };
+        Skeleton.prototype._computeTransformMatrices = function (targetMatrix, initialSkinMatrix) {
             for (var index = 0; index < this.bones.length; index++) {
                 var bone = this.bones[index];
                 var parentBone = bone.getParent();
@@ -119,11 +127,46 @@ var BABYLON;
                     bone.getLocalMatrix().multiplyToRef(parentBone.getWorldMatrix(), bone.getWorldMatrix());
                 }
                 else {
-                    bone.getWorldMatrix().copyFrom(bone.getLocalMatrix());
+                    if (initialSkinMatrix) {
+                        bone.getLocalMatrix().multiplyToRef(initialSkinMatrix, bone.getWorldMatrix());
+                    }
+                    else {
+                        bone.getWorldMatrix().copyFrom(bone.getLocalMatrix());
+                    }
                 }
-                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), this._transformMatrices, index * 16);
+                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), targetMatrix, index * 16);
             }
-            this._identity.copyToArray(this._transformMatrices, this.bones.length * 16);
+            this._identity.copyToArray(targetMatrix, this.bones.length * 16);
+        };
+        Skeleton.prototype.prepare = function () {
+            if (!this._isDirty) {
+                return;
+            }
+            if (this.needInitialSkinMatrix) {
+                for (var index = 0; index < this._meshesWithPoseMatrix.length; index++) {
+                    var mesh = this._meshesWithPoseMatrix[index];
+                    if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
+                        mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
+                    }
+                    var poseMatrix = mesh.getPoseMatrix();
+                    // Prepare bones
+                    for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
+                        var bone = this.bones[boneIndex];
+                        if (!bone.getParent()) {
+                            var matrix = bone.getBaseMatrix();
+                            matrix.multiplyToRef(poseMatrix, BABYLON.Tmp.Matrix[0]);
+                            bone._updateDifferenceMatrix(BABYLON.Tmp.Matrix[0]);
+                        }
+                    }
+                    this._computeTransformMatrices(mesh._bonesTransformMatrices, poseMatrix);
+                }
+            }
+            else {
+                if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
+                    this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
+                }
+                this._computeTransformMatrices(this._transformMatrices, null);
+            }
             this._isDirty = false;
             this._scene._activeBones += this.bones.length;
         };
@@ -151,6 +194,7 @@ var BABYLON;
             return result;
         };
         Skeleton.prototype.dispose = function () {
+            this._meshesWithPoseMatrix = [];
             // Animations
             this.getScene().stopAnimation(this);
             // Remove from scene
@@ -161,6 +205,7 @@ var BABYLON;
             serializationObject.name = this.name;
             serializationObject.id = this.id;
             serializationObject.bones = [];
+            serializationObject.needInitialSkinMatrix = this.needInitialSkinMatrix;
             for (var index = 0; index < this.bones.length; index++) {
                 var bone = this.bones[index];
                 var serializedBone = {
@@ -189,6 +234,7 @@ var BABYLON;
         };
         Skeleton.Parse = function (parsedSkeleton, scene) {
             var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+            skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
             for (var index = 0; index < parsedSkeleton.bones.length; index++) {
                 var parsedBone = parsedSkeleton.bones[index];
                 var parentBone = null;

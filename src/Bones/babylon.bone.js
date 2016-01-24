@@ -51,27 +51,24 @@ var BABYLON;
         Bone.prototype.getInvertedAbsoluteTransform = function () {
             return this._invertedAbsoluteTransform;
         };
-        Bone.prototype.getAbsoluteMatrix = function () {
-            var matrix = this._matrix.clone();
-            var parent = this._parent;
-            while (parent) {
-                matrix = matrix.multiply(parent.getLocalMatrix());
-                parent = parent.getParent();
-            }
-            return matrix;
+        Bone.prototype.getAbsoluteTransform = function () {
+            return this._absoluteTransform;
         };
         // Methods
         Bone.prototype.updateMatrix = function (matrix) {
-            this._matrix = matrix;
+            this._baseMatrix = matrix.clone();
             this._skeleton._markAsDirty();
             this._updateDifferenceMatrix();
         };
-        Bone.prototype._updateDifferenceMatrix = function () {
+        Bone.prototype._updateDifferenceMatrix = function (rootMatrix) {
+            if (!rootMatrix) {
+                rootMatrix = this._baseMatrix;
+            }
             if (this._parent) {
-                this._matrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
+                rootMatrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
             }
             else {
-                this._absoluteTransform.copyFrom(this._matrix);
+                this._absoluteTransform.copyFrom(rootMatrix);
             }
             this._absoluteTransform.invertToRef(this._invertedAbsoluteTransform);
             for (var index = 0; index < this.children.length; index++) {

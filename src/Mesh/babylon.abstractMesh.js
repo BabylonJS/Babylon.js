@@ -7,6 +7,7 @@ var BABYLON;
 (function (BABYLON) {
     var AbstractMesh = (function (_super) {
         __extends(AbstractMesh, _super);
+        // Constructor
         function AbstractMesh(name, scene) {
             var _this = this;
             _super.call(this, name, scene);
@@ -125,7 +126,32 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AbstractMesh.prototype, "skeleton", {
+            get: function () {
+                return this._skeleton;
+            },
+            set: function (value) {
+                if (this._skeleton && this._skeleton.needInitialSkinMatrix) {
+                    this._skeleton._unregisterMeshWithPoseMatrix(this);
+                }
+                if (value && value.needInitialSkinMatrix) {
+                    value._registerMeshWithPoseMatrix(this);
+                }
+                this._skeleton = value;
+                if (!this._skeleton) {
+                    this._bonesTransformMatrices = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
+        AbstractMesh.prototype.updatePoseMatrix = function (matrix) {
+            this._poseMatrix.copyFrom(matrix);
+        };
+        AbstractMesh.prototype.getPoseMatrix = function () {
+            return this._poseMatrix;
+        };
         AbstractMesh.prototype.disableEdgesRendering = function () {
             if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
@@ -489,6 +515,9 @@ var BABYLON;
             for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
                 this._onAfterWorldMatrixUpdate[callbackIndex](this);
             }
+            if (!this._poseMatrix) {
+                this._poseMatrix = BABYLON.Matrix.Invert(this._worldMatrix);
+            }
             return this._worldMatrix;
         };
         /**
@@ -827,6 +856,8 @@ var BABYLON;
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
             var index;
+            // Skeleton
+            this.skeleton = null;
             // Animations
             this.getScene().stopAnimation(this);
             // Physics

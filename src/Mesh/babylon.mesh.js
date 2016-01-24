@@ -1581,7 +1581,7 @@ var BABYLON;
             var needExtras = this.numBoneInfluencers > 4;
             var matricesIndicesExtraData = needExtras ? this.getVerticesData(BABYLON.VertexBuffer.MatricesIndicesExtraKind) : null;
             var matricesWeightsExtraData = needExtras ? this.getVerticesData(BABYLON.VertexBuffer.MatricesWeightsExtraKind) : null;
-            var skeletonMatrices = skeleton.getTransformMatrices();
+            var skeletonMatrices = skeleton.getTransformMatrices(this);
             var tempVector3 = BABYLON.Vector3.Zero();
             var finalMatrix = new BABYLON.Matrix();
             var tempMatrix = new BABYLON.Matrix();

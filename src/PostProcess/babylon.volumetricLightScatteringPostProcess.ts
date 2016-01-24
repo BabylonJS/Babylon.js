@@ -291,7 +291,7 @@
 
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
                     // Draw
