@@ -1868,7 +1868,7 @@
             var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
             var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
 
-            var skeletonMatrices = skeleton.getTransformMatrices();
+            var skeletonMatrices = skeleton.getTransformMatrices(this);
 
             var tempVector3 = Vector3.Zero();
             var finalMatrix = new Matrix();

@@ -151,12 +151,14 @@
                 }
             }
 
-            // freeze world matrix application
+            // freeze and compute world matrix application
             for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                 currentMesh = scene.meshes[index];
                 if (currentMesh._waitingFreezeWorldMatrix) {
                     currentMesh.freezeWorldMatrix();
                     currentMesh._waitingFreezeWorldMatrix = undefined;
+                } else {
+                    currentMesh.computeWorldMatrix(true);
                 }
             }
 
@@ -393,6 +395,8 @@
                 if (currentMesh._waitingFreezeWorldMatrix) {
                     currentMesh.freezeWorldMatrix();
                     currentMesh._waitingFreezeWorldMatrix = undefined;
+                } else {
+                    currentMesh.computeWorldMatrix(true);
                 }
             }
 

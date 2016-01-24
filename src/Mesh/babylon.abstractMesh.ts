@@ -43,7 +43,6 @@
         public showSubMeshesBoundingBox = false;
         public onDispose = null;
         public isBlocker = false;
-        public skeleton: Skeleton;
         public renderingGroupId = 0;
         public material: Material;
         public receiveShadows = false;
@@ -122,10 +121,37 @@
 
         public _unIndexed = false;
 
+        public _poseMatrix: Matrix;
+
         // Loading properties
         public _waitingActions: any;
         public _waitingFreezeWorldMatrix: boolean;
 
+        // Skeleton
+        private _skeleton: Skeleton;
+        public _bonesTransformMatrices: Float32Array;
+
+        public set skeleton(value: Skeleton) {
+            if (this._skeleton && this._skeleton.needInitialSkinMatrix) {
+                this._skeleton._unregisterMeshWithPoseMatrix(this);
+            }
+
+            if (value && value.needInitialSkinMatrix) {
+                value._registerMeshWithPoseMatrix(this);
+            }
+
+            this._skeleton = value;
+
+            if (!this._skeleton) {
+                this._bonesTransformMatrices = null;
+            }
+        }
+
+        public get skeleton(): Skeleton {
+            return this._skeleton;
+        }
+
+        // Constructor
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
@@ -133,6 +159,14 @@
         }
 
         // Methods
+        public updatePoseMatrix(matrix: Matrix) {
+            this._poseMatrix.copyFrom(matrix);
+        }
+
+        public getPoseMatrix(): Matrix {
+            return this._poseMatrix;
+        }
+
         public disableEdgesRendering(): void {
             if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
@@ -542,6 +576,10 @@
             // Callbacks
             for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
                 this._onAfterWorldMatrixUpdate[callbackIndex](this);
+            }
+
+            if (!this._poseMatrix) {
+                this._poseMatrix = Matrix.Invert(this._worldMatrix);
             }
 
             return this._worldMatrix;
@@ -982,6 +1020,9 @@
 
         public dispose(doNotRecurse?: boolean): void {
             var index: number;
+
+            // Skeleton
+            this.skeleton = null;
 
             // Animations
             this.getScene().stopAnimation(this);

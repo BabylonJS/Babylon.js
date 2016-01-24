@@ -79,7 +79,7 @@ var BABYLON;
                     }
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
                     if (_this.forceBackFacesOnly) {
                         engine.setState(true, 0, false, true);

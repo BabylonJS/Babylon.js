@@ -48,7 +48,7 @@ var BABYLON;
                     }
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        _this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
                     // Draw
                     mesh._processRendering(subMesh, _this._effect, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._effect.setMatrix("world", world); });

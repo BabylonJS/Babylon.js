@@ -5,7 +5,7 @@
         public length: number;
 
         private _skeleton: Skeleton;
-        private _matrix: Matrix;
+        public _matrix: Matrix;
         private _restPose: Matrix;
         private _baseMatrix: Matrix;
         private _worldTransform = new Matrix();
@@ -47,7 +47,7 @@
 
         public getRestPose(): Matrix {
             return this._restPose;
-        }
+        }      
 
         public returnToRest(): void {
             this.updateMatrix(this._restPose.clone());
@@ -61,31 +61,28 @@
             return this._invertedAbsoluteTransform;
         }
 
-        public getAbsoluteMatrix(): Matrix {
-            var matrix = this._matrix.clone();
-            var parent = this._parent;
-
-            while (parent) {
-                matrix = matrix.multiply(parent.getLocalMatrix());
-                parent = parent.getParent();
-            }
-
-            return matrix;
+        public getAbsoluteTransform(): Matrix {
+            return this._absoluteTransform;
         }
 
         // Methods
         public updateMatrix(matrix: Matrix): void {
-            this._matrix = matrix;
+            this._baseMatrix = matrix.clone();
+
             this._skeleton._markAsDirty();
 
             this._updateDifferenceMatrix();
         }
 
-        private _updateDifferenceMatrix(): void {
+        public _updateDifferenceMatrix(rootMatrix?: Matrix): void {
+            if (!rootMatrix) {
+                rootMatrix = this._baseMatrix;
+            }
+
             if (this._parent) {
-                this._matrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
+                rootMatrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
             } else {
-                this._absoluteTransform.copyFrom(this._matrix);
+                this._absoluteTransform.copyFrom(rootMatrix);
             }
 
             this._absoluteTransform.invertToRef(this._invertedAbsoluteTransform);

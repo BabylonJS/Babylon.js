@@ -64,7 +64,7 @@
 
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
                     // Draw
