@@ -342,6 +342,10 @@
         public play(time?: number) {
             if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
+                    if (this._startOffset < 0) {
+                        time = -this._startOffset;
+                        this._startOffset = 0;
+                    }
                     var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound) {
@@ -376,7 +380,7 @@
                         this._soundSource.loop = this.loop;
                         this._soundSource.playbackRate.value = this._playbackRate;
                         this._soundSource.onended = () => { this._onended(); };
-                        this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
+                        this._soundSource.start(startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
                     }
                     this._startTime = startTime;
                     this.isPlaying = true;
