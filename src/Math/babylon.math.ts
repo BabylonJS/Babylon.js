@@ -315,13 +315,6 @@
             result.a = left.a + (right.a - left.a) * amount;
         }
 
-        public static RandomLerpToRef(left: Color4, right: Color4, result: Color4): void {
-            result.r = left.r + (right.r - left.r) * Math.random();
-            result.g = left.g + (right.g - left.g) * Math.random();
-            result.b = left.b + (right.b - left.b) * Math.random();
-            result.a = left.a + (right.a - left.a) * Math.random();
-        }
-
         public static FromArray(array: number[], offset: number = 0): Color4 {
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }

@@ -286,9 +286,6 @@
             };
 
             img.onerror = err => {
-                if (onerror){
-                    return onerror();
-                }
                 Tools.Error("Error while trying to load texture: " + url);
 
                 if (Tools.UseFallbackTexture) {
