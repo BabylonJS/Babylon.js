@@ -145,10 +145,12 @@
 
             // Animations
             Animation.AppendSerializedAnimations(instance, serializationInstance);
+            serializationInstance.ranges = instance.serializeAnimationRanges();
         }
 
         // Animations
         Animation.AppendSerializedAnimations(mesh, serializationObject);
+        serializationObject.ranges = mesh.serializeAnimationRanges();
 
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;

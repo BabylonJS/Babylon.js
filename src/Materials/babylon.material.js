@@ -132,6 +132,19 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Material.prototype, "isFrozen", {
+            get: function () {
+                return this.checkReadyOnlyOnce;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Material.prototype.freeze = function () {
+            this.checkReadyOnlyOnce = true;
+        };
+        Material.prototype.unfreeze = function () {
+            this.checkReadyOnlyOnce = false;
+        };
         Material.prototype.isReady = function (mesh, useInstances) {
             return true;
         };

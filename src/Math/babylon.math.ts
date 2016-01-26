@@ -1086,8 +1086,8 @@
             return center;
         }
 
-        /** 
-         * Given three orthogonal left-handed oriented Vector3 axis in space (target system), 
+        /**
+         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
          * to something in order to rotate it from its local system to the given target system.
          */
@@ -1097,17 +1097,17 @@
             return rotation;
         }
 
-        /** 
+        /**
          * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
          */
         public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
-            var u = Vector3.Normalize(axis1);
-            var w = Vector3.Normalize(axis3);
+            var u = axis1.normalize();
+            var w = axis3.normalize();
 
             // world axis
             var X = Axis.X;
             var Y = Axis.Y;
-            
+
             // equation unknowns and vars
             var yaw = 0.0;
             var pitch = 0.0;
@@ -1118,14 +1118,13 @@
             var t = 0.0;
             var sign = -1.0;
             var nbRevert = 0;
-            var cross: Vector3;
+            var cross: Vector3 = Tmp.Vector3[0];
             var dot = 0.0;
 
             // step 1  : rotation around w
             // Rv3(u) = u1, and u1 belongs to plane xOz
             // Rv3(w) = w1 = w invariant
-            var u1: Vector3;
-            var v1: Vector3;
+            var u1: Vector3 = Tmp.Vector3[1];
             if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
                 z = 1.0;
             }
@@ -1138,11 +1137,11 @@
                 z = Math.sqrt(1 / (1 + t * t));
             }
 
-            u1 = new Vector3(x, y, z);
+            u1.x = x;
+            u1.y = y;
+            u1.z = z;
             u1.normalize();
-            v1 = Vector3.Cross(w, u1);     // v1 image of v through rotation around w
-            v1.normalize();
-            cross = Vector3.Cross(u, u1);  // returns same direction as w (=local z) if positive angle : cross(source, image)
+            Vector3.CrossToRef(u, u1, cross);  // returns same direction as w (=local z) if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(w, cross) < 0) {
                 sign = 1.0;
@@ -1155,19 +1154,18 @@
             if (Vector3.Dot(u1, X) < 0) { // checks X orientation
                 roll = Math.PI + roll;
                 u1 = u1.scaleInPlace(-1);
-                v1 = v1.scaleInPlace(-1);
                 nbRevert++;
             }
-            
+
             // step 2 : rotate around u1
             // Ru1(w1) = Ru1(w) = w2, and w2 belongs to plane xOz
             // u1 is yet in xOz and invariant by Ru1, so after this step u1 and w2 will be in xOz
-            var w2: Vector3;
-            var v2: Vector3;
+            var w2: Vector3 = Tmp.Vector3[2];
+            var v2: Vector3 = Tmp.Vector3[3];
             x = 0.0;
             y = 0.0;
             z = 0.0;
-            sign = -1;
+            sign = -1.0;
             if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
                 x = 1.0;
             }
@@ -1177,11 +1175,13 @@
                 z = Math.sqrt(1 / (1 + t * t));
             }
 
-            w2 = new Vector3(x, y, z);
+            w2.x = x;
+            w2.y = y;
+            w2.z = z;
             w2.normalize();
-            v2 = Vector3.Cross(w2, u1);   // v2 image of v1 through rotation around u1
+            Vector3.CrossToRef(w2, u1, v2);   // v2 image of v1 through rotation around u1
             v2.normalize();
-            cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            Vector3.CrossToRef(w, w2, cross); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(u1, cross) < 0) {
                 sign = 1.0;
@@ -1192,15 +1192,13 @@
             pitch = Math.acos(dot) * sign;
             if (Vector3.Dot(v2, Y) < 0) { // checks for Y orientation
                 pitch = Math.PI + pitch;
-                v2 = v2.scaleInPlace(-1);
-                w2 = w2.scaleInPlace(-1);
                 nbRevert++;
             }
-            
+
             // step 3 : rotate around v2
             // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
-            sign = -1;
-            cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            sign = -1.0;
+            Vector3.CrossToRef(X, u1, cross); // returns same direction as Y if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(cross, Y) < 0) {
                 sign = 1.0;
@@ -1616,51 +1614,51 @@
             return this;
         }
 
-        public toEulerAngles(): Vector3 {
+        public toEulerAngles(order = "YZX"): Vector3 {
             var result = Vector3.Zero();
 
-            this.toEulerAnglesToRef(result);
+            this.toEulerAnglesToRef(result, order);
 
             return result;
         }
 
-        public toEulerAnglesToRef(result: Vector3): Quaternion {
-            //result is an EulerAngles in the in the z-x-z convention
-            var qx = this.x;
-            var qy = this.y;
-            var qz = this.z;
-            var qw = this.w;
-            var qxy = qx * qy;
-            var qxz = qx * qz;
-            var qwy = qw * qy;
-            var qwz = qw * qz;
-            var qwx = qw * qx;
-            var qyz = qy * qz;
-            var sqx = qx * qx;
-            var sqy = qy * qy;
+        public toEulerAnglesToRef(result: Vector3, order = "YZX"): Quaternion {
+            var heading: number, attitude: number, bank: number;
+            var x = this.x, y = this.y, z = this.z, w = this.w;
 
-            var determinant = sqx + sqy;
-
-            if (determinant !== 0.000 && determinant !== 1.000) {
-                result.x = Math.atan2(qxz + qwy, qwx - qyz);
-                result.y = Math.acos(1 - 2 * determinant);
-                result.z = Math.atan2(qxz - qwy, qwx + qyz);
-            } else {
-                if (determinant === 0.0) {
-                    result.x = 0.0;
-                    result.y = 0.0;
-                    result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                } else //determinant == 1.000
-                {
-                    result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x-z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                    result.y = Math.PI;
-                    result.z = 0.0;
-                }
+            switch (order) {
+                case "YZX":
+                    var test = x * y + z * w;
+                    if (test > 0.499) { // singularity at north pole
+                        heading = 2 * Math.atan2(x, w);
+                        attitude = Math.PI / 2;
+                        bank = 0;
+                    }
+                    if (test < -0.499) { // singularity at south pole
+                        heading = -2 * Math.atan2(x, w);
+                        attitude = - Math.PI / 2;
+                        bank = 0;
+                    }
+                    if (isNaN(heading)) {
+                        var sqx = x * x;
+                        var sqy = y * y;
+                        var sqz = z * z;
+                        heading = Math.atan2(2 * y * w - 2 * x * z, 1 - 2 * sqy - 2 * sqz); // Heading
+                        attitude = Math.asin(2 * test); // attitude
+                        bank = Math.atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz); // bank
+                    }
+                    break;
+                default:
+                    throw new Error("Euler order " + order + " not supported yet.");
             }
 
-            return this;
-        }
+            result.y = heading;
+            result.z = attitude;
+            result.x = bank;
 
+            return this;
+        };
+        
         public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
@@ -2469,7 +2467,7 @@
             target.subtractToRef(eye, this._zAxis);
             this._zAxis.normalize();
 
-            // X axis            
+            // X axis
             Vector3.CrossToRef(up, this._zAxis, this._xAxis);
 
             if (this._xAxis.lengthSquared() === 0) {
@@ -3060,7 +3058,7 @@
         }
 
         /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be 
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
         * transformed to the given world matrix.
         * @param origin The origin point
         * @param end The end point
@@ -3374,8 +3372,8 @@
         private _binormals = new Array<Vector3>();
         private _raw: boolean;
 
-        /** 
-        * new Path3D(path, normal, raw) 
+        /**
+        * new Path3D(path, normal, raw)
         * path : an array of Vector3, the curve axis of the Path3D
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
@@ -3431,7 +3429,7 @@
             if (!this._raw) {
                 this._tangents[l - 1].normalize();
             }
-            
+
             // normals and binormals at first point : arbitrary vector with _normalVector()
             var tg0 = this._tangents[0];
             var pp0 = this._normalVector(this._curve[0], tg0, firstNormal);
@@ -3460,8 +3458,8 @@
                     this._tangents[i] = prev.add(cur);
                     this._tangents[i].normalize();
                 }
-                this._distances[i] = this._distances[i - 1] + prev.length();   
-                      
+                this._distances[i] = this._distances[i - 1] + prev.length();
+
                 // normals and binormals
                 // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
                 curTang = this._tangents[i];
@@ -3509,7 +3507,7 @@
 
             if (va === undefined || va === null) {
                 var point: Vector3;
-                if (!Tools.WithinEpsilon(vt.y, 1, Engine.Epsilon)) {     // search for a point in the plane 
+                if (!Tools.WithinEpsilon(vt.y, 1, Engine.Epsilon)) {     // search for a point in the plane
                     point = new Vector3(0, -1, 0);
                 }
                 else if (!Tools.WithinEpsilon(vt.x, 1, Engine.Epsilon)) {
@@ -3625,7 +3623,21 @@
             return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
         }
     }
+
+    // Temporary pre-allocated objects for engine internal use
+    // usage in any internal function :
+    // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
+    // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
+    export class Tmp {
+        public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
+        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()
+            , Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 6 temp Vector3 at once should be enough
+        public static Vector4: Vector4[] = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()];  // 3 temp Vector4 at once should be enough
+        public static Quaternion: Quaternion[] = [new Quaternion(0, 0, 0, 0)];                // 1 temp Quaternion at once should be enough
+        public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
+    }
 }
-
-
 

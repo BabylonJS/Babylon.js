@@ -505,17 +505,21 @@
             // Wireframe
             var indexToBind;
 
-            switch (fillMode) {
-                case Material.PointFillMode:
-                    indexToBind = null;
-                    break;
-                case Material.WireFrameFillMode:
-                    indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
-                    break;
-                default:
-                case Material.TriangleFillMode:
-                    indexToBind = this._geometry.getIndexBuffer();
-                    break;
+            if (this._unIndexed) {
+                indexToBind = null;
+            } else {
+                switch (fillMode) {
+                    case Material.PointFillMode:
+                        indexToBind = null;
+                        break;
+                    case Material.WireFrameFillMode:
+                        indexToBind = subMesh.getLinesIndexBuffer(this.getIndices(), engine);
+                        break;
+                    default:
+                    case Material.TriangleFillMode:
+                        indexToBind = this._unIndexed ? null : this._geometry.getIndexBuffer();
+                        break;
+                }
             }
 
             // VBOs
@@ -535,11 +539,19 @@
                     engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
                     break;
                 case Material.WireFrameFillMode:
-                    engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                    if (this._unIndexed) {
+                        engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+                    } else {
+                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
+                    }
                     break;
 
                 default:
-                    engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
+                    if (this._unIndexed) {
+                        engine.drawUnIndexed(true, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+                    } else {
+                        engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
+                    }
             }
         }
 
@@ -1148,6 +1160,73 @@
             this.synchronizeInstances();
         }
 
+        public convertToUnIndexedMesh(): void {
+            /// <summary>Remove indices by unfolding faces into buffers</summary>
+            /// <summary>Warning: This implies adding vertices to the mesh in order to get exactly 3 vertices per face</summary>
+
+            var kinds = this.getVerticesDataKinds();
+            var vbs = [];
+            var data = [];
+            var newdata = [];
+            var updatableNormals = false;
+            var kindIndex: number;
+            var kind: string;
+            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                kind = kinds[kindIndex];
+                var vertexBuffer = this.getVertexBuffer(kind);
+                vbs[kind] = vertexBuffer;
+                data[kind] = vbs[kind].getData();
+                newdata[kind] = [];
+            }
+
+            // Save previous submeshes
+            var previousSubmeshes = this.subMeshes.slice(0);
+
+            var indices = this.getIndices();
+            var totalIndices = this.getTotalIndices();
+
+            // Generating unique vertices per face
+            var index: number;
+            for (index = 0; index < totalIndices; index++) {
+                var vertexIndex = indices[index];
+
+                for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                    kind = kinds[kindIndex];
+                    var stride = vbs[kind].getStrideSize();
+
+                    for (var offset = 0; offset < stride; offset++) {
+                        newdata[kind].push(data[kind][vertexIndex * stride + offset]);
+                    }
+                }
+            }
+
+            // Updating indices
+            for (index = 0; index < totalIndices; index += 3) {
+                indices[index] = index;
+                indices[index + 1] = index + 1;
+                indices[index + 2] = index + 2;
+            }
+
+            this.setIndices(indices);
+
+            // Updating vertex buffers
+            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
+                kind = kinds[kindIndex];
+                this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
+            }
+
+            // Updating submeshes
+            this.releaseSubMeshes();
+            for (var submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
+                var previousOne = previousSubmeshes[submeshIndex];
+                var subMesh = new SubMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+            }
+
+            this._unIndexed = true;
+
+            this.synchronizeInstances();
+        }
+
         // will inverse faces orientations, and invert normals too if specified
         public flipFaces(flipNormals: boolean = false): void {
             var vertex_data = VertexData.ExtractFromMesh(this);
@@ -1398,6 +1477,7 @@
 
                     mesh.animations.push(Animation.Parse(parsedAnimation));
                 }
+                Node.ParseAnimationRanges(mesh, parsedMesh, scene);
             }
 
             if (parsedMesh.autoAnimate) {
@@ -1437,6 +1517,7 @@
 
                             instance.animations.push(Animation.Parse(parsedAnimation));
                         }
+                        Node.ParseAnimationRanges(instance, parsedMesh, scene);
                     }
                 }
             }
@@ -1737,6 +1818,16 @@
          * @param {skeleton} skeleton to apply
          */
         public applySkeleton(skeleton: Skeleton): Mesh {
+            if (!this.geometry) {
+                return;
+            }
+
+            if (this.geometry._softwareSkinningRenderId == this.getScene().getRenderId()) {
+                return;
+            }
+
+            this.geometry._softwareSkinningRenderId = this.getScene().getRenderId();
+
             if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
                 return this;
             }
@@ -1777,7 +1868,7 @@
             var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
             var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
 
-            var skeletonMatrices = skeleton.getTransformMatrices();
+            var skeletonMatrices = skeleton.getTransformMatrices(this);
 
             var tempVector3 = Vector3.Zero();
             var finalMatrix = new Matrix();
@@ -1915,6 +2006,7 @@
         }
     }
 }
+
 
 
 

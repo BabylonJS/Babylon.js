@@ -46,6 +46,7 @@
         private _MSGestureHandler: MSGesture;
 
         // Panning
+        public panningAxis: Vector3 = new Vector3(1, 0, 1);
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
         private _isRightClick: boolean = false;
@@ -89,7 +90,7 @@
         }
 
         public _getTargetPosition(): Vector3 {
-            return this.target.position || this.target;
+            return this.target.getAbsolutePosition ? this.target.getAbsolutePosition() : this.target;
         }
 
         // Cache
@@ -438,9 +439,10 @@
                 if (Math.abs(this.inertialPanningY) < Engine.Epsilon)
                     this.inertialPanningY = 0;
 
-                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, 0);
+                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
                 Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                this._transformedDirection.multiplyInPlace(this.panningAxis);
                 this.target.addInPlace(this._transformedDirection);
             }
 
@@ -549,7 +551,7 @@
             if (!collidedMesh) {
                 this._previousPosition.copyFrom(this.position);
             } else {
-                this.setPosition(newPosition); 
+                this.setPosition(newPosition);
 
                 if (this.onCollide) {
                     this.onCollide(collidedMesh);

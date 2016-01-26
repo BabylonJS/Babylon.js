@@ -134,7 +134,7 @@ var BABYLON;
                 return;
             }
             var vertexShaderUrl;
-            if (vertex[0] === "." || vertex[0] === "/") {
+            if (vertex[0] === "." || vertex[0] === "/" || vertex.indexOf("http") > -1) {
                 vertexShaderUrl = vertex;
             }
             else {
@@ -160,7 +160,7 @@ var BABYLON;
                 return;
             }
             var fragmentShaderUrl;
-            if (fragment[0] === "." || fragment[0] === "/") {
+            if (fragment[0] === "." || fragment[0] === "/" || fragment.indexOf("http") > -1) {
                 fragmentShaderUrl = fragment;
             }
             else {
@@ -305,9 +305,9 @@ var BABYLON;
             return this;
         };
         Effect.prototype.setMatrix = function (uniformName, matrix) {
-            if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-                return this;
-            this._cacheMatrix(uniformName, matrix);
+            //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
+            //    return this;
+            // this._cacheMatrix(uniformName, matrix);
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
             return this;
         };

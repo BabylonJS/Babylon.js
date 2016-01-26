@@ -127,9 +127,11 @@ var BABYLON;
             serializationObject.instances.push(serializationInstance);
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(instance, serializationInstance);
+            serializationInstance.ranges = instance.serializeAnimationRanges();
         }
         // Animations
         BABYLON.Animation.AppendSerializedAnimations(mesh, serializationObject);
+        serializationObject.ranges = mesh.serializeAnimationRanges();
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
         return serializationObject;

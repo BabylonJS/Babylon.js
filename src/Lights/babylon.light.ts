@@ -73,7 +73,6 @@
                 return false;
             }
 
-
             if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
@@ -187,13 +186,15 @@
 
                     light.animations.push(Animation.Parse(parsedAnimation));
                 }
+                Node.ParseAnimationRanges(light, parsedLight, scene);
             }
 
             if (parsedLight.autoAnimate) {
                 scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
             }
-            
+
             return light;
         }
     }
 } 
+

@@ -78,6 +78,15 @@ module BABYLON {
             this.updateShaderUniforms();
         }
         
+        public get zoom(): number {
+            return this._zoom;
+        }
+
+        public set zoom(value: number) {
+            this._zoom = value;
+            this.updateShaderUniforms();
+        }
+        
         public get tile(): number {
             return this._tile;
         }

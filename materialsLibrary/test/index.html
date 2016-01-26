@@ -13,6 +13,8 @@
 	<script src="../dist/babylon.pbrMaterial.js"></script>
 	<script src="../dist/babylon.furMaterial.js"></script>
 	<script src="../dist/babylon.triPlanarMaterial.js"></script>
+	<script src="../dist/babylon.gradientMaterial.js"></script>
+	<script src="../dist/babylon.skyMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -55,6 +57,8 @@
 	<script src="add/addterrain.js"></script>
 	<script src="add/addfire.js"></script>
 	<script src="add/addtriplanar.js"></script>
+	<script src="add/addgradient.js"></script>
+	<script src="add/addsky.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -180,7 +184,9 @@
 				simple.diffuseTexture.vScale = 5;
 
 				var normal = prepareNormal();
-				
+
+				var gradient = prepareGradient();
+								
 				var fur = prepareFur();
 				
 				var water = prepareWater();
@@ -197,13 +203,18 @@
 				
 				var triPlanar = prepareTriPlanar();
 				
+				var sky = prepareSky();
+				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky']).onFinishChange(function () {
 					water.enableRenderTargets(false);
+					skybox.material = skyboxMaterial;
+					currentMesh.isVisible = true;
+					fur.resetFur();
 					
 					switch (options.material) {
 						case "simple":
@@ -230,10 +241,18 @@
 							currentMaterial = pbr;
 							break;
 						case "fur":
-							currentMaterial = fur;
+							currentMaterial = fur.material;
+							fur.configureFur(currentMesh, true);
 							break;
 						case "triPlanar":
 							currentMaterial = triPlanar;
+							break;
+						case "gradient":
+							currentMaterial = gradient;
+							break;
+						case "sky":
+							skybox.setEnabled(true);
+							skybox.material = sky;
 							break;
 						default:
 							currentMaterial = std;
@@ -272,6 +291,11 @@
 					currentMesh.material = currentMaterial;
 					
 					water.mesh = currentMesh;
+					
+					if (currentMaterial === fur.material) {
+						fur.resetFur();
+						fur.configureFur(currentMesh, currentMaterial === fur.material);
+					}
 				});
 
 				var f1 = gui.addFolder('lights');

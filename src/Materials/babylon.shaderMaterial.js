@@ -165,7 +165,7 @@ var BABYLON;
                 }
                 // Bones
                 if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                 }
                 // Texture
                 for (var name in this._textures) {

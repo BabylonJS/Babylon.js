@@ -20,6 +20,10 @@ var BABYLON;
         }
         DefaultLoadingScreen.prototype.displayLoadingUI = function () {
             var _this = this;
+            if (this._loadingDiv) {
+                // Do not add a loading screen if there is already one  
+                return;
+            }
             this._loadingDiv = document.createElement("div");
             this._loadingDiv.id = "babylonjsLoadingDiv";
             this._loadingDiv.style.opacity = "0";

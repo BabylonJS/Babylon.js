@@ -43,7 +43,6 @@
         public showSubMeshesBoundingBox = false;
         public onDispose = null;
         public isBlocker = false;
-        public skeleton: Skeleton;
         public renderingGroupId = 0;
         public material: Material;
         public receiveShadows = false;
@@ -96,13 +95,6 @@
         public _edgesRenderer: EdgesRenderer;
 
         // Cache
-        private _localScaling = Matrix.Zero();
-        private _localRotation = Matrix.Zero();
-        private _localTranslation = Matrix.Zero();
-        private _localBillboard = Matrix.Zero();
-        private _localPivotScaling = Matrix.Zero();
-        private _localPivotScalingRotation = Matrix.Zero();
-        private _localMeshReferalTransform: Matrix;
         private _localWorld = Matrix.Zero();
         public _worldMatrix = Matrix.Zero();
         private _rotateYByPI = Matrix.RotationY(Math.PI);
@@ -127,10 +119,39 @@
 
         private _isWorldMatrixFrozen = false;
 
+        public _unIndexed = false;
+
+        public _poseMatrix: Matrix;
+
         // Loading properties
         public _waitingActions: any;
         public _waitingFreezeWorldMatrix: boolean;
 
+        // Skeleton
+        private _skeleton: Skeleton;
+        public _bonesTransformMatrices: Float32Array;
+
+        public set skeleton(value: Skeleton) {
+            if (this._skeleton && this._skeleton.needInitialSkinMatrix) {
+                this._skeleton._unregisterMeshWithPoseMatrix(this);
+            }
+
+            if (value && value.needInitialSkinMatrix) {
+                value._registerMeshWithPoseMatrix(this);
+            }
+
+            this._skeleton = value;
+
+            if (!this._skeleton) {
+                this._bonesTransformMatrices = null;
+            }
+        }
+
+        public get skeleton(): Skeleton {
+            return this._skeleton;
+        }
+
+        // Constructor
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
@@ -138,6 +159,14 @@
         }
 
         // Methods
+        public updatePoseMatrix(matrix: Matrix) {
+            this._poseMatrix.copyFrom(matrix);
+        }
+
+        public getPoseMatrix(): Matrix {
+            return this._poseMatrix;
+        }
+
         public disableEdgesRendering(): void {
             if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
@@ -439,7 +468,9 @@
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
 
-                subMesh.updateBoundingInfo(matrix);
+                if (!subMesh.IsGlobal) {
+                    subMesh.updateBoundingInfo(matrix);
+                }
             }
         }
 
@@ -449,6 +480,7 @@
             }
 
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
+                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
 
@@ -460,14 +492,14 @@
             this._isDirty = false;
 
             // Scaling
-            Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, this._localScaling);
+            Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
 
             // Rotation
             if (this.rotationQuaternion) {
-                this.rotationQuaternion.toRotationMatrix(this._localRotation);
+                this.rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
             } else {
-                Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
+                Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, Tmp.Matrix[0]);
                 this._cache.rotation.copyFrom(this.rotation);
             }
 
@@ -480,15 +512,15 @@
                     var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
                     Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
-                        this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                        this.position.z + cameraGlobalPosition.z, Tmp.Matrix[2]);
                 }
             } else {
-                Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
+                Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, Tmp.Matrix[2]);
             }
 
             // Composing transformations
-            this._pivotMatrix.multiplyToRef(this._localScaling, this._localPivotScaling);
-            this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
+            this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
+            Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
 
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
@@ -497,7 +529,7 @@
 
                 if (this.parent && (<any>this.parent).position) {
                     localPosition.addInPlace((<any>this.parent).position);
-                    Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
+                    Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, Tmp.Matrix[2]);
                 }
 
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
@@ -509,29 +541,25 @@
                         zero.z = localPosition.z + 0.001;
                 }
 
-                Matrix.LookAtLHToRef(localPosition, zero, Vector3.Up(), this._localBillboard);
-                this._localBillboard.m[12] = this._localBillboard.m[13] = this._localBillboard.m[14] = 0;
+                Matrix.LookAtLHToRef(localPosition, zero, Vector3.Up(), Tmp.Matrix[3]);
+                Tmp.Matrix[3].m[12] = Tmp.Matrix[3].m[13] = Tmp.Matrix[3].m[14] = 0;
 
-                this._localBillboard.invert();
+                Tmp.Matrix[3].invert();
 
-                this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
-                this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
+                Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[3], this._localWorld);
+                this._rotateYByPI.multiplyToRef(this._localWorld, Tmp.Matrix[5]);
             }
 
             // Local world
-            this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
+            Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localWorld);
 
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
                 this._markSyncedWithParent();
 
                 if (this._meshToBoneReferal) {
-                    if (!this._localMeshReferalTransform) {
-                        this._localMeshReferalTransform = Matrix.Zero();
-                    }
-
-                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._localMeshReferalTransform);
-                    this._localMeshReferalTransform.multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
+                    Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
                 } else {
                     this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
                 }
@@ -548,6 +576,10 @@
             // Callbacks
             for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
                 this._onAfterWorldMatrixUpdate[callbackIndex](this);
+            }
+
+            if (!this._poseMatrix) {
+                this._poseMatrix = Matrix.Invert(this._worldMatrix);
             }
 
             return this._worldMatrix;
@@ -988,6 +1020,9 @@
 
         public dispose(doNotRecurse?: boolean): void {
             var index: number;
+
+            // Skeleton
+            this.skeleton = null;
 
             // Animations
             this.getScene().stopAnimation(this);

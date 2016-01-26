@@ -72,7 +72,8 @@
         private _pointerX: number;
         private _pointerY: number;
         private _meshUnderPointer: AbstractMesh;
-
+        private _startingPointerPosition = new Vector2(0, 0);
+        private _startingPointerTime = 0;
         // Mirror
         public _mirroredCameraPosition: Vector3;
 
@@ -509,30 +510,54 @@
 
                 this._updatePointerPosition(evt);
 
+                this._startingPointerPosition.x = this._pointerX;
+                this._startingPointerPosition.y = this._pointerY;
+                this._startingPointerTime = new Date().getTime();
+
                 var predicate = null;
 
                 // Meshes
                 if (!this.onPointerDown) {
                     predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPickTriggers;
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
                     };
                 }
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
-                        switch (evt.button) {
-                            case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                break;
-                            case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                break;
-                            case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                break;
+                        if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
+                            switch (evt.button) {
+                                case 0:
+                                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    break;
+                                case 1:
+                                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    break;
+                                case 2:
+                                    pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    break;
+                            }
+                            pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+
+                        if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
+                            var that = this;
+                            window.setTimeout(function () {
+                                var pickResult = that.pick(that._pointerX, that._pointerY,
+                                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
+                                    false, that.cameraToUseForPointers);
+
+                                if (pickResult.hit && pickResult.pickedMesh) {
+                                    if (pickResult.pickedMesh.actionManager) {
+                                        if (that._startingPointerTime !== 0 && ((new Date().getTime() - that._startingPointerTime) > ActionManager.LongPressDelay) && (Math.abs(that._startingPointerPosition.x - that._pointerX) < ActionManager.DragMovementThreshold && Math.abs(that._startingPointerPosition.y - that._pointerY) < ActionManager.DragMovementThreshold)) {
+                                            that._startingPointerTime = 0;
+                                            pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                        }
+                                    }
+                                }
+                            }, ActionManager.LongPressDelay);
+                        }
                     }
                 }
 
@@ -557,11 +582,12 @@
                                     pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
                                     break;
                             }
-                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                            pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
                         }
                     }
                 }
             };
+
             this._onPointerUp = (evt: PointerEvent) => {
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
@@ -573,7 +599,7 @@
 
                 if (!this.onPointerUp) {
                     predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnPickUpTrigger);
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger));
                     };
                 }
 
@@ -583,6 +609,10 @@
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+
+                        if (Math.abs(this._startingPointerPosition.x - this._pointerX) < ActionManager.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < ActionManager.DragMovementThreshold) {
+                            pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        }
                     }
                 }
 
@@ -590,6 +620,8 @@
                     this.onPointerUp(evt, pickResult);
                 }
 
+                this._startingPointerTime = 0;
+                
                 // Sprites
                 if (this.spriteManagers.length > 0) {
                     pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
@@ -673,7 +705,6 @@
                         return false;
                     }
                 }
-
             }
 
             return true;
@@ -813,6 +844,10 @@
             return null;
         }
 
+        public get Animatables(): Animatable[] {
+            return this._activeAnimatables;
+        }
+
         /**
          * Will stop the animation of the given target
          * @param target - the target 
@@ -827,11 +862,15 @@
         }
 
         private _animate(): void {
-            if (!this.animationsEnabled) {
+            if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
             }
 
             if (!this._animationStartDate) {
+                if (this._pendingData.length > 0) {
+                    return;
+                }
+
                 this._animationStartDate = Tools.Now;
             }
             // Getting time
@@ -1615,7 +1654,7 @@
 
             // Render targets
             var beforeRenderTargetDate = Tools.Now;
-            if (this.renderTargetsEnabled) {
+            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
@@ -1628,9 +1667,7 @@
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
                 this._renderId++;
-            }
-            if (this._renderTargets.length > 0) { // Restore back buffer
-                engine.restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
             this._renderTargetsDuration += Tools.Now - beforeRenderTargetDate;
 
@@ -1889,6 +1926,10 @@
                 var currentRenderId = this._renderId;
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     this._renderId = currentRenderId;
+                    if (cameraIndex > 0) {
+                        this._engine.clear(0, false, true);
+                    }
+
                     this._processSubCameras(this.activeCameras[cameraIndex]);
                 }
             } else {
@@ -2064,6 +2105,18 @@
 
             this._depthRenderer.dispose();
             this._depthRenderer = null;
+        }
+
+        public freezeMaterials(): void {
+            for (var i = 0; i < this.materials.length; i++) {
+                this.materials[i].freeze();
+            }
+        }
+
+        public unfreezeMaterials(): void {
+            for (var i = 0; i < this.materials.length; i++) {
+                this.materials[i].unfreeze();
+            }
         }
 
         public dispose(): void {
@@ -2504,3 +2557,4 @@
         }
     }
 }
+

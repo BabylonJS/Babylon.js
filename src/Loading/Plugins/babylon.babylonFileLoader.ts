@@ -151,12 +151,14 @@
                 }
             }
 
-            // freeze world matrix application
+            // freeze and compute world matrix application
             for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                 currentMesh = scene.meshes[index];
                 if (currentMesh._waitingFreezeWorldMatrix) {
                     currentMesh.freezeWorldMatrix();
                     currentMesh._waitingFreezeWorldMatrix = undefined;
+                } else {
+                    currentMesh.computeWorldMatrix(true);
                 }
             }
 
@@ -358,12 +360,13 @@
                 for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                     var parsedSound = parsedData.sounds[index];
                     if (Engine.audioEngine.canUseWebAudio) {
-                        if (!loadedSounds[parsedSound.name]) {
+                        if (!parsedSound.url) parsedSound.url = parsedSound.name;
+                        if (!loadedSounds[parsedSound.url]) {
                             loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
-                            loadedSounds[loadedSound.name] = loadedSound;
+                            loadedSounds[parsedSound.url] = loadedSound;
                         }
                         else {
-                            Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.name]);
+                            Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
                         }
                     } else {
                         var emptySound = new Sound(parsedSound.name, null, scene);
@@ -392,6 +395,8 @@
                 if (currentMesh._waitingFreezeWorldMatrix) {
                     currentMesh.freezeWorldMatrix();
                     currentMesh._waitingFreezeWorldMatrix = undefined;
+                } else {
+                    currentMesh.computeWorldMatrix(true);
                 }
             }
 

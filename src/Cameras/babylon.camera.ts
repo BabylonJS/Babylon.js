@@ -53,7 +53,7 @@
             result.hScreenSize = 0.149759993;
             result.vScreenSize = 0.0935999975;
             result.vScreenCenter = 0.0467999987,
-            result.eyeToScreenDistance = 0.0410000011;
+                result.eyeToScreenDistance = 0.0410000011;
             result.lensSeparationDistance = 0.0635000020;
             result.interpupillaryDistance = 0.0640000030;
             result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
@@ -253,15 +253,15 @@
 
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 check = this._cache.fov === this.fov
-                && this._cache.aspectRatio === engine.getAspectRatio(this);
+                    && this._cache.aspectRatio === engine.getAspectRatio(this);
             }
             else {
                 check = this._cache.orthoLeft === this.orthoLeft
-                && this._cache.orthoRight === this.orthoRight
-                && this._cache.orthoBottom === this.orthoBottom
-                && this._cache.orthoTop === this.orthoTop
-                && this._cache.renderWidth === engine.getRenderWidth()
-                && this._cache.renderHeight === engine.getRenderHeight();
+                    && this._cache.orthoRight === this.orthoRight
+                    && this._cache.orthoBottom === this.orthoBottom
+                    && this._cache.orthoTop === this.orthoTop
+                    && this._cache.renderWidth === engine.getRenderWidth()
+                    && this._cache.renderHeight === engine.getRenderHeight();
             }
 
             return check;
@@ -607,6 +607,7 @@
             
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
 
             // Layer mask
             serializationObject.layerMask = this.layerMask;
@@ -661,9 +662,12 @@
             } else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
                 camera = new VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
 
+            } else if (parsedCamera.type === "FreeCamera") {
+                camera = new BABYLON.FreeCamera(parsedCamera.name, position, scene);   
+                        
             } else {
-                // Free Camera is the default value
-                camera = new FreeCamera(parsedCamera.name, position, scene);
+                // Touch Camera is the default value
+                camera = new TouchCamera(parsedCamera.name, position, scene);
             }
 
             // apply 3d rig, when found
@@ -718,6 +722,7 @@
 
                     camera.animations.push(Animation.Parse(parsedAnimation));
                 }
+                Node.ParseAnimationRanges(camera, parsedCamera, scene);
             }
 
             if (parsedCamera.autoAnimate) {
@@ -735,4 +740,5 @@
         }
     }
 }
+
 

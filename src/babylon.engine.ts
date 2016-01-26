@@ -484,7 +484,7 @@
         }
 
         public static get Version(): string {
-            return "2.3.0-alpha";
+            return "2.3.0-beta";
         }
 
         // Updatable statics so stick with vars here
@@ -568,7 +568,7 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean }, adaptToDeviceRatio = false) {
+        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean }, adaptToDeviceRatio = true) {
             this._renderingCanvas = canvas;
 
             options = options || {};
@@ -1237,6 +1237,19 @@
             }
 
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
+        }
+
+        public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+            // Apply states
+            this.applyStates();
+            this._drawCalls++;
+
+            if (instancesCount) {
+                this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
+                return;
+            }
+
+            this._gl.drawArrays(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount);
         }
 
         // Shaders

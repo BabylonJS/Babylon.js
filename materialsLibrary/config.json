@@ -1,6 +1,15 @@
 {
   "materials": [
+
      {
+      "file": "materials/gradient/babylon.gradientMaterial.ts",
+      "shaderFiles": [
+        "materials/gradient/gradient.vertex.fx",
+        "materials/gradient/gradient.fragment.fx"
+      ],
+      "output": "babylon.gradientMaterial.js"
+    },
+    {
       "file": "materials/pbr/babylon.pbrMaterial.ts",
       "shaderFiles": [
         "materials/pbr/pbr.vertex.fx",
@@ -73,6 +82,14 @@
         "materials/triPlanar/triplanar.fragment.fx"
       ],
       "output": "babylon.triPlanarMaterial.js"
+    },
+    {
+      "file": "materials/sky/babylon.skyMaterial.ts",
+      "shaderFiles": [
+        "materials/sky/sky.vertex.fx",
+        "materials/sky/sky.fragment.fx"
+      ],
+      "output": "babylon.skyMaterial.js"
     }
   ],
   "build": {

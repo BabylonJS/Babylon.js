@@ -533,6 +533,7 @@ var BABYLON;
             serializationObject.inertia = this.inertia;
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
             // Layer mask
             serializationObject.layerMask = this.layerMask;
             return serializationObject;
@@ -584,9 +585,12 @@ var BABYLON;
             else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
                 camera = new BABYLON.VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
             }
-            else {
-                // Free Camera is the default value
+            else if (parsedCamera.type === "FreeCamera") {
                 camera = new BABYLON.FreeCamera(parsedCamera.name, position, scene);
+            }
+            else {
+                // Touch Camera is the default value
+                camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
             }
             // apply 3d rig, when found
             if (parsedCamera.cameraRigMode) {
@@ -632,6 +636,7 @@ var BABYLON;
                     var parsedAnimation = parsedCamera.animations[animationIndex];
                     camera.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
+                BABYLON.Node.ParseAnimationRanges(camera, parsedCamera, scene);
             }
             if (parsedCamera.autoAnimate) {
                 scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);

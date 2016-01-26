@@ -12,7 +12,6 @@ module BABYLON {
             super(name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps);
             this._fireColors = FireProceduralTexture.RedFireColors;
             this.updateShaderUniforms();
-            this.refreshRate = 1;
         }
 
         public updateShaderUniforms() {

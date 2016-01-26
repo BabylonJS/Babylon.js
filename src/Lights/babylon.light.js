@@ -130,6 +130,7 @@ var BABYLON;
                     var parsedAnimation = parsedLight.animations[animationIndex];
                     light.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
+                BABYLON.Node.ParseAnimationRanges(light, parsedLight, scene);
             }
             if (parsedLight.autoAnimate) {
                 scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);

@@ -141,7 +141,7 @@ var BABYLON;
             this.useEmissiveAsIllumination = false;
             this.linkEmissiveWithDiffuse = false;
             this.useReflectionFresnelFromSpecular = false;
-            this.useSpecularOverAlpha = true;
+            this.useSpecularOverAlpha = false;
             this.disableLighting = false;
             this.roughness = 0;
             this.useLightmapAsShadowmap = false;
@@ -322,7 +322,7 @@ var BABYLON;
             }
         };
         StandardMaterial.prototype.isReady = function (mesh, useInstances) {
-            if (this.checkReadyOnlyOnce) {
+            if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
                 }
@@ -680,12 +680,12 @@ var BABYLON;
             var scene = this.getScene();
             // Matrices        
             this.bindOnlyWorldMatrix(world);
-            this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
             if (scene.getCachedMaterial() !== this) {
+                this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 if (StandardMaterial.FresnelEnabled) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
@@ -770,24 +770,26 @@ var BABYLON;
                 }
                 this._effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
-            // Diffuse
-            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-            // Lights
-            if (scene.lightsEnabled && !this.disableLighting) {
-                StandardMaterial.BindLights(scene, mesh, this._effect, this._defines);
-            }
-            // View
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
-                this._effect.setMatrix("view", scene.getViewMatrix());
-            }
-            // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
-            // Log. depth
-            if (this._defines.LOGARITHMICDEPTH) {
-                this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+            if (scene.getCachedMaterial() !== this || !this.isFrozen) {
+                // Diffuse
+                this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+                // Lights
+                if (scene.lightsEnabled && !this.disableLighting) {
+                    StandardMaterial.BindLights(scene, mesh, this._effect, this._defines);
+                }
+                // View
+                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this.reflectionTexture) {
+                    this._effect.setMatrix("view", scene.getViewMatrix());
+                }
+                // Fog
+                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+                    this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+                    this._effect.setColor3("vFogColor", scene.fogColor);
+                }
+                // Log. depth
+                if (this._defines.LOGARITHMICDEPTH) {
+                    this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+                }
             }
             _super.prototype.bind.call(this, world, mesh);
         };

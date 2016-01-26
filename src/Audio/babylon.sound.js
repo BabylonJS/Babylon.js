@@ -397,8 +397,9 @@ var BABYLON;
         Sound.prototype.setVolume = function (newVolume, time) {
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 if (time) {
-                    this._soundGain.gain.linearRampToValueAtTime(this._volume, BABYLON.Engine.audioEngine.audioContext.currentTime);
-                    this._soundGain.gain.linearRampToValueAtTime(newVolume, time);
+                    this._soundGain.gain.cancelScheduledValues(BABYLON.Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, BABYLON.Engine.audioEngine.audioContext.currentTime);
+                    this._soundGain.gain.linearRampToValueAtTime(newVolume, BABYLON.Engine.audioEngine.audioContext.currentTime + time);
                 }
                 else {
                     this._soundGain.gain.value = newVolume;
@@ -484,7 +485,13 @@ var BABYLON;
         };
         Sound.Parse = function (parsedSound, scene, rootUrl, sourceSound) {
             var soundName = parsedSound.name;
-            var soundUrl = rootUrl + soundName;
+            var soundUrl;
+            if (parsedSound.url) {
+                soundUrl = rootUrl + parsedSound.url;
+            }
+            else {
+                soundUrl = rootUrl + soundName;
+            }
             var options = {
                 autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
                 spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,

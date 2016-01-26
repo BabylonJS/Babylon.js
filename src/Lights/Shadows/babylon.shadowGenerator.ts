@@ -184,7 +184,7 @@
                     return;
                 }
 
-                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
+                var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
 
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);
@@ -207,7 +207,7 @@
 
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
                     if (this.forceBackFacesOnly) {

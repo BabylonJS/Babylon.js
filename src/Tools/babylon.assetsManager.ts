@@ -173,7 +173,7 @@
                 onError();
             };
 
-            this.texture = new Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onError);
+            this.texture = new Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
         }
     }
 

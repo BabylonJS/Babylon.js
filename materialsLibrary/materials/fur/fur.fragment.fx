@@ -105,6 +105,14 @@ uniform sampler2D diffuseSampler;
 uniform vec2 vDiffuseInfos;
 #endif
 
+// Fur uniforms
+#ifdef HIGHLEVEL
+uniform float furOffset;
+uniform sampler2D furTexture;
+
+varying vec2 vFurUV;
+#endif
+
 // Shadows
 #ifdef SHADOWS
 
@@ -384,8 +392,11 @@ void main(void) {
 	float alpha = vDiffuseColor.a;
 
 #ifdef DIFFUSE
+	#ifdef HIGHLEVEL
+	baseColor = vec4(0.0, 0.0, 0.0, 0.0);
+	#else
 	baseColor = texture2D(diffuseSampler, vDiffuseUV);
-
+	#endif
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
 		discard;
@@ -404,6 +415,21 @@ void main(void) {
 #else
 	vec3 normalW = vec3(1.0, 1.0, 1.0);
 #endif
+
+	#ifdef HIGHLEVEL
+	// Fur
+	vec4 furTextureColor = texture2D(furTexture, vec2(vFurUV.x, vFurUV.y));
+	
+	#ifdef DIFFUSE
+	baseColor = texture2D(diffuseSampler, vec2(vFurUV.x * 0.2, vFurUV.y * 0.2)) * 2.0;
+	#endif
+	
+	if (furTextureColor.a <= 0.0 || furTextureColor.g < furOffset) {
+		discard;
+	}
+	
+	baseColor = vec4(furColor.xyz * baseColor.xyz, 1.1 - furOffset);
+	#endif
 
 	// Lighting
 	vec3 diffuseBase = vec3(0., 0., 0.);
@@ -552,10 +578,13 @@ void main(void) {
 	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor, 0.0, 1.0) * baseColor.rgb;
 
 	// Composition
-	//float r = Rand(vPositionW) * 0.5;
+	#ifdef HIGHLEVEL
+	vec4 color = vec4(finalDiffuse, alpha);
+	#else
 	float r = vfur_length * 0.5;
 	vec4 color = vec4(finalDiffuse * (0.5 + r), alpha);
-
+	#endif
+	
 #ifdef FOG
 	float fog = CalcFogFactor();
 	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;

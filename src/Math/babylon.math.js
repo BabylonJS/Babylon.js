@@ -847,7 +847,7 @@ var BABYLON;
             return center;
         };
         /**
-         * Given three orthogonal left-handed oriented Vector3 axis in space (target system),
+         * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
          * to something in order to rotate it from its local system to the given target system.
          */
@@ -860,8 +860,8 @@ var BABYLON;
          * The same than RotationFromAxis but updates the passed ref Vector3 parameter.
          */
         Vector3.RotationFromAxisToRef = function (axis1, axis2, axis3, ref) {
-            var u = Vector3.Normalize(axis1);
-            var w = Vector3.Normalize(axis3);
+            var u = axis1.normalize();
+            var w = axis3.normalize();
             // world axis
             var X = Axis.X;
             var Y = Axis.Y;
@@ -875,13 +875,12 @@ var BABYLON;
             var t = 0.0;
             var sign = -1.0;
             var nbRevert = 0;
-            var cross;
+            var cross = Tmp.Vector3[0];
             var dot = 0.0;
             // step 1  : rotation around w
             // Rv3(u) = u1, and u1 belongs to plane xOz
             // Rv3(w) = w1 = w invariant
-            var u1;
-            var v1;
+            var u1 = Tmp.Vector3[1];
             if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 z = 1.0;
             }
@@ -893,11 +892,11 @@ var BABYLON;
                 x = -t * Math.sqrt(1 / (1 + t * t));
                 z = Math.sqrt(1 / (1 + t * t));
             }
-            u1 = new Vector3(x, y, z);
+            u1.x = x;
+            u1.y = y;
+            u1.z = z;
             u1.normalize();
-            v1 = Vector3.Cross(w, u1); // v1 image of v through rotation around w
-            v1.normalize();
-            cross = Vector3.Cross(u, u1); // returns same direction as w (=local z) if positive angle : cross(source, image)
+            Vector3.CrossToRef(u, u1, cross); // returns same direction as w (=local z) if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(w, cross) < 0) {
                 sign = 1.0;
@@ -908,18 +907,17 @@ var BABYLON;
             if (Vector3.Dot(u1, X) < 0) {
                 roll = Math.PI + roll;
                 u1 = u1.scaleInPlace(-1);
-                v1 = v1.scaleInPlace(-1);
                 nbRevert++;
             }
             // step 2 : rotate around u1
             // Ru1(w1) = Ru1(w) = w2, and w2 belongs to plane xOz
             // u1 is yet in xOz and invariant by Ru1, so after this step u1 and w2 will be in xOz
-            var w2;
-            var v2;
+            var w2 = Tmp.Vector3[2];
+            var v2 = Tmp.Vector3[3];
             x = 0.0;
             y = 0.0;
             z = 0.0;
-            sign = -1;
+            sign = -1.0;
             if (BABYLON.Tools.WithinEpsilon(w.z, 0, BABYLON.Engine.Epsilon)) {
                 x = 1.0;
             }
@@ -928,11 +926,13 @@ var BABYLON;
                 x = -t * Math.sqrt(1 / (1 + t * t));
                 z = Math.sqrt(1 / (1 + t * t));
             }
-            w2 = new Vector3(x, y, z);
+            w2.x = x;
+            w2.y = y;
+            w2.z = z;
             w2.normalize();
-            v2 = Vector3.Cross(w2, u1); // v2 image of v1 through rotation around u1
+            Vector3.CrossToRef(w2, u1, v2); // v2 image of v1 through rotation around u1
             v2.normalize();
-            cross = Vector3.Cross(w, w2); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
+            Vector3.CrossToRef(w, w2, cross); // returns same direction as u1 (=local x) if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(u1, cross) < 0) {
                 sign = 1.0;
@@ -942,14 +942,12 @@ var BABYLON;
             pitch = Math.acos(dot) * sign;
             if (Vector3.Dot(v2, Y) < 0) {
                 pitch = Math.PI + pitch;
-                v2 = v2.scaleInPlace(-1);
-                w2 = w2.scaleInPlace(-1);
                 nbRevert++;
             }
             // step 3 : rotate around v2
             // Rv2(u1) = X, same as Rv2(w2) = Z, with X=(1,0,0) and Z=(0,0,1)
-            sign = -1;
-            cross = Vector3.Cross(X, u1); // returns same direction as Y if positive angle : cross(source, image)
+            sign = -1.0;
+            Vector3.CrossToRef(X, u1, cross); // returns same direction as Y if positive angle : cross(source, image)
             cross.normalize();
             if (Vector3.Dot(cross, Y) < 0) {
                 sign = 1.0;
@@ -1298,45 +1296,47 @@ var BABYLON;
             this.w *= length;
             return this;
         };
-        Quaternion.prototype.toEulerAngles = function () {
+        Quaternion.prototype.toEulerAngles = function (order) {
+            if (order === void 0) { order = "YZX"; }
             var result = Vector3.Zero();
-            this.toEulerAnglesToRef(result);
+            this.toEulerAnglesToRef(result, order);
             return result;
         };
-        Quaternion.prototype.toEulerAnglesToRef = function (result) {
-            //result is an EulerAngles in the in the z-x-z convention
-            var qx = this.x;
-            var qy = this.y;
-            var qz = this.z;
-            var qw = this.w;
-            var qxy = qx * qy;
-            var qxz = qx * qz;
-            var qwy = qw * qy;
-            var qwz = qw * qz;
-            var qwx = qw * qx;
-            var qyz = qy * qz;
-            var sqx = qx * qx;
-            var sqy = qy * qy;
-            var determinant = sqx + sqy;
-            if (determinant !== 0.000 && determinant !== 1.000) {
-                result.x = Math.atan2(qxz + qwy, qwx - qyz);
-                result.y = Math.acos(1 - 2 * determinant);
-                result.z = Math.atan2(qxz - qwy, qwx + qyz);
+        Quaternion.prototype.toEulerAnglesToRef = function (result, order) {
+            if (order === void 0) { order = "YZX"; }
+            var heading, attitude, bank;
+            var x = this.x, y = this.y, z = this.z, w = this.w;
+            switch (order) {
+                case "YZX":
+                    var test = x * y + z * w;
+                    if (test > 0.499) {
+                        heading = 2 * Math.atan2(x, w);
+                        attitude = Math.PI / 2;
+                        bank = 0;
+                    }
+                    if (test < -0.499) {
+                        heading = -2 * Math.atan2(x, w);
+                        attitude = -Math.PI / 2;
+                        bank = 0;
+                    }
+                    if (isNaN(heading)) {
+                        var sqx = x * x;
+                        var sqy = y * y;
+                        var sqz = z * z;
+                        heading = Math.atan2(2 * y * w - 2 * x * z, 1 - 2 * sqy - 2 * sqz); // Heading
+                        attitude = Math.asin(2 * test); // attitude
+                        bank = Math.atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz); // bank
+                    }
+                    break;
+                default:
+                    throw new Error("Euler order " + order + " not supported yet.");
             }
-            else {
-                if (determinant === 0.0) {
-                    result.x = 0.0;
-                    result.y = 0.0;
-                    result.z = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x+z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                }
-                else {
-                    result.x = Math.atan2(qxy - qwz, 0.5 - sqy - qz * qz); //actually, degeneracy gives us choice with x-z=Math.atan2(qxy-qwz,0.5-sqy-qz*qz)
-                    result.y = Math.PI;
-                    result.z = 0.0;
-                }
-            }
+            result.y = heading;
+            result.z = attitude;
+            result.x = bank;
             return this;
         };
+        ;
         Quaternion.prototype.toRotationMatrix = function (result) {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
@@ -1963,7 +1963,7 @@ var BABYLON;
             // Z axis
             target.subtractToRef(eye, this._zAxis);
             this._zAxis.normalize();
-            // X axis            
+            // X axis
             Vector3.CrossToRef(up, this._zAxis, this._xAxis);
             if (this._xAxis.lengthSquared() === 0) {
                 this._xAxis.x = 1.0;
@@ -2945,4 +2945,23 @@ var BABYLON;
         return PositionNormalTextureVertex;
     })();
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
+    // Temporary pre-allocated objects for engine internal use
+    // usage in any internal function :
+    // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
+    // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
+    var Tmp = (function () {
+        function Tmp() {
+        }
+        Tmp.Vector2 = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()]; // 3 temp Vector2 at once should be enough
+        Tmp.Vector3 = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
+            Vector3.Zero(), Vector3.Zero(), Vector3.Zero()]; // 6 temp Vector3 at once should be enough
+        Tmp.Vector4 = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()]; // 3 temp Vector4 at once should be enough
+        Tmp.Quaternion = [new Quaternion(0, 0, 0, 0)]; // 1 temp Quaternion at once should be enough
+        Tmp.Matrix = [Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero(),
+            Matrix.Zero(), Matrix.Zero()]; // 6 temp Matrices at once should be enough
+        return Tmp;
+    })();
+    BABYLON.Tmp = Tmp;
 })(BABYLON || (BABYLON = {}));

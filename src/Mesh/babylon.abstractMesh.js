@@ -7,6 +7,7 @@ var BABYLON;
 (function (BABYLON) {
     var AbstractMesh = (function (_super) {
         __extends(AbstractMesh, _super);
+        // Constructor
         function AbstractMesh(name, scene) {
             var _this = this;
             _super.call(this, name, scene);
@@ -58,12 +59,6 @@ var BABYLON;
             this.edgesWidth = 1;
             this.edgesColor = new BABYLON.Color4(1, 0, 0, 1);
             // Cache
-            this._localScaling = BABYLON.Matrix.Zero();
-            this._localRotation = BABYLON.Matrix.Zero();
-            this._localTranslation = BABYLON.Matrix.Zero();
-            this._localBillboard = BABYLON.Matrix.Zero();
-            this._localPivotScaling = BABYLON.Matrix.Zero();
-            this._localPivotScalingRotation = BABYLON.Matrix.Zero();
             this._localWorld = BABYLON.Matrix.Zero();
             this._worldMatrix = BABYLON.Matrix.Zero();
             this._rotateYByPI = BABYLON.Matrix.RotationY(Math.PI);
@@ -77,6 +72,7 @@ var BABYLON;
             this._intersectionsInProgress = new Array();
             this._onAfterWorldMatrixUpdate = new Array();
             this._isWorldMatrixFrozen = false;
+            this._unIndexed = false;
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
                 if (collidedMesh === void 0) { collidedMesh = null; }
                 //TODO move this to the collision coordinator!
@@ -130,7 +126,32 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AbstractMesh.prototype, "skeleton", {
+            get: function () {
+                return this._skeleton;
+            },
+            set: function (value) {
+                if (this._skeleton && this._skeleton.needInitialSkinMatrix) {
+                    this._skeleton._unregisterMeshWithPoseMatrix(this);
+                }
+                if (value && value.needInitialSkinMatrix) {
+                    value._registerMeshWithPoseMatrix(this);
+                }
+                this._skeleton = value;
+                if (!this._skeleton) {
+                    this._bonesTransformMatrices = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
+        AbstractMesh.prototype.updatePoseMatrix = function (matrix) {
+            this._poseMatrix.copyFrom(matrix);
+        };
+        AbstractMesh.prototype.getPoseMatrix = function () {
+            return this._poseMatrix;
+        };
         AbstractMesh.prototype.disableEdgesRendering = function () {
             if (this._edgesRenderer !== undefined) {
                 this._edgesRenderer.dispose();
@@ -403,7 +424,9 @@ var BABYLON;
             }
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
-                subMesh.updateBoundingInfo(matrix);
+                if (!subMesh.IsGlobal) {
+                    subMesh.updateBoundingInfo(matrix);
+                }
             }
         };
         AbstractMesh.prototype.computeWorldMatrix = function (force) {
@@ -411,6 +434,7 @@ var BABYLON;
                 return this._worldMatrix;
             }
             if (!force && (this._currentRenderId === this.getScene().getRenderId() || this.isSynchronized(true))) {
+                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
             this._cache.position.copyFrom(this.position);
@@ -420,14 +444,14 @@ var BABYLON;
             this._currentRenderId = this.getScene().getRenderId();
             this._isDirty = false;
             // Scaling
-            BABYLON.Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, this._localScaling);
+            BABYLON.Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, BABYLON.Tmp.Matrix[1]);
             // Rotation
             if (this.rotationQuaternion) {
-                this.rotationQuaternion.toRotationMatrix(this._localRotation);
+                this.rotationQuaternion.toRotationMatrix(BABYLON.Tmp.Matrix[0]);
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
             }
             else {
-                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._localRotation);
+                BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, BABYLON.Tmp.Matrix[0]);
                 this._cache.rotation.copyFrom(this.rotation);
             }
             // Translation
@@ -436,22 +460,22 @@ var BABYLON;
                 if (camera) {
                     var cameraWorldMatrix = camera.getWorldMatrix();
                     var cameraGlobalPosition = new BABYLON.Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
-                    BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, this._localTranslation);
+                    BABYLON.Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y, this.position.z + cameraGlobalPosition.z, BABYLON.Tmp.Matrix[2]);
                 }
             }
             else {
-                BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._localTranslation);
+                BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, BABYLON.Tmp.Matrix[2]);
             }
             // Composing transformations
-            this._pivotMatrix.multiplyToRef(this._localScaling, this._localPivotScaling);
-            this._localPivotScaling.multiplyToRef(this._localRotation, this._localPivotScalingRotation);
+            this._pivotMatrix.multiplyToRef(BABYLON.Tmp.Matrix[1], BABYLON.Tmp.Matrix[4]);
+            BABYLON.Tmp.Matrix[4].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
                 var localPosition = this.position.clone();
                 var zero = this.getScene().activeCamera.globalPosition.clone();
                 if (this.parent && this.parent.position) {
                     localPosition.addInPlace(this.parent.position);
-                    BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, this._localTranslation);
+                    BABYLON.Matrix.TranslationToRef(localPosition.x, localPosition.y, localPosition.z, BABYLON.Tmp.Matrix[2]);
                 }
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
@@ -461,23 +485,20 @@ var BABYLON;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Z)
                         zero.z = localPosition.z + 0.001;
                 }
-                BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), this._localBillboard);
-                this._localBillboard.m[12] = this._localBillboard.m[13] = this._localBillboard.m[14] = 0;
-                this._localBillboard.invert();
-                this._localPivotScalingRotation.multiplyToRef(this._localBillboard, this._localWorld);
-                this._rotateYByPI.multiplyToRef(this._localWorld, this._localPivotScalingRotation);
+                BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), BABYLON.Tmp.Matrix[3]);
+                BABYLON.Tmp.Matrix[3].m[12] = BABYLON.Tmp.Matrix[3].m[13] = BABYLON.Tmp.Matrix[3].m[14] = 0;
+                BABYLON.Tmp.Matrix[3].invert();
+                BABYLON.Tmp.Matrix[5].multiplyToRef(BABYLON.Tmp.Matrix[3], this._localWorld);
+                this._rotateYByPI.multiplyToRef(this._localWorld, BABYLON.Tmp.Matrix[5]);
             }
             // Local world
-            this._localPivotScalingRotation.multiplyToRef(this._localTranslation, this._localWorld);
+            BABYLON.Tmp.Matrix[5].multiplyToRef(BABYLON.Tmp.Matrix[2], this._localWorld);
             // Parent
             if (this.parent && this.parent.getWorldMatrix && this.billboardMode === AbstractMesh.BILLBOARDMODE_NONE) {
                 this._markSyncedWithParent();
                 if (this._meshToBoneReferal) {
-                    if (!this._localMeshReferalTransform) {
-                        this._localMeshReferalTransform = BABYLON.Matrix.Zero();
-                    }
-                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._localMeshReferalTransform);
-                    this._localMeshReferalTransform.multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                    this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                    BABYLON.Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
                 }
                 else {
                     this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
@@ -493,6 +514,9 @@ var BABYLON;
             // Callbacks
             for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
                 this._onAfterWorldMatrixUpdate[callbackIndex](this);
+            }
+            if (!this._poseMatrix) {
+                this._poseMatrix = BABYLON.Matrix.Invert(this._worldMatrix);
             }
             return this._worldMatrix;
         };
@@ -832,6 +856,8 @@ var BABYLON;
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
             var index;
+            // Skeleton
+            this.skeleton = null;
             // Animations
             this.getScene().stopAnimation(this);
             // Physics

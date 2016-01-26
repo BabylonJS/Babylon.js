@@ -3,6 +3,8 @@ var BABYLON;
     var Layer = (function () {
         function Layer(name, imgUrl, scene, isBackground, color) {
             this.name = name;
+            this.scale = new BABYLON.Vector2(1, 1);
+            this.offset = new BABYLON.Vector2(0, 0);
             this.alphaBlendingMode = BABYLON.Engine.ALPHA_COMBINE;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
@@ -28,7 +30,7 @@ var BABYLON;
             indices.push(3);
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
             // Effects
-            this._effect = this._scene.getEngine().createEffect("layer", ["position"], ["textureMatrix", "color"], ["textureSampler"], "");
+            this._effect = this._scene.getEngine().createEffect("layer", ["position"], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], "");
         }
         Layer.prototype.render = function () {
             // Check
@@ -43,6 +45,9 @@ var BABYLON;
             this._effect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
             // Color
             this._effect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
+            // Scale / offset
+            this._effect.setVector2("offset", this.offset);
+            this._effect.setVector2("scale", this.scale);
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
             // Draw order

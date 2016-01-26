@@ -142,12 +142,15 @@ var BABYLON;
                         currentMesh._waitingParentId = undefined;
                     }
                 }
-                // freeze world matrix application
+                // freeze and compute world matrix application
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingFreezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
                         currentMesh._waitingFreezeWorldMatrix = undefined;
+                    }
+                    else {
+                        currentMesh.computeWorldMatrix(true);
                     }
                 }
                 // Particles
@@ -327,12 +330,14 @@ var BABYLON;
                     for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
                         var parsedSound = parsedData.sounds[index];
                         if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            if (!loadedSounds[parsedSound.name]) {
+                            if (!parsedSound.url)
+                                parsedSound.url = parsedSound.name;
+                            if (!loadedSounds[parsedSound.url]) {
                                 loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
-                                loadedSounds[loadedSound.name] = loadedSound;
+                                loadedSounds[parsedSound.url] = loadedSound;
                             }
                             else {
-                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.name]);
+                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
                             }
                         }
                         else {
@@ -359,6 +364,9 @@ var BABYLON;
                     if (currentMesh._waitingFreezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
                         currentMesh._waitingFreezeWorldMatrix = undefined;
+                    }
+                    else {
+                        currentMesh.computeWorldMatrix(true);
                     }
                 }
                 // Particles Systems
