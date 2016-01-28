@@ -4,10 +4,15 @@
         public coordinatesMode = Texture.CUBIC_MODE;
 
         private _noMipmap: boolean;
+        private _files: string[];
         private _extensions: string[];
         private _textureMatrix: Matrix;
 
-        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean) {
+        public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
+            return new CubeTexture("", scene, null, noMipmap, files);
+        }
+
+        constructor(rootUrl: string, scene: Scene, extensions?: string[], noMipmap?: boolean, files?: string[]) {
             super(scene);
 
             this.name = rootUrl;
@@ -15,21 +20,32 @@
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
 
-            if (!rootUrl) {
+            if (!rootUrl && !files) {
                 return;
             }
 
             this._texture = this._getFromCache(rootUrl, noMipmap);
 
-            if (!extensions) {
-                extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
+            if (!files) {
+
+                if (!extensions) {
+                    extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
+                }
+
+                files = [];
+
+                for (var index = 0; index < extensions.length; index++) {
+                    files.push(rootUrl + extensions[index]);
+                }
+
+                this._extensions = extensions;
             }
 
-            this._extensions = extensions;
+            this._files = files;
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, extensions, noMipmap);
+                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap);
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
                 }
@@ -41,7 +57,7 @@
         }
 
         public clone(): CubeTexture {
-            var newTexture = new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap);
+            var newTexture = new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap, this._files);
 
             // Base texture
             newTexture.level = this.level;

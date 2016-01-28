@@ -35,4 +35,3 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.ColorCorrectionPostProcess = ColorCorrectionPostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.colorCorrectionPostProcess.js.map

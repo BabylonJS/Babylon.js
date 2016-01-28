@@ -70,4 +70,3 @@ var BABYLON;
     })();
     BABYLON.PhysicsEngine = PhysicsEngine;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.physicsEngine.js.map

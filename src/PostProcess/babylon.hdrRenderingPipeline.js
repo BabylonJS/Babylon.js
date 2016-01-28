@@ -376,4 +376,3 @@ var BABYLON;
     })(BABYLON.PostProcessRenderPipeline);
     BABYLON.HDRRenderingPipeline = HDRRenderingPipeline;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.hdrRenderingPipeline.js.map

@@ -415,7 +415,7 @@ var BABYLON;
         };
         AbstractMesh.prototype._updateBoundingInfo = function () {
             this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this.absolutePosition, this.absolutePosition);
-            this._boundingInfo._update(this.worldMatrixFromCache);
+            this._boundingInfo.update(this.worldMatrixFromCache);
             this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         };
         AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
@@ -922,4 +922,3 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.abstractMesh.js.map

@@ -78,7 +78,7 @@ var BABYLON;
             if (!this.getBoundingInfo()) {
                 this.refreshBoundingInfo();
             }
-            this.getBoundingInfo()._update(world);
+            this.getBoundingInfo().update(world);
         };
         SubMesh.prototype.isInFrustum = function (frustumPlanes) {
             return this.getBoundingInfo().isInFrustum(frustumPlanes);
@@ -160,4 +160,3 @@ var BABYLON;
     })();
     BABYLON.SubMesh = SubMesh;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.subMesh.js.map
