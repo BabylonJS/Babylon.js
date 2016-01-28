@@ -358,13 +358,13 @@
     }
 
     var cascadeLoad = (rootUrl: string, scene,
-        onfinish: (images: HTMLImageElement[]) => void, extensions: string[]) => {
+        onfinish: (images: HTMLImageElement[]) => void, files: string[]) => {
 
         var loadedImages: any = [];
         loadedImages._internalCount = 0;
 
         for (var index = 0; index < 6; index++) {
-            partialLoad(rootUrl + extensions[index], index, loadedImages, scene, onfinish);
+            partialLoad(files[index], index, loadedImages, scene, onfinish);
         }
     };
 
@@ -2074,7 +2074,7 @@
             return texture;
         }
 
-        public createCubeTexture(rootUrl: string, scene: Scene, extensions: string[], noMipmap?: boolean): WebGLTexture {
+        public createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean): WebGLTexture {
             var gl = this._gl;
 
             var texture = gl.createTexture();
@@ -2151,7 +2151,7 @@
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
-                }, extensions);
+                }, files);
             }
 
             return texture;

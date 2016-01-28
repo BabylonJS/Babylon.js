@@ -7,24 +7,31 @@ var BABYLON;
 (function (BABYLON) {
     var CubeTexture = (function (_super) {
         __extends(CubeTexture, _super);
-        function CubeTexture(rootUrl, scene, extensions, noMipmap) {
+        function CubeTexture(rootUrl, scene, extensions, noMipmap, files) {
             _super.call(this, scene);
             this.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
             this.name = rootUrl;
             this.url = rootUrl;
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
-            if (!rootUrl) {
+            if (!rootUrl && !files) {
                 return;
             }
             this._texture = this._getFromCache(rootUrl, noMipmap);
-            if (!extensions) {
-                extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
+            if (!files) {
+                if (!extensions) {
+                    extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
+                }
+                files = [];
+                for (var index = 0; index < extensions.length; index++) {
+                    files.push(rootUrl + extensions[index]);
+                }
+                this._extensions = extensions;
             }
-            this._extensions = extensions;
+            this._files = files;
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
-                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, extensions, noMipmap);
+                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap);
                 }
                 else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
@@ -33,8 +40,11 @@ var BABYLON;
             this.isCube = true;
             this._textureMatrix = BABYLON.Matrix.Identity();
         }
+        CubeTexture.CreateFromImages = function (files, scene, noMipmap) {
+            return new CubeTexture("", scene, null, noMipmap, files);
+        };
         CubeTexture.prototype.clone = function () {
-            var newTexture = new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap);
+            var newTexture = new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap, this._files);
             // Base texture
             newTexture.level = this.level;
             newTexture.wrapU = this.wrapU;
@@ -84,4 +94,3 @@ var BABYLON;
     })(BABYLON.BaseTexture);
     BABYLON.CubeTexture = CubeTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.cubeTexture.js.map

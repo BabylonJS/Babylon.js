@@ -34,4 +34,3 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.RefractionPostProcess = RefractionPostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.refractionPostProcess.js.map

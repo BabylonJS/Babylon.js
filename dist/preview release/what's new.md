@@ -6,7 +6,7 @@
       - Fire material: http://doc.babylonjs.com/extensions/fire ([julien-moreau](https://github.com/julien-moreau))
       - Normal material: http://doc.babylonjs.com/extensions/normal ([temechon](https://github.com/temechon))
       - Lava Material: http://doc.babylonjs.com/extensions/lava ([temechon](https://github.com/temechon))
-      - PBR Material: http://doc.babylonjs.com/extensions/pbr ([deltakosh](https://github.com/deltakosh))
+      - PBR Material: http://doc.babylonjs.com/extensions/pbr ([deltakosh](https://github.com/deltakosh))    
     - New cache mechanism for StandardMaterial ([deltakosh](https://github.com/deltakosh))
     - New Solid Particle System ([jerome](https://github.com/jbousquie))
     - New `StandardMaterial.lightmapTexture` which can be controlled with `StandardMaterial.useLightmapAsShadowMap` ([deltakosh](https://github.com/deltakosh))
@@ -22,6 +22,7 @@
       - Expanded AnimationRanges for Nodes (Mesh, Lights, &amp; Cameras) ([Palmer-JC](https://github.com/Palmer-JC))
       - Support for added to Blender Exporter ([Palmer-JC](https://github.com/Palmer-JC))
   - **Updates**
+    - New `CubeTexture.CreateFromImages()` ([deltakosh](https://github.com/deltakosh))
     - Bounding info can be locked and updated (`bb.isLocked` and `bb.update()`) ([deltakosh](https://github.com/deltakosh))
     - 2D layers now have a scale and offset properties ([deltakosh](https://github.com/deltakosh))
     - TouchCamera can now fallback to regular mouse/keyboard controls ([deltakosh](https://github.com/deltakosh))

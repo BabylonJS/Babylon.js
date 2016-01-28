@@ -99,4 +99,3 @@ var BABYLON;
     })();
     BABYLON.SoundTrack = SoundTrack;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.soundtrack.js.map

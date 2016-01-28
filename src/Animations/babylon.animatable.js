@@ -112,4 +112,3 @@ var BABYLON;
     })();
     BABYLON.Animatable = Animatable;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.animatable.js.map

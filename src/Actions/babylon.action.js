@@ -70,4 +70,3 @@ var BABYLON;
     })();
     BABYLON.Action = Action;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.action.js.map

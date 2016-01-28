@@ -247,4 +247,3 @@ var BABYLON;
     })(EasingFunction);
     BABYLON.BezierCurveEase = BezierCurveEase;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.easing.js.map

@@ -88,4 +88,3 @@ var BABYLON;
     })();
     BABYLON.Tags = Tags;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.tags.js.map

@@ -267,4 +267,3 @@ var BABYLON;
     })();
     BABYLON.SIMDHelper = SIMDHelper;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.math.SIMD.js.map

@@ -330,11 +330,11 @@ var BABYLON;
         img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
     };
-    var cascadeLoad = function (rootUrl, scene, onfinish, extensions) {
+    var cascadeLoad = function (rootUrl, scene, onfinish, files) {
         var loadedImages = [];
         loadedImages._internalCount = 0;
         for (var index = 0; index < 6; index++) {
-            partialLoad(rootUrl + extensions[index], index, loadedImages, scene, onfinish);
+            partialLoad(files[index], index, loadedImages, scene, onfinish);
         }
     };
     var EngineCapabilities = (function () {
@@ -1750,7 +1750,7 @@ var BABYLON;
             texture.isReady = true;
             return texture;
         };
-        Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions, noMipmap) {
+        Engine.prototype.createCubeTexture = function (rootUrl, scene, files, noMipmap) {
             var _this = this;
             var gl = this._gl;
             var texture = gl.createTexture();
@@ -1809,7 +1809,7 @@ var BABYLON;
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
-                }, extensions);
+                }, files);
             }
             return texture;
         };
@@ -2095,4 +2095,3 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.engine.js.map
