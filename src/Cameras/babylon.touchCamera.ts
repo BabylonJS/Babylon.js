@@ -11,7 +11,7 @@ module BABYLON {
         private _onPointerMove: (e: PointerEvent) => any;
 
         public touchAngularSensibility: number = 200000.0;
-        public touchMoveSensibility: number = 500.0;
+        public touchMoveSensibility: number = 250.0;
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);

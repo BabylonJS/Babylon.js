@@ -15,7 +15,7 @@ var BABYLON;
             this._pointerCount = 0;
             this._pointerPressed = [];
             this.touchAngularSensibility = 200000.0;
-            this.touchMoveSensibility = 500.0;
+            this.touchMoveSensibility = 250.0;
         }
         TouchCamera.prototype._onLostFocus = function (e) {
             this._offsetX = null;
@@ -117,3 +117,4 @@ var BABYLON;
     })(BABYLON.FreeCamera);
     BABYLON.TouchCamera = TouchCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.touchCamera.js.map

@@ -455,7 +455,7 @@
         public _updateBoundingInfo(): void {
             this._boundingInfo = this._boundingInfo || new BoundingInfo(this.absolutePosition, this.absolutePosition);
 
-            this._boundingInfo._update(this.worldMatrixFromCache);
+            this._boundingInfo.update(this.worldMatrixFromCache);
 
             this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         }

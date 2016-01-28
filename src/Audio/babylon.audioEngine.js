@@ -6,9 +6,16 @@ var BABYLON;
             this._audioContextInitialized = false;
             this.canUseWebAudio = false;
             this.WarnedWebAudioUnsupported = false;
+            this.unlocked = false;
             if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 this.canUseWebAudio = true;
+            }
+            if (/iPad|iPhone|iPod/.test(navigator.platform)) {
+                this._unlockiOSaudio();
+            }
+            else {
+                this.unlocked = true;
             }
         }
         Object.defineProperty(AudioEngine.prototype, "audioContext", {
@@ -21,6 +28,26 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        AudioEngine.prototype._unlockiOSaudio = function () {
+            var _this = this;
+            var unlockaudio = function () {
+                var buffer = _this.audioContext.createBuffer(1, 1, 22050);
+                var source = _this.audioContext.createBufferSource();
+                source.buffer = buffer;
+                source.connect(_this.audioContext.destination);
+                source.start(0);
+                setTimeout(function () {
+                    if ((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
+                        _this.unlocked = true;
+                        window.removeEventListener('touchend', unlockaudio, false);
+                        if (_this.onAudioUnlocked) {
+                            _this.onAudioUnlocked();
+                        }
+                    }
+                }, 0);
+            };
+            window.addEventListener('touchend', unlockaudio, false);
+        };
         AudioEngine.prototype._initializeAudioContext = function () {
             try {
                 if (this.canUseWebAudio) {
@@ -77,3 +104,4 @@ var BABYLON;
     })();
     BABYLON.AudioEngine = AudioEngine;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.audioEngine.js.map

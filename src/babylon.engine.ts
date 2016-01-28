@@ -382,6 +382,7 @@
         public uintIndices: boolean;
         public highPrecisionShaderSupported: boolean;
         public fragmentDepthSupported: boolean;
+        public drawBuffersExtension;
     }
 
     /**
@@ -506,6 +507,7 @@
         public _gl: WebGLRenderingContext;
         private _renderingCanvas: HTMLCanvasElement;
         private _windowIsBackground = false;
+        private _webGLVersion = "1.0";
 
         public static audioEngine: AudioEngine;
 
@@ -581,9 +583,20 @@
 
             // GL
             try {
-                this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                if (this._gl) {
+                    this._webGLVersion = "2.0";
+                }
             } catch (e) {
-                throw new Error("WebGL not supported");
+                // Do nothing
+            }
+
+            if (!this._gl) {
+                try {
+                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                } catch (e) {
+                    throw new Error("WebGL not supported");
+                }
             }
 
             if (!this._gl) {
@@ -639,6 +652,7 @@
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
+            this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -702,6 +716,10 @@
             this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+        }
+
+        public get webGLVersion(): string {
+            return this._webGLVersion;
         }
 
         private _prepareWorkingCanvas(): void {

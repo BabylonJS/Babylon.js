@@ -922,3 +922,4 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.abstractMesh.js.map

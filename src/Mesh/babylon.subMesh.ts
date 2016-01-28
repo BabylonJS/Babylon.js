@@ -98,7 +98,7 @@
             if (!this.getBoundingInfo()) {
                 this.refreshBoundingInfo();
             }
-            this.getBoundingInfo()._update(world);
+            this.getBoundingInfo().update(world);
         }
 
         public isInFrustum(frustumPlanes: Plane[]): boolean {
