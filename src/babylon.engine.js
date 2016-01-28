@@ -365,6 +365,7 @@ var BABYLON;
             this.enableOfflineSupport = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
+            this._webGLVersion = "1.0";
             this._drawCalls = 0;
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
@@ -391,10 +392,20 @@ var BABYLON;
             }
             // GL
             try {
-                this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                if (this._gl) {
+                    this._webGLVersion = "2.0";
+                }
             }
             catch (e) {
-                throw new Error("WebGL not supported");
+            }
+            if (!this._gl) {
+                try {
+                    this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                }
+                catch (e) {
+                    throw new Error("WebGL not supported");
+                }
             }
             if (!this._gl) {
                 throw new Error("WebGL not supported");
@@ -439,6 +450,7 @@ var BABYLON;
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
+            this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
                 this._caps.highPrecisionShaderSupported = highp.precision !== 0;
@@ -623,6 +635,13 @@ var BABYLON;
         Object.defineProperty(Engine, "Version", {
             get: function () {
                 return "2.3.0-beta";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "webGLVersion", {
+            get: function () {
+                return this._webGLVersion;
             },
             enumerable: true,
             configurable: true
@@ -2076,3 +2095,4 @@ var BABYLON;
     })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.engine.js.map

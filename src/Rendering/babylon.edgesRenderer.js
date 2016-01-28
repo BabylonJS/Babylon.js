@@ -243,3 +243,4 @@ var BABYLON;
     })();
     BABYLON.EdgesRenderer = EdgesRenderer;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.edgesRenderer.js.map

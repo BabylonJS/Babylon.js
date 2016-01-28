@@ -2965,3 +2965,4 @@ var BABYLON;
     })();
     BABYLON.Tmp = Tmp;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.math.js.map
