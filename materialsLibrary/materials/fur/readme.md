@@ -14,7 +14,7 @@ var sphere = BABYLON.Mesh.CreateSphere("sphere", 500, 8, scene);
 The fur material is created using 
 
 ```
-var furMaterial = new BABYLON.furMaterial("fur_material", scene);
+var furMaterial = new BABYLON.FurMaterial("fur_material", scene);
 
 ground.material = furMaterial;
 ```
