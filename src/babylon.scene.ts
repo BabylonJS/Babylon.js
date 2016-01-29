@@ -994,6 +994,23 @@
                 this.onNewCameraAdded(newCamera, position, this);
             }
         }
+        
+        /**
+         * Swith the active camera of the scene
+         * @param {Camera} newCamera - the new camera
+		 * @param {boolean} control - attachControl for the camera (default true)
+         */
+		public swithActiveCamera(newCamera: Camera, control: boolean) {	
+			if(control == undefined) {
+				control = true;
+			}			
+			var canvas = this._engine.getRenderingCanvas();
+			this.activeCamera.detachControl(canvas);			
+			this.activeCamera = newCamera;			
+			if(control) {
+				newCamera.attachControl(canvas);
+			}	
+		}
 
         /**
          * sets the active camera of the scene using its ID
