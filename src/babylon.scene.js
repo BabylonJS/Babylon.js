@@ -137,6 +137,7 @@ var BABYLON;
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._edgesRenderers = new BABYLON.SmartArray(16);
             this._uniqueIdCounter = 0;
+            this._pickedMeshName = null;
             this._engine = engine;
             engine.scenes.push(this);
             this._renderingManager = new BABYLON.RenderingManager(this);
@@ -360,18 +361,20 @@ var BABYLON;
                     return;
                 }
                 _this._updatePointerPosition(evt);
+                _this._pickedMeshName = null;
                 _this._startingPointerPosition.x = _this._pointerX;
                 _this._startingPointerPosition.y = _this._pointerY;
                 _this._startingPointerTime = new Date().getTime();
                 var predicate = null;
                 // Meshes
-                if (!_this.onPointerDown) {
+                if (!_this.onPointerDown && !_this.onPointerDownUp) {
                     predicate = function (mesh) {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
                     };
                 }
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
+                    _this._pickedMeshName = pickResult.pickedMesh.name;
                     if (pickResult.pickedMesh.actionManager) {
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
@@ -433,7 +436,7 @@ var BABYLON;
                 }
                 var predicate = null;
                 _this._updatePointerPosition(evt);
-                if (!_this.onPointerUp) {
+                if (!_this.onPointerUp && !_this.onPointerDownUp) {
                     predicate = function (mesh) {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger));
                     };
@@ -441,6 +444,9 @@ var BABYLON;
                 // Meshes
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
+                    if (_this.onPointerDownUp && _this._pickedMeshName != null && pickResult.pickedMesh.name == _this._pickedMeshName) {
+                        _this.onPointerDownUp(evt, pickResult);
+                    }
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                         if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < BABYLON.ActionManager.DragMovementThreshold) {
