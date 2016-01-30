@@ -68,6 +68,7 @@
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerDownUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
@@ -277,6 +278,8 @@
         private _depthRenderer: DepthRenderer;
 
         private _uniqueIdCounter = 0;
+        
+        private _pickedMeshName : string = null;
 
         /**
          * @constructor
@@ -508,8 +511,8 @@
                     return;
                 }
 
-                this._updatePointerPosition(evt);
-
+                this._updatePointerPosition(evt); 
+                this._pickedMeshName = null;
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = new Date().getTime();
@@ -517,7 +520,7 @@
                 var predicate = null;
 
                 // Meshes
-                if (!this.onPointerDown) {
+                if (!this.onPointerDown && !this.onPointerDownUp) {
                     predicate = (mesh: AbstractMesh): boolean => {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
                     };
@@ -525,6 +528,7 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
+                    this._pickedMeshName = pickResult.pickedMesh.name;
                     if (pickResult.pickedMesh.actionManager) {
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
@@ -597,7 +601,7 @@
 
                 this._updatePointerPosition(evt);
 
-                if (!this.onPointerUp) {
+                if (!this.onPointerUp && !this.onPointerDownUp) {
                     predicate = (mesh: AbstractMesh): boolean => {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger));
                     };
@@ -607,6 +611,9 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
+                    if(this.onPointerDownUp && this._pickedMeshName != null && pickResult.pickedMesh.name == this._pickedMeshName){
+						this.onPointerDownUp(evt, pickResult);
+					}
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
 
