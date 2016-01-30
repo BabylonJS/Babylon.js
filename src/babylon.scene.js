@@ -374,9 +374,8 @@ var BABYLON;
                 }
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
+                    _this._pickedMeshName = pickResult.pickedMesh.name;
                     if (pickResult.pickedMesh.actionManager) {
-                        _this._pickedMeshName = pickResult.pickedMesh.name;
-                        console.log(_this._pickedMeshName);
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
                                 case 0:
