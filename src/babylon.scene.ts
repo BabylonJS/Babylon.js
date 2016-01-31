@@ -68,7 +68,7 @@
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
-        public onPointerDownUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
@@ -520,7 +520,7 @@
                 var predicate = null;
 
                 // Meshes
-                if (!this.onPointerDown && !this.onPointerDownUp) {
+                if (!this.onPointerDown && !this.onPointerPick) {
                     predicate = (mesh: AbstractMesh): boolean => {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
                     };
@@ -601,7 +601,7 @@
 
                 this._updatePointerPosition(evt);
 
-                if (!this.onPointerUp && !this.onPointerDownUp) {
+                if (!this.onPointerUp && !this.onPointerPick) {
                     predicate = (mesh: AbstractMesh): boolean => {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger));
                     };
@@ -611,8 +611,8 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    if(this.onPointerDownUp && this._pickedMeshName != null && pickResult.pickedMesh.name == this._pickedMeshName){
-						this.onPointerDownUp(evt, pickResult);
+                    if(this.onPointerPick && this._pickedMeshName != null && pickResult.pickedMesh.name == this._pickedMeshName){
+						this.onPointerPick(evt, pickResult);
 					}
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));

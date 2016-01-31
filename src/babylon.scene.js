@@ -367,7 +367,7 @@ var BABYLON;
                 _this._startingPointerTime = new Date().getTime();
                 var predicate = null;
                 // Meshes
-                if (!_this.onPointerDown && !_this.onPointerDownUp) {
+                if (!_this.onPointerDown && !_this.onPointerPick) {
                     predicate = function (mesh) {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
                     };
@@ -436,7 +436,7 @@ var BABYLON;
                 }
                 var predicate = null;
                 _this._updatePointerPosition(evt);
-                if (!_this.onPointerUp && !_this.onPointerDownUp) {
+                if (!_this.onPointerUp && !_this.onPointerPick) {
                     predicate = function (mesh) {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger));
                     };
@@ -444,8 +444,8 @@ var BABYLON;
                 // Meshes
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    if (_this.onPointerDownUp && _this._pickedMeshName != null && pickResult.pickedMesh.name == _this._pickedMeshName) {
-                        _this.onPointerDownUp(evt, pickResult);
+                    if (_this.onPointerPick && _this._pickedMeshName != null && pickResult.pickedMesh.name == _this._pickedMeshName) {
+                        _this.onPointerPick(evt, pickResult);
                     }
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
