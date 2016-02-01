@@ -278,8 +278,8 @@
         private _depthRenderer: DepthRenderer;
 
         private _uniqueIdCounter = 0;
-        
-        private _pickedMeshName : string = null;
+
+        private _pickedMeshName: string = null;
 
         /**
          * @constructor
@@ -511,7 +511,7 @@
                     return;
                 }
 
-                this._updatePointerPosition(evt); 
+                this._updatePointerPosition(evt);
                 this._pickedMeshName = null;
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
@@ -611,9 +611,9 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    if(this.onPointerPick && this._pickedMeshName != null && pickResult.pickedMesh.name == this._pickedMeshName){
-						this.onPointerPick(evt, pickResult);
-					}
+                    if (this.onPointerPick && this._pickedMeshName != null && pickResult.pickedMesh.name == this._pickedMeshName) {
+                        this.onPointerPick(evt, pickResult);
+                    }
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
 
@@ -1003,21 +1003,18 @@
         }
         
         /**
-         * Swith the active camera of the scene
-         * @param {Camera} newCamera - the new camera
-		 * @param {boolean} control - attachControl for the camera (default true)
+         * Switch active camera
+         * @param {Camera} newCamera - new active camera
+		 * @param {boolean} attachControl - call attachControl for the new active camera (default: true)
          */
-		public swithActiveCamera(newCamera: Camera, control: boolean) {	
-			if(control == undefined) {
-				control = true;
-			}			
-			var canvas = this._engine.getRenderingCanvas();
-			this.activeCamera.detachControl(canvas);			
-			this.activeCamera = newCamera;			
-			if(control) {
-				newCamera.attachControl(canvas);
-			}	
-		}
+        public swithActiveCamera(newCamera: Camera, attachControl = true) {
+            var canvas = this._engine.getRenderingCanvas();
+            this.activeCamera.detachControl(canvas);
+            this.activeCamera = newCamera;
+            if (attachControl) {
+                newCamera.attachControl(canvas);
+            }
+        }
 
         /**
          * sets the active camera of the scene using its ID
@@ -2581,4 +2578,3 @@
         }
     }
 }
-

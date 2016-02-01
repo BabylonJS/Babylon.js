@@ -1762,7 +1762,7 @@
             return MeshBuilder.CreatePolyhedron(name, options, scene);
         }
 
-        public static CreateIcoSphere(name: string, options: { radius?: number, flat?: number, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
+        public static CreateIcoSphere(name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
             return MeshBuilder.CreateIcoSphere(name, options, scene);
         }
 

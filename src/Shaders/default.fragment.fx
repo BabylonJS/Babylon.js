@@ -850,7 +850,6 @@ void main(void) {
 	// Reflection
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
-
 #ifdef REFLECTION
 	vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
