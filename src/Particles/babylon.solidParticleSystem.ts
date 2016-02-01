@@ -29,6 +29,7 @@ module BABYLON {
         private _index: number = 0;  // indices index
         private _updatable: boolean = true;
         private _pickable: boolean = false;
+        private _isVisibilityBoxLocked = false;
         private _alwaysVisible: boolean = false;
         private _shapeCounter: number = 0;
         private _copy: SolidParticle = new SolidParticle(null, null, null, null, null);
@@ -579,8 +580,21 @@ module BABYLON {
         * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
         */
         public refreshVisibleSize(): void {
-            this.mesh.refreshBoundingInfo();
+            if (!this._isVisibilityBoxLocked) {
+                this.mesh.refreshBoundingInfo();
+            }
         }
+
+        /** Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+        * @param size the size (float) of the visibility box
+        * note : this doesn't lock the SPS mesh bounding box.
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
+        */
+        public setVisibilityBox(size: number): void {
+            var vis = size / 2;
+            this.mesh._boundingInfo = new BoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
+        }
+
 
         // getter and setter
         /**
@@ -597,6 +611,22 @@ module BABYLON {
         public set isAlwaysVisible(val: boolean) {
             this._alwaysVisible = val;
             this.mesh.alwaysSelectAsActiveMesh = val;
+        }
+
+        /**
+        * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
+        */
+        public set isVisibilityBoxLocked(val: boolean) {
+            this._isVisibilityBoxLocked = val;
+            this.mesh.getBoundingInfo.isLocked = val;
+        }
+
+        /**
+        * True if the SPS visibility box is locked. The underlying mesh bounding box is then not updatable any more.
+        */
+        public get isVisibilityBoxLocked(): boolean {
+            return this._isVisibilityBoxLocked;
         }
 
         // Optimizer setters
@@ -716,4 +746,3 @@ module BABYLON {
         }
     }
 }
-
