@@ -619,7 +619,7 @@ module BABYLON {
         */
         public set isVisibilityBoxLocked(val: boolean) {
             this._isVisibilityBoxLocked = val;
-            this.mesh.getBoundingInfo.isLocked = val;
+            this.mesh.getBoundingInfo().isLocked = val;
         }
 
         /**
@@ -746,3 +746,4 @@ module BABYLON {
         }
     }
 }
+

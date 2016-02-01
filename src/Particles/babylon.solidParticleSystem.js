@@ -25,6 +25,7 @@ var BABYLON;
             this._index = 0; // indices index
             this._updatable = true;
             this._pickable = false;
+            this._isVisibilityBoxLocked = false;
             this._alwaysVisible = false;
             this._shapeCounter = 0;
             this._copy = new BABYLON.SolidParticle(null, null, null, null, null);
@@ -512,7 +513,18 @@ var BABYLON;
         * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
         */
         SolidParticleSystem.prototype.refreshVisibleSize = function () {
-            this.mesh.refreshBoundingInfo();
+            if (!this._isVisibilityBoxLocked) {
+                this.mesh.refreshBoundingInfo();
+            }
+        };
+        /** Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+        * @param size the size (float) of the visibility box
+        * note : this doesn't lock the SPS mesh bounding box.
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
+        */
+        SolidParticleSystem.prototype.setVisibilityBox = function (size) {
+            var vis = size / 2;
+            this.mesh._boundingInfo = new BABYLON.BoundingInfo(new BABYLON.Vector3(-vis, -vis, -vis), new BABYLON.Vector3(vis, vis, vis));
         };
         Object.defineProperty(SolidParticleSystem.prototype, "isAlwaysVisible", {
             // getter and setter
@@ -529,6 +541,24 @@ var BABYLON;
             set: function (val) {
                 this._alwaysVisible = val;
                 this.mesh.alwaysSelectAsActiveMesh = val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SolidParticleSystem.prototype, "isVisibilityBoxLocked", {
+            /**
+            * True if the SPS visibility box is locked. The underlying mesh bounding box is then not updatable any more.
+            */
+            get: function () {
+                return this._isVisibilityBoxLocked;
+            },
+            /**
+            * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+            * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
+            */
+            set: function (val) {
+                this._isVisibilityBoxLocked = val;
+                this.mesh.getBoundingInfo().isLocked = val;
             },
             enumerable: true,
             configurable: true
