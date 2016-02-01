@@ -1,10 +1,14 @@
 var BABYLON;
 (function (BABYLON) {
     var CannonJSPlugin = (function () {
-        function CannonJSPlugin() {
+        function CannonJSPlugin(_useDeltaForWorldStep) {
+            if (_useDeltaForWorldStep === void 0) { _useDeltaForWorldStep = true; }
+            this._useDeltaForWorldStep = _useDeltaForWorldStep;
             this._registeredMeshes = [];
             this._physicsMaterials = [];
-            this.name = "cannon";
+            this._fixedTimeStep = 1 / 60;
+            //private _maxSubSteps : number = 15;
+            this.name = "CannonJS";
             this.updateBodyPosition = function (mesh) {
                 for (var index = 0; index < this._registeredMeshes.length; index++) {
                     var registeredMesh = this._registeredMeshes[index];
@@ -59,7 +63,7 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.runOneStep = function (delta) {
             var _this = this;
-            this._world.step(delta);
+            this._world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0);
             this._registeredMeshes.forEach(function (registeredMesh) {
                 // Body position
                 var bodyX = registeredMesh.body.position.x, bodyY = registeredMesh.body.position.y, bodyZ = registeredMesh.body.position.z;
@@ -343,9 +347,13 @@ var BABYLON;
                 var registeredMesh = this._registeredMeshes[index];
                 if (registeredMesh.mesh === mesh1) {
                     body1 = registeredMesh.body;
+                    if (body2)
+                        break;
                 }
                 else if (registeredMesh.mesh === mesh2) {
                     body2 = registeredMesh.body;
+                    if (body1)
+                        break;
                 }
             }
             if (!body1 || !body2) {
