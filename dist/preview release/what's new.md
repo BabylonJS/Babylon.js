@@ -1,5 +1,6 @@
 - 2.3.0:
   - **Major updates**
+    - New UniversalCamera which support keyboard, mouse, touch and gamepad ([davrous](https://github.com/davrous))
     - Point lights shadow mapping. [Demo here](http://www.babylonjs-playground.com/#LYCSQ#12) ([deltakosh](https://github.com/deltakosh))
     - Introducing [Materials Library](https://github.com/BabylonJS/Babylon.js/tree/master/materialsLibrary) ([deltakosh](https://github.com/deltakosh))
       - Water material: http://doc.babylonjs.com/extensions/Water ([julien-moreau](https://github.com/julien-moreau))
