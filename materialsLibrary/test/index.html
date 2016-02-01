@@ -242,7 +242,7 @@
 							break;
 						case "fur":
 							currentMaterial = fur.material;
-							fur.configureFur(currentMesh, true);
+							fur.configureFur(currentMesh);
 							break;
 						case "triPlanar":
 							currentMaterial = triPlanar;
@@ -293,8 +293,9 @@
 					water.mesh = currentMesh;
 					
 					if (currentMaterial === fur.material) {
+                        // Furify the mesh
 						fur.resetFur();
-						fur.configureFur(currentMesh, currentMaterial === fur.material);
+						fur.configureFur(currentMesh);
 					}
 				});
 

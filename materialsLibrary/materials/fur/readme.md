@@ -53,49 +53,53 @@ furMaterial.diffuseTexture = new BABYLON.Texture("leopard_fur.jpg", scene); // S
 Fur materials have always been subjects of a lot of theories and conferences with multiple implementations thanks to multiple technologies.
 Here, with WebGL, we decided to choose one of these implementations, not hard to use and pretty smart (with performances) with simple models
 
-First, activate the high level:
+First, activate the high level (activated by default):
 ```
 furMaterial.highLevelFur = true;
 ```
 
-That's all. Now, the most difficult part should be to configure the shells and create the fur effect.
-Indeed, you'll have to draw several times the same mesh with an offset (computed in the effect) to create the illusion of fur:
+That's all. Now, the most difficult part should be to configure the shells and the fur texture to create the fur effect.
+Indeed, you'll have to draw several times the same mesh with an offset (computed in the effect) to create the illusion of fur.
+Hopefully, there is a function that creates and returns the shells:
 
 ```
-furMaterial.furOffset = 0;
-myMesh.material = furMaterial;
-
-var shells = 30; // Works as the quality
-
 // Generate a fur texture (internally used), working like a noise texture, that will be shared between all the shells
 var furTexture = BABYLON.FurMaterial.GenerateTexture("furTexture", scene);
 
-for (var i = 1; i < shells; i++) {
-	var offsetFur = new BABYLON.FurMaterial("fur" + i, scene);
-	offsetFur.diffuseTexture = myDiffuseTexture;
-	
-	offsetFur.furOffset = i / shells; // Create the offset
-	offsetFur.furTexture = furTexture; // Assign the fur texture (previously generated)
-	offsetFur.highLevelFur = fur.highLevelFur; // Set as high level
-	
-	var offsetMesh = myMesh.clone(mesh.name + i); // Clone the mesh. For more performances, you can use LOD system of cloned meshes
-	offsetMesh.material = offsetFur; // Assign the material with appropriate offset
-	offsetMesh.skeleton = mesh.skeleton; // If the mesh is animated, keep the skeleton reference
+furMaterial.furTexture = furTexture;
+myMesh.material = furMaterial;
+
+var quality = 30; // Average quality
+
+// Create shells
+var shells = BABYLON.FurMaterial.FurifyMesh(myMesh, quality);
+```
+
+It is now working!
+The function "BABYLON.FurMaterial.FurifyMesh" returns an array of "BABYLON.Mesh" that you can dispose later.
+The first element is the mesh you used as the source mesh (myMesh here):
+```
+for (var i=0; i < shells.length; i++) {
+    shells[i].material.dispose();
+    shells[i].dispose();
 }
 ```
 
-It is now working! You can customize the high level fur rendering thanks to some properties:
+You can customize the high level fur rendering thanks to some properties:
 ```
-allFurMaterials.furSpacing = 2; // Computes the space between shells. In others words, works as the fur density 
+allFurMaterials.furSpacing = 2; // Computes the space between shells. In others words, works as the fur height
 ```
 
 ```
-allFurMaterials.furSpeed = 1; // Divides the animation of fur in time according to the gravity
+allFurMaterials.furDensity = 20; // Computes the fur density. More the density is high, more you'll have to zoom on the model
+```
+
+```
+allFurMaterials.furSpeed = 100; // Divides the animation of fur in time according to the gravity
 ```
 
 ```
 // Compute the gravity followed by the fur
-// In range [-1, 1] for X, Y and Z
 allFurMaterials.furGravity = new BABYLON.Vector3(0, -1, 0);
 ```
 
