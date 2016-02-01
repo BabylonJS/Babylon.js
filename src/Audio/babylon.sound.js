@@ -310,6 +310,10 @@ var BABYLON;
             var _this = this;
             if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
+                    if (this._startOffset < 0) {
+                        time = -this._startOffset;
+                        this._startOffset = 0;
+                    }
                     var startTime = time ? BABYLON.Engine.audioEngine.audioContext.currentTime + time : BABYLON.Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound) {
@@ -344,12 +348,7 @@ var BABYLON;
                         this._soundSource.loop = this.loop;
                         this._soundSource.playbackRate.value = this._playbackRate;
                         this._soundSource.onended = function () { _this._onended(); };
-                        if (!this.isPaused) {
-                            this._soundSource.start(startTime);
-                        }
-                        else {
-                            this._soundSource.start(0, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
-                        }
+                        this._soundSource.start(startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
                     }
                     this._startTime = startTime;
                     this.isPlaying = true;

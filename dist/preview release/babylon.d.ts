@@ -1622,75 +1622,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Bone extends Node {
-        name: string;
-        children: Bone[];
-        animations: Animation[];
-        length: number;
-        private _skeleton;
-        _matrix: Matrix;
-        private _restPose;
-        private _baseMatrix;
-        private _worldTransform;
-        private _absoluteTransform;
-        private _invertedAbsoluteTransform;
-        private _parent;
-        constructor(name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix);
-        getParent(): Bone;
-        getLocalMatrix(): Matrix;
-        getBaseMatrix(): Matrix;
-        getRestPose(): Matrix;
-        returnToRest(): void;
-        getWorldMatrix(): Matrix;
-        getInvertedAbsoluteTransform(): Matrix;
-        getAbsoluteTransform(): Matrix;
-        updateMatrix(matrix: Matrix): void;
-        _updateDifferenceMatrix(rootMatrix?: Matrix): void;
-        markAsDirty(): void;
-        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Skeleton {
-        name: string;
-        id: string;
-        bones: Bone[];
-        needInitialSkinMatrix: boolean;
-        private _scene;
-        private _isDirty;
-        private _transformMatrices;
-        private _meshesWithPoseMatrix;
-        private _animatables;
-        private _identity;
-        private _ranges;
-        constructor(name: string, id: string, scene: Scene);
-        getTransformMatrices(mesh: AbstractMesh): Float32Array;
-        getScene(): Scene;
-        createAnimationRange(name: string, from: number, to: number): void;
-        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
-        getAnimationRange(name: string): AnimationRange;
-        /**
-         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
-         */
-        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
-        returnToRest(): void;
-        private _getHighestAnimationFrame();
-        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void;
-        _markAsDirty(): void;
-        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Matrix): void;
-        prepare(): void;
-        getAnimatables(): IAnimatable[];
-        clone(name: string, id: string): Skeleton;
-        dispose(): void;
-        serialize(): any;
-        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
-    }
-}
-
-declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -2100,6 +2031,216 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Bone extends Node {
+        name: string;
+        children: Bone[];
+        animations: Animation[];
+        length: number;
+        private _skeleton;
+        _matrix: Matrix;
+        private _restPose;
+        private _baseMatrix;
+        private _worldTransform;
+        private _absoluteTransform;
+        private _invertedAbsoluteTransform;
+        private _parent;
+        constructor(name: string, skeleton: Skeleton, parentBone: Bone, matrix: Matrix, restPose?: Matrix);
+        getParent(): Bone;
+        getLocalMatrix(): Matrix;
+        getBaseMatrix(): Matrix;
+        getRestPose(): Matrix;
+        returnToRest(): void;
+        getWorldMatrix(): Matrix;
+        getInvertedAbsoluteTransform(): Matrix;
+        getAbsoluteTransform(): Matrix;
+        updateMatrix(matrix: Matrix): void;
+        _updateDifferenceMatrix(rootMatrix?: Matrix): void;
+        markAsDirty(): void;
+        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Skeleton {
+        name: string;
+        id: string;
+        bones: Bone[];
+        needInitialSkinMatrix: boolean;
+        private _scene;
+        private _isDirty;
+        private _transformMatrices;
+        private _meshesWithPoseMatrix;
+        private _animatables;
+        private _identity;
+        private _ranges;
+        constructor(name: string, id: string, scene: Scene);
+        getTransformMatrices(mesh: AbstractMesh): Float32Array;
+        getScene(): Scene;
+        createAnimationRange(name: string, from: number, to: number): void;
+        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
+        getAnimationRange(name: string): AnimationRange;
+        /**
+         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         */
+        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
+        returnToRest(): void;
+        private _getHighestAnimationFrame();
+        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void;
+        _markAsDirty(): void;
+        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Matrix): void;
+        prepare(): void;
+        getAnimatables(): IAnimatable[];
+        clone(name: string, id: string): Skeleton;
+        dispose(): void;
+        serialize(): any;
+        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBox {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        extendSize: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingInfo {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        private _camera;
+        private _transformationMatrix;
+        private _enabled;
+        private _labelsEnabled;
+        private _displayStatistics;
+        private _displayTree;
+        private _displayLogs;
+        private _globalDiv;
+        private _statsDiv;
+        private _statsSubsetDiv;
+        private _optionsDiv;
+        private _optionsSubsetDiv;
+        private _logDiv;
+        private _logSubsetDiv;
+        private _treeDiv;
+        private _treeSubsetDiv;
+        private _drawingCanvas;
+        private _drawingContext;
+        private _rootElement;
+        _syncPositions: () => void;
+        private _syncData;
+        private _syncUI;
+        private _onCanvasClick;
+        private _clickPosition;
+        private _ratio;
+        private _identityMatrix;
+        private _showUI;
+        private _needToRefreshMeshesTree;
+        shouldDisplayLabel: (node: Node) => boolean;
+        shouldDisplayAxis: (mesh: Mesh) => boolean;
+        axisRatio: number;
+        accentColor: string;
+        customStatsFunction: () => string;
+        constructor(scene: Scene);
+        private _refreshMeshesTreeContent();
+        private _renderSingleAxis(zero, unit, unitText, label, color);
+        private _renderAxis(projectedPosition, mesh, globalViewport);
+        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
+        private _isClickInsideRect(x, y, width, height);
+        isVisible(): boolean;
+        hide(): void;
+        show(showUI?: boolean, camera?: Camera, rootElement?: HTMLElement): void;
+        private _clearLabels();
+        private _generateheader(root, text);
+        private _generateTexBox(root, title, color);
+        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
+        private _generateCheckBox(root, title, initialState, task, tag?);
+        private _generateButton(root, title, task, tag?);
+        private _generateRadio(root, title, name, initialState, task, tag?);
+        private _generateDOMelements();
+        private _displayStats();
+    }
+}
+
+declare module BABYLON {
+    class Layer {
+        name: string;
+        texture: Texture;
+        isBackground: boolean;
+        color: Color4;
+        scale: Vector2;
+        offset: Vector2;
+        onDispose: () => void;
+        alphaBlendingMode: number;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class Collider {
         radius: Vector3;
         retry: number;
@@ -2341,125 +2482,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class BoundingBox {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        extendSize: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingInfo {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        private _camera;
-        private _transformationMatrix;
-        private _enabled;
-        private _labelsEnabled;
-        private _displayStatistics;
-        private _displayTree;
-        private _displayLogs;
-        private _globalDiv;
-        private _statsDiv;
-        private _statsSubsetDiv;
-        private _optionsDiv;
-        private _optionsSubsetDiv;
-        private _logDiv;
-        private _logSubsetDiv;
-        private _treeDiv;
-        private _treeSubsetDiv;
-        private _drawingCanvas;
-        private _drawingContext;
-        private _rootElement;
-        _syncPositions: () => void;
-        private _syncData;
-        private _syncUI;
-        private _onCanvasClick;
-        private _clickPosition;
-        private _ratio;
-        private _identityMatrix;
-        private _showUI;
-        private _needToRefreshMeshesTree;
-        shouldDisplayLabel: (node: Node) => boolean;
-        shouldDisplayAxis: (mesh: Mesh) => boolean;
-        axisRatio: number;
-        accentColor: string;
-        customStatsFunction: () => string;
-        constructor(scene: Scene);
-        private _refreshMeshesTreeContent();
-        private _renderSingleAxis(zero, unit, unitText, label, color);
-        private _renderAxis(projectedPosition, mesh, globalViewport);
-        private _renderLabel(text, projectedPosition, labelOffset, onClick, getFillStyle);
-        private _isClickInsideRect(x, y, width, height);
-        isVisible(): boolean;
-        hide(): void;
-        show(showUI?: boolean, camera?: Camera, rootElement?: HTMLElement): void;
-        private _clearLabels();
-        private _generateheader(root, text);
-        private _generateTexBox(root, title, color);
-        private _generateAdvancedCheckBox(root, leftTitle, rightTitle, initialState, task, tag?);
-        private _generateCheckBox(root, title, initialState, task, tag?);
-        private _generateButton(root, title, task, tag?);
-        private _generateRadio(root, title, name, initialState, task, tag?);
-        private _generateDOMelements();
-        private _displayStats();
-    }
-}
-
-declare module BABYLON {
     class LensFlare {
         size: number;
         position: number;
@@ -2504,28 +2526,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Layer {
-        name: string;
-        texture: Texture;
-        isBackground: boolean;
-        color: Color4;
-        scale: Vector2;
-        offset: Vector2;
-        onDispose: () => void;
-        alphaBlendingMode: number;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     interface ISceneLoaderPlugin {
         extensions: string;
         importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
@@ -2554,132 +2554,6 @@ declare module BABYLON {
         * @param scene is the instance of BABYLON.Scene to append to
         */
         static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-    }
-}
-
-declare module BABYLON {
-    class DirectionalLight extends Light implements IShadowLight {
-        direction: Vector3;
-        position: Vector3;
-        private _transformedDirection;
-        transformedPosition: Vector3;
-        private _worldMatrix;
-        shadowOrthoScale: number;
-        autoUpdateExtends: boolean;
-        private _orthoLeft;
-        private _orthoRight;
-        private _orthoTop;
-        private _orthoBottom;
-        constructor(name: string, direction: Vector3, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        setDirectionToTarget(target: Vector3): Vector3;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        needCube(): boolean;
-        getShadowDirection(faceIndex?: number): Vector3;
-        computeTransformedPosition(): boolean;
-        transferToEffect(effect: Effect, directionUniformName: string): void;
-        _getWorldMatrix(): Matrix;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    class HemisphericLight extends Light {
-        direction: Vector3;
-        groundColor: Color3;
-        private _worldMatrix;
-        constructor(name: string, direction: Vector3, scene: Scene);
-        setDirectionToTarget(target: Vector3): Vector3;
-        getShadowGenerator(): ShadowGenerator;
-        transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void;
-        _getWorldMatrix(): Matrix;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    interface IShadowLight {
-        id: string;
-        position: Vector3;
-        transformedPosition: Vector3;
-        name: string;
-        computeTransformedPosition(): boolean;
-        getScene(): Scene;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        needCube(): boolean;
-        getShadowDirection(faceIndex?: number): Vector3;
-        _shadowGenerator: ShadowGenerator;
-    }
-    class Light extends Node {
-        diffuse: Color3;
-        specular: Color3;
-        intensity: number;
-        range: number;
-        includeOnlyWithLayerMask: number;
-        includedOnlyMeshes: AbstractMesh[];
-        excludedMeshes: AbstractMesh[];
-        excludeWithLayerMask: number;
-        _shadowGenerator: ShadowGenerator;
-        private _parentedWorldMatrix;
-        _excludedMeshesIds: string[];
-        _includedOnlyMeshesIds: string[];
-        constructor(name: string, scene: Scene);
-        getShadowGenerator(): ShadowGenerator;
-        getAbsolutePosition(): Vector3;
-        transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void;
-        _getWorldMatrix(): Matrix;
-        canAffectMesh(mesh: AbstractMesh): boolean;
-        getWorldMatrix(): Matrix;
-        dispose(): void;
-        serialize(): any;
-        static Parse(parsedLight: any, scene: Scene): Light;
-    }
-}
-
-declare module BABYLON {
-    class PointLight extends Light implements IShadowLight {
-        position: Vector3;
-        private _worldMatrix;
-        transformedPosition: Vector3;
-        constructor(name: string, position: Vector3, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        computeTransformedPosition(): boolean;
-        transferToEffect(effect: Effect, positionUniformName: string): void;
-        needCube(): boolean;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        getShadowDirection(faceIndex?: number): Vector3;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        _getWorldMatrix(): Matrix;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    class SpotLight extends Light implements IShadowLight {
-        position: Vector3;
-        direction: Vector3;
-        angle: number;
-        exponent: number;
-        transformedPosition: Vector3;
-        private _transformedDirection;
-        private _worldMatrix;
-        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
-        getAbsolutePosition(): Vector3;
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        needCube(): boolean;
-        supportsVSM(): boolean;
-        needRefreshPerFrame(): boolean;
-        getShadowDirection(faceIndex?: number): Vector3;
-        setDirectionToTarget(target: Vector3): Vector3;
-        computeTransformedPosition(): boolean;
-        transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
-        _getWorldMatrix(): Matrix;
-        serialize(): any;
     }
 }
 
@@ -2955,6 +2829,132 @@ declare module BABYLON {
         static FresnelEnabled: boolean;
         static LightmapEnabled: boolean;
         static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial;
+    }
+}
+
+declare module BABYLON {
+    class DirectionalLight extends Light implements IShadowLight {
+        direction: Vector3;
+        position: Vector3;
+        private _transformedDirection;
+        transformedPosition: Vector3;
+        private _worldMatrix;
+        shadowOrthoScale: number;
+        autoUpdateExtends: boolean;
+        private _orthoLeft;
+        private _orthoRight;
+        private _orthoTop;
+        private _orthoBottom;
+        constructor(name: string, direction: Vector3, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        setDirectionToTarget(target: Vector3): Vector3;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        needCube(): boolean;
+        getShadowDirection(faceIndex?: number): Vector3;
+        computeTransformedPosition(): boolean;
+        transferToEffect(effect: Effect, directionUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class HemisphericLight extends Light {
+        direction: Vector3;
+        groundColor: Color3;
+        private _worldMatrix;
+        constructor(name: string, direction: Vector3, scene: Scene);
+        setDirectionToTarget(target: Vector3): Vector3;
+        getShadowGenerator(): ShadowGenerator;
+        transferToEffect(effect: Effect, directionUniformName: string, groundColorUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    interface IShadowLight {
+        id: string;
+        position: Vector3;
+        transformedPosition: Vector3;
+        name: string;
+        computeTransformedPosition(): boolean;
+        getScene(): Scene;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        needCube(): boolean;
+        getShadowDirection(faceIndex?: number): Vector3;
+        _shadowGenerator: ShadowGenerator;
+    }
+    class Light extends Node {
+        diffuse: Color3;
+        specular: Color3;
+        intensity: number;
+        range: number;
+        includeOnlyWithLayerMask: number;
+        includedOnlyMeshes: AbstractMesh[];
+        excludedMeshes: AbstractMesh[];
+        excludeWithLayerMask: number;
+        _shadowGenerator: ShadowGenerator;
+        private _parentedWorldMatrix;
+        _excludedMeshesIds: string[];
+        _includedOnlyMeshesIds: string[];
+        constructor(name: string, scene: Scene);
+        getShadowGenerator(): ShadowGenerator;
+        getAbsolutePosition(): Vector3;
+        transferToEffect(effect: Effect, uniformName0?: string, uniformName1?: string): void;
+        _getWorldMatrix(): Matrix;
+        canAffectMesh(mesh: AbstractMesh): boolean;
+        getWorldMatrix(): Matrix;
+        dispose(): void;
+        serialize(): any;
+        static Parse(parsedLight: any, scene: Scene): Light;
+    }
+}
+
+declare module BABYLON {
+    class PointLight extends Light implements IShadowLight {
+        position: Vector3;
+        private _worldMatrix;
+        transformedPosition: Vector3;
+        constructor(name: string, position: Vector3, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        computeTransformedPosition(): boolean;
+        transferToEffect(effect: Effect, positionUniformName: string): void;
+        needCube(): boolean;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        getShadowDirection(faceIndex?: number): Vector3;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        _getWorldMatrix(): Matrix;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    class SpotLight extends Light implements IShadowLight {
+        position: Vector3;
+        direction: Vector3;
+        angle: number;
+        exponent: number;
+        transformedPosition: Vector3;
+        private _transformedDirection;
+        private _worldMatrix;
+        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
+        getAbsolutePosition(): Vector3;
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        needCube(): boolean;
+        supportsVSM(): boolean;
+        needRefreshPerFrame(): boolean;
+        getShadowDirection(faceIndex?: number): Vector3;
+        setDirectionToTarget(target: Vector3): Vector3;
+        computeTransformedPosition(): boolean;
+        transferToEffect(effect: Effect, positionUniformName: string, directionUniformName: string): void;
+        _getWorldMatrix(): Matrix;
+        serialize(): any;
     }
 }
 
@@ -4995,6 +4995,7 @@ declare module BABYLON {
         private _index;
         private _updatable;
         private _pickable;
+        private _isVisibilityBoxLocked;
         private _alwaysVisible;
         private _shapeCounter;
         private _copy;
@@ -5090,6 +5091,12 @@ declare module BABYLON {
         * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
         */
         refreshVisibleSize(): void;
+        /** Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+        * @param size the size (float) of the visibility box
+        * note : this doesn't lock the SPS mesh bounding box.
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
+        */
+        setVisibilityBox(size: number): void;
         /**
         * True if the SPS is set as always visible
         */
@@ -5098,6 +5105,14 @@ declare module BABYLON {
         * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
         */
         isAlwaysVisible: boolean;
+        /**
+        * True if the SPS visibility box is locked. The underlying mesh bounding box is then not updatable any more.
+        */
+        /**
+        * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+        * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
+        */
+        isVisibilityBoxLocked: boolean;
         /**
         * Tells to setParticle() to compute the particle rotations or not.
         * Default value : true. The SPS is faster when it's set to false.
@@ -5168,6 +5183,258 @@ declare module BABYLON {
         * @param update the boolean update value actually passed to setParticles()
         */
         afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    interface IPhysicsEnginePlugin {
+        name: string;
+        initialize(iterations?: number): any;
+        setGravity(gravity: Vector3): void;
+        getGravity(): Vector3;
+        runOneStep(delta: number): void;
+        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
+        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
+        unregisterMesh(mesh: AbstractMesh): any;
+        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
+        dispose(): void;
+        isSupported(): boolean;
+        updateBodyPosition(mesh: AbstractMesh): void;
+        getWorldObject(): any;
+        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
+    }
+    interface PhysicsBodyCreationOptions {
+        mass: number;
+        friction: number;
+        restitution: number;
+    }
+    interface PhysicsCompoundBodyPart {
+        mesh: Mesh;
+        impostor: number;
+    }
+    class PhysicsEngine {
+        gravity: Vector3;
+        private _currentPlugin;
+        constructor(plugin?: IPhysicsEnginePlugin);
+        _initialize(gravity?: Vector3): void;
+        _runOneStep(delta: number): void;
+        _setGravity(gravity: Vector3): void;
+        _getGravity(): Vector3;
+        _registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
+        _registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
+        _unregisterMesh(mesh: AbstractMesh): void;
+        _applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        _createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
+        _updateBodyPosition(mesh: AbstractMesh): void;
+        dispose(): void;
+        isSupported(): boolean;
+        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
+        getPhysicsPluginName(): string;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CapsuleImpostor: number;
+        static ConeImpostor: number;
+        static CylinderImpostor: number;
+        static ConvexHullImpostor: number;
+        static HeightmapImpostor: number;
+        static Epsilon: number;
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        refreshRate: number;
+        getScene(): Scene;
+        cubeTexture: RenderTargetTexture;
+        renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBoxRenderer {
+        frontColor: Color3;
+        backColor: Color3;
+        showBackLines: boolean;
+        renderList: SmartArray<BoundingBox>;
+        private _scene;
+        private _colorShader;
+        private _vb;
+        private _ib;
+        constructor(scene: Scene);
+        private _prepareRessources();
+        reset(): void;
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DepthRenderer {
+        private _scene;
+        private _depthMap;
+        private _effect;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedDefines;
+        constructor(scene: Scene, type?: number);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getDepthMap(): RenderTargetTexture;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class EdgesRenderer {
+        edgesWidthScalerForOrthographic: number;
+        edgesWidthScalerForPerspective: number;
+        private _source;
+        private _linesPositions;
+        private _linesNormals;
+        private _linesIndices;
+        private _epsilon;
+        private _indicesCount;
+        private _lineShader;
+        private _vb0;
+        private _vb1;
+        private _ib;
+        private _buffers;
+        private _checkVerticesInsteadOfIndices;
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
+        private _prepareRessources();
+        dispose(): void;
+        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
+        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
+        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
+        _generateEdgesLines(): void;
+        render(): void;
+    }
+}
+
+declare module BABYLON {
+    class OutlineRenderer {
+        private _scene;
+        private _effect;
+        private _cachedDefines;
+        constructor(scene: Scene);
+        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class RenderingGroup {
+        index: number;
+        private _scene;
+        private _opaqueSubMeshes;
+        private _transparentSubMeshes;
+        private _alphaTestSubMeshes;
+        private _activeVertices;
+        onBeforeTransparentRendering: () => void;
+        constructor(index: number, scene: Scene);
+        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): boolean;
+        prepare(): void;
+        dispatch(subMesh: SubMesh): void;
+    }
+}
+
+declare module BABYLON {
+    class RenderingManager {
+        static MAX_RENDERINGGROUPS: number;
+        private _scene;
+        private _renderingGroups;
+        private _depthBufferAlreadyCleaned;
+        private _currentIndex;
+        private _currentActiveMeshes;
+        private _currentRenderParticles;
+        private _currentRenderSprites;
+        constructor(scene: Scene);
+        private _renderParticles(index, activeMeshes);
+        private _renderSprites(index);
+        private _clearDepthBuffer();
+        private _renderSpritesAndParticles();
+        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
+        reset(): void;
+        dispatch(subMesh: SubMesh): void;
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _frameCount;
+        private _manager;
+        private _time;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        cellSize: number;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        onDispose: () => void;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _vertices;
+        private _effectBase;
+        private _effectFog;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -5737,258 +6004,6 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    interface IPhysicsEnginePlugin {
-        name: string;
-        initialize(iterations?: number): any;
-        setGravity(gravity: Vector3): void;
-        getGravity(): Vector3;
-        runOneStep(delta: number): void;
-        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
-        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        unregisterMesh(mesh: AbstractMesh): any;
-        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
-        dispose(): void;
-        isSupported(): boolean;
-        updateBodyPosition(mesh: AbstractMesh): void;
-        getWorldObject(): any;
-        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
-    }
-    interface PhysicsBodyCreationOptions {
-        mass: number;
-        friction: number;
-        restitution: number;
-    }
-    interface PhysicsCompoundBodyPart {
-        mesh: Mesh;
-        impostor: number;
-    }
-    class PhysicsEngine {
-        gravity: Vector3;
-        private _currentPlugin;
-        constructor(plugin?: IPhysicsEnginePlugin);
-        _initialize(gravity?: Vector3): void;
-        _runOneStep(delta: number): void;
-        _setGravity(gravity: Vector3): void;
-        _getGravity(): Vector3;
-        _registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
-        _registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        _unregisterMesh(mesh: AbstractMesh): void;
-        _applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        _createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
-        _updateBodyPosition(mesh: AbstractMesh): void;
-        dispose(): void;
-        isSupported(): boolean;
-        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
-        getPhysicsPluginName(): string;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CapsuleImpostor: number;
-        static ConeImpostor: number;
-        static CylinderImpostor: number;
-        static ConvexHullImpostor: number;
-        static HeightmapImpostor: number;
-        static Epsilon: number;
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        refreshRate: number;
-        getScene(): Scene;
-        cubeTexture: RenderTargetTexture;
-        renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBoxRenderer {
-        frontColor: Color3;
-        backColor: Color3;
-        showBackLines: boolean;
-        renderList: SmartArray<BoundingBox>;
-        private _scene;
-        private _colorShader;
-        private _vb;
-        private _ib;
-        constructor(scene: Scene);
-        private _prepareRessources();
-        reset(): void;
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedDefines;
-        constructor(scene: Scene, type?: number);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getDepthMap(): RenderTargetTexture;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class EdgesRenderer {
-        edgesWidthScalerForOrthographic: number;
-        edgesWidthScalerForPerspective: number;
-        private _source;
-        private _linesPositions;
-        private _linesNormals;
-        private _linesIndices;
-        private _epsilon;
-        private _indicesCount;
-        private _lineShader;
-        private _vb0;
-        private _vb1;
-        private _ib;
-        private _buffers;
-        private _checkVerticesInsteadOfIndices;
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
-        private _prepareRessources();
-        dispose(): void;
-        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
-        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
-        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
-        _generateEdgesLines(): void;
-        render(): void;
-    }
-}
-
-declare module BABYLON {
-    class OutlineRenderer {
-        private _scene;
-        private _effect;
-        private _cachedDefines;
-        constructor(scene: Scene);
-        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class RenderingGroup {
-        index: number;
-        private _scene;
-        private _opaqueSubMeshes;
-        private _transparentSubMeshes;
-        private _alphaTestSubMeshes;
-        private _activeVertices;
-        onBeforeTransparentRendering: () => void;
-        constructor(index: number, scene: Scene);
-        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): boolean;
-        prepare(): void;
-        dispatch(subMesh: SubMesh): void;
-    }
-}
-
-declare module BABYLON {
-    class RenderingManager {
-        static MAX_RENDERINGGROUPS: number;
-        private _scene;
-        private _renderingGroups;
-        private _depthBufferAlreadyCleaned;
-        private _currentIndex;
-        private _currentActiveMeshes;
-        private _currentRenderParticles;
-        private _currentRenderSprites;
-        constructor(scene: Scene);
-        private _renderParticles(index, activeMeshes);
-        private _renderSprites(index);
-        private _clearDepthBuffer();
-        private _renderSpritesAndParticles();
-        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
-        reset(): void;
-        dispatch(subMesh: SubMesh): void;
-    }
-}
-
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _frameCount;
-        private _manager;
-        private _time;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        cellSize: number;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        onDispose: () => void;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _vertices;
-        private _effectBase;
-        private _effectFog;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: number, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo;
-        render(): void;
-        dispose(): void;
     }
 }
 
@@ -6738,64 +6753,6 @@ declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
-    class ShadowGenerator {
-        private static _FILTER_NONE;
-        private static _FILTER_VARIANCESHADOWMAP;
-        private static _FILTER_POISSONSAMPLING;
-        private static _FILTER_BLURVARIANCESHADOWMAP;
-        static FILTER_NONE: number;
-        static FILTER_VARIANCESHADOWMAP: number;
-        static FILTER_POISSONSAMPLING: number;
-        static FILTER_BLURVARIANCESHADOWMAP: number;
-        private _filter;
-        blurScale: number;
-        private _blurBoxOffset;
-        private _bias;
-        private _lightDirection;
-        forceBackFacesOnly: boolean;
-        bias: number;
-        blurBoxOffset: number;
-        filter: number;
-        useVarianceShadowMap: boolean;
-        usePoissonSampling: boolean;
-        useBlurVarianceShadowMap: boolean;
-        private _light;
-        private _scene;
-        private _shadowMap;
-        private _shadowMap2;
-        private _darkness;
-        private _transparencyShadow;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedPosition;
-        private _cachedDirection;
-        private _cachedDefines;
-        private _currentRenderID;
-        private _downSamplePostprocess;
-        private _boxBlurPostprocess;
-        private _mapSize;
-        private _currentFaceIndex;
-        private _currentFaceIndexCache;
-        constructor(mapSize: number, light: IShadowLight);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getShadowMap(): RenderTargetTexture;
-        getShadowMapForRendering(): RenderTargetTexture;
-        getLight(): IShadowLight;
-        getTransformMatrix(): Matrix;
-        getDarkness(): number;
-        setDarkness(darkness: number): void;
-        setTransparencyShadow(hasShadow: boolean): void;
-        private _packHalf(depth);
-        dispose(): void;
-        serialize(): any;
-        static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
-    }
-}
-
-declare module BABYLON {
     class BaseTexture {
         name: string;
         delayLoadState: number;
@@ -7005,6 +6962,126 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ShadowGenerator {
+        private static _FILTER_NONE;
+        private static _FILTER_VARIANCESHADOWMAP;
+        private static _FILTER_POISSONSAMPLING;
+        private static _FILTER_BLURVARIANCESHADOWMAP;
+        static FILTER_NONE: number;
+        static FILTER_VARIANCESHADOWMAP: number;
+        static FILTER_POISSONSAMPLING: number;
+        static FILTER_BLURVARIANCESHADOWMAP: number;
+        private _filter;
+        blurScale: number;
+        private _blurBoxOffset;
+        private _bias;
+        private _lightDirection;
+        forceBackFacesOnly: boolean;
+        bias: number;
+        blurBoxOffset: number;
+        filter: number;
+        useVarianceShadowMap: boolean;
+        usePoissonSampling: boolean;
+        useBlurVarianceShadowMap: boolean;
+        private _light;
+        private _scene;
+        private _shadowMap;
+        private _shadowMap2;
+        private _darkness;
+        private _transparencyShadow;
+        private _effect;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedPosition;
+        private _cachedDirection;
+        private _cachedDefines;
+        private _currentRenderID;
+        private _downSamplePostprocess;
+        private _boxBlurPostprocess;
+        private _mapSize;
+        private _currentFaceIndex;
+        private _currentFaceIndexCache;
+        constructor(mapSize: number, light: IShadowLight);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getShadowMap(): RenderTargetTexture;
+        getShadowMapForRendering(): RenderTargetTexture;
+        getLight(): IShadowLight;
+        getTransformMatrix(): Matrix;
+        getDarkness(): number;
+        setDarkness(darkness: number): void;
+        setTransparencyShadow(hasShadow: boolean): void;
+        private _packHalf(depth);
+        dispose(): void;
+        serialize(): any;
+        static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
+    }
+}
+
+declare module BABYLON {
+    class CannonJSPlugin implements IPhysicsEnginePlugin {
+        private _world;
+        private _registeredMeshes;
+        private _physicsMaterials;
+        private _gravity;
+        name: string;
+        initialize(iterations?: number): void;
+        private _checkWithEpsilon(value);
+        runOneStep(delta: number): void;
+        setGravity(gravity: Vector3): void;
+        getGravity(): Vector3;
+        registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any;
+        private _createShape(mesh, impostor);
+        private _createConvexPolyhedron(rawVerts, rawFaces, mesh);
+        private _createHeightmap(mesh, pointDepth?);
+        private _addMaterial(friction, restitution);
+        private _createRigidBodyFromShape(shape, mesh, options);
+        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
+        private _unbindBody(body);
+        unregisterMesh(mesh: AbstractMesh): void;
+        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        updateBodyPosition: (mesh: AbstractMesh) => void;
+        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean;
+        dispose(): void;
+        isSupported(): boolean;
+        getWorldObject(): any;
+        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
+    }
+}
+
+declare module BABYLON {
+    class OimoJSPlugin implements IPhysicsEnginePlugin {
+        private _world;
+        private _registeredMeshes;
+        name: string;
+        private _gravity;
+        private _checkWithEpsilon(value);
+        initialize(iterations?: number): void;
+        setGravity(gravity: Vector3): void;
+        getGravity(): Vector3;
+        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
+        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
+        private _createBodyAsCompound(part, options, initialMesh);
+        unregisterMesh(mesh: AbstractMesh): void;
+        private _unbindBody(body);
+        /**
+         * Update the body position according to the mesh position
+         * @param mesh
+         */
+        updateBodyPosition: (mesh: AbstractMesh) => void;
+        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
+        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
+        dispose(): void;
+        isSupported(): boolean;
+        getWorldObject(): any;
+        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
+        private _getLastShape(body);
+        runOneStep(time: number): void;
+    }
+}
+
+declare module BABYLON {
     class PostProcessRenderEffect {
         private _engine;
         private _postProcesses;
@@ -7102,68 +7179,6 @@ declare module BABYLON {
         disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera): any;
         disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera[]): any;
         update(): void;
-    }
-}
-
-declare module BABYLON {
-    class CannonJSPlugin implements IPhysicsEnginePlugin {
-        private _world;
-        private _registeredMeshes;
-        private _physicsMaterials;
-        private _gravity;
-        name: string;
-        initialize(iterations?: number): void;
-        private _checkWithEpsilon(value);
-        runOneStep(delta: number): void;
-        setGravity(gravity: Vector3): void;
-        getGravity(): Vector3;
-        registerMesh(mesh: AbstractMesh, impostor: number, options?: PhysicsBodyCreationOptions): any;
-        private _createShape(mesh, impostor);
-        private _createConvexPolyhedron(rawVerts, rawFaces, mesh);
-        private _createHeightmap(mesh, pointDepth?);
-        private _addMaterial(friction, restitution);
-        private _createRigidBodyFromShape(shape, mesh, options);
-        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        private _unbindBody(body);
-        unregisterMesh(mesh: AbstractMesh): void;
-        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        updateBodyPosition: (mesh: AbstractMesh) => void;
-        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3): boolean;
-        dispose(): void;
-        isSupported(): boolean;
-        getWorldObject(): any;
-        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
-    }
-}
-
-declare module BABYLON {
-    class OimoJSPlugin implements IPhysicsEnginePlugin {
-        private _world;
-        private _registeredMeshes;
-        name: string;
-        private _gravity;
-        private _checkWithEpsilon(value);
-        initialize(iterations?: number): void;
-        setGravity(gravity: Vector3): void;
-        getGravity(): Vector3;
-        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
-        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        private _createBodyAsCompound(part, options, initialMesh);
-        unregisterMesh(mesh: AbstractMesh): void;
-        private _unbindBody(body);
-        /**
-         * Update the body position according to the mesh position
-         * @param mesh
-         */
-        updateBodyPosition: (mesh: AbstractMesh) => void;
-        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
-        dispose(): void;
-        isSupported(): boolean;
-        getWorldObject(): any;
-        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
-        private _getLastShape(body);
-        runOneStep(time: number): void;
     }
 }
 

@@ -586,7 +586,7 @@ var BABYLON;
                 camera = new BABYLON.VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
             }
             else if (parsedCamera.type === "FreeCamera") {
-                camera = new BABYLON.UniversalCamera(parsedCamera.name, position, scene);
+                camera = new BABYLON.UniversalCamera(parsedCamera.name, position, scene); // Forcing Universal here
             }
             else {
                 // Universal Camera is the default value
