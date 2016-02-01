@@ -27,6 +27,7 @@ uniform float furOffset;
 uniform vec3 furGravity;
 uniform float furTime;
 uniform float furSpacing;
+uniform float furDensity;
 #endif
 #ifdef HEIGHTMAP
 uniform sampler2D heightTexture;
@@ -146,7 +147,7 @@ float r = Rand(position);
 	tangent1 = normalize(tangent1);
 	
     vec3 newPosition = position + normal * vfur_length*cos(furAngle) + tangent1 * vfur_length * sin(furAngle);
-	
+    
 	#ifdef HIGHLEVEL
 	// Compute fur data passed to the pixel shader
 	vec3 forceDirection = vec3(0.0, 0.0, 0.0);
@@ -167,7 +168,7 @@ float r = Rand(position);
 	
 	#ifdef NORMAL
 	#ifdef HIGHLEVEL
-	vNormalW = normalize(normal * aNormal);
+	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)) * aNormal);
 	#else
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
 	#endif
@@ -187,10 +188,6 @@ float r = Rand(position);
 	vec2 uv2 = vec2(0., 0.);
 #endif
 
-	#ifdef HIGHLEVEL
-	vFurUV = uv * 20.0;
-	#endif
-
 #ifdef DIFFUSE
 	if (vDiffuseInfos.x == 0.)
 	{
@@ -200,6 +197,14 @@ float r = Rand(position);
 	{
 		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
 	}
+    
+    #ifdef HIGHLEVEL
+	vFurUV = vDiffuseUV * furDensity;
+	#endif
+#else
+    #ifdef HIGHLEVEL
+	vFurUV = uv * furDensity;
+	#endif
 #endif
 
 	// Clip plane
