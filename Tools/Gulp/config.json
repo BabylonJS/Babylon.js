@@ -156,6 +156,7 @@
       "../../src/LensFlare/babylon.lensFlare.js",
       "../../src/LensFlare/babylon.lensFlareSystem.js",
       "../../src/Cameras/babylon.deviceOrientationCamera.js",
+      "../../src/Cameras/babylon.universalCamera.js",
       "../../src/Tools/babylon.gamepads.js",
       "../../src/Cameras/babylon.gamepadCamera.js",
       "../../src/Audio/babylon.analyser.js",
