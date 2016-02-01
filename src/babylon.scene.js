@@ -771,6 +771,20 @@ var BABYLON;
             }
         };
         /**
+         * Switch active camera
+         * @param {Camera} newCamera - new active camera
+         * @param {boolean} attachControl - call attachControl for the new active camera (default: true)
+         */
+        Scene.prototype.swithActiveCamera = function (newCamera, attachControl) {
+            if (attachControl === void 0) { attachControl = true; }
+            var canvas = this._engine.getRenderingCanvas();
+            this.activeCamera.detachControl(canvas);
+            this.activeCamera = newCamera;
+            if (attachControl) {
+                newCamera.attachControl(canvas);
+            }
+        };
+        /**
          * sets the active camera of the scene using its ID
          * @param {string} id - the camera's ID
          * @return {BABYLON.Camera|null} the new active camera or null if none found.
