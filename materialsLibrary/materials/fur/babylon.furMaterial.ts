@@ -69,14 +69,15 @@ module BABYLON {
         public furAngle: number = 0;
         public furColor = new Color3(0.44,0.21,0.02);
         
-        public furOffset: number = 0.9;
+        public furOffset: number = 0.0;
         public furSpacing: number = 12;
         public furGravity = new Vector3(0, 0, 0);
         public furSpeed: number = 100;
+        public furDensity: number = 20;
         public furTexture: DynamicTexture;
         
         public disableLighting = false;
-        public highLevelFur: boolean = false;
+        public highLevelFur: boolean = true;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3(1.,1.,1.);
@@ -91,6 +92,14 @@ module BABYLON {
             super(name, scene);
 
             this._cachedDefines.BonesPerMesh = -1;
+        }
+        
+        public get furTime() {
+            return this._furTime;
+        }
+        
+        public set furTime(furTime: number) {
+            this._furTime = furTime;
         }
 
         public needAlphaBlending(): boolean {
@@ -383,7 +392,7 @@ module BABYLON {
                         "mBones",
                         "vClipPlane", "diffuseMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3",
-                        "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing"
+                        "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing", "furDensity"
                     ],
                     ["diffuseSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
@@ -520,6 +529,7 @@ module BABYLON {
                 this._effect.setVector3("furGravity", this.furGravity);
                 this._effect.setFloat("furOffset", this.furOffset);
                 this._effect.setFloat("furSpacing", this.furSpacing);
+                this._effect.setFloat("furDensity", this.furDensity);
                 
                 this._furTime += this.getScene().getEngine().getDeltaTime() / this.furSpeed;
                 this._effect.setFloat("furTime", this._furTime);
@@ -577,9 +587,15 @@ module BABYLON {
             serializationObject.customType      = "BABYLON.FurMaterial";
             serializationObject.diffuseColor    = this.diffuseColor.asArray();
             serializationObject.disableLighting = this.disableLighting;
+            
             serializationObject.furLength = this.furLength;
             serializationObject.furAngle = this.furAngle;
             serializationObject.furColor = this.furColor.asArray();
+            
+            serializationObject.furGravity = this.furGravity.asArray();
+            serializationObject.furSpacing = this.furSpacing;
+            serializationObject.furSpeed = this.furSpeed;
+            serializationObject.furDensity = this.furDensity;
             
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
@@ -599,11 +615,15 @@ module BABYLON {
             material.furLength          = source.furLength;
             material.furAngle           = source.furAngle;
             material.furColor           = Color3.FromArray(source.furColor);
+            material.furGravity         = Vector3.FromArray(source.furGravity);
+            material.furSpacing         = source.furSpacing;
+            material.furSpeed           = source.furSpeed;
+            material.furDensity         = source.furDensity;
             material.disableLighting    = source.disableLighting;
 
-            material.alpha          = source.alpha;
+            material.alpha              = source.alpha;
 
-            material.id             = source.id;
+            material.id                 = source.id;
 
             Tags.AddTagsTo(material, source.tags);
             material.backFaceCulling = source.backFaceCulling;
@@ -639,6 +659,41 @@ module BABYLON {
             texture.wrapV = Texture.WRAP_ADDRESSMODE;
             
             return texture;
+        }
+        
+        // Creates and returns an array of meshes used as shells for the Fur Material
+        // that can be disposed later in your code
+        // The quality is in interval [0, 100]
+        public static FurifyMesh(sourceMesh: Mesh, quality: number): Mesh[] {
+            var meshes = [sourceMesh];
+            var mat: FurMaterial = <FurMaterial>sourceMesh.material;
+            
+            if (!(mat instanceof FurMaterial)) {
+                throw "The material of the source mesh must be a Fur Material";
+            }
+            
+            for (var i = 1; i < quality; i++) {
+                var offsetFur = new BABYLON.FurMaterial(mat.name + i, sourceMesh.getScene());
+                offsetFur.furLength = mat.furLength;
+                offsetFur.furAngle = mat.furAngle;
+                offsetFur.furGravity = mat.furGravity;
+                offsetFur.furSpacing = mat.furSpacing;
+                offsetFur.furSpeed = mat.furSpeed;
+                offsetFur.furColor = mat.furColor;
+                offsetFur.diffuseTexture = mat.diffuseTexture;
+                offsetFur.furOffset = i / quality;
+                offsetFur.furTexture = mat.furTexture;
+                offsetFur.highLevelFur = mat.highLevelFur;
+                offsetFur.furTime = mat.furTime;
+                offsetFur.furDensity = mat.furDensity;
+                
+                var offsetMesh = sourceMesh.clone(sourceMesh.name + i);
+                offsetMesh.material = offsetFur;
+                offsetMesh.skeleton = sourceMesh.skeleton;
+                meshes.push(offsetMesh);
+            }
+            
+            return meshes;
         }
     }
 } 
