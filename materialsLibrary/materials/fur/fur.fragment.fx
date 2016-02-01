@@ -392,11 +392,8 @@ void main(void) {
 	float alpha = vDiffuseColor.a;
 
 #ifdef DIFFUSE
-	#ifdef HIGHLEVEL
-	baseColor = vec4(0.0, 0.0, 0.0, 0.0);
-	#else
-	baseColor = texture2D(diffuseSampler, vDiffuseUV);
-	#endif
+	baseColor *= texture2D(diffuseSampler, vDiffuseUV);
+    
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
 		discard;
@@ -420,15 +417,11 @@ void main(void) {
 	// Fur
 	vec4 furTextureColor = texture2D(furTexture, vec2(vFurUV.x, vFurUV.y));
 	
-	#ifdef DIFFUSE
-	baseColor = texture2D(diffuseSampler, vec2(vFurUV.x * 0.2, vFurUV.y * 0.2)) * 2.0;
-	#endif
-	
 	if (furTextureColor.a <= 0.0 || furTextureColor.g < furOffset) {
 		discard;
 	}
 	
-	baseColor = vec4(furColor.xyz * baseColor.xyz, 1.1 - furOffset);
+	baseColor = vec4(baseColor.xyz, 1.0 - furOffset);
 	#endif
 
 	// Lighting
