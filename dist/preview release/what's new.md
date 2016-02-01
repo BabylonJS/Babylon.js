@@ -70,7 +70,7 @@
     - Float32Arrays can now directly be specified for vertex data attributes, `Mesh.updateVerticesDataDirectly` deprecated ([Palmer-JC](https://github.com/Palmer-JC))
     - Added panning axis to the ArcRotateCamera [PR](https://github.com/BabylonJS/Babylon.js/pull/913) ([mstdokumaci](https://github.com/mstdokumaci), [RaananW](https://github.com/RaananW))
     - Added `Tmp` class for internal use in order to improvement the memory management, [jerome](https://github.com/jbousquie))
-
+    - Added `Scene.swithActiveCamera(newCamera, attachControl)` to go from one camera active to another. ([dad72](https://github.com/dad72)) [PR](https://github.com/BabylonJS/Babylon.js/pull/928)
 
   - **Bug fixes**
     - Fixed a bug with spherical mapping ([deltakosh](https://github.com/deltakosh)) 
