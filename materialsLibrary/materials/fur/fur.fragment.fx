@@ -421,7 +421,9 @@ void main(void) {
 		discard;
 	}
 	
-	baseColor = vec4(baseColor.xyz, 1.0 - furOffset);
+    float occlusion = mix(0.0, furTextureColor.b * 1.2, furOffset);
+    
+	baseColor = vec4(baseColor.xyz * occlusion, 1.1 - furOffset);
 	#endif
 
 	// Lighting
