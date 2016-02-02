@@ -286,7 +286,7 @@ module BABYLON {
             }
             this.nbParticles += nb;
             this._shapeCounter++;
-            return this._shapeCounter;
+            return this._shapeCounter - 1;
         }
 
         // rebuilds a particle back to its just built status : if needed, recomputes the custom positions and vertices
@@ -746,4 +746,3 @@ module BABYLON {
         }
     }
 }
-
