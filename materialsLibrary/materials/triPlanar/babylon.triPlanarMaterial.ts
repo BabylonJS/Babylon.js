@@ -419,7 +419,7 @@ module BABYLON {
 
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
             
             this._effect.setFloat("tileSize", this.tileSize);
