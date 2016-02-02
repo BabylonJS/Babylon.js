@@ -122,6 +122,11 @@
             if (this.intensity) {
                 serializationObject.intensity = this.intensity;
             }
+            
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
 
             serializationObject.range = this.range;
 
