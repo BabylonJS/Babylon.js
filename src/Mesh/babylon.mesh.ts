@@ -364,6 +364,9 @@
         }
 
         public refreshBoundingInfo(): void {
+            if (this._boundingInfo.isLocked) {
+                return;
+            }
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
             if (data) {
@@ -770,7 +773,7 @@
                 scene.getOutlineRenderer().render(subMesh, batch);
                 engine.setColorWrite(true);
             }
-            
+
             // Overlay
             if (this.renderOverlay) {
                 var currentMode = engine.getAlphaMode();
@@ -928,7 +931,7 @@
                 Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
             }
             this.setVerticesData(VertexBuffer.NormalKind, temp, this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable());
-            
+
             // flip faces?
             if (transform.m[0] * transform.m[5] * transform.m[10] < 0) { this.flipFaces(); }
         }
@@ -1319,7 +1322,7 @@
         }
 
         // Statics
-        
+
         public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
             var mesh = new Mesh(parsedMesh.name, scene);
             mesh.id = parsedMesh.id;
@@ -1854,7 +1857,7 @@
             if (!(positionsData instanceof Float32Array)) {
                 positionsData = new Float32Array(positionsData);
             }
-            
+
             // normalsData checks for not being Float32Array will only pass at most once
             var normalsData = this.getVerticesData(VertexBuffer.NormalKind);
             if (!(normalsData instanceof Float32Array)) {
@@ -1911,7 +1914,7 @@
 
             return this;
         }
-        
+
         // Tools
         public static MinMax(meshes: AbstractMesh[]): { min: Vector3; max: Vector3 } {
             var minVector: Vector3 = null;
@@ -2006,9 +2009,3 @@
         }
     }
 }
-
-
-
-
-
-
