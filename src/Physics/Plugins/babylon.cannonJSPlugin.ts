@@ -18,13 +18,13 @@
         private _registeredMeshes: Array<IRegisteredMesh> = [];
         private _physicsMaterials = [];
         private _gravity: Vector3;
-        private _fixedTimeStep: number = 1/60;
+        private _fixedTimeStep: number = 1 / 60;
         //private _maxSubSteps : number = 15;
 
         public name = "CannonJS";
-        
+
         public constructor(private _useDeltaForWorldStep: boolean = true) {
-            
+
         }
 
         public initialize(iterations: number = 10): void {
@@ -38,7 +38,7 @@
         }
 
         public runOneStep(delta: number): void {
-            
+
             this._world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0);
 
             this._registeredMeshes.forEach((registeredMesh) => {
@@ -461,10 +461,10 @@
 
                 if (registeredMesh.mesh === mesh1) {
                     body1 = registeredMesh.body;
-                    if(body2) break;
+                    if (body2) break;
                 } else if (registeredMesh.mesh === mesh2) {
                     body2 = registeredMesh.body;
-                    if(body1) break;
+                    if (body1) break;
                 }
             }
 
@@ -503,3 +503,4 @@
         }
     }
 }
+

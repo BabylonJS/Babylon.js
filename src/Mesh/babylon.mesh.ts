@@ -51,6 +51,7 @@
         public _binaryInfo: any;
         private _LODLevels = new Array<Internals.MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
+        public onBeforeDraw: () => void;
 
         // Private
         public _geometry: Geometry;
@@ -532,6 +533,10 @@
         public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): void {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
+            }
+
+            if (this.onBeforeDraw) {
+                this.onBeforeDraw();
             }
 
             var engine = this.getScene().getEngine();
@@ -2009,3 +2014,4 @@
         }
     }
 }
+

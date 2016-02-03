@@ -81,6 +81,10 @@ var BABYLON;
             if (this.intensity) {
                 serializationObject.intensity = this.intensity;
             }
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
             serializationObject.range = this.range;
             serializationObject.diffuse = this.diffuse.asArray();
             serializationObject.specular = this.specular.asArray();

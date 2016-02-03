@@ -306,7 +306,7 @@
 
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline && Database.IsUASupportingBlobStorage) {
+            if (url.substr(0, 5) !== "data:" && database && database.enableTexturesOffline && Database.IsUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {

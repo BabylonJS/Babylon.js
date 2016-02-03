@@ -241,7 +241,7 @@ var BABYLON;
                 database.loadImageFromDB(url, img);
             };
             //ANY database to do!
-            if (database && database.enableTexturesOffline && BABYLON.Database.IsUASupportingBlobStorage) {
+            if (url.substr(0, 5) !== "data:" && database && database.enableTexturesOffline && BABYLON.Database.IsUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
