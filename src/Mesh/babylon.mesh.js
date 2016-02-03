@@ -345,6 +345,9 @@ var BABYLON;
             this._visibleInstances[renderId].push(instance);
         };
         Mesh.prototype.refreshBoundingInfo = function () {
+            if (this._boundingInfo.isLocked) {
+                return;
+            }
             var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (data) {
                 var extend = BABYLON.Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
@@ -483,6 +486,9 @@ var BABYLON;
         Mesh.prototype._draw = function (subMesh, fillMode, instancesCount) {
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
+            }
+            if (this.onBeforeDraw) {
+                this.onBeforeDraw();
             }
             var engine = this.getScene().getEngine();
             // Draw order

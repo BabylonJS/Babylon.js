@@ -39,10 +39,10 @@
             if (!obj._tags) {
                 return null;
             }
-            if(asString) {
+            if (asString) {
                 var tagsArray = []
-                for(var tag in obj._tags) {
-                    if(obj._tags.hasOwnProperty(tag) && obj._tags[tag]===true) {
+                for (var tag in obj._tags) {
+                    if (obj._tags.hasOwnProperty(tag) && obj._tags[tag] === true) {
                         tagsArray.push(tag);
                     }
                 }
@@ -50,7 +50,7 @@
             } else {
                 return obj._tags;
             }
-            
+
         }
 
         // the tags 'true' and 'false' are reserved and cannot be used as tags

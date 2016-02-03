@@ -96,7 +96,7 @@
                     if (typeof (urlOrArrayBuffer) === "string") {
                         // Loading sound using XHR2
                         if (!this._streaming) {
-                            Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
+                            Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, this._scene.database, true);
                         }
                         // Streaming sound using HTML5 Audio tag
                         else {

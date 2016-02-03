@@ -80,7 +80,7 @@ var BABYLON;
                     if (typeof (urlOrArrayBuffer) === "string") {
                         // Loading sound using XHR2
                         if (!this._streaming) {
-                            BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) { _this._soundLoaded(data); }, null, null, true);
+                            BABYLON.Tools.LoadFile(urlOrArrayBuffer, function (data) { _this._soundLoaded(data); }, null, this._scene.database, true);
                         }
                         else {
                             this._htmlAudioElement = new Audio(urlOrArrayBuffer);

@@ -6,13 +6,14 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 [![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
 
 ## CDN
-- http://cdn.babylonjs.com/2-2/babylon.js 
-- http://cdn.babylonjs.com/2-2/babylon.max.js 
-- http://cdn.babylonjs.com/2-2/babylon.noworker.js 
+- http://cdn.babylonjs.com/2-3/babylon.js 
+- http://cdn.babylonjs.com/2-3/babylon.max.js 
+- http://cdn.babylonjs.com/2-3/babylon.noworker.js 
+- http://cdn.babylonjs.com/2-3/babylon.core.js 
 
 ## Preview release
 You can help by testing or contributing to the next version.
-- **2.3-beta** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
+- **2.4-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
 - We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
 - Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
 
