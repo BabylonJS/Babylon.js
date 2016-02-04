@@ -412,7 +412,6 @@
                     var value: any = null;
 
                     if (targetPath === "rotationQuaternion") { // VEC4
-                        //value = Quaternion.RotationAxis(Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]).normalize(), bufferOutput[arrayOffset + 3]);
                         value = Quaternion.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
                         arrayOffset += 4;
                     }
@@ -468,7 +467,7 @@
             var scale = Vector3.FromArray(node.scale);
             var rotation = Quaternion.FromArray(node.rotation);
             var position = Vector3.FromArray(node.translation);
-            
+
             mat = Matrix.Compose(scale, rotation, position);
         }
         else {
@@ -753,7 +752,6 @@
         if (!node.babylonNode) {
             return newMesh;
         }
-
         var multiMat = new MultiMaterial("multimat" + id, gltfRuntime.scene);
         newMesh.material = multiMat;
 
@@ -918,6 +916,12 @@
             var scaling = new Vector3(0, 0, 0);
             var mat = Matrix.FromArray(node.matrix);
             mat.decompose(scaling, rotation, position);
+
+            // Y is Up
+            if (GLTFFileLoader.MakeYUP) {
+                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
+            }
+
             configureNode(newNode, position, rotation, scaling);
 
             if (newNode instanceof TargetCamera) {
@@ -925,7 +929,6 @@
             }
         }
         else {
-            //configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.RotationAxis(Vector3.FromArray(node.rotation), node.rotation[3]), Vector3.FromArray(node.scale));
             configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
         }
     };
@@ -1478,8 +1481,8 @@
 
             // Create shader material
             var shaderPath = {
-                vertex: program.vertexShader,
-                fragment: program.fragmentShader
+                vertex: program.vertexShader + mat,
+                fragment: program.fragmentShader + mat
             };
 
             var options = {
@@ -1489,8 +1492,8 @@
                 needAlphaBlending: states.functions && states.functions.blendEquationSeparate
             };
 
-            Effect.ShadersStore[program.vertexShader + "VertexShader"] = newVertexShader;
-            Effect.ShadersStore[program.fragmentShader + "PixelShader"] = newPixelShader;
+            Effect.ShadersStore[program.vertexShader + mat + "VertexShader"] = newVertexShader;
+            Effect.ShadersStore[program.fragmentShader + mat + "PixelShader"] = newPixelShader;
 
             var shaderMaterial = new ShaderMaterial(material.name, gltfRuntime.scene, shaderPath, options);
             shaderMaterial.id = mat;
@@ -1590,6 +1593,11 @@
         * Private members
         */
         // None
+
+        /**
+        * Static members
+        */
+        public static MakeYUP: boolean = false;
 
         /**
         * Import meshes
