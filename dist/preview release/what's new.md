@@ -1,5 +1,6 @@
 - 2.4.0:
   - **Major updates**
   - **Updates**
+    - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**
   - **Breaking changes**
