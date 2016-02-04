@@ -52,6 +52,18 @@
         }
 
         // Public functions
+        public static GetPluginForExtension(extension: string): ISceneLoaderPlugin {
+            for (var index = 0; index < this._registeredPlugins.length; index++) {
+                var plugin = this._registeredPlugins[index];
+
+                if (plugin.extensions.indexOf(extension) !== -1) {
+                    return plugin;
+                }
+            }
+
+            return null;
+        }
+
         public static RegisterPlugin(plugin: ISceneLoaderPlugin): void {
             plugin.extensions = plugin.extensions.toLowerCase();
             SceneLoader._registeredPlugins.push(plugin);

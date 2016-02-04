@@ -1,5 +1,6 @@
 - 2.4.0:
   - **Major updates**
+    - New refraction channel for Standardd material. [See demo here](NEED FEATURE DEMO) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**

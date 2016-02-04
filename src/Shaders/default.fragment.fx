@@ -154,6 +154,11 @@ uniform vec2 vLightmapInfos;
 uniform sampler2D lightmapSampler;
 #endif
 
+#ifdef REFRACTION
+uniform vec2 vRefractionInfos;
+uniform samplerCube refractionSampler;
+#endif
+
 #if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
@@ -847,6 +852,20 @@ void main(void) {
 #endif
 #endif
 
+	// Refraction http://www.babylonjs-playground.com/#22KZUW#0
+	vec3 refractionColor = vec3(0., 0., 0.);
+
+#ifdef REFRACTION
+	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+
+	refractionVector.y = -refractionVector.y;
+
+	if (dot(refractionVector, viewDirectionW) < 0.01)
+	{
+		refractionColor = textureCube(refractionSampler, refractionVector).rgb * vRefractionInfos.x;
+	}
+#endif
+
 	// Reflection
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
@@ -961,9 +980,9 @@ void main(void) {
 
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
-	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor, 0.0, 1.0), alpha);
+	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor + refractionColor, 0.0, 1.0), alpha);
 #else
-	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
+	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + refractionColor, alpha);
 #endif
 
 #ifdef LIGHTMAP

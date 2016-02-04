@@ -121,6 +121,7 @@
         public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
         public INVERTCUBICMAP = false;
         public LOGARITHMICDEPTH = false;
+        public REFRACTION = false;
 
         constructor() {
             super();
@@ -137,6 +138,7 @@
         public specularTexture: BaseTexture;
         public bumpTexture: BaseTexture;
         public lightmapTexture: BaseTexture;
+        public refractionTexture: BaseTexture;
 
         public ambientColor = new Color3(0, 0, 0);
         public diffuseColor = new Color3(1, 1, 1);
@@ -151,6 +153,8 @@
         public disableLighting = false;
 
         public roughness = 0;
+
+        public indexOfRefraction = 1.05;
 
         public useLightmapAsShadowmap = false;
 
@@ -181,6 +185,10 @@
 
                 if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
                     this._renderTargets.push(this.reflectionTexture);
+                }
+
+                if (this.refractionTexture && this.refractionTexture.isRenderTarget) {
+                    this._renderTargets.push(this.refractionTexture);
                 }
 
                 return this._renderTargets;
@@ -506,14 +514,23 @@
                         this._defines.GLOSSINESS = this.useGlossinessFromSpecularMapAlpha;
                     }
                 }
-            }
 
-            if (scene.getEngine().getCaps().standardDerivatives && this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
-                if (!this.bumpTexture.isReady()) {
-                    return false;
-                } else {
-                    needUVs = true;
-                    this._defines.BUMP = true;
+                if (scene.getEngine().getCaps().standardDerivatives && this.bumpTexture && StandardMaterial.BumpTextureEnabled) {
+                    if (!this.bumpTexture.isReady()) {
+                        return false;
+                    } else {
+                        needUVs = true;
+                        this._defines.BUMP = true;
+                    }
+                }
+
+                if (this.refractionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    if (!this.refractionTexture.isReady()) {
+                        return false;
+                    } else {
+                        needUVs = true;
+                        this._defines.REFRACTION = true;
+                    }
                 }
             }
 
@@ -758,14 +775,14 @@
                         "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                         "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                         "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos",
+                        "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues", 
+                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
                         "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
                         "logarithmicDepthConstant"
                     ],
-                    ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
+                    ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                     ],
                     join, fallbacks, this.onCompiled, this.onError);
@@ -898,6 +915,12 @@
                         this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
                         this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
                     }
+
+                    if (this.refractionTexture && StandardMaterial.RefractionEnabled) {
+                        this._effect.setTexture("refractionSampler", this.refractionTexture);
+
+                        this._effect.setFloat2("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction);
+                    }
                 }
 
                 // Clip plane
@@ -922,7 +945,7 @@
                 }
                 this._effect.setColor3("vEmissiveColor", this.emissiveColor);
             }
-            
+
             if (scene.getCachedMaterial() !== this || !this.isFrozen) {
                 // Diffuse
                 this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -983,6 +1006,14 @@
                 results.push(this.bumpTexture);
             }
 
+            if (this.lightmapTexture && this.lightmapTexture.animations && this.lightmapTexture.animations.length > 0) {
+                results.push(this.lightmapTexture);
+            }
+
+            if (this.refractionTexture && this.refractionTexture.animations && this.refractionTexture.animations.length > 0) {
+                results.push(this.refractionTexture);
+            }
+
             return results;
         }
 
@@ -1013,6 +1044,14 @@
 
             if (this.bumpTexture) {
                 this.bumpTexture.dispose();
+            }
+
+            if (this.lightmapTexture) {
+                this.lightmapTexture.dispose();
+            }
+
+            if (this.refractionTexture) {
+                this.refractionTexture.dispose();
             }
 
             super.dispose(forceDisposeEffect);
@@ -1049,6 +1088,9 @@
             if (this.lightmapTexture && this.lightmapTexture.clone) {
                 newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
                 newStandardMaterial.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
+            }
+            if (this.refractionTexture && this.refractionTexture.clone) {
+                newStandardMaterial.refractionTexture = this.refractionTexture.clone();
             }
 
             newStandardMaterial.ambientColor = this.ambientColor.clone();
@@ -1139,6 +1181,10 @@
                 serializationObject.bumpTexture = this.bumpTexture.serialize();
             }
 
+            if (this.refractionTexture) {
+                serializationObject.refractionTexture = this.refractionTexture.serialize();
+            }
+
             return serializationObject;
         }
 
@@ -1153,6 +1199,7 @@
         public static BumpTextureEnabled = true;
         public static FresnelEnabled = true;
         public static LightmapEnabled = true;
+        public static RefractionEnabled = true;
 
         public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
             var material = new StandardMaterial(source.name, scene);
@@ -1224,6 +1271,10 @@
 
             if (source.bumpTexture) {
                 material.bumpTexture = Texture.Parse(source.bumpTexture, scene, rootUrl);
+            }
+
+            if (source.refractionTexture) {
+                material.refractionTexture = Texture.Parse(source.refractionTexture, scene, rootUrl);
             }
 
             if (source.checkReadyOnlyOnce) {

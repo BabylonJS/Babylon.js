@@ -1173,7 +1173,7 @@ var BABYLON;
                     if (material.getRenderTargetTextures) {
                         if (this._processedMaterials.indexOf(material) === -1) {
                             this._processedMaterials.push(material);
-                            this._renderTargets.concat(material.getRenderTargetTextures());
+                            this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
                         }
                     }
                     // Dispatch
