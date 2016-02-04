@@ -378,7 +378,6 @@ var BABYLON;
                 for (var j = 0; j < bufferInput.length; j++) {
                     var value = null;
                     if (targetPath === "rotationQuaternion") {
-                        //value = Quaternion.RotationAxis(Vector3.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]).normalize(), bufferOutput[arrayOffset + 3]);
                         value = BABYLON.Quaternion.FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
                         arrayOffset += 4;
                     }
@@ -794,13 +793,16 @@ var BABYLON;
             var scaling = new BABYLON.Vector3(0, 0, 0);
             var mat = BABYLON.Matrix.FromArray(node.matrix);
             mat.decompose(scaling, rotation, position);
+            // Y is Up
+            if (GLTFFileLoader.MakeYUP) {
+                rotation = rotation.multiply(new BABYLON.Quaternion(-0.707107, 0, 0, 0.707107));
+            }
             configureNode(newNode, position, rotation, scaling);
             if (newNode instanceof BABYLON.TargetCamera) {
                 newNode.setTarget(BABYLON.Vector3.Zero());
             }
         }
         else {
-            //configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.RotationAxis(Vector3.FromArray(node.rotation), node.rotation[3]), Vector3.FromArray(node.scale));
             configureNode(newNode, BABYLON.Vector3.FromArray(node.translation), BABYLON.Quaternion.FromArray(node.rotation), BABYLON.Vector3.FromArray(node.scale));
         }
     };
@@ -1254,8 +1256,8 @@ var BABYLON;
             }
             // Create shader material
             var shaderPath = {
-                vertex: program.vertexShader,
-                fragment: program.fragmentShader
+                vertex: program.vertexShader + mat,
+                fragment: program.fragmentShader + mat
             };
             var options = {
                 attributes: attributes,
@@ -1263,8 +1265,8 @@ var BABYLON;
                 samplers: samplers,
                 needAlphaBlending: states.functions && states.functions.blendEquationSeparate
             };
-            BABYLON.Effect.ShadersStore[program.vertexShader + "VertexShader"] = newVertexShader;
-            BABYLON.Effect.ShadersStore[program.fragmentShader + "PixelShader"] = newPixelShader;
+            BABYLON.Effect.ShadersStore[program.vertexShader + mat + "VertexShader"] = newVertexShader;
+            BABYLON.Effect.ShadersStore[program.fragmentShader + mat + "PixelShader"] = newPixelShader;
             var shaderMaterial = new BABYLON.ShaderMaterial(material.name, gltfRuntime.scene, shaderPath, options);
             shaderMaterial.id = mat;
             shaderMaterial.onError = onShaderCompileError(program, shaderMaterial);
@@ -1351,10 +1353,6 @@ var BABYLON;
             */
             this.extensions = ".gltf";
         }
-        /**
-        * Private members
-        */
-        // None
         /**
         * Import meshes
         */
@@ -1498,9 +1496,18 @@ var BABYLON;
             }
             return gltfRuntime;
         };
+        /**
+        * Private members
+        */
+        // None
+        /**
+        * Static members
+        */
+        GLTFFileLoader.MakeYUP = false;
         return GLTFFileLoader;
     })();
     BABYLON.GLTFFileLoader = GLTFFileLoader;
     ;
     BABYLON.SceneLoader.RegisterPlugin(new GLTFFileLoader());
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.glTFFileLoader.js.map
