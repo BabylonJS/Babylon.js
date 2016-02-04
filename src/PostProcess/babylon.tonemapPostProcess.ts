@@ -11,12 +11,12 @@
     export class TonemapPostProcess extends PostProcess
     {
         private _operator : TonemappingOperator;
-        private _exposureAdjustment : number;
+        public exposureAdjustment : number;
 
         constructor(name: string, operator: TonemappingOperator, exposureAdjustment: number, camera: Camera, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Engine.TEXTURETYPE_UNSIGNED_INT)
         {
             this._operator = operator;
-            this._exposureAdjustment = exposureAdjustment;
+            this.exposureAdjustment = exposureAdjustment;
 
             var params = ["_ExposureAdjustment"];
             var defines = "#define ";
@@ -34,7 +34,7 @@
 
             this.onApply = (effect: Effect) =>
             {
-                effect.setFloat("_ExposureAdjustment", this._exposureAdjustment);
+                effect.setFloat("_ExposureAdjustment", this.exposureAdjustment);
             };
         }
     }
