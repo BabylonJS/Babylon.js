@@ -144,8 +144,8 @@ module BABYLON {
         * @param number the wanted number of particles : each particle is built with mesh_total_facets / number facets (optional)
         */
         public digest(mesh: Mesh, options?: {facetNb?: number; number?: number}): void {
-            var size: number = options.facetNb || 1;
-            var number: number = options.number;
+            var size: number = (options && options.facetNb) || 1;
+            var number: number = (options && options.number);
             var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
