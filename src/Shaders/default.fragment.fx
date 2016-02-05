@@ -865,7 +865,7 @@ void main(void) {
 
 	refractionVector.y = -refractionVector.y;
 
-	if (dot(refractionVector, viewDirectionW) < 0.01)
+	if (dot(refractionVector, viewDirectionW) < 1.0)
 	{
 		refractionColor = textureCube(refractionSampler, refractionVector).rgb * vRefractionInfos.x;
 	}
