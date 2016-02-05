@@ -135,6 +135,95 @@ module BABYLON {
             return mesh;
         }
 
+        /**
+        * Digests the mesh and generates as many solid particles in the system as wanted.
+        * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
+        * Thus the particles generated from digest() have their property "positiion" yet set.
+        * @param mesh the mesh to be digested
+        * @param facetNb the number of mesh facets per particle (optional, default 1), this parameter is overriden by the parameter "number" if any
+        * @param number the wanted number of particles : each particle is built with mesh_total_facets / number facets (optional)
+        */
+        public digest(mesh: Mesh, options?: {facetNb?: number; number?: number}): void {
+            var size: number = (options && options.facetNb) || 1;
+            var number: number = (options && options.number);
+            var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
+            var meshInd = mesh.getIndices();
+            var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
+            var meshCol = mesh.getVerticesData(VertexBuffer.ColorKind);
+
+            var f: number = 0;                              // facet counter
+            var totalFacets: number = meshInd.length / 3;   // a facet is a triangle, so 3 indices
+            // compute size from number
+            if (number) {
+                number = (number > totalFacets) ? totalFacets : number;
+                size = Math.round(totalFacets / number);
+            } else {
+                size = (size > totalFacets) ? totalFacets : size;
+            }
+
+            var facetPos: number[] = [];      // submesh positions
+            var facetInd: number[] = [];      // submesh indices
+            var facetUV: number[] = [];       // submesh UV
+            var facetCol: number[] = [];      // submesh colors
+            var barycenter: Vector3 = Tmp.Vector3[0];
+
+            while (f < totalFacets) {
+                if (f > totalFacets - size) {
+                    size = totalFacets - f;
+                }
+                // reset temp arrays
+                facetPos.length = 0;
+                facetInd.length = 0;
+                facetUV.length = 0;
+                facetCol.length = 0;
+
+                // iterate over "size" facets
+                var fi: number = 0;
+                for (var j = f * 3; j < (f + size) * 3; j++) {
+                    facetInd.push(fi);
+                    var i: number = meshInd[j];
+                    facetPos.push(meshPos[i * 3], meshPos[i * 3 + 1], meshPos[i * 3 + 2]);
+                    if (meshUV) {
+                        facetUV.push(meshUV[i * 2], meshUV[i * 2 + 1]);
+                    }
+                    if (meshCol) {
+                        facetCol.push(meshCol[i * 4], meshCol[i * 4 + 1], meshCol[i * 4 + 2], meshCol[i * 4 + 3]);
+                    }
+                    fi++;
+                }
+
+                // create a model shape for each single particle
+                var idx: number = this.nbParticles;
+                var shape: Vector3[] = this._posToShape(facetPos);
+                var shapeUV: number[] = this._uvsToShapeUV(facetUV);
+
+                // compute the barycenter of the shape
+                var v: number;
+                for (v = 0; v < shape.length; v++) {
+                    barycenter.addInPlace(shape[v]);
+                }
+                barycenter.scaleInPlace(1 / shape.length);
+
+                // shift the shape from its barycenter to the origin
+                for (v = 0; v < shape.length; v++) {
+                    shape[v].subtractInPlace(barycenter);
+                }
+                var modelShape = new ModelShape(this._shapeCounter, shape, shapeUV, null, null);
+
+                // add the particle in the SPS
+                this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, idx, 0, null);
+                this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0);
+                // initialize the particle position
+                this.particles[this.nbParticles].position.addInPlace(barycenter);
+
+                this._index += shape.length;
+                idx++;
+                this.nbParticles++;
+                this._shapeCounter++;
+                f += size;
+            }
+        }
+
         //reset copy
         private _resetCopy() {
             this._copy.position.x = 0;
