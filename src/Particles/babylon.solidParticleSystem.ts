@@ -143,7 +143,7 @@ module BABYLON {
         * @param facetNb the number of mesh facets per particle (optional, default 1), this parameter is overriden by the parameter "number" if any
         * @param number the wanted number of particles : each particle is built with mesh_total_facets / number facets (optional)
         */
-        public digest(mesh: Mesh, options?: {facetNb?: number; number?: number}): void {
+        public digest(mesh: Mesh, options?: { facetNb?: number; number?: number }): void {
             var size: number = (options && options.facetNb) || 1;
             var number: number = (options && options.number);
             var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -835,3 +835,4 @@ module BABYLON {
         }
     }
 }
+

@@ -93,6 +93,7 @@
         public DIFFUSEFRESNEL = false;
         public OPACITYFRESNEL = false;
         public REFLECTIONFRESNEL = false;
+        public REFRACTIONFRESNEL = false;
         public EMISSIVEFRESNEL = false;
         public FRESNEL = false;
         public NORMAL = false;
@@ -161,6 +162,7 @@
         public diffuseFresnelParameters: FresnelParameters;
         public opacityFresnelParameters: FresnelParameters;
         public reflectionFresnelParameters: FresnelParameters;
+        public refractionFresnelParameters: FresnelParameters;
         public emissiveFresnelParameters: FresnelParameters;
 
         public useGlossinessFromSpecularMapAlpha = false;
@@ -582,6 +584,7 @@
                 if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled ||
                     this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled ||
                     this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled ||
+                    this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled ||
                     this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
 
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
@@ -594,6 +597,10 @@
 
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
                         this._defines.REFLECTIONFRESNEL = true;
+                    }
+
+                    if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
+                        this._defines.REFRACTIONFRESNEL = true;
                     }
 
                     if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
@@ -779,7 +786,7 @@
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
-                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor",
+                        "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                         "logarithmicDepthConstant"
                     ],
                     ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionSampler",
@@ -846,6 +853,11 @@
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
                         this._effect.setColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
                         this._effect.setColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
+                    }
+
+                    if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
+                        this._effect.setColor4("refractionLeftColor", this.refractionFresnelParameters.leftColor, this.refractionFresnelParameters.power);
+                        this._effect.setColor4("refractionRightColor", this.refractionFresnelParameters.rightColor, this.refractionFresnelParameters.bias);
                     }
 
                     if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
@@ -1114,6 +1126,9 @@
             if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.clone) {
                 newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
             }
+            if (this.refractionFresnelParameters && this.refractionFresnelParameters.clone) {
+                newStandardMaterial.refractionFresnelParameters = this.refractionFresnelParameters.clone();
+            }
             if (this.opacityFresnelParameters && this.opacityFresnelParameters.clone) {
                 newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
             }
@@ -1158,6 +1173,10 @@
 
             if (this.reflectionFresnelParameters) {
                 serializationObject.reflectionFresnelParameters = this.reflectionFresnelParameters.serialize();
+            }
+
+            if (this.refractionFresnelParameters) {
+                serializationObject.refractionFresnelParameters = this.refractionFresnelParameters.serialize();
             }
 
             if (this.emissiveTexture) {
@@ -1250,6 +1269,10 @@
 
             if (source.reflectionFresnelParameters) {
                 material.reflectionFresnelParameters = FresnelParameters.Parse(source.reflectionFresnelParameters);
+            }
+
+            if (source.refractionFresnelParameters) {
+                material.refractionFresnelParameters = FresnelParameters.Parse(source.refractionFresnelParameters);
             }
 
             if (source.emissiveTexture) {
