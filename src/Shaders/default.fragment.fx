@@ -157,6 +157,11 @@ uniform sampler2D lightmapSampler;
 #ifdef REFRACTION
 uniform vec2 vRefractionInfos;
 uniform samplerCube refractionSampler;
+
+#ifdef REFRACTIONFRESNEL
+uniform vec4 refractionLeftColor;
+uniform vec4 refractionRightColor;
+#endif
 #endif
 
 #if defined(SPECULAR) && defined(SPECULARTERM)
@@ -914,6 +919,12 @@ void main(void) {
 	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
 #endif
 #endif
+#endif
+
+#ifdef REFRACTIONFRESNEL
+	float refractionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, refractionRightColor.a, refractionLeftColor.a);
+
+	refractionColor *= refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * refractionRightColor.rgb;
 #endif
 
 #ifdef OPACITY
