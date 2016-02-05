@@ -3,5 +3,6 @@
     - New refraction channel for Standardd material (including fresnel support). [See demo here](NEED FEATURE DEMO) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
+    - New SPS method `digest()` ([jerome](https://github.com/jbousquie))
   - **Bug fixes**
   - **Breaking changes**
