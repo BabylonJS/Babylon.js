@@ -57,6 +57,7 @@ var BABYLON;
         // Methods
         Bone.prototype.updateMatrix = function (matrix) {
             this._baseMatrix = matrix.clone();
+            this._matrix = matrix.clone();
             this._skeleton._markAsDirty();
             this._updateDifferenceMatrix();
         };
