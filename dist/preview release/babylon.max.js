@@ -12333,7 +12333,6 @@ var BABYLON;
             this._transformMatrix = BABYLON.Matrix.Zero();
             this._edgesRenderers = new BABYLON.SmartArray(16);
             this._uniqueIdCounter = 0;
-            this._pickedMeshName = null;
             this._engine = engine;
             engine.scenes.push(this);
             this._renderingManager = new BABYLON.RenderingManager(this);
@@ -12557,7 +12556,6 @@ var BABYLON;
                     return;
                 }
                 _this._updatePointerPosition(evt);
-                _this._pickedMeshName = null;
                 _this._startingPointerPosition.x = _this._pointerX;
                 _this._startingPointerPosition.y = _this._pointerY;
                 _this._startingPointerTime = new Date().getTime();
@@ -12572,7 +12570,7 @@ var BABYLON;
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
-                        _this._pickedMeshName = pickResult.pickedMesh.name;
+                        _this._pickedDownMesh = pickResult.pickedMesh;
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
                                 case 0:
@@ -12593,7 +12591,6 @@ var BABYLON;
                                 var pickResult = that.pick(that._pointerX, that._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger); }, false, that.cameraToUseForPointers);
                                 if (pickResult.hit && pickResult.pickedMesh) {
                                     if (pickResult.pickedMesh.actionManager) {
-                                        this._pickedDownMesh = pickResult.pickedMesh;
                                         if (that._startingPointerTime !== 0 && ((new Date().getTime() - that._startingPointerTime) > BABYLON.ActionManager.LongPressDelay) && (Math.abs(that._startingPointerPosition.x - that._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(that._startingPointerPosition.y - that._pointerY) < BABYLON.ActionManager.DragMovementThreshold)) {
                                             that._startingPointerTime = 0;
                                             pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -12644,7 +12641,7 @@ var BABYLON;
                 // Meshes
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    if (_this.onPointerPick && _this._pickedMeshName != null && pickResult.pickedMesh.name == _this._pickedMeshName) {
+                    if (_this.onPointerPick && _this._pickedDownMesh != null && pickResult.pickedMesh == _this._pickedDownMesh) {
                         _this.onPointerPick(evt, pickResult);
                     }
                     if (pickResult.pickedMesh.actionManager) {
@@ -12655,7 +12652,7 @@ var BABYLON;
                     }
                 }
                 if (_this._pickedDownMesh && _this._pickedDownMesh !== pickResult.pickedMesh) {
-                    _this._pickedDownMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(_this._pickedDownMesh, evt));
+                    _this._pickedDownMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNew(_this._pickedDownMesh, evt));
                 }
                 if (_this.onPointerUp) {
                     _this.onPointerUp(evt, pickResult);
@@ -12673,7 +12670,7 @@ var BABYLON;
                         }
                     }
                     if (_this._pickedDownSprite && _this._pickedDownSprite !== pickResult.pickedSprite) {
-                        _this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(_this._pickedDownSprite, _this, evt));
+                        _this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(_this._pickedDownSprite, _this, evt));
                     }
                 }
             };
@@ -26401,6 +26398,14 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "OnPickOutTrigger", {
+            /// This trigger will only be raised if you also declared a OnPickDown
+            get: function () {
+                return ActionManager._OnPickOutTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ActionManager, "OnLongPressTrigger", {
             get: function () {
                 return ActionManager._OnLongPressTrigger;
@@ -26748,6 +26753,7 @@ var BABYLON;
         ActionManager._OnIntersectionExitTrigger = 12;
         ActionManager._OnKeyDownTrigger = 13;
         ActionManager._OnKeyUpTrigger = 14;
+        ActionManager._OnPickOutTrigger = 15;
         ActionManager.DragMovementThreshold = 10; // in pixels
         ActionManager.LongPressDelay = 500; // in milliseconds
         return ActionManager;

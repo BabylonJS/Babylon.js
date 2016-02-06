@@ -278,8 +278,7 @@
         private _depthRenderer: DepthRenderer;
 
         private _uniqueIdCounter = 0;
-
-        private _pickedMeshName: string = null;
+        
         private _pickedDownMesh: AbstractMesh;
         private _pickedDownSprite: Sprite;
 
@@ -495,7 +494,6 @@
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
                     } else {
-
                         // Restore pointer
                         this.setPointerOverMesh(null);
                         canvas.style.cursor = "";
@@ -514,7 +512,6 @@
                 }
 
                 this._updatePointerPosition(evt);
-                this._pickedMeshName = null;
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = new Date().getTime();
@@ -532,7 +529,7 @@
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
-                        this._pickedMeshName = pickResult.pickedMesh.name;
+                        this._pickedDownMesh = pickResult.pickedMesh;
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
                                 case 0:
@@ -557,7 +554,6 @@
 
                                 if (pickResult.hit && pickResult.pickedMesh) {
                                     if (pickResult.pickedMesh.actionManager) {
-                                        this._pickedDownMesh = pickResult.pickedMesh;
                                         if (that._startingPointerTime !== 0 && ((new Date().getTime() - that._startingPointerTime) > ActionManager.LongPressDelay) && (Math.abs(that._startingPointerPosition.x - that._pointerX) < ActionManager.DragMovementThreshold && Math.abs(that._startingPointerPosition.y - that._pointerY) < ActionManager.DragMovementThreshold)) {
                                             that._startingPointerTime = 0;
                                             pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -617,7 +613,7 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    if (this.onPointerPick && this._pickedMeshName != null && pickResult.pickedMesh.name == this._pickedMeshName) {
+                    if (this.onPointerPick && this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
                         this.onPointerPick(evt, pickResult);
                     }
                     if (pickResult.pickedMesh.actionManager) {
@@ -629,10 +625,9 @@
                     }
                 }
                 if (this._pickedDownMesh && this._pickedDownMesh !== pickResult.pickedMesh) {
-                    this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+                    this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
                 }
                 
-
                 if (this.onPointerUp) {
                     this.onPointerUp(evt, pickResult);
                 }
@@ -653,7 +648,7 @@
                         }
                     }
                     if (this._pickedDownSprite && this._pickedDownSprite !== pickResult.pickedSprite) {
-                        this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                        this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
                     }
 
                 }

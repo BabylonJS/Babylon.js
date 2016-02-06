@@ -3,7 +3,7 @@
     - New refraction channel for Standard material (including fresnel support). Refraction texture can be provided by a reflection probe or a refraction texture. [See demo here](http://www.babylonjs.com/Demos/refraction/) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
-    - New SPS method `digest()` ([jerome](https://github.com/jbousquie))
+    - New SPS method `digest()` ([jerome](https://github.com/jbousquie))    
+    - Added a new OnPickOut trigger fired when you release the pointer button outside of a mesh or sprite. ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**
-    - Fixed a bug with OnPickUp trigger which was not triggered everytime ([deltakosh](https://github.com/deltakosh))
   - **Breaking changes**
