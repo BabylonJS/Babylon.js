@@ -159,7 +159,7 @@ uniform mat4 view;
 #endif
 
 #ifdef REFRACTION
-uniform vec3 vRefractionInfos;
+uniform vec4 vRefractionInfos;
 
 #ifdef REFRACTIONMAP_3D
 uniform samplerCube refractionCubeSampler;
@@ -871,7 +871,7 @@ void main(void) {
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
 #ifdef REFRACTIONMAP_3D
 
-	refractionVector.y = -refractionVector.y;
+	refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
 	if (dot(refractionVector, viewDirectionW) < 1.0)
 	{

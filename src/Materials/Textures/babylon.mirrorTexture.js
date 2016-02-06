@@ -51,6 +51,12 @@ var BABYLON;
         return MirrorTexture;
     })(BABYLON.RenderTargetTexture);
     BABYLON.MirrorTexture = MirrorTexture;
+    /**
+    * Creates a refraction texture used by refraction channel of the standard material.
+    * @param name the texture name
+    * @param size size of the underlying texture
+    * @param scene root scene
+    */
     var RefractionTexture = (function (_super) {
         __extends(RefractionTexture, _super);
         function RefractionTexture(name, size, scene, generateMipMaps) {

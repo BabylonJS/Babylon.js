@@ -2043,7 +2043,7 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
 
-            // mipmaps
+            // Mipmaps
             if (texture.generateMipMaps) {
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
