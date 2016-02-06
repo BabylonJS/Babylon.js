@@ -72,7 +72,6 @@
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
-        private _meshUnderPointer: AbstractMesh;
         private _startingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
         // Mirror
@@ -272,6 +271,7 @@
         private _selectionOctree: Octree<AbstractMesh>;
 
         private _pointerOverMesh: AbstractMesh;
+        private _pointerOverSprite: Sprite;
 
         private _debugLayer: DebugLayer;
 
@@ -352,7 +352,7 @@
          * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
          */
         public get meshUnderPointer(): AbstractMesh {
-            return this._meshUnderPointer;
+            return this._pointerOverMesh;
         }
 
         /**
@@ -459,7 +459,7 @@
         // Pointers handling
         public attachControl() {
             var spritePredicate = (sprite: Sprite): boolean => {
-                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPickTriggers;
+                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
@@ -478,26 +478,26 @@
                     this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    this._meshUnderPointer = pickResult.pickedMesh;
+                    this.setPointerOverSprite(null);
 
                     this.setPointerOverMesh(pickResult.pickedMesh);
 
-                    if (this._meshUnderPointer.actionManager && this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                    if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
                         canvas.style.cursor = "pointer";
                     } else {
                         canvas.style.cursor = "";
                     }
                 } else {
+                    this.setPointerOverMesh(null);
                     // Sprites
                     pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
+                        this.setPointerOverSprite(pickResult.pickedSprite);
                     } else {
                         // Restore pointer
-                        this.setPointerOverMesh(null);
                         canvas.style.cursor = "";
-                        this._meshUnderPointer = null;
                     }
                 }
 
@@ -2445,6 +2445,25 @@
 
         public getPointerOverMesh(): AbstractMesh {
             return this._pointerOverMesh;
+        }
+
+        public setPointerOverSprite(sprite: Sprite): void {
+            if (this._pointerOverSprite === sprite) {
+                return;
+            }
+
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+
+            this._pointerOverSprite = sprite;
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+        }
+
+        public getPointerOverSprite(): Sprite {
+            return this._pointerOverSprite;
         }
 
         // Physics

@@ -223,7 +223,7 @@ var BABYLON;
              * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
              */
             get: function () {
-                return this._meshUnderPointer;
+                return this._pointerOverMesh;
             },
             enumerable: true,
             configurable: true
@@ -318,7 +318,7 @@ var BABYLON;
         Scene.prototype.attachControl = function () {
             var _this = this;
             var spritePredicate = function (sprite) {
-                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPickTriggers;
+                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
             this._onPointerMove = function (evt) {
                 if (!_this.cameraToUseForPointers && !_this.activeCamera) {
@@ -329,9 +329,9 @@ var BABYLON;
                 // Meshes
                 var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); }, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    _this._meshUnderPointer = pickResult.pickedMesh;
+                    _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
-                    if (_this._meshUnderPointer.actionManager && _this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                    if (_this._pointerOverMesh.actionManager && _this._pointerOverMesh.actionManager.hasPointerTriggers) {
                         canvas.style.cursor = "pointer";
                     }
                     else {
@@ -339,16 +339,16 @@ var BABYLON;
                     }
                 }
                 else {
+                    _this.setPointerOverMesh(null);
                     // Sprites
                     pickResult = _this.pickSprite(_this._pointerX, _this._pointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
+                        _this.setPointerOverSprite(pickResult.pickedSprite);
                     }
                     else {
                         // Restore pointer
-                        _this.setPointerOverMesh(null);
                         canvas.style.cursor = "";
-                        _this._meshUnderPointer = null;
                     }
                 }
                 if (_this.onPointerMove) {
@@ -1957,6 +1957,21 @@ var BABYLON;
         };
         Scene.prototype.getPointerOverMesh = function () {
             return this._pointerOverMesh;
+        };
+        Scene.prototype.setPointerOverSprite = function (sprite) {
+            if (this._pointerOverSprite === sprite) {
+                return;
+            }
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+            this._pointerOverSprite = sprite;
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger, BABYLON.ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+        };
+        Scene.prototype.getPointerOverSprite = function () {
+            return this._pointerOverSprite;
         };
         // Physics
         Scene.prototype.getPhysicsEngine = function () {
