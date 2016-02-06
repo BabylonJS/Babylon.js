@@ -157,6 +157,7 @@
         public roughness = 0;
 
         public indexOfRefraction = 1.05;
+        public invertRefractionY = true;
 
         public useLightmapAsShadowmap = false;
 
@@ -947,7 +948,7 @@
                                 depth = (<any>this.refractionTexture).depth;
                             }
                         }
-                        this._effect.setFloat3("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth);
+                        this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
                 }
 

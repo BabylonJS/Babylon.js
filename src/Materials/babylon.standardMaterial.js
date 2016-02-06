@@ -148,6 +148,7 @@ var BABYLON;
             this.disableLighting = false;
             this.roughness = 0;
             this.indexOfRefraction = 1.05;
+            this.invertRefractionY = true;
             this.useLightmapAsShadowmap = false;
             this.useGlossinessFromSpecularMapAlpha = false;
             this._renderTargets = new BABYLON.SmartArray(16);
@@ -791,7 +792,7 @@ var BABYLON;
                                 depth = this.refractionTexture.depth;
                             }
                         }
-                        this._effect.setFloat3("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth);
+                        this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
                 }
                 // Clip plane
