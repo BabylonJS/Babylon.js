@@ -672,7 +672,7 @@ var BABYLON;
             this._effect.setMatrix("viewProjection", this._myScene.getTransformMatrix());
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
             if (this._myScene.getCachedMaterial() !== this) {
                 if (BABYLON.StandardMaterial.FresnelEnabled) {

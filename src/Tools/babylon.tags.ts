@@ -35,11 +35,22 @@
             return !Tools.IsEmpty(obj._tags);
         }
 
-        public static GetTags(obj: any): any {
+        public static GetTags(obj: any, asString: boolean = true): any {
             if (!obj._tags) {
                 return null;
             }
-            return obj._tags;
+            if(asString) {
+                var tagsArray = []
+                for(var tag in obj._tags) {
+                    if(obj._tags.hasOwnProperty(tag) && obj._tags[tag]===true) {
+                        tagsArray.push(tag);
+                    }
+                }
+                return tagsArray.join(" ");
+            } else {
+                return obj._tags;
+            }
+            
         }
 
         // the tags 'true' and 'false' are reserved and cannot be used as tags
