@@ -12543,6 +12543,7 @@ var BABYLON;
                         _this.setPointerOverSprite(pickResult.pickedSprite);
                     }
                     else {
+                        _this.setPointerOverSprite(null);
                         // Restore pointer
                         canvas.style.cursor = "";
                     }
