@@ -1,6 +1,6 @@
 - 2.4.0:
   - **Major updates**
-    - New refraction channel for Standard material (including fresnel support). [See demo here](http://www.babylonjs.com/Demos/refraction/) ([deltakosh](https://github.com/deltakosh))
+    - New refraction channel for Standard material (including fresnel support). Refraction texture can be provided by a reflection probe or a refraction texture. [See demo here](http://www.babylonjs.com/Demos/refraction/) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
     - New SPS method `digest()` ([jerome](https://github.com/jbousquie))

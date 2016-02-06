@@ -51,4 +51,42 @@ var BABYLON;
         return MirrorTexture;
     })(BABYLON.RenderTargetTexture);
     BABYLON.MirrorTexture = MirrorTexture;
+    var RefractionTexture = (function (_super) {
+        __extends(RefractionTexture, _super);
+        function RefractionTexture(name, size, scene, generateMipMaps) {
+            var _this = this;
+            _super.call(this, name, size, scene, generateMipMaps, true);
+            this.refractionPlane = new BABYLON.Plane(0, 1, 0, 1);
+            this.depth = 2.0;
+            this.onBeforeRender = function () {
+                scene.clipPlane = _this.refractionPlane;
+            };
+            this.onAfterRender = function () {
+                delete scene.clipPlane;
+            };
+        }
+        RefractionTexture.prototype.clone = function () {
+            var textureSize = this.getSize();
+            var newTexture = new RefractionTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
+            // Base texture
+            newTexture.hasAlpha = this.hasAlpha;
+            newTexture.level = this.level;
+            // Refraction Texture
+            newTexture.refractionPlane = this.refractionPlane.clone();
+            newTexture.renderList = this.renderList.slice(0);
+            newTexture.depth = this.depth;
+            return newTexture;
+        };
+        RefractionTexture.prototype.serialize = function () {
+            if (!this.name) {
+                return null;
+            }
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.mirrorPlane = this.refractionPlane.asArray();
+            serializationObject.depth = this.depth;
+            return serializationObject;
+        };
+        return RefractionTexture;
+    })(BABYLON.RenderTargetTexture);
+    BABYLON.RefractionTexture = RefractionTexture;
 })(BABYLON || (BABYLON = {}));

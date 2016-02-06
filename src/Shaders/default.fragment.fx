@@ -154,9 +154,19 @@ uniform vec2 vLightmapInfos;
 uniform sampler2D lightmapSampler;
 #endif
 
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+uniform mat4 view;
+#endif
+
 #ifdef REFRACTION
-uniform vec2 vRefractionInfos;
-uniform samplerCube refractionSampler;
+uniform vec3 vRefractionInfos;
+
+#ifdef REFRACTIONMAP_3D
+uniform samplerCube refractionCubeSampler;
+#else
+uniform sampler2D refraction2DSampler;
+uniform mat4 refractionMatrix;
+#endif
 
 #ifdef REFRACTIONFRESNEL
 uniform vec4 refractionLeftColor;
@@ -212,9 +222,6 @@ varying vec3 vDirectionW;
 
 #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
 uniform mat4 reflectionMatrix;
-#endif
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 view;
 #endif
 #endif
 
@@ -857,18 +864,28 @@ void main(void) {
 #endif
 #endif
 
-	// Refraction http://www.babylonjs-playground.com/#22KZUW#0
+	// Refraction
 	vec3 refractionColor = vec3(0., 0., 0.);
 
 #ifdef REFRACTION
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+#ifdef REFRACTIONMAP_3D
 
 	refractionVector.y = -refractionVector.y;
 
 	if (dot(refractionVector, viewDirectionW) < 1.0)
 	{
-		refractionColor = textureCube(refractionSampler, refractionVector).rgb * vRefractionInfos.x;
+		refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb * vRefractionInfos.x;
 	}
+#else
+	vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+
+	vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+
+	refractionCoords.y = 1.0 - refractionCoords.y;
+
+	refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+#endif
 #endif
 
 	// Reflection

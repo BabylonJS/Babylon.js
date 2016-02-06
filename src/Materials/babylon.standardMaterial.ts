@@ -123,6 +123,7 @@
         public INVERTCUBICMAP = false;
         public LOGARITHMICDEPTH = false;
         public REFRACTION = false;
+        public REFRACTIONMAP_3D = false;
 
         constructor() {
             super();
@@ -497,7 +498,7 @@
                     }
                 }
 
-                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                if (this.lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                     if (!this.lightmapTexture.isReady()) {
                         return false;
                     } else {
@@ -526,12 +527,14 @@
                     }
                 }
 
-                if (this.refractionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                     if (!this.refractionTexture.isReady()) {
                         return false;
                     } else {
                         needUVs = true;
                         this._defines.REFRACTION = true;
+
+                        this._defines.REFRACTIONMAP_3D = this.refractionTexture.isCube;
                     }
                 }
             }
@@ -784,12 +787,12 @@
                         "vFogInfos", "vFogColor", "pointSize",
                         "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                         "mBones",
-                        "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix",
+                        "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
                         "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                         "logarithmicDepthConstant"
                     ],
-                    ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionSampler",
+                    ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
                     ],
                     join, fallbacks, this.onCompiled, this.onError);
@@ -816,6 +819,10 @@
         public unbind(): void {
             if (this.reflectionTexture && this.reflectionTexture.isRenderTarget) {
                 this._effect.setTexture("reflection2DSampler", null);
+            }
+
+            if (this.refractionTexture && this.refractionTexture.isRenderTarget) {
+                this._effect.setTexture("refraction2DSampler", null);
             }
 
             super.unbind();
@@ -907,7 +914,7 @@
                         this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
                     }
 
-                    if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                    if (this.lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                         this._effect.setTexture("lightmapSampler", this.lightmapTexture);
 
                         this._effect.setFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
@@ -928,10 +935,19 @@
                         this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
                     }
 
-                    if (this.refractionTexture && StandardMaterial.RefractionEnabled) {
-                        this._effect.setTexture("refractionSampler", this.refractionTexture);
+                    if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                        var depth = 1.0;
+                        if (this.refractionTexture.isCube) {
+                            this._effect.setTexture("refractionCubeSampler", this.refractionTexture);
+                        } else {
+                            this._effect.setTexture("refraction2DSampler", this.refractionTexture);
+                            this._effect.setMatrix("refractionMatrix", this.refractionTexture.getReflectionTextureMatrix());
 
-                        this._effect.setFloat2("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction);
+                            if ((<any>this.refractionTexture).depth) {
+                                depth = (<any>this.refractionTexture).depth;
+                            }
+                        }
+                        this._effect.setFloat3("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth);
                     }
                 }
 
@@ -968,7 +984,7 @@
                 }
 
                 // View
-                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this.reflectionTexture) {
+                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this.reflectionTexture || this.refractionTexture) {
                     this._effect.setMatrix("view", scene.getViewMatrix());
                 }
 
@@ -1217,8 +1233,8 @@
         public static SpecularTextureEnabled = true;
         public static BumpTextureEnabled = true;
         public static FresnelEnabled = true;
-        public static LightmapEnabled = true;
-        public static RefractionEnabled = true;
+        public static LightmapTextureEnabled = true;
+        public static RefractionTextureEnabled = true;
 
         public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
             var material = new StandardMaterial(source.name, scene);
