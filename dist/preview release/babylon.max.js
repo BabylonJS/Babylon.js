@@ -18355,6 +18355,16 @@ var BABYLON;
         return MirrorTexture;
     })(BABYLON.RenderTargetTexture);
     BABYLON.MirrorTexture = MirrorTexture;
+})(BABYLON || (BABYLON = {}));
+
+
+
+
+
+
+
+var BABYLON;
+(function (BABYLON) {
     /**
     * Creates a refraction texture used by refraction channel of the standard material.
     * @param name the texture name
@@ -22937,6 +22947,7 @@ var BABYLON;
         // Methods
         Bone.prototype.updateMatrix = function (matrix) {
             this._baseMatrix = matrix.clone();
+            this._matrix = matrix.clone();
             this._skeleton._markAsDirty();
             this._updateDifferenceMatrix();
         };
