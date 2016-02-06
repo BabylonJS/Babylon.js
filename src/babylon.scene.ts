@@ -496,6 +496,7 @@
                         canvas.style.cursor = "pointer";
                         this.setPointerOverSprite(pickResult.pickedSprite);
                     } else {
+                        this.setPointerOverSprite(null);
                         // Restore pointer
                         canvas.style.cursor = "";
                     }
