@@ -109,6 +109,14 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ActionManager, "OnPickOutTrigger", {
+            /// This trigger will only be raised if you also declared a OnPickDown
+            get: function () {
+                return ActionManager._OnPickOutTrigger;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ActionManager, "OnLongPressTrigger", {
             get: function () {
                 return ActionManager._OnLongPressTrigger;
@@ -456,6 +464,7 @@ var BABYLON;
         ActionManager._OnIntersectionExitTrigger = 12;
         ActionManager._OnKeyDownTrigger = 13;
         ActionManager._OnKeyUpTrigger = 14;
+        ActionManager._OnPickOutTrigger = 15;
         ActionManager.DragMovementThreshold = 10; // in pixels
         ActionManager.LongPressDelay = 500; // in milliseconds
         return ActionManager;
