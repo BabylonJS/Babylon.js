@@ -5,4 +5,5 @@
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
     - New SPS method `digest()` ([jerome](https://github.com/jbousquie))
   - **Bug fixes**
+    - Fixed a bug with OnPickUp trigger which was not triggered everytime ([deltakosh](https://github.com/deltakosh))
   - **Breaking changes**
