@@ -280,6 +280,8 @@
         private _uniqueIdCounter = 0;
 
         private _pickedMeshName: string = null;
+        private _pickedDownMesh: AbstractMesh;
+        private _pickedDownSprite: Sprite;
 
         /**
          * @constructor
@@ -520,6 +522,7 @@
                 var predicate = null;
 
                 // Meshes
+                this._pickedDownMesh = null;
                 if (!this.onPointerDown && !this.onPointerPick) {
                     predicate = (mesh: AbstractMesh): boolean => {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
@@ -528,8 +531,8 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    this._pickedMeshName = pickResult.pickedMesh.name;
                     if (pickResult.pickedMesh.actionManager) {
+                        this._pickedMeshName = pickResult.pickedMesh.name;
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
                                 case 0:
@@ -554,6 +557,7 @@
 
                                 if (pickResult.hit && pickResult.pickedMesh) {
                                     if (pickResult.pickedMesh.actionManager) {
+                                        this._pickedDownMesh = pickResult.pickedMesh;
                                         if (that._startingPointerTime !== 0 && ((new Date().getTime() - that._startingPointerTime) > ActionManager.LongPressDelay) && (Math.abs(that._startingPointerPosition.x - that._pointerX) < ActionManager.DragMovementThreshold && Math.abs(that._startingPointerPosition.y - that._pointerY) < ActionManager.DragMovementThreshold)) {
                                             that._startingPointerTime = 0;
                                             pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -570,11 +574,13 @@
                 }
 
                 // Sprites
+                this._pickedDownSprite = null;
                 if (this.spriteManagers.length > 0) {
                     pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
+                            this._pickedDownSprite = pickResult.pickedSprite;
                             switch (evt.button) {
                                 case 0:
                                     pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
@@ -622,6 +628,10 @@
                         }
                     }
                 }
+                if (this._pickedDownMesh && this._pickedDownMesh !== pickResult.pickedMesh) {
+                    this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+                }
+                
 
                 if (this.onPointerUp) {
                     this.onPointerUp(evt, pickResult);
@@ -642,6 +652,10 @@
                             }
                         }
                     }
+                    if (this._pickedDownSprite && this._pickedDownSprite !== pickResult.pickedSprite) {
+                        this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                    }
+
                 }
             };
 
