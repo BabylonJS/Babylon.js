@@ -386,6 +386,7 @@
         public uintIndices: boolean;
         public highPrecisionShaderSupported: boolean;
         public fragmentDepthSupported: boolean;
+        public textureFloatLinearFiltering: boolean;
         public drawBuffersExtension;
     }
 
@@ -597,10 +598,10 @@
 
             if (!this._gl) {
                 try {
-                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
-                } catch (e) {
-                    throw new Error("WebGL not supported");
-                }
+                this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+            } catch (e) {
+                throw new Error("WebGL not supported");
+            }
             }
 
             if (!this._gl) {
@@ -657,6 +658,7 @@
             this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
             this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+            this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
@@ -2148,6 +2150,98 @@
 
             return texture;
         }
+
+        public createRawCubeTexture = function (url: string, scene: Scene, size:number, format:number, type: number, noMipmap:boolean, callback: (ArrayBuffer) => ArrayBufferView[]): WebGLTexture {
+            var gl = this._gl;
+            var texture = gl.createTexture();
+            scene._addPendingData(texture);
+            texture.isCube = true;
+            texture.references = 1;
+            texture.url = url;
+
+            var internalFormat = gl.RGBA;
+            switch (format) {
+                case Engine.TEXTUREFORMAT_ALPHA:
+                    internalFormat = gl.ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE:
+                    internalFormat = gl.LUMINANCE;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    internalFormat = gl.LUMINANCE_ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_RGB:
+                    internalFormat = gl.RGB;
+                    break;
+                case Engine.TEXTUREFORMAT_RGBA:
+                    internalFormat = gl.RGBA;
+                    break;
+            }
+
+            var textureType = gl.UNSIGNED_BYTE;
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                textureType = gl.FLOAT;
+            }
+            
+            var width = size;
+            var height = width;
+            var isPot = (Tools.IsExponentOfTwo(width) && Tools.IsExponentOfTwo(height));                                                                                                    
+             
+            texture._width = width;
+            texture._height = height;
+             
+            var onerror = () => {
+                scene._removePendingData(texture);
+            };
+            
+            var internalCallback = (data) => {
+                var rgbeDataArrays = callback(data);
+                
+                var facesIndex = [                                                                                                          
+                    gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,                    
+                    gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z                     
+                ];                                                                                                                     
+                                                                                                                
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);                                                                          
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);                                                                             
+                                                                                                                
+                for (var index = 0; index < facesIndex.length; index++) {                                                                   
+                    var faceData = rgbeDataArrays[index];                                                                                   
+                    gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);                            
+                }                                                                                                                      
+                                                                                                                
+                if (!noMipmap && isPot) {                                                                                                       
+                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);                                                                            
+                } 
+                else {
+                    noMipmap = true;
+                }                                                                                                                     
+
+                if (textureType == gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                }
+                else {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);          
+                }
+
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);                                          
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);                                          
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+
+                texture.isReady = true;
+
+                this.resetTextureCache();
+                scene._removePendingData(texture); 
+            };
+            
+            Tools.LoadFile(url, data => {
+                    internalCallback(data);
+                }, onerror, scene.database, true);                                                                                                
+                                                                                                            
+            return texture;                                                                                                        
+        };                                                                                                                         
 
         public _releaseTexture(texture: WebGLTexture): void {
             var gl = this._gl;
