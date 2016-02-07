@@ -1,12 +1,29 @@
 window.preparePBR = function() {
 	var pbr = new BABYLON.PBRMaterial("pbr", scene);
+
 	pbr.albedoTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
 	pbr.albedoTexture.uScale = 5;
 	pbr.albedoTexture.vScale = 5;
-	pbr.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/TropicalSunnyDay", scene);	
+    
+    var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 512);
+    pbr.reflectionTexture = hdrTexture;
 	pbr.reflectivityColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+    
 	pbr.microSurface = 0.9;
-	
+    
+    // Skybox
+    var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
+    var hdrSkyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+    hdrSkyboxMaterial.backFaceCulling = false;
+    hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
+    hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+    hdrSkyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+    hdrSkyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+    hdrSkyboxMaterial.disableLighting = true;
+    hdrSkybox.material = hdrSkyboxMaterial;
+    hdrSkybox.infiniteDistance = true;
+    hdrSkybox.setEnabled(false);
+    
 	registerButtonUI("pbr", "Default", function() {
 		setRangeValues({
 		  "directIntensity": 1,
@@ -26,6 +43,28 @@ window.preparePBR = function() {
 		  "albedoColorB": 1,
 		  "albedoColorLevel": 0
 		});
+	});
+    registerButtonUI("pbr", "Env Irradiance No Lighting", function() {
+		setRangeValues({
+		  "directIntensity": 0,
+		  "emissiveIntensity": 1,
+		  "environmentIntensity": 1,
+		  "specularIntensity": 1,
+		  "ShadowIntensity": 1,
+		  "ShadeIntensity": 1,
+		  "cameraExposure": 1,
+		  "cameraContrast": 1,
+		  "microSurface": 0,
+		  "reflectivityColorR": 0,
+		  "reflectivityColorG": 0,
+		  "reflectivityColorB": 0,
+		  "albedoColorR": 1,
+		  "albedoColorG": 1,
+		  "albedoColorB": 1,
+		  "albedoColorLevel": 1
+		});
+        
+        hdrSkybox.setEnabled(true);
 	});
 	registerButtonUI("pbr", "Rough Gold", function() {
 		setRangeValues({
@@ -64,26 +103,6 @@ window.preparePBR = function() {
 		  "albedoColorR": 0.20592723615301922,
 		  "albedoColorG": 0.942929976069088,
 		  "albedoColorB": 1,
-		  "albedoColorLevel": 1
-		});
-	});
-	registerButtonUI("pbr", "Shiny Copper", function() {
-		setRangeValues({
-		  "directIntensity": 1.2355634169181153,
-		  "emissiveIntensity": 0.910415149308085,
-		  "environmentIntensity": 0.21676551174002023,
-		  "specularIntensity": 1,
-		  "ShadowIntensity": 1.018797905178095,
-		  "ShadeIntensity": 0.975444802830091,
-		  "cameraExposure": 1.0621510075260991,
-		  "cameraContrast": 1.0404744563520971,
-		  "microSurface": 0.888738598134083,
-		  "reflectivityColorR": 0.98,
-		  "reflectivityColorG": 0.78,
-		  "reflectivityColorB": 0.706,
-		  "albedoColorR": 0.1,
-		  "albedoColorG": 0.1,
-		  "albedoColorB": 0.1,
 		  "albedoColorLevel": 1
 		});
 	});
@@ -182,6 +201,10 @@ window.preparePBR = function() {
 		pbr.overloadedAlbedoIntensity = value;
 	}, function() {
 		return pbr.overloadedAlbedoIntensity;
+	});
+    
+    registerButtonUI("pbr", "Toggle Skybox", function() {
+        hdrSkybox.setEnabled(!hdrSkybox.isEnabled());
 	});
 
 	return pbr;
