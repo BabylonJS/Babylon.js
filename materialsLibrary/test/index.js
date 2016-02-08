@@ -9,7 +9,9 @@ var options = {
 	castShadows: false,
 	spotLight: false,
 	fog: false,
-	skybox: false
+	skybox: false,
+    lightIntensity: 1.0,
+    lightRange: 1000
 }
 
 var registeredUIs = {};
