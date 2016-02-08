@@ -488,11 +488,8 @@
             }
         }
 
-        public setPosition(position: Vector3): void {
-            if (this.position.equals(position)) {
-                return;
-            }
-            var radiusv3 = position.subtract(this._getTargetPosition());
+        public rebuildAnglesAndRadius() {
+            var radiusv3 = this.position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
 
             // Alpha
@@ -508,8 +505,18 @@
             this._checkLimits();
         }
 
+        public setPosition(position: Vector3): void {
+            if (this.position.equals(position)) {
+                return;
+            }
+            this.rebuildAnglesAndRadius();
+        }
+
         public setTarget(target: Vector3): void {
-            this.target = target;
+            if (this.target.equals(target)) {
+                return;
+            }
+            this.rebuildAnglesAndRadius();
         }
 
         public _getViewMatrix(): Matrix {

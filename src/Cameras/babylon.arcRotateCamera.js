@@ -448,11 +448,8 @@ var BABYLON;
                 this.radius = this.upperRadiusLimit;
             }
         };
-        ArcRotateCamera.prototype.setPosition = function (position) {
-            if (this.position.equals(position)) {
-                return;
-            }
-            var radiusv3 = position.subtract(this._getTargetPosition());
+        ArcRotateCamera.prototype.rebuildAnglesAndRadius = function () {
+            var radiusv3 = this.position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
             // Alpha
             this.alpha = Math.acos(radiusv3.x / Math.sqrt(Math.pow(radiusv3.x, 2) + Math.pow(radiusv3.z, 2)));
@@ -463,8 +460,17 @@ var BABYLON;
             this.beta = Math.acos(radiusv3.y / this.radius);
             this._checkLimits();
         };
+        ArcRotateCamera.prototype.setPosition = function (position) {
+            if (this.position.equals(position)) {
+                return;
+            }
+            this.rebuildAnglesAndRadius();
+        };
         ArcRotateCamera.prototype.setTarget = function (target) {
-            this.target = target;
+            if (this.target.equals(target)) {
+                return;
+            }
+            this.rebuildAnglesAndRadius();
         };
         ArcRotateCamera.prototype._getViewMatrix = function () {
             // Compute
