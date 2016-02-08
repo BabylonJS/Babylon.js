@@ -464,12 +464,14 @@ var BABYLON;
             if (this.position.equals(position)) {
                 return;
             }
+            this.position = position;
             this.rebuildAnglesAndRadius();
         };
         ArcRotateCamera.prototype.setTarget = function (target) {
             if (this.target.equals(target)) {
                 return;
             }
+            this.target = target;
             this.rebuildAnglesAndRadius();
         };
         ArcRotateCamera.prototype._getViewMatrix = function () {

@@ -509,6 +509,8 @@
             if (this.position.equals(position)) {
                 return;
             }
+            this.position = position;
+
             this.rebuildAnglesAndRadius();
         }
 
@@ -516,6 +518,7 @@
             if (this.target.equals(target)) {
                 return;
             }
+            this.target = target;
             this.rebuildAnglesAndRadius();
         }
 
