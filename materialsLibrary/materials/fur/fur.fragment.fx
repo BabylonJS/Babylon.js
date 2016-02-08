@@ -570,7 +570,7 @@ void main(void) {
 	alpha *= vColor.a;
 #endif
 
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor, 0.0, 1.0) * baseColor.rgb;
+    vec3 finalDiffuse = clamp(diffuseBase.rgb * baseColor.rgb, 0.0, 1.0);
 
 	// Composition
 	#ifdef HIGHLEVEL

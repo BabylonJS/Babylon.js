@@ -589,12 +589,12 @@ module BABYLON {
             serializationObject.disableLighting = this.disableLighting;
             
             serializationObject.furLength = this.furLength;
-            serializationObject.furAngle = this.furAngle;
-            serializationObject.furColor = this.furColor.asArray();
+            serializationObject.furAngle  = this.furAngle;
+            serializationObject.furColor  = this.furColor.asArray();
             
             serializationObject.furGravity = this.furGravity.asArray();
             serializationObject.furSpacing = this.furSpacing;
-            serializationObject.furSpeed = this.furSpeed;
+            serializationObject.furSpeed   = this.furSpeed;
             serializationObject.furDensity = this.furDensity;
             
             if (this.diffuseTexture) {
@@ -610,7 +610,7 @@ module BABYLON {
 
         public static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {
             var material = new FurMaterial(source.name, scene);
-
+            
             material.diffuseColor       = Color3.FromArray(source.diffuseColor);
             material.furLength          = source.furLength;
             material.furAngle           = source.furAngle;
@@ -690,6 +690,7 @@ module BABYLON {
                 var offsetMesh = sourceMesh.clone(sourceMesh.name + i);
                 offsetMesh.material = offsetFur;
                 offsetMesh.skeleton = sourceMesh.skeleton;
+                offsetMesh.parent = sourceMesh;
                 meshes.push(offsetMesh);
             }
             

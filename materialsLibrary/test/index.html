@@ -300,6 +300,20 @@
 				});
 
 				var f1 = gui.addFolder('lights');
+                f1.add(options, 'lightIntensity').onChange(function() {
+                    hemisphericLight.intensity = options.lightIntensity;
+                    directionalLight.intensity = options.lightIntensity;
+                    pointLight.intensity = options.lightIntensity;
+                    spotLight.intensity = options.lightIntensity;
+                });
+                
+                f1.add(options, 'lightRange').onChange(function() {
+                    hemisphericLight.range = options.lightRange;
+                    directionalLight.range = options.lightRange;
+                    pointLight.range = options.lightRange;
+                    spotLight.range = options.lightRange;
+                });
+                
 				f1.add(options, 'hemisphericLight').onChange(function () {
 					hemisphericLight.setEnabled(options.hemisphericLight);
 				});
