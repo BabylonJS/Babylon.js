@@ -100,6 +100,10 @@
         public getPhysicsPluginName(): string {
             return this._currentPlugin.name;
         }
+        
+        public getWorldObject() : any {
+            return this._currentPlugin.getWorldObject();
+        }
 
         // Statics
         public static NoImpostor = 0;
