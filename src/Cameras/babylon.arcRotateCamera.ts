@@ -46,7 +46,7 @@
         private _MSGestureHandler: MSGesture;
 
         // Panning
-        public panningAxis: Vector3 = new Vector3(1, 0, 1);
+        public panningAxis: Vector3 = new Vector3(1, 1, 0);
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
         private _isRightClick: boolean = false;

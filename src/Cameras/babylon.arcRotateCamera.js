@@ -405,9 +405,9 @@ var BABYLON;
                 if (Math.abs(this.inertialPanningY) < BABYLON.Engine.Epsilon)
                     this.inertialPanningY = 0;
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+                this._localDirection.multiplyInPlace(this.panningAxis);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
                 BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
-                this._transformedDirection.multiplyInPlace(this.panningAxis);
                 this.target.addInPlace(this._transformedDirection);
             }
             // Limits
