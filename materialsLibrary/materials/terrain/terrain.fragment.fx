@@ -699,7 +699,7 @@ void main(void) {
 	vec3 finalSpecular = vec3(0.0);
 #endif
 
-	vec3 finalDiffuse = clamp(diffuseBase * diffuseColor, 0.0, 1.0) * baseColor.rgb;
+    vec3 finalDiffuse = clamp(diffuseBase * diffuseColor * baseColor.rgb, 0.0, 1.0);
 
 	// Composition
 	vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
