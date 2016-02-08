@@ -443,6 +443,10 @@
                 this._localDirection.multiplyInPlace(this.panningAxis);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
                 Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                //Eliminate y if map panning is enabled (panningAxis == 1,0,1)
+                if (!this.panningAxis.y) {
+					this._transformedDirection.y = 0;
+				}
                 this.target.addInPlace(this._transformedDirection);
             }
 
