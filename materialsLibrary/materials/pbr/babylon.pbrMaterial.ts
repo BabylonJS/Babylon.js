@@ -82,6 +82,7 @@ module BABYLON {
         public CAMERACONTRAST = false;
         public OVERLOADEDVALUES = false;
         public OVERLOADEDSHADOWVALUES = false;
+        public USESPHERICALFROMREFLECTIONMAP = false;
 
         constructor() {
             super();
@@ -470,10 +471,15 @@ module BABYLON {
                                 this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
                                 break;
                         }
+
+                        if (this.reflectionTexture instanceof HDRCubeTexture) {
+                            this._defines.USESPHERICALFROMREFLECTIONMAP = true;
+                            needNormals = true;
+                        }
                     }
                 }
 
-                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                if (this.lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                     if (!this.lightmapTexture.isReady()) {
                         return false;
                     } else {
@@ -570,7 +576,7 @@ module BABYLON {
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = PBRMaterial.PrepareDefinesForLights(scene, mesh, this._defines);
+                needNormals = PBRMaterial.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
             }
 
             if (StandardMaterial.FresnelEnabled) {
@@ -759,7 +765,10 @@ module BABYLON {
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
                         "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vCameraInfos", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
-                        "logarithmicDepthConstant"
+                        "logarithmicDepthConstant",
+                        "vSphericalX", "vSphericalY", "vSphericalZ",
+                        "vSphericalXX", "vSphericalYY", "vSphericalZZ",
+                        "vSphericalXY", "vSphericalYZ", "vSphericalZX"
                     ],
                     ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -856,6 +865,36 @@ module BABYLON {
 
                     this._effect.setMatrix("reflectionMatrix", this.reflectionTexture.getReflectionTextureMatrix());
                     this._effect.setFloat2("vReflectionInfos", this.reflectionTexture.level, 0);
+
+                    if (this._defines.USESPHERICALFROMREFLECTIONMAP) {
+                        this._effect.setFloat3("vSphericalX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.x.z);
+                        this._effect.setFloat3("vSphericalY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.y.z);
+                        this._effect.setFloat3("vSphericalZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.z.z);
+                        this._effect.setFloat3("vSphericalXX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xx.z);
+                        this._effect.setFloat3("vSphericalYY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yy.z);
+                        this._effect.setFloat3("vSphericalZZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zz.z);
+                        this._effect.setFloat3("vSphericalXY", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.xy.z);
+                        this._effect.setFloat3("vSphericalYZ", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.yz.z);
+                        this._effect.setFloat3("vSphericalZX", (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.x,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.y,
+                            (<HDRCubeTexture>this.reflectionTexture).sphericalPolynomial.zx.z);
+                    }
                 }
 
                 if (this.emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -865,7 +904,7 @@ module BABYLON {
                     this._effect.setMatrix("emissiveMatrix", this.emissiveTexture.getTextureMatrix());
                 }
 
-                if (this.lightmapTexture && StandardMaterial.LightmapEnabled) {
+                if (this.lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                     this._effect.setTexture("lightmapSampler", this.lightmapTexture);
 
                     this._effect.setFloat2("vLightmapInfos", this.lightmapTexture.coordinatesIndex, this.lightmapTexture.level);
