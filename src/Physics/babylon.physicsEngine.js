@@ -54,6 +54,9 @@ var BABYLON;
         PhysicsEngine.prototype.getPhysicsPluginName = function () {
             return this._currentPlugin.name;
         };
+        PhysicsEngine.prototype.getWorldObject = function () {
+            return this._currentPlugin.getWorldObject();
+        };
         // Statics
         PhysicsEngine.NoImpostor = 0;
         PhysicsEngine.SphereImpostor = 1;
