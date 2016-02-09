@@ -156,7 +156,7 @@
 
         public roughness = 0;
 
-        public indexOfRefraction = 1.05;
+        public indexOfRefraction = 0.98;
         public invertRefractionY = true;
 
         public useLightmapAsShadowmap = false;
@@ -1133,6 +1133,8 @@
             newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
             newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newStandardMaterial.roughness = this.roughness;
+            newStandardMaterial.indexOfRefraction = this.indexOfRefraction;
+            newStandardMaterial.invertRefractionY = this.invertRefractionY;
 
             if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.clone) {
                 newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
@@ -1161,8 +1163,10 @@
             serializationObject.specular = this.specularColor.asArray();
             serializationObject.specularPower = this.specularPower;
             serializationObject.emissive = this.emissiveColor.asArray();
-            serializationObject.useReflectionFresnelFromSpecular = serializationObject.useReflectionFresnelFromSpecular;
-            serializationObject.useEmissiveAsIllumination = serializationObject.useEmissiveAsIllumination;
+            serializationObject.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
+            serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
+            serializationObject.indexOfRefraction = this.indexOfRefraction;
+            serializationObject.invertRefractionY = this.invertRefractionY;
 
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
@@ -1247,6 +1251,8 @@
             material.emissiveColor = Color3.FromArray(source.emissive);
             material.useReflectionFresnelFromSpecular = source.useReflectionFresnelFromSpecular;
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
+            material.indexOfRefraction = source.indexOfRefraction;
+            material.invertRefractionY = source.invertRefractionY;
 
             material.alpha = source.alpha;
 

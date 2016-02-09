@@ -100,8 +100,8 @@
         public getPhysicsPluginName(): string {
             return this._currentPlugin.name;
         }
-        
-        public getWorldObject() : any {
+
+        public getWorldObject(): any {
             return this._currentPlugin.getWorldObject();
         }
 

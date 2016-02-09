@@ -147,7 +147,7 @@ var BABYLON;
             this.useSpecularOverAlpha = false;
             this.disableLighting = false;
             this.roughness = 0;
-            this.indexOfRefraction = 1.05;
+            this.indexOfRefraction = 0.98;
             this.invertRefractionY = true;
             this.useLightmapAsShadowmap = false;
             this.useGlossinessFromSpecularMapAlpha = false;
@@ -941,6 +941,8 @@ var BABYLON;
             newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
             newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newStandardMaterial.roughness = this.roughness;
+            newStandardMaterial.indexOfRefraction = this.indexOfRefraction;
+            newStandardMaterial.invertRefractionY = this.invertRefractionY;
             if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.clone) {
                 newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
             }
@@ -965,8 +967,10 @@ var BABYLON;
             serializationObject.specular = this.specularColor.asArray();
             serializationObject.specularPower = this.specularPower;
             serializationObject.emissive = this.emissiveColor.asArray();
-            serializationObject.useReflectionFresnelFromSpecular = serializationObject.useReflectionFresnelFromSpecular;
-            serializationObject.useEmissiveAsIllumination = serializationObject.useEmissiveAsIllumination;
+            serializationObject.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
+            serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
+            serializationObject.indexOfRefraction = this.indexOfRefraction;
+            serializationObject.invertRefractionY = this.invertRefractionY;
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
             }
@@ -1021,6 +1025,8 @@ var BABYLON;
             material.emissiveColor = BABYLON.Color3.FromArray(source.emissive);
             material.useReflectionFresnelFromSpecular = source.useReflectionFresnelFromSpecular;
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
+            material.indexOfRefraction = source.indexOfRefraction;
+            material.invertRefractionY = source.invertRefractionY;
             material.alpha = source.alpha;
             material.id = source.id;
             if (source.disableDepthWrite) {
