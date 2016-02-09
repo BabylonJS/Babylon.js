@@ -582,6 +582,15 @@ var BABYLON;
             if (this.bumpTexture) {
                 this.bumpTexture.dispose();
             }
+            var index = this.getScene().customRenderTargets.indexOf(this._refractionRTT);
+            if (index != -1) {
+                this.getScene().customRenderTargets.splice(index, 1);
+            }
+            index = -1;
+            index = this.getScene().customRenderTargets.indexOf(this._reflectionRTT);
+            if (index != -1) {
+                this.getScene().customRenderTargets.splice(index, 1);
+            }
             if (this._reflectionRTT) {
                 this._reflectionRTT.dispose();
             }
