@@ -5,13 +5,44 @@ module BABYLON {
     */
     export class SolidParticleSystem implements IDisposable {
         // public members
+        /**
+        *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
+        *  Example : var p = SPS.particles[i];
+        */
         public particles: SolidParticle[] = new Array<SolidParticle>();
+        /**
+        * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
+        */
         public nbParticles: number = 0;
+        /**
+        * If the particles must ever face the camera (default false). Useful for planar particles.
+        */
         public billboard: boolean = false;
+        /**
+        * This a counter ofr your own usage. It's not set by any SPS functions.
+        */
         public counter: number = 0;
+        /**
+        * The SPS name. This name is also given to the underlying mesh.
+        */
         public name: string;
+        /**
+        * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
+        */
         public mesh: Mesh;
+        /**
+        * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
+        * Please read : http://doc.babylonjs.com/tutorials/Solid_Particle_System#garbage-collector-concerns
+        */
         public vars: any = {};
+        /**
+        * This array is populated when the SPS is set as 'pickable'.
+        * Each key of this array is a faceId value that you can get from a pickResult object.
+        * Each element of this array is an object {idx: int, faceId: int}.
+        * idx is the picked particle index in the SPS.particles array
+        * faceId is the picked face index counted within this particles
+        * Please read : http://doc.babylonjs.com/tutorials/Solid_Particle_System#pickable-particles
+        */
         public pickedParticles: { idx: number; faceId: number }[];
 
         // private members
@@ -40,6 +71,7 @@ module BABYLON {
         private _computeParticleTexture: boolean = true;
         private _computeParticleRotation: boolean = true;
         private _computeParticleVertex: boolean = false;
+        private _computeBoundingBox: boolean = false;
         private _cam_axisZ: Vector3 = Vector3.Zero();
         private _cam_axisY: Vector3 = Vector3.Zero();
         private _cam_axisX: Vector3 = Vector3.Zero();
@@ -68,13 +100,17 @@ module BABYLON {
         private _sinYaw: number = 0.0;
         private _cosYaw: number = 0.0;
         private _w: number = 0.0;
+        private _minimum: Vector3 = Tmp.Vector3[0];
+        private _maximum: Vector3 = Tmp.Vector3[1];
+        private _vertexWorld: Vector3 = Tmp.Vector3[2];
+
 
 
         /**
         * Creates a SPS (Solid Particle System) object.
         * @param name the SPS name, this will be the underlying mesh name
-        * @param updatable (default true) if the SPS must be updatable or immutable
-        * @param isPickable (default false) if the solid particles must be pickable
+        * @param scene the scene in which the SPS is added
+        * @param options "updatable" (default true) : if the SPS must be updatable or immutable, "isPickable" (default false) : if the solid particles must be pickable
         */
         constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean }) {
             this.name = name;
@@ -346,8 +382,7 @@ module BABYLON {
         * Please read the doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#create-an-immutable-sps
         * @param mesh any Mesh object that will be used as a model for the solid particles.
         * @param nb the number of particles to be created from this model
-        * @param positionFunction an optional javascript function to called for each particle on SPS creation
-        * @param vertexFunction an optional javascript function to called for each vertex of each particle on SPS creation
+        * @param options positionFunction is an optional javascript function to called for each particle on SPS creation. vertexFunction an optional javascript function to called for each vertex of each particle on SPS creation
         */
         public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any }): number {
             var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -497,6 +532,11 @@ module BABYLON {
             var uvidx = 0;
             var uvIndex = 0;
 
+            if (this._computeBoundingBox) {
+                Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
+                Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+            }
+
             // particle loop
             end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
             for (var p = start; p <= end; p++) {
@@ -554,6 +594,27 @@ module BABYLON {
                     this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
                     this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
 
+                    if (this._computeBoundingBox) {
+                        if (this._positions32[idx] < this._minimum.x) {
+                            this._minimum.x = this._positions32[idx];
+                        }
+                        if (this._positions32[idx] > this._maximum.x) {
+                            this._maximum.x = this._positions32[idx];
+                        }
+                        if (this._positions32[idx + 1] < this._minimum.y) {
+                            this._minimum.y = this._positions32[idx + 1];
+                        }
+                        if (this._positions32[idx + 1] > this._maximum.y) {
+                            this._maximum.y = this._positions32[idx + 1];
+                        }
+                        if (this._positions32[idx + 2] < this._minimum.z) {
+                            this._minimum.z = this._positions32[idx + 2];
+                        }
+                        if (this._positions32[idx + 2] > this._maximum.z) {
+                            this._maximum.z = this._positions32[idx + 2];
+                        }
+                    }
+
                     // normals : if the particles can't be morphed then just rotate the normals
                     if (!this._computeParticleVertex && !this.billboard) {
                         this._normal.x = this._fixedNormal32[idx];
@@ -605,6 +666,10 @@ module BABYLON {
                     }
                     this.mesh.updateVerticesData(VertexBuffer.NormalKind, this._normals32, false, false);
                 }
+            }
+            if (this._computeBoundingBox) {
+                this.mesh._boundingInfo = new BoundingInfo(this._minimum, this._maximum);
+                this.mesh._boundingInfo.boundingBox.setWorldMatrix(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
         }
@@ -720,7 +785,7 @@ module BABYLON {
 
         // Optimizer setters
         /**
-        * Tells to setParticle() to compute the particle rotations or not.
+        * Tells to setParticles() to compute the particle rotations or not.
         * Default value : true. The SPS is faster when it's set to false.
         * Note : the particle rotations aren't stored values, so setting computeParticleRotation to false will prevents the particle to rotate.
         */
@@ -728,7 +793,7 @@ module BABYLON {
             this._computeParticleRotation = val;
         }
         /**
-        * Tells to setParticle() to compute the particle colors or not.
+        * Tells to setParticles() to compute the particle colors or not.
         * Default value : true. The SPS is faster when it's set to false.
         * Note : the particle colors are stored values, so setting computeParticleColor to false will keep yet the last colors set.
         */
@@ -736,7 +801,7 @@ module BABYLON {
             this._computeParticleColor = val;
         }
         /**
-        * Tells to setParticle() to compute the particle textures or not.
+        * Tells to setParticles() to compute the particle textures or not.
         * Default value : true. The SPS is faster when it's set to false.
         * Note : the particle textures are stored values, so setting computeParticleTexture to false will keep yet the last colors set.
         */
@@ -744,12 +809,18 @@ module BABYLON {
             this._computeParticleTexture = val;
         }
         /**
-        * Tells to setParticle() to call the vertex function for each vertex of each particle, or not.
+        * Tells to setParticles() to call the vertex function for each vertex of each particle, or not.
         * Default value : false. The SPS is faster when it's set to false.
         * Note : the particle custom vertex positions aren't stored values.
         */
         public set computeParticleVertex(val: boolean) {
             this._computeParticleVertex = val;
+        }
+        /**
+        * Tells to setParticles() to compute or not the mesh bounding box when computing the particle positions.
+        */
+        public set computeBoundingBox(val: boolean) {
+            this._computeBoundingBox = val;
         }
 
         // getters
@@ -767,6 +838,10 @@ module BABYLON {
 
         public get computeParticleVertex(): boolean {
             return this._computeParticleVertex;
+        }
+
+        public get computeBoundingBox(): boolean {
+            return this._computeBoundingBox;
         }
 
         // =======================================================================
@@ -835,4 +910,3 @@ module BABYLON {
         }
     }
 }
-
