@@ -14,15 +14,16 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-#if NUM_BONE_INFLUENCERS > 0
-uniform mat4 mBones[BonesPerMesh];
 
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
-#if NUM_BONE_INFLUENCERS > 4
-attribute vec4 matricesIndicesExtra;
-attribute vec4 matricesWeightsExtra;
-#endif
+#if NUM_BONE_INFLUENCERS > 0
+    uniform mat4 mBones[BonesPerMesh];
+
+    attribute vec4 matricesIndices;
+    attribute vec4 matricesWeights;
+    #if NUM_BONE_INFLUENCERS > 4
+        attribute vec4 matricesIndicesExtra;
+        attribute vec4 matricesWeightsExtra;
+    #endif
 #endif
 
 // Uniforms
@@ -127,7 +128,7 @@ varying vec4 vPositionFromLight3;
 varying vec3 vPositionUVW;
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
 varying vec3 vDirectionW;
 #endif
 
@@ -137,7 +138,6 @@ varying float vFragmentDepth;
 #endif
 
 void main(void) {
-
 #ifdef REFLECTIONMAP_SKYBOX
     vPositionUVW = position;
 #endif 
@@ -187,7 +187,7 @@ void main(void) {
     vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
 #endif
 
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
     vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
 #endif
 

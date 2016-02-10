@@ -435,6 +435,23 @@ uniform vec4 emissiveLeftColor;
 uniform vec4 emissiveRightColor;
 #endif
 
+// Refraction Reflection
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+    uniform mat4 view;
+#endif
+
+// Refraction
+#ifdef REFRACTION
+    uniform vec4 vRefractionInfos;
+
+    #ifdef REFRACTIONMAP_3D
+        uniform samplerCube refractionCubeSampler;
+    #else
+        uniform sampler2D refraction2DSampler;
+        uniform mat4 refractionMatrix;
+    #endif
+#endif
+
 // Reflection
 #ifdef REFLECTION
 uniform vec2 vReflectionInfos;
@@ -448,16 +465,13 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #else
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
-varying vec3 vDirectionW;
-#endif
+    #ifdef REFLECTIONMAP_EQUIRECTANGULAR
+    varying vec3 vDirectionW;
+    #endif
 
-#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 reflectionMatrix;
-#endif
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 view;
-#endif
+    #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
+    uniform mat4 reflectionMatrix;
+    #endif
 #endif
 
 vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
@@ -902,9 +916,11 @@ void main(void) {
         surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV);
         surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
 
-    #ifdef ALPHATEST
-        if (surfaceAlbedo.a < 0.4)
-            discard;
+    #ifndef LINKREFRACTIONTOTRANSPARENCY
+        #ifdef ALPHATEST
+            if (surfaceAlbedo.a < 0.4)
+                discard;
+        #endif
     #endif
 
     #ifdef ALPHAFROMALBEDO
@@ -954,7 +970,8 @@ void main(void) {
     #endif
 
     #ifdef REFLECTIVITY
-        surfaceReflectivityColor = texture2D(reflectivitySampler, vReflectivityUV).rgb;
+        vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV);
+        surfaceReflectivityColor = surfaceReflectivityColorMap.rgb;
         surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
 
         #ifdef OVERLOADEDVALUES
@@ -962,7 +979,7 @@ void main(void) {
         #endif
 
         #ifdef MICROSURFACEFROMREFLECTIVITYMAP
-            microSurface = reflectivityMapColor.a;
+            microSurface = surfaceReflectivityColorMap.a;
         #else
             microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
         #endif
@@ -1180,6 +1197,60 @@ void main(void) {
     lightSpecularContribution *= vLightingIntensity.w;
 #endif
 
+#ifdef OPACITY
+    vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
+
+    #ifdef OPACITYRGB
+        opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
+        alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
+    #else
+        alpha *= opacityMap.a * vOpacityInfos.y;
+    #endif
+
+#endif
+
+#ifdef VERTEXALPHA
+    alpha *= vColor.a;
+#endif
+
+#ifdef OPACITYFRESNEL
+    float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);
+
+    alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
+#endif
+
+// Refraction
+vec3 surfaceRefractionColor = vec3(0., 0., 0.);
+
+// Go mat -> blurry reflexion according to microSurface
+float bias = 20. * (1.0 - microSurface);
+        
+#ifdef REFRACTION
+	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+    
+    #ifdef REFRACTIONMAP_3D
+        refractionVector.y = refractionVector.y * vRefractionInfos.w;
+
+        if (dot(refractionVector, viewDirectionW) < 1.0)
+        {
+            surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, bias).rgb * vRefractionInfos.x;
+        }
+        
+        #ifndef REFRACTIONMAPINLINEARSPACE
+            surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
+        #endif
+    #else
+        vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+
+        vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+
+        refractionCoords.y = 1.0 - refractionCoords.y;
+
+        surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+        surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
+    #endif    
+#endif
+
 // Reflection
 vec3 environmentRadiance = vReflectionColor.rgb;
 vec3 environmentIrradiance = vReflectionColor.rgb;
@@ -1188,9 +1259,6 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
     vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
     #ifdef REFLECTIONMAP_3D
-        // Go mat -> blurry reflexion according to microSurface
-        float bias = 20. * (1.0 - microSurface);
-
         environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
         
         #ifdef PoissonSamplingEnvironment
@@ -1237,32 +1305,40 @@ environmentIrradiance *= vLightingIntensity.z;
 vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
 vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
 vec3 specularEnvironmentReflectance = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
+
+// Compute refractance
+vec3 refractance = vec3(0.0 , 0.0, 0.0);
+#ifdef REFRACTION
+    vec3 transmission = vec3(1.0 , 1.0, 1.0);
+    #ifdef LINKREFRACTIONTOTRANSPARENCY
+        transmission *= (1.0 - alpha);
+        surfaceAlbedoContribution *= alpha;
+        
+        // Tint the material with diffuse.
+        // TODO. Double Check.
+        float maxChannel = max(max(surfaceAlbedoContribution.r, surfaceAlbedoContribution.g), surfaceAlbedoContribution.b);
+        vec3 tint = transmission + clamp(surfaceAlbedoContribution.rgb - maxChannel, 0.0, 1.0);
+        surfaceRefractionColor *= tint;
+        
+        // Put alpha back to 1;
+        alpha = 1.0;
+    #endif
+    
+    // Add Multiple internal bounces.
+    specularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
+    
+    // In theory T = 1 - R.
+    transmission *= 1.0 - specularEnvironmentReflectance;
+    
+    // Should baked in diffuse.
+    refractance = surfaceRefractionColor * transmission;
+#endif
+
+refractance *= vLightingIntensity.z;
 environmentRadiance *= specularEnvironmentReflectance;
 
-#ifdef OPACITY
-    vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
-
-    #ifdef OPACITYRGB
-        opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
-        alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
-    #else
-        alpha *= opacityMap.a * vOpacityInfos.y;
-    #endif
-
-#endif
-
-#ifdef VERTEXALPHA
-    alpha *= vColor.a;
-#endif
-
-#ifdef OPACITYFRESNEL
-    float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);
-
-    alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
-#endif
-
-    // Emissive
-    vec3 surfaceEmissiveColor = vEmissiveColor;
+// Emissive
+vec3 surfaceEmissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
     vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV).rgb;
     surfaceEmissiveColor = toLinearSpace(emissiveColorTex.rgb) * surfaceEmissiveColor * vEmissiveInfos.y;
@@ -1322,9 +1398,9 @@ environmentRadiance *= specularEnvironmentReflectance;
 // Composition
 // Reflection already includes the environment intensity.
 #ifdef EMISSIVEASILLUMINATION
-    vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance + surfaceEmissiveColor * vLightingIntensity.y, alpha);
+    vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance + surfaceEmissiveColor * vLightingIntensity.y + refractance, alpha);
 #else
-    vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance, alpha);
+    vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance + refractance, alpha);
 #endif
 
 #ifdef LIGHTMAP
@@ -1374,6 +1450,9 @@ environmentRadiance *= specularEnvironmentReflectance;
 
     // Specular Map
     // gl_FragColor = vec4(reflectivityMapColor.rgb, 1.0);
+    
+    // Refractance
+    // gl_FragColor = vec4(refractance.rgb, 1.0);
 
     //// Emissive Color
     //vec2 test = vEmissiveUV * 0.5 + 0.5;

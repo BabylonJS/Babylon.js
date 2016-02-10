@@ -7,8 +7,11 @@ window.preparePBR = function() {
     
     var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 512);
     pbr.reflectionTexture = hdrTexture;
-	pbr.reflectivityColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+    pbr.refractionTexture = hdrTexture;
+    pbr.linkRefractionWithTransparency = true;
+    pbr.indexOfRefraction = 0.52;
     
+	pbr.reflectivityColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 	pbr.microSurface = 0.9;
     
     // Skybox
@@ -106,13 +109,25 @@ window.preparePBR = function() {
 		  "albedoColorLevel": 1
 		});
 	});
-
-	registerRangeUI("pbr", "directIntensity", 0, 2, function(value) {
+	
+    registerRangeUI("pbr", "indiceOfRefraction", 0, 2, function(value) {
+		pbr.indexOfRefraction = value;
+	}, function() {
+		return pbr.indexOfRefraction;
+	});
+    
+    registerRangeUI("pbr", "alpha", 0, 1, function(value) {
+		pbr.alpha = value;
+	}, function() {
+		return pbr.alpha;
+	});
+    
+    registerRangeUI("pbr", "directIntensity", 0, 2, function(value) {
 		pbr.directIntensity = value;
 	}, function() {
 		return pbr.directIntensity;
 	});
-	
+    
 	registerRangeUI("pbr", "emissiveIntensity", 0, 2, function(value) {
 		pbr.emissiveIntensity = value;
 	}, function() {
