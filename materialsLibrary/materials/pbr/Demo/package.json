@@ -1,0 +1,13 @@
+{
+  "name": "BabylonJSPBRDemo",
+  "version": "2.4.0",
+  "description": "Quick PBR DEMO",
+  "main": "",
+  "repository": { "url": "https://github.com/BabylonJS/Babylon.js/" },
+  "readme": "https://github.com/BabylonJS/Babylon.js/edit/master/readme.md",
+  "license": "(Apache-2.0)",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-webserver": "^0.9.1"
+  }
+}
