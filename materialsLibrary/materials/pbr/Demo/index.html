@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>PBR Demo</title>
+	<script src="refs/babylon.max.js"></script>
+    <script src="refs/babylon.pbrMaterial.js"></script>
+
+	<style>
+		html, body {
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			overflow: hidden;
+		}
+
+		#renderCanvas {
+			width: 100%;
+			height: 100%;
+		}
+
+		#fps {
+			position: absolute;
+			background-color: black;
+			border: 2px solid red;
+			text-align: center;
+			font-size: 16px;
+			color: white;
+			top: 15px;
+			left: 10px;
+			width: 60px;
+			height: 20px;
+		}
+	</style>
+</head>
+<body>
+	<div id="fps">0</div>
+	<canvas id="renderCanvas"></canvas>
+
+	<script src="index.js"></script>
+</body>
+</html>
