@@ -989,11 +989,7 @@ void main(void) {
         microSurface = mix(microSurface, vOverloadedMicroSurface.x, vOverloadedMicroSurface.y);
     #endif
 
-    // Apply Energy Conservation taking in account the environment level only if the environment is present.
-    float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
-    surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
-
-    // Compute Specular Fresnel + Reflectance.
+    // Compute N dot V.
     float NdotV = max(0.00000000001, dot(normalW, viewDirectionW));
 
     // Adapt microSurface.
@@ -1311,13 +1307,22 @@ vec3 refractance = vec3(0.0 , 0.0, 0.0);
 #ifdef REFRACTION
     vec3 transmission = vec3(1.0 , 1.0, 1.0);
     #ifdef LINKREFRACTIONTOTRANSPARENCY
+        // Transmission based on alpha.
         transmission *= (1.0 - alpha);
+        
+        // Tint the material with albedo.
+        // TODO. PBR Tinting.
+        vec3 mixedAlbedo = surfaceAlbedoContribution.rgb * surfaceAlbedo.rgb;
+        float maxChannel = max(max(mixedAlbedo.r, mixedAlbedo.g), mixedAlbedo.b);
+        vec3 tint = clamp(maxChannel * mixedAlbedo, 0.0, 1.0);
+        
+        // Decrease Albedo Contribution
         surfaceAlbedoContribution *= alpha;
         
-        // Tint the material with diffuse.
-        // TODO. Double Check.
-        float maxChannel = max(max(surfaceAlbedoContribution.r, surfaceAlbedoContribution.g), surfaceAlbedoContribution.b);
-        vec3 tint = transmission + clamp(surfaceAlbedoContribution.rgb - maxChannel, 0.0, 1.0);
+        // Decrease irradiance Contribution
+        environmentIrradiance *= alpha;
+        
+        // Tint reflectance
         surfaceRefractionColor *= tint;
         
         // Put alpha back to 1;
@@ -1325,7 +1330,8 @@ vec3 refractance = vec3(0.0 , 0.0, 0.0);
     #endif
     
     // Add Multiple internal bounces.
-    specularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
+    vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
+    specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, alpha);
     
     // In theory T = 1 - R.
     transmission *= 1.0 - specularEnvironmentReflectance;
@@ -1333,6 +1339,10 @@ vec3 refractance = vec3(0.0 , 0.0, 0.0);
     // Should baked in diffuse.
     refractance = surfaceRefractionColor * transmission;
 #endif
+
+// Apply Energy Conservation taking in account the environment level only if the environment is present.
+float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
+surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
 
 refractance *= vLightingIntensity.z;
 environmentRadiance *= specularEnvironmentReflectance;
