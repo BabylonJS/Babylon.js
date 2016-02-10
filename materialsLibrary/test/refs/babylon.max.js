@@ -8415,6 +8415,10 @@ var BABYLON;
             this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2, options);
         };
         AbstractMesh.prototype.updatePhysicsBodyPosition = function () {
+            BABYLON.Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()");
+            this.updatePhysicsBody();
+        };
+        AbstractMesh.prototype.updatePhysicsBody = function () {
             if (!this._physicImpostor) {
                 return;
             }
@@ -11520,7 +11524,7 @@ var BABYLON;
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
             // Panning
-            this.panningAxis = new BABYLON.Vector3(1, 0, 1);
+            this.panningAxis = new BABYLON.Vector3(1, 1, 0);
             this._isRightClick = false;
             this._isCtrlPushed = false;
             this.checkCollisions = false;
@@ -11883,9 +11887,13 @@ var BABYLON;
                 if (Math.abs(this.inertialPanningY) < BABYLON.Engine.Epsilon)
                     this.inertialPanningY = 0;
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+                this._localDirection.multiplyInPlace(this.panningAxis);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
                 BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
-                this._transformedDirection.multiplyInPlace(this.panningAxis);
+                //Eliminate y if map panning is enabled (panningAxis == 1,0,1)
+                if (!this.panningAxis.y) {
+                    this._transformedDirection.y = 0;
+                }
                 this.target.addInPlace(this._transformedDirection);
             }
             // Limits
@@ -19604,7 +19612,7 @@ var BABYLON;
             this.useSpecularOverAlpha = false;
             this.disableLighting = false;
             this.roughness = 0;
-            this.indexOfRefraction = 1.05;
+            this.indexOfRefraction = 0.98;
             this.invertRefractionY = true;
             this.useLightmapAsShadowmap = false;
             this.useGlossinessFromSpecularMapAlpha = false;
@@ -20398,6 +20406,8 @@ var BABYLON;
             newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
             newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newStandardMaterial.roughness = this.roughness;
+            newStandardMaterial.indexOfRefraction = this.indexOfRefraction;
+            newStandardMaterial.invertRefractionY = this.invertRefractionY;
             if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.clone) {
                 newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
             }
@@ -20422,8 +20432,10 @@ var BABYLON;
             serializationObject.specular = this.specularColor.asArray();
             serializationObject.specularPower = this.specularPower;
             serializationObject.emissive = this.emissiveColor.asArray();
-            serializationObject.useReflectionFresnelFromSpecular = serializationObject.useReflectionFresnelFromSpecular;
-            serializationObject.useEmissiveAsIllumination = serializationObject.useEmissiveAsIllumination;
+            serializationObject.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
+            serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
+            serializationObject.indexOfRefraction = this.indexOfRefraction;
+            serializationObject.invertRefractionY = this.invertRefractionY;
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
             }
@@ -20478,6 +20490,8 @@ var BABYLON;
             material.emissiveColor = BABYLON.Color3.FromArray(source.emissive);
             material.useReflectionFresnelFromSpecular = source.useReflectionFresnelFromSpecular;
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
+            material.indexOfRefraction = source.indexOfRefraction;
+            material.invertRefractionY = source.invertRefractionY;
             material.alpha = source.alpha;
             material.id = source.id;
             if (source.disableDepthWrite) {
@@ -23683,6 +23697,9 @@ var BABYLON;
         };
         PhysicsEngine.prototype.getPhysicsPluginName = function () {
             return this._currentPlugin.name;
+        };
+        PhysicsEngine.prototype.getWorldObject = function () {
+            return this._currentPlugin.getWorldObject();
         };
         // Statics
         PhysicsEngine.NoImpostor = 0;
