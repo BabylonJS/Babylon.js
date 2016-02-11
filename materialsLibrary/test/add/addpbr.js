@@ -16,13 +16,16 @@ window.preparePBR = function() {
     
     // Skybox
     var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
-    var hdrSkyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+    var hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
     hdrSkyboxMaterial.backFaceCulling = false;
     hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
     hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-    hdrSkyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-    hdrSkyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+    hdrSkyboxMaterial.microSurface = 1;
+    hdrSkyboxMaterial.specularColor = new BABYLON.Color3(1, 1, 1);
     hdrSkyboxMaterial.disableLighting = true;
+    hdrSkyboxMaterial.cameraExposure = 0.6;
+    hdrSkyboxMaterial.cameraContrast = 1.6;
+    hdrSkyboxMaterial.directIntensity = 0;
     hdrSkybox.material = hdrSkyboxMaterial;
     hdrSkybox.infiniteDistance = true;
     hdrSkybox.setEnabled(false);
