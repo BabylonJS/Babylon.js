@@ -9,12 +9,14 @@
         return ((random * (max - min)) + min);
     }
 
-    export class ParticleSystem implements IDisposable {
+    export class ParticleSystem implements IDisposable, IAnimatable {
         // Statics
         public static BLENDMODE_ONEONE = 0;
         public static BLENDMODE_STANDARD = 1;
 
         // Members
+        public animations: Animation[] = [];
+
         public id: string;
         public renderingGroupId = 0;
         public emitter = null;
@@ -449,17 +451,29 @@
             var serializationObject: any = {};
 
             serializationObject.name = this.name;
+
+            // Emitter
             if (this.emitter.position) {
                 serializationObject.emitterId = this.emitter.id;
             } else {
                 serializationObject.emitter = this.emitter.asArray();;
             }
+
             serializationObject.capacity = this.getCapacity();
 
             if (this.particleTexture) {
                 serializationObject.textureName = this.particleTexture.name;
             }
+            
+            // Animations
+            serializationObject.animations = [];
+            var animation: Animation;
+            for (var index = 0; index < this.animations.length; index++) {
+                animation = this.animations[index];
+                serializationObject.animations.push(animation.serialize());
+            }
 
+            // Particle system
             serializationObject.minAngularSpeed = this.minAngularSpeed;
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
@@ -488,15 +502,29 @@
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var name = parsedParticleSystem.name;
             var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+
+            // Texture
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
+
+            // Emitter
             if (parsedParticleSystem.emitterId) {
                 particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
             } else {
                 particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
             }
+
+            // Animations
+            if (parsedParticleSystem.animations) {
+                for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedParticleSystem.animations[animationIndex];
+                    particleSystem.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
+            // Particle system
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
