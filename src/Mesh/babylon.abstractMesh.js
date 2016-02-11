@@ -684,6 +684,10 @@ var BABYLON;
             this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2, options);
         };
         AbstractMesh.prototype.updatePhysicsBodyPosition = function () {
+            BABYLON.Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()");
+            this.updatePhysicsBody();
+        };
+        AbstractMesh.prototype.updatePhysicsBody = function () {
             if (!this._physicImpostor) {
                 return;
             }

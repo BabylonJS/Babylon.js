@@ -68,6 +68,7 @@
         // Methods
         public updateMatrix(matrix: Matrix): void {
             this._baseMatrix = matrix.clone();
+            this._matrix = matrix.clone();
 
             this._skeleton._markAsDirty();
 

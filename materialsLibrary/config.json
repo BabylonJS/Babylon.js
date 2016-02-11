@@ -17,7 +17,8 @@
         "materials/pbr/legacypbr.vertex.fx",
         "materials/pbr/legacypbr.fragment.fx"
       ],
-      "output": "babylon.pbrMaterial.js"
+      "output": "babylon.pbrMaterial.js",
+      "declarationFilename": "babylon.pbrMaterial.d.ts"
     },
     {
       "file": "materials/normal/babylon.normalMaterial.ts",

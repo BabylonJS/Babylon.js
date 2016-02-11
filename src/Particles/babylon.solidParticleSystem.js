@@ -7,15 +7,32 @@ var BABYLON;
         /**
         * Creates a SPS (Solid Particle System) object.
         * @param name the SPS name, this will be the underlying mesh name
-        * @param updatable (default true) if the SPS must be updatable or immutable
-        * @param isPickable (default false) if the solid particles must be pickable
+        * @param scene the scene in which the SPS is added
+        * @param options "updatable" (default true) : if the SPS must be updatable or immutable, "isPickable" (default false) : if the solid particles must be pickable
         */
         function SolidParticleSystem(name, scene, options) {
             // public members
+            /**
+            *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
+            *  Example : var p = SPS.particles[i];
+            */
             this.particles = new Array();
+            /**
+            * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
+            */
             this.nbParticles = 0;
+            /**
+            * If the particles must ever face the camera (default false). Useful for planar particles.
+            */
             this.billboard = false;
+            /**
+            * This a counter ofr your own usage. It's not set by any SPS functions.
+            */
             this.counter = 0;
+            /**
+            * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
+            * Please read : http://doc.babylonjs.com/tutorials/Solid_Particle_System#garbage-collector-concerns
+            */
             this.vars = {};
             this._positions = new Array();
             this._indices = new Array();
@@ -34,6 +51,7 @@ var BABYLON;
             this._computeParticleTexture = true;
             this._computeParticleRotation = true;
             this._computeParticleVertex = false;
+            this._computeBoundingBox = false;
             this._cam_axisZ = BABYLON.Vector3.Zero();
             this._cam_axisY = BABYLON.Vector3.Zero();
             this._cam_axisX = BABYLON.Vector3.Zero();
@@ -60,6 +78,9 @@ var BABYLON;
             this._sinYaw = 0.0;
             this._cosYaw = 0.0;
             this._w = 0.0;
+            this._minimum = BABYLON.Tmp.Vector3[0];
+            this._maximum = BABYLON.Tmp.Vector3[1];
+            this._vertexWorld = BABYLON.Tmp.Vector3[2];
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -114,6 +135,86 @@ var BABYLON;
                 this.particles.length = 0;
             }
             return mesh;
+        };
+        /**
+        * Digests the mesh and generates as many solid particles in the system as wanted.
+        * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
+        * Thus the particles generated from digest() have their property "positiion" yet set.
+        * @param mesh the mesh to be digested
+        * @param facetNb the number of mesh facets per particle (optional, default 1), this parameter is overriden by the parameter "number" if any
+        * @param number the wanted number of particles : each particle is built with mesh_total_facets / number facets (optional)
+        */
+        SolidParticleSystem.prototype.digest = function (mesh, options) {
+            var size = (options && options.facetNb) || 1;
+            var number = (options && options.number);
+            var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            var meshInd = mesh.getIndices();
+            var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
+            var meshCol = mesh.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+            var f = 0; // facet counter
+            var totalFacets = meshInd.length / 3; // a facet is a triangle, so 3 indices
+            // compute size from number
+            if (number) {
+                number = (number > totalFacets) ? totalFacets : number;
+                size = Math.round(totalFacets / number);
+            }
+            else {
+                size = (size > totalFacets) ? totalFacets : size;
+            }
+            var facetPos = []; // submesh positions
+            var facetInd = []; // submesh indices
+            var facetUV = []; // submesh UV
+            var facetCol = []; // submesh colors
+            var barycenter = BABYLON.Tmp.Vector3[0];
+            while (f < totalFacets) {
+                if (f > totalFacets - size) {
+                    size = totalFacets - f;
+                }
+                // reset temp arrays
+                facetPos.length = 0;
+                facetInd.length = 0;
+                facetUV.length = 0;
+                facetCol.length = 0;
+                // iterate over "size" facets
+                var fi = 0;
+                for (var j = f * 3; j < (f + size) * 3; j++) {
+                    facetInd.push(fi);
+                    var i = meshInd[j];
+                    facetPos.push(meshPos[i * 3], meshPos[i * 3 + 1], meshPos[i * 3 + 2]);
+                    if (meshUV) {
+                        facetUV.push(meshUV[i * 2], meshUV[i * 2 + 1]);
+                    }
+                    if (meshCol) {
+                        facetCol.push(meshCol[i * 4], meshCol[i * 4 + 1], meshCol[i * 4 + 2], meshCol[i * 4 + 3]);
+                    }
+                    fi++;
+                }
+                // create a model shape for each single particle
+                var idx = this.nbParticles;
+                var shape = this._posToShape(facetPos);
+                var shapeUV = this._uvsToShapeUV(facetUV);
+                // compute the barycenter of the shape
+                var v;
+                for (v = 0; v < shape.length; v++) {
+                    barycenter.addInPlace(shape[v]);
+                }
+                barycenter.scaleInPlace(1 / shape.length);
+                // shift the shape from its barycenter to the origin
+                for (v = 0; v < shape.length; v++) {
+                    shape[v].subtractInPlace(barycenter);
+                }
+                var modelShape = new BABYLON.ModelShape(this._shapeCounter, shape, shapeUV, null, null);
+                // add the particle in the SPS
+                this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, idx, 0, null);
+                this._addParticle(idx, this._positions.length, modelShape, this._shapeCounter, 0);
+                // initialize the particle position
+                this.particles[this.nbParticles].position.addInPlace(barycenter);
+                this._index += shape.length;
+                idx++;
+                this.nbParticles++;
+                this._shapeCounter++;
+                f += size;
+            }
         };
         //reset copy
         SolidParticleSystem.prototype._resetCopy = function () {
@@ -225,8 +326,7 @@ var BABYLON;
         * Please read the doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#create-an-immutable-sps
         * @param mesh any Mesh object that will be used as a model for the solid particles.
         * @param nb the number of particles to be created from this model
-        * @param positionFunction an optional javascript function to called for each particle on SPS creation
-        * @param vertexFunction an optional javascript function to called for each vertex of each particle on SPS creation
+        * @param options positionFunction is an optional javascript function to called for each particle on SPS creation. vertexFunction an optional javascript function to called for each vertex of each particle on SPS creation
         */
         SolidParticleSystem.prototype.addShape = function (mesh, nb, options) {
             var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -358,6 +458,10 @@ var BABYLON;
             var colorIndex = 0;
             var uvidx = 0;
             var uvIndex = 0;
+            if (this._computeBoundingBox) {
+                BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this._minimum);
+                BABYLON.Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this._maximum);
+            }
             // particle loop
             end = (end > this.nbParticles - 1) ? this.nbParticles - 1 : end;
             for (var p = start; p <= end; p++) {
@@ -407,6 +511,26 @@ var BABYLON;
                     this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
                     this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
                     this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                    if (this._computeBoundingBox) {
+                        if (this._positions32[idx] < this._minimum.x) {
+                            this._minimum.x = this._positions32[idx];
+                        }
+                        if (this._positions32[idx] > this._maximum.x) {
+                            this._maximum.x = this._positions32[idx];
+                        }
+                        if (this._positions32[idx + 1] < this._minimum.y) {
+                            this._minimum.y = this._positions32[idx + 1];
+                        }
+                        if (this._positions32[idx + 1] > this._maximum.y) {
+                            this._maximum.y = this._positions32[idx + 1];
+                        }
+                        if (this._positions32[idx + 2] < this._minimum.z) {
+                            this._minimum.z = this._positions32[idx + 2];
+                        }
+                        if (this._positions32[idx + 2] > this._maximum.z) {
+                            this._maximum.z = this._positions32[idx + 2];
+                        }
+                    }
                     // normals : if the particles can't be morphed then just rotate the normals
                     if (!this._computeParticleVertex && !this.billboard) {
                         this._normal.x = this._fixedNormal32[idx];
@@ -453,6 +577,10 @@ var BABYLON;
                     }
                     this.mesh.updateVerticesData(BABYLON.VertexBuffer.NormalKind, this._normals32, false, false);
                 }
+            }
+            if (this._computeBoundingBox) {
+                this.mesh._boundingInfo = new BABYLON.BoundingInfo(this._minimum, this._maximum);
+                this.mesh._boundingInfo.boundingBox.setWorldMatrix(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
         };
@@ -570,7 +698,7 @@ var BABYLON;
             },
             // Optimizer setters
             /**
-            * Tells to setParticle() to compute the particle rotations or not.
+            * Tells to setParticles() to compute the particle rotations or not.
             * Default value : true. The SPS is faster when it's set to false.
             * Note : the particle rotations aren't stored values, so setting computeParticleRotation to false will prevents the particle to rotate.
             */
@@ -585,7 +713,7 @@ var BABYLON;
                 return this._computeParticleColor;
             },
             /**
-            * Tells to setParticle() to compute the particle colors or not.
+            * Tells to setParticles() to compute the particle colors or not.
             * Default value : true. The SPS is faster when it's set to false.
             * Note : the particle colors are stored values, so setting computeParticleColor to false will keep yet the last colors set.
             */
@@ -600,7 +728,7 @@ var BABYLON;
                 return this._computeParticleTexture;
             },
             /**
-            * Tells to setParticle() to compute the particle textures or not.
+            * Tells to setParticles() to compute the particle textures or not.
             * Default value : true. The SPS is faster when it's set to false.
             * Note : the particle textures are stored values, so setting computeParticleTexture to false will keep yet the last colors set.
             */
@@ -615,12 +743,25 @@ var BABYLON;
                 return this._computeParticleVertex;
             },
             /**
-            * Tells to setParticle() to call the vertex function for each vertex of each particle, or not.
+            * Tells to setParticles() to call the vertex function for each vertex of each particle, or not.
             * Default value : false. The SPS is faster when it's set to false.
             * Note : the particle custom vertex positions aren't stored values.
             */
             set: function (val) {
                 this._computeParticleVertex = val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SolidParticleSystem.prototype, "computeBoundingBox", {
+            get: function () {
+                return this._computeBoundingBox;
+            },
+            /**
+            * Tells to setParticles() to compute or not the mesh bounding box when computing the particle positions.
+            */
+            set: function (val) {
+                this._computeBoundingBox = val;
             },
             enumerable: true,
             configurable: true

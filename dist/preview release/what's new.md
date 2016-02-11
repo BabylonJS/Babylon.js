@@ -1,6 +1,13 @@
 - 2.4.0:
   - **Major updates**
+    - New refraction channel for Standard material (including fresnel support). Refraction texture can be provided by a reflection probe or a refraction texture. [See demo here](http://www.babylonjs.com/Demos/refraction/) ([deltakosh](https://github.com/deltakosh))
+    - Added support for HDR cubemaps ([sebavan](https://github.com/sebavan))
   - **Updates**
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
+    - New SPS method `digest()` ([jerome](https://github.com/jbousquie))    
+    - New SPS property `computeBoundingBox` ([jerome](https://github.com/jbousquie))  
+    - Added a new OnPickOut trigger fired when you release the pointer button outside of a mesh or sprite. ([deltakosh](https://github.com/deltakosh))
+    - Added support for OnPointerOver and OnPointerOut for sprites. ([deltakosh](https://github.com/deltakosh))
   - **Bug fixes**
+    - Fixed bug with ArcRotateCamera.setTarget ([deltakosh](https://github.com/deltakosh))
   - **Breaking changes**

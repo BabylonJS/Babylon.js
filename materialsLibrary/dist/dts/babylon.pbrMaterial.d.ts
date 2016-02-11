@@ -35,6 +35,7 @@ declare module BABYLON {
         reflectivityTexture: BaseTexture;
         bumpTexture: BaseTexture;
         lightmapTexture: BaseTexture;
+        refractionTexture: BaseTexture;
         ambientColor: Color3;
         albedoColor: Color3;
         reflectivityColor: Color3;
@@ -46,6 +47,9 @@ declare module BABYLON {
         linkEmissiveWithAlbedo: boolean;
         useSpecularOverAlpha: boolean;
         disableLighting: boolean;
+        indexOfRefraction: number;
+        invertRefractionY: boolean;
+        linkRefractionWithTransparency: boolean;
         useLightmapAsShadowmap: boolean;
         opacityFresnelParameters: FresnelParameters;
         emissiveFresnelParameters: FresnelParameters;

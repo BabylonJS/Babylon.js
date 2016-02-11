@@ -35,8 +35,96 @@ uniform vec4 vCameraInfos;
     uniform vec4 vOverloadedShadowIntensity;
 #endif
 
+#ifdef USESPHERICALFROMREFLECTIONMAP
+    uniform vec3 vSphericalX;
+    uniform vec3 vSphericalY;
+    uniform vec3 vSphericalZ;
+    uniform vec3 vSphericalXX;
+    uniform vec3 vSphericalYY;
+    uniform vec3 vSphericalZZ;
+    uniform vec3 vSphericalXY;
+    uniform vec3 vSphericalYZ;
+    uniform vec3 vSphericalZX;
+
+    vec3 EnvironmentIrradiance(vec3 normal)
+    {
+        // Note: 'normal' is assumed to be normalised (or near normalised)
+        // This isn't as critical as it is with other calculations (e.g. specular highlight), but the result will be incorrect nonetheless.
+
+        // TODO: switch to optimal implementation
+        vec3 result =
+            vSphericalX * normal.x +
+            vSphericalY * normal.y +
+            vSphericalZ * normal.z +
+            vSphericalXX * normal.x * normal.x +
+            vSphericalYY * normal.y * normal.y +
+            vSphericalZZ * normal.z * normal.z +
+            vSphericalYZ * normal.y * normal.z +
+            vSphericalZX * normal.z * normal.x +
+            vSphericalXY * normal.x * normal.y;
+
+        return result.rgb;
+    }
+#endif
+
 // PBR CUSTOM CONSTANTS
 const float kPi = 3.1415926535897932384626433832795;
+
+#ifdef PoissonSamplingEnvironment
+    const int poissonSphereSamplersCount = 32;
+    vec3 poissonSphereSamplers[poissonSphereSamplersCount];
+
+    void initSamplers()
+    {
+        poissonSphereSamplers[0] = vec3( -0.552198926093, 0.801049753814, -0.0322487480415 );
+        poissonSphereSamplers[1] = vec3( 0.344874796559, -0.650989584719, 0.283038477033 ); 
+        poissonSphereSamplers[2] = vec3( -0.0710183703467, 0.163770497767, -0.95022416734 ); 
+        poissonSphereSamplers[3] = vec3( 0.422221832073, 0.576613638193, 0.519157625948 ); 
+        poissonSphereSamplers[4] = vec3( -0.561872200916, -0.665581249881, -0.131630473211 ); 
+        poissonSphereSamplers[5] = vec3( -0.409905973809, 0.0250731510778, 0.674676954809 ); 
+        poissonSphereSamplers[6] = vec3( 0.206829570551, -0.190199352704, 0.919073906156 ); 
+        poissonSphereSamplers[7] = vec3( -0.857514664463, 0.0274425010091, -0.475068738967 ); 
+        poissonSphereSamplers[8] = vec3( -0.816275009951, -0.0432916479141, 0.40394579291 ); 
+        poissonSphereSamplers[9] = vec3( 0.397976181928, -0.633227519667, -0.617794410447 ); 
+        poissonSphereSamplers[10] = vec3( -0.181484199014, 0.0155418272003, -0.34675720703 ); 
+        poissonSphereSamplers[11] = vec3( 0.591734926919, 0.489930882201, -0.51675303188 ); 
+        poissonSphereSamplers[12] = vec3( -0.264514973057, 0.834248662136, 0.464624235985 ); 
+        poissonSphereSamplers[13] = vec3( -0.125845223505, 0.812029586099, -0.46213797731 ); 
+        poissonSphereSamplers[14] = vec3( 0.0345715424639, 0.349983742938, 0.855109899027 ); 
+        poissonSphereSamplers[15] = vec3( 0.694340492749, -0.281052190209, -0.379600605543 ); 
+        poissonSphereSamplers[16] = vec3( -0.241055518078, -0.580199280578, 0.435381168431 );
+        poissonSphereSamplers[17] = vec3( 0.126313722289, 0.715113642744, 0.124385788055 ); 
+        poissonSphereSamplers[18] = vec3( 0.752862552387, 0.277075021888, 0.275059597549 );
+        poissonSphereSamplers[19] = vec3( -0.400896300918, -0.309374534321, -0.74285782627 ); 
+        poissonSphereSamplers[20] = vec3( 0.121843331941, -0.00381197918195, 0.322441835258 ); 
+        poissonSphereSamplers[21] = vec3( 0.741656771351, -0.472083016745, 0.14589173819 ); 
+        poissonSphereSamplers[22] = vec3( -0.120347565985, -0.397252703556, -0.00153836114051 ); 
+        poissonSphereSamplers[23] = vec3( -0.846258835203, -0.433763808754, 0.168732209784 ); 
+        poissonSphereSamplers[24] = vec3( 0.257765618362, -0.546470581239, -0.242234375624 ); 
+        poissonSphereSamplers[25] = vec3( -0.640343473361, 0.51920903395, 0.549310644325 ); 
+        poissonSphereSamplers[26] = vec3( -0.894309984621, 0.297394061018, 0.0884583225292 ); 
+        poissonSphereSamplers[27] = vec3( -0.126241933628, -0.535151016335, -0.440093659672 ); 
+        poissonSphereSamplers[28] = vec3( -0.158176440297, -0.393125021578, 0.890727226039 ); 
+        poissonSphereSamplers[29] = vec3( 0.896024272938, 0.203068725821, -0.11198597748 ); 
+        poissonSphereSamplers[30] = vec3( 0.568671758933, -0.314144243629, 0.509070768816 ); 
+        poissonSphereSamplers[31] = vec3( 0.289665332178, 0.104356977462, -0.348379247171 );
+    }
+
+    vec3 environmentSampler(samplerCube cubeMapSampler, vec3 centralDirection, float microsurfaceAverageSlope)
+    {
+        vec3 result = vec3(0., 0., 0.);
+        for(int i = 0; i < poissonSphereSamplersCount; i++)
+        {
+            vec3 offset = poissonSphereSamplers[i];
+            vec3 direction = centralDirection + microsurfaceAverageSlope * offset;
+            result += textureCube(cubeMapSampler, direction, 0.).rgb;
+        }
+
+        result /= 32.0;
+        return result;
+    }
+
+#endif
 
 // PBR HELPER METHODS
 float Square(float value)
@@ -347,6 +435,23 @@ uniform vec4 emissiveLeftColor;
 uniform vec4 emissiveRightColor;
 #endif
 
+// Refraction Reflection
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+    uniform mat4 view;
+#endif
+
+// Refraction
+#ifdef REFRACTION
+    uniform vec4 vRefractionInfos;
+
+    #ifdef REFRACTIONMAP_3D
+        uniform samplerCube refractionCubeSampler;
+    #else
+        uniform sampler2D refraction2DSampler;
+        uniform mat4 refractionMatrix;
+    #endif
+#endif
+
 // Reflection
 #ifdef REFLECTION
 uniform vec2 vReflectionInfos;
@@ -360,27 +465,34 @@ uniform sampler2D reflection2DSampler;
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #else
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
-varying vec3 vDirectionW;
-#endif
+    #ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+    varying vec3 vDirectionW;
+    #endif
 
-#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 reflectionMatrix;
-#endif
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 view;
-#endif
+    #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
+    uniform mat4 reflectionMatrix;
+    #endif
 #endif
 
 vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
     vec3 direction = normalize(vDirectionW);
 
     float t = clamp(direction.y * -0.5 + 0.5, 0., 1.0);
     float s = atan(direction.z, direction.x) * RECIPROCAL_PI2 + 0.5;
 
     return vec3(s, t, 0);
+#endif
+
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR
+
+	vec3 cameraToVertex = normalize(worldPos.xyz - vEyePosition);
+	vec3 r = reflect(cameraToVertex, worldNormal);
+	float t = clamp(r.y * -0.5 + 0.5, 0., 1.0);
+	float s = atan(r.z, r.x) * RECIPROCAL_PI2 + 0.5;
+
+	return vec3(s, t, 0);
 #endif
 
 #ifdef REFLECTIONMAP_SPHERICAL
@@ -791,89 +903,99 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 }
 
 void main(void) {
+    #ifdef PoissonSamplingEnvironment
+        initSamplers();
+    #endif
+
     // Clip plane
-#ifdef CLIPPLANE
-    if (fClipDistance > 0.0)
-        discard;
-#endif
+    #ifdef CLIPPLANE
+        if (fClipDistance > 0.0)
+            discard;
+    #endif
 
     vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
-    // Base color
-    vec4 baseColor = vec4(1., 1., 1., 1.);
-    vec3 albedoColor = vAlbedoColor.rgb;
+    // Albedo
+    vec4 surfaceAlbedo = vec4(1., 1., 1., 1.);
+    vec3 surfaceAlbedoContribution = vAlbedoColor.rgb;
     
     // Alpha
     float alpha = vAlbedoColor.a;
 
-#ifdef ALBEDO
-    baseColor = texture2D(albedoSampler, vAlbedoUV);
-    baseColor = vec4(toLinearSpace(baseColor.rgb), baseColor.a);
+    #ifdef ALBEDO
+        surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV);
+        surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
 
-#ifdef ALPHATEST
-    if (baseColor.a < 0.4)
-        discard;
-#endif
+        #ifndef LINKREFRACTIONTOTRANSPARENCY
+            #ifdef ALPHATEST
+                if (surfaceAlbedo.a < 0.4)
+                    discard;
+            #endif
+        #endif
 
-#ifdef ALPHAFROMALBEDO
-    alpha *= baseColor.a;
-#endif
+        #ifdef ALPHAFROMALBEDO
+            alpha *= surfaceAlbedo.a;
+        #endif
 
-    baseColor.rgb *= vAlbedoInfos.y;
-#endif
+        surfaceAlbedo.rgb *= vAlbedoInfos.y;
+    #else
+        // No Albedo texture.
+        surfaceAlbedo.rgb = surfaceAlbedoContribution;
+        surfaceAlbedoContribution = vec3(1., 1., 1.);
+    #endif
 
-#ifdef VERTEXCOLOR
-    baseColor.rgb *= vColor.rgb;
-#endif
+    #ifdef VERTEXCOLOR
+        surfaceAlbedo.rgb *= vColor.rgb;
+    #endif
 
-#ifdef OVERLOADEDVALUES
-    baseColor.rgb = mix(baseColor.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
-    albedoColor.rgb = mix(albedoColor.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
-#endif
+    #ifdef OVERLOADEDVALUES
+        surfaceAlbedo.rgb = mix(surfaceAlbedo.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
+    #endif
 
     // Bump
-#ifdef NORMAL
-    vec3 normalW = normalize(vNormalW);
-#else
-    vec3 normalW = vec3(1.0, 1.0, 1.0);
-#endif
+    #ifdef NORMAL
+        vec3 normalW = normalize(vNormalW);
+    #else
+        vec3 normalW = vec3(1.0, 1.0, 1.0);
+    #endif
 
 
-#ifdef BUMP
-    normalW = perturbNormal(viewDirectionW);
-#endif
+    #ifdef BUMP
+        normalW = perturbNormal(viewDirectionW);
+    #endif
 
     // Ambient color
-    vec3 baseAmbientColor = vec3(1., 1., 1.);
+    vec3 ambientColor = vec3(1., 1., 1.);
 
-#ifdef AMBIENT
-    baseAmbientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;
-    
-    #ifdef OVERLOADEDVALUES
-        baseAmbientColor.rgb = mix(baseAmbientColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
+    #ifdef AMBIENT
+        ambientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;
+        
+        #ifdef OVERLOADEDVALUES
+            ambientColor.rgb = mix(ambientColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
+        #endif
     #endif
-#endif
 
     // Specular map
     float microSurface = vReflectivityColor.a;
-    vec3 reflectivityColor = vReflectivityColor.rgb;
+    vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
     
     #ifdef OVERLOADEDVALUES
-        reflectivityColor.rgb = mix(reflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
+        surfaceReflectivityColor.rgb = mix(surfaceReflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
     #endif
 
     #ifdef REFLECTIVITY
-        vec4 reflectivityMapColor = texture2D(reflectivitySampler, vReflectivityUV);
-        reflectivityColor = toLinearSpace(reflectivityMapColor.rgb);
+        vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV);
+        surfaceReflectivityColor = surfaceReflectivityColorMap.rgb;
+        surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
 
         #ifdef OVERLOADEDVALUES
-                reflectivityColor.rgb = mix(reflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
+                surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
         #endif
 
         #ifdef MICROSURFACEFROMREFLECTIVITYMAP
-            microSurface = reflectivityMapColor.a;
+            microSurface = surfaceReflectivityColorMap.a;
         #else
-            microSurface = computeDefaultMicroSurface(microSurface, reflectivityColor);
+            microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
         #endif
     #endif
 
@@ -881,11 +1003,7 @@ void main(void) {
         microSurface = mix(microSurface, vOverloadedMicroSurface.x, vOverloadedMicroSurface.y);
     #endif
 
-    // Apply Energy Conservation taking in account the environment level only if the environment is present.
-    float reflectance = max(max(reflectivityColor.r, reflectivityColor.g), reflectivityColor.b);
-    baseColor.rgb = (1. - reflectance) * baseColor.rgb;
-
-    // Compute Specular Fresnel + Reflectance.
+    // Compute N dot V.
     float NdotV = max(0.00000000001, dot(normalW, viewDirectionW));
 
     // Adapt microSurface.
@@ -895,16 +1013,16 @@ void main(void) {
     float rough = clamp(1. - microSurface, 0.000001, 1.0);
 
     // Lighting
-    vec3 diffuseBase = vec3(0., 0., 0.);
+    vec3 lightDiffuseContribution = vec3(0., 0., 0.);
     
 #ifdef OVERLOADEDSHADOWVALUES
-    vec3 shadowedOnlyDiffuseBase = vec3(1., 1., 1.);
+    vec3 shadowedOnlyLightDiffuseContribution = vec3(1., 1., 1.);
 #endif
 
 #ifdef SPECULARTERM
-    vec3 specularBase = vec3(0., 0., 0.);
+    vec3 lightSpecularContribution= vec3(0., 0., 0.);
 #endif
-    float shadow = 1.;
+    float notShadowLevel = 1.; // 1 - shadowLevel
 
 #ifdef LIGHT0
 #ifndef SPECULARTERM
@@ -921,32 +1039,32 @@ void main(void) {
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
-    shadow = computeShadowWithVSM(vPositionFromLight0, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x);
+    notShadowLevel = computeShadowWithVSM(vPositionFromLight0, shadowSampler0, shadowsInfo0.z, shadowsInfo0.x);
 #else
 #ifdef SHADOWPCF0
 #if defined(POINTLIGHT0)
-    shadow = computeShadowWithPCFCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
+    notShadowLevel = computeShadowWithPCFCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
 #else
-    shadow = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
+    notShadowLevel = computeShadowWithPCF(vPositionFromLight0, shadowSampler0, shadowsInfo0.y, shadowsInfo0.z, shadowsInfo0.x);
 #endif
 #else
 #if defined(POINTLIGHT0)
-    shadow = computeShadowCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
+    notShadowLevel = computeShadowCube(vLightData0.xyz, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
 #else
-    shadow = computeShadow(vPositionFromLight0, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
+    notShadowLevel = computeShadow(vPositionFromLight0, shadowSampler0, shadowsInfo0.x, shadowsInfo0.z);
 #endif
 #endif
 #endif
 #else
-    shadow = 1.;
+    notShadowLevel = 1.;
 #endif
-    diffuseBase += info.diffuse * shadow;
+    lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
-    shadowedOnlyDiffuseBase *= shadow;
+    shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
 #ifdef SPECULARTERM
-    specularBase += info.specular * shadow;
+    lightSpecularContribution += info.specular * notShadowLevel;
 #endif
 #endif
 
@@ -965,33 +1083,33 @@ void main(void) {
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
-    shadow = computeShadowWithVSM(vPositionFromLight1, shadowSampler1, shadowsInfo1.z, shadowsInfo1.x);
+    notShadowLevel = computeShadowWithVSM(vPositionFromLight1, shadowSampler1, shadowsInfo1.z, shadowsInfo1.x);
 #else
 #ifdef SHADOWPCF1
 #if defined(POINTLIGHT1)
-    shadow = computeShadowWithPCFCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
+    notShadowLevel = computeShadowWithPCFCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
 #else
-    shadow = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
+    notShadowLevel = computeShadowWithPCF(vPositionFromLight1, shadowSampler1, shadowsInfo1.y, shadowsInfo1.z, shadowsInfo1.x);
 #endif
 #else
 #if defined(POINTLIGHT1)
-    shadow = computeShadowCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
+    notShadowLevel = computeShadowCube(vLightData1.xyz, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
 #else
-    shadow = computeShadow(vPositionFromLight1, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
+    notShadowLevel = computeShadow(vPositionFromLight1, shadowSampler1, shadowsInfo1.x, shadowsInfo1.z);
 #endif
 #endif
 #endif
 #else
-    shadow = 1.;
+    notShadowLevel = 1.;
 #endif
 
-    diffuseBase += info.diffuse * shadow;
+    lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
-    shadowedOnlyDiffuseBase *= shadow;
+    shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
 #ifdef SPECULARTERM
-    specularBase += info.specular * shadow;
+    lightSpecularContribution += info.specular * notShadowLevel;
 #endif
 #endif
 
@@ -1010,33 +1128,33 @@ void main(void) {
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
-    shadow = computeShadowWithVSM(vPositionFromLight2, shadowSampler2, shadowsInfo2.z, shadowsInfo2.x);
+    notShadowLevel = computeShadowWithVSM(vPositionFromLight2, shadowSampler2, shadowsInfo2.z, shadowsInfo2.x);
 #else
 #ifdef SHADOWPCF2
 #if defined(POINTLIGHT2)
-    shadow = computeShadowWithPCFCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
+    notShadowLevel = computeShadowWithPCFCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
 #else
-    shadow = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
+    notShadowLevel = computeShadowWithPCF(vPositionFromLight2, shadowSampler2, shadowsInfo2.y, shadowsInfo2.z, shadowsInfo2.x);
 #endif
 #else
 #if defined(POINTLIGHT2)
-    shadow = computeShadowCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
+    notShadowLevel = computeShadowCube(vLightData2.xyz, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
 #else
-    shadow = computeShadow(vPositionFromLight2, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
+    notShadowLevel = computeShadow(vPositionFromLight2, shadowSampler2, shadowsInfo2.x, shadowsInfo2.z);
 #endif
 #endif	
 #endif	
 #else
-    shadow = 1.;
+    notShadowLevel = 1.;
 #endif
 
-    diffuseBase += info.diffuse * shadow;
+    lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
-    shadowedOnlyDiffuseBase *= shadow;
+    shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
 #ifdef SPECULARTERM
-    specularBase += info.specular * shadow;
+    lightSpecularContribution += info.specular * notShadowLevel;
 #endif
 #endif
 
@@ -1055,82 +1173,39 @@ void main(void) {
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
-    shadow = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
+    notShadowLevel = computeShadowWithVSM(vPositionFromLight3, shadowSampler3, shadowsInfo3.z, shadowsInfo3.x);
 #else
 #ifdef SHADOWPCF3
 #if defined(POINTLIGHT3)
-    shadow = computeShadowWithPCFCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
+    notShadowLevel = computeShadowWithPCFCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 #else
-    shadow = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
+    notShadowLevel = computeShadowWithPCF(vPositionFromLight3, shadowSampler3, shadowsInfo3.y, shadowsInfo3.z, shadowsInfo3.x);
 #endif
 #else
 #if defined(POINTLIGHT3)
-    shadow = computeShadowCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
+    notShadowLevel = computeShadowCube(vLightData3.xyz, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
 #else
-    shadow = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
+    notShadowLevel = computeShadow(vPositionFromLight3, shadowSampler3, shadowsInfo3.x, shadowsInfo3.z);
 #endif
 #endif	
 #endif	
 #else
-    shadow = 1.;
+    notShadowLevel = 1.;
 #endif
 
-    diffuseBase += info.diffuse * shadow;
+    lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
-    shadowedOnlyDiffuseBase *= shadow;
+    shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
 #ifdef SPECULARTERM
-    specularBase += info.specular * shadow;
+    lightSpecularContribution += info.specular * notShadowLevel;
 #endif
 #endif
 
-// Reflection
-vec3 reflectionColor = vReflectionColor.rgb;
-vec3 ambientReflectionColor = vReflectionColor.rgb;
-
-#ifdef REFLECTION
-    vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
-
-    #ifdef REFLECTIONMAP_3D
-        // Go mat -> blurry reflexion according to microSurface
-        float bias = 20. * (1.0 - microSurface);
-
-        reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
-        reflectionColor = toLinearSpace(reflectionColor.rgb);
-
-        ambientReflectionColor = textureCube(reflectionCubeSampler, normalW, 20.).rgb * vReflectionInfos.x;
-        ambientReflectionColor = toLinearSpace(ambientReflectionColor.rgb);
-    #else
-        vec2 coords = vReflectionUVW.xy;
-
-        #ifdef REFLECTIONMAP_PROJECTION
-            coords /= vReflectionUVW.z;
-        #endif
-
-        coords.y = 1.0 - coords.y;
-
-        reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
-        reflectionColor = toLinearSpace(reflectionColor.rgb);
-
-        ambientReflectionColor = texture2D(reflection2DSampler, coords, 20.).rgb * vReflectionInfos.x;
-        ambientReflectionColor = toLinearSpace(ambientReflectionColor.rgb);
-    #endif
+#ifdef SPECULARTERM
+    lightSpecularContribution *= vLightingIntensity.w;
 #endif
-
-#ifdef OVERLOADEDVALUES
-    ambientReflectionColor = mix(ambientReflectionColor, vOverloadedReflection, vOverloadedMicroSurface.z);
-    reflectionColor = mix(reflectionColor, vOverloadedReflection, vOverloadedMicroSurface.z);
-#endif
-
-reflectionColor *= vLightingIntensity.z;
-ambientReflectionColor *= vLightingIntensity.z;
-
-// Compute reflection specular fresnel
-vec3 specularEnvironmentR0 = reflectivityColor.rgb;
-vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
-vec3 specularEnvironmentReflectanceViewer = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
-reflectionColor *= specularEnvironmentReflectanceViewer;
 
 #ifdef OPACITY
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
@@ -1154,56 +1229,186 @@ reflectionColor *= specularEnvironmentReflectanceViewer;
     alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
 #endif
 
-    // Emissive
-    vec3 emissiveColor = vEmissiveColor;
-#ifdef EMISSIVE
-    vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV).rgb;
-    emissiveColor = toLinearSpace(emissiveColorTex.rgb) * emissiveColor * vEmissiveInfos.y;
+// Refraction
+vec3 surfaceRefractionColor = vec3(0., 0., 0.);
+
+// Go mat -> blurry reflexion according to microSurface
+float bias = 20. * (1.0 - microSurface);
+        
+#ifdef REFRACTION
+	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+    
+    #ifdef REFRACTIONMAP_3D
+        refractionVector.y = refractionVector.y * vRefractionInfos.w;
+
+        if (dot(refractionVector, viewDirectionW) < 1.0)
+        {
+            surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, bias).rgb * vRefractionInfos.x;
+        }
+        
+        #ifndef REFRACTIONMAPINLINEARSPACE
+            surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
+        #endif
+    #else
+        vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+
+        vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+
+        refractionCoords.y = 1.0 - refractionCoords.y;
+
+        surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+        surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
+    #endif    
+#endif
+
+// Reflection
+vec3 environmentRadiance = vReflectionColor.rgb;
+vec3 environmentIrradiance = vReflectionColor.rgb;
+
+#ifdef REFLECTION
+    vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
+
+    #ifdef REFLECTIONMAP_3D
+        environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
+        
+        #ifdef PoissonSamplingEnvironment
+            float alphaG = convertRoughnessToAverageSlope(rough);
+            environmentRadiance = environmentSampler(reflectionCubeSampler, vReflectionUVW, alphaG) * vReflectionInfos.x;
+        #endif
+
+        #ifdef USESPHERICALFROMREFLECTIONMAP
+            #ifndef REFLECTIONMAP_SKYBOX
+                vec3 normalEnvironmentSpace = (reflectionMatrix * vec4(normalW, 1)).xyz;
+                environmentIrradiance = EnvironmentIrradiance(normalEnvironmentSpace);
+            #endif
+        #else
+            environmentRadiance = toLinearSpace(environmentRadiance.rgb);
+            
+            environmentIrradiance = textureCube(reflectionCubeSampler, normalW, 20.).rgb * vReflectionInfos.x;
+            environmentIrradiance = toLinearSpace(environmentIrradiance.rgb);
+            environmentIrradiance *= 0.2; // Hack in case of no hdr cube map use for environment.
+        #endif
+    #else
+        vec2 coords = vReflectionUVW.xy;
+
+        #ifdef REFLECTIONMAP_PROJECTION
+            coords /= vReflectionUVW.z;
+        #endif
+
+        coords.y = 1.0 - coords.y;
+
+        environmentRadiance = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+        environmentRadiance = toLinearSpace(environmentRadiance.rgb);
+
+        environmentIrradiance = texture2D(reflection2DSampler, coords, 20.).rgb * vReflectionInfos.x;
+        environmentIrradiance = toLinearSpace(environmentIrradiance.rgb);
+    #endif
 #endif
 
 #ifdef OVERLOADEDVALUES
-    emissiveColor = mix(emissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
+    environmentIrradiance = mix(environmentIrradiance, vOverloadedReflection, vOverloadedMicroSurface.z);
+    environmentRadiance = mix(environmentRadiance, vOverloadedReflection, vOverloadedMicroSurface.z);
+#endif
+
+environmentRadiance *= vLightingIntensity.z;
+environmentIrradiance *= vLightingIntensity.z;
+
+// Compute reflection specular fresnel
+vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
+vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
+vec3 specularEnvironmentReflectance = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
+
+// Compute refractance
+vec3 refractance = vec3(0.0 , 0.0, 0.0);
+#ifdef REFRACTION
+    vec3 transmission = vec3(1.0 , 1.0, 1.0);
+    #ifdef LINKREFRACTIONTOTRANSPARENCY
+        // Transmission based on alpha.
+        transmission *= (1.0 - alpha);
+        
+        // Tint the material with albedo.
+        // TODO. PBR Tinting.
+        vec3 mixedAlbedo = surfaceAlbedoContribution.rgb * surfaceAlbedo.rgb;
+        float maxChannel = max(max(mixedAlbedo.r, mixedAlbedo.g), mixedAlbedo.b);
+        vec3 tint = clamp(maxChannel * mixedAlbedo, 0.0, 1.0);
+        
+        // Decrease Albedo Contribution
+        surfaceAlbedoContribution *= alpha;
+        
+        // Decrease irradiance Contribution
+        environmentIrradiance *= alpha;
+        
+        // Tint reflectance
+        surfaceRefractionColor *= tint;
+        
+        // Put alpha back to 1;
+        alpha = 1.0;
+    #endif
+    
+    // Add Multiple internal bounces.
+    vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
+    specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, alpha);
+    
+    // In theory T = 1 - R.
+    transmission *= 1.0 - specularEnvironmentReflectance;
+    
+    // Should baked in diffuse.
+    refractance = surfaceRefractionColor * transmission;
+#endif
+
+// Apply Energy Conservation taking in account the environment level only if the environment is present.
+float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
+surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+
+refractance *= vLightingIntensity.z;
+environmentRadiance *= specularEnvironmentReflectance;
+
+// Emissive
+vec3 surfaceEmissiveColor = vEmissiveColor;
+#ifdef EMISSIVE
+    vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV).rgb;
+    surfaceEmissiveColor = toLinearSpace(emissiveColorTex.rgb) * surfaceEmissiveColor * vEmissiveInfos.y;
+#endif
+
+#ifdef OVERLOADEDVALUES
+    surfaceEmissiveColor = mix(surfaceEmissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
 #endif
 
 #ifdef EMISSIVEFRESNEL
     float emissiveFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);
 
-    emissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;
+    surfaceEmissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;
 #endif
 
-    // Composition
+// Composition
 #ifdef EMISSIVEASILLUMINATION
-    vec3 finalDiffuse = max(diffuseBase * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
+    vec3 finalDiffuse = max(lightDiffuseContribution * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
     
     #ifdef OVERLOADEDSHADOWVALUES
-        shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
+        shadowedOnlyLightDiffuseContribution = max(shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
     #endif
 #else
     #ifdef LINKEMISSIVEWITHALBEDO
-        vec3 finalDiffuse = max((diffuseBase + emissiveColor) * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
+        vec3 finalDiffuse = max((lightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
 
         #ifdef OVERLOADEDSHADOWVALUES
-            shadowedOnlyDiffuseBase = max((shadowedOnlyDiffuseBase + emissiveColor) * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
+            shadowedOnlyLightDiffuseContribution = max((shadowedOnlyLightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
         #endif
     #else
-        vec3 finalDiffuse = max(diffuseBase * albedoColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+        vec3 finalDiffuse = max(lightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
 
         #ifdef OVERLOADEDSHADOWVALUES
-            shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * albedoColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+            shadowedOnlyLightDiffuseContribution = max(shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
         #endif
     #endif
 #endif
 
 #ifdef OVERLOADEDSHADOWVALUES
-    finalDiffuse = mix(finalDiffuse, shadowedOnlyDiffuseBase, (1.0 - vOverloadedShadowIntensity.y));
+    finalDiffuse = mix(finalDiffuse, shadowedOnlyLightDiffuseContribution, (1.0 - vOverloadedShadowIntensity.y));
 #endif
 
-// diffuse lighting from environment 0.2 replaces Harmonic...
-// Ambient Reflection already includes the environment intensity.
-finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
-
 #ifdef SPECULARTERM
-    vec3 finalSpecular = specularBase * reflectivityColor * vLightingIntensity.w;
+    vec3 finalSpecular = lightSpecularContribution * surfaceReflectivityColor;
 #else
     vec3 finalSpecular = vec3(0.0);
 #endif
@@ -1219,36 +1424,36 @@ finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
 // Composition
 // Reflection already includes the environment intensity.
 #ifdef EMISSIVEASILLUMINATION
-    vec4 color = vec4(finalDiffuse * baseAmbientColor * vLightingIntensity.x + finalSpecular * vLightingIntensity.x + reflectionColor + emissiveColor * vLightingIntensity.y, alpha);
+    vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance + surfaceEmissiveColor * vLightingIntensity.y + refractance, alpha);
 #else
-    vec4 color = vec4(finalDiffuse * baseAmbientColor * vLightingIntensity.x + finalSpecular * vLightingIntensity.x + reflectionColor, alpha);
+    vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance + refractance, alpha);
 #endif
 
 #ifdef LIGHTMAP
     vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV).rgb * vLightmapInfos.y;
 
     #ifdef USELIGHTMAPASSHADOWMAP
-        color.rgb *= lightmapColor;
+        finalColor.rgb *= lightmapColor;
     #else
-        color.rgb += lightmapColor;
+        finalColor.rgb += lightmapColor;
     #endif
 #endif
 
 #ifdef FOG
     float fog = CalcFogFactor();
-    color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
+    finalColor.rgb = fog * finalColor.rgb + (1.0 - fog) * vFogColor;
 #endif
 
-    color = max(color, 0.0);
+    finalColor = max(finalColor, 0.0);
 
 #ifdef CAMERATONEMAP
-    color.rgb = toneMaps(color.rgb);
+    finalColor.rgb = toneMaps(finalColor.rgb);
 #endif
 
-    color.rgb = toGammaSpace(color.rgb);
+    finalColor.rgb = toGammaSpace(finalColor.rgb);
 
 #ifdef CAMERACONTRAST
-    color = contrasts(color);
+    finalColor = contrasts(finalColor);
 #endif
 
     // Normal Display.
@@ -1261,20 +1466,23 @@ finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
     // gl_FragColor = vec4(reflectionColor, 1.0);
 
     // Base color.
-    // gl_FragColor = vec4(baseColor.rgb, 1.0);
+    // gl_FragColor = vec4(surfaceAlbedo.rgb, 1.0);
 
     // Specular color.
-    // gl_FragColor = vec4(reflectivityColor.rgb, 1.0);
+    // gl_FragColor = vec4(surfaceReflectivityColor.rgb, 1.0);
 
     // MicroSurface color.
     // gl_FragColor = vec4(microSurface, microSurface, microSurface, 1.0);
 
     // Specular Map
     // gl_FragColor = vec4(reflectivityMapColor.rgb, 1.0);
+    
+    // Refractance
+    // gl_FragColor = vec4(refractance.rgb, 1.0);
 
     //// Emissive Color
     //vec2 test = vEmissiveUV * 0.5 + 0.5;
     //gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
 
-    gl_FragColor = color;
+    gl_FragColor = finalColor;
 }

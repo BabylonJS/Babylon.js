@@ -7,7 +7,7 @@
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
-    export class Scene {
+    export class Scene implements IAnimatable {
         // Statics
         private static _FOGMODE_NONE = 0;
         private static _FOGMODE_EXP = 1;
@@ -61,6 +61,9 @@
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
 
+        // Animations
+        public animations: Animation[] = [];
+
         // Pointers
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
@@ -72,7 +75,6 @@
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
-        private _meshUnderPointer: AbstractMesh;
         private _startingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
         // Mirror
@@ -272,14 +274,16 @@
         private _selectionOctree: Octree<AbstractMesh>;
 
         private _pointerOverMesh: AbstractMesh;
+        private _pointerOverSprite: Sprite;
 
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: DepthRenderer;
 
         private _uniqueIdCounter = 0;
-
-        private _pickedMeshName: string = null;
+        
+        private _pickedDownMesh: AbstractMesh;
+        private _pickedDownSprite: Sprite;
 
         /**
          * @constructor
@@ -351,7 +355,7 @@
          * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
          */
         public get meshUnderPointer(): AbstractMesh {
-            return this._meshUnderPointer;
+            return this._pointerOverMesh;
         }
 
         /**
@@ -458,7 +462,7 @@
         // Pointers handling
         public attachControl() {
             var spritePredicate = (sprite: Sprite): boolean => {
-                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPickTriggers;
+                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
@@ -477,27 +481,27 @@
                     this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    this._meshUnderPointer = pickResult.pickedMesh;
+                    this.setPointerOverSprite(null);
 
                     this.setPointerOverMesh(pickResult.pickedMesh);
 
-                    if (this._meshUnderPointer.actionManager && this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                    if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
                         canvas.style.cursor = "pointer";
                     } else {
                         canvas.style.cursor = "";
                     }
                 } else {
+                    this.setPointerOverMesh(null);
                     // Sprites
                     pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
+                        this.setPointerOverSprite(pickResult.pickedSprite);
                     } else {
-
+                        this.setPointerOverSprite(null);
                         // Restore pointer
-                        this.setPointerOverMesh(null);
                         canvas.style.cursor = "";
-                        this._meshUnderPointer = null;
                     }
                 }
 
@@ -512,7 +516,6 @@
                 }
 
                 this._updatePointerPosition(evt);
-                this._pickedMeshName = null;
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = new Date().getTime();
@@ -520,6 +523,7 @@
                 var predicate = null;
 
                 // Meshes
+                this._pickedDownMesh = null;
                 if (!this.onPointerDown && !this.onPointerPick) {
                     predicate = (mesh: AbstractMesh): boolean => {
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
@@ -528,8 +532,8 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    this._pickedMeshName = pickResult.pickedMesh.name;
                     if (pickResult.pickedMesh.actionManager) {
+                        this._pickedDownMesh = pickResult.pickedMesh;
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
                                 case 0:
@@ -570,11 +574,13 @@
                 }
 
                 // Sprites
+                this._pickedDownSprite = null;
                 if (this.spriteManagers.length > 0) {
                     pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
+                            this._pickedDownSprite = pickResult.pickedSprite;
                             switch (evt.button) {
                                 case 0:
                                     pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
@@ -611,7 +617,7 @@
                 var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    if (this.onPointerPick && this._pickedMeshName != null && pickResult.pickedMesh.name == this._pickedMeshName) {
+                    if (this.onPointerPick && this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
                         this.onPointerPick(evt, pickResult);
                     }
                     if (pickResult.pickedMesh.actionManager) {
@@ -622,7 +628,10 @@
                         }
                     }
                 }
-
+                if (this._pickedDownMesh && this._pickedDownMesh !== pickResult.pickedMesh) {
+                    this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+                }
+                
                 if (this.onPointerUp) {
                     this.onPointerUp(evt, pickResult);
                 }
@@ -642,6 +651,10 @@
                             }
                         }
                     }
+                    if (this._pickedDownSprite && this._pickedDownSprite !== pickResult.pickedSprite) {
+                        this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                    }
+
                 }
             };
 
@@ -1490,7 +1503,7 @@
                         if (this._processedMaterials.indexOf(material) === -1) {
                             this._processedMaterials.push(material);
 
-                            this._renderTargets.concat(material.getRenderTargetTextures());
+                            this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
                         }
                     }
 
@@ -2436,6 +2449,25 @@
 
         public getPointerOverMesh(): AbstractMesh {
             return this._pointerOverMesh;
+        }
+
+        public setPointerOverSprite(sprite: Sprite): void {
+            if (this._pointerOverSprite === sprite) {
+                return;
+            }
+
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+
+            this._pointerOverSprite = sprite;
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+        }
+
+        public getPointerOverSprite(): Sprite {
+            return this._pointerOverSprite;
         }
 
         // Physics

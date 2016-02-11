@@ -20,7 +20,7 @@ var BABYLON;
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
             if (textureFormat === void 0) { textureFormat = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
             this._operator = operator;
-            this._exposureAdjustment = exposureAdjustment;
+            this.exposureAdjustment = exposureAdjustment;
             var params = ["_ExposureAdjustment"];
             var defines = "#define ";
             if (operator === TonemappingOperator.Hable)
@@ -33,7 +33,7 @@ var BABYLON;
                 defines += "PHOTOGRAPHIC_TONEMAPPING";
             _super.call(this, name, "tonemap", params, null, 1.0, camera, samplingMode, engine, true, defines, textureFormat);
             this.onApply = function (effect) {
-                effect.setFloat("_ExposureAdjustment", _this._exposureAdjustment);
+                effect.setFloat("_ExposureAdjustment", _this.exposureAdjustment);
             };
         }
         return TonemapPostProcess;

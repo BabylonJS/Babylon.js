@@ -11,7 +11,7 @@
         private _worldMatrix: Matrix;
 
         constructor(public minimum: Vector3, public maximum: Vector3) {
-            // Bounding vectors            
+            // Bounding vectors
             this.vectors.push(this.minimum.clone());
             this.vectors.push(this.maximum.clone());
 
@@ -32,7 +32,7 @@
 
             this.vectors.push(this.maximum.clone());
             this.vectors[7].y = this.minimum.y;
-            
+
             // OBB
             this.center = this.maximum.add(this.minimum).scale(0.5);
             this.extendSize = this.maximum.subtract(this.minimum).scale(0.5);
@@ -175,4 +175,4 @@
             return true;
         }
     }
-} 
+}

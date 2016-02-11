@@ -2916,6 +2916,81 @@ var BABYLON;
         return Curve3;
     })();
     BABYLON.Curve3 = Curve3;
+    // SphericalHarmonics
+    var SphericalHarmonics = (function () {
+        function SphericalHarmonics() {
+            this.L00 = Vector3.Zero();
+            this.L1_1 = Vector3.Zero();
+            this.L10 = Vector3.Zero();
+            this.L11 = Vector3.Zero();
+            this.L2_2 = Vector3.Zero();
+            this.L2_1 = Vector3.Zero();
+            this.L20 = Vector3.Zero();
+            this.L21 = Vector3.Zero();
+            this.L22 = Vector3.Zero();
+        }
+        SphericalHarmonics.prototype.addLight = function (direction, color, deltaSolidAngle) {
+            var colorVector = new Vector3(color.r, color.g, color.b);
+            var c = colorVector.scale(deltaSolidAngle);
+            this.L00 = this.L00.add(c.scale(0.282095));
+            this.L1_1 = this.L1_1.add(c.scale(0.488603 * direction.y));
+            this.L10 = this.L10.add(c.scale(0.488603 * direction.z));
+            this.L11 = this.L11.add(c.scale(0.488603 * direction.x));
+            this.L2_2 = this.L2_2.add(c.scale(1.092548 * direction.x * direction.y));
+            this.L2_1 = this.L2_1.add(c.scale(1.092548 * direction.y * direction.z));
+            this.L21 = this.L21.add(c.scale(1.092548 * direction.x * direction.z));
+            this.L20 = this.L20.add(c.scale(0.315392 * (3.0 * direction.z * direction.z - 1.0)));
+            this.L22 = this.L22.add(c.scale(0.546274 * (direction.x * direction.x - direction.y * direction.y)));
+        };
+        SphericalHarmonics.prototype.scale = function (scale) {
+            this.L00 = this.L00.scale(scale);
+            this.L1_1 = this.L1_1.scale(scale);
+            this.L10 = this.L10.scale(scale);
+            this.L11 = this.L11.scale(scale);
+            this.L2_2 = this.L2_2.scale(scale);
+            this.L2_1 = this.L2_1.scale(scale);
+            this.L20 = this.L20.scale(scale);
+            this.L21 = this.L21.scale(scale);
+            this.L22 = this.L22.scale(scale);
+        };
+        return SphericalHarmonics;
+    })();
+    BABYLON.SphericalHarmonics = SphericalHarmonics;
+    // SphericalPolynomial
+    var SphericalPolynomial = (function () {
+        function SphericalPolynomial() {
+            this.x = Vector3.Zero();
+            this.y = Vector3.Zero();
+            this.z = Vector3.Zero();
+            this.xx = Vector3.Zero();
+            this.yy = Vector3.Zero();
+            this.zz = Vector3.Zero();
+            this.xy = Vector3.Zero();
+            this.yz = Vector3.Zero();
+            this.zx = Vector3.Zero();
+        }
+        SphericalPolynomial.prototype.addAmbient = function (color) {
+            var colorVector = new Vector3(color.r, color.g, color.b);
+            this.xx = this.xx.add(colorVector);
+            this.yy = this.yy.add(colorVector);
+            this.zz = this.zz.add(colorVector);
+        };
+        SphericalPolynomial.getSphericalPolynomialFromHarmonics = function (harmonics) {
+            var result = new SphericalPolynomial();
+            result.x = harmonics.L11.scale(1.02333);
+            result.y = harmonics.L1_1.scale(1.02333);
+            result.z = harmonics.L10.scale(1.02333);
+            result.xx = harmonics.L00.scale(0.886277).subtract(harmonics.L20.scale(0.247708)).add(harmonics.L22.scale(0.429043));
+            result.yy = harmonics.L00.scale(0.886277).subtract(harmonics.L20.scale(0.247708)).subtract(harmonics.L22.scale(0.429043));
+            result.zz = harmonics.L00.scale(0.886277).add(harmonics.L20.scale(0.495417));
+            result.yz = harmonics.L2_1.scale(0.858086);
+            result.zx = harmonics.L21.scale(0.858086);
+            result.xy = harmonics.L2_2.scale(0.858086);
+            return result;
+        };
+        return SphericalPolynomial;
+    })();
+    BABYLON.SphericalPolynomial = SphericalPolynomial;
     // Vertex formats
     var PositionNormalVertex = (function () {
         function PositionNormalVertex(position, normal) {

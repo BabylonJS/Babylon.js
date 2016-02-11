@@ -20,7 +20,7 @@ function shadersName(filename) {
 }
 
 gulp.task('copyReference', function () {
-    return gulp.src("../dist/preview release/babylon.max.js").pipe(gulp.dest("test"));
+    return gulp.src("../dist/preview release/babylon.max.js").pipe(gulp.dest("test/refs"));
 });
 
 /*
@@ -37,9 +37,20 @@ gulp.task('default', ["copyReference"], function () {
             }));
 
         var js = compilOutput.js;
-        // Build definitions file
-        var dts = compilOutput.dts.pipe(gulp.dest(config.build.dtsOutputDirectory));
-
+        
+        var dts = [];
+        if (material.declarationFilename) {
+            // Build definitions file
+            dts = compilOutput.dts
+                .pipe(concat(material.declarationFilename))
+                .pipe(gulp.dest(config.build.dtsOutputDirectory));
+        }
+        else {
+            // Build definitions file
+            dts = compilOutput.dts
+                .pipe(gulp.dest(config.build.dtsOutputDirectory));
+        }
+        
         var shader = gulp.src(material.shaderFiles).pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
 
         return merge2(js, shader)

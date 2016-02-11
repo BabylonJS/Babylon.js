@@ -57,6 +57,7 @@
       "../../src/Materials/Textures/babylon.renderTargetTexture.js",
       "../../src/Materials/Textures/Procedurals/babylon.proceduralTexture.js",
       "../../src/Materials/Textures/babylon.mirrorTexture.js",
+      "../../src/Materials/Textures/babylon.refractionTexture.js",
       "../../src/Materials/Textures/babylon.dynamicTexture.js",
       "../../src/Materials/Textures/babylon.videoTexture.js",
       "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js",
@@ -171,7 +172,11 @@
       "../../src/PostProcess/babylon.tonemapPostProcess.js",
       "../../src/Probes/babylon.reflectionProbe.js",
       "../../src/Particles/babylon.solidParticle.js",
-      "../../src/Particles/babylon.solidParticleSystem.js"
+      "../../src/Particles/babylon.solidParticleSystem.js",
+      "../../src/tools/hdr/babylon.tools.cubemaptosphericalpolynomial.js",
+      "../../src/tools/hdr/babylon.tools.panoramatocubemap.js",
+      "../../src/tools/hdr/babylon.tools.hdr.js",
+      "../../src/materials/textures/babylon.hdrcubetexture.js"
     ]
   }
 }

@@ -154,6 +154,26 @@ uniform vec2 vLightmapInfos;
 uniform sampler2D lightmapSampler;
 #endif
 
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+uniform mat4 view;
+#endif
+
+#ifdef REFRACTION
+uniform vec4 vRefractionInfos;
+
+#ifdef REFRACTIONMAP_3D
+uniform samplerCube refractionCubeSampler;
+#else
+uniform sampler2D refraction2DSampler;
+uniform mat4 refractionMatrix;
+#endif
+
+#ifdef REFRACTIONFRESNEL
+uniform vec4 refractionLeftColor;
+uniform vec4 refractionRightColor;
+#endif
+#endif
+
 #if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
@@ -202,9 +222,6 @@ varying vec3 vDirectionW;
 
 #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
 uniform mat4 reflectionMatrix;
-#endif
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 view;
 #endif
 #endif
 
@@ -847,6 +864,30 @@ void main(void) {
 #endif
 #endif
 
+	// Refraction
+	vec3 refractionColor = vec3(0., 0., 0.);
+
+#ifdef REFRACTION
+	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+#ifdef REFRACTIONMAP_3D
+
+	refractionVector.y = refractionVector.y * vRefractionInfos.w;
+
+	if (dot(refractionVector, viewDirectionW) < 1.0)
+	{
+		refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb * vRefractionInfos.x;
+	}
+#else
+	vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+
+	vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+
+	refractionCoords.y = 1.0 - refractionCoords.y;
+
+	refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+#endif
+#endif
+
 	// Reflection
 	vec3 reflectionColor = vec3(0., 0., 0.);
 
@@ -895,6 +936,12 @@ void main(void) {
 	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
 #endif
 #endif
+#endif
+
+#ifdef REFRACTIONFRESNEL
+	float refractionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, refractionRightColor.a, refractionLeftColor.a);
+
+	refractionColor *= refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * refractionRightColor.rgb;
 #endif
 
 #ifdef OPACITY
@@ -961,9 +1008,9 @@ void main(void) {
 
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
-	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor, 0.0, 1.0), alpha);
+	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor + refractionColor, 0.0, 1.0), alpha);
 #else
-	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor, alpha);
+	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + refractionColor, alpha);
 #endif
 
 #ifdef LIGHTMAP

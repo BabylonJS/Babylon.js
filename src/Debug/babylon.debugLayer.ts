@@ -353,7 +353,8 @@
             StandardMaterial.BumpTextureEnabled = true;
             StandardMaterial.OpacityTextureEnabled = true;
             StandardMaterial.ReflectionTextureEnabled = true;
-            StandardMaterial.LightmapEnabled = true;
+            StandardMaterial.LightmapTextureEnabled = true;
+            StandardMaterial.RefractionTextureEnabled = true;
 
             this._scene.shadowsEnabled = true;
             this._scene.particlesEnabled = true;
@@ -661,8 +662,9 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Bump", StandardMaterial.BumpTextureEnabled, (element) => { StandardMaterial.BumpTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Opacity", StandardMaterial.OpacityTextureEnabled, (element) => { StandardMaterial.OpacityTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", StandardMaterial.ReflectionTextureEnabled, (element) => { StandardMaterial.ReflectionTextureEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Refraction", StandardMaterial.RefractionTextureEnabled, (element) => { StandardMaterial.RefractionTextureEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", StandardMaterial.LightmapTextureEnabled, (element) => { StandardMaterial.LightmapTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", StandardMaterial.FresnelEnabled, (element) => { StandardMaterial.FresnelEnabled = element.checked });
-                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", StandardMaterial.LightmapEnabled, (element) => { StandardMaterial.LightmapEnabled = element.checked });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
                 this._generateCheckBox(this._optionsSubsetDiv, "Animations", this._scene.animationsEnabled, (element) => { this._scene.animationsEnabled = element.checked });

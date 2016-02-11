@@ -795,6 +795,11 @@
         }
 
         public updatePhysicsBodyPosition(): void {
+            Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()")
+            this.updatePhysicsBody();
+        }
+
+        public updatePhysicsBody(): void {
             if (!this._physicImpostor) {
                 return;
             }
@@ -1091,6 +1096,7 @@
         }
     }
 }
+
 
 
 
