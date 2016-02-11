@@ -53,11 +53,6 @@
             return this._worldMatrix;
         }
 
-        public setWorldMatrix(matrix: Matrix): BoundingBox {
-            this._worldMatrix.copyFrom(matrix);
-            return this;
-        }
-
         public _update(world: Matrix): void {
             Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);
             Vector3.FromFloatsToRef(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, this.maximumWorld);
