@@ -669,7 +669,7 @@ module BABYLON {
             }
             if (this._computeBoundingBox) {
                 this.mesh._boundingInfo = new BoundingInfo(this._minimum, this._maximum);
-                this.mesh._boundingInfo.boundingBox.setWorldMatrix(this.mesh._worldMatrix);
+                this.mesh._boundingInfo.update(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
         }
