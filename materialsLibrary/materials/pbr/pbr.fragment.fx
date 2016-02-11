@@ -926,18 +926,22 @@ void main(void) {
         surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV);
         surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
 
-    #ifndef LINKREFRACTIONTOTRANSPARENCY
-        #ifdef ALPHATEST
-            if (surfaceAlbedo.a < 0.4)
-                discard;
+        #ifndef LINKREFRACTIONTOTRANSPARENCY
+            #ifdef ALPHATEST
+                if (surfaceAlbedo.a < 0.4)
+                    discard;
+            #endif
         #endif
-    #endif
 
-    #ifdef ALPHAFROMALBEDO
-        alpha *= surfaceAlbedo.a;
-    #endif
+        #ifdef ALPHAFROMALBEDO
+            alpha *= surfaceAlbedo.a;
+        #endif
 
         surfaceAlbedo.rgb *= vAlbedoInfos.y;
+    #else
+        // No Albedo texture.
+        surfaceAlbedo.rgb = surfaceAlbedoContribution;
+        surfaceAlbedoContribution = vec3(1., 1., 1.);
     #endif
 
     #ifdef VERTEXCOLOR
