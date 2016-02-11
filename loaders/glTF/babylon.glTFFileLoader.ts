@@ -355,6 +355,7 @@
     var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
         for (var anim in gltfRuntime.animations) {
             var animation: IGLTFAnimation = gltfRuntime.animations[anim];
+            var lastAnimation: Animation = null;
 
             for (var i = 0; i < animation.channels.length; i++) {
                 // Get parameters and load buffers
@@ -403,9 +404,19 @@
                 }
 
                 // Create animation and key frames
-                var babylonAnimation = new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
+                var babylonAnimation: Animation = null;
                 var keys = [];
                 var arrayOffset = 0;
+                var modifyKey = false;
+
+                if (isBone && lastAnimation && lastAnimation.getKeys().length === bufferInput.length) {
+                    babylonAnimation = lastAnimation;
+                    modifyKey = true;
+                }
+                
+                if (!modifyKey) {
+                    babylonAnimation = new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
+                }
 
                 // For each frame
                 for (var j = 0; j < bufferInput.length; j++) {
@@ -428,6 +439,11 @@
 
                         // Warning on decompose
                         var mat = bone.getBaseMatrix();
+
+                        if (modifyKey) {
+                            mat = lastAnimation.getKeys()[j].value;
+                        }
+
                         mat.decompose(scaling, rotationQuaternion, translation);
 
                         if (targetPath === "position") {
@@ -435,6 +451,10 @@
                         }
                         else if (targetPath === "rotationQuaternion") {
                             rotationQuaternion = value;
+                            // Y is Up
+                            if (GLTFFileLoader.MakeYUP) {
+                                rotationQuaternion = rotationQuaternion.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
+                            }
                         }
                         else {
                             scaling = value;
@@ -443,16 +463,26 @@
                         value = Matrix.Compose(scaling, rotationQuaternion, translation);
                     }
 
-                    keys.push({
-                        frame: bufferInput[j],
-                        value: value
-                    });
+                    if (!modifyKey) {
+                        keys.push({
+                            frame: bufferInput[j],
+                            value: value
+                        });
+                    }
+                    else {
+                        lastAnimation.getKeys()[j].value = value;
+                    }
                 }
                 
                 // Finish
-                babylonAnimation.setKeys(keys);
-                targetNode.animations.push(babylonAnimation);
+                if (!modifyKey) {
+                    babylonAnimation.setKeys(keys);
+                    targetNode.animations.push(babylonAnimation);
+                }
 
+                lastAnimation = babylonAnimation;
+
+                gltfRuntime.scene.stopAnimation(targetNode);
                 gltfRuntime.scene.beginAnimation(targetNode, 0, bufferInput[bufferInput.length - 1], true, 1.0);
             }
         }
@@ -467,6 +497,11 @@
             var scale = Vector3.FromArray(node.scale);
             var rotation = Quaternion.FromArray(node.rotation);
             var position = Vector3.FromArray(node.translation);
+
+            // Y is Up
+            if (GLTFFileLoader.MakeYUP) {
+                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
+            }
 
             mat = Matrix.Compose(scale, rotation, position);
         }
@@ -616,6 +651,15 @@
         }
     };
 
+    var printMat = (m: Float32Array) => {
+        console.log(
+            m[0] + "\t" + m[1] + "\t" + m[2] + "\t" + m[3] + "\n" +
+            m[4] + "\t" + m[5] + "\t" + m[6] + "\t" + m[7] + "\n" +
+            m[8] + "\t" + m[9] + "\t" + m[10] + "\t" + m[11] + "\n" +
+            m[12] + "\t" + m[13] + "\t" + m[14] + "\t" + m[15] + "\n"
+        );
+    }
+
     /**
     * Imports a skeleton
     */
@@ -634,7 +678,6 @@
         var buffer = getBufferFromAccessor(gltfRuntime, accessor);
 
         var bindShapeMatrix = Matrix.FromArray(skins.bindShapeMatrix);
-        (<any>newSkeleton)._identity = bindShapeMatrix;
 
         // Find the root bones
         var nodesToRoot: INodeToRoot[] = [];
@@ -642,6 +685,10 @@
 
         getNodesToRoot(gltfRuntime, newSkeleton, skins, nodesToRoot);
         newSkeleton.bones = [];
+
+        if (nodesToRoot.length === 0) {
+            newSkeleton.needInitialSkinMatrix = true;
+        }
 
         // Joints
         for (var i = 0; i < skins.jointNames.length; i++) {
@@ -654,6 +701,13 @@
             }
             
             var id = jointNode.id;
+
+            // Optimize, if the bone already exists...
+            var existingBone = gltfRuntime.scene.getBoneByID(id);
+            if (existingBone) {
+                newSkeleton.bones.push(existingBone);
+                continue;
+            }
 
             // Check if node already exists
             var foundBone = false;
@@ -697,7 +751,7 @@
             // Create bone
             var mat = configureBoneTransformation(node);
 
-            if (!parentBone) {
+            if (!parentBone && nodesToRoot.length > 0) {
                 parentBone = getNodeToRoot(nodesToRoot, id);
 
                 if (parentBone) {
@@ -705,6 +759,12 @@
                         nodesToRootToAdd.push(parentBone);
                     }
                 }
+            }
+
+            if (!parentBone && nodesToRoot.length === 0) {
+                var inverseBindMatrix = Matrix.FromArray(buffer, i * 16);
+                var invertMesh = Matrix.Invert(mesh.getWorldMatrix());
+                mat = mat.multiply(mesh.getWorldMatrix());
             }
 
             var bone = new Bone(node.name, newSkeleton, parentBone, mat);
