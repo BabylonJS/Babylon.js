@@ -183,6 +183,9 @@ var BABYLON;
     var SceneSerializer = (function () {
         function SceneSerializer() {
         }
+        SceneSerializer.ClearCache = function () {
+            serializedGeometries = [];
+        };
         SceneSerializer.Serialize = function (scene) {
             var serializationObject = {};
             // Scene
@@ -223,6 +226,13 @@ var BABYLON;
             }
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
+            }
+            // Animations
+            serializationObject.animations = [];
+            var animation;
+            for (index = 0; index < scene.animations.length; index++) {
+                animation = scene.animations[index];
+                serializationObject.animations.push(animation.serialize());
             }
             // Materials
             serializationObject.materials = [];

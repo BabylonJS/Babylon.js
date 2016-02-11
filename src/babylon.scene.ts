@@ -7,7 +7,7 @@
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
-    export class Scene {
+    export class Scene implements IAnimatable {
         // Statics
         private static _FOGMODE_NONE = 0;
         private static _FOGMODE_EXP = 1;
@@ -60,6 +60,9 @@
         public clipPlane: Plane;
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
+
+        // Animations
+        public animations: Animation[] = [];
 
         // Pointers
         private _onPointerMove: (evt: PointerEvent) => void;

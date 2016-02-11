@@ -222,6 +222,14 @@
                 Light.Parse(parsedLight, scene);
             }
 
+            // Animations
+            if (parsedData.animations) {
+                for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
+                    var parsedAnimation = parsedData.animations[index];
+                    scene.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
             // Materials
             if (parsedData.materials) {
                 for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
