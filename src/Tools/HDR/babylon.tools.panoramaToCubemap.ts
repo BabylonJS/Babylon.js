@@ -1,5 +1,3 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
-
 module BABYLON.Internals {
     export interface CubeMapInfo {
         front: Float32Array;

@@ -10,13 +10,7 @@
       "output": "babylon.gradientMaterial.js"
     },
     {
-      "file": ["materials/pbr/babylon.pbrMaterial.ts",
-        "materials/pbr/babylon.sphericalharmonics.ts",
-        "materials/pbr/babylon.sphericalpolynomial.ts", 
-        "materials/pbr/babylon.tools.panoramatocubemap.ts",
-        "materials/pbr/babylon.tools.cubemaptosphericalpolynomial.ts",
-        "materials/pbr/babylon.tools.hdr.ts",
-        "materials/pbr/babylon.hdrcubetexture.ts"],
+      "file": "materials/pbr/babylon.pbrMaterial.ts",
       "shaderFiles": [
         "materials/pbr/pbr.vertex.fx",
         "materials/pbr/pbr.fragment.fx",
