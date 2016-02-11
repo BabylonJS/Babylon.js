@@ -102,10 +102,8 @@ module BABYLON {
         private _w: number = 0.0;
         private _minimum: Vector3 = Tmp.Vector3[0];
         private _maximum: Vector3 = Tmp.Vector3[1];
-        private _vertexWorld: Vector3 = Tmp.Vector3[2];
 
-
-
+        
         /**
         * Creates a SPS (Solid Particle System) object.
         * @param name the SPS name, this will be the underlying mesh name
