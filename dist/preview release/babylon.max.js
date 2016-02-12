@@ -4495,7 +4495,7 @@ var BABYLON;
                     var a = window.document.createElement("a");
                     a.href = base64Image;
                     var date = new Date();
-                    var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                    var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
                     a.setAttribute("download", "screenshot_" + stringDate + ".png");
                     window.document.body.appendChild(a);
                     a.addEventListener("click", function () {
@@ -5302,14 +5302,14 @@ var BABYLON;
                 options.preserveDrawingBuffer = false;
             }
             // GL
-            try {
-                this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-                if (this._gl) {
-                    this._webGLVersion = "2.0";
-                }
-            }
-            catch (e) {
-            }
+            //try {
+            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+            //    if (this._gl) {
+            //        this._webGLVersion = "2.0";
+            //    }
+            //} catch (e) {
+            //    // Do nothing
+            //}
             if (!this._gl) {
                 try {
                     this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
@@ -12375,6 +12375,8 @@ var BABYLON;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
+            // Animations
+            this.animations = [];
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
             this._startingPointerPosition = new BABYLON.Vector2(0, 0);
             this._startingPointerTime = 0;
@@ -21111,6 +21113,13 @@ var BABYLON;
                     var parsedLight = parsedData.lights[index];
                     BABYLON.Light.Parse(parsedLight, scene);
                 }
+                // Animations
+                if (parsedData.animations) {
+                    for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
+                        var parsedAnimation = parsedData.animations[index];
+                        scene.animations.push(BABYLON.Animation.Parse(parsedAnimation));
+                    }
+                }
                 // Materials
                 if (parsedData.materials) {
                     for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
@@ -21704,6 +21713,8 @@ var BABYLON;
         function ParticleSystem(name, capacity, scene, customEffect) {
             var _this = this;
             this.name = name;
+            // Members
+            this.animations = [];
             this.renderingGroupId = 0;
             this.emitter = null;
             this.emitRate = 10;
@@ -22025,6 +22036,7 @@ var BABYLON;
         ParticleSystem.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.name = this.name;
+            // Emitter
             if (this.emitter.position) {
                 serializationObject.emitterId = this.emitter.id;
             }
@@ -22036,6 +22048,9 @@ var BABYLON;
             if (this.particleTexture) {
                 serializationObject.textureName = this.particleTexture.name;
             }
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            // Particle system
             serializationObject.minAngularSpeed = this.minAngularSpeed;
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
@@ -22062,16 +22077,26 @@ var BABYLON;
         ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
             var name = parsedParticleSystem.name;
             var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+            // Texture
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
+            // Emitter
             if (parsedParticleSystem.emitterId) {
                 particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
             }
             else {
                 particleSystem.emitter = BABYLON.Vector3.FromArray(parsedParticleSystem.emitter);
             }
+            // Animations
+            if (parsedParticleSystem.animations) {
+                for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedParticleSystem.animations[animationIndex];
+                    particleSystem.animations.push(BABYLON.Animation.Parse(parsedAnimation));
+                }
+            }
+            // Particle system
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
@@ -31633,6 +31658,9 @@ var BABYLON;
     var SceneSerializer = (function () {
         function SceneSerializer() {
         }
+        SceneSerializer.ClearCache = function () {
+            serializedGeometries = [];
+        };
         SceneSerializer.Serialize = function (scene) {
             var serializationObject = {};
             // Scene
@@ -31674,6 +31702,8 @@ var BABYLON;
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(scene, serializationObject);
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
@@ -37183,7 +37213,6 @@ var BABYLON;
             this._w = 0.0;
             this._minimum = BABYLON.Tmp.Vector3[0];
             this._maximum = BABYLON.Tmp.Vector3[1];
-            this._vertexWorld = BABYLON.Tmp.Vector3[2];
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -37245,11 +37274,13 @@ var BABYLON;
         * Thus the particles generated from digest() have their property "positiion" yet set.
         * @param mesh the mesh to be digested
         * @param facetNb the number of mesh facets per particle (optional, default 1), this parameter is overriden by the parameter "number" if any
+        * @param delta the random extra number of facets per partical (optional, default 0), each particle will have between facetNb and facetNb + delta facets
         * @param number the wanted number of particles : each particle is built with mesh_total_facets / number facets (optional)
         */
         SolidParticleSystem.prototype.digest = function (mesh, options) {
             var size = (options && options.facetNb) || 1;
             var number = (options && options.number);
+            var delta = (options && options.delta) || 0;
             var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
@@ -37260,6 +37291,7 @@ var BABYLON;
             if (number) {
                 number = (number > totalFacets) ? totalFacets : number;
                 size = Math.round(totalFacets / number);
+                delta = 0;
             }
             else {
                 size = (size > totalFacets) ? totalFacets : size;
@@ -37269,7 +37301,10 @@ var BABYLON;
             var facetUV = []; // submesh UV
             var facetCol = []; // submesh colors
             var barycenter = BABYLON.Tmp.Vector3[0];
+            var rand;
+            var sizeO = size;
             while (f < totalFacets) {
+                size = sizeO + Math.floor((1 + delta) * Math.random());
                 if (f > totalFacets - size) {
                     size = totalFacets - f;
                 }
@@ -37683,7 +37718,7 @@ var BABYLON;
             }
             if (this._computeBoundingBox) {
                 this.mesh._boundingInfo = new BABYLON.BoundingInfo(this._minimum, this._maximum);
-                this.mesh._boundingInfo.boundingBox.setWorldMatrix(this.mesh._worldMatrix);
+                this.mesh._boundingInfo.update(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
         };

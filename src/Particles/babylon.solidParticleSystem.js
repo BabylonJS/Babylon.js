@@ -80,7 +80,6 @@ var BABYLON;
             this._w = 0.0;
             this._minimum = BABYLON.Tmp.Vector3[0];
             this._maximum = BABYLON.Tmp.Vector3[1];
-            this._vertexWorld = BABYLON.Tmp.Vector3[2];
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -142,11 +141,13 @@ var BABYLON;
         * Thus the particles generated from digest() have their property "positiion" yet set.
         * @param mesh the mesh to be digested
         * @param facetNb the number of mesh facets per particle (optional, default 1), this parameter is overriden by the parameter "number" if any
+        * @param delta the random extra number of facets per partical (optional, default 0), each particle will have between facetNb and facetNb + delta facets
         * @param number the wanted number of particles : each particle is built with mesh_total_facets / number facets (optional)
         */
         SolidParticleSystem.prototype.digest = function (mesh, options) {
             var size = (options && options.facetNb) || 1;
             var number = (options && options.number);
+            var delta = (options && options.delta) || 0;
             var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
@@ -157,6 +158,7 @@ var BABYLON;
             if (number) {
                 number = (number > totalFacets) ? totalFacets : number;
                 size = Math.round(totalFacets / number);
+                delta = 0;
             }
             else {
                 size = (size > totalFacets) ? totalFacets : size;
@@ -166,7 +168,10 @@ var BABYLON;
             var facetUV = []; // submesh UV
             var facetCol = []; // submesh colors
             var barycenter = BABYLON.Tmp.Vector3[0];
+            var rand;
+            var sizeO = size;
             while (f < totalFacets) {
+                size = sizeO + Math.floor((1 + delta) * Math.random());
                 if (f > totalFacets - size) {
                     size = totalFacets - f;
                 }
@@ -580,7 +585,7 @@ var BABYLON;
             }
             if (this._computeBoundingBox) {
                 this.mesh._boundingInfo = new BABYLON.BoundingInfo(this._minimum, this._maximum);
-                this.mesh._boundingInfo.boundingBox.setWorldMatrix(this.mesh._worldMatrix);
+                this.mesh._boundingInfo.update(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
         };

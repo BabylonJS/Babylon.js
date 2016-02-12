@@ -260,12 +260,7 @@
             }
 
             // Animations
-            serializationObject.animations = [];
-            var animation: Animation;
-            for (index = 0; index < scene.animations.length; index++) {
-                animation = scene.animations[index];
-                serializationObject.animations.push(animation.serialize());
-            }
+            Animation.AppendSerializedAnimations(scene, serializationObject);
 
             // Materials
             serializationObject.materials = [];
@@ -379,3 +374,4 @@
         }
     }
 }
+
