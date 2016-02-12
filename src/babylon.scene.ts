@@ -281,7 +281,7 @@
         private _depthRenderer: DepthRenderer;
 
         private _uniqueIdCounter = 0;
-        
+
         private _pickedDownMesh: AbstractMesh;
         private _pickedDownSprite: Sprite;
 
@@ -631,7 +631,7 @@
                 if (this._pickedDownMesh && this._pickedDownMesh !== pickResult.pickedMesh) {
                     this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
                 }
-                
+
                 if (this.onPointerUp) {
                     this.onPointerUp(evt, pickResult);
                 }
@@ -2614,3 +2614,4 @@
         }
     }
 }
+
