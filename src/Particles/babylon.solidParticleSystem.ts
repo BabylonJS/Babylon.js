@@ -103,7 +103,7 @@ module BABYLON {
         private _minimum: Vector3 = Tmp.Vector3[0];
         private _maximum: Vector3 = Tmp.Vector3[1];
 
-        
+
         /**
         * Creates a SPS (Solid Particle System) object.
         * @param name the SPS name, this will be the underlying mesh name
@@ -175,11 +175,13 @@ module BABYLON {
         * Thus the particles generated from digest() have their property "positiion" yet set.
         * @param mesh the mesh to be digested
         * @param facetNb the number of mesh facets per particle (optional, default 1), this parameter is overriden by the parameter "number" if any
+        * @param delta the random extra number of facets per partical (optional, default 0), each particle will have between facetNb and facetNb + delta facets
         * @param number the wanted number of particles : each particle is built with mesh_total_facets / number facets (optional)
         */
-        public digest(mesh: Mesh, options?: { facetNb?: number; number?: number }): void {
+        public digest(mesh: Mesh, options?: { facetNb?: number; number?: number; delta?: number }): void {
             var size: number = (options && options.facetNb) || 1;
             var number: number = (options && options.number);
+            var delta: number = (options && options.delta) || 0;
             var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
             var meshUV = mesh.getVerticesData(VertexBuffer.UVKind);
@@ -191,6 +193,7 @@ module BABYLON {
             if (number) {
                 number = (number > totalFacets) ? totalFacets : number;
                 size = Math.round(totalFacets / number);
+                delta = 0;
             } else {
                 size = (size > totalFacets) ? totalFacets : size;
             }
@@ -200,8 +203,11 @@ module BABYLON {
             var facetUV: number[] = [];       // submesh UV
             var facetCol: number[] = [];      // submesh colors
             var barycenter: Vector3 = Tmp.Vector3[0];
+            var rand: number;
+            var sizeO: number = size;
 
             while (f < totalFacets) {
+                size = sizeO + Math.floor((1 + delta) * Math.random());
                 if (f > totalFacets - size) {
                     size = totalFacets - f;
                 }
