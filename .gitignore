@@ -123,3 +123,6 @@ node_modules
 
 # for JetBrains IDE
 .idea
+
+# for VSCode
+.vscode
