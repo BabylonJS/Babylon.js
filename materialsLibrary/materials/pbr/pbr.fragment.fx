@@ -314,97 +314,10 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#ifdef LIGHT0
-uniform vec4 vLightData0;
-uniform vec4 vLightDiffuse0;
-#ifdef SPECULARTERM
-uniform vec3 vLightSpecular0;
-#endif
-#ifdef SHADOW0
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-varying vec4 vPositionFromLight0;
-uniform sampler2D shadowSampler0;
-#else
-uniform samplerCube shadowSampler0;
-#endif
-uniform vec3 shadowsInfo0;
-#endif
-#ifdef SPOTLIGHT0
-uniform vec4 vLightDirection0;
-#endif
-#ifdef HEMILIGHT0
-uniform vec3 vLightGround0;
-#endif
-#endif
-
-#ifdef LIGHT1
-uniform vec4 vLightData1;
-uniform vec4 vLightDiffuse1;
-#ifdef SPECULARTERM
-uniform vec3 vLightSpecular1;
-#endif
-#ifdef SHADOW1
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-varying vec4 vPositionFromLight1;
-uniform sampler2D shadowSampler1;
-#else
-uniform samplerCube shadowSampler1;
-#endif
-uniform vec3 shadowsInfo1;
-#endif
-#ifdef SPOTLIGHT1
-uniform vec4 vLightDirection1;
-#endif
-#ifdef HEMILIGHT1
-uniform vec3 vLightGround1;
-#endif
-#endif
-
-#ifdef LIGHT2
-uniform vec4 vLightData2;
-uniform vec4 vLightDiffuse2;
-#ifdef SPECULARTERM
-uniform vec3 vLightSpecular2;
-#endif
-#ifdef SHADOW2
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-varying vec4 vPositionFromLight2;
-uniform sampler2D shadowSampler2;
-#else
-uniform samplerCube shadowSampler2;
-#endif
-uniform vec3 shadowsInfo2;
-#endif
-#ifdef SPOTLIGHT2
-uniform vec4 vLightDirection2;
-#endif
-#ifdef HEMILIGHT2
-uniform vec3 vLightGround2;
-#endif
-#endif
-
-#ifdef LIGHT3
-uniform vec4 vLightData3;
-uniform vec4 vLightDiffuse3;
-#ifdef SPECULARTERM
-uniform vec3 vLightSpecular3;
-#endif
-#ifdef SHADOW3
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-varying vec4 vPositionFromLight3;
-uniform sampler2D shadowSampler3;
-#else
-uniform samplerCube shadowSampler3;
-#endif
-uniform vec3 shadowsInfo3;
-#endif
-#ifdef SPOTLIGHT3
-uniform vec4 vLightDirection3;
-#endif
-#ifdef HEMILIGHT3
-uniform vec3 vLightGround3;
-#endif
-#endif
+#include<light0FragmentDeclaration>
+#include<light1FragmentDeclaration>
+#include<light2FragmentDeclaration>
+#include<light3FragmentDeclaration>
 
 // Samplers
 #ifdef ALBEDO
