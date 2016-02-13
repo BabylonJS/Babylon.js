@@ -208,9 +208,8 @@ vec3 FresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectan
 }
 
 // Cook Torance Specular computation.
-vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 specularColor)
+vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float alphaG, vec3 specularColor)
 {
-    float alphaG = convertRoughnessToAverageSlope(roughness);
     float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
     float visibility = smithVisibilityG_TrowbridgeReitzGGX_Walter(NdotL, NdotV, alphaG);
     visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integated in viibility to avoid issues when visibility function changes.
@@ -705,7 +704,7 @@ struct lightingInfo
 #endif
 };
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float alphaG, float NdotV) {
     lightingInfo result;
 
     vec3 lightVectorW;
@@ -734,14 +733,14 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     // Specular
     float NdotH = max(0.00000000001, dot(vNormal, H));
 
-    vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
+    vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, alphaG, specularColor);
     result.specular = specTerm * attenuation;
 #endif
 
     return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float alphaG, float NdotV) {
     lightingInfo result;
 
     vec3 direction = lightData.xyz - vPositionW;
@@ -769,7 +768,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
         // Specular
         float NdotH = max(0.00000000001, dot(vNormal, H));
 
-        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
+        vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, alphaG, specularColor);
         result.specular = specTerm  * attenuation * spotAtten;
 #endif
 
@@ -784,7 +783,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float alphaG, float NdotV) {
     lightingInfo result;
 
     vec3 lightVectorW = normalize(lightData.xyz);
@@ -800,7 +799,7 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
     float NdotL = max(0.00000000001, ndl);
     float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
 
-    vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
+    vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, alphaG, specularColor);
     result.specular = specTerm;
 #endif
 
@@ -914,9 +913,10 @@ void main(void) {
     // Adapt microSurface.
     microSurface = clamp(microSurface, 0., 1.) * 0.98;
 
-    // Call rough to not conflict with previous one.
-    float rough = clamp(1. - microSurface, 0.000001, 1.0);
-
+    // Compute roughness and average slope.
+    float roughness = clamp(1. - microSurface, 0.000001, 1.0);
+    float alphaG = convertRoughnessToAverageSlope(roughness);
+    
     // Lighting
     vec3 lightDiffuseContribution = vec3(0., 0., 0.);
     
@@ -934,13 +934,13 @@ void main(void) {
     vec3 vLightSpecular0 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT0
-    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, rough, NdotV);
+    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, alphaG, NdotV);
 #endif
 #ifdef HEMILIGHT0
-    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, rough, NdotV);
+    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, roughness, alphaG, NdotV);
 #endif
 #if defined(POINTLIGHT0) || defined(DIRLIGHT0)
-    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, rough, NdotV);
+    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, alphaG, NdotV);
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
@@ -978,13 +978,13 @@ void main(void) {
     vec3 vLightSpecular1 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT1
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, alphaG, NdotV);
 #endif
 #ifdef HEMILIGHT1
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, roughness, alphaG, NdotV);
 #endif
 #if defined(POINTLIGHT1) || defined(DIRLIGHT1)
-    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, alphaG, NdotV);
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
@@ -1023,13 +1023,13 @@ void main(void) {
     vec3 vLightSpecular2 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT2
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, alphaG, NdotV);
 #endif
 #ifdef HEMILIGHT2
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, roughness, alphaG, NdotV);
 #endif
 #if defined(POINTLIGHT2) || defined(DIRLIGHT2)
-    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, alphaG, NdotV);
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
@@ -1068,13 +1068,13 @@ void main(void) {
     vec3 vLightSpecular3 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT3
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, alphaG, NdotV);
 #endif
 #ifdef HEMILIGHT3
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, roughness, alphaG, NdotV);
 #endif
 #if defined(POINTLIGHT3) || defined(DIRLIGHT3)
-    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, alphaG, NdotV);
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
@@ -1146,7 +1146,7 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
     
     #ifdef LODBASEDMICROSFURACE
-        float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, Square(1.0 - microSurface + 0.0005));
+        float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, alphaG);
     #endif
     
     #ifdef REFRACTIONMAP_3D
@@ -1189,7 +1189,7 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
     vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
     #ifdef LODBASEDMICROSFURACE
-        float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, Square(1.0 - microSurface + 0.0005));
+        float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, alphaG);
     #endif
     
     #ifdef REFLECTIONMAP_3D
@@ -1201,7 +1201,6 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
         #endif
         
         #ifdef PoissonSamplingEnvironment
-            float alphaG = convertRoughnessToAverageSlope(rough);
             environmentRadiance = environmentSampler(reflectionCubeSampler, vReflectionUVW, alphaG) * vReflectionInfos.x;
         #endif
 
