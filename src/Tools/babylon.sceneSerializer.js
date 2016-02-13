@@ -228,12 +228,7 @@ var BABYLON;
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
             // Animations
-            serializationObject.animations = [];
-            var animation;
-            for (index = 0; index < scene.animations.length; index++) {
-                animation = scene.animations[index];
-                serializationObject.animations.push(animation.serialize());
-            }
+            BABYLON.Animation.AppendSerializedAnimations(scene, serializationObject);
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];

@@ -466,12 +466,7 @@
             }
             
             // Animations
-            serializationObject.animations = [];
-            var animation: Animation;
-            for (var index = 0; index < this.animations.length; index++) {
-                animation = this.animations[index];
-                serializationObject.animations.push(animation.serialize());
-            }
+            Animation.AppendSerializedAnimations(this, serializationObject);
 
             // Particle system
             serializationObject.minAngularSpeed = this.minAngularSpeed;
@@ -551,5 +546,4 @@
             return particleSystem;
         }
     }
-}  
-
+}

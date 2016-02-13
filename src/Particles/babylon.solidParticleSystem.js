@@ -80,7 +80,6 @@ var BABYLON;
             this._w = 0.0;
             this._minimum = BABYLON.Tmp.Vector3[0];
             this._maximum = BABYLON.Tmp.Vector3[1];
-            this._vertexWorld = BABYLON.Tmp.Vector3[2];
             this.name = name;
             this._scene = scene;
             this._camera = scene.activeCamera;
@@ -580,7 +579,7 @@ var BABYLON;
             }
             if (this._computeBoundingBox) {
                 this.mesh._boundingInfo = new BABYLON.BoundingInfo(this._minimum, this._maximum);
-                this.mesh._boundingInfo.boundingBox.setWorldMatrix(this.mesh._worldMatrix);
+                this.mesh._boundingInfo.update(this.mesh._worldMatrix);
             }
             this.afterUpdateParticles(start, end, update);
         };

@@ -394,14 +394,14 @@ var BABYLON;
                 options.preserveDrawingBuffer = false;
             }
             // GL
-            try {
-                this._gl = (canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
-                if (this._gl) {
-                    this._webGLVersion = "2.0";
-                }
-            }
-            catch (e) {
-            }
+            //try {
+            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+            //    if (this._gl) {
+            //        this._webGLVersion = "2.0";
+            //    }
+            //} catch (e) {
+            //    // Do nothing
+            //}
             if (!this._gl) {
                 try {
                     this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
