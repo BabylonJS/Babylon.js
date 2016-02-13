@@ -14,21 +14,11 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-#ifdef BONES
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
-#endif
+
+#include<bonesDeclaration>
 
 // Uniforms
-
-#ifdef INSTANCES
-attribute vec4 world0;
-attribute vec4 world1;
-attribute vec4 world2;
-attribute vec4 world3;
-#else
-uniform mat4 world;
-#endif
+#include<instancesDeclaration>
 
 uniform mat4 view;
 uniform mat4 viewProjection;
@@ -37,10 +27,6 @@ uniform mat4 viewProjection;
 varying vec2 vDiffuseUV;
 uniform mat4 diffuseMatrix;
 uniform vec2 vDiffuseInfos;
-#endif
-
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
 #endif
 
 #ifdef POINTSIZE
@@ -62,9 +48,7 @@ uniform vec4 vClipPlane;
 varying float fClipDistance;
 #endif
 
-#ifdef FOG
-varying float fFogDistance;
-#endif
+#include<fogVertexDeclaration>
 
 #ifdef SHADOWS
 #if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
@@ -86,27 +70,10 @@ varying vec4 vPositionFromLight3;
 #endif
 
 void main(void) {
-	mat4 finalWorld;
 
-#ifdef INSTANCES
-	finalWorld = mat4(world0, world1, world2, world3);
-#else
-	finalWorld = world;
-#endif
+#include<instancesVertex>
+#include<bonesVertex>
 
-#ifdef BONES
-	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
-	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
-	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
-
-#ifdef BONES4
-	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
-#else
-	finalWorld = finalWorld * (m0 + m1 + m2);
-#endif 
-
-#endif
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
@@ -141,9 +108,7 @@ void main(void) {
 #endif
 
 	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
+#include<fogVertex>
 
 	// Shadows
 #ifdef SHADOWS

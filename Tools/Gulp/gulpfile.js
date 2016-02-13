@@ -14,6 +14,7 @@ var replace = require("gulp-replace");
 
 var config = require("./config.json");
 
+var includeShadersStream;
 var shadersStream;
 var workersStream;
 
@@ -26,7 +27,20 @@ function shadersName(filename) {
         .replace('.fx', 'Shader');
 }
 
-gulp.task("shaders", function (cb) {
+function includeShadersName(filename) {
+    return filename.replace('.fx', '');
+}
+
+gulp.task("includeShaders", function (cb) {
+    includeShadersStream = config.includeShadersDirectories.map(function (shadersDef) {
+        return gulp.src(shadersDef.files).pipe(srcToVariable({
+            variableName: shadersDef.variable, asMap: true, namingCallback: includeShadersName
+        }));
+    });
+    cb();
+});
+
+gulp.task("shaders", ["includeShaders"], function (cb) {
     shadersStream = config.shadersDirectories.map(function (shadersDef) {
         return gulp.src(shadersDef.files).pipe(srcToVariable({
             variableName: shadersDef.variable, asMap: true, namingCallback: shadersName
@@ -81,7 +95,8 @@ gulp.task('typescript-sourcemaps', function () {
 gulp.task("buildCore", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files),
-        shadersStream
+        shadersStream, 
+        includeShadersStream
         )
         .pipe(concat(config.build.minCoreFilename))
         .pipe(cleants())
@@ -95,7 +110,8 @@ gulp.task("buildNoWorker", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files),
         gulp.src(config.extras.files),
-        shadersStream
+        shadersStream, 
+        includeShadersStream
         )
         .pipe(concat(config.build.minNoWorkerFilename))
         .pipe(cleants())
@@ -110,7 +126,8 @@ gulp.task("build", ["workers", "shaders"], function () {
         gulp.src(config.core.files),
         gulp.src(config.extras.files),
         shadersStream,
-        workersStream
+        workersStream, 
+        includeShadersStream
         )
         .pipe(concat(config.build.filename))
         .pipe(cleants())
