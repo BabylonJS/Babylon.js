@@ -84,28 +84,8 @@ uniform vec4 vClipPlane;
 varying float fClipDistance;
 #endif
 
-#ifdef FOG
-varying float fFogDistance;
-#endif
-
-#ifdef SHADOWS
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-uniform mat4 lightMatrix0;
-varying vec4 vPositionFromLight0;
-#endif
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-uniform mat4 lightMatrix1;
-varying vec4 vPositionFromLight1;
-#endif
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-uniform mat4 lightMatrix2;
-varying vec4 vPositionFromLight2;
-#endif
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-uniform mat4 lightMatrix3;
-varying vec4 vPositionFromLight3;
-#endif
-#endif
+#include<fogVertexDeclaration>
+#include<shadowsVertexDeclaration>
 
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
@@ -231,26 +211,8 @@ void main(void) {
 	fClipDistance = dot(worldPos, vClipPlane);
 #endif
 
-	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
-
-	// Shadows
-#ifdef SHADOWS
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-	vPositionFromLight0 = lightMatrix0 * worldPos;
-#endif
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-	vPositionFromLight1 = lightMatrix1 * worldPos;
-#endif
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-	vPositionFromLight2 = lightMatrix2 * worldPos;
-#endif
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-	vPositionFromLight3 = lightMatrix3 * worldPos;
-#endif
-#endif
+#include<fogVertex>
+#include<shadowsVertex>
 
 	// Vertex color
 #ifdef VERTEXCOLOR
