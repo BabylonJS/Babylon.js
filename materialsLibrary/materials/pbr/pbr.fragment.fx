@@ -2,6 +2,10 @@
 #extension GL_OES_standard_derivatives : enable
 #endif
 
+#ifdef LODBASEDMICROSFURACE
+#extension GL_EXT_shader_texture_lod : enable
+#endif
+
 #ifdef LOGARITHMICDEPTH
 #extension GL_EXT_frag_depth : enable
 #endif
@@ -67,8 +71,14 @@ uniform vec4 vCameraInfos;
     }
 #endif
 
+#ifdef LODBASEDMICROSFURACE
+    uniform vec2 vMicrosurfaceTextureLods;
+#endif
+
 // PBR CUSTOM CONSTANTS
 const float kPi = 3.1415926535897932384626433832795;
+const float kRougnhessToAlphaScale = 0.1;
+const float kRougnhessToAlphaOffset = 0.29248125;
 
 #ifdef PoissonSamplingEnvironment
     const int poissonSphereSamplersCount = 32;
@@ -143,6 +153,22 @@ float convertRoughnessToAverageSlope(float roughness)
     const float kMinimumVariance = 0.0005;
     float alphaG = Square(roughness) + kMinimumVariance;
     return alphaG;
+}
+
+// Based on Beckamm roughness to Blinn exponent + http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html 
+float getMipMapIndexFromAverageSlope(float maxMipLevel, float alpha)
+{
+    // do not take in account lower mips hence -1... and wait from proper preprocess.
+    // formula comes from approximation of the mathematical solution.
+    //float mip = maxMipLevel + kRougnhessToAlphaOffset + 0.5 * log2(alpha);
+    
+    // In the mean time 
+    // Always [0..1] goes from max mip to min mip in a log2 way.  
+    // Change 5 to nummip below.
+    // http://www.wolframalpha.com/input/?i=x+in+0..1+plot+(+5+%2B+0.3+%2B+0.1+*+5+*+log2(+(1+-+x)+*+(1+-+x)+%2B+0.0005))
+    float mip = kRougnhessToAlphaOffset + maxMipLevel + (maxMipLevel * kRougnhessToAlphaScale * log2(alpha));
+    
+    return clamp(mip, 0., maxMipLevel);
 }
 
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
@@ -1233,17 +1259,27 @@ void main(void) {
 vec3 surfaceRefractionColor = vec3(0., 0., 0.);
 
 // Go mat -> blurry reflexion according to microSurface
-float bias = 20. * (1.0 - microSurface);
+#ifndef LODBASEDMICROSFURACE
+    float bias = 20. * (1.0 - microSurface);
+#endif
         
 #ifdef REFRACTION
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+    
+    #ifdef LODBASEDMICROSFURACE
+        float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, Square(1.0 - microSurface + 0.0005));
+    #endif
     
     #ifdef REFRACTIONMAP_3D
         refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
         if (dot(refractionVector, viewDirectionW) < 1.0)
         {
-            surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, bias).rgb * vRefractionInfos.x;
+            #ifdef LODBASEDMICROSFURACE
+                surfaceRefractionColor = textureCubeLodEXT(refractionCubeSampler, refractionVector, lodRefraction).rgb * vRefractionInfos.x;
+            #else
+                surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, bias).rgb * vRefractionInfos.x;
+            #endif
         }
         
         #ifndef REFRACTIONMAPINLINEARSPACE
@@ -1256,9 +1292,14 @@ float bias = 20. * (1.0 - microSurface);
 
         refractionCoords.y = 1.0 - refractionCoords.y;
 
-        surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+        #ifdef LODBASEDMICROSFURACE
+            surfaceRefractionColor = texture2DLodEXT(refraction2DSampler, refractionCoords, lodRefraction).rgb * vRefractionInfos.x;
+        #else
+            surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+        #endif    
+        
         surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
-    #endif    
+    #endif
 #endif
 
 // Reflection
@@ -1268,8 +1309,17 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
 #ifdef REFLECTION
     vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
+    #ifdef LODBASEDMICROSFURACE
+        float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, Square(1.0 - microSurface + 0.0005));
+    #endif
+    
     #ifdef REFLECTIONMAP_3D
-        environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
+        
+        #ifdef LODBASEDMICROSFURACE
+            environmentRadiance = textureCubeLodEXT(reflectionCubeSampler, vReflectionUVW, lodReflection).rgb * vReflectionInfos.x;
+        #else
+            environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
+        #endif
         
         #ifdef PoissonSamplingEnvironment
             float alphaG = convertRoughnessToAverageSlope(rough);
@@ -1296,8 +1346,12 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
         #endif
 
         coords.y = 1.0 - coords.y;
-
-        environmentRadiance = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+        #ifdef LODBASEDMICROSFURACE
+            environmentRadiance = texture2DLodExt(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
+        #else
+            environmentRadiance = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+        #endif
+    
         environmentRadiance = toLinearSpace(environmentRadiance.rgb);
 
         environmentIrradiance = texture2D(reflection2DSampler, coords, 20.).rgb * vReflectionInfos.x;
