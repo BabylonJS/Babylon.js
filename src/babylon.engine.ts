@@ -387,6 +387,7 @@
         public highPrecisionShaderSupported: boolean;
         public fragmentDepthSupported: boolean;
         public textureFloatLinearFiltering: boolean;
+        public textureLOD: boolean;
         public drawBuffersExtension;
     }
 
@@ -659,6 +660,7 @@
             this._caps.highPrecisionShaderSupported = true;
             this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
             this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
+            this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
 
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
