@@ -87,7 +87,8 @@ module BABYLON {
         public REFRACTIONMAP_3D = false;
         public LINKREFRACTIONTOTRANSPARENCY = false;
         public REFRACTIONMAPINLINEARSPACE = false;
-        
+        public LODBASEDMICROSFURACE = false;
+
         constructor() {
             super();
             this._keys = Object.keys(this);
@@ -110,6 +111,8 @@ module BABYLON {
         public cameraExposure: number = 1.0;
         public cameraContrast: number = 1.0;
         private _cameraInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
+
+        private _microsurfaceTextureLods: Vector2 = new Vector2(0.0, 0.0);
 
         public overloadedAmbientIntensity: number = 0.0;
         public overloadedAlbedoIntensity: number = 0.0;
@@ -204,16 +207,14 @@ module BABYLON {
         }
 
         public needAlphaBlending(): boolean {
-            if (this.linkRefractionWithTransparency)
-            {
+            if (this.linkRefractionWithTransparency) {
                 return false;
             }
             return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
         }
 
         public needAlphaTesting(): boolean {
-            if (this.linkRefractionWithTransparency)
-            {
+            if (this.linkRefractionWithTransparency) {
                 return false;
             }
             return this.albedoTexture != null && this.albedoTexture.hasAlpha;
@@ -425,6 +426,10 @@ module BABYLON {
             if (scene.texturesEnabled) {
                 // Textures
                 if (scene.texturesEnabled) {
+                    if (scene.getEngine().getCaps().textureLOD) {
+                        this._defines.LODBASEDMICROSFURACE = true;
+                    }
+
                     if (this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
                         if (!this.albedoTexture.isReady()) {
                             return false;
@@ -808,7 +813,8 @@ module BABYLON {
                         "logarithmicDepthConstant",
                         "vSphericalX", "vSphericalY", "vSphericalZ",
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
-                        "vSphericalXY", "vSphericalYZ", "vSphericalZX"
+                        "vSphericalXY", "vSphericalYZ", "vSphericalZX",
+                        "vMicrosurfaceTextureLods"
                     ],
                     ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -902,6 +908,8 @@ module BABYLON {
                     }
 
                     if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        this._microsurfaceTextureLods.x = Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E;
+                        
                         if (this.reflectionTexture.isCube) {
                             this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
                         } else {
@@ -971,6 +979,8 @@ module BABYLON {
                     }
 
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                        this._microsurfaceTextureLods.y = Math.log(this.refractionTexture.getSize().width) * Math.LOG2E;
+                        
                         var depth = 1.0;
                         if (this.refractionTexture.isCube) {
                             this._effect.setTexture("refractionCubeSampler", this.refractionTexture);
@@ -983,6 +993,10 @@ module BABYLON {
                             }
                         }
                         this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
+                    }
+                    
+                    if ((this.reflectionTexture || this.refractionTexture) && this._myScene.getEngine().getCaps().textureLOD) {
+                        this._effect.setFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                     }
                 }
 
@@ -1116,7 +1130,7 @@ module BABYLON {
             if (this.bumpTexture && this.bumpTexture.animations && this.bumpTexture.animations.length > 0) {
                 results.push(this.bumpTexture);
             }
-            
+
             if (this.lightmapTexture && this.lightmapTexture.animations && this.lightmapTexture.animations.length > 0) {
                 results.push(this.lightmapTexture);
             }
@@ -1156,7 +1170,7 @@ module BABYLON {
             if (this.bumpTexture) {
                 this.bumpTexture.dispose();
             }
-            
+
             if (this.lightmapTexture) {
                 this.lightmapTexture.dispose();
             }
@@ -1244,7 +1258,7 @@ module BABYLON {
             newPBRMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newPBRMaterial.indexOfRefraction = this.indexOfRefraction;
             newPBRMaterial.invertRefractionY = this.invertRefractionY;
-            
+
             newPBRMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
             newPBRMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
 
@@ -1313,7 +1327,7 @@ module BABYLON {
                 serializationObject.refractionTexture = this.refractionTexture;
                 serializationObject.linkRefractionWithTransparency = this.linkRefractionWithTransparency;
             }
-            
+
             serializationObject.ambientColor = this.ambientColor.asArray();
             serializationObject.albedoColor = this.albedoColor.asArray();
             serializationObject.reflectivityColor = this.reflectivityColor.asArray();
@@ -1326,7 +1340,7 @@ module BABYLON {
             serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
             serializationObject.indexOfRefraction = this.indexOfRefraction;
             serializationObject.invertRefractionY = this.invertRefractionY;
-            
+
             serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
             serializationObject.opacityFresnelParameters = this.opacityFresnelParameters.serialize();
 
@@ -1420,8 +1434,8 @@ module BABYLON {
             material.useMicroSurfaceFromReflectivityMapAlpha = source.useMicroSurfaceFromReflectivityMapAlpha;
             material.useSpecularOverAlpha = source.useSpecularOverAlpha;
             material.indexOfRefraction = source.indexOfRefraction;
-            material.invertRefractionY = source.invertRefractionY; 
-            
+            material.invertRefractionY = source.invertRefractionY;
+
             material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
             material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);
 
