@@ -12,6 +12,7 @@ declare module BABYLON {
         cameraExposure: number;
         cameraContrast: number;
         private _cameraInfos;
+        private _microsurfaceTextureLods;
         overloadedAmbientIntensity: number;
         overloadedAlbedoIntensity: number;
         overloadedReflectivityIntensity: number;
