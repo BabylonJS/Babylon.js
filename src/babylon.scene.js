@@ -19,6 +19,8 @@ var BABYLON;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
+            // Animations
+            this.animations = [];
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
             this._startingPointerPosition = new BABYLON.Vector2(0, 0);
             this._startingPointerTime = 0;

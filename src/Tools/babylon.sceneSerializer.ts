@@ -207,6 +207,10 @@
     }
 
     export class SceneSerializer {
+        public static ClearCache(): void {
+            serializedGeometries = [];
+        }
+
         public static Serialize(scene: Scene): any {
             var serializationObject: any = {};
 
@@ -254,6 +258,9 @@
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
+
+            // Animations
+            Animation.AppendSerializedAnimations(scene, serializationObject);
 
             // Materials
             serializationObject.materials = [];
@@ -367,3 +374,4 @@
         }
     }
 }
+

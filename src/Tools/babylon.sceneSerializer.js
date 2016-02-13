@@ -183,6 +183,9 @@ var BABYLON;
     var SceneSerializer = (function () {
         function SceneSerializer() {
         }
+        SceneSerializer.ClearCache = function () {
+            serializedGeometries = [];
+        };
         SceneSerializer.Serialize = function (scene) {
             var serializationObject = {};
             // Scene
@@ -224,6 +227,8 @@ var BABYLON;
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(scene, serializationObject);
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
