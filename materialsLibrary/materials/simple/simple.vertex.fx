@@ -48,9 +48,7 @@ uniform vec4 vClipPlane;
 varying float fClipDistance;
 #endif
 
-#ifdef FOG
-varying float fFogDistance;
-#endif
+#include<fogVertexDeclaration>
 
 #ifdef SHADOWS
 #if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
@@ -110,9 +108,7 @@ void main(void) {
 #endif
 
 	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
+#include<fogVertex>
 
 	// Shadows
 #ifdef SHADOWS
