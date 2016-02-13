@@ -111,6 +111,12 @@
       "files": "../../src/Shaders/*.fx"
     }
   ],
+  "includeShadersDirectories": [
+    {
+      "variable": "BABYLON.Effect.IncludesShadersStore",
+      "files": "../../src/Shaders/ShadersInclude/*.fx"
+    }
+  ],
   "workers": [
     {
       "variable": "BABYLON.CollisionWorker",
