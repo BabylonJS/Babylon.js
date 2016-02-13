@@ -11,6 +11,8 @@ var BABYLON;
         function ParticleSystem(name, capacity, scene, customEffect) {
             var _this = this;
             this.name = name;
+            // Members
+            this.animations = [];
             this.renderingGroupId = 0;
             this.emitter = null;
             this.emitRate = 10;
@@ -332,6 +334,7 @@ var BABYLON;
         ParticleSystem.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.name = this.name;
+            // Emitter
             if (this.emitter.position) {
                 serializationObject.emitterId = this.emitter.id;
             }
@@ -343,6 +346,9 @@ var BABYLON;
             if (this.particleTexture) {
                 serializationObject.textureName = this.particleTexture.name;
             }
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            // Particle system
             serializationObject.minAngularSpeed = this.minAngularSpeed;
             serializationObject.maxAngularSpeed = this.maxAngularSpeed;
             serializationObject.minSize = this.minSize;
@@ -369,16 +375,26 @@ var BABYLON;
         ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
             var name = parsedParticleSystem.name;
             var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+            // Texture
             if (parsedParticleSystem.textureName) {
                 particleSystem.particleTexture = new BABYLON.Texture(rootUrl + parsedParticleSystem.textureName, scene);
                 particleSystem.particleTexture.name = parsedParticleSystem.textureName;
             }
+            // Emitter
             if (parsedParticleSystem.emitterId) {
                 particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
             }
             else {
                 particleSystem.emitter = BABYLON.Vector3.FromArray(parsedParticleSystem.emitter);
             }
+            // Animations
+            if (parsedParticleSystem.animations) {
+                for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedParticleSystem.animations[animationIndex];
+                    particleSystem.animations.push(BABYLON.Animation.Parse(parsedAnimation));
+                }
+            }
+            // Particle system
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
             particleSystem.minSize = parsedParticleSystem.minSize;
