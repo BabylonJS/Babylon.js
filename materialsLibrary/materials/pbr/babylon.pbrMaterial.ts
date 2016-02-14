@@ -743,7 +743,7 @@ module BABYLON {
             this.bindOnlyWorldMatrix(world);
 
             // Bones
-            StandardMaterial.ApplyBonesParameters(mesh, this._effect);
+            StandardMaterial.BindBonesParameters(mesh, this._effect);
 
             if (this._myScene.getCachedMaterial() !== (<BABYLON.Material>this)) {
                 this._effect.setMatrix("viewProjection", this._myScene.getTransformMatrix());
@@ -923,10 +923,7 @@ module BABYLON {
                 }
 
                 // Fog
-                if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== Scene.FOGMODE_NONE) {
-                    this._effect.setFloat4("vFogInfos", this._myScene.fogMode, this._myScene.fogStart, this._myScene.fogEnd, this._myScene.fogDensity);
-                    this._effect.setColor3("vFogColor", this._myScene.fogColor);
-                }
+                StandardMaterial.BindFogParameters(this._myScene, mesh, this._effect);
 
                 this._lightingInfos.x = this.directIntensity;
                 this._lightingInfos.y = this.emissiveIntensity;

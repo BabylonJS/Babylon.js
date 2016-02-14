@@ -236,7 +236,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            BABYLON.StandardMaterial.ApplyBonesParameters(mesh, this._effect);
+            BABYLON.StandardMaterial.BindBonesParameters(mesh, this._effect);
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
                 if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
@@ -265,7 +265,7 @@ var BABYLON;
                 this._effect.setMatrix("view", scene.getViewMatrix());
             }
             // Fog
-            BABYLON.StandardMaterial.ApplyFogParameters(scene, mesh, this._effect);
+            BABYLON.StandardMaterial.BindFogParameters(scene, mesh, this._effect);
             _super.prototype.bind.call(this, world, mesh);
         };
         SimpleMaterial.prototype.getAnimatables = function () {
