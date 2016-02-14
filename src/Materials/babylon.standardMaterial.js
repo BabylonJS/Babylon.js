@@ -251,7 +251,7 @@ var BABYLON;
                 }
                 defines[type] = true;
                 // Specular
-                if (!light.specular.equalsFloats(0, 0, 0)) {
+                if (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined) {
                     defines["SPECULARTERM"] = true;
                 }
                 // Shadows
@@ -273,6 +273,23 @@ var BABYLON;
                     break;
             }
             return needNormals;
+        };
+        StandardMaterial.BindLightShadow = function (light, scene, mesh, lightIndex, effect, depthValuesAlreadySet) {
+            var shadowGenerator = light.getShadowGenerator();
+            if (mesh.receiveShadows && shadowGenerator) {
+                if (!light.needCube()) {
+                    effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
+                }
+                else {
+                    if (!depthValuesAlreadySet) {
+                        depthValuesAlreadySet = true;
+                        effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                    }
+                }
+                effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
+                effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
+            }
+            return depthValuesAlreadySet;
         };
         StandardMaterial.BindLights = function (scene, mesh, effect, defines) {
             var lightIndex = 0;
@@ -309,24 +326,49 @@ var BABYLON;
                 }
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh.receiveShadows && shadowGenerator) {
-                        if (!light.needCube()) {
-                            effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                        }
-                        else {
-                            if (!depthValuesAlreadySet) {
-                                depthValuesAlreadySet = true;
-                                effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                            }
-                        }
-                        effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                        effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
-                    }
+                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
                     break;
+            }
+        };
+        StandardMaterial.HandleFallbacksForShadows = function (defines, fallbacks) {
+            for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+                if (!defines["LIGHT" + lightIndex]) {
+                    continue;
+                }
+                if (lightIndex > 0) {
+                    fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
+                }
+                if (defines["SHADOW" + lightIndex]) {
+                    fallbacks.addFallback(0, "SHADOW" + lightIndex);
+                }
+                if (defines["SHADOWPCF" + lightIndex]) {
+                    fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
+                }
+                if (defines["SHADOWVSM" + lightIndex]) {
+                    fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
+                }
+            }
+        };
+        StandardMaterial.PrepareAttributesForBones = function (attribs, mesh, defines, fallbacks) {
+            if (defines["NUM_BONE_INFLUENCERS"] > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+                attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
+                attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+                if (defines["NUM_BONE_INFLUENCERS"] > 4) {
+                    attribs.push(BABYLON.VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
+                }
+            }
+        };
+        StandardMaterial.PrepareAttributesForInstances = function (attribs, defines) {
+            if (defines["INSTANCES"]) {
+                attribs.push("world0");
+                attribs.push("world1");
+                attribs.push("world2");
+                attribs.push("world3");
             }
         };
         StandardMaterial.prototype.isReady = function (mesh, useInstances) {
@@ -588,23 +630,7 @@ var BABYLON;
                 if (this._defines.LOGARITHMICDEPTH) {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
-                for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-                    if (!this._defines["LIGHT" + lightIndex]) {
-                        continue;
-                    }
-                    if (lightIndex > 0) {
-                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
-                    }
-                    if (this._defines["SHADOW" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                    }
-                    if (this._defines["SHADOWPCF" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                    }
-                    if (this._defines["SHADOWVSM" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                    }
-                }
+                StandardMaterial.HandleFallbacksForShadows(this._defines, fallbacks);
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
                 }
@@ -623,9 +649,6 @@ var BABYLON;
                 if (this._defines.FRESNEL) {
                     fallbacks.addFallback(4, "FRESNEL");
                 }
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    fallbacks.addCPUSkinningFallback(0, mesh);
-                }
                 //Attributes
                 var attribs = [BABYLON.VertexBuffer.PositionKind];
                 if (this._defines.NORMAL) {
@@ -640,20 +663,8 @@ var BABYLON;
                 if (this._defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
-                    attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
-                        attribs.push(BABYLON.VertexBuffer.MatricesIndicesExtraKind);
-                        attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
-                    }
-                }
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
+                StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                StandardMaterial.PrepareAttributesForInstances(attribs, this._defines);
                 // Legacy browser patch
                 var shaderName = "default";
                 if (!scene.getEngine().getCaps().standardDerivatives) {
@@ -706,9 +717,7 @@ var BABYLON;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            StandardMaterial.ApplyBonesParameters(mesh, this._effect);
             if (scene.getCachedMaterial() !== this) {
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 if (StandardMaterial.FresnelEnabled) {
@@ -825,16 +834,24 @@ var BABYLON;
                     this._effect.setMatrix("view", scene.getViewMatrix());
                 }
                 // Fog
-                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                    this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                    this._effect.setColor3("vFogColor", scene.fogColor);
-                }
+                StandardMaterial.ApplyFogParameters(scene, mesh, this._effect);
                 // Log. depth
                 if (this._defines.LOGARITHMICDEPTH) {
                     this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
                 }
             }
             _super.prototype.bind.call(this, world, mesh);
+        };
+        StandardMaterial.ApplyFogParameters = function (scene, mesh, effect) {
+            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+                effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+                effect.setColor3("vFogColor", scene.fogColor);
+            }
+        };
+        StandardMaterial.ApplyBonesParameters = function (mesh, effect) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+                effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+            }
         };
         StandardMaterial.prototype.getAnimatables = function () {
             var results = [];
