@@ -138,68 +138,7 @@ var BABYLON;
             }
             var lightIndex = 0;
             if (scene.lightsEnabled && !this.disableLighting) {
-                for (var index = 0; index < scene.lights.length; index++) {
-                    var light = scene.lights[index];
-                    if (!light.isEnabled()) {
-                        continue;
-                    }
-                    // Excluded check
-                    if (light._excludedMeshesIds.length > 0) {
-                        for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                            var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
-                            if (excludedMesh) {
-                                light.excludedMeshes.push(excludedMesh);
-                            }
-                        }
-                        light._excludedMeshesIds = [];
-                    }
-                    // Included check
-                    if (light._includedOnlyMeshesIds.length > 0) {
-                        for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                            var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
-                            if (includedOnlyMesh) {
-                                light.includedOnlyMeshes.push(includedOnlyMesh);
-                            }
-                        }
-                        light._includedOnlyMeshesIds = [];
-                    }
-                    if (!light.canAffectMesh(mesh)) {
-                        continue;
-                    }
-                    needNormals = true;
-                    this._defines["LIGHT" + lightIndex] = true;
-                    var type;
-                    if (light instanceof BABYLON.SpotLight) {
-                        type = "SPOTLIGHT" + lightIndex;
-                    }
-                    else if (light instanceof BABYLON.HemisphericLight) {
-                        type = "HEMILIGHT" + lightIndex;
-                    }
-                    else if (light instanceof BABYLON.PointLight) {
-                        type = "POINTLIGHT" + lightIndex;
-                    }
-                    else {
-                        type = "DIRLIGHT" + lightIndex;
-                    }
-                    this._defines[type] = true;
-                    // Shadows
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = light.getShadowGenerator();
-                        if (mesh && mesh.receiveShadows && shadowGenerator) {
-                            this._defines["SHADOW" + lightIndex] = true;
-                            this._defines.SHADOWS = true;
-                            if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
-                                this._defines["SHADOWVSM" + lightIndex] = true;
-                            }
-                            if (shadowGenerator.usePoissonSampling) {
-                                this._defines["SHADOWPCF" + lightIndex] = true;
-                            }
-                        }
-                    }
-                    lightIndex++;
-                    if (lightIndex === maxSimultaneousLights)
-                        break;
-                }
+                needNormals = BABYLON.StandardMaterial.PrepareDefinesForLights(scene, mesh, this._defines);
             }
             // Attribs
             if (mesh) {

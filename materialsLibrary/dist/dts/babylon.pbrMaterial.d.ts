@@ -70,7 +70,6 @@ declare module BABYLON {
         private _shouldUseAlphaFromAlbedoTexture();
         getAlphaTestTexture(): BaseTexture;
         private _checkCache(scene, mesh?, useInstances?);
-        static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines): boolean;
         private static _scaledAlbedo;
         private static _scaledReflectivity;
         private static _scaledEmissive;
