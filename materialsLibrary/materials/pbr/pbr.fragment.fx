@@ -890,7 +890,9 @@ void main(void) {
         #ifdef MICROSURFACEFROMREFLECTIVITYMAP
             microSurface = surfaceReflectivityColorMap.a;
         #else
-            microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
+            #ifdef MICROSURFACEAUTOMATIC
+                microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
+            #endif
         #endif
     #endif
 
