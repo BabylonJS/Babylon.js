@@ -294,19 +294,7 @@ module BABYLON {
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh.receiveShadows && shadowGenerator) {
-                        if (!(<any>light).needCube()) {
-                            effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                        } else {
-                            if (!depthValuesAlreadySet) {
-                                depthValuesAlreadySet = true;
-                                effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                            }
-                        }
-                        effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                        effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
-                    }
+                    depthValuesAlreadySet = StandardMaterial.BindLightShadow(light, scene, mesh, lightIndex, effect, defines, depthValuesAlreadySet);
                 }
 
                 lightIndex++;
