@@ -291,7 +291,7 @@ module BABYLON {
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = StandardMaterial.BindLightShadow(light, scene, mesh, lightIndex, effect, defines, depthValuesAlreadySet);
+                    depthValuesAlreadySet = StandardMaterial.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
 
                 lightIndex++;
@@ -768,9 +768,7 @@ module BABYLON {
             this.bindOnlyWorldMatrix(world);
 
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            StandardMaterial.ApplyBonesParameters(mesh, this._effect);
 
             if (this._myScene.getCachedMaterial() !== (<BABYLON.Material>this)) {
                 this._effect.setMatrix("viewProjection", this._myScene.getTransformMatrix());
