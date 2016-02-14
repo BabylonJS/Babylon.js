@@ -1,7 +1,7 @@
 var BABYLON;
 (function (BABYLON) {
-    var ToGammaSpace = 1 / 2.2;
-    var ToLinearSpace = 2.2;
+    BABYLON.ToGammaSpace = 1 / 2.2;
+    BABYLON.ToLinearSpace = 2.2;
     var Color3 = (function () {
         function Color3(r, g, b) {
             if (r === void 0) { r = 0; }
@@ -105,9 +105,9 @@ var BABYLON;
             return convertedColor;
         };
         Color3.prototype.toLinearSpaceToRef = function (convertedColor) {
-            convertedColor.r = Math.pow(this.r, ToLinearSpace);
-            convertedColor.g = Math.pow(this.g, ToLinearSpace);
-            convertedColor.b = Math.pow(this.b, ToLinearSpace);
+            convertedColor.r = Math.pow(this.r, BABYLON.ToLinearSpace);
+            convertedColor.g = Math.pow(this.g, BABYLON.ToLinearSpace);
+            convertedColor.b = Math.pow(this.b, BABYLON.ToLinearSpace);
             return this;
         };
         Color3.prototype.toGammaSpace = function () {
@@ -116,9 +116,9 @@ var BABYLON;
             return convertedColor;
         };
         Color3.prototype.toGammaSpaceToRef = function (convertedColor) {
-            convertedColor.r = Math.pow(this.r, ToGammaSpace);
-            convertedColor.g = Math.pow(this.g, ToGammaSpace);
-            convertedColor.b = Math.pow(this.b, ToGammaSpace);
+            convertedColor.r = Math.pow(this.r, BABYLON.ToGammaSpace);
+            convertedColor.g = Math.pow(this.g, BABYLON.ToGammaSpace);
+            convertedColor.b = Math.pow(this.b, BABYLON.ToGammaSpace);
             return this;
         };
         // Statics

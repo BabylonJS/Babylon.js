@@ -350,7 +350,7 @@ var BABYLON;
                                     this._defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
                                     break;
                             }
-                            if (this.reflectionTexture instanceof BABYLON.HDRCubeTexture) {
+                            if (this.reflectionTexture instanceof BABYLON.HDRCubeTexture && this.reflectionTexture) {
                                 this._defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 needNormals = true;
                             }

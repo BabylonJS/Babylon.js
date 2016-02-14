@@ -422,7 +422,7 @@ module BABYLON {
                                     break;
                             }
 
-                            if (this.reflectionTexture instanceof HDRCubeTexture) {
+                            if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
                                 this._defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 needNormals = true;
                             }
