@@ -285,57 +285,10 @@ var BABYLON;
                 }
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
             }
-            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+            // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                var lightIndex = 0;
-                var depthValuesAlreadySet = false;
-                for (var index = 0; index < scene.lights.length; index++) {
-                    var light = scene.lights[index];
-                    if (!light.isEnabled()) {
-                        continue;
-                    }
-                    if (!light.canAffectMesh(mesh)) {
-                        continue;
-                    }
-                    if (light instanceof BABYLON.PointLight) {
-                        // Point Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex);
-                    }
-                    else if (light instanceof BABYLON.DirectionalLight) {
-                        // Directional Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex);
-                    }
-                    else if (light instanceof BABYLON.SpotLight) {
-                        // Spot Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                    }
-                    else if (light instanceof BABYLON.HemisphericLight) {
-                        // Hemispheric Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                    }
-                    light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
-                    this._effect.setColor4("vLightDiffuse" + lightIndex, this._scaledDiffuse, light.range);
-                    // Shadows
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = light.getShadowGenerator();
-                        if (mesh.receiveShadows && shadowGenerator) {
-                            if (!light.needCube()) {
-                                this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                            }
-                            else {
-                                if (!depthValuesAlreadySet) {
-                                    depthValuesAlreadySet = true;
-                                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                                }
-                            }
-                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                            this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
-                        }
-                    }
-                    lightIndex++;
-                    if (lightIndex === maxSimultaneousLights)
-                        break;
-                }
+                BABYLON.StandardMaterial.BindLights(scene, mesh, this._effect, this._defines);
             }
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
