@@ -264,9 +264,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            BABYLON.StandardMaterial.ApplyBonesParameters(mesh, this._effect);
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
                 if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
@@ -295,10 +293,7 @@ var BABYLON;
                 this._effect.setMatrix("view", scene.getViewMatrix());
             }
             // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
+            BABYLON.StandardMaterial.ApplyFogParameters(scene, mesh, this._effect);
             _super.prototype.bind.call(this, world, mesh);
         };
         SimpleMaterial.prototype.getAnimatables = function () {

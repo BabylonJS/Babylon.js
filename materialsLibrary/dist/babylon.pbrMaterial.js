@@ -242,7 +242,7 @@ var BABYLON;
                 }
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = BABYLON.StandardMaterial.BindLightShadow(light, scene, mesh, lightIndex, effect, defines, depthValuesAlreadySet);
+                    depthValuesAlreadySet = BABYLON.StandardMaterial.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
@@ -637,9 +637,7 @@ var BABYLON;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            BABYLON.StandardMaterial.ApplyBonesParameters(mesh, this._effect);
             if (this._myScene.getCachedMaterial() !== this) {
                 this._effect.setMatrix("viewProjection", this._myScene.getTransformMatrix());
                 if (BABYLON.StandardMaterial.FresnelEnabled) {

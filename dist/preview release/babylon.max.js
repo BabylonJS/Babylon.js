@@ -19860,7 +19860,7 @@ var BABYLON;
             }
             return needNormals;
         };
-        StandardMaterial.BindLightShadow = function (light, scene, mesh, lightIndex, effect, defines, depthValuesAlreadySet) {
+        StandardMaterial.BindLightShadow = function (light, scene, mesh, lightIndex, effect, depthValuesAlreadySet) {
             var shadowGenerator = light.getShadowGenerator();
             if (mesh.receiveShadows && shadowGenerator) {
                 if (!light.needCube()) {
@@ -19912,7 +19912,7 @@ var BABYLON;
                 }
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, defines, depthValuesAlreadySet);
+                    depthValuesAlreadySet = this.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
@@ -20296,9 +20296,7 @@ var BABYLON;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            StandardMaterial.ApplyBonesParameters(mesh, this._effect);
             if (scene.getCachedMaterial() !== this) {
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 if (StandardMaterial.FresnelEnabled) {
@@ -20415,16 +20413,24 @@ var BABYLON;
                     this._effect.setMatrix("view", scene.getViewMatrix());
                 }
                 // Fog
-                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                    this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                    this._effect.setColor3("vFogColor", scene.fogColor);
-                }
+                StandardMaterial.ApplyFogParameters(scene, mesh, this._effect);
                 // Log. depth
                 if (this._defines.LOGARITHMICDEPTH) {
                     this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
                 }
             }
             _super.prototype.bind.call(this, world, mesh);
+        };
+        StandardMaterial.ApplyFogParameters = function (scene, mesh, effect) {
+            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
+                effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+                effect.setColor3("vFogColor", scene.fogColor);
+            }
+        };
+        StandardMaterial.ApplyBonesParameters = function (mesh, effect) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+                effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+            }
         };
         StandardMaterial.prototype.getAnimatables = function () {
             var results = [];
