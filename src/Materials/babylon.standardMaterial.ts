@@ -856,7 +856,7 @@
             this.bindOnlyWorldMatrix(world);
 
             // Bones
-            StandardMaterial.ApplyBonesParameters(mesh, this._effect);
+            StandardMaterial.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
@@ -1004,7 +1004,7 @@
                 }
 
                 // Fog
-                StandardMaterial.ApplyFogParameters(scene, mesh, this._effect);
+                StandardMaterial.BindFogParameters(scene, mesh, this._effect);
 
                 // Log. depth
                 if (this._defines.LOGARITHMICDEPTH) {
@@ -1015,13 +1015,13 @@
             super.bind(world, mesh);
         }
 
-        public static ApplyFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect): void {
+        public static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect): void {
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
                 effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
                 effect.setColor3("vFogColor", scene.fogColor);
             }
         }
-        public static ApplyBonesParameters(mesh: AbstractMesh, effect: Effect): void {
+        public static BindBonesParameters(mesh: AbstractMesh, effect: Effect): void {
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                 effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }

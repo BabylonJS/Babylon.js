@@ -286,7 +286,7 @@ module BABYLON {
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            StandardMaterial.ApplyBonesParameters(mesh, this._effect);
+            StandardMaterial.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
@@ -323,7 +323,7 @@ module BABYLON {
             }
 
             // Fog
-            StandardMaterial.ApplyFogParameters(scene, mesh, this._effect);
+            StandardMaterial.BindFogParameters(scene, mesh, this._effect);
 
             super.bind(world, mesh);
         }
