@@ -233,13 +233,7 @@ module BABYLON {
                 }
 
                 StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
+                StandardMaterial.PrepareAttributesForInstances(attribs, this._defines);
 
                 // Legacy browser patch
                 var shaderName = "simple";

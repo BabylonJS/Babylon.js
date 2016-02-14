@@ -237,7 +237,7 @@
         }
 
         private _processIncludes(sourceCode: string, callback: (data: any) => void): void {
-            var regex = /#include<(.+)>/g;
+            var regex = /#include<(.+)>(\((.*)\))*/g;
             var match = regex.exec(sourceCode);
 
             var returnValue = new String(sourceCode);
@@ -246,7 +246,21 @@
                 var includeFile = match[1];
 
                 if (Effect.IncludesShadersStore[includeFile]) {
-                    returnValue = returnValue.replace(match[0], Effect.IncludesShadersStore[includeFile]);
+                    // Substitution
+                    var includeContent = Effect.IncludesShadersStore[includeFile];
+                    if (match[2]) {
+                        var splits = match[2].substr(1, match[2].length - 2).split(",");
+
+                        for (var index = 0; index < splits.length; index += 2) {
+                            var source = new RegExp(splits[index], "g");
+                            var dest = splits[index + 1];
+
+                            includeContent = includeContent.replace(source, dest);
+                        }
+                    }
+
+                    // Replace
+                    returnValue = returnValue.replace(match[0], includeContent);
                 } else {
                     var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
