@@ -615,27 +615,7 @@ module BABYLON {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
 
-                for (let lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-                    if (!this._defines["LIGHT" + lightIndex]) {
-                        continue;
-                    }
-
-                    if (lightIndex > 0) {
-                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOW" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWPCF" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWVSM" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                    }
-                }
+                StandardMaterial.HandleFallbacksForShadows(this._defines, fallbacks);
 
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
@@ -676,14 +656,7 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    attribs.push(VertexBuffer.MatricesIndicesKind);
-                    attribs.push(VertexBuffer.MatricesWeightsKind);
-                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
-                        attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                        attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-                    }
-                }
+                StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
 
                 if (this._defines.INSTANCES) {
                     attribs.push("world0");
