@@ -154,7 +154,7 @@ module BABYLON {
         public linkEmissiveWithAlbedo = false;
         public useSpecularOverAlpha = true;
         public disableLighting = false;
-
+        
         public indexOfRefraction = 0.66;
         public invertRefractionY = false;
         public linkRefractionWithTransparency = false;
@@ -170,7 +170,6 @@ module BABYLON {
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
         private _tempColor = new Color3();
-
         private _renderId: number;
 
         private _defines = new PBRMaterialDefines();
@@ -248,6 +247,7 @@ module BABYLON {
         private static _scaledReflectivity = new Color3();
         private static _scaledEmissive = new Color3();
         private static _scaledReflection = new Color3();
+        private static _lightRadiuses = [1, 1, 1, 1];
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
             var lightIndex = 0;
@@ -262,6 +262,8 @@ module BABYLON {
                 if (!light.canAffectMesh(mesh)) {
                     continue;
                 }
+                
+                this._lightRadiuses[lightIndex] = light.radius;
 
                 if (light instanceof PointLight) {
                     // Point Light
@@ -279,12 +281,13 @@ module BABYLON {
 
                 // GAMMA CORRECTION.
                 light.diffuse.toLinearSpaceToRef(PBRMaterial._scaledAlbedo);
+                
                 PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
-
-                light.diffuse.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
                 effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, light.range);
+                
                 if (defines["SPECULARTERM"]) {
                     light.specular.toLinearSpaceToRef(PBRMaterial._scaledReflectivity);
+                    
                     PBRMaterial._scaledReflectivity.scaleToRef(light.intensity, PBRMaterial._scaledReflectivity);
                     effect.setColor3("vLightSpecular" + lightIndex, PBRMaterial._scaledReflectivity);
                 }
@@ -299,6 +302,11 @@ module BABYLON {
                 if (lightIndex === maxSimultaneousLights)
                     break;
             }
+            
+            effect.setFloat4("vLightRadiuses", this._lightRadiuses[0],
+                this._lightRadiuses[1],
+                this._lightRadiuses[2],
+                this._lightRadiuses[3]);
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
@@ -683,7 +691,7 @@ module BABYLON {
                         "vSphericalX", "vSphericalY", "vSphericalZ",
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
-                        "vMicrosurfaceTextureLods"
+                        "vMicrosurfaceTextureLods", "vLightRadiuses"
                     ],
                     ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"

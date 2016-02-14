@@ -30,6 +30,9 @@
         public excludedMeshes = new Array<AbstractMesh>();
         public excludeWithLayerMask = 0;
 
+        // PBR Properties.
+        public radius = 0.00001;
+
         public _shadowGenerator: ShadowGenerator;
         private _parentedWorldMatrix: Matrix;
         public _excludedMeshesIds = new Array<string>();
@@ -129,6 +132,7 @@
             }
 
             serializationObject.range = this.range;
+            serializationObject.radius = this.radius;
 
             serializationObject.diffuse = this.diffuse.asArray();
             serializationObject.specular = this.specular.asArray();
@@ -166,6 +170,10 @@
 
             if (parsedLight.range) {
                 light.range = parsedLight.range;
+            }
+            
+            if (parsedLight.radius) {
+                light.radius = parsedLight.radius;
             }
 
             light.diffuse = Color3.FromArray(parsedLight.diffuse);
