@@ -64,6 +64,7 @@ module BABYLON {
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public MICROSURFACEFROMREFLECTIVITYMAP = false;
+        public MICROSURFACEAUTOMATIC = false;
         public EMISSIVEASILLUMINATION = false;
         public LINKEMISSIVEWITHALBEDO = false;
         public LIGHTMAP = false;
@@ -165,6 +166,7 @@ module BABYLON {
         public emissiveFresnelParameters: FresnelParameters;
 
         public useMicroSurfaceFromReflectivityMapAlpha = false;
+        public useAutoMicroSurfaceFromReflectivityMap = false;
         public useScalarInLinearSpace = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
@@ -453,6 +455,7 @@ module BABYLON {
                             needUVs = true;
                             this._defines.REFLECTIVITY = true;
                             this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
+                            this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
                         }
                     }
                 }
@@ -1141,6 +1144,7 @@ module BABYLON {
             newPBRMaterial.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
             newPBRMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
             newPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
+            newPBRMaterial.useAutoMicroSurfaceFromReflectivityMap = this.useAutoMicroSurfaceFromReflectivityMap;
             newPBRMaterial.useScalarInLinearSpace = this.useScalarInLinearSpace;
             newPBRMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newPBRMaterial.indexOfRefraction = this.indexOfRefraction;
@@ -1224,6 +1228,7 @@ module BABYLON {
             serializationObject.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
             serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
             serializationObject.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
+            serializationObject.useAutoMicroSurfaceFromReflectivityMap = this.useAutoMicroSurfaceFromReflectivityMap;
             serializationObject.useScalarInLinear = this.useScalarInLinearSpace;
             serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
             serializationObject.indexOfRefraction = this.indexOfRefraction;
@@ -1320,6 +1325,7 @@ module BABYLON {
             material.useAlphaFromAlbedoTexture = source.useAlphaFromAlbedoTexture;
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
             material.useMicroSurfaceFromReflectivityMapAlpha = source.useMicroSurfaceFromReflectivityMapAlpha;
+            material.useAutoMicroSurfaceFromReflectivityMap = source.useAutoMicroSurfaceFromReflectivityMap;
             material.useScalarInLinearSpace = source.useScalarInLinear;
             material.useSpecularOverAlpha = source.useSpecularOverAlpha;
             material.indexOfRefraction = source.indexOfRefraction;
