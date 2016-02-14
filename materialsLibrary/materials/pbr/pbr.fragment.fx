@@ -1407,11 +1407,6 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
     #endif
 #endif
 
-#ifdef FOG
-    float fog = CalcFogFactor();
-    finalColor.rgb = fog * finalColor.rgb + (1.0 - fog) * vFogColor;
-#endif
-
     finalColor = max(finalColor, 0.0);
 
 #ifdef CAMERATONEMAP
@@ -1451,6 +1446,8 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
     //// Emissive Color
     //vec2 test = vEmissiveUV * 0.5 + 0.5;
     //gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
+
+#include<fogFragment>(color, finalColor)
 
     gl_FragColor = finalColor;
 }
