@@ -79,11 +79,8 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
 
+#include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 #include<shadowsVertexDeclaration>
 
@@ -95,10 +92,7 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
-#ifdef LOGARITHMICDEPTH
-uniform float logarithmicDepthConstant;
-varying float vFragmentDepth;
-#endif
+#include<logDepthDeclaration>
 
 void main(void) {
 #ifdef REFLECTIONMAP_SKYBOX
@@ -207,9 +201,7 @@ void main(void) {
 #endif
 
     // Clip plane
-#ifdef CLIPPLANE
-    fClipDistance = dot(worldPos, vClipPlane);
-#endif
+#include<clipPlaneVertex>
 
     // Fog
 #include<fogVertex>
@@ -228,8 +220,5 @@ void main(void) {
 #endif
 
     // Log. depth
-#ifdef LOGARITHMICDEPTH
-    vFragmentDepth = 1.0 + gl_Position.w;
-    gl_Position.z = log2(max(0.000001, vFragmentDepth)) * logarithmicDepthConstant;
-#endif
+#include<logDepthVertex>
 }

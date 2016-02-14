@@ -33,19 +33,13 @@ uniform vec2 vDiffuseInfos;
 
 #endif
 
-#ifdef CLIPPLANE
-varying float fClipDistance;
-#endif
+#include<clipPlaneFragmentDeclaration>
 
 // Fog
 #include<fogFragmentDeclaration>
 
 void main(void) {
-	// Clip plane
-#ifdef CLIPPLANE
-	if (fClipDistance > 0.0)
-		discard;
-#endif
+#include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
