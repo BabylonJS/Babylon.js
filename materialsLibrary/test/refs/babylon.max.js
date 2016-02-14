@@ -19837,7 +19837,7 @@ var BABYLON;
                 }
                 defines[type] = true;
                 // Specular
-                if (!light.specular.equalsFloats(0, 0, 0)) {
+                if (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined) {
                     defines["SPECULARTERM"] = true;
                 }
                 // Shadows

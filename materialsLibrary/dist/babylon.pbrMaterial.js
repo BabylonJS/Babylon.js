@@ -203,77 +203,6 @@ var BABYLON;
             }
             return false;
         };
-        PBRMaterial.PrepareDefinesForLights = function (scene, mesh, defines) {
-            var lightIndex = 0;
-            var needNormals = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-                if (!light.isEnabled()) {
-                    continue;
-                }
-                // Excluded check
-                if (light._excludedMeshesIds.length > 0) {
-                    for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                        var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
-                        if (excludedMesh) {
-                            light.excludedMeshes.push(excludedMesh);
-                        }
-                    }
-                    light._excludedMeshesIds = [];
-                }
-                // Included check
-                if (light._includedOnlyMeshesIds.length > 0) {
-                    for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                        var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
-                        if (includedOnlyMesh) {
-                            light.includedOnlyMeshes.push(includedOnlyMesh);
-                        }
-                    }
-                    light._includedOnlyMeshesIds = [];
-                }
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
-                needNormals = true;
-                defines["LIGHT" + lightIndex] = true;
-                var type;
-                if (light instanceof BABYLON.SpotLight) {
-                    type = "SPOTLIGHT" + lightIndex;
-                }
-                else if (light instanceof BABYLON.HemisphericLight) {
-                    type = "HEMILIGHT" + lightIndex;
-                }
-                else if (light instanceof BABYLON.PointLight) {
-                    type = "POINTLIGHT" + lightIndex;
-                }
-                else {
-                    type = "DIRLIGHT" + lightIndex;
-                }
-                defines[type] = true;
-                // Specular
-                if (!light.specular.equalsFloats(0, 0, 0)) {
-                    defines["SPECULARTERM"] = true;
-                }
-                // Shadows
-                if (scene.shadowsEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh && mesh.receiveShadows && shadowGenerator) {
-                        defines["SHADOW" + lightIndex] = true;
-                        defines["SHADOWS"] = true;
-                        if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
-                            defines["SHADOWVSM" + lightIndex] = true;
-                        }
-                        if (shadowGenerator.usePoissonSampling) {
-                            defines["SHADOWPCF" + lightIndex] = true;
-                        }
-                    }
-                }
-                lightIndex++;
-                if (lightIndex === maxSimultaneousLights)
-                    break;
-            }
-            return needNormals;
-        };
         PBRMaterial.BindLights = function (scene, mesh, effect, defines) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
@@ -530,7 +459,7 @@ var BABYLON;
                 this._defines.FOG = true;
             }
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = PBRMaterial.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
+                needNormals = BABYLON.StandardMaterial.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
             }
             if (BABYLON.StandardMaterial.FresnelEnabled) {
                 // Fresnel
