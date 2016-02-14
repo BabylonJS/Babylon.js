@@ -171,7 +171,7 @@
             if (parsedLight.range) {
                 light.range = parsedLight.range;
             }
-            
+
             if (parsedLight.radius) {
                 light.radius = parsedLight.radius;
             }

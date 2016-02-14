@@ -43,10 +43,8 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
+
+#include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
 #include<shadowsVertexDeclaration>
@@ -85,9 +83,7 @@ void main(void) {
 #endif
 
 	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
+#include<clipPlaneVertex>
 
     // Fog
 #include<fogVertex>

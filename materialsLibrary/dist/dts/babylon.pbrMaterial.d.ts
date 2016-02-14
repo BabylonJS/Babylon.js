@@ -74,6 +74,7 @@ declare module BABYLON {
         private static _scaledReflectivity;
         private static _scaledEmissive;
         private static _scaledReflection;
+        private static _lightRadiuses;
         static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines): void;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
         unbind(): void;

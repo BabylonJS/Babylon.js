@@ -17,6 +17,8 @@ var BABYLON;
             this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
             this.excludeWithLayerMask = 0;
+            // PBR Properties.
+            this.radius = 0.00001;
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
             scene.addLight(this);
@@ -86,6 +88,7 @@ var BABYLON;
                 serializationObject.parentId = this.parent.id;
             }
             serializationObject.range = this.range;
+            serializationObject.radius = this.radius;
             serializationObject.diffuse = this.diffuse.asArray();
             serializationObject.specular = this.specular.asArray();
             return serializationObject;
@@ -115,6 +118,9 @@ var BABYLON;
             }
             if (parsedLight.range) {
                 light.range = parsedLight.range;
+            }
+            if (parsedLight.radius) {
+                light.radius = parsedLight.radius;
             }
             light.diffuse = BABYLON.Color3.FromArray(parsedLight.diffuse);
             light.specular = BABYLON.Color3.FromArray(parsedLight.specular);
