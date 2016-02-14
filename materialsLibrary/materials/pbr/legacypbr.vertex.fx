@@ -58,10 +58,7 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
+#include<clipPlaneVertexDeclaration>
 
 void main(void) {
     mat4 finalWorld = world;
@@ -140,10 +137,7 @@ void main(void) {
 	}
 #endif
 
-	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
+#include<clipPlaneVertex>
 
 	// Vertex color
 #ifdef VERTEXCOLOR
