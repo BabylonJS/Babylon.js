@@ -3027,6 +3027,7 @@ var BABYLON;
     var Tmp = (function () {
         function Tmp() {
         }
+        Tmp.Color3 = [Color3.Black(), Color3.Black(), Color3.Black()];
         Tmp.Vector2 = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()]; // 3 temp Vector2 at once should be enough
         Tmp.Vector3 = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
             Vector3.Zero(), Vector3.Zero(), Vector3.Zero()]; // 6 temp Vector3 at once should be enough
