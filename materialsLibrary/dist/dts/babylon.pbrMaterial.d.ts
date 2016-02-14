@@ -55,6 +55,7 @@ declare module BABYLON {
         opacityFresnelParameters: FresnelParameters;
         emissiveFresnelParameters: FresnelParameters;
         useMicroSurfaceFromReflectivityMapAlpha: boolean;
+        useAutoMicroSurfaceFromReflectivityMap: boolean;
         useScalarInLinearSpace: boolean;
         private _renderTargets;
         private _worldViewProjectionMatrix;
