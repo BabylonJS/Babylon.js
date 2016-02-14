@@ -19949,6 +19949,14 @@ var BABYLON;
                 }
             }
         };
+        StandardMaterial.PrepareAttributesForInstances = function (attribs, defines) {
+            if (defines["INSTANCES"]) {
+                attribs.push("world0");
+                attribs.push("world1");
+                attribs.push("world2");
+                attribs.push("world3");
+            }
+        };
         StandardMaterial.prototype.isReady = function (mesh, useInstances) {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
@@ -20242,12 +20250,7 @@ var BABYLON;
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
                 StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
+                StandardMaterial.PrepareAttributesForInstances(attribs, this._defines);
                 // Legacy browser patch
                 var shaderName = "default";
                 if (!scene.getEngine().getCaps().standardDerivatives) {
