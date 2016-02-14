@@ -19919,6 +19919,36 @@ var BABYLON;
                     break;
             }
         };
+        StandardMaterial.HandleFallbacksForShadows = function (defines, fallbacks) {
+            for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+                if (!defines["LIGHT" + lightIndex]) {
+                    continue;
+                }
+                if (lightIndex > 0) {
+                    fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
+                }
+                if (defines["SHADOW" + lightIndex]) {
+                    fallbacks.addFallback(0, "SHADOW" + lightIndex);
+                }
+                if (defines["SHADOWPCF" + lightIndex]) {
+                    fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
+                }
+                if (defines["SHADOWVSM" + lightIndex]) {
+                    fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
+                }
+            }
+        };
+        StandardMaterial.PrepareAttributesForBones = function (attribs, mesh, defines, fallbacks) {
+            if (defines["NUM_BONE_INFLUENCERS"] > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+                attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
+                attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
+                if (defines["NUM_BONE_INFLUENCERS"] > 4) {
+                    attribs.push(BABYLON.VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
+                }
+            }
+        };
         StandardMaterial.prototype.isReady = function (mesh, useInstances) {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
@@ -20178,23 +20208,7 @@ var BABYLON;
                 if (this._defines.LOGARITHMICDEPTH) {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
-                for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-                    if (!this._defines["LIGHT" + lightIndex]) {
-                        continue;
-                    }
-                    if (lightIndex > 0) {
-                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
-                    }
-                    if (this._defines["SHADOW" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                    }
-                    if (this._defines["SHADOWPCF" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                    }
-                    if (this._defines["SHADOWVSM" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                    }
-                }
+                StandardMaterial.HandleFallbacksForShadows(this._defines, fallbacks);
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
                 }
@@ -20213,9 +20227,6 @@ var BABYLON;
                 if (this._defines.FRESNEL) {
                     fallbacks.addFallback(4, "FRESNEL");
                 }
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    fallbacks.addCPUSkinningFallback(0, mesh);
-                }
                 //Attributes
                 var attribs = [BABYLON.VertexBuffer.PositionKind];
                 if (this._defines.NORMAL) {
@@ -20230,14 +20241,7 @@ var BABYLON;
                 if (this._defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
-                    attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
-                        attribs.push(BABYLON.VertexBuffer.MatricesIndicesExtraKind);
-                        attribs.push(BABYLON.VertexBuffer.MatricesWeightsExtraKind);
-                    }
-                }
+                StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 if (this._defines.INSTANCES) {
                     attribs.push("world0");
                     attribs.push("world1");
