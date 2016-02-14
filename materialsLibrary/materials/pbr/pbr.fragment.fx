@@ -523,14 +523,14 @@ float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float dar
 
 float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float bias, float darkness)
 {
-	vec3 directionToLight = vPositionW - lightPosition;
-	float depth = length(directionToLight);
+    vec3 directionToLight = vPositionW - lightPosition;
+    float depth = length(directionToLight);
 
-	depth = clamp(depth, 0., 1.0);
-	float diskScale = 2.0 / mapSize;
+    depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+    depth = clamp(depth, 0., 1.0);
 
-	directionToLight = normalize(directionToLight);
-	directionToLight.y = -directionToLight.y;
+    directionToLight = normalize(directionToLight);
+    directionToLight.y = -directionToLight.y;
 
     float visibility = 1.;
 
@@ -543,10 +543,10 @@ float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, fl
     // Poisson Sampling
     float biasedDepth = depth - bias;
 
-    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * diskScale)) < biasedDepth) visibility -= 0.25;
-    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * diskScale)) < biasedDepth) visibility -= 0.25;
-    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * diskScale)) < biasedDepth) visibility -= 0.25;
-    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * diskScale)) < biasedDepth) visibility -= 0.25;
+    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize)) < biasedDepth) visibility -= 0.25;
 
 #ifdef OVERLOADEDSHADOWVALUES
     return  min(1.0, mix(1.0, visibility + darkness, vOverloadedShadowIntensity.x));
@@ -603,10 +603,10 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, flo
     // Poisson Sampling
     float biasedDepth = depth.z - bias;
 
-    if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] / mapSize)) < biasedDepth) visibility -= 0.25;
-    if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] / mapSize)) < biasedDepth) visibility -= 0.25;
-    if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / mapSize)) < biasedDepth) visibility -= 0.25;
-    if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] * mapSize)) < biasedDepth) visibility -= 0.25;
 
 #ifdef OVERLOADEDSHADOWVALUES
     return  min(1.0, mix(1.0, visibility + darkness, vOverloadedShadowIntensity.x));
