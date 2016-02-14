@@ -314,6 +314,13 @@
                     spotLight.range = options.lightRange;
                 });
                 
+                f1.add(options, 'lightRadius').onChange(function() {
+                    hemisphericLight.radius = options.lightRadius;
+                    directionalLight.radius = options.lightRadius;
+                    pointLight.radius = options.lightRadius;
+                    spotLight.radius = options.lightRadius;
+                });
+                
 				f1.add(options, 'hemisphericLight').onChange(function () {
 					hemisphericLight.setEnabled(options.hemisphericLight);
 				});
