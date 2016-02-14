@@ -20,6 +20,7 @@ uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
+uniform vec4 vLightRadiuses;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
@@ -236,6 +237,15 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
     return diffuseFresnelTerm * NdotL;
     // PI Test
     // diffuseFresnelTerm /= kPi;
+}
+
+float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
+{
+    // At small angle this approximation works. 
+    float lightRoughness = lightRadius / lightDistance;
+    // Distribution can sum.
+    float totalRoughness = clamp(lightRoughness + roughness, 0., 1.);
+    return totalRoughness;
 }
 
 float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
@@ -705,26 +715,39 @@ struct lightingInfo
 #endif
 };
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius) {
     lightingInfo result;
 
-    vec3 lightVectorW;
+    vec3 lightDirection;
     float attenuation = 1.0;
+    float lightDistance;
+    
+    // Point
     if (lightData.w == 0.)
     {
-        vec3 direction = lightData.xyz - vPositionW;
-
-        attenuation = max(0., 1.0 - length(direction) / range);
-        lightVectorW = normalize(direction);
+        vec3 lightOffset = lightData.xyz - vPositionW;
+        
+        // Inverse squared falloff.
+        float lightDistanceSquared = dot(lightOffset, lightOffset);
+        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001) * range);
+        attenuation = lightDistanceFalloff;
+        
+        lightDistance = sqrt(lightDistanceSquared);
+        lightDirection = normalize(lightOffset);
     }
+    // Directional
     else
     {
-        lightVectorW = normalize(-lightData.xyz);
+        lightDistance = length(-lightData.xyz);
+        lightDirection = normalize(-lightData.xyz);
     }
-
+    
+    // Roughness
+    roughness = adjustRoughnessFromLightProperties(roughness, lightRadius, lightDistance);
+    
     // diffuse
-    vec3 H = normalize(viewDirectionW + lightVectorW);
-    float NdotL = max(0.00000000001, dot(vNormal, lightVectorW));
+    vec3 H = normalize(viewDirectionW + lightDirection);
+    float NdotL = max(0.00000000001, dot(vNormal, lightDirection));
     float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
 
     float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
@@ -741,36 +764,45 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius) {
     lightingInfo result;
 
-    vec3 direction = lightData.xyz - vPositionW;
-    vec3 lightVectorW = normalize(direction);
-    float attenuation = max(0., 1.0 - length(direction) / range);
+    vec3 lightOffset = lightData.xyz - vPositionW;
+    vec3 lightVectorW = normalize(lightOffset);
 
     // diffuse
-    float cosAngle = max(0.0000001, dot(-lightDirection.xyz, lightVectorW));
-    float spotAtten = 0.0;
-
+    float cosAngle = max(0.000000000000001, dot(-lightDirection.xyz, lightVectorW));
+    
     if (cosAngle >= lightDirection.w)
     {
         cosAngle = max(0., pow(cosAngle, lightData.w));
-        spotAtten = clamp((cosAngle - lightDirection.w) / (1. - cosAngle), 0.0, 1.0);
-
+        
+        // Inverse squared falloff.
+        float lightDistanceSquared = dot(lightOffset, lightOffset);
+        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001) * range);
+        float attenuation = lightDistanceFalloff;
+        
+        // Directional falloff.
+        attenuation *= cosAngle;
+        
+        // Roughness.
+        float lightDistance = sqrt(lightDistanceSquared);
+        roughness = adjustRoughnessFromLightProperties(roughness, lightRadius, lightDistance);
+        
         // Diffuse
         vec3 H = normalize(viewDirectionW - lightDirection.xyz);
         float NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
         float VdotH = clamp(dot(viewDirectionW, H), 0.00000000001, 1.0);
 
         float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
-        result.diffuse = diffuseTerm * diffuseColor * attenuation * spotAtten;
+        result.diffuse = diffuseTerm * diffuseColor * attenuation;
 
 #ifdef SPECULARTERM
         // Specular
         float NdotH = max(0.00000000001, dot(vNormal, H));
 
         vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
-        result.specular = specTerm  * attenuation * spotAtten;
+        result.specular = specTerm  * attenuation;
 #endif
 
         return result;
@@ -784,10 +816,11 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, float lightRadius) {
     lightingInfo result;
 
-    vec3 lightVectorW = normalize(lightData.xyz);
+    // Roughness
+    // Do not touch roughness on hemispheric.
 
     // Diffuse
     float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
@@ -795,6 +828,7 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 
 #ifdef SPECULARTERM
     // Specular
+    vec3 lightVectorW = normalize(lightData.xyz);
     vec3 H = normalize(viewDirectionW + lightVectorW);
     float NdotH = max(0.00000000001, dot(vNormal, H));
     float NdotL = max(0.00000000001, ndl);
@@ -914,9 +948,9 @@ void main(void) {
     // Adapt microSurface.
     microSurface = clamp(microSurface, 0., 1.) * 0.98;
 
-    // Call rough to not conflict with previous one.
-    float rough = clamp(1. - microSurface, 0.000001, 1.0);
-
+    // Compute roughness.
+    float roughness = clamp(1. - microSurface, 0.000001, 1.0);
+    
     // Lighting
     vec3 lightDiffuseContribution = vec3(0., 0., 0.);
     
@@ -934,13 +968,13 @@ void main(void) {
     vec3 vLightSpecular0 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT0
-    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, rough, NdotV);
+    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0]);
 #endif
 #ifdef HEMILIGHT0
-    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, rough, NdotV);
+    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, roughness, NdotV, vLightRadiuses[0]);
 #endif
 #if defined(POINTLIGHT0) || defined(DIRLIGHT0)
-    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, rough, NdotV);
+    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0]);
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
@@ -978,13 +1012,13 @@ void main(void) {
     vec3 vLightSpecular1 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT1
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1]);
 #endif
 #ifdef HEMILIGHT1
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, roughness, NdotV, vLightRadiuses[1]);
 #endif
 #if defined(POINTLIGHT1) || defined(DIRLIGHT1)
-    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1]);
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
@@ -1023,13 +1057,13 @@ void main(void) {
     vec3 vLightSpecular2 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT2
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2]);
 #endif
 #ifdef HEMILIGHT2
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, roughness, NdotV, vLightRadiuses[2]);
 #endif
 #if defined(POINTLIGHT2) || defined(DIRLIGHT2)
-    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2]);
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
@@ -1068,13 +1102,13 @@ void main(void) {
     vec3 vLightSpecular3 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT3
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3]);
 #endif
 #ifdef HEMILIGHT3
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, roughness, NdotV, vLightRadiuses[3]);
 #endif
 #if defined(POINTLIGHT3) || defined(DIRLIGHT3)
-    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3]);
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
@@ -1140,13 +1174,15 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
 // Go mat -> blurry reflexion according to microSurface
 #ifndef LODBASEDMICROSFURACE
     float bias = 20. * (1.0 - microSurface);
+#else
+    float alphaG = convertRoughnessToAverageSlope(roughness);
 #endif
         
 #ifdef REFRACTION
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
     
     #ifdef LODBASEDMICROSFURACE
-        float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, Square(1.0 - microSurface + 0.0005));
+        float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, alphaG);
     #endif
     
     #ifdef REFRACTIONMAP_3D
@@ -1189,7 +1225,7 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
     vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
     #ifdef LODBASEDMICROSFURACE
-        float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, Square(1.0 - microSurface + 0.0005));
+        float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, alphaG);
     #endif
     
     #ifdef REFLECTIONMAP_3D
@@ -1201,7 +1237,6 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
         #endif
         
         #ifdef PoissonSamplingEnvironment
-            float alphaG = convertRoughnessToAverageSlope(rough);
             environmentRadiance = environmentSampler(reflectionCubeSampler, vReflectionUVW, alphaG) * vReflectionInfos.x;
         #endif
 
