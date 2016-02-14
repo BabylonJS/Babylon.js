@@ -253,7 +253,7 @@ var BABYLON;
                 }
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = BABYLON.StandardMaterial.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
+                    depthValuesAlreadySet = BABYLON.MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights)
@@ -459,7 +459,7 @@ var BABYLON;
                 this._defines.FOG = true;
             }
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.StandardMaterial.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
             }
             if (BABYLON.StandardMaterial.FresnelEnabled) {
                 // Fresnel
@@ -533,7 +533,7 @@ var BABYLON;
                 if (this._defines.LOGARITHMICDEPTH) {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
-                BABYLON.StandardMaterial.HandleFallbacksForShadows(this._defines, fallbacks);
+                BABYLON.MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
                 }
@@ -563,8 +563,8 @@ var BABYLON;
                 if (this._defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                BABYLON.StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                BABYLON.StandardMaterial.PrepareAttributesForInstances(attribs, this._defines);
+                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 // Legacy browser patch
                 var shaderName = "pbr";
                 if (!scene.getEngine().getCaps().standardDerivatives) {
@@ -622,7 +622,7 @@ var BABYLON;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
             // Bones
-            BABYLON.StandardMaterial.ApplyBonesParameters(mesh, this._effect);
+            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
             if (this._myScene.getCachedMaterial() !== this) {
                 this._effect.setMatrix("viewProjection", this._myScene.getTransformMatrix());
                 if (BABYLON.StandardMaterial.FresnelEnabled) {
@@ -747,10 +747,7 @@ var BABYLON;
                     this._effect.setMatrix("view", this._myScene.getViewMatrix());
                 }
                 // Fog
-                if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                    this._effect.setFloat4("vFogInfos", this._myScene.fogMode, this._myScene.fogStart, this._myScene.fogEnd, this._myScene.fogDensity);
-                    this._effect.setColor3("vFogColor", this._myScene.fogColor);
-                }
+                BABYLON.MaterialHelper.BindFogParameters(this._myScene, mesh, this._effect);
                 this._lightingInfos.x = this.directIntensity;
                 this._lightingInfos.y = this.emissiveIntensity;
                 this._lightingInfos.z = this.environmentIntensity;

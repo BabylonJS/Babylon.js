@@ -138,7 +138,7 @@ var BABYLON;
             }
             var lightIndex = 0;
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = BABYLON.StandardMaterial.PrepareDefinesForLights(scene, mesh, this._defines);
+                needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
             }
             // Attribs
             if (mesh) {
@@ -177,7 +177,7 @@ var BABYLON;
                 if (this._defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-                BABYLON.StandardMaterial.HandleFallbacksForShadows(this._defines, fallbacks);
+                BABYLON.MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
                 if (this._defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
@@ -195,8 +195,8 @@ var BABYLON;
                 if (this._defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                BABYLON.StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                BABYLON.StandardMaterial.PrepareAttributesForInstances(attribs, this._defines);
+                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 // Legacy browser patch
                 var shaderName = "simple";
                 var join = this._defines.toString();
@@ -236,7 +236,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            BABYLON.StandardMaterial.ApplyBonesParameters(mesh, this._effect);
+            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
                 if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
@@ -258,14 +258,14 @@ var BABYLON;
             this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                BABYLON.StandardMaterial.BindLights(scene, mesh, this._effect, this._defines);
+                BABYLON.MaterialHelper.BindLights(scene, mesh, this._effect, this._defines);
             }
             // View
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
                 this._effect.setMatrix("view", scene.getViewMatrix());
             }
             // Fog
-            BABYLON.StandardMaterial.ApplyFogParameters(scene, mesh, this._effect);
+            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
             _super.prototype.bind.call(this, world, mesh);
         };
         SimpleMaterial.prototype.getAnimatables = function () {
