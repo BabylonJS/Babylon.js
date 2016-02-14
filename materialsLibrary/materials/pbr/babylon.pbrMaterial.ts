@@ -294,7 +294,7 @@ module BABYLON {
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    depthValuesAlreadySet = StandardMaterial.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
+                    depthValuesAlreadySet = MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
 
                 lightIndex++;
@@ -531,7 +531,7 @@ module BABYLON {
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = StandardMaterial.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
             }
 
             if (StandardMaterial.FresnelEnabled) {
@@ -623,7 +623,7 @@ module BABYLON {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
 
-                StandardMaterial.HandleFallbacksForShadows(this._defines, fallbacks);
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
 
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
@@ -664,8 +664,8 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                StandardMaterial.PrepareAttributesForInstances(attribs, this._defines);
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
                 // Legacy browser patch
                 var shaderName = "pbr";
@@ -743,7 +743,7 @@ module BABYLON {
             this.bindOnlyWorldMatrix(world);
 
             // Bones
-            StandardMaterial.BindBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (this._myScene.getCachedMaterial() !== (<BABYLON.Material>this)) {
                 this._effect.setMatrix("viewProjection", this._myScene.getTransformMatrix());
@@ -923,7 +923,7 @@ module BABYLON {
                 }
 
                 // Fog
-                StandardMaterial.BindFogParameters(this._myScene, mesh, this._effect);
+                MaterialHelper.BindFogParameters(this._myScene, mesh, this._effect);
 
                 this._lightingInfos.x = this.directIntensity;
                 this._lightingInfos.y = this.emissiveIntensity;
