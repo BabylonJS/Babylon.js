@@ -3703,6 +3703,7 @@
     // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
     // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
     export class Tmp {
+        public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
         public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()
             , Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 6 temp Vector3 at once should be enough

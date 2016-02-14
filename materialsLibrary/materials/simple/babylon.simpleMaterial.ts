@@ -161,7 +161,7 @@ module BABYLON {
 
             var lightIndex = 0;
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = StandardMaterial.PrepareDefinesForLights(scene, mesh, this._defines);
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
             }
 
             // Attribs
@@ -207,7 +207,7 @@ module BABYLON {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                StandardMaterial.HandleFallbacksForShadows(this._defines, fallbacks);
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
                 
                 if (this._defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
@@ -232,8 +232,8 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                StandardMaterial.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
-                StandardMaterial.PrepareAttributesForInstances(attribs, this._defines);
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
                 // Legacy browser patch
                 var shaderName = "simple";
@@ -286,7 +286,7 @@ module BABYLON {
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            StandardMaterial.ApplyBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
@@ -314,7 +314,7 @@ module BABYLON {
 
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                StandardMaterial.BindLights(scene, mesh, this._effect, this._defines);          
+                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines);          
             }
 
             // View
@@ -323,7 +323,7 @@ module BABYLON {
             }
 
             // Fog
-            StandardMaterial.ApplyFogParameters(scene, mesh, this._effect);
+            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
 
             super.bind(world, mesh);
         }
