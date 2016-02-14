@@ -55,6 +55,8 @@ declare module BABYLON {
         opacityFresnelParameters: FresnelParameters;
         emissiveFresnelParameters: FresnelParameters;
         useMicroSurfaceFromReflectivityMapAlpha: boolean;
+        useAutoMicroSurfaceFromReflectivityMap: boolean;
+        useScalarInLinearSpace: boolean;
         private _renderTargets;
         private _worldViewProjectionMatrix;
         private _globalAmbientColor;
@@ -70,12 +72,14 @@ declare module BABYLON {
         private _shouldUseAlphaFromAlbedoTexture();
         getAlphaTestTexture(): BaseTexture;
         private _checkCache(scene, mesh?, useInstances?);
+        private convertColorToLinearSpaceToRef(color, ref);
+        private static convertColorToLinearSpaceToRef(color, ref, useScalarInLinear);
         private static _scaledAlbedo;
         private static _scaledReflectivity;
         private static _scaledEmissive;
         private static _scaledReflection;
         private static _lightRadiuses;
-        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines): void;
+        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean): void;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
         unbind(): void;
         bindOnlyWorldMatrix(world: Matrix): void;

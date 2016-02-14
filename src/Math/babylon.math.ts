@@ -2,8 +2,8 @@
 
     declare var SIMD;
 
-    const ToGammaSpace = 1 / 2.2;
-    const ToLinearSpace = 2.2;
+    export const ToGammaSpace = 1 / 2.2;
+    export const ToLinearSpace = 2.2;
 
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {

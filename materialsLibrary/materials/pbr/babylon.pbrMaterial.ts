@@ -64,6 +64,7 @@ module BABYLON {
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public MICROSURFACEFROMREFLECTIVITYMAP = false;
+        public MICROSURFACEAUTOMATIC = false;
         public EMISSIVEASILLUMINATION = false;
         public LINKEMISSIVEWITHALBEDO = false;
         public LIGHTMAP = false;
@@ -165,6 +166,8 @@ module BABYLON {
         public emissiveFresnelParameters: FresnelParameters;
 
         public useMicroSurfaceFromReflectivityMapAlpha = false;
+        public useAutoMicroSurfaceFromReflectivityMap = false;
+        public useScalarInLinearSpace = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -243,13 +246,23 @@ module BABYLON {
             return false;
         }
       
+        private convertColorToLinearSpaceToRef (color: Color3, ref: Color3): void {
+            PBRMaterial.convertColorToLinearSpaceToRef(color, ref, this.useScalarInLinearSpace);
+        }
+        
+        private static convertColorToLinearSpaceToRef (color: Color3, ref: Color3, useScalarInLinear: boolean): void {
+            if (!useScalarInLinear) {
+                color.toLinearSpaceToRef(ref);
+            }
+        }
+        
         private static _scaledAlbedo = new Color3();
         private static _scaledReflectivity = new Color3();
         private static _scaledEmissive = new Color3();
         private static _scaledReflection = new Color3();
         private static _lightRadiuses = [1, 1, 1, 1];
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {
@@ -280,13 +293,13 @@ module BABYLON {
                 }
 
                 // GAMMA CORRECTION.
-                light.diffuse.toLinearSpaceToRef(PBRMaterial._scaledAlbedo);
+                this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
                 
                 PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
                 effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, light.range);
                 
                 if (defines["SPECULARTERM"]) {
-                    light.specular.toLinearSpaceToRef(PBRMaterial._scaledReflectivity);
+                    this.convertColorToLinearSpaceToRef(light.specular, PBRMaterial._scaledReflectivity, useScalarInLinearSpace);
                     
                     PBRMaterial._scaledReflectivity.scaleToRef(light.intensity, PBRMaterial._scaledReflectivity);
                     effect.setColor3("vLightSpecular" + lightIndex, PBRMaterial._scaledReflectivity);
@@ -409,7 +422,7 @@ module BABYLON {
                                     break;
                             }
 
-                            if (this.reflectionTexture instanceof HDRCubeTexture) {
+                            if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
                                 this._defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 needNormals = true;
                             }
@@ -442,6 +455,7 @@ module BABYLON {
                             needUVs = true;
                             this._defines.REFLECTIVITY = true;
                             this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
+                            this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
                         }
                     }
                 }
@@ -892,29 +906,29 @@ module BABYLON {
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
                 
                 // GAMMA CORRECTION.
-                this.reflectivityColor.toLinearSpaceToRef(PBRMaterial._scaledReflectivity);
+                this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
 
                 this._effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
                 this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
 
                 // GAMMA CORRECTION.
-                this.emissiveColor.toLinearSpaceToRef(PBRMaterial._scaledEmissive);
+                this.convertColorToLinearSpaceToRef(this.emissiveColor,PBRMaterial._scaledEmissive);
                 this._effect.setColor3("vEmissiveColor", PBRMaterial._scaledEmissive);
 
                 // GAMMA CORRECTION.
-                this.reflectionColor.toLinearSpaceToRef(PBRMaterial._scaledReflection);
+                this.convertColorToLinearSpaceToRef(this.reflectionColor, PBRMaterial._scaledReflection);
                 this._effect.setColor3("vReflectionColor", PBRMaterial._scaledReflection);
             }
 
             if (this._myScene.getCachedMaterial() !== this || !this.isFrozen) {
                 // GAMMA CORRECTION.
-                this.albedoColor.toLinearSpaceToRef(PBRMaterial._scaledAlbedo);
+                this.convertColorToLinearSpaceToRef(this.albedoColor, PBRMaterial._scaledAlbedo);
                 this._effect.setColor4("vAlbedoColor", PBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
 
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
-                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines);
+                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace);
                 }
 
                 // View
@@ -946,15 +960,15 @@ module BABYLON {
                 this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
                 this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
 
-                this.overloadedAmbient.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedAmbient,this._tempColor);
                 this._effect.setColor3("vOverloadedAmbient", this._tempColor);
-                this.overloadedAlbedo.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
                 this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
-                this.overloadedReflectivity.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
                 this._effect.setColor3("vOverloadedReflectivity", this._tempColor);
-                this.overloadedEmissive.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedEmissive, this._tempColor);
                 this._effect.setColor3("vOverloadedEmissive", this._tempColor);
-                this.overloadedReflection.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedReflection, this._tempColor);
                 this._effect.setColor3("vOverloadedReflection", this._tempColor);
 
                 this._overloadedMicroSurface.x = this.overloadedMicroSurface;
@@ -1127,6 +1141,8 @@ module BABYLON {
             newPBRMaterial.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
             newPBRMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
             newPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
+            newPBRMaterial.useAutoMicroSurfaceFromReflectivityMap = this.useAutoMicroSurfaceFromReflectivityMap;
+            newPBRMaterial.useScalarInLinearSpace = this.useScalarInLinearSpace;
             newPBRMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newPBRMaterial.indexOfRefraction = this.indexOfRefraction;
             newPBRMaterial.invertRefractionY = this.invertRefractionY;
@@ -1209,6 +1225,8 @@ module BABYLON {
             serializationObject.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
             serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
             serializationObject.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
+            serializationObject.useAutoMicroSurfaceFromReflectivityMap = this.useAutoMicroSurfaceFromReflectivityMap;
+            serializationObject.useScalarInLinear = this.useScalarInLinearSpace;
             serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
             serializationObject.indexOfRefraction = this.indexOfRefraction;
             serializationObject.invertRefractionY = this.invertRefractionY;
@@ -1304,6 +1322,8 @@ module BABYLON {
             material.useAlphaFromAlbedoTexture = source.useAlphaFromAlbedoTexture;
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
             material.useMicroSurfaceFromReflectivityMapAlpha = source.useMicroSurfaceFromReflectivityMapAlpha;
+            material.useAutoMicroSurfaceFromReflectivityMap = source.useAutoMicroSurfaceFromReflectivityMap;
+            material.useScalarInLinearSpace = source.useScalarInLinear;
             material.useSpecularOverAlpha = source.useSpecularOverAlpha;
             material.indexOfRefraction = source.indexOfRefraction;
             material.invertRefractionY = source.invertRefractionY;
