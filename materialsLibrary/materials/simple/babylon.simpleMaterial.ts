@@ -235,7 +235,6 @@ module BABYLON {
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
-                // Legacy browser patch
                 var shaderName = "simple";
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName,
