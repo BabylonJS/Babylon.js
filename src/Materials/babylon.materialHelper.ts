@@ -210,11 +210,24 @@
                 effect.setColor3("vFogColor", scene.fogColor);
             }
         }
+
         public static BindBonesParameters(mesh: AbstractMesh, effect: Effect): void {
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
                 effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
         }
 
+        public static BindLogDepth(defines: MaterialDefines, effect: Effect, scene: Scene): void {
+            if (defines["LOGARITHMICDEPTH"]) {
+                effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+            }
+        }
+
+        public static BindClipPlane(effect: Effect, scene: Scene): void {
+            if (scene.clipPlane) {
+                var clipPlane = scene.clipPlane;
+                effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }
+        }
     }
 }
