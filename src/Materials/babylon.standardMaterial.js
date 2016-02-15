@@ -498,9 +498,9 @@ var BABYLON;
                 BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 // Legacy browser patch
                 var shaderName = "default";
-                // if (!scene.getEngine().getCaps().standardDerivatives) {
-                shaderName = "legacydefault";
-                //}
+                if (!scene.getEngine().getCaps().standardDerivatives) {
+                    shaderName = "legacydefault";
+                }
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName, attribs, ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
