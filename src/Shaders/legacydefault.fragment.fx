@@ -97,21 +97,11 @@ uniform vec4 emissiveLeftColor;
 uniform vec4 emissiveRightColor;
 #endif
 
-// Shadows
-
-#ifdef CLIPPLANE
-varying float fClipDistance;
-#endif
-
-// Fog
+#include<clipPlaneFragmentDeclaration>
 #include<fogFragmentDeclaration>
 
 void main(void) {
-	// Clip plane
-#ifdef CLIPPLANE
-	if (fClipDistance > 0.0)
-		discard;
-#endif
+#include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
