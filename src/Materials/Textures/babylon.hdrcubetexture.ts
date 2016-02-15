@@ -3,14 +3,25 @@ module BABYLON {
         public url: string;
         public coordinatesMode = Texture.CUBIC_MODE;
 
+        private _useInGammaSpace = false;
+        private _generateHarmonics = true;
         private _noMipmap: boolean;
         private _extensions: string[];
         private _textureMatrix: Matrix;
         private _size: number;
 
+        private static _facesMapping = [
+            "left",
+            "down",
+            "front",
+            "right",
+            "up",
+            "back"
+        ];
+
         public sphericalPolynomial: SphericalPolynomial = null;
 
-        constructor(url: string, scene: Scene, size:number, noMipmap?: boolean) {
+        constructor(url: string, scene: Scene, size: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false) {
             super(scene);
 
             this.name = url;
@@ -18,6 +29,7 @@ module BABYLON {
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
             this._size = size;
+            this._useInGammaSpace = useInGammaSpace;
 
             if (!url) {
                 return;
@@ -37,35 +49,56 @@ module BABYLON {
 
             this._textureMatrix = Matrix.Identity();
         }
-        
+
         private loadTexture() {
             var callback = (buffer: ArrayBuffer) => {
+                // Extract the raw linear data.
                 var data = BABYLON.Internals.HDRTools.GetCubeMapTextureData(buffer, this._size);
-                this.sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
-
-                var mapping = [
-                    "left",
-                    "down",
-                    "front",
-                    "right",
-                    "up",
-                    "back"
-                ];
+                
+                // Generate harmonics if needed.
+                if (this._generateHarmonics) {
+                    this.sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
+                }
 
                 var results = [];
+                var byteArray: Uint8Array = null;
+                
+                // Create uintarray fallback.
+                if (!this.getScene().getEngine().getCaps().textureFloat) {
+                    // 3 channels of 1 bytes per pixel in bytes.
+                    var byteBuffer = new ArrayBuffer(this._size * this._size * 3);
+                    byteArray = new Uint8Array(byteBuffer);
+                }
+                
+                // Push each faces.
                 for (var j = 0; j < 6; j++) {
-                    var dataFace = <Float32Array>data[mapping[j]];
-// TODO. Support Int Textures...
-//                     // 3 channels of 1 bytes per pixel in bytes.
-//                     var byteBuffer = new ArrayBuffer(this._size * this._size * 3);
-//                     var byteArray = new Uint8Array(byteBuffer);
-// 
-//                     /* now convert data from buffer into bytes */
-//                     for(var i = 0; i < this._size * this._size; i++) {
-//                         byteArray[(i * 3) + 0] = dataFace[(i * 3) + 0] * 255;
-//                         byteArray[(i * 3) + 1] = dataFace[(i * 3) + 1] * 255;
-//                         byteArray[(i * 3) + 2] = dataFace[(i * 3) + 2] * 255;
-//                     }
+                    var dataFace = <Float32Array>data[HDRCubeTexture._facesMapping[j]];
+                    
+                    // If special cases.
+                    if (this._useInGammaSpace || byteArray) {
+                        for (var i = 0; i < this._size * this._size; i++) {
+                             
+                            // Put in gamma space if requested.
+                            if (this._useInGammaSpace) {
+                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], BABYLON.ToGammaSpace);
+                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], BABYLON.ToGammaSpace);
+                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], BABYLON.ToGammaSpace);
+                            }
+                             
+                            // Convert to int texture for fallback.
+                            if (byteArray) {
+                                // R
+                                byteArray[(i * 3) + 0] = dataFace[(i * 3) + 0] * 255;
+                                byteArray[(i * 3) + 0] = Math.min(255, byteArray[(i * 3) + 0]);
+                                // G
+                                byteArray[(i * 3) + 1] = dataFace[(i * 3) + 1] * 255;
+                                byteArray[(i * 3) + 1] = Math.min(255, byteArray[(i * 3) + 1]);
+                                // B
+                                byteArray[(i * 3) + 2] = dataFace[(i * 3) + 2] * 255;
+                                byteArray[(i * 3) + 2] = Math.min(255, byteArray[(i * 3) + 2]);
+                            }
+                        }
+                    }
 
                     results.push(dataFace);
                 }
@@ -76,7 +109,8 @@ module BABYLON {
         }
 
         public clone(): HDRCubeTexture {
-            var newTexture = new HDRCubeTexture(this.url, this.getScene(), this._size, this._noMipmap);
+            var newTexture = new HDRCubeTexture(this.url, this.getScene(), this._size, this._noMipmap,
+                this._generateHarmonics, this._useInGammaSpace);
 
             // Base texture
             newTexture.level = this.level;
@@ -105,11 +139,12 @@ module BABYLON {
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
-        
+
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): HDRCubeTexture {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
-                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.size);
+                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.size,
+                    texture.generateHarmonics, texture.useInGammaSpace);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;
                 texture.level = parsedTexture.level;
@@ -130,6 +165,8 @@ module BABYLON {
             serializationObject.level = this.level;
             serializationObject.size = this._size;
             serializationObject.coordinatesMode = this.coordinatesMode;
+            serializationObject.useInGammaSpace = this._useInGammaSpace;
+            serializationObject.generateHarmonics = this._generateHarmonics;
 
             return serializationObject;
         }

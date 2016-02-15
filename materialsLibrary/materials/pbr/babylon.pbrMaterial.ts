@@ -64,6 +64,7 @@ module BABYLON {
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public MICROSURFACEFROMREFLECTIVITYMAP = false;
+        public MICROSURFACEAUTOMATIC = false;
         public EMISSIVEASILLUMINATION = false;
         public LINKEMISSIVEWITHALBEDO = false;
         public LIGHTMAP = false;
@@ -87,7 +88,8 @@ module BABYLON {
         public REFRACTIONMAP_3D = false;
         public LINKREFRACTIONTOTRANSPARENCY = false;
         public REFRACTIONMAPINLINEARSPACE = false;
-        
+        public LODBASEDMICROSFURACE = false;
+
         constructor() {
             super();
             this._keys = Object.keys(this);
@@ -110,6 +112,8 @@ module BABYLON {
         public cameraExposure: number = 1.0;
         public cameraContrast: number = 1.0;
         private _cameraInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
+
+        private _microsurfaceTextureLods: Vector2 = new Vector2(0.0, 0.0);
 
         public overloadedAmbientIntensity: number = 0.0;
         public overloadedAlbedoIntensity: number = 0.0;
@@ -151,7 +155,7 @@ module BABYLON {
         public linkEmissiveWithAlbedo = false;
         public useSpecularOverAlpha = true;
         public disableLighting = false;
-
+        
         public indexOfRefraction = 0.66;
         public invertRefractionY = false;
         public linkRefractionWithTransparency = false;
@@ -162,12 +166,13 @@ module BABYLON {
         public emissiveFresnelParameters: FresnelParameters;
 
         public useMicroSurfaceFromReflectivityMapAlpha = false;
+        public useAutoMicroSurfaceFromReflectivityMap = false;
+        public useScalarInLinearSpace = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
         private _tempColor = new Color3();
-
         private _renderId: number;
 
         private _defines = new PBRMaterialDefines();
@@ -204,16 +209,14 @@ module BABYLON {
         }
 
         public needAlphaBlending(): boolean {
-            if (this.linkRefractionWithTransparency)
-            {
+            if (this.linkRefractionWithTransparency) {
                 return false;
             }
             return (this.alpha < 1.0) || (this.opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture() || this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled;
         }
 
         public needAlphaTesting(): boolean {
-            if (this.linkRefractionWithTransparency)
-            {
+            if (this.linkRefractionWithTransparency) {
                 return false;
             }
             return this.albedoTexture != null && this.albedoTexture.hasAlpha;
@@ -242,99 +245,24 @@ module BABYLON {
 
             return false;
         }
-
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines): boolean {
-            var lightIndex = 0;
-            var needNormals = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                // Excluded check
-                if (light._excludedMeshesIds.length > 0) {
-                    for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                        var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
-
-                        if (excludedMesh) {
-                            light.excludedMeshes.push(excludedMesh);
-                        }
-                    }
-
-                    light._excludedMeshesIds = [];
-                }
-
-                // Included check
-                if (light._includedOnlyMeshesIds.length > 0) {
-                    for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                        var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
-
-                        if (includedOnlyMesh) {
-                            light.includedOnlyMeshes.push(includedOnlyMesh);
-                        }
-                    }
-
-                    light._includedOnlyMeshesIds = [];
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
-                needNormals = true;
-                defines["LIGHT" + lightIndex] = true;
-
-                var type;
-                if (light instanceof SpotLight) {
-                    type = "SPOTLIGHT" + lightIndex;
-                } else if (light instanceof HemisphericLight) {
-                    type = "HEMILIGHT" + lightIndex;
-                } else if (light instanceof PointLight) {
-                    type = "POINTLIGHT" + lightIndex;
-                } else {
-                    type = "DIRLIGHT" + lightIndex;
-                }
-
-                defines[type] = true;
-
-                // Specular
-                if (!light.specular.equalsFloats(0, 0, 0)) {
-                    defines["SPECULARTERM"] = true;
-                }
-
-                // Shadows
-                if (scene.shadowsEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh && mesh.receiveShadows && shadowGenerator) {
-                        defines["SHADOW" + lightIndex] = true;
-
-                        defines["SHADOWS"] = true;
-
-                        if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
-                            defines["SHADOWVSM" + lightIndex] = true;
-                        }
-
-                        if (shadowGenerator.usePoissonSampling) {
-                            defines["SHADOWPCF" + lightIndex] = true;
-                        }
-                    }
-                }
-
-                lightIndex++;
-                if (lightIndex === maxSimultaneousLights)
-                    break;
-            }
-
-            return needNormals;
+      
+        private convertColorToLinearSpaceToRef (color: Color3, ref: Color3): void {
+            PBRMaterial.convertColorToLinearSpaceToRef(color, ref, this.useScalarInLinearSpace);
         }
-
+        
+        private static convertColorToLinearSpaceToRef (color: Color3, ref: Color3, useScalarInLinear: boolean): void {
+            if (!useScalarInLinear) {
+                color.toLinearSpaceToRef(ref);
+            }
+        }
+        
         private static _scaledAlbedo = new Color3();
         private static _scaledReflectivity = new Color3();
         private static _scaledEmissive = new Color3();
         private static _scaledReflection = new Color3();
+        private static _lightRadiuses = [1, 1, 1, 1];
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {
@@ -347,48 +275,27 @@ module BABYLON {
                 if (!light.canAffectMesh(mesh)) {
                     continue;
                 }
+                
+                this._lightRadiuses[lightIndex] = light.radius;
 
-                if (light instanceof PointLight) {
-                    // Point Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                } else if (light instanceof DirectionalLight) {
-                    // Directional Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                } else if (light instanceof SpotLight) {
-                    // Spot Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                } else if (light instanceof HemisphericLight) {
-                    // Hemispheric Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                }
+                MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 // GAMMA CORRECTION.
-                light.diffuse.toLinearSpaceToRef(PBRMaterial._scaledAlbedo);
+                this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
+                
                 PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
-
-                light.diffuse.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
                 effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, light.range);
+                
                 if (defines["SPECULARTERM"]) {
-                    light.specular.toLinearSpaceToRef(PBRMaterial._scaledReflectivity);
+                    this.convertColorToLinearSpaceToRef(light.specular, PBRMaterial._scaledReflectivity, useScalarInLinearSpace);
+                    
                     PBRMaterial._scaledReflectivity.scaleToRef(light.intensity, PBRMaterial._scaledReflectivity);
                     effect.setColor3("vLightSpecular" + lightIndex, PBRMaterial._scaledReflectivity);
                 }
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh.receiveShadows && shadowGenerator) {
-                        if (!(<any>light).needCube()) {
-                            effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                        } else {
-                            if (!depthValuesAlreadySet) {
-                                depthValuesAlreadySet = true;
-                                effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                            }
-                        }
-                        effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                        effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
-                    }
+                    depthValuesAlreadySet = MaterialHelper.BindLightShadow(light, scene, mesh, lightIndex, effect, depthValuesAlreadySet);
                 }
 
                 lightIndex++;
@@ -396,6 +303,11 @@ module BABYLON {
                 if (lightIndex === maxSimultaneousLights)
                     break;
             }
+            
+            effect.setFloat4("vLightRadiuses", this._lightRadiuses[0],
+                this._lightRadiuses[1],
+                this._lightRadiuses[2],
+                this._lightRadiuses[3]);
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
@@ -425,6 +337,10 @@ module BABYLON {
             if (scene.texturesEnabled) {
                 // Textures
                 if (scene.texturesEnabled) {
+                    if (scene.getEngine().getCaps().textureLOD) {
+                        this._defines.LODBASEDMICROSFURACE = true;
+                    }
+
                     if (this.albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
                         if (!this.albedoTexture.isReady()) {
                             return false;
@@ -494,7 +410,7 @@ module BABYLON {
                                     break;
                             }
 
-                            if (this.reflectionTexture instanceof HDRCubeTexture) {
+                            if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
                                 this._defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 needNormals = true;
                             }
@@ -527,6 +443,7 @@ module BABYLON {
                             needUVs = true;
                             this._defines.REFLECTIVITY = true;
                             this._defines.MICROSURFACEFROMREFLECTIVITYMAP = this.useMicroSurfaceFromReflectivityMapAlpha;
+                            this._defines.MICROSURFACEAUTOMATIC = this.useAutoMicroSurfaceFromReflectivityMap;
                         }
                     }
                 }
@@ -616,7 +533,7 @@ module BABYLON {
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = PBRMaterial.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
             }
 
             if (StandardMaterial.FresnelEnabled) {
@@ -708,27 +625,7 @@ module BABYLON {
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
 
-                for (let lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-                    if (!this._defines["LIGHT" + lightIndex]) {
-                        continue;
-                    }
-
-                    if (lightIndex > 0) {
-                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOW" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWPCF" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWVSM" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                    }
-                }
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
 
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
@@ -769,21 +666,8 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    attribs.push(VertexBuffer.MatricesIndicesKind);
-                    attribs.push(VertexBuffer.MatricesWeightsKind);
-                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
-                        attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                        attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-                    }
-                }
-
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
                 // Legacy browser patch
                 var shaderName = "pbr";
@@ -808,7 +692,8 @@ module BABYLON {
                         "logarithmicDepthConstant",
                         "vSphericalX", "vSphericalY", "vSphericalZ",
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
-                        "vSphericalXY", "vSphericalYZ", "vSphericalZX"
+                        "vSphericalXY", "vSphericalYZ", "vSphericalZX",
+                        "vMicrosurfaceTextureLods", "vLightRadiuses"
                     ],
                     ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
@@ -860,9 +745,7 @@ module BABYLON {
             this.bindOnlyWorldMatrix(world);
 
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (this._myScene.getCachedMaterial() !== (<BABYLON.Material>this)) {
                 this._effect.setMatrix("viewProjection", this._myScene.getTransformMatrix());
@@ -902,6 +785,8 @@ module BABYLON {
                     }
 
                     if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                        this._microsurfaceTextureLods.x = Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E;
+                        
                         if (this.reflectionTexture.isCube) {
                             this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
                         } else {
@@ -971,6 +856,8 @@ module BABYLON {
                     }
 
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
+                        this._microsurfaceTextureLods.y = Math.log(this.refractionTexture.getSize().width) * Math.LOG2E;
+                        
                         var depth = 1.0;
                         if (this.refractionTexture.isCube) {
                             this._effect.setTexture("refractionCubeSampler", this.refractionTexture);
@@ -984,15 +871,14 @@ module BABYLON {
                         }
                         this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
+                    
+                    if ((this.reflectionTexture || this.refractionTexture) && this._myScene.getEngine().getCaps().textureLOD) {
+                        this._effect.setFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
+                    }
                 }
 
                 // Clip plane
-                if (this._myScene.clipPlane) {
-                    this._effect.setFloat4("vClipPlane", this._myScene.clipPlane.normal.x,
-                        this._myScene.clipPlane.normal.y,
-                        this._myScene.clipPlane.normal.z,
-                        this._myScene.clipPlane.d);
-                }
+                MaterialHelper.BindClipPlane(this._effect, this._myScene);
 
                 // Point size
                 if (this.pointsCloud) {
@@ -1003,29 +889,29 @@ module BABYLON {
                 this._myScene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
                 
                 // GAMMA CORRECTION.
-                this.reflectivityColor.toLinearSpaceToRef(PBRMaterial._scaledReflectivity);
+                this.convertColorToLinearSpaceToRef(this.reflectivityColor, PBRMaterial._scaledReflectivity);
 
                 this._effect.setVector3("vEyePosition", this._myScene._mirroredCameraPosition ? this._myScene._mirroredCameraPosition : this._myScene.activeCamera.position);
                 this._effect.setColor3("vAmbientColor", this._globalAmbientColor);
                 this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
 
                 // GAMMA CORRECTION.
-                this.emissiveColor.toLinearSpaceToRef(PBRMaterial._scaledEmissive);
+                this.convertColorToLinearSpaceToRef(this.emissiveColor,PBRMaterial._scaledEmissive);
                 this._effect.setColor3("vEmissiveColor", PBRMaterial._scaledEmissive);
 
                 // GAMMA CORRECTION.
-                this.reflectionColor.toLinearSpaceToRef(PBRMaterial._scaledReflection);
+                this.convertColorToLinearSpaceToRef(this.reflectionColor, PBRMaterial._scaledReflection);
                 this._effect.setColor3("vReflectionColor", PBRMaterial._scaledReflection);
             }
 
             if (this._myScene.getCachedMaterial() !== this || !this.isFrozen) {
                 // GAMMA CORRECTION.
-                this.albedoColor.toLinearSpaceToRef(PBRMaterial._scaledAlbedo);
+                this.convertColorToLinearSpaceToRef(this.albedoColor, PBRMaterial._scaledAlbedo);
                 this._effect.setColor4("vAlbedoColor", PBRMaterial._scaledAlbedo, this.alpha * mesh.visibility);
 
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
-                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines);
+                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace);
                 }
 
                 // View
@@ -1034,10 +920,7 @@ module BABYLON {
                 }
 
                 // Fog
-                if (this._myScene.fogEnabled && mesh.applyFog && this._myScene.fogMode !== Scene.FOGMODE_NONE) {
-                    this._effect.setFloat4("vFogInfos", this._myScene.fogMode, this._myScene.fogStart, this._myScene.fogEnd, this._myScene.fogDensity);
-                    this._effect.setColor3("vFogColor", this._myScene.fogColor);
-                }
+                MaterialHelper.BindFogParameters(this._myScene, mesh, this._effect);
 
                 this._lightingInfos.x = this.directIntensity;
                 this._lightingInfos.y = this.emissiveIntensity;
@@ -1060,15 +943,15 @@ module BABYLON {
                 this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
                 this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
 
-                this.overloadedAmbient.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedAmbient,this._tempColor);
                 this._effect.setColor3("vOverloadedAmbient", this._tempColor);
-                this.overloadedAlbedo.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
                 this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
-                this.overloadedReflectivity.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedReflectivity, this._tempColor);
                 this._effect.setColor3("vOverloadedReflectivity", this._tempColor);
-                this.overloadedEmissive.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedEmissive, this._tempColor);
                 this._effect.setColor3("vOverloadedEmissive", this._tempColor);
-                this.overloadedReflection.toLinearSpaceToRef(this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedReflection, this._tempColor);
                 this._effect.setColor3("vOverloadedReflection", this._tempColor);
 
                 this._overloadedMicroSurface.x = this.overloadedMicroSurface;
@@ -1077,9 +960,7 @@ module BABYLON {
                 this._effect.setVector3("vOverloadedMicroSurface", this._overloadedMicroSurface);
 
                 // Log. depth
-                if (this._defines.LOGARITHMICDEPTH) {
-                    this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(this._myScene.activeCamera.maxZ + 1.0) / Math.LN2));
-                }
+                MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
             }
             super.bind(world, mesh);
 
@@ -1116,7 +997,7 @@ module BABYLON {
             if (this.bumpTexture && this.bumpTexture.animations && this.bumpTexture.animations.length > 0) {
                 results.push(this.bumpTexture);
             }
-            
+
             if (this.lightmapTexture && this.lightmapTexture.animations && this.lightmapTexture.animations.length > 0) {
                 results.push(this.lightmapTexture);
             }
@@ -1156,7 +1037,7 @@ module BABYLON {
             if (this.bumpTexture) {
                 this.bumpTexture.dispose();
             }
-            
+
             if (this.lightmapTexture) {
                 this.lightmapTexture.dispose();
             }
@@ -1241,10 +1122,12 @@ module BABYLON {
             newPBRMaterial.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
             newPBRMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
             newPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
+            newPBRMaterial.useAutoMicroSurfaceFromReflectivityMap = this.useAutoMicroSurfaceFromReflectivityMap;
+            newPBRMaterial.useScalarInLinearSpace = this.useScalarInLinearSpace;
             newPBRMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newPBRMaterial.indexOfRefraction = this.indexOfRefraction;
             newPBRMaterial.invertRefractionY = this.invertRefractionY;
-            
+
             newPBRMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
             newPBRMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
 
@@ -1313,7 +1196,7 @@ module BABYLON {
                 serializationObject.refractionTexture = this.refractionTexture;
                 serializationObject.linkRefractionWithTransparency = this.linkRefractionWithTransparency;
             }
-            
+
             serializationObject.ambientColor = this.ambientColor.asArray();
             serializationObject.albedoColor = this.albedoColor.asArray();
             serializationObject.reflectivityColor = this.reflectivityColor.asArray();
@@ -1323,10 +1206,12 @@ module BABYLON {
             serializationObject.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
             serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
             serializationObject.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
+            serializationObject.useAutoMicroSurfaceFromReflectivityMap = this.useAutoMicroSurfaceFromReflectivityMap;
+            serializationObject.useScalarInLinear = this.useScalarInLinearSpace;
             serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
             serializationObject.indexOfRefraction = this.indexOfRefraction;
             serializationObject.invertRefractionY = this.invertRefractionY;
-            
+
             serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
             serializationObject.opacityFresnelParameters = this.opacityFresnelParameters.serialize();
 
@@ -1418,10 +1303,12 @@ module BABYLON {
             material.useAlphaFromAlbedoTexture = source.useAlphaFromAlbedoTexture;
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
             material.useMicroSurfaceFromReflectivityMapAlpha = source.useMicroSurfaceFromReflectivityMapAlpha;
+            material.useAutoMicroSurfaceFromReflectivityMap = source.useAutoMicroSurfaceFromReflectivityMap;
+            material.useScalarInLinearSpace = source.useScalarInLinear;
             material.useSpecularOverAlpha = source.useSpecularOverAlpha;
             material.indexOfRefraction = source.indexOfRefraction;
-            material.invertRefractionY = source.invertRefractionY; 
-            
+            material.invertRefractionY = source.invertRefractionY;
+
             material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
             material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);
 

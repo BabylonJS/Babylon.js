@@ -13,16 +13,7 @@ attribute vec2 uv2;
 attribute vec4 color;
 #endif
 
-#if NUM_BONE_INFLUENCERS > 0
-uniform mat4 mBones[BonesPerMesh];
-
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
-#if NUM_BONE_INFLUENCERS > 4
-attribute vec4 matricesIndicesExtra;
-attribute vec4 matricesWeightsExtra;
-#endif
-#endif
+#include<bonesDeclaration>
 
 // Uniforms
 uniform mat4 world;
@@ -67,40 +58,12 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
+#include<clipPlaneVertexDeclaration>
 
 void main(void) {
     mat4 finalWorld = world;
 
-#if NUM_BONE_INFLUENCERS > 0
-    mat4 influence;
-    influence = mBones[int(matricesIndices[0])] * matricesWeights[0];
-
-#if NUM_BONE_INFLUENCERS > 1
-    influence += mBones[int(matricesIndices[1])] * matricesWeights[1];
-#endif 
-#if NUM_BONE_INFLUENCERS > 2
-    influence += mBones[int(matricesIndices[2])] * matricesWeights[2];
-#endif	
-#if NUM_BONE_INFLUENCERS > 3
-    influence += mBones[int(matricesIndices[3])] * matricesWeights[3];
-#endif	
-
-#if NUM_BONE_INFLUENCERS > 4
-    influence += mBones[int(matricesIndicesExtra[0])] * matricesWeightsExtra[0];
-#endif
-#if NUM_BONE_INFLUENCERS > 5
-    influence += mBones[int(matricesIndicesExtra[1])] * matricesWeightsExtra[1];
-#endif	
-#if NUM_BONE_INFLUENCERS > 6
-    influence += mBones[int(matricesIndicesExtra[2])] * matricesWeightsExtra[2];
-#endif	
-#if NUM_BONE_INFLUENCERS > 7
-    influence += mBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
-#endif	
+#include<bonesVertex>
 
     finalWorld = finalWorld * influence;
 #endif
@@ -174,10 +137,7 @@ void main(void) {
 	}
 #endif
 
-	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
+#include<clipPlaneVertex>
 
 	// Vertex color
 #ifdef VERTEXCOLOR

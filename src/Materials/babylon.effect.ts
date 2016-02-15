@@ -112,8 +112,12 @@
             }
 
             this._loadVertexShader(vertexSource, vertexCode => {
-                this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                    this._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, fallbacks);
+                this._processIncludes(vertexCode, vertexCodeWithIncludes => {
+                    this._loadFragmentShader(fragmentSource, (fragmentCode) => {
+                        this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
+                            this._prepareEffect(vertexCodeWithIncludes, fragmentCodeWithIncludes, attributesNames, defines, fallbacks);
+                        });
+                    });
                 });
             });
         }
@@ -232,10 +236,52 @@
             }
         }
 
+        private _processIncludes(sourceCode: string, callback: (data: any) => void): void {
+            var regex = /#include<(.+)>(\((.*)\))*/g;
+            var match = regex.exec(sourceCode);
+
+            var returnValue = new String(sourceCode);
+
+            while (match != null) {
+                var includeFile = match[1];
+
+                if (Effect.IncludesShadersStore[includeFile]) {
+                    // Substitution
+                    var includeContent = Effect.IncludesShadersStore[includeFile];
+                    if (match[2]) {
+                        var splits = match[2].substr(1, match[2].length - 2).split(",");
+
+                        for (var index = 0; index < splits.length; index += 2) {
+                            var source = new RegExp(splits[index], "g");
+                            var dest = splits[index + 1];
+
+                            includeContent = includeContent.replace(source, dest);
+                        }
+                    }
+
+                    // Replace
+                    returnValue = returnValue.replace(match[0], includeContent);
+                } else {
+                    var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+
+                    Tools.LoadFile(includeShaderUrl, (fileContent) => {
+                        Effect.IncludesShadersStore[includeFile] = fileContent;
+                        this._processIncludes(<string>returnValue, callback)
+                    });
+                    return;
+                }
+
+                match = regex.exec(sourceCode);
+            }
+
+            callback(returnValue);
+        }
+
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
                 var engine = this._engine;
 
+                // Precision
                 if (!engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
                     vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
                     fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
@@ -507,5 +553,6 @@
 
         // Statics
         public static ShadersStore = {};
+        public static IncludesShadersStore = {};
     }
 } 

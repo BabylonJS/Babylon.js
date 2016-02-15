@@ -216,6 +216,15 @@
 					currentMesh.isVisible = true;
 					fur.resetFur();
 					
+                    options.lightRange = 1000;
+                    hemisphericLight.range = 1000;
+                    options.lightRange = 1000;
+                    directionalLight.range = 1000;
+                    options.lightRange = 1000;
+                    pointLight.range = 1000;
+                    options.lightRange = 1000;
+                    spotLight.range = 1000;
+                    
 					switch (options.material) {
 						case "simple":
 							currentMaterial = simple;
@@ -239,6 +248,14 @@
 							break;
 						case "pbr":
 							currentMaterial = pbr;
+                            options.lightRange = 1;
+                            hemisphericLight.range = 1;
+                            options.lightRange = 1;
+                            directionalLight.range = 1;
+                            options.lightRange = 1;
+                            pointLight.range = 1;
+                            options.lightRange = 1;
+                            spotLight.range = 1;
 							break;
 						case "fur":
 							currentMaterial = fur.material;
@@ -312,6 +329,13 @@
                     directionalLight.range = options.lightRange;
                     pointLight.range = options.lightRange;
                     spotLight.range = options.lightRange;
+                }).listen();
+                
+                f1.add(options, 'lightRadius').onChange(function() {
+                    hemisphericLight.radius = options.lightRadius;
+                    directionalLight.radius = options.lightRadius;
+                    pointLight.radius = options.lightRadius;
+                    spotLight.radius = options.lightRadius;
                 });
                 
 				f1.add(options, 'hemisphericLight').onChange(function () {

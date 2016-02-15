@@ -1,6 +1,4 @@
 ﻿module BABYLON {
-    var maxSimultaneousLights = 4;
-
     export class FresnelParameters {
         public isEnabled = true;
         public leftColor = Color3.White();
@@ -240,153 +238,6 @@
             return false;
         }
 
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines): boolean {
-            var lightIndex = 0;
-            var needNormals = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                // Excluded check
-                if (light._excludedMeshesIds.length > 0) {
-                    for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                        var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
-
-                        if (excludedMesh) {
-                            light.excludedMeshes.push(excludedMesh);
-                        }
-                    }
-
-                    light._excludedMeshesIds = [];
-                }
-
-                // Included check
-                if (light._includedOnlyMeshesIds.length > 0) {
-                    for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                        var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
-
-                        if (includedOnlyMesh) {
-                            light.includedOnlyMeshes.push(includedOnlyMesh);
-                        }
-                    }
-
-                    light._includedOnlyMeshesIds = [];
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
-                needNormals = true;
-                defines["LIGHT" + lightIndex] = true;
-
-                var type;
-                if (light instanceof SpotLight) {
-                    type = "SPOTLIGHT" + lightIndex;
-                } else if (light instanceof HemisphericLight) {
-                    type = "HEMILIGHT" + lightIndex;
-                } else if (light instanceof PointLight) {
-                    type = "POINTLIGHT" + lightIndex;
-                } else {
-                    type = "DIRLIGHT" + lightIndex;
-                }
-
-                defines[type] = true;
-
-                // Specular
-                if (!light.specular.equalsFloats(0, 0, 0)) {
-                    defines["SPECULARTERM"] = true;
-                }
-
-                // Shadows
-                if (scene.shadowsEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh && mesh.receiveShadows && shadowGenerator) {
-                        defines["SHADOW" + lightIndex] = true;
-
-                        defines["SHADOWS"] = true;
-
-                        if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
-                            defines["SHADOWVSM" + lightIndex] = true;
-                        }
-
-                        if (shadowGenerator.usePoissonSampling) {
-                            defines["SHADOWPCF" + lightIndex] = true;
-                        }
-                    }
-                }
-
-                lightIndex++;
-                if (lightIndex === maxSimultaneousLights)
-                    break;
-            }
-
-            return needNormals;
-        }
-
-        private static _scaledDiffuse = new Color3();
-        private static _scaledSpecular = new Color3();
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
-            var lightIndex = 0;
-            var depthValuesAlreadySet = false;
-            for (var index = 0; index < scene.lights.length; index++) {
-                var light = scene.lights[index];
-
-                if (!light.isEnabled()) {
-                    continue;
-                }
-
-                if (!light.canAffectMesh(mesh)) {
-                    continue;
-                }
-
-                if (light instanceof PointLight) {
-                    // Point Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                } else if (light instanceof DirectionalLight) {
-                    // Directional Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                } else if (light instanceof SpotLight) {
-                    // Spot Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                } else if (light instanceof HemisphericLight) {
-                    // Hemispheric Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                }
-
-                light.diffuse.scaleToRef(light.intensity, StandardMaterial._scaledDiffuse);
-                effect.setColor4("vLightDiffuse" + lightIndex, StandardMaterial._scaledDiffuse, light.range);
-                if (defines["SPECULARTERM"]) {
-                    light.specular.scaleToRef(light.intensity, StandardMaterial._scaledSpecular);
-                    effect.setColor3("vLightSpecular" + lightIndex, StandardMaterial._scaledSpecular);
-                }
-
-                // Shadows
-                if (scene.shadowsEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (mesh.receiveShadows && shadowGenerator) {
-                        if (!(<any>light).needCube()) {
-                            effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                        } else {
-                            if (!depthValuesAlreadySet) {
-                                depthValuesAlreadySet = true;
-                                effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                            }
-                        }
-                        effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                        effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.blurScale / shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
-                    }
-                }
-
-                lightIndex++;
-
-                if (lightIndex === maxSimultaneousLights)
-                    break;
-            }
-        }
-
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady) {
@@ -580,7 +431,7 @@
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = StandardMaterial.PrepareDefinesForLights(scene, mesh, this._defines);
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
             }
 
             if (StandardMaterial.FresnelEnabled) {
@@ -687,27 +538,7 @@
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
 
-                for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-                    if (!this._defines["LIGHT" + lightIndex]) {
-                        continue;
-                    }
-
-                    if (lightIndex > 0) {
-                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOW" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWPCF" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWVSM" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                    }
-                }
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
 
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
@@ -733,10 +564,6 @@
                     fallbacks.addFallback(4, "FRESNEL");
                 }
 
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    fallbacks.addCPUSkinningFallback(0, mesh);
-                }
-
                 //Attributes
                 var attribs = [VertexBuffer.PositionKind];
 
@@ -756,22 +583,9 @@
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
-                    attribs.push(VertexBuffer.MatricesIndicesKind);
-                    attribs.push(VertexBuffer.MatricesWeightsKind);
-                    if (this._defines.NUM_BONE_INFLUENCERS > 4) {
-                        attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                        attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-                    }
-                }
-
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
-
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
+                
                 // Legacy browser patch
                 var shaderName = "default";
                 if (!scene.getEngine().getCaps().standardDerivatives) {
@@ -840,9 +654,7 @@
             this.bindOnlyWorldMatrix(world);
 
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
@@ -953,10 +765,7 @@
                 }
 
                 // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+                MaterialHelper.BindClipPlane(this._effect, scene);
 
                 // Point size
                 if (this.pointsCloud) {
@@ -981,7 +790,7 @@
 
                 // Lights
                 if (scene.lightsEnabled && !this.disableLighting) {
-                    StandardMaterial.BindLights(scene, mesh, this._effect, this._defines);
+                    MaterialHelper.BindLights(scene, mesh, this._effect, this._defines);
                 }
 
                 // View
@@ -990,15 +799,10 @@
                 }
 
                 // Fog
-                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                    this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                    this._effect.setColor3("vFogColor", scene.fogColor);
-                }
+                MaterialHelper.BindFogParameters(scene, mesh, this._effect);
 
                 // Log. depth
-                if (this._defines.LOGARITHMICDEPTH) {
-                    this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
-                }
+                MaterialHelper.BindLogDepth(this._defines, this._effect, scene);
             }
 
             super.bind(world, mesh);

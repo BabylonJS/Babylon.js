@@ -2,8 +2,8 @@
 
     declare var SIMD;
 
-    const ToGammaSpace = 1 / 2.2;
-    const ToLinearSpace = 2.2;
+    export const ToGammaSpace = 1 / 2.2;
+    export const ToLinearSpace = 2.2;
 
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
@@ -1651,7 +1651,7 @@
 
             return this;
         };
-        
+
         public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
@@ -3703,6 +3703,7 @@
     // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
     // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
     export class Tmp {
+        public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
         public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()
             , Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 6 temp Vector3 at once should be enough
@@ -3714,4 +3715,5 @@
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
 }
+
 

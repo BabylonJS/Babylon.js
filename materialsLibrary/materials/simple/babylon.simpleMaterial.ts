@@ -47,8 +47,7 @@ module BABYLON {
         public UV2 = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public BONES = false;
-        public BONES4 = false;
+        public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
 
@@ -162,80 +161,7 @@ module BABYLON {
 
             var lightIndex = 0;
             if (scene.lightsEnabled && !this.disableLighting) {
-                for (var index = 0; index < scene.lights.length; index++) {
-                    var light = scene.lights[index];
-
-                    if (!light.isEnabled()) {
-                        continue;
-                    }
-
-                    // Excluded check
-                    if (light._excludedMeshesIds.length > 0) {
-                        for (var excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                            var excludedMesh = scene.getMeshByID(light._excludedMeshesIds[excludedIndex]);
-
-                            if (excludedMesh) {
-                                light.excludedMeshes.push(excludedMesh);
-                            }
-                        }
-
-                        light._excludedMeshesIds = [];
-                    }
-
-                    // Included check
-                    if (light._includedOnlyMeshesIds.length > 0) {
-                        for (var includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                            var includedOnlyMesh = scene.getMeshByID(light._includedOnlyMeshesIds[includedOnlyIndex]);
-
-                            if (includedOnlyMesh) {
-                                light.includedOnlyMeshes.push(includedOnlyMesh);
-                            }
-                        }
-
-                        light._includedOnlyMeshesIds = [];
-                    }
-
-                    if (!light.canAffectMesh(mesh)) {
-                        continue;
-                    }
-                    needNormals = true;
-                    this._defines["LIGHT" + lightIndex] = true;
-
-                    var type;
-                    if (light instanceof SpotLight) {
-                        type = "SPOTLIGHT" + lightIndex;
-                    } else if (light instanceof HemisphericLight) {
-                        type = "HEMILIGHT" + lightIndex;
-                    } else if (light instanceof PointLight) {
-                        type = "POINTLIGHT" + lightIndex;
-                    } else {
-                        type = "DIRLIGHT" + lightIndex;
-                    }
-
-                    this._defines[type] = true;
-
-                    // Shadows
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = light.getShadowGenerator();
-                        if (mesh && mesh.receiveShadows && shadowGenerator) {
-                            this._defines["SHADOW" + lightIndex] = true;
-
-                            this._defines.SHADOWS = true;
-
-                            if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
-                                this._defines["SHADOWVSM" + lightIndex] = true;
-                            }
-
-                            if (shadowGenerator.usePoissonSampling) {
-                                this._defines["SHADOWPCF" + lightIndex] = true;
-                            }
-                        }
-                    }
-
-                    lightIndex++;
-                    if (lightIndex === maxSimultaneousLights)
-                        break;
-                }
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines);
             }
 
             // Attribs
@@ -259,9 +185,8 @@ module BABYLON {
                     }
                 }
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.BONES = true;
+                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                    this._defines.BONES4 = true;
                 }
 
                 // Instances
@@ -282,30 +207,10 @@ module BABYLON {
                     fallbacks.addFallback(1, "FOG");
                 }
 
-                for (lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-                    if (!this._defines["LIGHT" + lightIndex]) {
-                        continue;
-                    }
-
-                    if (lightIndex > 0) {
-                        fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOW" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWPCF" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                    }
-
-                    if (this._defines["SHADOWVSM" + lightIndex]) {
-                        fallbacks.addFallback(0, "SHADOWVSM" + lightIndex);
-                    }
-                }
-             
-                if (this._defines.BONES4) {
-                    fallbacks.addFallback(0, "BONES4");
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
+                
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
@@ -327,19 +232,9 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.BONES) {
-                    attribs.push(VertexBuffer.MatricesIndicesKind);
-                    attribs.push(VertexBuffer.MatricesWeightsKind);
-                }
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
-
-                // Legacy browser patch
                 var shaderName = "simple";
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName,
@@ -390,9 +285,7 @@ module BABYLON {
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
@@ -402,11 +295,9 @@ module BABYLON {
                     this._effect.setFloat2("vDiffuseInfos", this.diffuseTexture.coordinatesIndex, this.diffuseTexture.level);
                     this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
                 }
+                
                 // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+                MaterialHelper.BindClipPlane(this._effect, scene);
 
                 // Point size
                 if (this.pointsCloud) {
@@ -416,61 +307,11 @@ module BABYLON {
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
             }
 
-            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
+            // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                var lightIndex = 0;
-                var depthValuesAlreadySet = false;
-                for (var index = 0; index < scene.lights.length; index++) {
-                    var light = scene.lights[index];
-
-                    if (!light.isEnabled()) {
-                        continue;
-                    }
-
-                    if (!light.canAffectMesh(mesh)) {
-                        continue;
-                    }
-
-                    if (light instanceof PointLight) {
-                        // Point Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex);
-                    } else if (light instanceof DirectionalLight) {
-                        // Directional Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex);
-                    } else if (light instanceof SpotLight) {
-                        // Spot Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                    } else if (light instanceof HemisphericLight) {
-                        // Hemispheric Light
-                        light.transferToEffect(this._effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                    }
-
-                    light.diffuse.scaleToRef(light.intensity, this._scaledDiffuse);
-                    this._effect.setColor4("vLightDiffuse" + lightIndex, this._scaledDiffuse, light.range);
-
-                    // Shadows
-                    if (scene.shadowsEnabled) {
-                        var shadowGenerator = light.getShadowGenerator();
-                        if (mesh.receiveShadows && shadowGenerator) {
-                            if (!(<any>light).needCube()) {
-                                this._effect.setMatrix("lightMatrix" + lightIndex, shadowGenerator.getTransformMatrix());
-                            } else {
-                                if (!depthValuesAlreadySet) {
-                                    depthValuesAlreadySet = true;
-                                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                                }
-                            }
-                            this._effect.setTexture("shadowSampler" + lightIndex, shadowGenerator.getShadowMapForRendering());
-                            this._effect.setFloat3("shadowsInfo" + lightIndex, shadowGenerator.getDarkness(), shadowGenerator.getShadowMap().getSize().width, shadowGenerator.bias);
-                        }
-                    }
-
-                    lightIndex++;
-
-                    if (lightIndex === maxSimultaneousLights)
-                        break;
-                }
+                MaterialHelper.BindLights(scene, mesh, this._effect, this._defines);          
             }
 
             // View
@@ -479,10 +320,7 @@ module BABYLON {
             }
 
             // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
+            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
 
             super.bind(world, mesh);
         }

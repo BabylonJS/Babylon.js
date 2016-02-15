@@ -2,6 +2,10 @@
 #extension GL_OES_standard_derivatives : enable
 #endif
 
+#ifdef LODBASEDMICROSFURACE
+#extension GL_EXT_shader_texture_lod : enable
+#endif
+
 #ifdef LOGARITHMICDEPTH
 #extension GL_EXT_frag_depth : enable
 #endif
@@ -16,6 +20,7 @@ uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
+uniform vec4 vLightRadiuses;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
@@ -67,8 +72,14 @@ uniform vec4 vCameraInfos;
     }
 #endif
 
+#ifdef LODBASEDMICROSFURACE
+    uniform vec2 vMicrosurfaceTextureLods;
+#endif
+
 // PBR CUSTOM CONSTANTS
 const float kPi = 3.1415926535897932384626433832795;
+const float kRougnhessToAlphaScale = 0.1;
+const float kRougnhessToAlphaOffset = 0.29248125;
 
 #ifdef PoissonSamplingEnvironment
     const int poissonSphereSamplersCount = 32;
@@ -145,6 +156,22 @@ float convertRoughnessToAverageSlope(float roughness)
     return alphaG;
 }
 
+// Based on Beckamm roughness to Blinn exponent + http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html 
+float getMipMapIndexFromAverageSlope(float maxMipLevel, float alpha)
+{
+    // do not take in account lower mips hence -1... and wait from proper preprocess.
+    // formula comes from approximation of the mathematical solution.
+    //float mip = maxMipLevel + kRougnhessToAlphaOffset + 0.5 * log2(alpha);
+    
+    // In the mean time 
+    // Always [0..1] goes from max mip to min mip in a log2 way.  
+    // Change 5 to nummip below.
+    // http://www.wolframalpha.com/input/?i=x+in+0..1+plot+(+5+%2B+0.3+%2B+0.1+*+5+*+log2(+(1+-+x)+*+(1+-+x)+%2B+0.0005))
+    float mip = kRougnhessToAlphaOffset + maxMipLevel + (maxMipLevel * kRougnhessToAlphaScale * log2(alpha));
+    
+    return clamp(mip, 0., maxMipLevel);
+}
+
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
 float smithVisibilityG1_TrowbridgeReitzGGX(float dot, float alphaG)
 {
@@ -210,6 +237,15 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
     return diffuseFresnelTerm * NdotL;
     // PI Test
     // diffuseFresnelTerm /= kPi;
+}
+
+float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
+{
+    // At small angle this approximation works. 
+    float lightRoughness = lightRadius / lightDistance;
+    // Distribution can sum.
+    float totalRoughness = clamp(lightRoughness + roughness, 0., 1.);
+    return totalRoughness;
 }
 
 float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
@@ -288,97 +324,10 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#ifdef LIGHT0
-uniform vec4 vLightData0;
-uniform vec4 vLightDiffuse0;
-#ifdef SPECULARTERM
-uniform vec3 vLightSpecular0;
-#endif
-#ifdef SHADOW0
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-varying vec4 vPositionFromLight0;
-uniform sampler2D shadowSampler0;
-#else
-uniform samplerCube shadowSampler0;
-#endif
-uniform vec3 shadowsInfo0;
-#endif
-#ifdef SPOTLIGHT0
-uniform vec4 vLightDirection0;
-#endif
-#ifdef HEMILIGHT0
-uniform vec3 vLightGround0;
-#endif
-#endif
-
-#ifdef LIGHT1
-uniform vec4 vLightData1;
-uniform vec4 vLightDiffuse1;
-#ifdef SPECULARTERM
-uniform vec3 vLightSpecular1;
-#endif
-#ifdef SHADOW1
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-varying vec4 vPositionFromLight1;
-uniform sampler2D shadowSampler1;
-#else
-uniform samplerCube shadowSampler1;
-#endif
-uniform vec3 shadowsInfo1;
-#endif
-#ifdef SPOTLIGHT1
-uniform vec4 vLightDirection1;
-#endif
-#ifdef HEMILIGHT1
-uniform vec3 vLightGround1;
-#endif
-#endif
-
-#ifdef LIGHT2
-uniform vec4 vLightData2;
-uniform vec4 vLightDiffuse2;
-#ifdef SPECULARTERM
-uniform vec3 vLightSpecular2;
-#endif
-#ifdef SHADOW2
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-varying vec4 vPositionFromLight2;
-uniform sampler2D shadowSampler2;
-#else
-uniform samplerCube shadowSampler2;
-#endif
-uniform vec3 shadowsInfo2;
-#endif
-#ifdef SPOTLIGHT2
-uniform vec4 vLightDirection2;
-#endif
-#ifdef HEMILIGHT2
-uniform vec3 vLightGround2;
-#endif
-#endif
-
-#ifdef LIGHT3
-uniform vec4 vLightData3;
-uniform vec4 vLightDiffuse3;
-#ifdef SPECULARTERM
-uniform vec3 vLightSpecular3;
-#endif
-#ifdef SHADOW3
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-varying vec4 vPositionFromLight3;
-uniform sampler2D shadowSampler3;
-#else
-uniform samplerCube shadowSampler3;
-#endif
-uniform vec3 shadowsInfo3;
-#endif
-#ifdef SPOTLIGHT3
-uniform vec4 vLightDirection3;
-#endif
-#ifdef HEMILIGHT3
-uniform vec3 vLightGround3;
-#endif
-#endif
+#include<light0FragmentDeclaration>
+#include<light1FragmentDeclaration>
+#include<light2FragmentDeclaration>
+#include<light3FragmentDeclaration>
 
 // Samplers
 #ifdef ALBEDO
@@ -574,14 +523,14 @@ float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float dar
 
 float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float bias, float darkness)
 {
-	vec3 directionToLight = vPositionW - lightPosition;
-	float depth = length(directionToLight);
+    vec3 directionToLight = vPositionW - lightPosition;
+    float depth = length(directionToLight);
 
-	depth = clamp(depth, 0., 1.0);
-	float diskScale = 2.0 / mapSize;
+    depth = (depth - depthValues.x) / (depthValues.y - depthValues.x);
+    depth = clamp(depth, 0., 1.0);
 
-	directionToLight = normalize(directionToLight);
-	directionToLight.y = -directionToLight.y;
+    directionToLight = normalize(directionToLight);
+    directionToLight.y = -directionToLight.y;
 
     float visibility = 1.;
 
@@ -594,10 +543,10 @@ float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, fl
     // Poisson Sampling
     float biasedDepth = depth - bias;
 
-    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * diskScale)) < biasedDepth) visibility -= 0.25;
-    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * diskScale)) < biasedDepth) visibility -= 0.25;
-    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * diskScale)) < biasedDepth) visibility -= 0.25;
-    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * diskScale)) < biasedDepth) visibility -= 0.25;
+    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize)) < biasedDepth) visibility -= 0.25;
 
 #ifdef OVERLOADEDSHADOWVALUES
     return  min(1.0, mix(1.0, visibility + darkness, vOverloadedShadowIntensity.x));
@@ -654,10 +603,10 @@ float computeShadowWithPCF(vec4 vPositionFromLight, sampler2D shadowSampler, flo
     // Poisson Sampling
     float biasedDepth = depth.z - bias;
 
-    if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] / mapSize)) < biasedDepth) visibility -= 0.25;
-    if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] / mapSize)) < biasedDepth) visibility -= 0.25;
-    if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] / mapSize)) < biasedDepth) visibility -= 0.25;
-    if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] / mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < biasedDepth) visibility -= 0.25;
+    if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] * mapSize)) < biasedDepth) visibility -= 0.25;
 
 #ifdef OVERLOADEDSHADOWVALUES
     return  min(1.0, mix(1.0, visibility + darkness, vOverloadedShadowIntensity.x));
@@ -710,86 +659,12 @@ float computeShadowWithVSM(vec4 vPositionFromLight, sampler2D shadowSampler, flo
 
 #endif
 
-// Bump
-#ifdef BUMP
-varying vec2 vBumpUV;
-uniform vec2 vBumpInfos;
-uniform sampler2D bumpSampler;
-
-// Thanks to http://www.thetenthplanet.de/archives/1180
-mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
-{
-    // get edge vectors of the pixel triangle
-    vec3 dp1 = dFdx(p);
-    vec3 dp2 = dFdy(p);
-    vec2 duv1 = dFdx(uv);
-    vec2 duv2 = dFdy(uv);
-
-    // solve the linear system
-    vec3 dp2perp = cross(dp2, normal);
-    vec3 dp1perp = cross(normal, dp1);
-    vec3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;
-    vec3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;
-
-    // construct a scale-invariant frame 
-    float invmax = inversesqrt(max(dot(tangent, tangent), dot(binormal, binormal)));
-    return mat3(tangent * invmax, binormal * invmax, normal);
-}
-
-vec3 perturbNormal(vec3 viewDir)
-{
-    vec3 map = texture2D(bumpSampler, vBumpUV).xyz;
-    map = map * 255. / 127. - 128. / 127.;
-    mat3 TBN = cotangent_frame(vNormalW * vBumpInfos.y, -viewDir, vBumpUV);
-    return normalize(TBN * map);
-}
-#endif
-
-#ifdef CLIPPLANE
-varying float fClipDistance;
-#endif
-
-#ifdef LOGARITHMICDEPTH
-uniform float logarithmicDepthConstant;
-varying float vFragmentDepth;
-#endif
+#include<bumpFragmentFunctions>
+#include<clipPlaneFragmentDeclaration>
+#include<logDepthDeclaration>
 
 // Fog
-#ifdef FOG
-
-#define FOGMODE_NONE    0.
-#define FOGMODE_EXP     1.
-#define FOGMODE_EXP2    2.
-#define FOGMODE_LINEAR  3.
-#define E 2.71828
-
-uniform vec4 vFogInfos;
-uniform vec3 vFogColor;
-varying float fFogDistance;
-
-float CalcFogFactor()
-{
-    float fogCoeff = 1.0;
-    float fogStart = vFogInfos.y;
-    float fogEnd = vFogInfos.z;
-    float fogDensity = vFogInfos.w;
-
-    if (FOGMODE_LINEAR == vFogInfos.x)
-    {
-        fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);
-    }
-    else if (FOGMODE_EXP == vFogInfos.x)
-    {
-        fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);
-    }
-    else if (FOGMODE_EXP2 == vFogInfos.x)
-    {
-        fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);
-    }
-
-    return clamp(fogCoeff, 0.0, 1.0);
-}
-#endif
+#include<fogFragmentDeclaration>
 
 // Light Computing
 struct lightingInfo
@@ -800,26 +675,39 @@ struct lightingInfo
 #endif
 };
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius) {
     lightingInfo result;
 
-    vec3 lightVectorW;
+    vec3 lightDirection;
     float attenuation = 1.0;
+    float lightDistance;
+    
+    // Point
     if (lightData.w == 0.)
     {
-        vec3 direction = lightData.xyz - vPositionW;
-
-        attenuation = max(0., 1.0 - length(direction) / range);
-        lightVectorW = normalize(direction);
+        vec3 lightOffset = lightData.xyz - vPositionW;
+        
+        // Inverse squared falloff.
+        float lightDistanceSquared = dot(lightOffset, lightOffset);
+        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001) * range);
+        attenuation = lightDistanceFalloff;
+        
+        lightDistance = sqrt(lightDistanceSquared);
+        lightDirection = normalize(lightOffset);
     }
+    // Directional
     else
     {
-        lightVectorW = normalize(-lightData.xyz);
+        lightDistance = length(-lightData.xyz);
+        lightDirection = normalize(-lightData.xyz);
     }
-
+    
+    // Roughness
+    roughness = adjustRoughnessFromLightProperties(roughness, lightRadius, lightDistance);
+    
     // diffuse
-    vec3 H = normalize(viewDirectionW + lightVectorW);
-    float NdotL = max(0.00000000001, dot(vNormal, lightVectorW));
+    vec3 H = normalize(viewDirectionW + lightDirection);
+    float NdotL = max(0.00000000001, dot(vNormal, lightDirection));
     float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
 
     float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
@@ -836,36 +724,45 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius) {
     lightingInfo result;
 
-    vec3 direction = lightData.xyz - vPositionW;
-    vec3 lightVectorW = normalize(direction);
-    float attenuation = max(0., 1.0 - length(direction) / range);
+    vec3 lightOffset = lightData.xyz - vPositionW;
+    vec3 lightVectorW = normalize(lightOffset);
 
     // diffuse
-    float cosAngle = max(0.0000001, dot(-lightDirection.xyz, lightVectorW));
-    float spotAtten = 0.0;
-
+    float cosAngle = max(0.000000000000001, dot(-lightDirection.xyz, lightVectorW));
+    
     if (cosAngle >= lightDirection.w)
     {
         cosAngle = max(0., pow(cosAngle, lightData.w));
-        spotAtten = clamp((cosAngle - lightDirection.w) / (1. - cosAngle), 0.0, 1.0);
-
+        
+        // Inverse squared falloff.
+        float lightDistanceSquared = dot(lightOffset, lightOffset);
+        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001) * range);
+        float attenuation = lightDistanceFalloff;
+        
+        // Directional falloff.
+        attenuation *= cosAngle;
+        
+        // Roughness.
+        float lightDistance = sqrt(lightDistanceSquared);
+        roughness = adjustRoughnessFromLightProperties(roughness, lightRadius, lightDistance);
+        
         // Diffuse
         vec3 H = normalize(viewDirectionW - lightDirection.xyz);
         float NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
         float VdotH = clamp(dot(viewDirectionW, H), 0.00000000001, 1.0);
 
         float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
-        result.diffuse = diffuseTerm * diffuseColor * attenuation * spotAtten;
+        result.diffuse = diffuseTerm * diffuseColor * attenuation;
 
 #ifdef SPECULARTERM
         // Specular
         float NdotH = max(0.00000000001, dot(vNormal, H));
 
         vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
-        result.specular = specTerm  * attenuation * spotAtten;
+        result.specular = specTerm  * attenuation;
 #endif
 
         return result;
@@ -879,10 +776,11 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, float lightRadius) {
     lightingInfo result;
 
-    vec3 lightVectorW = normalize(lightData.xyz);
+    // Roughness
+    // Do not touch roughness on hemispheric.
 
     // Diffuse
     float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
@@ -890,6 +788,7 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 
 #ifdef SPECULARTERM
     // Specular
+    vec3 lightVectorW = normalize(lightData.xyz);
     vec3 H = normalize(viewDirectionW + lightVectorW);
     float NdotH = max(0.00000000001, dot(vNormal, H));
     float NdotL = max(0.00000000001, ndl);
@@ -903,14 +802,10 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 }
 
 void main(void) {
+#include<clipPlaneFragment>
+
     #ifdef PoissonSamplingEnvironment
         initSamplers();
-    #endif
-
-    // Clip plane
-    #ifdef CLIPPLANE
-        if (fClipDistance > 0.0)
-            discard;
     #endif
 
     vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
@@ -995,7 +890,9 @@ void main(void) {
         #ifdef MICROSURFACEFROMREFLECTIVITYMAP
             microSurface = surfaceReflectivityColorMap.a;
         #else
-            microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
+            #ifdef MICROSURFACEAUTOMATIC
+                microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
+            #endif
         #endif
     #endif
 
@@ -1009,9 +906,9 @@ void main(void) {
     // Adapt microSurface.
     microSurface = clamp(microSurface, 0., 1.) * 0.98;
 
-    // Call rough to not conflict with previous one.
-    float rough = clamp(1. - microSurface, 0.000001, 1.0);
-
+    // Compute roughness.
+    float roughness = clamp(1. - microSurface, 0.000001, 1.0);
+    
     // Lighting
     vec3 lightDiffuseContribution = vec3(0., 0., 0.);
     
@@ -1029,13 +926,13 @@ void main(void) {
     vec3 vLightSpecular0 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT0
-    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, rough, NdotV);
+    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0]);
 #endif
 #ifdef HEMILIGHT0
-    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, rough, NdotV);
+    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, roughness, NdotV, vLightRadiuses[0]);
 #endif
 #if defined(POINTLIGHT0) || defined(DIRLIGHT0)
-    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, rough, NdotV);
+    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0]);
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
@@ -1073,13 +970,13 @@ void main(void) {
     vec3 vLightSpecular1 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT1
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1]);
 #endif
 #ifdef HEMILIGHT1
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, roughness, NdotV, vLightRadiuses[1]);
 #endif
 #if defined(POINTLIGHT1) || defined(DIRLIGHT1)
-    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1]);
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
@@ -1118,13 +1015,13 @@ void main(void) {
     vec3 vLightSpecular2 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT2
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2]);
 #endif
 #ifdef HEMILIGHT2
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, roughness, NdotV, vLightRadiuses[2]);
 #endif
 #if defined(POINTLIGHT2) || defined(DIRLIGHT2)
-    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2]);
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
@@ -1163,13 +1060,13 @@ void main(void) {
     vec3 vLightSpecular3 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT3
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3]);
 #endif
 #ifdef HEMILIGHT3
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, roughness, NdotV, vLightRadiuses[3]);
 #endif
 #if defined(POINTLIGHT3) || defined(DIRLIGHT3)
-    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3]);
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
@@ -1233,17 +1130,29 @@ void main(void) {
 vec3 surfaceRefractionColor = vec3(0., 0., 0.);
 
 // Go mat -> blurry reflexion according to microSurface
-float bias = 20. * (1.0 - microSurface);
+#ifndef LODBASEDMICROSFURACE
+    float bias = 20. * (1.0 - microSurface);
+#else
+    float alphaG = convertRoughnessToAverageSlope(roughness);
+#endif
         
 #ifdef REFRACTION
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+    
+    #ifdef LODBASEDMICROSFURACE
+        float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, alphaG);
+    #endif
     
     #ifdef REFRACTIONMAP_3D
         refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
         if (dot(refractionVector, viewDirectionW) < 1.0)
         {
-            surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, bias).rgb * vRefractionInfos.x;
+            #ifdef LODBASEDMICROSFURACE
+                surfaceRefractionColor = textureCubeLodEXT(refractionCubeSampler, refractionVector, lodRefraction).rgb * vRefractionInfos.x;
+            #else
+                surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, bias).rgb * vRefractionInfos.x;
+            #endif
         }
         
         #ifndef REFRACTIONMAPINLINEARSPACE
@@ -1256,9 +1165,14 @@ float bias = 20. * (1.0 - microSurface);
 
         refractionCoords.y = 1.0 - refractionCoords.y;
 
-        surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+        #ifdef LODBASEDMICROSFURACE
+            surfaceRefractionColor = texture2DLodEXT(refraction2DSampler, refractionCoords, lodRefraction).rgb * vRefractionInfos.x;
+        #else
+            surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+        #endif    
+        
         surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
-    #endif    
+    #endif
 #endif
 
 // Reflection
@@ -1268,11 +1182,19 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
 #ifdef REFLECTION
     vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
+    #ifdef LODBASEDMICROSFURACE
+        float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, alphaG);
+    #endif
+    
     #ifdef REFLECTIONMAP_3D
-        environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
+        
+        #ifdef LODBASEDMICROSFURACE
+            environmentRadiance = textureCubeLodEXT(reflectionCubeSampler, vReflectionUVW, lodReflection).rgb * vReflectionInfos.x;
+        #else
+            environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
+        #endif
         
         #ifdef PoissonSamplingEnvironment
-            float alphaG = convertRoughnessToAverageSlope(rough);
             environmentRadiance = environmentSampler(reflectionCubeSampler, vReflectionUVW, alphaG) * vReflectionInfos.x;
         #endif
 
@@ -1296,8 +1218,12 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
         #endif
 
         coords.y = 1.0 - coords.y;
-
-        environmentRadiance = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+        #ifdef LODBASEDMICROSFURACE
+            environmentRadiance = texture2DLodExt(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
+        #else
+            environmentRadiance = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+        #endif
+    
         environmentRadiance = toLinearSpace(environmentRadiance.rgb);
 
         environmentIrradiance = texture2D(reflection2DSampler, coords, 20.).rgb * vReflectionInfos.x;
@@ -1439,11 +1365,6 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
     #endif
 #endif
 
-#ifdef FOG
-    float fog = CalcFogFactor();
-    finalColor.rgb = fog * finalColor.rgb + (1.0 - fog) * vFogColor;
-#endif
-
     finalColor = max(finalColor, 0.0);
 
 #ifdef CAMERATONEMAP
@@ -1483,6 +1404,9 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
     //// Emissive Color
     //vec2 test = vEmissiveUV * 0.5 + 0.5;
     //gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
+
+#include<logDepthFragment>
+#include<fogFragment>(color, finalColor)
 
     gl_FragColor = finalColor;
 }

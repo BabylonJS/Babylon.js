@@ -62,6 +62,7 @@
       "../../src/Materials/Textures/babylon.videoTexture.js",
       "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js",
       "../../src/Materials/babylon.effect.js",
+      "../../src/Materials/babylon.materialHelper.js",
       "../../src/Materials/babylon.material.js",
       "../../src/Materials/babylon.standardMaterial.js",
       "../../src/Materials/babylon.multiMaterial.js",
@@ -109,6 +110,12 @@
     {
       "variable": "BABYLON.Effect.ShadersStore",
       "files": "../../src/Shaders/*.fx"
+    }
+  ],
+  "includeShadersDirectories": [
+    {
+      "variable": "BABYLON.Effect.IncludesShadersStore",
+      "files": "../../src/Shaders/ShadersInclude/*.fx"
     }
   ],
   "workers": [
