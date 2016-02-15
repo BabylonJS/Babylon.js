@@ -2,14 +2,14 @@ module BABYLON {
     export class HDRCubeTexture extends BaseTexture {
         public url: string;
         public coordinatesMode = Texture.CUBIC_MODE;
-        
+
         private _useInGammaSpace = false;
         private _generateHarmonics = true;
         private _noMipmap: boolean;
         private _extensions: string[];
         private _textureMatrix: Matrix;
         private _size: number;
-        
+
         private static _facesMapping = [
             "left",
             "down",
@@ -17,11 +17,11 @@ module BABYLON {
             "right",
             "up",
             "back"
-        ]; 
+        ];
 
         public sphericalPolynomial: SphericalPolynomial = null;
-        
-        constructor(url: string, scene: Scene, size:number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false) {
+
+        constructor(url: string, scene: Scene, size: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false) {
             super(scene);
 
             this.name = url;
@@ -49,7 +49,7 @@ module BABYLON {
 
             this._textureMatrix = Matrix.Identity();
         }
-        
+
         private loadTexture() {
             var callback = (buffer: ArrayBuffer) => {
                 // Extract the raw linear data.
@@ -59,7 +59,7 @@ module BABYLON {
                 if (this._generateHarmonics) {
                     this.sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
                 }
-                
+
                 var results = [];
                 var byteArray: Uint8Array = null;
                 
@@ -76,28 +76,28 @@ module BABYLON {
                     
                     // If special cases.
                     if (this._useInGammaSpace || byteArray) {
-                        for(var i = 0; i < this._size * this._size; i++) {
+                        for (var i = 0; i < this._size * this._size; i++) {
                              
-                             // Put in gamma space if requested.
-                             if (this._useInGammaSpace) {
+                            // Put in gamma space if requested.
+                            if (this._useInGammaSpace) {
                                 dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], BABYLON.ToGammaSpace);
                                 dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], BABYLON.ToGammaSpace);
                                 dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], BABYLON.ToGammaSpace);
-                             }
+                            }
                              
-                             // Convert to int texture for fallback.
-                             if (byteArray) {
-                                 // R
-                                 byteArray[(i * 3) + 0] = dataFace[(i * 3) + 0] * 255;
-                                 byteArray[(i * 3) + 0] = Math.min(255, byteArray[(i * 3) + 0]);
-                                 // G
-                                 byteArray[(i * 3) + 1] = dataFace[(i * 3) + 1] * 255;
-                                 byteArray[(i * 3) + 1] = Math.min(255, byteArray[(i * 3) + 1]);
-                                 // B
-                                 byteArray[(i * 3) + 2] = dataFace[(i * 3) + 2] * 255;
-                                 byteArray[(i * 3) + 2] = Math.min(255, byteArray[(i * 3) + 2]);
-                             }
-                         }
+                            // Convert to int texture for fallback.
+                            if (byteArray) {
+                                // R
+                                byteArray[(i * 3) + 0] = dataFace[(i * 3) + 0] * 255;
+                                byteArray[(i * 3) + 0] = Math.min(255, byteArray[(i * 3) + 0]);
+                                // G
+                                byteArray[(i * 3) + 1] = dataFace[(i * 3) + 1] * 255;
+                                byteArray[(i * 3) + 1] = Math.min(255, byteArray[(i * 3) + 1]);
+                                // B
+                                byteArray[(i * 3) + 2] = dataFace[(i * 3) + 2] * 255;
+                                byteArray[(i * 3) + 2] = Math.min(255, byteArray[(i * 3) + 2]);
+                            }
+                        }
                     }
 
                     results.push(dataFace);
@@ -118,7 +118,7 @@ module BABYLON {
             newTexture.wrapV = this.wrapV;
             newTexture.coordinatesIndex = this.coordinatesIndex;
             newTexture.coordinatesMode = this.coordinatesMode;
-            
+
             return newTexture;
         }
 
@@ -139,7 +139,7 @@ module BABYLON {
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
-        
+
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): HDRCubeTexture {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {

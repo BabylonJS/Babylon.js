@@ -278,19 +278,7 @@ module BABYLON {
                 
                 this._lightRadiuses[lightIndex] = light.radius;
 
-                if (light instanceof PointLight) {
-                    // Point Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                } else if (light instanceof DirectionalLight) {
-                    // Directional Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                } else if (light instanceof SpotLight) {
-                    // Spot Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                } else if (light instanceof HemisphericLight) {
-                    // Hemispheric Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                }
+                MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
@@ -890,12 +878,7 @@ module BABYLON {
                 }
 
                 // Clip plane
-                if (this._myScene.clipPlane) {
-                    this._effect.setFloat4("vClipPlane", this._myScene.clipPlane.normal.x,
-                        this._myScene.clipPlane.normal.y,
-                        this._myScene.clipPlane.normal.z,
-                        this._myScene.clipPlane.d);
-                }
+                MaterialHelper.BindClipPlane(this._effect, this._myScene);
 
                 // Point size
                 if (this.pointsCloud) {
@@ -977,9 +960,7 @@ module BABYLON {
                 this._effect.setVector3("vOverloadedMicroSurface", this._overloadedMicroSurface);
 
                 // Log. depth
-                if (this._defines.LOGARITHMICDEPTH) {
-                    this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(this._myScene.activeCamera.maxZ + 1.0) / Math.LN2));
-                }
+                MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
             }
             super.bind(world, mesh);
 

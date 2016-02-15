@@ -131,6 +131,24 @@ var BABYLON;
             }
             return depthValuesAlreadySet;
         };
+        MaterialHelper.BindLightProperties = function (light, effect, lightIndex) {
+            if (light instanceof BABYLON.PointLight) {
+                // Point Light
+                light.transferToEffect(effect, "vLightData" + lightIndex);
+            }
+            else if (light instanceof BABYLON.DirectionalLight) {
+                // Directional Light
+                light.transferToEffect(effect, "vLightData" + lightIndex);
+            }
+            else if (light instanceof BABYLON.SpotLight) {
+                // Spot Light
+                light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
+            }
+            else if (light instanceof BABYLON.HemisphericLight) {
+                // Hemispheric Light
+                light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
+            }
+        };
         MaterialHelper.BindLights = function (scene, mesh, effect, defines) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
@@ -142,22 +160,7 @@ var BABYLON;
                 if (!light.canAffectMesh(mesh)) {
                     continue;
                 }
-                if (light instanceof BABYLON.PointLight) {
-                    // Point Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                }
-                else if (light instanceof BABYLON.DirectionalLight) {
-                    // Directional Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                }
-                else if (light instanceof BABYLON.SpotLight) {
-                    // Spot Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                }
-                else if (light instanceof BABYLON.HemisphericLight) {
-                    // Hemispheric Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                }
+                MaterialHelper.BindLightProperties(light, effect, lightIndex);
                 light.diffuse.scaleToRef(light.intensity, BABYLON.Tmp.Color3[0]);
                 effect.setColor4("vLightDiffuse" + lightIndex, BABYLON.Tmp.Color3[0], light.range);
                 if (defines["SPECULARTERM"]) {

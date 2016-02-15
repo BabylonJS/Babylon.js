@@ -1651,7 +1651,7 @@
 
             return this;
         };
-        
+
         public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
@@ -3715,4 +3715,5 @@
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
 }
+
 
