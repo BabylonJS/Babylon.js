@@ -30,7 +30,6 @@ varying vec4 vColor;
 varying vec2 vDiffuseUV;
 uniform sampler2D diffuseSampler;
 uniform vec2 vDiffuseInfos;
-
 #endif
 
 #include<clipPlaneFragmentDeclaration>
@@ -65,7 +64,7 @@ void main(void) {
 	baseColor.rgb *= vColor.rgb;
 #endif
 
-	// Bump
+	// Normal
 #ifdef NORMAL
 	vec3 normalW = normalize(vNormalW);
 #else
