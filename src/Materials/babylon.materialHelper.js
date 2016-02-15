@@ -187,6 +187,17 @@ var BABYLON;
                 effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
         };
+        MaterialHelper.BindLogDepth = function (defines, effect, scene) {
+            if (defines["LOGARITHMICDEPTH"]) {
+                effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+            }
+        };
+        MaterialHelper.BindClipPlane = function (effect, scene) {
+            if (scene.clipPlane) {
+                var clipPlane = scene.clipPlane;
+                effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }
+        };
         return MaterialHelper;
     })();
     BABYLON.MaterialHelper = MaterialHelper;

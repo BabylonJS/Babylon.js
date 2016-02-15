@@ -636,10 +636,7 @@ var BABYLON;
                     }
                 }
                 // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+                BABYLON.MaterialHelper.BindClipPlane(this._effect, scene);
                 // Point size
                 if (this.pointsCloud) {
                     this._effect.setFloat("pointSize", this.pointSize);
@@ -667,9 +664,7 @@ var BABYLON;
                 // Fog
                 BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
                 // Log. depth
-                if (this._defines.LOGARITHMICDEPTH) {
-                    this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
-                }
+                BABYLON.MaterialHelper.BindLogDepth(this._defines, this._effect, scene);
             }
             _super.prototype.bind.call(this, world, mesh);
         };
