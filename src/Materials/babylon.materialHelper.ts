@@ -153,6 +153,22 @@
             return depthValuesAlreadySet;
         }
 
+        public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
+            if (light instanceof PointLight) {
+                // Point Light
+                light.transferToEffect(effect, "vLightData" + lightIndex);
+            } else if (light instanceof DirectionalLight) {
+                // Directional Light
+                light.transferToEffect(effect, "vLightData" + lightIndex);
+            } else if (light instanceof SpotLight) {
+                // Spot Light
+                light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
+            } else if (light instanceof HemisphericLight) {
+                // Hemispheric Light
+                light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
+            }
+        }
+
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
@@ -167,19 +183,7 @@
                     continue;
                 }
 
-                if (light instanceof PointLight) {
-                    // Point Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                } else if (light instanceof DirectionalLight) {
-                    // Directional Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                } else if (light instanceof SpotLight) {
-                    // Spot Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                } else if (light instanceof HemisphericLight) {
-                    // Hemispheric Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                }
+                MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 light.diffuse.scaleToRef(light.intensity, Tmp.Color3[0]);
                 effect.setColor4("vLightDiffuse" + lightIndex, Tmp.Color3[0], light.range);

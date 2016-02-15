@@ -226,22 +226,7 @@ var BABYLON;
                     continue;
                 }
                 this._lightRadiuses[lightIndex] = light.radius;
-                if (light instanceof BABYLON.PointLight) {
-                    // Point Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                }
-                else if (light instanceof BABYLON.DirectionalLight) {
-                    // Directional Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex);
-                }
-                else if (light instanceof BABYLON.SpotLight) {
-                    // Spot Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightDirection" + lightIndex);
-                }
-                else if (light instanceof BABYLON.HemisphericLight) {
-                    // Hemispheric Light
-                    light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
-                }
+                BABYLON.MaterialHelper.BindLightProperties(light, effect, lightIndex);
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
                 PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
@@ -713,9 +698,7 @@ var BABYLON;
                     }
                 }
                 // Clip plane
-                if (this._myScene.clipPlane) {
-                    this._effect.setFloat4("vClipPlane", this._myScene.clipPlane.normal.x, this._myScene.clipPlane.normal.y, this._myScene.clipPlane.normal.z, this._myScene.clipPlane.d);
-                }
+                BABYLON.MaterialHelper.BindClipPlane(this._effect, this._myScene);
                 // Point size
                 if (this.pointsCloud) {
                     this._effect.setFloat("pointSize", this.pointSize);
@@ -779,9 +762,7 @@ var BABYLON;
                 this._overloadedMicroSurface.z = this.overloadedReflectionIntensity;
                 this._effect.setVector3("vOverloadedMicroSurface", this._overloadedMicroSurface);
                 // Log. depth
-                if (this._defines.LOGARITHMICDEPTH) {
-                    this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(this._myScene.activeCamera.maxZ + 1.0) / Math.LN2));
-                }
+                BABYLON.MaterialHelper.BindLogDepth(this._defines, this._effect, this._myScene);
             }
             _super.prototype.bind.call(this, world, mesh);
             this._myScene = null;
