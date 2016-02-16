@@ -194,7 +194,6 @@ module BABYLON {
                     quad.slope.copyFromFloats(cd, h);
                     quad.facet1.copyFromFloats(norm1.x, norm1.y, norm1.z, d1);
                     quad.facet2.copyFromFloats(norm2.x, norm2.y, norm2.z, d2);
-                    this._heightQuads[row * this._subdivisions + col] = quad;
                 }
             }
         }
