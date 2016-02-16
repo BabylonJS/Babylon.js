@@ -1,4 +1,4 @@
-module BABYLON {
+﻿module BABYLON {
     export class GroundMesh extends Mesh {
         public generateOctree = false;
 
@@ -124,7 +124,7 @@ module BABYLON {
             this._heightQuads = new Array();
             for (var row = 0; row < this._subdivisions; row++) {
                 for (var col = 0; col < this._subdivisions; col++) {
-                    var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0, 0, 0,0), facet2: new BABYLON.Vector4(0, 0, 0,0) };
+                    var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0, 0, 0, 0), facet2: new BABYLON.Vector4(0, 0, 0, 0) };
                     this._heightQuads[row * this._subdivisions + col] = quad;
                 }
             }
@@ -199,3 +199,4 @@ module BABYLON {
         }
     }
 }
+
