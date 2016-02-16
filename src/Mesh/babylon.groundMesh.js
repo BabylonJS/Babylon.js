@@ -167,3 +167,4 @@ var BABYLON;
     })(BABYLON.Mesh);
     BABYLON.GroundMesh = GroundMesh;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.groundMesh.js.map

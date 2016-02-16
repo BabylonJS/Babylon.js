@@ -340,3 +340,4 @@ var BABYLON;
     })(BABYLON.Material);
     BABYLON.ShaderMaterial = ShaderMaterial;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.shaderMaterial.js.map

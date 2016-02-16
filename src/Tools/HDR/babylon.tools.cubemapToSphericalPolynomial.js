@@ -104,3 +104,4 @@ var BABYLON;
         Internals.CubeMapToSphericalPolynomialTools = CubeMapToSphericalPolynomialTools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tools.cubemapToSphericalPolynomial.js.map

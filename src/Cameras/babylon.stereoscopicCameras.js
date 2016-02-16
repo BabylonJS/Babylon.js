@@ -61,3 +61,4 @@ var BABYLON;
     })(BABYLON.GamepadCamera);
     BABYLON.StereoscopicGamepadCamera = StereoscopicGamepadCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.stereoscopicCameras.js.map
