@@ -126,4 +126,3 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.Bone = Bone;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.bone.js.map
