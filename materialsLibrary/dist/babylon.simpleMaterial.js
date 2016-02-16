@@ -244,10 +244,7 @@ var BABYLON;
                     this._effect.setMatrix("diffuseMatrix", this.diffuseTexture.getTextureMatrix());
                 }
                 // Clip plane
-                if (scene.clipPlane) {
-                    var clipPlane = scene.clipPlane;
-                    this._effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-                }
+                BABYLON.MaterialHelper.BindClipPlane(this._effect, scene);
                 // Point size
                 if (this.pointsCloud) {
                     this._effect.setFloat("pointSize", this.pointSize);
