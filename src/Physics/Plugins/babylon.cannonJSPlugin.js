@@ -387,4 +387,3 @@ var BABYLON;
     })();
     BABYLON.CannonJSPlugin = CannonJSPlugin;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.cannonJSPlugin.js.map

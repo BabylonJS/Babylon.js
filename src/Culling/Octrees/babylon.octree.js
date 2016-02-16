@@ -86,4 +86,3 @@ var BABYLON;
     })();
     BABYLON.Octree = Octree;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.octree.js.map

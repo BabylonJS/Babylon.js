@@ -23,4 +23,3 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.BlurPostProcess = BlurPostProcess;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.blurPostProcess.js.map
