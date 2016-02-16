@@ -426,3 +426,4 @@ var BABYLON;
     })();
     BABYLON.ParticleSystem = ParticleSystem;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.particleSystem.js.map

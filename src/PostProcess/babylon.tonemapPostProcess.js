@@ -40,3 +40,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.TonemapPostProcess = TonemapPostProcess;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tonemapPostProcess.js.map
