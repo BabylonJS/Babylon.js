@@ -17609,6 +17609,8 @@ var BABYLON;
                 }
                 else {
                     this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NOTLOADED;
+                    this._delayedOnLoad = onLoad;
+                    this._delayedOnError = onError;
                 }
             }
             else {
@@ -17626,7 +17628,7 @@ var BABYLON;
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
@@ -19506,6 +19508,44 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var FresnelParameters = (function () {
+        function FresnelParameters() {
+            this.isEnabled = true;
+            this.leftColor = BABYLON.Color3.White();
+            this.rightColor = BABYLON.Color3.Black();
+            this.bias = 0;
+            this.power = 1;
+        }
+        FresnelParameters.prototype.clone = function () {
+            var newFresnelParameters = new FresnelParameters();
+            BABYLON.Tools.DeepCopy(this, newFresnelParameters);
+            return new FresnelParameters;
+        };
+        FresnelParameters.prototype.serialize = function () {
+            var serializationObject = {};
+            serializationObject.isEnabled = this.isEnabled;
+            serializationObject.leftColor = this.leftColor;
+            serializationObject.rightColor = this.rightColor;
+            serializationObject.bias = this.bias;
+            serializationObject.power = this.power;
+            return serializationObject;
+        };
+        FresnelParameters.Parse = function (parsedFresnelParameters) {
+            var fresnelParameters = new FresnelParameters();
+            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
+            fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
+            fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
+            fresnelParameters.bias = parsedFresnelParameters.bias;
+            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
+            return fresnelParameters;
+        };
+        return FresnelParameters;
+    })();
+    BABYLON.FresnelParameters = FresnelParameters;
+})(BABYLON || (BABYLON = {}));
+
+var BABYLON;
+(function (BABYLON) {
     var MaterialDefines = (function () {
         function MaterialDefines() {
         }
@@ -19803,40 +19843,6 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FresnelParameters = (function () {
-        function FresnelParameters() {
-            this.isEnabled = true;
-            this.leftColor = BABYLON.Color3.White();
-            this.rightColor = BABYLON.Color3.Black();
-            this.bias = 0;
-            this.power = 1;
-        }
-        FresnelParameters.prototype.clone = function () {
-            var newFresnelParameters = new FresnelParameters();
-            BABYLON.Tools.DeepCopy(this, newFresnelParameters);
-            return new FresnelParameters;
-        };
-        FresnelParameters.prototype.serialize = function () {
-            var serializationObject = {};
-            serializationObject.isEnabled = this.isEnabled;
-            serializationObject.leftColor = this.leftColor;
-            serializationObject.rightColor = this.rightColor;
-            serializationObject.bias = this.bias;
-            serializationObject.power = this.power;
-            return serializationObject;
-        };
-        FresnelParameters.Parse = function (parsedFresnelParameters) {
-            var fresnelParameters = new FresnelParameters();
-            fresnelParameters.isEnabled = parsedFresnelParameters.isEnabled;
-            fresnelParameters.leftColor = BABYLON.Color3.FromArray(parsedFresnelParameters.leftColor);
-            fresnelParameters.rightColor = BABYLON.Color3.FromArray(parsedFresnelParameters.rightColor);
-            fresnelParameters.bias = parsedFresnelParameters.bias;
-            fresnelParameters.power = parsedFresnelParameters.power || 1.0;
-            return fresnelParameters;
-        };
-        return FresnelParameters;
-    })();
-    BABYLON.FresnelParameters = FresnelParameters;
     var StandardMaterialDefines = (function (_super) {
         __extends(StandardMaterialDefines, _super);
         function StandardMaterialDefines() {
@@ -20669,7 +20675,7 @@ var BABYLON;
                 material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
             }
             if (source.diffuseFresnelParameters) {
-                material.diffuseFresnelParameters = FresnelParameters.Parse(source.diffuseFresnelParameters);
+                material.diffuseFresnelParameters = BABYLON.FresnelParameters.Parse(source.diffuseFresnelParameters);
             }
             if (source.ambientTexture) {
                 material.ambientTexture = BABYLON.Texture.Parse(source.ambientTexture, scene, rootUrl);
@@ -20678,16 +20684,16 @@ var BABYLON;
                 material.opacityTexture = BABYLON.Texture.Parse(source.opacityTexture, scene, rootUrl);
             }
             if (source.opacityFresnelParameters) {
-                material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);
+                material.opacityFresnelParameters = BABYLON.FresnelParameters.Parse(source.opacityFresnelParameters);
             }
             if (source.reflectionTexture) {
                 material.reflectionTexture = BABYLON.Texture.Parse(source.reflectionTexture, scene, rootUrl);
             }
             if (source.reflectionFresnelParameters) {
-                material.reflectionFresnelParameters = FresnelParameters.Parse(source.reflectionFresnelParameters);
+                material.reflectionFresnelParameters = BABYLON.FresnelParameters.Parse(source.reflectionFresnelParameters);
             }
             if (source.refractionFresnelParameters) {
-                material.refractionFresnelParameters = FresnelParameters.Parse(source.refractionFresnelParameters);
+                material.refractionFresnelParameters = BABYLON.FresnelParameters.Parse(source.refractionFresnelParameters);
             }
             if (source.emissiveTexture) {
                 material.emissiveTexture = BABYLON.Texture.Parse(source.emissiveTexture, scene, rootUrl);
@@ -20697,7 +20703,7 @@ var BABYLON;
                 material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
             }
             if (source.emissiveFresnelParameters) {
-                material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
+                material.emissiveFresnelParameters = BABYLON.FresnelParameters.Parse(source.emissiveFresnelParameters);
             }
             if (source.specularTexture) {
                 material.specularTexture = BABYLON.Texture.Parse(source.specularTexture, scene, rootUrl);
