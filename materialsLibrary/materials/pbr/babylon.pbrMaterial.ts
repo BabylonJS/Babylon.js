@@ -253,6 +253,10 @@ module BABYLON {
         private static convertColorToLinearSpaceToRef (color: Color3, ref: Color3, useScalarInLinear: boolean): void {
             if (!useScalarInLinear) {
                 color.toLinearSpaceToRef(ref);
+            } else {
+                ref.r = color.r;
+                ref.g = color.g;
+                ref.b = color.b;
             }
         }
         

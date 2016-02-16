@@ -213,6 +213,11 @@ var BABYLON;
             if (!useScalarInLinear) {
                 color.toLinearSpaceToRef(ref);
             }
+            else {
+                ref.r = color.r;
+                ref.g = color.g;
+                ref.b = color.b;
+            }
         };
         PBRMaterial.BindLights = function (scene, mesh, effect, defines, useScalarInLinearSpace) {
             var lightIndex = 0;
