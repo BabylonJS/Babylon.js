@@ -1153,7 +1153,7 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
 
         coords.y = 1.0 - coords.y;
         #ifdef LODBASEDMICROSFURACE
-            environmentRadiance = texture2DLodExt(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
+            environmentRadiance = texture2DLodEXT(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
         #else
             environmentRadiance = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
         #endif
