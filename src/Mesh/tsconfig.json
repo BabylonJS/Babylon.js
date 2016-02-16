@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "isolatedModules": false,
+        "jsx": "react",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true
+    },
+    "filesGlob": [
+        "**/*.ts",
+        "**/*.tsx",
+        "!node_modules/**"
+    ],
+    "compileOnSave": true,
+    "buildOnSave": false,
+    "files": [
+        "babylon.abstractMesh.ts",
+        "babylon.csg.ts",
+        "babylon.geometry.ts",
+        "babylon.groundMesh.ts",
+        "babylon.instancedMesh.ts",
+        "babylon.linesMesh.ts",
+        "babylon.mesh.ts",
+        "babylon.mesh.vertexData.ts",
+        "babylon.meshBuilder.ts",
+        "babylon.meshLODLevel.ts",
+        "babylon.meshSimplification.ts",
+        "babylon.polygonMesh.ts",
+        "babylon.subMesh.ts",
+        "babylon.vertexBuffer.ts"
+    ],
+    "atom": {
+        "rewriteTsconfig": true
+    }
+}
