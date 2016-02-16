@@ -67,6 +67,8 @@
 
         // Methods
         public refreshBoundingInfo(): void {
+            this._lastColliderWorldVertices = null;
+
             if (this.IsGlobal) {
                 return;
             }
