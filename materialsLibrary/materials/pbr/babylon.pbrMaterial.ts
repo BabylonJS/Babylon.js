@@ -89,6 +89,7 @@ module BABYLON {
         public LINKREFRACTIONTOTRANSPARENCY = false;
         public REFRACTIONMAPINLINEARSPACE = false;
         public LODBASEDMICROSFURACE = false;
+        public USEPHYSICALLIGHTFALLOFF = false;
 
         constructor() {
             super();
@@ -148,26 +149,27 @@ module BABYLON {
         public albedoColor = new Color3(1, 1, 1);
         public reflectivityColor = new Color3(1, 1, 1);
         public reflectionColor = new Color3(0.5, 0.5, 0.5);
-        public microSurface = 0.5;
         public emissiveColor = new Color3(0, 0, 0);
-        public useAlphaFromAlbedoTexture = false;
-        public useEmissiveAsIllumination = false;
-        public linkEmissiveWithAlbedo = false;
-        public useSpecularOverAlpha = true;
-        public disableLighting = false;
-        
+        public microSurface = 0.5;
         public indexOfRefraction = 0.66;
         public invertRefractionY = false;
-        public linkRefractionWithTransparency = false;
-
-        public useLightmapAsShadowmap = false;
 
         public opacityFresnelParameters: FresnelParameters;
         public emissiveFresnelParameters: FresnelParameters;
 
+        public linkRefractionWithTransparency = false;
+        public linkEmissiveWithAlbedo = false;
+        
+        public useLightmapAsShadowmap = false;
+        public useEmissiveAsIllumination = false;
+        public useAlphaFromAlbedoTexture = false;
+        public useSpecularOverAlpha = true;
         public useMicroSurfaceFromReflectivityMapAlpha = false;
         public useAutoMicroSurfaceFromReflectivityMap = false;
         public useScalarInLinearSpace = false;
+        public usePhysicalLightFalloff = true;
+        
+        public disableLighting = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -560,6 +562,10 @@ module BABYLON {
 
             if (this._defines.SPECULARTERM && this.useSpecularOverAlpha) {
                 this._defines.SPECULAROVERALPHA = true;
+            }
+            
+            if (this.usePhysicalLightFalloff) {
+                this._defines.USEPHYSICALLIGHTFALLOFF = true;
             }
 
             // Attribs
@@ -1131,6 +1137,7 @@ module BABYLON {
             newPBRMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
             newPBRMaterial.indexOfRefraction = this.indexOfRefraction;
             newPBRMaterial.invertRefractionY = this.invertRefractionY;
+            newPBRMaterial.usePhysicalLightFalloff = this.usePhysicalLightFalloff;
 
             newPBRMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
             newPBRMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
@@ -1215,6 +1222,7 @@ module BABYLON {
             serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
             serializationObject.indexOfRefraction = this.indexOfRefraction;
             serializationObject.invertRefractionY = this.invertRefractionY;
+            serializationObject.usePhysicalLightFalloff = this.usePhysicalLightFalloff;
 
             serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
             serializationObject.opacityFresnelParameters = this.opacityFresnelParameters.serialize();
@@ -1312,6 +1320,7 @@ module BABYLON {
             material.useSpecularOverAlpha = source.useSpecularOverAlpha;
             material.indexOfRefraction = source.indexOfRefraction;
             material.invertRefractionY = source.invertRefractionY;
+            material.usePhysicalLightFalloff = source.usePhysicalLightFalloff;
 
             material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
             material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);
