@@ -20,16 +20,10 @@ attribute vec2 uv2;
 attribute vec4 color;
 #endif
 
-// Uniforms
+#include<bonesDeclaration>
 
-#ifdef INSTANCES
-attribute vec4 world0;
-attribute vec4 world1;
-attribute vec4 world2;
-attribute vec4 world3;
-#else
-uniform mat4 world;
-#endif
+// Uniforms
+#include<instancesDeclaration>
 
 uniform mat4 view;
 uniform mat4 viewProjection;
@@ -38,17 +32,6 @@ uniform mat4 viewProjection;
 varying vec2 vDiffuseUV;
 uniform mat4 diffuseMatrix;
 uniform vec2 vDiffuseInfos;
-#endif
-
-#if NUM_BONE_INFLUENCERS > 0
-	uniform mat4 mBones[BonesPerMesh];
-
-	attribute vec4 matricesIndices;
-	attribute vec4 matricesWeights;
-	#if NUM_BONE_INFLUENCERS > 4
-		attribute vec4 matricesIndicesExtra;
-		attribute vec4 matricesWeightsExtra;
-	#endif
 #endif
 
 #ifdef POINTSIZE
@@ -65,33 +48,11 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
 
-#ifdef FOG
-varying float fFogDistance;
-#endif
+#include<clipPlaneVertexDeclaration>
 
-#ifdef SHADOWS
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-uniform mat4 lightMatrix0;
-varying vec4 vPositionFromLight0;
-#endif
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-uniform mat4 lightMatrix1;
-varying vec4 vPositionFromLight1;
-#endif
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-uniform mat4 lightMatrix2;
-varying vec4 vPositionFromLight2;
-#endif
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-uniform mat4 lightMatrix3;
-varying vec4 vPositionFromLight3;
-#endif
-#endif
+#include<fogVertexDeclaration>
+#include<shadowsVertexDeclaration>
 
 /* NOISE FUNCTIONS */
 ////// ASHIMA webgl noise
@@ -202,45 +163,11 @@ float turbulence( vec3 p ) {
 }
 
 void main(void) {
-	mat4 finalWorld;
 
-#ifdef INSTANCES
-	finalWorld = mat4(world0, world1, world2, world3);
-#else
-	finalWorld = world;
-#endif
+#include<instancesVertex>
+#include<bonesVertex>
 
-#if NUM_BONE_INFLUENCERS > 0
-	mat4 influence;
-	influence = mBones[int(matricesIndices[0])] * matricesWeights[0];
-
-	#if NUM_BONE_INFLUENCERS > 1
-		influence += mBones[int(matricesIndices[1])] * matricesWeights[1];
-	#endif 
-	#if NUM_BONE_INFLUENCERS > 2
-		influence += mBones[int(matricesIndices[2])] * matricesWeights[2];
-	#endif	
-	#if NUM_BONE_INFLUENCERS > 3
-		influence += mBones[int(matricesIndices[3])] * matricesWeights[3];
-	#endif	
-
-	#if NUM_BONE_INFLUENCERS > 4
-		influence += mBones[int(matricesIndicesExtra[0])] * matricesWeightsExtra[0];
-	#endif
-	#if NUM_BONE_INFLUENCERS > 5
-		influence += mBones[int(matricesIndicesExtra[1])] * matricesWeightsExtra[1];
-	#endif	
-	#if NUM_BONE_INFLUENCERS > 6
-		influence += mBones[int(matricesIndicesExtra[2])] * matricesWeightsExtra[2];
-	#endif	
-	#if NUM_BONE_INFLUENCERS > 7
-		influence += mBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
-	#endif	
-
-	finalWorld = finalWorld * influence;
-#endif
-
-
+#ifdef NORMAL
     // get a turbulent 3d noise using the normal, normal to high freq
     noise = 10.0 *  -.10 * turbulence( .5 * normal + time*1.15 );
     // get a 3d noise using the position, low frequency
@@ -256,7 +183,6 @@ void main(void) {
 	vec4 worldPos = finalWorld * vec4(newPosition, 1.0);
 	vPositionW = vec3(worldPos);
 
-#ifdef NORMAL
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
 #endif
 
@@ -280,30 +206,11 @@ void main(void) {
 #endif
 
 	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
+#include<clipPlaneVertex>
 
 	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
-
-	// Shadows
-#ifdef SHADOWS
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-	vPositionFromLight0 = lightMatrix0 * worldPos;
-#endif
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-	vPositionFromLight1 = lightMatrix1 * worldPos;
-#endif
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-	vPositionFromLight2 = lightMatrix2 * worldPos;
-#endif
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-	vPositionFromLight3 = lightMatrix3 * worldPos;
-#endif
-#endif
+#include<fogVertex>
+#include<shadowsVertex>
 
 	// Vertex color
 #ifdef VERTEXCOLOR
