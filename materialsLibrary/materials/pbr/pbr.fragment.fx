@@ -1281,7 +1281,11 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
 #endif
 
 #ifdef SPECULAROVERALPHA
-    alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);
+    alpha = clamp(alpha + getLuminance(finalSpecular), 0., 1.);
+#endif
+
+#ifdef RADIANCEOVERALPHA
+    alpha = clamp(alpha + getLuminance(environmentRadiance), 0., 1.);
 #endif
 
 // Composition
