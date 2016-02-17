@@ -49,6 +49,8 @@
         public _samplingMode: number;
         private _buffer: any;
         private _deleteBuffer: boolean;
+        private _delayedOnLoad: () => void;
+        private _delayedOnError: () => void;
 
         constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false) {
             super(scene);
@@ -75,6 +77,9 @@
                     }
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+
+                    this._delayedOnLoad = onLoad;
+                    this._delayedOnError = onError;
                 }
             } else {
                 Tools.SetImmediate(() => {
@@ -94,7 +99,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }

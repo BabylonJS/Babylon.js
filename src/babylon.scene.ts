@@ -75,6 +75,8 @@
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
+        private _unTranslatedPointerX: number;
+        private _unTranslatedPointerY: number;
         private _startingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
         // Mirror
@@ -453,6 +455,9 @@
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
 
+            this._unTranslatedPointerX = this._pointerX;
+            this._unTranslatedPointerY = this._pointerY;
+
             if (this.cameraToUseForPointers) {
                 this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
                 this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
@@ -475,7 +480,7 @@
                 this._updatePointerPosition(evt);
 
                 // Meshes
-                var pickResult = this.pick(this._pointerX, this._pointerY,
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY,
                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined),
                     false,
                     this.cameraToUseForPointers);
@@ -493,7 +498,7 @@
                 } else {
                     this.setPointerOverMesh(null);
                     // Sprites
-                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
@@ -529,7 +534,7 @@
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
                     };
                 }
-                var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
@@ -552,7 +557,7 @@
                         if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
                             var that = this;
                             window.setTimeout(function () {
-                                var pickResult = that.pick(that._pointerX, that._pointerY,
+                                var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY,
                                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
                                     false, that.cameraToUseForPointers);
 
@@ -576,7 +581,7 @@
                 // Sprites
                 this._pickedDownSprite = null;
                 if (this.spriteManagers.length > 0) {
-                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
@@ -614,7 +619,7 @@
                 }
 
                 // Meshes
-                var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, predicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (this.onPointerPick && this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
@@ -640,7 +645,7 @@
                 
                 // Sprites
                 if (this.spriteManagers.length > 0) {
-                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {

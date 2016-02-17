@@ -51,6 +51,7 @@ var BABYLON;
         };
         // Methods
         SubMesh.prototype.refreshBoundingInfo = function () {
+            this._lastColliderWorldVertices = null;
             if (this.IsGlobal) {
                 return;
             }
