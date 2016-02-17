@@ -90,6 +90,7 @@ module BABYLON {
         public REFRACTIONMAPINLINEARSPACE = false;
         public LODBASEDMICROSFURACE = false;
         public USEPHYSICALLIGHTFALLOFF = false;
+        public RADIANCEOVERALPHA = false;
 
         constructor() {
             super();
@@ -168,6 +169,7 @@ module BABYLON {
         public useAutoMicroSurfaceFromReflectivityMap = false;
         public useScalarInLinearSpace = false;
         public usePhysicalLightFalloff = true;
+        public useRadianceOverAlpha = true;
         
         public disableLighting = false;
 
@@ -566,6 +568,10 @@ module BABYLON {
             
             if (this.usePhysicalLightFalloff) {
                 this._defines.USEPHYSICALLIGHTFALLOFF = true;
+            }
+            
+            if (this.useRadianceOverAlpha) {
+                this._defines.RADIANCEOVERALPHA = true;
             }
 
             // Attribs
@@ -1138,6 +1144,7 @@ module BABYLON {
             newPBRMaterial.indexOfRefraction = this.indexOfRefraction;
             newPBRMaterial.invertRefractionY = this.invertRefractionY;
             newPBRMaterial.usePhysicalLightFalloff = this.usePhysicalLightFalloff;
+            newPBRMaterial.useRadianceOverAlpha = this.useRadianceOverAlpha;
 
             newPBRMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
             newPBRMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
@@ -1223,6 +1230,7 @@ module BABYLON {
             serializationObject.indexOfRefraction = this.indexOfRefraction;
             serializationObject.invertRefractionY = this.invertRefractionY;
             serializationObject.usePhysicalLightFalloff = this.usePhysicalLightFalloff;
+            serializationObject.useRadianceOverAlpha = this.useRadianceOverAlpha;
 
             serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
             serializationObject.opacityFresnelParameters = this.opacityFresnelParameters.serialize();
@@ -1321,6 +1329,7 @@ module BABYLON {
             material.indexOfRefraction = source.indexOfRefraction;
             material.invertRefractionY = source.invertRefractionY;
             material.usePhysicalLightFalloff = source.usePhysicalLightFalloff;
+            material.useRadianceOverAlpha = source.useRadianceOverAlpha;
 
             material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
             material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);

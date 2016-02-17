@@ -57,6 +57,7 @@ declare module BABYLON {
         useAutoMicroSurfaceFromReflectivityMap: boolean;
         useScalarInLinearSpace: boolean;
         usePhysicalLightFalloff: boolean;
+        useRadianceOverAlpha: boolean;
         disableLighting: boolean;
         private _renderTargets;
         private _worldViewProjectionMatrix;
