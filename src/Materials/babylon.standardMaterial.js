@@ -91,6 +91,7 @@ var BABYLON;
             this.LOGARITHMICDEPTH = false;
             this.REFRACTION = false;
             this.REFRACTIONMAP_3D = false;
+            this.REFLECTIONOVERALPHA = false;
             this._keys = Object.keys(this);
         }
         return StandardMaterialDefines;
@@ -110,6 +111,7 @@ var BABYLON;
             this.linkEmissiveWithDiffuse = false;
             this.useReflectionFresnelFromSpecular = false;
             this.useSpecularOverAlpha = false;
+            this.useReflectionOverAlpha = false;
             this.disableLighting = false;
             this.roughness = 0;
             this.indexOfRefraction = 0.98;
@@ -228,6 +230,9 @@ var BABYLON;
                         if (this.roughness > 0) {
                             this._defines.ROUGHNESS = true;
                         }
+                        if (this.useReflectionOverAlpha) {
+                            this._defines.REFLECTIONOVERALPHA = true;
+                        }
                         if (this.reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE) {
                             this._defines.INVERTCUBICMAP = true;
                         }
@@ -326,9 +331,6 @@ var BABYLON;
             if (this.linkEmissiveWithDiffuse) {
                 this._defines.LINKEMISSIVEWITHDIFFUSE = true;
             }
-            if (this.useReflectionFresnelFromSpecular) {
-                this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
-            }
             if (this.useLogarithmicDepth) {
                 this._defines.LOGARITHMICDEPTH = true;
             }
@@ -358,6 +360,9 @@ var BABYLON;
                     }
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
                         this._defines.REFLECTIONFRESNEL = true;
+                        if (this.useReflectionFresnelFromSpecular) {
+                            this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
+                        }
                     }
                     if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
                         this._defines.REFRACTIONFRESNEL = true;
@@ -738,6 +743,7 @@ var BABYLON;
             newStandardMaterial.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
             newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
             newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
+            newStandardMaterial.useReflectionOverAlpha = this.useReflectionOverAlpha;
             newStandardMaterial.roughness = this.roughness;
             newStandardMaterial.indexOfRefraction = this.indexOfRefraction;
             newStandardMaterial.invertRefractionY = this.invertRefractionY;
@@ -769,6 +775,8 @@ var BABYLON;
             serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
             serializationObject.indexOfRefraction = this.indexOfRefraction;
             serializationObject.invertRefractionY = this.invertRefractionY;
+            serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
+            serializationObject.useReflectionOverAlpha = this.useReflectionOverAlpha;
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
             }
@@ -825,6 +833,8 @@ var BABYLON;
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
             material.indexOfRefraction = source.indexOfRefraction;
             material.invertRefractionY = source.invertRefractionY;
+            material.useSpecularOverAlpha = source.useSpecularOverAlpha;
+            material.useReflectionOverAlpha = source.useReflectionOverAlpha;
             material.alpha = source.alpha;
             material.id = source.id;
             if (source.disableDepthWrite) {

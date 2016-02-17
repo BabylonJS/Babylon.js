@@ -581,6 +581,11 @@
             var sina = Math.sin(this.alpha);
             var cosb = Math.cos(this.beta);
             var sinb = Math.sin(this.beta);
+
+            if (sinb === 0) {
+                sinb = 0.0001;
+            }
+
             var target = this._getTargetPosition();
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             this.position.copyFrom(this._newPosition);

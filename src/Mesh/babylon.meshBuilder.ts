@@ -151,11 +151,11 @@
 
             return torusKnot;
         }
-        
-        public static CreateLineSystem(name: string, options: {lines: Vector3[][], updatable: boolean, instance?: LinesMesh}, scene: Scene): LinesMesh {
+
+        public static CreateLineSystem(name: string, options: { lines: Vector3[][], updatable: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh {
             var instance = options.instance;
             var lines = options.lines;
-            
+
             if (instance) { // lines update
                 var positionFunction = positions => {
                     var i = 0;
@@ -844,4 +844,3 @@
         }
     }
 }
-

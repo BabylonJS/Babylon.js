@@ -82,6 +82,7 @@
         public LOGARITHMICDEPTH = false;
         public REFRACTION = false;
         public REFRACTIONMAP_3D = false;
+        public REFLECTIONOVERALPHA = false;
 
         constructor() {
             super();
@@ -110,6 +111,7 @@
         public linkEmissiveWithDiffuse = false;
         public useReflectionFresnelFromSpecular = false;
         public useSpecularOverAlpha = false;
+        public useReflectionOverAlpha = false;
         public disableLighting = false;
 
         public roughness = 0;
@@ -265,6 +267,10 @@
                             this._defines.ROUGHNESS = true;
                         }
 
+                        if (this.useReflectionOverAlpha) {
+                            this._defines.REFLECTIONOVERALPHA = true;
+                        }
+
                         if (this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                             this._defines.INVERTCUBICMAP = true;
                         }
@@ -372,10 +378,6 @@
                 this._defines.LINKEMISSIVEWITHDIFFUSE = true;
             }
 
-            if (this.useReflectionFresnelFromSpecular) {
-                this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
-            }
-
             if (this.useLogarithmicDepth) {
                 this._defines.LOGARITHMICDEPTH = true;
             }
@@ -412,6 +414,10 @@
 
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
                         this._defines.REFLECTIONFRESNEL = true;
+
+                        if (this.useReflectionFresnelFromSpecular) {
+                            this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
+                        }
                     }
 
                     if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
@@ -896,6 +902,7 @@
             newStandardMaterial.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
             newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
             newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
+            newStandardMaterial.useReflectionOverAlpha = this.useReflectionOverAlpha;
             newStandardMaterial.roughness = this.roughness;
             newStandardMaterial.indexOfRefraction = this.indexOfRefraction;
             newStandardMaterial.invertRefractionY = this.invertRefractionY;
@@ -931,6 +938,8 @@
             serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
             serializationObject.indexOfRefraction = this.indexOfRefraction;
             serializationObject.invertRefractionY = this.invertRefractionY;
+            serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
+            serializationObject.useReflectionOverAlpha = this.useReflectionOverAlpha;
 
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
@@ -1017,6 +1026,8 @@
             material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
             material.indexOfRefraction = source.indexOfRefraction;
             material.invertRefractionY = source.invertRefractionY;
+            material.useSpecularOverAlpha = source.useSpecularOverAlpha;
+            material.useReflectionOverAlpha = source.useReflectionOverAlpha;
 
             material.alpha = source.alpha;
 

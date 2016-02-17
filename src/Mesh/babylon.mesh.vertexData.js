@@ -914,6 +914,27 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
+        VertexData.CreateLineSystem = function (options) {
+            var indices = [];
+            var positions = [];
+            var lines = options.lines;
+            var idx = 0;
+            for (var l = 0; l < lines.length; l++) {
+                var points = lines[l];
+                for (var index = 0; index < points.length; index++) {
+                    positions.push(points[index].x, points[index].y, points[index].z);
+                    if (index > 0) {
+                        indices.push(idx - 1);
+                        indices.push(idx);
+                    }
+                    idx++;
+                }
+            }
+            var vertexData = new VertexData();
+            vertexData.indices = indices;
+            vertexData.positions = positions;
+            return vertexData;
+        };
         VertexData.CreateLines = function (options) {
             var indices = [];
             var positions = [];
