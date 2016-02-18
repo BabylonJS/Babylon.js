@@ -41,6 +41,11 @@ var BABYLON;
             _super.prototype.detachControl.call(this, element);
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         };
+        VRDeviceOrientationFreeCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "VRDeviceOrientationFreeCamera";
+            return serializationObject;
+        };
         return VRDeviceOrientationFreeCamera;
     })(BABYLON.FreeCamera);
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;

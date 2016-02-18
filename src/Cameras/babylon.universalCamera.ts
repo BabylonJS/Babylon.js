@@ -54,5 +54,13 @@ module BABYLON {
             this._gamepads.dispose();
             super.dispose();
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.type = "UniversalCamera";
+
+            return serializationObject;
+        }
     }
 }

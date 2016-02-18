@@ -677,6 +677,8 @@
         public serialize(): any {
             var serializationObject = super.serialize();
 
+            serializationObject.type = "ArcRotateCamera";
+
             if (this.target instanceof Vector3) {
                 serializationObject.target = this.target.asArray();
             }

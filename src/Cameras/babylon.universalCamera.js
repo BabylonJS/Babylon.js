@@ -51,6 +51,11 @@ var BABYLON;
             this._gamepads.dispose();
             _super.prototype.dispose.call(this);
         };
+        UniversalCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "UniversalCamera";
+            return serializationObject;
+        };
         return UniversalCamera;
     })(BABYLON.TouchCamera);
     BABYLON.UniversalCamera = UniversalCamera;

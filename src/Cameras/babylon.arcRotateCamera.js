@@ -576,6 +576,7 @@ var BABYLON;
         };
         ArcRotateCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "ArcRotateCamera";
             if (this.target instanceof BABYLON.Vector3) {
                 serializationObject.target = this.target.asArray();
             }

@@ -46,5 +46,13 @@ module BABYLON {
 
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.type = "VRDeviceOrientationFreeCamera";
+
+            return serializationObject;
+        }
     }
 }
