@@ -1875,7 +1875,7 @@
             // Physics
             if (this._physicsEngine) {
                 Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                this._physicsEngine._step(deltaTime / 1000.0);
                 Tools.EndPerformanceCounter("Physics");
             }
 
@@ -2486,16 +2486,14 @@
                 return true;
             }
 
-            this._physicsEngine = new PhysicsEngine(plugin);
-
-            if (!this._physicsEngine.isSupported()) {
-                this._physicsEngine = null;
+            try {
+                this._physicsEngine = new PhysicsEngine(gravity, plugin);
+                return true;
+            } catch(e) {
+                Tools.Error(e.message);
                 return false;
             }
-
-            this._physicsEngine._initialize(gravity);
-
-            return true;
+            
         }
 
         public disablePhysicsEngine(): void {
@@ -2512,45 +2510,45 @@
         }
 
         /**
+         * 
          * Sets the gravity of the physics engine (and NOT of the scene)
          * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
          */
         public setGravity(gravity: Vector3): void {
+            Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'")
             if (!this._physicsEngine) {
                 return;
             }
 
-            this._physicsEngine._setGravity(gravity);
+            this._physicsEngine.setGravity(gravity);
         }
 
-        public createCompoundImpostor(parts: any, options: PhysicsBodyCreationOptions): any {
+        /**
+         * Legacy support, using the new API
+         * @Deprecated
+         */
+        public createCompoundImpostor(parts: any, options: PhysicsImpostorParameters): any {
+            Tools.Warn("This function is deprecated. Please use PhysicsImpostor parent/child")
+            
             if (parts.parts) { // Old API
                 options = parts;
                 parts = parts.parts;
             }
-
-            if (!this._physicsEngine) {
-                return null;
+            
+            var mainMesh : AbstractMesh = parts[0].mesh;
+            mainMesh.physicImpostor = new PhysicsImpostor(mainMesh, parts[0].impostor, options)
+            for (var index = 1; index < parts.length; index++) {
+                var mesh : AbstractMesh = parts[index].mesh;
+                mesh.position = mesh.position.subtract(mainMesh.position);
+                mesh.parent = mainMesh;
+                mesh.physicImpostor = new PhysicsImpostor(mesh, parts[index].impostor, options)
             }
-
-            for (var index = 0; index < parts.length; index++) {
-                var mesh = parts[index].mesh;
-
-                mesh._physicImpostor = parts[index].impostor;
-                mesh._physicsMass = options.mass / parts.length;
-                mesh._physicsFriction = options.friction;
-                mesh._physicRestitution = options.restitution;
-            }
-
-            return this._physicsEngine._registerMeshesAsCompound(parts, options);
         }
 
         public deleteCompoundImpostor(compound: any): void {
-            for (var index = 0; index < compound.parts.length; index++) {
-                var mesh = compound.parts[index].mesh;
-                mesh._physicImpostor = PhysicsEngine.NoImpostor;
-                this._physicsEngine._unregisterMesh(mesh);
-            }
+            var mesh : AbstractMesh = compound.parts[0].mesh;
+            mesh.physicImpostor.dispose(true);
+            mesh.physicImpostor = null;
         }
 
         // Misc.

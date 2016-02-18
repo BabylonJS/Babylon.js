@@ -1,75 +1,110 @@
 var BABYLON;
 (function (BABYLON) {
     var PhysicsEngine = (function () {
-        function PhysicsEngine(plugin) {
-            this._currentPlugin = plugin || new BABYLON.OimoJSPlugin();
+        function PhysicsEngine(gravity, _physicsPlugin) {
+            if (gravity === void 0) { gravity = new BABYLON.Vector3(0, -9.807, 0); }
+            if (_physicsPlugin === void 0) { _physicsPlugin = new BABYLON.CannonJSPlugin(); }
+            this._physicsPlugin = _physicsPlugin;
+            //new methods and parameters
+            this._impostors = [];
+            this._joints = [];
+            if (!this._physicsPlugin.isSupported()) {
+                throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. "
+                    + "Please make sure it is included.");
+            }
+            this.setGravity(gravity);
         }
-        PhysicsEngine.prototype._initialize = function (gravity) {
-            this._currentPlugin.initialize();
-            this._setGravity(gravity);
+        PhysicsEngine.prototype.setGravity = function (gravity) {
+            this.gravity = gravity;
+            this._physicsPlugin.setGravity(this.gravity);
         };
-        PhysicsEngine.prototype._runOneStep = function (delta) {
+        PhysicsEngine.prototype.dispose = function () {
+            this._impostors.forEach(function (impostor) {
+                impostor.dispose();
+            });
+            this._physicsPlugin.dispose();
+        };
+        PhysicsEngine.prototype.getPhysicsPluginName = function () {
+            return this._physicsPlugin.name;
+        };
+        PhysicsEngine.prototype.addImpostor = function (impostor) {
+            this._impostors.push(impostor);
+        };
+        PhysicsEngine.prototype.removeImpostor = function (impostor) {
+            var index = this._impostors.indexOf(impostor);
+            if (index > -1) {
+                var removed = this._impostors.splice(index, 1);
+                //Is it needed?
+                if (removed.length) {
+                    this._physicsPlugin.removePhysicsBody(removed[0]);
+                }
+            }
+        };
+        PhysicsEngine.prototype.addJoint = function (mainImpostor, connectedImpostor, joint) {
+            this._joints.push({
+                mainImpostor: mainImpostor,
+                connectedImpostor: connectedImpostor,
+                joint: joint
+            });
+        };
+        PhysicsEngine.prototype.removeJoint = function (mainImpostor, connectedImpostor, joint) {
+            var matchingJoints = this._joints.filter(function (impostorJoint) {
+                return (impostorJoint.connectedImpostor === connectedImpostor
+                    && impostorJoint.joint === joint
+                    && impostorJoint.mainImpostor === mainImpostor);
+            });
+            if (matchingJoints.length) {
+                this._physicsPlugin.removeJoint(matchingJoints[0]);
+            }
+        };
+        PhysicsEngine.prototype._step = function (delta) {
+            var _this = this;
+            //check if any mesh has no body / requires an update
+            this._impostors.forEach(function (impostor) {
+                if (impostor.isUpdateRequired()) {
+                    _this._physicsPlugin.generatePhysicsBody(impostor);
+                }
+            });
             if (delta > 0.1) {
                 delta = 0.1;
             }
             else if (delta <= 0) {
                 delta = 1.0 / 60.0;
             }
-            this._currentPlugin.runOneStep(delta);
+            this._physicsPlugin.executeStep(delta, this._impostors);
         };
-        PhysicsEngine.prototype._setGravity = function (gravity) {
-            this.gravity = gravity || new BABYLON.Vector3(0, -9.807, 0);
-            this._currentPlugin.setGravity(this.gravity);
+        PhysicsEngine.prototype.getPhysicsPlugin = function () {
+            return this._physicsPlugin;
         };
-        PhysicsEngine.prototype._getGravity = function () {
-            return this._currentPlugin.getGravity();
+        PhysicsEngine.prototype.getImpostorWithPhysicsBody = function (body) {
+            for (var i = 0; i < this._impostors.length; ++i) {
+                if (this._impostors[i].physicsBody === body) {
+                    return this._impostors[i];
+                }
+            }
         };
-        PhysicsEngine.prototype._registerMesh = function (mesh, impostor, options) {
-            return this._currentPlugin.registerMesh(mesh, impostor, options);
-        };
-        PhysicsEngine.prototype._registerMeshesAsCompound = function (parts, options) {
-            return this._currentPlugin.registerMeshesAsCompound(parts, options);
-        };
-        PhysicsEngine.prototype._unregisterMesh = function (mesh) {
-            this._currentPlugin.unregisterMesh(mesh);
-        };
-        PhysicsEngine.prototype._applyImpulse = function (mesh, force, contactPoint) {
-            this._currentPlugin.applyImpulse(mesh, force, contactPoint);
-        };
-        PhysicsEngine.prototype._createLink = function (mesh1, mesh2, pivot1, pivot2, options) {
-            return this._currentPlugin.createLink(mesh1, mesh2, pivot1, pivot2, options);
-        };
-        PhysicsEngine.prototype._updateBodyPosition = function (mesh) {
-            this._currentPlugin.updateBodyPosition(mesh);
-        };
-        PhysicsEngine.prototype.dispose = function () {
-            this._currentPlugin.dispose();
-        };
-        PhysicsEngine.prototype.isSupported = function () {
-            return this._currentPlugin.isSupported();
-        };
-        PhysicsEngine.prototype.getPhysicsBodyOfMesh = function (mesh) {
-            return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
-        };
-        PhysicsEngine.prototype.getPhysicsPluginName = function () {
-            return this._currentPlugin.name;
-        };
-        PhysicsEngine.prototype.getWorldObject = function () {
-            return this._currentPlugin.getWorldObject();
-        };
-        // Statics
-        PhysicsEngine.NoImpostor = 0;
-        PhysicsEngine.SphereImpostor = 1;
-        PhysicsEngine.BoxImpostor = 2;
-        PhysicsEngine.PlaneImpostor = 3;
-        PhysicsEngine.MeshImpostor = 4;
-        PhysicsEngine.CapsuleImpostor = 5;
-        PhysicsEngine.ConeImpostor = 6;
-        PhysicsEngine.CylinderImpostor = 7;
-        PhysicsEngine.ConvexHullImpostor = 8;
-        PhysicsEngine.HeightmapImpostor = 9;
+        // Statics, Legacy support.
+        /**
+         * @Deprecated
+         *
+         */
+        PhysicsEngine.NoImpostor = BABYLON.PhysicsImpostor.NoImpostor;
+        PhysicsEngine.SphereImpostor = BABYLON.PhysicsImpostor.SphereImpostor;
+        PhysicsEngine.BoxImpostor = BABYLON.PhysicsImpostor.BoxImpostor;
+        PhysicsEngine.PlaneImpostor = BABYLON.PhysicsImpostor.PlaneImpostor;
+        PhysicsEngine.MeshImpostor = BABYLON.PhysicsImpostor.MeshImpostor;
+        PhysicsEngine.CapsuleImpostor = BABYLON.PhysicsImpostor.CapsuleImpostor;
+        PhysicsEngine.ConeImpostor = BABYLON.PhysicsImpostor.ConeImpostor;
+        PhysicsEngine.CylinderImpostor = BABYLON.PhysicsImpostor.CylinderImpostor;
+        PhysicsEngine.ConvexHullImpostor = BABYLON.PhysicsImpostor.ConvexHullImpostor;
+        PhysicsEngine.HeightmapImpostor = BABYLON.PhysicsImpostor.HeightmapImpostor;
         PhysicsEngine.Epsilon = 0.001;
         return PhysicsEngine;
     })();
     BABYLON.PhysicsEngine = PhysicsEngine;
+    (function (PhysicsFeature) {
+        PhysicsFeature[PhysicsFeature["PIVOT_IN_JOINT"] = 0] = "PIVOT_IN_JOINT";
+        PhysicsFeature[PhysicsFeature["TRIMESH"] = 1] = "TRIMESH";
+    })(BABYLON.PhysicsFeature || (BABYLON.PhysicsFeature = {}));
+    var PhysicsFeature = BABYLON.PhysicsFeature;
 })(BABYLON || (BABYLON = {}));

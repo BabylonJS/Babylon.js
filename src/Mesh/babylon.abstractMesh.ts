@@ -29,10 +29,10 @@
 
         // Properties
         public definedFacingForward = true; // orientation for POV movement & rotation
-        public position = new Vector3(0, 0, 0);
-        public rotation = new Vector3(0, 0, 0);
-        public rotationQuaternion: Quaternion;
-        public scaling = new Vector3(1, 1, 1);
+        private _position = new Vector3(0, 0, 0);
+        private _rotation = new Vector3(0, 0, 0);
+        private _rotationQuaternion: Quaternion;
+        private _scaling = new Vector3(1, 1, 1);
         public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
         public alphaIndex = Number.MAX_VALUE;
@@ -69,10 +69,8 @@
         public alwaysSelectAsActiveMesh = false;
 
         // Physics
-        public _physicImpostor = PhysicsEngine.NoImpostor;
-        public _physicsMass: number;
-        public _physicsFriction: number;
-        public _physicRestitution: number;
+        public physicImpostor: BABYLON.PhysicsImpostor;
+        //Deprecated, Legacy support
         public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void; 
 
         // Collisions
@@ -156,6 +154,52 @@
             super(name, scene);
 
             scene.addMesh(this);
+        }
+
+        public get position(): Vector3 {
+            return this._position;
+        }
+
+        public set position(newPosition: Vector3) {
+            this._position = newPosition;
+            if (this.physicImpostor) {
+                this.physicImpostor.setTransformationUpdated(true);
+            }
+        }
+
+        public get rotation(): Vector3 {
+            if (this.rotationQuaternion) {
+                Tools.Warn("Quaternion rotation is used, the rotation value is probably wrong");
+            }
+            return this._rotation;
+        }
+
+        public set rotation(newRotation: Vector3) {
+            this._rotation = newRotation;
+            //check if rotationQuaternion exists, and if it does - update it!
+            if (this._rotationQuaternion) {
+                var len = this._rotation.length();
+                if (len) {
+                    this._rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z))
+                    this._rotation.copyFromFloats(0, 0, 0);
+                }
+            }
+        }
+
+        public get scaling(): Vector3 {
+            return this._scaling;
+        }
+
+        public set scaling(newScaling: Vector3) {
+            this._scaling = newScaling;
+        }
+
+        public get rotationQuaternion(): Quaternion {
+            return this._rotationQuaternion;
+        }
+
+        public set rotationQuaternion(quaternion: Quaternion) {
+            this._rotationQuaternion = quaternion;
         }
 
         // Methods
@@ -692,74 +736,69 @@
             return this._boundingInfo.intersectsPoint(point);
         }
 
+        public getChildMeshes(): AbstractMesh[] {
+            return this.getScene().meshes.filter((m) => {
+                return m.parent === this;
+            });
+        }
+
+        public getChildren(): Node[] {
+            var results = [];
+            for (var index = 0; index < this.getScene().meshes.length; index++) {
+                var mesh = this.getScene().meshes[index];
+                if (mesh.parent === this) {
+                    results.push(mesh);
+                }
+            }
+
+            for (var index = 0; index < this.getScene().lights.length; index++) {
+                var light = this.getScene().lights[index];
+                if (light.parent === this) {
+                    results.push(mesh);
+                }
+            }
+
+            for (var index = 0; index < this.getScene().cameras.length; index++) {
+                var camera = this.getScene().cameras[index];
+                if (camera.parent === this) {
+                    results.push(mesh);
+                }
+            }
+
+            return results;
+        }
+
         // Physics
-        public setPhysicsState(impostor?: any, options?: PhysicsBodyCreationOptions): any {
-            var physicsEngine = this.getScene().getPhysicsEngine();
-
-            if (!physicsEngine) {
-                return null;
-            }
-
-            impostor = impostor || PhysicsEngine.NoImpostor;
-
-            if (impostor.impostor) {
-                // Old API
-                options = impostor;
-                impostor = impostor.impostor;
-            }
-
-            if (impostor === PhysicsEngine.NoImpostor) {
-                physicsEngine._unregisterMesh(this);
-                return null;
-            }
-
-            if (!options) {
-                options = { mass: 0, friction: 0.2, restitution: 0.2 };
-            } else {
-                if (!options.mass && options.mass !== 0) options.mass = 0;
-                if (!options.friction && options.friction !== 0) options.friction = 0.2;
-                if (!options.restitution && options.restitution !== 0) options.restitution = 0.2;
-            }
-
-            this._physicImpostor = impostor;
-            this._physicsMass = options.mass;
-            this._physicsFriction = options.friction;
-            this._physicRestitution = options.restitution;
-
-
-            return physicsEngine._registerMesh(this, impostor, options);
+        /**
+         *  @Deprecated. Use new PhysicsImpostor instead.
+         * */
+        public setPhysicsState(impostor?: any, options?: PhysicsImpostorParameters): any {
+            this.physicImpostor = new PhysicsImpostor(this, impostor, options);
         }
 
-        public getPhysicsImpostor(): number {
-            if (!this._physicImpostor) {
-                return PhysicsEngine.NoImpostor;
-            }
-
-            return this._physicImpostor;
+        public getPhysicsImpostor(): PhysicsImpostor {
+            return this.physicImpostor;
         }
 
+        /**
+         * @Deprecated. Use getPhysicsImpostor().getParam("mass");
+         */
         public getPhysicsMass(): number {
-            if (!this._physicsMass) {
-                return 0;
-            }
-
-            return this._physicsMass;
+            return this.physicImpostor.getParam("mass")
         }
 
+        /**
+         * @Deprecated. Use getPhysicsImpostor().getParam("friction");
+         */
         public getPhysicsFriction(): number {
-            if (!this._physicsFriction) {
-                return 0;
-            }
-
-            return this._physicsFriction;
+            return this.physicImpostor.getParam("friction")
         }
 
+        /**
+         * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
+         */
         public getPhysicsRestitution(): number {
-            if (!this._physicRestitution) {
-                return 0;
-            }
-
-            return this._physicRestitution;
+            return this.physicImpostor.getParam("resitution")
         }
 
         public getPositionInCameraSpace(camera?: Camera): Vector3 {
@@ -779,31 +818,39 @@
         }
 
         public applyImpulse(force: Vector3, contactPoint: Vector3): void {
-            if (!this._physicImpostor) {
+            if (!this.physicImpostor) {
                 return;
             }
 
-            this.getScene().getPhysicsEngine()._applyImpulse(this, force, contactPoint);
+            this.physicImpostor.applyImpulse(force, contactPoint);
         }
 
         public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): void {
-            if (!this._physicImpostor) {
+            if (!this.physicImpostor || !otherMesh.physicImpostor) {
                 return;
             }
 
-            this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2, options);
+            this.physicImpostor.createJoint(otherMesh.physicImpostor, PhysicsJoint.HingeJoint, {
+                mainPivot: pivot1,
+                connectedPivot: pivot2
+            })
         }
 
+        /**
+         * @Deprecated
+         */
         public updatePhysicsBodyPosition(): void {
             Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()")
             this.updatePhysicsBody();
         }
 
+        /**
+         * @Deprecated
+         * Calling this function is not needed anymore. 
+         * The physics engine takes care of transofmration automatically.
+         */
         public updatePhysicsBody(): void {
-            if (!this._physicImpostor) {
-                return;
-            }
-            this.getScene().getPhysicsEngine()._updateBodyPosition(this);
+            //Unneeded
         }
 
 
@@ -1033,8 +1080,8 @@
             this.getScene().stopAnimation(this);
 
             // Physics
-            if (this.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
-                this.setPhysicsState(PhysicsEngine.NoImpostor);
+            if (this.physicImpostor) {
+                this.physicImpostor.dispose(!doNotRecurse);
             }
 
             // Intersections in progress
