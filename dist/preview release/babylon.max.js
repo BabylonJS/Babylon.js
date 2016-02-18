@@ -4030,12 +4030,6 @@ var BABYLON;
             }
             return fn;
         };
-        Tools.GetConstructorName = function (obj) {
-            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
-            var cname = str.match(/function\s(\w*)/)[1];
-            var aliases = ["", "anonymous", "Anonymous"];
-            return aliases.indexOf(cname) > -1 ? "Function" : cname;
-        };
         Tools.ToHex = function (i) {
             var str = i.toString(16);
             if (i <= 15) {
@@ -10705,7 +10699,6 @@ var BABYLON;
             serializationObject.tags = BABYLON.Tags.GetTags(this);
             serializationObject.id = this.id;
             serializationObject.position = this.position.asArray();
-            serializationObject.type = BABYLON.Tools.GetConstructorName(this);
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
@@ -11095,6 +11088,7 @@ var BABYLON;
         TargetCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
             serializationObject.speed = this.speed;
+            serializationObject.type = "TargetCamera";
             if (this.rotation) {
                 serializationObject.rotation = this.rotation.asArray();
             }
@@ -11335,6 +11329,7 @@ var BABYLON;
         };
         FreeCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "FreeCamera";
             serializationObject.checkCollisions = this.checkCollisions;
             serializationObject.applyGravity = this.applyGravity;
             serializationObject.ellipsoid = this.ellipsoid.asArray();
@@ -11405,6 +11400,7 @@ var BABYLON;
         };
         FollowCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "FollowCamera";
             serializationObject.radius = this.radius;
             serializationObject.heightOffset = this.heightOffset;
             serializationObject.rotationOffset = this.rotationOffset;
@@ -11437,6 +11433,7 @@ var BABYLON;
         };
         ArcFollowCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "ArcFollowCamera";
             serializationObject.radius = this.radius;
             return serializationObject;
         };
@@ -11560,6 +11557,11 @@ var BABYLON;
                 }
             }
             _super.prototype._checkInputs.call(this);
+        };
+        TouchCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "TouchCamera";
+            return serializationObject;
         };
         return TouchCamera;
     })(BABYLON.FreeCamera);
@@ -12145,6 +12147,7 @@ var BABYLON;
         };
         ArcRotateCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "ArcRotateCamera";
             if (this.target instanceof BABYLON.Vector3) {
                 serializationObject.target = this.target.asArray();
             }
@@ -32893,6 +32896,11 @@ var BABYLON;
             this._leftjoystick.releaseCanvas();
             _super.prototype.dispose.call(this);
         };
+        VirtualJoysticksCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "VirtualJoysticksCamera";
+            return serializationObject;
+        };
         return VirtualJoysticksCamera;
     })(BABYLON.FreeCamera);
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
@@ -33267,6 +33275,11 @@ var BABYLON;
             _super.prototype.detachControl.call(this, element);
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         };
+        VRDeviceOrientationFreeCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "VRDeviceOrientationFreeCamera";
+            return serializationObject;
+        };
         return VRDeviceOrientationFreeCamera;
     })(BABYLON.FreeCamera);
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;
@@ -33341,6 +33354,11 @@ var BABYLON;
         WebVRFreeCamera.prototype.detachControl = function (element) {
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
+        };
+        WebVRFreeCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "WebVRFreeCamera";
+            return serializationObject;
         };
         return WebVRFreeCamera;
     })(BABYLON.FreeCamera);
@@ -34707,6 +34725,11 @@ var BABYLON;
             BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
             this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
             _super.prototype._checkInputs.call(this);
+        };
+        DeviceOrientationCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "DeviceOrientationCamera";
+            return serializationObject;
         };
         return DeviceOrientationCamera;
     })(BABYLON.FreeCamera);
@@ -38211,6 +38234,11 @@ var BABYLON;
             this._gamepads.dispose();
             _super.prototype.dispose.call(this);
         };
+        UniversalCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "UniversalCamera";
+            return serializationObject;
+        };
         return UniversalCamera;
     })(BABYLON.TouchCamera);
     BABYLON.UniversalCamera = UniversalCamera;
@@ -38725,6 +38753,11 @@ var BABYLON;
             BABYLON.Tools.Warn("Deprecated. Please use Universal Camera instead.");
             _super.call(this, name, position, scene);
         }
+        GamepadCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "GamepadCamera";
+            return serializationObject;
+        };
         return GamepadCamera;
     })(BABYLON.UniversalCamera);
     BABYLON.GamepadCamera = GamepadCamera;
@@ -38745,6 +38778,11 @@ var BABYLON;
             this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
+        AnaglyphFreeCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "AnaglyphFreeCamera";
+            return serializationObject;
+        };
         return AnaglyphFreeCamera;
     })(BABYLON.FreeCamera);
     BABYLON.AnaglyphFreeCamera = AnaglyphFreeCamera;
@@ -38754,6 +38792,11 @@ var BABYLON;
             _super.call(this, name, alpha, beta, radius, target, scene);
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
+        AnaglyphArcRotateCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "AnaglyphArcRotateCamera";
+            return serializationObject;
+        };
         return AnaglyphArcRotateCamera;
     })(BABYLON.ArcRotateCamera);
     BABYLON.AnaglyphArcRotateCamera = AnaglyphArcRotateCamera;
@@ -38763,6 +38806,11 @@ var BABYLON;
             _super.call(this, name, position, scene);
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
+        AnaglyphGamepadCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "AnaglyphGamepadCamera";
+            return serializationObject;
+        };
         return AnaglyphGamepadCamera;
     })(BABYLON.GamepadCamera);
     BABYLON.AnaglyphGamepadCamera = AnaglyphGamepadCamera;
@@ -38772,6 +38820,11 @@ var BABYLON;
             _super.call(this, name, position, scene);
             this.setCameraRigMode(isSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
+        StereoscopicFreeCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "StereoscopicFreeCamera";
+            return serializationObject;
+        };
         return StereoscopicFreeCamera;
     })(BABYLON.FreeCamera);
     BABYLON.StereoscopicFreeCamera = StereoscopicFreeCamera;
@@ -38781,6 +38834,11 @@ var BABYLON;
             _super.call(this, name, alpha, beta, radius, target, scene);
             this.setCameraRigMode(isSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
+        StereoscopicArcRotateCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "StereoscopicArcRotateCamera";
+            return serializationObject;
+        };
         return StereoscopicArcRotateCamera;
     })(BABYLON.ArcRotateCamera);
     BABYLON.StereoscopicArcRotateCamera = StereoscopicArcRotateCamera;
@@ -38790,6 +38848,11 @@ var BABYLON;
             _super.call(this, name, position, scene);
             this.setCameraRigMode(isSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
+        StereoscopicGamepadCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "StereoscopicGamepadCamera";
+            return serializationObject;
+        };
         return StereoscopicGamepadCamera;
     })(BABYLON.GamepadCamera);
     BABYLON.StereoscopicGamepadCamera = StereoscopicGamepadCamera;

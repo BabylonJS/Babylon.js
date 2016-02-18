@@ -113,6 +113,11 @@ var BABYLON;
             }
             _super.prototype._checkInputs.call(this);
         };
+        TouchCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "TouchCamera";
+            return serializationObject;
+        };
         return TouchCamera;
     })(BABYLON.FreeCamera);
     BABYLON.TouchCamera = TouchCamera;

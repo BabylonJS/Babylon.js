@@ -522,7 +522,6 @@ var BABYLON;
             serializationObject.tags = BABYLON.Tags.GetTags(this);
             serializationObject.id = this.id;
             serializationObject.position = this.position.asArray();
-            serializationObject.type = BABYLON.Tools.GetConstructorName(this);
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;

@@ -74,5 +74,13 @@ module BABYLON {
 
             super._checkInputs();
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.type = "DeviceOrientationCamera";
+
+            return serializationObject;
+        }
     }
 }

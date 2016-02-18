@@ -592,8 +592,6 @@
             serializationObject.id = this.id;
             serializationObject.position = this.position.asArray();
 
-            serializationObject.type = Tools.GetConstructorName(this);
-
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
