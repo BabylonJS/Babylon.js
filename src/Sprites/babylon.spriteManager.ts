@@ -21,6 +21,14 @@
         private _effectBase: Effect;
         private _effectFog: Effect;
 
+        public get texture(): Texture {
+            return this._spriteTexture;
+        }
+
+        public set texture(value: Texture) {
+            this._spriteTexture = value;
+        }
+
         constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             this._capacity = capacity;
             this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
