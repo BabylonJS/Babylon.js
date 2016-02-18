@@ -1,7 +1,7 @@
 module BABYLON {
     declare var OIMO;
 
-    export class OimoJSPlugin implements IPhysicsEnginePlugin {
+    export class OimoJSPlugin {
         private _world;
         private _registeredMeshes = [];
 
@@ -26,7 +26,7 @@ module BABYLON {
             return this._gravity;
         }
 
-        public registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any {
+        public registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsImpostorParameters): any {
             this.unregisterMesh(mesh);
 
             if (!mesh.rotationQuaternion) {
@@ -112,7 +112,7 @@ module BABYLON {
             return body;
         }
 
-        public registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
+        public registerMeshesAsCompound(parts: any[], options: PhysicsImpostorParameters): any {
             var types = [],
                 sizes = [],
                 positions = [],
@@ -153,7 +153,7 @@ module BABYLON {
             return body;
         }
 
-        private _createBodyAsCompound(part: PhysicsCompoundBodyPart, options: PhysicsBodyCreationOptions, initialMesh: AbstractMesh): any {
+        private _createBodyAsCompound(part: any, options: PhysicsImpostorParameters, initialMesh: AbstractMesh): any {
             var mesh = part.mesh;
 
             if (!mesh.rotationQuaternion) {

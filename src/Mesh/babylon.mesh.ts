@@ -819,18 +819,6 @@
             return results;
         }
 
-        public getChildren(): Node[] {
-            var results = [];
-            for (var index = 0; index < this.getScene().meshes.length; index++) {
-                var mesh = this.getScene().meshes[index];
-                if (mesh.parent === this) {
-                    results.push(mesh);
-                }
-            }
-
-            return results;
-        }
-
         public _checkDelayState(): void {
             var that = this;
             var scene = this.getScene();

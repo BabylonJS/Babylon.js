@@ -713,16 +713,6 @@ var BABYLON;
             }
             return results;
         };
-        Mesh.prototype.getChildren = function () {
-            var results = [];
-            for (var index = 0; index < this.getScene().meshes.length; index++) {
-                var mesh = this.getScene().meshes[index];
-                if (mesh.parent === this) {
-                    results.push(mesh);
-                }
-            }
-            return results;
-        };
         Mesh.prototype._checkDelayState = function () {
             var _this = this;
             var that = this;
