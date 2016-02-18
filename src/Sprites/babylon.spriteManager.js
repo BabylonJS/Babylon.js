@@ -38,6 +38,16 @@ var BABYLON;
             this._effectBase = this._scene.getEngine().createEffect("sprites", ["position", "options", "cellInfo", "color"], ["view", "projection", "textureInfos", "alphaTest"], ["diffuseSampler"], "");
             this._effectFog = this._scene.getEngine().createEffect("sprites", ["position", "options", "cellInfo", "color"], ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"], ["diffuseSampler"], "#define FOG");
         }
+        Object.defineProperty(SpriteManager.prototype, "texture", {
+            get: function () {
+                return this._spriteTexture;
+            },
+            set: function (value) {
+                this._spriteTexture = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         SpriteManager.prototype._appendSpriteVertex = function (index, sprite, offsetX, offsetY, rowSize) {
             var arrayOffset = index * 16;
             if (offsetX === 0)
