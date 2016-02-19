@@ -6,10 +6,6 @@ uniform vec3 vEyePosition;
 // Input
 varying vec3 vPositionW;
 
-#ifdef NORMAL
-varying vec3 vNormalW;
-#endif
-
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
 #endif
@@ -29,46 +25,10 @@ varying vec2 vDistortionCoords1;
 varying vec2 vDistortionCoords2;
 varying vec2 vDistortionCoords3;
 
-#ifdef CLIPPLANE
-varying float fClipDistance;
-#endif
+#include<clipPlaneFragmentDeclaration>
 
 // Fog
-#ifdef FOG
-
-#define FOGMODE_NONE    0.
-#define FOGMODE_EXP     1.
-#define FOGMODE_EXP2    2.
-#define FOGMODE_LINEAR  3.
-#define E 2.71828
-
-uniform vec4 vFogInfos;
-uniform vec3 vFogColor;
-varying float fFogDistance;
-
-float CalcFogFactor()
-{
-	float fogCoeff = 1.0;
-	float fogStart = vFogInfos.y;
-	float fogEnd = vFogInfos.z;
-	float fogDensity = vFogInfos.w;
-
-	if (FOGMODE_LINEAR == vFogInfos.x)
-	{
-		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);
-	}
-	else if (FOGMODE_EXP == vFogInfos.x)
-	{
-		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);
-	}
-	else if (FOGMODE_EXP2 == vFogInfos.x)
-	{
-		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);
-	}
-
-	return clamp(fogCoeff, 0.0, 1.0);
-}
-#endif
+#include<fogFragmentDeclaration>
 
 vec4 bx2(vec4 x)
 {
@@ -77,10 +37,7 @@ vec4 bx2(vec4 x)
 
 void main(void) {
 	// Clip plane
-#ifdef CLIPPLANE
-	if (fClipDistance > 0.0)
-		discard;
-#endif
+#include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
@@ -123,13 +80,6 @@ void main(void) {
 	baseColor.rgb *= vColor.rgb;
 #endif
 
-	// Bump
-#ifdef NORMAL
-	vec3 normalW = normalize(vNormalW);
-#else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
-#endif
-
 	// Lighting
 	vec3 diffuseBase = vec3(1.0, 1.0, 1.0);
 
@@ -140,10 +90,7 @@ void main(void) {
 	// Composition
 	vec4 color = vec4(baseColor.rgb, alpha);
 
-#ifdef FOG
-	float fog = CalcFogFactor();
-	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
-#endif
+#include<fogFragment>
 
 	gl_FragColor = color;
 }

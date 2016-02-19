@@ -300,6 +300,7 @@
         public serialize(): any {
             var serializationObject = super.serialize();
             serializationObject.speed = this.speed;
+            serializationObject.type = "TargetCamera";
 
             if (this.rotation) {
                 serializationObject.rotation = this.rotation.asArray();

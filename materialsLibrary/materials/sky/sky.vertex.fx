@@ -9,6 +9,7 @@ attribute vec4 color;
 
 // Uniforms
 uniform mat4 world;
+uniform mat4 view;
 uniform mat4 viewProjection;
 
 #ifdef POINTSIZE
@@ -22,14 +23,8 @@ varying vec3 vPositionW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
-
-#ifdef FOG
-varying float fFogDistance;
-#endif
+#include<clipPlaneVertexDeclaration>
+#include<fogVertexDeclaration>
 
 void main(void) {
 	gl_Position = viewProjection * world * vec4(position, 1.0);
@@ -38,14 +33,10 @@ void main(void) {
 	vPositionW = vec3(worldPos);
 
 	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
+#include<clipPlaneVertex>
 
 	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
+#include<fogVertex>
 
 	// Vertex color
 #ifdef VERTEXCOLOR

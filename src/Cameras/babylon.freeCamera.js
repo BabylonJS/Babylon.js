@@ -224,6 +224,7 @@ var BABYLON;
         };
         FreeCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "FreeCamera";
             serializationObject.checkCollisions = this.checkCollisions;
             serializationObject.applyGravity = this.applyGravity;
             serializationObject.ellipsoid = this.ellipsoid.asArray();

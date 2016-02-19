@@ -151,11 +151,11 @@
 
             return torusKnot;
         }
-        
-        public static CreateLineSystem(name: string, options: {lines: Vector3[][], updatable: boolean, instance?: LinesMesh}, scene: Scene): LinesMesh {
+
+        public static CreateLineSystem(name: string, options: { lines: Vector3[][], updatable: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh {
             var instance = options.instance;
             var lines = options.lines;
-            
+
             if (instance) { // lines update
                 var positionFunction = positions => {
                     var i = 0;
@@ -181,27 +181,7 @@
         }
 
         public static CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh {
-            var instance = options.instance;
-            var points = options.points;
-
-            if (instance) { // lines update
-                var positionFunction = positions => {
-                    var i = 0;
-                    for (var p = 0; p < points.length; p++) {
-                        positions[i] = points[p].x;
-                        positions[i + 1] = points[p].y;
-                        positions[i + 2] = points[p].z;
-                        i += 3;
-                    }
-                };
-                instance.updateMeshPositions(positionFunction, false);
-                return instance;
-            }
-
-            // lines creation
-            var lines = new LinesMesh(name, scene);
-            var vertexData = VertexData.CreateLines(options);
-            vertexData.applyToMesh(lines, options.updatable);
+            var lines = MeshBuilder.CreateLineSystem(name, {lines: [options.points], updatable: options.updatable, instance: options.instance}, scene);
             return lines;
         }
 
@@ -844,4 +824,3 @@
         }
     }
 }
-

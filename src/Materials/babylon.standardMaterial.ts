@@ -82,6 +82,7 @@
         public LOGARITHMICDEPTH = false;
         public REFRACTION = false;
         public REFRACTIONMAP_3D = false;
+        public REFLECTIONOVERALPHA = false;
 
         constructor() {
             super();
@@ -90,41 +91,97 @@
     }
 
     export class StandardMaterial extends Material {
+        @serializeAsTexture()
         public diffuseTexture: BaseTexture;
+
+        @serializeAsTexture()
         public ambientTexture: BaseTexture;
+
+        @serializeAsTexture()
         public opacityTexture: BaseTexture;
+
+        @serializeAsTexture()
         public reflectionTexture: BaseTexture;
+
+        @serializeAsTexture()
         public emissiveTexture: BaseTexture;
+
+        @serializeAsTexture()
         public specularTexture: BaseTexture;
+
+        @serializeAsTexture()
         public bumpTexture: BaseTexture;
+
+        @serializeAsTexture()
         public lightmapTexture: BaseTexture;
+
+        @serializeAsTexture()
         public refractionTexture: BaseTexture;
 
+        @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
+
+        @serializeAsColor3("diffuse")
         public diffuseColor = new Color3(1, 1, 1);
+
+        @serializeAsColor3("specular")
         public specularColor = new Color3(1, 1, 1);
-        public specularPower = 64;
+
+        @serializeAsColor3("emissive")
         public emissiveColor = new Color3(0, 0, 0);
+
+        @serialize()
+        public specularPower = 64;
+
+        @serialize()
         public useAlphaFromDiffuseTexture = false;
+
+        @serialize()
         public useEmissiveAsIllumination = false;
+
+        @serialize()
         public linkEmissiveWithDiffuse = false;
+
+        @serialize()
         public useReflectionFresnelFromSpecular = false;
+
+        @serialize()
         public useSpecularOverAlpha = false;
+
+        @serialize()
+        public useReflectionOverAlpha = false;
+
+        @serialize()
         public disableLighting = false;
 
+        @serialize()
         public roughness = 0;
 
+        @serialize()
         public indexOfRefraction = 0.98;
+
+        @serialize()
         public invertRefractionY = true;
 
+        @serialize()
         public useLightmapAsShadowmap = false;
 
+        @serializeAsFresnelParameters()
         public diffuseFresnelParameters: FresnelParameters;
+
+        @serializeAsFresnelParameters()
         public opacityFresnelParameters: FresnelParameters;
+
+        @serializeAsFresnelParameters()
         public reflectionFresnelParameters: FresnelParameters;
+
+        @serializeAsFresnelParameters()
         public refractionFresnelParameters: FresnelParameters;
+
+        @serializeAsFresnelParameters()
         public emissiveFresnelParameters: FresnelParameters;
 
+        @serialize()
         public useGlossinessFromSpecularMapAlpha = false;
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
@@ -265,6 +322,10 @@
                             this._defines.ROUGHNESS = true;
                         }
 
+                        if (this.useReflectionOverAlpha) {
+                            this._defines.REFLECTIONOVERALPHA = true;
+                        }
+
                         if (this.reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                             this._defines.INVERTCUBICMAP = true;
                         }
@@ -372,10 +433,6 @@
                 this._defines.LINKEMISSIVEWITHDIFFUSE = true;
             }
 
-            if (this.useReflectionFresnelFromSpecular) {
-                this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
-            }
-
             if (this.useLogarithmicDepth) {
                 this._defines.LOGARITHMICDEPTH = true;
             }
@@ -412,6 +469,10 @@
 
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
                         this._defines.REFLECTIONFRESNEL = true;
+
+                        if (this.useReflectionFresnelFromSpecular) {
+                            this._defines.REFLECTIONFRESNELFROMSPECULAR = true;
+                        }
                     }
 
                     if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
@@ -851,148 +912,18 @@
         }
 
         public clone(name: string): StandardMaterial {
-            var newStandardMaterial = new StandardMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newStandardMaterial);
-
-            // Standard material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newStandardMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.ambientTexture && this.ambientTexture.clone) {
-                newStandardMaterial.ambientTexture = this.ambientTexture.clone();
-            }
-            if (this.opacityTexture && this.opacityTexture.clone) {
-                newStandardMaterial.opacityTexture = this.opacityTexture.clone();
-            }
-            if (this.reflectionTexture && this.reflectionTexture.clone) {
-                newStandardMaterial.reflectionTexture = this.reflectionTexture.clone();
-            }
-            if (this.emissiveTexture && this.emissiveTexture.clone) {
-                newStandardMaterial.emissiveTexture = this.emissiveTexture.clone();
-            }
-            if (this.specularTexture && this.specularTexture.clone) {
-                newStandardMaterial.specularTexture = this.specularTexture.clone();
-            }
-            if (this.bumpTexture && this.bumpTexture.clone) {
-                newStandardMaterial.bumpTexture = this.bumpTexture.clone();
-            }
-            if (this.lightmapTexture && this.lightmapTexture.clone) {
-                newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
-                newStandardMaterial.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
-            }
-            if (this.refractionTexture && this.refractionTexture.clone) {
-                newStandardMaterial.refractionTexture = this.refractionTexture.clone();
-            }
-
-            newStandardMaterial.ambientColor = this.ambientColor.clone();
-            newStandardMaterial.diffuseColor = this.diffuseColor.clone();
-            newStandardMaterial.specularColor = this.specularColor.clone();
-            newStandardMaterial.specularPower = this.specularPower;
-            newStandardMaterial.emissiveColor = this.emissiveColor.clone();
-            newStandardMaterial.useAlphaFromDiffuseTexture = this.useAlphaFromDiffuseTexture;
-            newStandardMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            newStandardMaterial.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
-            newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
-            newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
-            newStandardMaterial.roughness = this.roughness;
-            newStandardMaterial.indexOfRefraction = this.indexOfRefraction;
-            newStandardMaterial.invertRefractionY = this.invertRefractionY;
-
-            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.clone) {
-                newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
-            }
-            if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.clone) {
-                newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
-            }
-            if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.clone) {
-                newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
-            }
-            if (this.refractionFresnelParameters && this.refractionFresnelParameters.clone) {
-                newStandardMaterial.refractionFresnelParameters = this.refractionFresnelParameters.clone();
-            }
-            if (this.opacityFresnelParameters && this.opacityFresnelParameters.clone) {
-                newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
-            }
-
-            return newStandardMaterial;
+            return SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this);
         }
 
         public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.ambient = this.ambientColor.asArray();
-            serializationObject.diffuse = this.diffuseColor.asArray();
-            serializationObject.specular = this.specularColor.asArray();
-            serializationObject.specularPower = this.specularPower;
-            serializationObject.emissive = this.emissiveColor.asArray();
-            serializationObject.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
-            serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            serializationObject.indexOfRefraction = this.indexOfRefraction;
-            serializationObject.invertRefractionY = this.invertRefractionY;
-
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-
-            if (this.diffuseFresnelParameters) {
-                serializationObject.diffuseFresnelParameters = this.diffuseFresnelParameters.serialize();
-            }
-
-            if (this.ambientTexture) {
-                serializationObject.ambientTexture = this.ambientTexture.serialize();
-            }
-
-            if (this.opacityTexture) {
-                serializationObject.opacityTexture = this.opacityTexture.serialize();
-            }
-
-            if (this.opacityFresnelParameters) {
-                serializationObject.opacityFresnelParameters = this.diffuseFresnelParameters.serialize();
-            }
-
-            if (this.reflectionTexture) {
-                serializationObject.reflectionTexture = this.reflectionTexture.serialize();
-            }
-
-            if (this.reflectionFresnelParameters) {
-                serializationObject.reflectionFresnelParameters = this.reflectionFresnelParameters.serialize();
-            }
-
-            if (this.refractionFresnelParameters) {
-                serializationObject.refractionFresnelParameters = this.refractionFresnelParameters.serialize();
-            }
-
-            if (this.emissiveTexture) {
-                serializationObject.emissiveTexture = this.emissiveTexture.serialize();
-            }
-
-            if (this.lightmapTexture) {
-                serializationObject.lightmapTexture = this.lightmapTexture.serialize();
-                serializationObject.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
-            }
-
-            if (this.emissiveFresnelParameters) {
-                serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
-            }
-
-            if (this.specularTexture) {
-                serializationObject.specularTexture = this.specularTexture.serialize();
-            }
-
-            if (this.bumpTexture) {
-                serializationObject.bumpTexture = this.bumpTexture.serialize();
-            }
-
-            if (this.refractionTexture) {
-                serializationObject.refractionTexture = this.refractionTexture.serialize();
-            }
-
-            return serializationObject;
+            return SerializationHelper.Serialize(this);
         }
 
         // Statics
+        public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
+            return SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+        }
+
         // Flags used to enable or disable a type of texture for all Standard Materials
         public static DiffuseTextureEnabled = true;
         public static AmbientTextureEnabled = true;
@@ -1004,94 +935,5 @@
         public static FresnelEnabled = true;
         public static LightmapTextureEnabled = true;
         public static RefractionTextureEnabled = true;
-
-        public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
-            var material = new StandardMaterial(source.name, scene);
-
-            material.ambientColor = Color3.FromArray(source.ambient);
-            material.diffuseColor = Color3.FromArray(source.diffuse);
-            material.specularColor = Color3.FromArray(source.specular);
-            material.specularPower = source.specularPower;
-            material.emissiveColor = Color3.FromArray(source.emissive);
-            material.useReflectionFresnelFromSpecular = source.useReflectionFresnelFromSpecular;
-            material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
-            material.indexOfRefraction = source.indexOfRefraction;
-            material.invertRefractionY = source.invertRefractionY;
-
-            material.alpha = source.alpha;
-
-            material.id = source.id;
-
-            if (source.disableDepthWrite) {
-                material.disableDepthWrite = source.disableDepthWrite;
-            }
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-
-            if (source.diffuseFresnelParameters) {
-                material.diffuseFresnelParameters = FresnelParameters.Parse(source.diffuseFresnelParameters);
-            }
-
-            if (source.ambientTexture) {
-                material.ambientTexture = Texture.Parse(source.ambientTexture, scene, rootUrl);
-            }
-
-            if (source.opacityTexture) {
-                material.opacityTexture = Texture.Parse(source.opacityTexture, scene, rootUrl);
-            }
-
-            if (source.opacityFresnelParameters) {
-                material.opacityFresnelParameters = FresnelParameters.Parse(source.opacityFresnelParameters);
-            }
-
-            if (source.reflectionTexture) {
-                material.reflectionTexture = Texture.Parse(source.reflectionTexture, scene, rootUrl);
-            }
-
-            if (source.reflectionFresnelParameters) {
-                material.reflectionFresnelParameters = FresnelParameters.Parse(source.reflectionFresnelParameters);
-            }
-
-            if (source.refractionFresnelParameters) {
-                material.refractionFresnelParameters = FresnelParameters.Parse(source.refractionFresnelParameters);
-            }
-
-            if (source.emissiveTexture) {
-                material.emissiveTexture = Texture.Parse(source.emissiveTexture, scene, rootUrl);
-            }
-
-            if (source.lightmapTexture) {
-                material.lightmapTexture = Texture.Parse(source.lightmapTexture, scene, rootUrl);
-                material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
-            }
-
-            if (source.emissiveFresnelParameters) {
-                material.emissiveFresnelParameters = FresnelParameters.Parse(source.emissiveFresnelParameters);
-            }
-
-            if (source.specularTexture) {
-                material.specularTexture = Texture.Parse(source.specularTexture, scene, rootUrl);
-            }
-
-            if (source.bumpTexture) {
-                material.bumpTexture = Texture.Parse(source.bumpTexture, scene, rootUrl);
-            }
-
-            if (source.refractionTexture) {
-                material.refractionTexture = Texture.Parse(source.refractionTexture, scene, rootUrl);
-            }
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
-            return material;
-        }
     }
 } 

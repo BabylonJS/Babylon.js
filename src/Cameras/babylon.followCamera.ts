@@ -62,6 +62,8 @@
 
         public serialize(): any {
             var serializationObject = super.serialize();
+
+            serializationObject.type = "FollowCamera";
        
             serializationObject.radius = this.radius;
             serializationObject.heightOffset = this.heightOffset;
@@ -97,6 +99,7 @@
         public serialize(): any {
             var serializationObject = super.serialize();
 
+            serializationObject.type = "ArcFollowCamera";
             serializationObject.radius = this.radius;
 
             return serializationObject;

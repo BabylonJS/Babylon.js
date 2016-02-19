@@ -1106,51 +1106,28 @@
 
             return vertexData;
         }
-        
-        public static CreateLineSystem(options: {lines: Vector3[][]}): VertexData {
+
+        public static CreateLineSystem(options: { lines: Vector3[][] }): VertexData {
             var indices = [];
             var positions = [];
             var lines = options.lines;
             var idx = 0;
-            
+
             for (var l = 0; l < lines.length; l++) {
                 var points = lines[l];
                 for (var index = 0; index < points.length; index++) {
                     positions.push(points[index].x, points[index].y, points[index].z);
-                    
+
                     if (index > 0) {
                         indices.push(idx - 1);
                         indices.push(idx);
                     }
-                    idx ++;
-                }               
-            }
-            var vertexData = new VertexData();
-            vertexData.indices = indices;
-            vertexData.positions = positions;
-            return vertexData;
-        }
-        
-        public static CreateLines(options: { points: Vector3[] }): VertexData {
-            var indices = [];
-            var positions = [];
-            var points = options.points;
-
-            for (var index = 0; index < points.length; index++) {
-                positions.push(points[index].x, points[index].y, points[index].z);
-
-                if (index > 0) {
-                    indices.push(index - 1);
-                    indices.push(index);
+                    idx++;
                 }
             }
-
-            // Result
             var vertexData = new VertexData();
-
             vertexData.indices = indices;
             vertexData.positions = positions;
-
             return vertexData;
         }
 
@@ -2189,4 +2166,3 @@
         }
     }
 }
-
