@@ -31,7 +31,7 @@
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = new Vector3(0, 0, 0);
         private _rotation = new Vector3(0, 0, 0);
-        public rotationQuaternion: Quaternion;
+        public _rotationQuaternion: Quaternion;
         private _scaling = new Vector3(1, 1, 1);
         public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
@@ -156,23 +156,20 @@
             scene.addMesh(this);
         }
 
+        /**
+         * Getting the rotation object. 
+         * If rotation quaternion is set, the euler angels of the quaternion will be sent back.
+         * This is not 100% accurate. Avoid using rotation if the wuaternion is set.
+         */
         public get rotation(): Vector3 {
             if (this.rotationQuaternion) {
-                Tools.Warn("Quaternion rotation is used, the rotation value is probably wrong");
+                return this._rotationQuaternion.toEulerAngles();
             }
             return this._rotation;
         }
-
+        
         public set rotation(newRotation: Vector3) {
             this._rotation = newRotation;
-            //check if rotationQuaternion exists, and if it does - update it!
-            if (this.rotationQuaternion) {
-                var len = this._rotation.length();
-                if (len) {
-                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z))
-                    this._rotation.copyFromFloats(0, 0, 0);
-                }
-            }
         }
 
         public get scaling(): Vector3 {
@@ -183,6 +180,18 @@
             this._scaling = newScaling;
             if(this.physicImpostor) {
                 this.physicImpostor.forceUpdate();
+            }
+        }
+        
+        public get rotationQuaternion() {
+            return this._rotationQuaternion;
+        }
+        
+        public set rotationQuaternion(quaternion: Quaternion) {
+            this._rotationQuaternion = quaternion;
+            //reset the rotation vector.
+            if(this.rotation.length()) {
+                this.rotation.copyFromFloats(0,0,0);
             }
         }
 
