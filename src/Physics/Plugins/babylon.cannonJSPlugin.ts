@@ -889,16 +889,6 @@
             return window.CANNON !== undefined;
         }
 
-        //TODO 
-        public supports(feature: PhysicsFeature) {
-            switch (feature) {
-                case PhysicsFeature.PIVOT_IN_JOINT:
-                    return false;
-                case PhysicsFeature.TRIMESH:
-                    return true;
-            }
-        }
-
         public dispose() {
             //nothing to do, actually.
         }
