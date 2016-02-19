@@ -65,44 +65,61 @@ module BABYLON {
 		/*
 		* Public members
 		*/
+        @serializeAsTexture()
         public bumpTexture: BaseTexture;
+        
+        @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
+        
+        @serializeAsColor3()
         public specularColor = new Color3(0, 0, 0);
+        
+        @serialize()
         public specularPower = 64;
+        
+        @serialize()
         public disableLighting = false;
         
         /**
         * @param {number}: Represents the wind force
         */
+        @serialize()
 		public windForce: number = 6;
         /**
         * @param {Vector2}: The direction of the wind in the plane (X, Z)
         */
+        @serializeAsVector2()
 		public windDirection: Vector2 = new Vector2(0, 1);
         /**
         * @param {number}: Wave height, represents the height of the waves
         */
+        @serialize()
 		public waveHeight: number = 0.4;
         /**
         * @param {number}: Bump height, represents the bump height related to the bump map
         */
+        @serialize()
 		public bumpHeight: number = 0.4;
         /**
         * @param {number}: The water color blended with the reflection and refraction samplers
         */
+        @serializeAsColor3()
 		public waterColor: Color3 = new Color3(0.1, 0.1, 0.6);
         /**
         * @param {number}: The blend factor related to the water color
         */
+        @serialize()
 		public colorBlendFactor: number = 0.2;
         /**
         * @param {number}: Represents the maximum length of a wave
         */
+        @serialize()
 		public waveLength: number = 0.1;
         
         /**
         * @param {number}: Defines the waves speed
         */
+        @serialize()
         public waveSpeed: number = 1.0;
 		
 		/*
@@ -717,81 +734,18 @@ module BABYLON {
         }
 
         public clone(name: string): WaterMaterial {
-            var newMaterial = new WaterMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // water material
-            if (this.bumpTexture && this.bumpTexture.clone) {
-                newMaterial.bumpTexture = this.bumpTexture.clone();
-            }
-
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            return SerializationHelper.Clone(() => new WaterMaterial(name, this.getScene()), this);
         }
-        
-		public serialize(): any {
-		        		
-            var serializationObject = super.serialize();
-			
-             serializationObject.customType         = "BABYLON.WaterMaterial";
-            serializationObject.diffuseColor    	= this.diffuseColor.asArray();
-			serializationObject.specularColor   	= this.specularColor.asArray();
-            serializationObject.specularPower   	= this.specularPower;
-            serializationObject.disableLighting 	= this.disableLighting;
-            serializationObject.windForce     		= this.windForce;
-            serializationObject.windDirection 		= this.windDirection.asArray();
-            serializationObject.waveHeight      	= this.waveHeight;
-            serializationObject.bumpHeight 			= this.bumpHeight;
-			serializationObject.waterColor 			= this.waterColor.asArray();
-			serializationObject.colorBlendFactor	= this.colorBlendFactor;
-			serializationObject.waveLength 			= this.waveLength;
-			serializationObject.renderTargetSize	= this.renderTargetSize.asArray();
-			
-            if (this.bumpTexture) {
-                serializationObject.bumpTexture 	= this.bumpTexture.serialize();
-            }
 
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.WaterMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
-		
-			var renderTargetSize = source.renderTargetSize ? Vector2.FromArray(source.renderTargetSize) : null;
-		
-            var material = new WaterMaterial(source.name, scene, renderTargetSize);
-
-            material.diffuseColor    	= Color3.FromArray(source.diffuseColor);
-			material.specularColor   	= Color3.FromArray(source.specularColor);
-            material.specularPower   	= source.specularPower;
-            material.disableLighting 	= source.disableLighting;
-            material.windForce     		= source.windForce;
-            material.windDirection 		= Vector2.FromArray(source.windDirection);
-            material.waveHeight      	= source.waveHeight;
-            material.bumpHeight 		= source.bumpHeight;
-			material.waterColor 		= Color3.FromArray(source.waterColor);
-			material.colorBlendFactor	= source.colorBlendFactor;
-			material.waveLength 		= source.waveLength;
-			material.renderTargetSize	= Vector2.FromArray(source.renderTargetSize);
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.bumpTexture) {
-                material.bumpTexture = Texture.Parse(source.bumpTexture, scene, rootUrl);
-            }
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
         }
 		
 		public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
