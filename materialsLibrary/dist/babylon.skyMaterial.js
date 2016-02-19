@@ -182,37 +182,13 @@ var BABYLON;
             return BABYLON.SerializationHelper.Clone(function () { return new SkyMaterial(name, _this.getScene()); }, this);
         };
         SkyMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.SkyMaterial";
-            serializationObject.luminance = this.luminance;
-            serializationObject.turbidity = this.turbidity;
-            serializationObject.rayleigh = this.rayleigh;
-            serializationObject.mieCoefficient = this.mieCoefficient;
-            serializationObject.mieDirectionalG = this.mieDirectionalG;
-            serializationObject.distance = this.distance;
-            serializationObject.inclination = this.inclination;
-            serializationObject.azimuth = this.azimuth;
             return serializationObject;
         };
+        // Statics
         SkyMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new SkyMaterial(source.name, scene);
-            material.alpha = source.alpha;
-            material.id = source.id;
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            material.luminance = source.luminance;
-            material.turbidity = source.turbidity;
-            material.rayleigh = source.rayleigh;
-            material.mieCoefficient = source.mieCoefficient;
-            material.mieDirectionalG = source.mieDirectionalG;
-            material.distance = source.distance;
-            material.inclination = source.inclination;
-            material.azimuth = source.azimuth;
-            return material;
+            return BABYLON.SerializationHelper.Parse(function () { return new SkyMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         __decorate([
             BABYLON.serialize()
@@ -229,6 +205,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], SkyMaterial.prototype, "mieDirectionalG");
+        __decorate([
+            BABYLON.serialize()
+        ], SkyMaterial.prototype, "distance");
         __decorate([
             BABYLON.serialize()
         ], SkyMaterial.prototype, "inclination");

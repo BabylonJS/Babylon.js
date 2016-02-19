@@ -1,5 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
+    switch (arguments.length) {
+        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+    }
+};
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
@@ -302,63 +310,45 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         LavaMaterial.prototype.clone = function (name) {
-            var newMaterial = new LavaMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newMaterial);
-            // Lava material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.noiseTexture && this.noiseTexture.clone) {
-                newMaterial.noiseTexture = this.noiseTexture.clone();
-            }
-            if (this.fogColor && this.fogColor.clone) {
-                newMaterial.fogColor = this.fogColor.clone();
-            }
-            return newMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new LavaMaterial(name, _this.getScene()); }, this);
         };
         LavaMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.LavaMaterial";
-            serializationObject.diffuseColor = this.diffuseColor.asArray();
-            serializationObject.fogColor = this.fogColor.asArray();
-            serializationObject.speed = this.speed;
-            serializationObject.movingSpeed = this.movingSpeed;
-            serializationObject.lowFrequencySpeed = this.lowFrequencySpeed;
-            serializationObject.fogDensity = this.fogDensity;
-            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-            if (this.noiseTexture) {
-                serializationObject.noiseTexture = this.noiseTexture.serialize();
-            }
             return serializationObject;
         };
+        // Statics
         LavaMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new LavaMaterial(source.name, scene);
-            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
-            material.speed = source.speed;
-            material.fogColor = BABYLON.Color3.FromArray(source.fogColor);
-            material.movingSpeed = source.movingSpeed;
-            material.lowFrequencySpeed = source.lowFrequencySpeed;
-            material.fogDensity = source.lowFrequencySpeed;
-            material.alpha = source.alpha;
-            material.id = source.id;
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            if (source.diffuseTexture) {
-                material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-            if (source.noiseTexture) {
-                material.noiseTexture = BABYLON.Texture.Parse(source.noiseTexture, scene, rootUrl);
-            }
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            return material;
+            return BABYLON.SerializationHelper.Parse(function () { return new LavaMaterial(source.name, scene); }, source, scene, rootUrl);
         };
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], LavaMaterial.prototype, "diffuseTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], LavaMaterial.prototype, "noiseTexture");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], LavaMaterial.prototype, "fogColor");
+        __decorate([
+            BABYLON.serialize()
+        ], LavaMaterial.prototype, "speed");
+        __decorate([
+            BABYLON.serialize()
+        ], LavaMaterial.prototype, "movingSpeed");
+        __decorate([
+            BABYLON.serialize()
+        ], LavaMaterial.prototype, "lowFrequencySpeed");
+        __decorate([
+            BABYLON.serialize()
+        ], LavaMaterial.prototype, "fogDensity");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], LavaMaterial.prototype, "diffuseColor");
+        __decorate([
+            BABYLON.serialize()
+        ], LavaMaterial.prototype, "disableLighting");
         return LavaMaterial;
     })(BABYLON.Material);
     BABYLON.LavaMaterial = LavaMaterial;

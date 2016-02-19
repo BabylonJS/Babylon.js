@@ -1,6 +1,14 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 /// <reference path="../simple/babylon.simpleMaterial.ts"/>
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
+    switch (arguments.length) {
+        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+    }
+};
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
@@ -600,68 +608,61 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         WaterMaterial.prototype.clone = function (name) {
-            var newMaterial = new WaterMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newMaterial);
-            // water material
-            if (this.bumpTexture && this.bumpTexture.clone) {
-                newMaterial.bumpTexture = this.bumpTexture.clone();
-            }
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new WaterMaterial(name, _this.getScene()); }, this);
         };
         WaterMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
-            serializationObject.diffuseColor = this.diffuseColor.asArray();
-            serializationObject.specularColor = this.specularColor.asArray();
-            serializationObject.specularPower = this.specularPower;
-            serializationObject.disableLighting = this.disableLighting;
-            serializationObject.windForce = this.windForce;
-            serializationObject.windDirection = this.windDirection.asArray();
-            serializationObject.waveHeight = this.waveHeight;
-            serializationObject.bumpHeight = this.bumpHeight;
-            serializationObject.waterColor = this.waterColor.asArray();
-            serializationObject.colorBlendFactor = this.colorBlendFactor;
-            serializationObject.waveLength = this.waveLength;
-            serializationObject.renderTargetSize = this.renderTargetSize.asArray();
-            if (this.bumpTexture) {
-                serializationObject.bumpTexture = this.bumpTexture.serialize();
-            }
             return serializationObject;
         };
+        // Statics
         WaterMaterial.Parse = function (source, scene, rootUrl) {
-            var renderTargetSize = source.renderTargetSize ? BABYLON.Vector2.FromArray(source.renderTargetSize) : null;
-            var material = new WaterMaterial(source.name, scene, renderTargetSize);
-            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
-            material.specularColor = BABYLON.Color3.FromArray(source.specularColor);
-            material.specularPower = source.specularPower;
-            material.disableLighting = source.disableLighting;
-            material.windForce = source.windForce;
-            material.windDirection = BABYLON.Vector2.FromArray(source.windDirection);
-            material.waveHeight = source.waveHeight;
-            material.bumpHeight = source.bumpHeight;
-            material.waterColor = BABYLON.Color3.FromArray(source.waterColor);
-            material.colorBlendFactor = source.colorBlendFactor;
-            material.waveLength = source.waveLength;
-            material.renderTargetSize = BABYLON.Vector2.FromArray(source.renderTargetSize);
-            material.alpha = source.alpha;
-            material.id = source.id;
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            if (source.bumpTexture) {
-                material.bumpTexture = BABYLON.Texture.Parse(source.bumpTexture, scene, rootUrl);
-            }
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            return material;
+            return BABYLON.SerializationHelper.Parse(function () { return new WaterMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         WaterMaterial.CreateDefaultMesh = function (name, scene) {
             var mesh = BABYLON.Mesh.CreateGround(name, 512, 512, 32, scene, false);
             return mesh;
         };
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], WaterMaterial.prototype, "bumpTexture");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WaterMaterial.prototype, "diffuseColor");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WaterMaterial.prototype, "specularColor");
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "specularPower");
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "disableLighting");
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "windForce");
+        __decorate([
+            BABYLON.serializeAsVector2()
+        ], WaterMaterial.prototype, "windDirection");
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "waveHeight");
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "bumpHeight");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], WaterMaterial.prototype, "waterColor");
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "colorBlendFactor");
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "waveLength");
+        __decorate([
+            BABYLON.serialize()
+        ], WaterMaterial.prototype, "waveSpeed");
         return WaterMaterial;
     })(BABYLON.Material);
     BABYLON.WaterMaterial = WaterMaterial;

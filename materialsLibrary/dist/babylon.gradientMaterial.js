@@ -1,5 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
+    switch (arguments.length) {
+        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+    }
+};
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
@@ -266,40 +274,39 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         GradientMaterial.prototype.clone = function (name) {
-            var newMaterial = new GradientMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newMaterial);
-            // Gradient material
-            newMaterial.topColor = this.topColor.clone();
-            newMaterial.bottomColor = this.bottomColor.clone();
-            newMaterial.offset = this.offset;
-            return newMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new GradientMaterial(name, _this.getScene()); }, this);
         };
         GradientMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.GradientMaterial";
-            serializationObject.topColor = this.topColor.asArray();
-            serializationObject.bottomColor = this.bottomColor.asArray();
-            serializationObject.offset = this.offset;
-            serializationObject.disableLighting = this.disableLighting;
             return serializationObject;
         };
+        // Statics
         GradientMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new GradientMaterial(source.name, scene);
-            material.topColor = BABYLON.Color3.FromArray(source.topColor);
-            material.bottomColor = BABYLON.Color3.FromArray(source.bottomColor);
-            material.offset = source.offset;
-            material.disableLighting = source.disableLighting;
-            material.alpha = source.alpha;
-            material.id = source.id;
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            return material;
+            return BABYLON.SerializationHelper.Parse(function () { return new GradientMaterial(source.name, scene); }, source, scene, rootUrl);
         };
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], GradientMaterial.prototype, "topColor");
+        __decorate([
+            BABYLON.serialize()
+        ], GradientMaterial.prototype, "topColorAlpha");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], GradientMaterial.prototype, "bottomColor");
+        __decorate([
+            BABYLON.serialize()
+        ], GradientMaterial.prototype, "bottomColorAlpha");
+        __decorate([
+            BABYLON.serialize()
+        ], GradientMaterial.prototype, "offset");
+        __decorate([
+            BABYLON.serialize()
+        ], GradientMaterial.prototype, "smoothness");
+        __decorate([
+            BABYLON.serialize()
+        ], GradientMaterial.prototype, "disableLighting");
         return GradientMaterial;
     })(BABYLON.Material);
     BABYLON.GradientMaterial = GradientMaterial;
