@@ -33,7 +33,8 @@ gulp.task('default', ["copyReference"], function () {
                 noExternalResolve: false,
                 target: 'ES5',
                 declarationFiles: true,
-                typescript: require('typescript')
+                typescript: require('typescript'),
+                experimentalDecorators: true
             }));
 
         var js = compilOutput.js;
