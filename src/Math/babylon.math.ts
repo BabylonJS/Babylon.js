@@ -5,6 +5,36 @@
     export const ToGammaSpace = 1 / 2.2;
     export const ToLinearSpace = 2.2;
 
+    export class ChangableMathObject {
+
+        private _onChangeTriggers: Array<(changedObject: ChangableMathObject) => void> = [];
+
+        public registerOnChange(func: (changedObject: ChangableMathObject) => void) {
+            if(!this._onChangeTriggers) {
+                this._onChangeTriggers = [];
+            }
+            this._onChangeTriggers.push(func);
+        }
+
+        public unregisterOnChange(func: (changedObject: ChangableMathObject) => void) {
+            var index = this._onChangeTriggers.indexOf(func);
+
+            if (index > -1) {
+                this._onChangeTriggers.splice(index, 1);
+            } else {
+                Tools.Warn("Function to remove was not found");
+            }
+        }
+
+        protected triggerChange() {
+            if (this._onChangeTriggers) {
+                this._onChangeTriggers.forEach((func) => {
+                    func(this);
+                })
+            }
+        }
+    }
+
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
         }
@@ -588,9 +618,37 @@
         }
     }
 
-    export class Vector3 {
+    export class Vector3 extends ChangableMathObject {
 
-        constructor(public x: number, public y: number, public z: number) {
+        constructor(private _x: number, private _y: number, private _z: number) {
+            super();
+        }
+
+        public get x() {
+            return this._x;
+        }
+
+        public set x(x: number) {
+            this._x = x;
+            this.triggerChange();
+        }
+
+        public get y() {
+            return this._y;
+        }
+
+        public set y(y: number) {
+            this._y = y;
+            this.triggerChange();
+        }
+
+        public get z() {
+            return this._z;
+        }
+
+        public set z(z: number) {
+            this._z = z;
+            this.triggerChange();
         }
 
         public toString(): string {
@@ -1518,9 +1576,45 @@
         }
     }
 
-    export class Quaternion {
-        constructor(public x: number = 0, public y: number = 0, public z: number = 0, public w: number = 1) {
+    export class Quaternion extends ChangableMathObject {
+        constructor(private _x: number = 0, private _y: number = 0, private _z: number = 0, private _w: number = 1) {
+            super();
+        }
+        
+        public get x() {
+            return this._x;
+        }
 
+        public set x(x: number) {
+            this._x = x;
+            this.triggerChange();
+        }
+
+        public get y() {
+            return this._y;
+        }
+
+        public set y(y: number) {
+            this._y = y;
+            this.triggerChange();
+        }
+
+        public get z() {
+            return this._z;
+        }
+
+        public set z(z: number) {
+            this._z = z;
+            this.triggerChange();
+        }
+        
+        public get w() {
+            return this._w;
+        }
+
+        public set w(w: number) {
+            this._w = w;
+            this.triggerChange();
         }
 
         public toString(): string {

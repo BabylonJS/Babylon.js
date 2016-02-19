@@ -68,10 +68,10 @@ var BABYLON;
         PhysicsImpostor.prototype.isUpdateRequired = function () {
             return this._transformationUpdated || this.isBodyInitRequired();
         };
-        PhysicsImpostor.prototype.setTransformationUpdated = function (updated) {
-            this._transformationUpdated = updated;
+        PhysicsImpostor.prototype.transformationUpdated = function () {
+            this._transformationUpdated = true;
             if (this._parent) {
-                this._parent.setTransformationUpdated(updated);
+                this._parent.transformationUpdated();
             }
         };
         PhysicsImpostor.prototype.setScalingUpdated = function (updated) {
@@ -214,6 +214,6 @@ var BABYLON;
         PhysicsImpostor.ConvexHullImpostor = 8;
         PhysicsImpostor.HeightmapImpostor = 9;
         return PhysicsImpostor;
-    })();
+    }());
     BABYLON.PhysicsImpostor = PhysicsImpostor;
 })(BABYLON || (BABYLON = {}));
