@@ -2,7 +2,6 @@ var BABYLON;
 (function (BABYLON) {
     var PhysicsEngine = (function () {
         function PhysicsEngine(gravity, _physicsPlugin) {
-            if (gravity === void 0) { gravity = new BABYLON.Vector3(0, -9.807, 0); }
             if (_physicsPlugin === void 0) { _physicsPlugin = new BABYLON.CannonJSPlugin(); }
             this._physicsPlugin = _physicsPlugin;
             //new methods and parameters
@@ -12,6 +11,7 @@ var BABYLON;
                 throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. "
                     + "Please make sure it is included.");
             }
+            gravity = gravity || new BABYLON.Vector3(0, -9.807, 0);
             this.setGravity(gravity);
         }
         PhysicsEngine.prototype.setGravity = function (gravity) {
@@ -100,7 +100,7 @@ var BABYLON;
         PhysicsEngine.HeightmapImpostor = BABYLON.PhysicsImpostor.HeightmapImpostor;
         PhysicsEngine.Epsilon = 0.001;
         return PhysicsEngine;
-    })();
+    }());
     BABYLON.PhysicsEngine = PhysicsEngine;
     (function (PhysicsFeature) {
         PhysicsFeature[PhysicsFeature["PIVOT_IN_JOINT"] = 0] = "PIVOT_IN_JOINT";

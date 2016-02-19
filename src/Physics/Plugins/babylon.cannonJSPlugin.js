@@ -508,6 +508,13 @@ var BABYLON;
             this.name = "CannonJSPlugin";
             this._physicsMaterials = [];
             this._fixedTimeStep = 1 / 60;
+            this._minus90X = new BABYLON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
+            this._plus90X = new BABYLON.Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
+            this._tmpPosition = BABYLON.Vector3.Zero();
+            this._tmpQuaternion = new BABYLON.Quaternion();
+            this._tmpDeltaPosition = BABYLON.Vector3.Zero();
+            this._tmpDeltaRotation = new BABYLON.Quaternion();
+            this._tmpUnityRotation = new BABYLON.Quaternion();
             if (!this.isSupported()) {
                 BABYLON.Tools.Error("CannonJS is not available. Please make sure you included the js file.");
                 return;
@@ -571,6 +578,7 @@ var BABYLON;
                 this.world.addEventListener("preStep", impostor.beforeStep);
                 this.world.addEventListener("postStep", impostor.afterStep);
                 impostor.physicsBody.addShape(shape);
+                this.world.add(impostor.physicsBody);
                 //try to keep the body moving in the right direction by taking old properties.
                 //Should be tested!
                 if (oldBody) {
@@ -757,23 +765,22 @@ var BABYLON;
             impostor.mesh.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
             var bbox = mesh.getBoundingInfo().boundingBox;
-            var deltaPosition = mesh.position.subtract(bbox.center);
-            var deltaRotation;
+            this._tmpDeltaPosition.copyFrom(mesh.position.subtract(bbox.center));
             var quaternion = mesh.rotationQuaternion;
-            var position = mesh.getBoundingInfo().boundingBox.center.clone();
+            this._tmpPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center);
             //is shape is a plane or a heightmap, it must be rotated 90 degs in the X axis.
             if (impostor.type === BABYLON.PhysicsEngine.PlaneImpostor || impostor.type === BABYLON.PhysicsEngine.HeightmapImpostor) {
                 //-90 DEG in X, precalculated
-                var tmpQ = new BABYLON.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
-                quaternion = quaternion.multiply(tmpQ);
+                quaternion = quaternion.multiply(this._minus90X);
                 //Invert! (Precalculated, 90 deg in X)
-                deltaRotation = new BABYLON.Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
+                //No need to clone. this will never change.
+                impostor.setDeltaRotation(this._plus90X);
             }
             //If it is a heightfield, if should be centered.
             if (impostor.type === BABYLON.PhysicsEngine.HeightmapImpostor) {
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
-                mesh.rotationQuaternion = new BABYLON.Quaternion();
+                mesh.rotationQuaternion = this._tmpUnityRotation;
                 mesh.computeWorldMatrix(true);
                 //get original center with no rotation
                 var center = mesh.getBoundingInfo().boundingBox.center.clone();
@@ -786,22 +793,29 @@ var BABYLON;
                 mesh.computeWorldMatrix(true);
                 //calculate the translation
                 var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
-                position.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
+                this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
                 //add it inverted to the delta 
-                deltaPosition = mesh.getBoundingInfo().boundingBox.center.subtract(center);
-                deltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
+                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center.subtract(center));
+                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             }
             else if (impostor.type === BABYLON.PhysicsEngine.MeshImpostor) {
-                deltaPosition = BABYLON.Vector3.Zero();
-                position.copyFrom(mesh.position);
+                this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
+                this._tmpPosition.copyFrom(mesh.position);
             }
-            impostor.setDeltaPosition(deltaPosition);
-            impostor.setDeltaRotation(deltaRotation);
+            impostor.setDeltaPosition(this._tmpDeltaPosition);
             //Now update the impostor object
-            impostor.physicsBody.position.copy(position);
+            impostor.physicsBody.position.copy(this._tmpPosition);
             impostor.physicsBody.quaternion.copy(quaternion);
+        };
+        CannonJSPlugin.prototype.setTransformationFromPhysicsBody = function (impostor) {
+            impostor.mesh.position.copyFrom(impostor.physicsBody.position);
+            impostor.mesh.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+        };
+        CannonJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
+            impostor.physicsBody.position.copy(newPosition);
+            impostor.physicsBody.quaternion.copy(newRotation);
         };
         CannonJSPlugin.prototype.isSupported = function () {
             return window.CANNON !== undefined;
@@ -819,6 +833,6 @@ var BABYLON;
             //nothing to do, actually.
         };
         return CannonJSPlugin;
-    })();
+    }());
     BABYLON.CannonJSPlugin = CannonJSPlugin;
 })(BABYLON || (BABYLON = {}));

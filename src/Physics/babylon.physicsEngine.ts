@@ -148,6 +148,8 @@
         removeJoint(joint: PhysicsImpostorJoint)
         isSupported(): boolean;
         supports(feature: PhysicsFeature): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor);
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition:Vector3, newRotation: Quaternion);
         dispose();
     }
 }
