@@ -94,6 +94,9 @@
             }
         }
 
+        /**
+         * Called by the scene. no need to call it.
+         */
         public _step(delta: number) {
             //check if any mesh has no body / requires an update
             this._impostors.forEach((impostor) => {
@@ -125,16 +128,6 @@
         }
     }
 
-    export enum PhysicsFeature {
-        PIVOT_IN_JOINT,
-        TRIMESH,
-
-    }
-
-    export interface PhysicsFeatures {
-
-    }
-
     export interface IPhysicsEnginePlugin {
         world: any;
         name: string;
@@ -147,7 +140,6 @@
         generateJoint(joint: PhysicsImpostorJoint);
         removeJoint(joint: PhysicsImpostorJoint)
         isSupported(): boolean;
-        supports(feature: PhysicsFeature): boolean;
         setTransformationFromPhysicsBody(impostor: PhysicsImpostor);
         setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition:Vector3, newRotation: Quaternion);
         dispose();
