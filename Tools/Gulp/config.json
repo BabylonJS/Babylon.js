@@ -16,6 +16,7 @@
     ],
     "files": [
       "../../src/Math/babylon.math.js",
+      "../../src/Tools/babylon.decorators.js",
       "../../src/Tools/babylon.database.js",
       "../../src/Tools/babylon.tools.tga.js",
       "../../src/Tools/babylon.smartArray.js",
