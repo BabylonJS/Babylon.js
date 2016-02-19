@@ -177,6 +177,19 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AbstractMesh.prototype, "rotationQuaternion", {
+            get: function () {
+                return this._rotationQuaternion;
+            },
+            set: function (quaternion) {
+                this._rotationQuaternion = quaternion;
+                if (this.rotation.length()) {
+                    this.rotation.copyFromFloats(0, 0, 0);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         AbstractMesh.prototype.updatePoseMatrix = function (matrix) {
             this._poseMatrix.copyFrom(matrix);
