@@ -61,7 +61,7 @@ module BABYLON {
         @serializeAsTexture()
         public diffuseTexture: BaseTexture;
 
-        @serialize("diffuseColor")
+        @serializeAsColor3("diffuseColor")
         public diffuseColor = new Color3(1, 1, 1);
         public disableLighting = false;
 
