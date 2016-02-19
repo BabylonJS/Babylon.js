@@ -16,15 +16,28 @@ module BABYLON {
     
     export class SkyMaterial extends Material {
         // Public members
+        @serialize()
         public luminance: number = 1.0;
+        
+        @serialize()
 		public turbidity: number = 10.0;
+        
+        @serialize()
 		public rayleigh: number = 2.0;
-		public mieCoefficient: number = 0.005;
-		public mieDirectionalG: number = 0.8;
+		
+        @serialize()
+        public mieCoefficient: number = 0.005;
+		
+        @serialize()
+        public mieDirectionalG: number = 0.8;
         
         public distance: number = 500;
+        
+        @serialize()
         public inclination: number = 0.49;
-		public azimuth: number = 0.25;
+		
+        @serialize()
+        public azimuth: number = 0.25;
         
         // Private members
         private _sunPosition: Vector3 = Vector3.Zero();
@@ -190,10 +203,7 @@ module BABYLON {
             }
             
             // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
+            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
             
             // Sky
             this._effect.setFloat("luminance", this.luminance);
@@ -223,6 +233,7 @@ module BABYLON {
         }
 
         public clone(name: string): SkyMaterial {
+            /*
             var newMaterial = new SkyMaterial(name, this.getScene());
 
             // Base material
@@ -238,6 +249,8 @@ module BABYLON {
             newMaterial.azimuth = this.azimuth;
             
             return newMaterial;
+            */
+            return SerializationHelper.Clone<SkyMaterial>(() => new SkyMaterial(name, this.getScene()), this);
         }
 		
 		public serialize(): any {

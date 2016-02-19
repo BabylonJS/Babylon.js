@@ -7,9 +7,7 @@ varying vec3 vPositionW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-varying float fClipDistance;
-#endif
+#include<clipPlaneFragmentDeclaration>
 
 // Sky
 uniform float luminance;
@@ -20,40 +18,7 @@ uniform float mieDirectionalG;
 uniform vec3 sunPosition;
 
 // Fog
-#ifdef FOG
-#define FOGMODE_NONE    0.
-#define FOGMODE_EXP     1.
-#define FOGMODE_EXP2    2.
-#define FOGMODE_LINEAR  3.
-#define E 2.71828
-
-uniform vec4 vFogInfos;
-uniform vec3 vFogColor;
-varying float fFogDistance;
-
-float CalcFogFactor()
-{
-	float fogCoeff = 1.0;
-	float fogStart = vFogInfos.y;
-	float fogEnd = vFogInfos.z;
-	float fogDensity = vFogInfos.w;
-
-	if (FOGMODE_LINEAR == vFogInfos.x)
-	{
-		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);
-	}
-	else if (FOGMODE_EXP == vFogInfos.x)
-	{
-		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);
-	}
-	else if (FOGMODE_EXP2 == vFogInfos.x)
-	{
-		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);
-	}
-
-	return clamp(fogCoeff, 0.0, 1.0);
-}
-#endif
+#include<fogFragmentDeclaration>
 
 // Constants
 const float e = 2.71828182845904523536028747135266249775724709369995957;
@@ -123,10 +88,7 @@ vec3 Uncharted2Tonemap(vec3 x)
 
 void main(void) {
 	// Clip plane
-#ifdef CLIPPLANE
-	if (fClipDistance > 0.0)
-		discard;
-#endif
+#include<clipPlaneFragment>
 
 	/**
 	*--------------------------------------------------------------------------------------------------
@@ -202,10 +164,7 @@ void main(void) {
 	// Composition
 	vec4 color = vec4(baseColor.rgb, alpha);
 
-#ifdef FOG
-	float fog = CalcFogFactor();
-	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
-#endif
+#include<fogFragment>
 
 	gl_FragColor = color;
 }
