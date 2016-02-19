@@ -1,7 +1,42 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var BABYLON;
 (function (BABYLON) {
     BABYLON.ToGammaSpace = 1 / 2.2;
     BABYLON.ToLinearSpace = 2.2;
+    var ChangableMathObject = (function () {
+        function ChangableMathObject() {
+            this._onChangeTriggers = [];
+        }
+        ChangableMathObject.prototype.registerOnChange = function (func) {
+            if (!this._onChangeTriggers) {
+                this._onChangeTriggers = [];
+            }
+            this._onChangeTriggers.push(func);
+        };
+        ChangableMathObject.prototype.unregisterOnChange = function (func) {
+            var index = this._onChangeTriggers.indexOf(func);
+            if (index > -1) {
+                this._onChangeTriggers.splice(index, 1);
+            }
+            else {
+                BABYLON.Tools.Warn("Function to remove was not found");
+            }
+        };
+        ChangableMathObject.prototype.triggerChange = function () {
+            var _this = this;
+            if (this._onChangeTriggers) {
+                this._onChangeTriggers.forEach(function (func) {
+                    func(_this);
+                });
+            }
+        };
+        return ChangableMathObject;
+    }());
+    BABYLON.ChangableMathObject = ChangableMathObject;
     var Color3 = (function () {
         function Color3(r, g, b) {
             if (r === void 0) { r = 0; }
@@ -155,7 +190,7 @@ var BABYLON;
         Color3.Yellow = function () { return new Color3(1, 1, 0); };
         Color3.Gray = function () { return new Color3(0.5, 0.5, 0.5); };
         return Color3;
-    })();
+    }());
     BABYLON.Color3 = Color3;
     var Color4 = (function () {
         function Color4(r, g, b, a) {
@@ -276,7 +311,7 @@ var BABYLON;
             return colors;
         };
         return Color4;
-    })();
+    }());
     BABYLON.Color4 = Color4;
     var Vector2 = (function () {
         function Vector2(x, y) {
@@ -464,14 +499,49 @@ var BABYLON;
             return (x * x) + (y * y);
         };
         return Vector2;
-    })();
+    }());
     BABYLON.Vector2 = Vector2;
-    var Vector3 = (function () {
-        function Vector3(x, y, z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+    var Vector3 = (function (_super) {
+        __extends(Vector3, _super);
+        function Vector3(_x, _y, _z) {
+            _super.call(this);
+            this._x = _x;
+            this._y = _y;
+            this._z = _z;
         }
+        Object.defineProperty(Vector3.prototype, "x", {
+            get: function () {
+                return this._x;
+            },
+            set: function (x) {
+                this._x = x;
+                this.triggerChange();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Vector3.prototype, "y", {
+            get: function () {
+                return this._y;
+            },
+            set: function (y) {
+                this._y = y;
+                this.triggerChange();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Vector3.prototype, "z", {
+            get: function () {
+                return this._z;
+            },
+            set: function (z) {
+                this._z = z;
+                this.triggerChange();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Vector3.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
         };
@@ -963,7 +1033,7 @@ var BABYLON;
             ref.z = roll;
         };
         return Vector3;
-    })();
+    }(ChangableMathObject));
     BABYLON.Vector3 = Vector3;
     //Vector4 class created for EulerAngle class conversion to Quaternion
     var Vector4 = (function () {
@@ -1220,19 +1290,65 @@ var BABYLON;
             return center;
         };
         return Vector4;
-    })();
+    }());
     BABYLON.Vector4 = Vector4;
-    var Quaternion = (function () {
-        function Quaternion(x, y, z, w) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            if (z === void 0) { z = 0; }
-            if (w === void 0) { w = 1; }
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
+    var Quaternion = (function (_super) {
+        __extends(Quaternion, _super);
+        function Quaternion(_x, _y, _z, _w) {
+            if (_x === void 0) { _x = 0; }
+            if (_y === void 0) { _y = 0; }
+            if (_z === void 0) { _z = 0; }
+            if (_w === void 0) { _w = 1; }
+            _super.call(this);
+            this._x = _x;
+            this._y = _y;
+            this._z = _z;
+            this._w = _w;
         }
+        Object.defineProperty(Quaternion.prototype, "x", {
+            get: function () {
+                return this._x;
+            },
+            set: function (x) {
+                this._x = x;
+                this.triggerChange();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Quaternion.prototype, "y", {
+            get: function () {
+                return this._y;
+            },
+            set: function (y) {
+                this._y = y;
+                this.triggerChange();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Quaternion.prototype, "z", {
+            get: function () {
+                return this._z;
+            },
+            set: function (z) {
+                this._z = z;
+                this.triggerChange();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Quaternion.prototype, "w", {
+            get: function () {
+                return this._w;
+            },
+            set: function (w) {
+                this._w = w;
+                this.triggerChange();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Quaternion.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
         };
@@ -1492,7 +1608,7 @@ var BABYLON;
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         };
         return Quaternion;
-    })();
+    }(ChangableMathObject));
     BABYLON.Quaternion = Quaternion;
     var Matrix = (function () {
         function Matrix() {
@@ -2127,7 +2243,7 @@ var BABYLON;
         Matrix._yAxis = Vector3.Zero();
         Matrix._zAxis = Vector3.Zero();
         return Matrix;
-    })();
+    }());
     BABYLON.Matrix = Matrix;
     var Plane = (function () {
         function Plane(a, b, c, d) {
@@ -2220,7 +2336,7 @@ var BABYLON;
             return Vector3.Dot(point, normal) + d;
         };
         return Plane;
-    })();
+    }());
     BABYLON.Plane = Plane;
     var Viewport = (function () {
         function Viewport(x, y, width, height) {
@@ -2240,7 +2356,7 @@ var BABYLON;
             return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
         };
         return Viewport;
-    })();
+    }());
     BABYLON.Viewport = Viewport;
     var Frustum = (function () {
         function Frustum() {
@@ -2292,7 +2408,7 @@ var BABYLON;
             frustumPlanes[5].normalize();
         };
         return Frustum;
-    })();
+    }());
     BABYLON.Frustum = Frustum;
     var Ray = (function () {
         function Ray(origin, direction, length) {
@@ -2460,7 +2576,7 @@ var BABYLON;
             return new Ray(newOrigin, newDirection, ray.length);
         };
         return Ray;
-    })();
+    }());
     BABYLON.Ray = Ray;
     (function (Space) {
         Space[Space["LOCAL"] = 0] = "LOCAL";
@@ -2474,7 +2590,7 @@ var BABYLON;
         Axis.Y = new Vector3(0, 1, 0);
         Axis.Z = new Vector3(0, 0, 1);
         return Axis;
-    })();
+    }());
     BABYLON.Axis = Axis;
     ;
     var BezierCurve = (function () {
@@ -2500,7 +2616,7 @@ var BABYLON;
                 Math.pow(refinedT, 3);
         };
         return BezierCurve;
-    })();
+    }());
     BABYLON.BezierCurve = BezierCurve;
     (function (Orientation) {
         Orientation[Orientation["CW"] = 0] = "CW";
@@ -2528,7 +2644,7 @@ var BABYLON;
             return new Angle(degrees * Math.PI / 180);
         };
         return Angle;
-    })();
+    }());
     BABYLON.Angle = Angle;
     var Arc2 = (function () {
         function Arc2(startPoint, midPoint, endPoint) {
@@ -2558,7 +2674,7 @@ var BABYLON;
             this.angle = Angle.FromDegrees(this.orientation === Orientation.CW ? a1 - a3 : a3 - a1);
         }
         return Arc2;
-    })();
+    }());
     BABYLON.Arc2 = Arc2;
     var PathCursor = (function () {
         function PathCursor(path) {
@@ -2615,7 +2731,7 @@ var BABYLON;
             return this;
         };
         return PathCursor;
-    })();
+    }());
     BABYLON.PathCursor = PathCursor;
     var Path2 = (function () {
         function Path2(x, y) {
@@ -2700,7 +2816,7 @@ var BABYLON;
             return new Path2(x, y);
         };
         return Path2;
-    })();
+    }());
     BABYLON.Path2 = Path2;
     var Path3D = (function () {
         /**
@@ -2847,7 +2963,7 @@ var BABYLON;
             return normal0;
         };
         return Path3D;
-    })();
+    }());
     BABYLON.Path3D = Path3D;
     var Curve3 = (function () {
         function Curve3(points) {
@@ -2914,7 +3030,7 @@ var BABYLON;
             return l;
         };
         return Curve3;
-    })();
+    }());
     BABYLON.Curve3 = Curve3;
     // SphericalHarmonics
     var SphericalHarmonics = (function () {
@@ -2954,7 +3070,7 @@ var BABYLON;
             this.L22 = this.L22.scale(scale);
         };
         return SphericalHarmonics;
-    })();
+    }());
     BABYLON.SphericalHarmonics = SphericalHarmonics;
     // SphericalPolynomial
     var SphericalPolynomial = (function () {
@@ -2989,7 +3105,7 @@ var BABYLON;
             return result;
         };
         return SphericalPolynomial;
-    })();
+    }());
     BABYLON.SphericalPolynomial = SphericalPolynomial;
     // Vertex formats
     var PositionNormalVertex = (function () {
@@ -3003,7 +3119,7 @@ var BABYLON;
             return new PositionNormalVertex(this.position.clone(), this.normal.clone());
         };
         return PositionNormalVertex;
-    })();
+    }());
     BABYLON.PositionNormalVertex = PositionNormalVertex;
     var PositionNormalTextureVertex = (function () {
         function PositionNormalTextureVertex(position, normal, uv) {
@@ -3018,7 +3134,7 @@ var BABYLON;
             return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
         };
         return PositionNormalTextureVertex;
-    })();
+    }());
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
     // Temporary pre-allocated objects for engine internal use
     // usage in any internal function :
@@ -3038,6 +3154,6 @@ var BABYLON;
             Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero()]; // 6 temp Matrices at once should be enough
         return Tmp;
-    })();
+    }());
     BABYLON.Tmp = Tmp;
 })(BABYLON || (BABYLON = {}));

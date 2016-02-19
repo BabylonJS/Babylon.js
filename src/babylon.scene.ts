@@ -551,7 +551,7 @@
 
                         if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
                             var that = this;
-                            window.setTimeout(function () {
+                            window.setTimeout(function() {
                                 var pickResult = that.pick(that._pointerX, that._pointerY,
                                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
                                     false, that.cameraToUseForPointers);
@@ -2489,11 +2489,11 @@
             try {
                 this._physicsEngine = new PhysicsEngine(gravity, plugin);
                 return true;
-            } catch(e) {
+            } catch (e) {
                 Tools.Error(e.message);
                 return false;
             }
-            
+
         }
 
         public disablePhysicsEngine(): void {
@@ -2529,24 +2529,26 @@
          */
         public createCompoundImpostor(parts: any, options: PhysicsImpostorParameters): any {
             Tools.Warn("This function is deprecated. Please use PhysicsImpostor parent/child")
-            
+
             if (parts.parts) { // Old API
                 options = parts;
                 parts = parts.parts;
             }
-            
-            var mainMesh : AbstractMesh = parts[0].mesh;
+
+            var mainMesh: AbstractMesh = parts[0].mesh;
             mainMesh.physicImpostor = new PhysicsImpostor(mainMesh, parts[0].impostor, options)
             for (var index = 1; index < parts.length; index++) {
-                var mesh : AbstractMesh = parts[index].mesh;
-                mesh.position = mesh.position.subtract(mainMesh.position);
-                mesh.parent = mainMesh;
+                var mesh: AbstractMesh = parts[index].mesh;
+                if (mesh.parent !== mainMesh) {
+                    mesh.position = mesh.position.subtract(mainMesh.position);
+                    mesh.parent = mainMesh;
+                }
                 mesh.physicImpostor = new PhysicsImpostor(mesh, parts[index].impostor, options)
             }
         }
 
         public deleteCompoundImpostor(compound: any): void {
-            var mesh : AbstractMesh = compound.parts[0].mesh;
+            var mesh: AbstractMesh = compound.parts[0].mesh;
             mesh.physicImpostor.dispose(true);
             mesh.physicImpostor = null;
         }

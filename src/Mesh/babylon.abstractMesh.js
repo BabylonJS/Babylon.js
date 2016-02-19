@@ -150,7 +150,8 @@ var BABYLON;
             set: function (newPosition) {
                 this._position = newPosition;
                 if (this.physicImpostor) {
-                    this.physicImpostor.setTransformationUpdated(true);
+                    this.position.registerOnChange(this.physicImpostor.transformationUpdated);
+                    this.physicImpostor.transformationUpdated();
                 }
             },
             enumerable: true,
@@ -193,6 +194,10 @@ var BABYLON;
             },
             set: function (quaternion) {
                 this._rotationQuaternion = quaternion;
+                if (this.physicImpostor) {
+                    this.position.registerOnChange(this.physicImpostor.transformationUpdated);
+                    this.physicImpostor.transformationUpdated();
+                }
             },
             enumerable: true,
             configurable: true
@@ -982,6 +987,6 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
         return AbstractMesh;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));

@@ -2035,8 +2035,10 @@ var BABYLON;
             mainMesh.physicImpostor = new BABYLON.PhysicsImpostor(mainMesh, parts[0].impostor, options);
             for (var index = 1; index < parts.length; index++) {
                 var mesh = parts[index].mesh;
-                mesh.position = mesh.position.subtract(mainMesh.position);
-                mesh.parent = mainMesh;
+                if (mesh.parent !== mainMesh) {
+                    mesh.position = mesh.position.subtract(mainMesh.position);
+                    mesh.parent = mainMesh;
+                }
                 mesh.physicImpostor = new BABYLON.PhysicsImpostor(mesh, parts[index].impostor, options);
             }
         };
@@ -2099,6 +2101,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    })();
+    }());
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));

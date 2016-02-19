@@ -65,10 +65,10 @@ module BABYLON {
             return this._transformationUpdated || this.isBodyInitRequired();
         }
 
-        public setTransformationUpdated(updated: boolean) {
-            this._transformationUpdated = updated;
+        public transformationUpdated() : void {
+            this._transformationUpdated = true;
             if (this._parent) {
-                this._parent.setTransformationUpdated(updated);
+                this._parent.transformationUpdated();
             }
         }
 
