@@ -1071,10 +1071,10 @@ void main(void) {
 vec3 surfaceRefractionColor = vec3(0., 0., 0.);
 
 // Go mat -> blurry reflexion according to microSurface
-#ifndef LODBASEDMICROSFURACE
-    float bias = 20. * (1.0 - microSurface);
-#else
+#ifdef LODBASEDMICROSFURACE
     float alphaG = convertRoughnessToAverageSlope(roughness);
+#else
+    float bias = 20. * (1.0 - microSurface);
 #endif
         
 #ifdef REFRACTION
@@ -1109,7 +1109,7 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
         #ifdef LODBASEDMICROSFURACE
             surfaceRefractionColor = texture2DLodEXT(refraction2DSampler, refractionCoords, lodRefraction).rgb * vRefractionInfos.x;
         #else
-            surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+            surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords, bias).rgb * vRefractionInfos.x;
         #endif    
         
         surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
@@ -1162,7 +1162,7 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
         #ifdef LODBASEDMICROSFURACE
             environmentRadiance = texture2DLodEXT(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
         #else
-            environmentRadiance = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+            environmentRadiance = texture2D(reflection2DSampler, coords, bias).rgb * vReflectionInfos.x;
         #endif
     
         environmentRadiance = toLinearSpace(environmentRadiance.rgb);
