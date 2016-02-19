@@ -528,6 +528,16 @@
             Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
 
             // Rotation
+            
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                var len = this.rotation.length();
+                if (len) {
+                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
+                    this.rotation.copyFromFloats(0, 0, 0);
+                }
+            }
+            
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
