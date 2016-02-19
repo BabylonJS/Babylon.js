@@ -935,23 +935,6 @@ var BABYLON;
             vertexData.positions = positions;
             return vertexData;
         };
-        VertexData.CreateLines = function (options) {
-            var indices = [];
-            var positions = [];
-            var points = options.points;
-            for (var index = 0; index < points.length; index++) {
-                positions.push(points[index].x, points[index].y, points[index].z);
-                if (index > 0) {
-                    indices.push(index - 1);
-                    indices.push(index);
-                }
-            }
-            // Result
-            var vertexData = new VertexData();
-            vertexData.indices = indices;
-            vertexData.positions = positions;
-            return vertexData;
-        };
         VertexData.CreateDashedLines = function (options) {
             var dashSize = options.dashSize || 3;
             var gapSize = options.gapSize || 1;

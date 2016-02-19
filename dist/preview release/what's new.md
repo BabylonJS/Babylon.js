@@ -4,6 +4,7 @@
     - Added support for HDR cubemaps ([sebavan](https://github.com/sebavan))
     - Support for shaders includes ([deltakosh](https://github.com/deltakosh))
     - new mesh type : `LineSystem` ([jerome](https://github.com/jbousquie))
+    - SerializationHelper for complex classes using TypeScript decorators  ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
     - New SPS method `digest()` ([jerome](https://github.com/jbousquie))    

@@ -25,6 +25,14 @@
         return generateSerializableMember(3, sourceName); // fresnel parameters member
     }
 
+    export function serializeAsVector3(sourceName?: string) {
+        return generateSerializableMember(4, sourceName); // vector3 member
+    }
+
+    export function serializeAsMeshReference(sourceName?: string) {
+        return generateSerializableMember(5, sourceName); // mesh reference member
+    }
+
     export class SerializationHelper {
 
         public static Serialize<T>(entity: T, serializationObject?: any): any {
@@ -56,6 +64,12 @@
                         case 3:     // FresnelParameters
                             serializationObject[targetPropertyName] = sourceProperty.serialize();
                             break;
+                        case 4:     // Vector3
+                            serializationObject[targetPropertyName] = sourceProperty.asArray();
+                            break;
+                        case 5:     // Mesh reference
+                            serializationObject[targetPropertyName] = sourceProperty.id;
+                            break;
                     }
                 }
             }
@@ -63,7 +77,7 @@
             return serializationObject;
         }
 
-        public static Parse<T>(creationFunction: () => T, source: any, scene: Scene, rootUrl: string): T {
+        public static Parse<T>(creationFunction: () => T, source: any, scene: Scene, rootUrl?: string): T {
             var destination = creationFunction();
 
             // Tags
@@ -89,6 +103,12 @@
                         case 3:     // FresnelParameters
                             destination[property] = FresnelParameters.Parse(sourceProperty);
                             break;
+                        case 4:     // Vector3
+                            destination[property] = Vector3.FromArray(sourceProperty);
+                            break;
+                        case 5:     // Mesh reference
+                            destination[property] = scene.getLastMeshByID(sourceProperty);
+                            break;
                     }
                 }
             }
@@ -111,11 +131,13 @@
                 if (sourceProperty !== undefined && sourceProperty !== null) {
                     switch (propertyType) {
                         case 0:     // Value
+                        case 5:     // Mesh reference
                             destination[property] = sourceProperty;
                             break;
                         case 1:     // Texture
                         case 2:     // Color3
                         case 3:     // FresnelParameters
+                        case 4:     // Vector3
                             destination[property] = sourceProperty.clone();
                             break;
                     }

@@ -5,9 +5,17 @@
      */
     export class Node {
         public parent: Node;
+
+        @serialize()
         public name: string;
+
+        @serialize()
         public id: string;
+
+        @serialize()
         public uniqueId: number;
+
+        @serialize()
         public state = "";
 
         public animations = new Array<Animation>();

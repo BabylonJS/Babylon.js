@@ -10,7 +10,10 @@ module BABYLON {
         private _attachedCanvas: HTMLCanvasElement;
         private _orientationChanged: (e: DeviceOrientationEvent) => any;
 
+        @serialize()
         public angularSensibility: number = 10000.0;
+
+        @serialize()
         public moveSensibility: number = 50.0;
 
         constructor(name: string, position: Vector3, scene: Scene) {
@@ -75,12 +78,8 @@ module BABYLON {
             super._checkInputs();
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "DeviceOrientationCamera";
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "DeviceOrientationCamera";
         }
     }
 }

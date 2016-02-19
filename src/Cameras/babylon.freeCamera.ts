@@ -1,13 +1,29 @@
 ﻿module BABYLON {
     export class FreeCamera extends TargetCamera {
+        @serializeAsVector3()
         public ellipsoid = new Vector3(0.5, 1, 0.5);
+
+        @serialize()
         public keysUp = [38];
+
+        @serialize()
         public keysDown = [40];
+
+        @serialize()
         public keysLeft = [37];
+
+        @serialize()
         public keysRight = [39];
+
+        @serialize()
         public checkCollisions = false;
+
+        @serialize()
         public applyGravity = false;
+
+        @serialize()
         public angularSensibility = 2000.0;
+
         public onCollide: (collidedMesh: AbstractMesh) => void;
 
         private _keys = [];
@@ -26,9 +42,7 @@
         private _onMouseMove: (e: MouseEvent) => any;
         private _onKeyDown: (e: KeyboardEvent) => any;
         private _onKeyUp: (e: KeyboardEvent) => any;        
-
-        public _waitingLockedTargetId: string;
-
+        
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
         }
@@ -264,15 +278,8 @@
             }
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "FreeCamera";
-            serializationObject.checkCollisions = this.checkCollisions;
-            serializationObject.applyGravity = this.applyGravity;
-            serializationObject.ellipsoid = this.ellipsoid.asArray();
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "FreeCamera";
         }
     }
 } 

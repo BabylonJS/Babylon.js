@@ -47,12 +47,8 @@
             super.dispose();
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "VirtualJoysticksCamera";
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "VirtualJoysticksCamera";
         }
     }
 }

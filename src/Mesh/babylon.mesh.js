@@ -48,6 +48,8 @@ var BABYLON;
                 }
                 // Deep copy
                 BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
+                // Pivot                
+                this.setPivotMatrix(source.getPivotMatrix());
                 this.id = name + "." + source.id;
                 // Material
                 this.material = source.material;

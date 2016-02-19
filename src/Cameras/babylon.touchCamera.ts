@@ -10,7 +10,10 @@ module BABYLON {
         private _onPointerUp: (e: PointerEvent) => any;
         private _onPointerMove: (e: PointerEvent) => any;
 
+        @serialize()
         public touchAngularSensibility: number = 200000.0;
+
+        @serialize()
         public touchMoveSensibility: number = 250.0;
 
         constructor(name: string, position: Vector3, scene: Scene) {
@@ -146,12 +149,8 @@ module BABYLON {
             super._checkInputs();
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "TouchCamera";
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "TouchCamera";
         }
     }
 }
