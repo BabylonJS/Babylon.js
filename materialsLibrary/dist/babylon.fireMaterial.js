@@ -247,26 +247,6 @@ var BABYLON;
         };
         FireMaterial.prototype.clone = function (name) {
             var _this = this;
-            /*
-            var newMaterial = new FireMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Fire material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.distortionTexture && this.distortionTexture.clone) {
-                newMaterial.distortionTexture = this.distortionTexture.clone();
-            }
-            if (this.opacityTexture && this.opacityTexture.clone) {
-                newMaterial.opacityTexture = this.opacityTexture.clone();
-            }
-
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
-            */
             return BABYLON.SerializationHelper.Clone(function () { return new FireMaterial(name, _this.getScene()); }, this);
         };
         FireMaterial.prototype.serialize = function () {

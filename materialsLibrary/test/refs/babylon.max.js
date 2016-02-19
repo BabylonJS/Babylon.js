@@ -3050,6 +3050,145 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    function generateSerializableMember(type, sourceName) {
+        return function (target, propertyKey) {
+            if (!target.__serializableMembers) {
+                target.__serializableMembers = {};
+            }
+            target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+        };
+    }
+    function serialize(sourceName) {
+        return generateSerializableMember(0, sourceName); // value member
+    }
+    BABYLON.serialize = serialize;
+    function serializeAsTexture(sourceName) {
+        return generateSerializableMember(1, sourceName); // texture member
+    }
+    BABYLON.serializeAsTexture = serializeAsTexture;
+    function serializeAsColor3(sourceName) {
+        return generateSerializableMember(2, sourceName); // color3 member
+    }
+    BABYLON.serializeAsColor3 = serializeAsColor3;
+    function serializeAsFresnelParameters(sourceName) {
+        return generateSerializableMember(3, sourceName); // fresnel parameters member
+    }
+    BABYLON.serializeAsFresnelParameters = serializeAsFresnelParameters;
+    function serializeAsVector3(sourceName) {
+        return generateSerializableMember(4, sourceName); // vector3 member
+    }
+    BABYLON.serializeAsVector3 = serializeAsVector3;
+    function serializeAsMeshReference(sourceName) {
+        return generateSerializableMember(5, sourceName); // mesh reference member
+    }
+    BABYLON.serializeAsMeshReference = serializeAsMeshReference;
+    var SerializationHelper = (function () {
+        function SerializationHelper() {
+        }
+        SerializationHelper.Serialize = function (entity, serializationObject) {
+            if (!serializationObject) {
+                serializationObject = {};
+            }
+            // Tags
+            serializationObject.tags = BABYLON.Tags.GetTags(entity);
+            // Properties
+            for (var property in entity.__serializableMembers) {
+                var propertyDescriptor = entity.__serializableMembers[property];
+                var targetPropertyName = propertyDescriptor.sourceName || property;
+                var propertyType = propertyDescriptor.type;
+                var sourceProperty = entity[property];
+                if (sourceProperty !== undefined && sourceProperty !== null) {
+                    switch (propertyType) {
+                        case 0:
+                            serializationObject[targetPropertyName] = sourceProperty;
+                            break;
+                        case 1:
+                            serializationObject[targetPropertyName] = sourceProperty.serialize();
+                            break;
+                        case 2:
+                            serializationObject[targetPropertyName] = sourceProperty.asArray();
+                            break;
+                        case 3:
+                            serializationObject[targetPropertyName] = sourceProperty.serialize();
+                            break;
+                        case 4:
+                            serializationObject[targetPropertyName] = sourceProperty.asArray();
+                            break;
+                        case 5:
+                            serializationObject[targetPropertyName] = sourceProperty.id;
+                            break;
+                    }
+                }
+            }
+            return serializationObject;
+        };
+        SerializationHelper.Parse = function (creationFunction, source, scene, rootUrl) {
+            var destination = creationFunction();
+            // Tags
+            BABYLON.Tags.AddTagsTo(destination, source.tags);
+            // Properties
+            for (var property in destination.__serializableMembers) {
+                var propertyDescriptor = destination.__serializableMembers[property];
+                var sourceProperty = source[propertyDescriptor.sourceName || property];
+                var propertyType = propertyDescriptor.type;
+                if (sourceProperty !== undefined && sourceProperty !== null) {
+                    switch (propertyType) {
+                        case 0:
+                            destination[property] = sourceProperty;
+                            break;
+                        case 1:
+                            destination[property] = BABYLON.Texture.Parse(sourceProperty, scene, rootUrl);
+                            break;
+                        case 2:
+                            destination[property] = BABYLON.Color3.FromArray(sourceProperty);
+                            break;
+                        case 3:
+                            destination[property] = BABYLON.FresnelParameters.Parse(sourceProperty);
+                            break;
+                        case 4:
+                            destination[property] = BABYLON.Vector3.FromArray(sourceProperty);
+                            break;
+                        case 5:
+                            destination[property] = scene.getLastMeshByID(sourceProperty);
+                            break;
+                    }
+                }
+            }
+            return destination;
+        };
+        SerializationHelper.Clone = function (creationFunction, source) {
+            var destination = creationFunction();
+            // Tags
+            BABYLON.Tags.AddTagsTo(destination, source.tags);
+            // Properties
+            for (var property in destination.__serializableMembers) {
+                var propertyDescriptor = destination.__serializableMembers[property];
+                var sourceProperty = source[property];
+                var propertyType = propertyDescriptor.type;
+                if (sourceProperty !== undefined && sourceProperty !== null) {
+                    switch (propertyType) {
+                        case 0: // Value
+                        case 5:
+                            destination[property] = sourceProperty;
+                            break;
+                        case 1: // Texture
+                        case 2: // Color3
+                        case 3: // FresnelParameters
+                        case 4:
+                            destination[property] = sourceProperty.clone();
+                            break;
+                    }
+                }
+            }
+            return destination;
+        };
+        return SerializationHelper;
+    })();
+    BABYLON.SerializationHelper = SerializationHelper;
+})(BABYLON || (BABYLON = {}));
+
+var BABYLON;
+(function (BABYLON) {
     var Database = (function () {
         function Database(urlToScene, callbackManifestChecked) {
             // Handling various flavors of prefixed version of IndexedDB
@@ -7059,6 +7198,12 @@ var BABYLON;
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -7276,6 +7421,18 @@ var BABYLON;
                 }
             }
         };
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "name", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "id", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "uniqueId", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "state", void 0);
         return Node;
     })();
     BABYLON.Node = Node;
@@ -8666,6 +8823,11 @@ var BABYLON;
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
             var index;
+            // Action manager
+            if (this.actionManager) {
+                this.actionManager.dispose();
+                this.actionManager = null;
+            }
             // Skeleton
             this.skeleton = null;
             // Animations
@@ -10182,81 +10344,10 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var VRCameraMetrics = (function () {
-        function VRCameraMetrics() {
-            this.compensateDistortion = true;
-        }
-        Object.defineProperty(VRCameraMetrics.prototype, "aspectRatio", {
-            get: function () {
-                return this.hResolution / (2 * this.vResolution);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(VRCameraMetrics.prototype, "aspectRatioFov", {
-            get: function () {
-                return (2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance)));
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(VRCameraMetrics.prototype, "leftHMatrix", {
-            get: function () {
-                var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
-                var h = (4 * meters) / this.hScreenSize;
-                return BABYLON.Matrix.Translation(h, 0, 0);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(VRCameraMetrics.prototype, "rightHMatrix", {
-            get: function () {
-                var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
-                var h = (4 * meters) / this.hScreenSize;
-                return BABYLON.Matrix.Translation(-h, 0, 0);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(VRCameraMetrics.prototype, "leftPreViewMatrix", {
-            get: function () {
-                return BABYLON.Matrix.Translation(0.5 * this.interpupillaryDistance, 0, 0);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(VRCameraMetrics.prototype, "rightPreViewMatrix", {
-            get: function () {
-                return BABYLON.Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        VRCameraMetrics.GetDefault = function () {
-            var result = new VRCameraMetrics();
-            result.hResolution = 1280;
-            result.vResolution = 800;
-            result.hScreenSize = 0.149759993;
-            result.vScreenSize = 0.0935999975;
-            result.vScreenCenter = 0.0467999987,
-                result.eyeToScreenDistance = 0.0410000011;
-            result.lensSeparationDistance = 0.0635000020;
-            result.interpupillaryDistance = 0.0640000030;
-            result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
-            result.chromaAbCorrection = [0.995999992, -0.00400000019, 1.01400006, 0.0];
-            result.postProcessScaleFactor = 1.714605507808412;
-            result.lensCenterOffset = 0.151976421;
-            return result;
-        };
-        return VRCameraMetrics;
-    })();
-    BABYLON.VRCameraMetrics = VRCameraMetrics;
     var Camera = (function (_super) {
         __extends(Camera, _super);
         function Camera(name, position, scene) {
             _super.call(this, name, scene);
-            this.position = position;
-            // Members
             this.upVector = BABYLON.Vector3.Up();
             this.orthoLeft = null;
             this.orthoRight = null;
@@ -10285,6 +10376,7 @@ var BABYLON;
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }
+            this.position = position;
         }
         Object.defineProperty(Camera, "PERSPECTIVE_CAMERA", {
             get: function () {
@@ -10443,7 +10535,7 @@ var BABYLON;
             return check;
         };
         // Controls
-        Camera.prototype.attachControl = function (element) {
+        Camera.prototype.attachControl = function (element, noPreventDefault) {
         };
         Camera.prototype.detachControl = function (element) {
         };
@@ -10638,7 +10730,7 @@ var BABYLON;
                 case Camera.RIG_MODE_VR:
                     this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
                     this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
-                    var metrics = rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
+                    var metrics = rigParams.vrCameraMetrics || BABYLON.VRCameraMetrics.GetDefault();
                     this._rigCameras[0]._cameraRigParams.vrMetrics = metrics;
                     this._rigCameras[0].viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0);
                     this._rigCameras[0]._cameraRigParams.vrWorkMatrix = new BABYLON.Matrix();
@@ -10694,91 +10786,72 @@ var BABYLON;
             }
         };
         Camera.prototype.serialize = function () {
-            var serializationObject = {};
-            serializationObject.name = this.name;
-            serializationObject.tags = BABYLON.Tags.GetTags(this);
-            serializationObject.id = this.id;
-            serializationObject.position = this.position.asArray();
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
+            // Type
+            serializationObject.type = this.getTypeName();
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
-            serializationObject.fov = this.fov;
-            serializationObject.minZ = this.minZ;
-            serializationObject.maxZ = this.maxZ;
-            serializationObject.inertia = this.inertia;
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
-            // Layer mask
-            serializationObject.layerMask = this.layerMask;
             return serializationObject;
         };
+        Camera.prototype.getTypeName = function () {
+            return "Camera";
+        };
+        Camera.prototype.clone = function (name) {
+            return BABYLON.SerializationHelper.Clone(Camera.GetConstructorFromName(this.getTypeName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+        };
+        Camera.GetConstructorFromName = function (type, name, scene, interaxial_distance, isStereoscopicSideBySide) {
+            if (interaxial_distance === void 0) { interaxial_distance = 0; }
+            if (isStereoscopicSideBySide === void 0) { isStereoscopicSideBySide = true; }
+            switch (type) {
+                case "ArcRotateCamera":
+                    return function () { return new BABYLON.ArcRotateCamera(name, 0, 0, 1.0, BABYLON.Vector3.Zero(), scene); };
+                case "DeviceOrientationCamera":
+                    return function () { return new BABYLON.DeviceOrientationCamera(name, BABYLON.Vector3.Zero(), scene); };
+                case "FollowCamera":
+                    return function () { return new BABYLON.FollowCamera(name, BABYLON.Vector3.Zero(), scene); };
+                case "ArcFollowCamera":
+                    return function () { return new BABYLON.ArcFollowCamera(name, 0, 0, 1.0, null, scene); };
+                case "GamepadCamera":
+                    return function () { return new BABYLON.GamepadCamera(name, BABYLON.Vector3.Zero(), scene); };
+                case "TouchCamera":
+                    return function () { return new BABYLON.TouchCamera(name, BABYLON.Vector3.Zero(), scene); };
+                case "VirtualJoysticksCamera":
+                    return function () { return new BABYLON.VirtualJoysticksCamera(name, BABYLON.Vector3.Zero(), scene); };
+                case "WebVRFreeCamera":
+                    return function () { return new BABYLON.WebVRFreeCamera(name, BABYLON.Vector3.Zero(), scene); };
+                case "VRDeviceOrientationFreeCamera":
+                    return function () { return new BABYLON.VRDeviceOrientationFreeCamera(name, BABYLON.Vector3.Zero(), scene); };
+                case "AnaglyphArcRotateCamera":
+                    return function () { return new BABYLON.AnaglyphArcRotateCamera(name, 0, 0, 1.0, BABYLON.Vector3.Zero(), interaxial_distance, scene); };
+                case "AnaglyphFreeCamera":
+                    return function () { return new BABYLON.AnaglyphFreeCamera(name, BABYLON.Vector3.Zero(), interaxial_distance, scene); };
+                case "AnaglyphGamepadCamera":
+                    return function () { return new BABYLON.AnaglyphGamepadCamera(name, BABYLON.Vector3.Zero(), interaxial_distance, scene); };
+                case "AnaglyphUniversalCamera":
+                    return function () { return new BABYLON.AnaglyphUniversalCamera(name, BABYLON.Vector3.Zero(), interaxial_distance, scene); };
+                case "StereoscopicArcRotateCamera":
+                    return function () { return new BABYLON.StereoscopicArcRotateCamera(name, 0, 0, 1.0, BABYLON.Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene); };
+                case "StereoscopicFreeCamera":
+                    return function () { return new BABYLON.StereoscopicFreeCamera(name, BABYLON.Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene); };
+                case "StereoscopicGamepadCamera":
+                    return function () { return new BABYLON.StereoscopicGamepadCamera(name, BABYLON.Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene); };
+                case "StereoscopicUniversalCamera":
+                    return function () { return new BABYLON.StereoscopicUniversalCamera(name, BABYLON.Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene); };
+                case "FreeCamera":
+                    return function () { return new BABYLON.UniversalCamera(name, BABYLON.Vector3.Zero(), scene); };
+                default:
+                    return function () { return new BABYLON.UniversalCamera(name, BABYLON.Vector3.Zero(), scene); };
+            }
+        };
         Camera.Parse = function (parsedCamera, scene) {
-            var camera;
-            var position = BABYLON.Vector3.FromArray(parsedCamera.position);
-            var lockedTargetMesh = (parsedCamera.lockedTargetId) ? scene.getLastMeshByID(parsedCamera.lockedTargetId) : null;
-            var interaxial_distance;
-            if (parsedCamera.type === "AnaglyphArcRotateCamera" || parsedCamera.type === "ArcRotateCamera") {
-                var alpha = parsedCamera.alpha;
-                var beta = parsedCamera.beta;
-                var radius = parsedCamera.radius;
-                if (parsedCamera.type === "AnaglyphArcRotateCamera") {
-                    interaxial_distance = parsedCamera.interaxial_distance;
-                    camera = new BABYLON.AnaglyphArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, interaxial_distance, scene);
-                }
-                else {
-                    camera = new BABYLON.ArcRotateCamera(parsedCamera.name, alpha, beta, radius, lockedTargetMesh, scene);
-                }
-            }
-            else if (parsedCamera.type === "AnaglyphFreeCamera") {
-                interaxial_distance = parsedCamera.interaxial_distance;
-                camera = new BABYLON.AnaglyphFreeCamera(parsedCamera.name, position, interaxial_distance, scene);
-            }
-            else if (parsedCamera.type === "DeviceOrientationCamera") {
-                camera = new BABYLON.DeviceOrientationCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "FollowCamera") {
-                camera = new BABYLON.FollowCamera(parsedCamera.name, position, scene);
-                camera.heightOffset = parsedCamera.heightOffset;
-                camera.radius = parsedCamera.radius;
-                camera.rotationOffset = parsedCamera.rotationOffset;
-                if (lockedTargetMesh)
-                    camera.target = lockedTargetMesh;
-            }
-            else if (parsedCamera.type === "GamepadCamera") {
-                camera = new BABYLON.GamepadCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "TouchCamera") {
-                camera = new BABYLON.TouchCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "VirtualJoysticksCamera") {
-                camera = new BABYLON.VirtualJoysticksCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "WebVRFreeCamera") {
-                camera = new BABYLON.WebVRFreeCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "VRDeviceOrientationFreeCamera") {
-                camera = new BABYLON.VRDeviceOrientationFreeCamera(parsedCamera.name, position, scene);
-            }
-            else if (parsedCamera.type === "FreeCamera") {
-                camera = new BABYLON.UniversalCamera(parsedCamera.name, position, scene); // Forcing Universal here
-            }
-            else {
-                // Universal Camera is the default value
-                camera = new BABYLON.UniversalCamera(parsedCamera.name, position, scene);
-            }
-            // apply 3d rig, when found
-            if (parsedCamera.cameraRigMode) {
-                var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
-                camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
-            }
-            // Test for lockedTargetMesh & FreeCamera outside of if-else-if nest, since things like GamepadCamera extend FreeCamera
-            if (lockedTargetMesh && camera instanceof BABYLON.FreeCamera) {
-                camera.lockedTarget = lockedTargetMesh;
-            }
-            camera.id = parsedCamera.id;
-            BABYLON.Tags.AddTagsTo(camera, parsedCamera.tags);
+            var type = parsedCamera.type;
+            var construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);
+            var camera = BABYLON.SerializationHelper.Parse(construct, parsedCamera, scene);
             // Parent
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
@@ -10788,23 +10861,11 @@ var BABYLON;
                 if (camera.setTarget) {
                     camera.setTarget(BABYLON.Vector3.FromArray(parsedCamera.target));
                 }
-                else {
-                    //For ArcRotate
-                    camera.target = BABYLON.Vector3.FromArray(parsedCamera.target);
-                }
             }
-            else {
-                camera.rotation = BABYLON.Vector3.FromArray(parsedCamera.rotation);
-            }
-            camera.fov = parsedCamera.fov;
-            camera.minZ = parsedCamera.minZ;
-            camera.maxZ = parsedCamera.maxZ;
-            camera.speed = parsedCamera.speed;
-            camera.inertia = parsedCamera.inertia;
-            camera.checkCollisions = parsedCamera.checkCollisions;
-            camera.applyGravity = parsedCamera.applyGravity;
-            if (parsedCamera.ellipsoid) {
-                camera.ellipsoid = BABYLON.Vector3.FromArray(parsedCamera.ellipsoid);
+            // Apply 3d rig, when found
+            if (parsedCamera.cameraRigMode) {
+                var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+                camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
             }
             // Animations
             if (parsedCamera.animations) {
@@ -10816,13 +10877,6 @@ var BABYLON;
             }
             if (parsedCamera.autoAnimate) {
                 scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
-            }
-            // Layer Mask
-            if (parsedCamera.layerMask && (!isNaN(parsedCamera.layerMask))) {
-                camera.layerMask = Math.abs(parseInt(parsedCamera.layerMask));
-            }
-            else {
-                camera.layerMask = 0x0FFFFFFF;
             }
             return camera;
         };
@@ -10837,6 +10891,54 @@ var BABYLON;
         Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
         Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
         Camera._RIG_MODE_VR = 20;
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], Camera.prototype, "position", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "upVector", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "orthoLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "orthoRight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "orthoBottom", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "orthoTop", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "fov", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "minZ", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "maxZ", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "inertia", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "mode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "layerMask", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "fovMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "cameraRigMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "interaxialDistance", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Camera.prototype, "isStereoscopicSideBySide", void 0);
         return Camera;
     })(BABYLON.Node);
     BABYLON.Camera = Camera;
@@ -11085,18 +11187,18 @@ var BABYLON;
             this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
             BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         };
-        TargetCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.speed = this.speed;
-            serializationObject.type = "TargetCamera";
-            if (this.rotation) {
-                serializationObject.rotation = this.rotation.asArray();
-            }
-            if (this.lockedTarget && this.lockedTarget.id) {
-                serializationObject.lockedTargetId = this.lockedTarget.id;
-            }
-            return serializationObject;
+        TargetCamera.prototype.getTypeName = function () {
+            return "TargetCamera";
         };
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], TargetCamera.prototype, "rotation", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TargetCamera.prototype, "speed", void 0);
+        __decorate([
+            BABYLON.serializeAsMeshReference("lockedTargetId")
+        ], TargetCamera.prototype, "lockedTarget", void 0);
         return TargetCamera;
     })(BABYLON.Camera);
     BABYLON.TargetCamera = TargetCamera;
@@ -11327,14 +11429,33 @@ var BABYLON;
                 this.position.addInPlace(this.cameraDirection);
             }
         };
-        FreeCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "FreeCamera";
-            serializationObject.checkCollisions = this.checkCollisions;
-            serializationObject.applyGravity = this.applyGravity;
-            serializationObject.ellipsoid = this.ellipsoid.asArray();
-            return serializationObject;
+        FreeCamera.prototype.getTypeName = function () {
+            return "FreeCamera";
         };
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], FreeCamera.prototype, "ellipsoid", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "keysUp", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "keysDown", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "keysLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "keysRight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "checkCollisions", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "applyGravity", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "angularSensibility", void 0);
         return FreeCamera;
     })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;
@@ -11350,13 +11471,14 @@ var BABYLON;
 (function (BABYLON) {
     var FollowCamera = (function (_super) {
         __extends(FollowCamera, _super);
-        function FollowCamera(name, position, scene) {
+        function FollowCamera(name, position, scene, target) {
             _super.call(this, name, position, scene);
             this.radius = 12;
             this.rotationOffset = 0;
             this.heightOffset = 4;
             this.cameraAcceleration = 0.05;
             this.maxCameraSpeed = 20;
+            this.target = target;
         }
         FollowCamera.prototype.getRadians = function (degrees) {
             return degrees * Math.PI / 180;
@@ -11398,14 +11520,27 @@ var BABYLON;
             _super.prototype._checkInputs.call(this);
             this.follow(this.target);
         };
-        FollowCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "FollowCamera";
-            serializationObject.radius = this.radius;
-            serializationObject.heightOffset = this.heightOffset;
-            serializationObject.rotationOffset = this.rotationOffset;
-            return serializationObject;
+        FollowCamera.prototype.getTypeName = function () {
+            return "FollowCamera";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "radius", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "rotationOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "heightOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "cameraAcceleration", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "maxCameraSpeed", void 0);
+        __decorate([
+            BABYLON.serializeAsMeshReference("lockedTargetId")
+        ], FollowCamera.prototype, "target", void 0);
         return FollowCamera;
     })(BABYLON.TargetCamera);
     BABYLON.FollowCamera = FollowCamera;
@@ -11431,11 +11566,8 @@ var BABYLON;
             _super.prototype._checkInputs.call(this);
             this.follow();
         };
-        ArcFollowCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "ArcFollowCamera";
-            serializationObject.radius = this.radius;
-            return serializationObject;
+        ArcFollowCamera.prototype.getTypeName = function () {
+            return "ArcFollowCamera";
         };
         return ArcFollowCamera;
     })(BABYLON.TargetCamera);
@@ -11558,11 +11690,15 @@ var BABYLON;
             }
             _super.prototype._checkInputs.call(this);
         };
-        TouchCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "TouchCamera";
-            return serializationObject;
+        TouchCamera.prototype.getTypeName = function () {
+            return "TouchCamera";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], TouchCamera.prototype, "touchAngularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TouchCamera.prototype, "touchMoveSensibility", void 0);
         return TouchCamera;
     })(BABYLON.FreeCamera);
     BABYLON.TouchCamera = TouchCamera;
@@ -11582,10 +11718,6 @@ var BABYLON;
         function ArcRotateCamera(name, alpha, beta, radius, target, scene) {
             var _this = this;
             _super.call(this, name, BABYLON.Vector3.Zero(), scene);
-            this.alpha = alpha;
-            this.beta = beta;
-            this.radius = radius;
-            this.target = target;
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
@@ -11644,7 +11776,7 @@ var BABYLON;
                 if (sinb === 0) {
                     sinb = 0.0001;
                 }
-                var target = _this._getTargetPosition();
+                var target = _this.target;
                 target.addToRef(new BABYLON.Vector3(_this.radius * cosa * sinb, _this.radius * cosb, _this.radius * sina * sinb), _this._newPosition);
                 _this.position.copyFrom(_this._newPosition);
                 var up = _this.upVector;
@@ -11660,6 +11792,12 @@ var BABYLON;
             if (!this.target) {
                 this.target = BABYLON.Vector3.Zero();
             }
+            else {
+                this.target = target;
+            }
+            this.alpha = alpha;
+            this.beta = beta;
+            this.radius = radius;
             this.getViewMatrix();
         }
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
@@ -11677,9 +11815,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        ArcRotateCamera.prototype._getTargetPosition = function () {
-            return this.target.getAbsolutePosition ? this.target.getAbsolutePosition() : this.target;
-        };
         // Cache
         ArcRotateCamera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
@@ -11693,7 +11828,7 @@ var BABYLON;
             if (!ignoreParentClass) {
                 _super.prototype._updateCache.call(this);
             }
-            this._cache.target.copyFrom(this._getTargetPosition());
+            this._cache.target.copyFrom(this.target);
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
@@ -11703,7 +11838,7 @@ var BABYLON;
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
-            return this._cache.target.equals(this._getTargetPosition())
+            return this._cache.target.equals(this.target)
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
@@ -12027,7 +12162,7 @@ var BABYLON;
             }
         };
         ArcRotateCamera.prototype.rebuildAnglesAndRadius = function () {
-            var radiusv3 = this.position.subtract(this._getTargetPosition());
+            var radiusv3 = this.position.subtract(this.target);
             this.radius = radiusv3.length();
             // Alpha
             this.alpha = Math.acos(radiusv3.x / Math.sqrt(Math.pow(radiusv3.x, 2) + Math.pow(radiusv3.z, 2)));
@@ -12061,7 +12196,7 @@ var BABYLON;
             if (sinb === 0) {
                 sinb = 0.0001;
             }
-            var target = this._getTargetPosition();
+            var target = this.target;
             target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
@@ -12145,21 +12280,87 @@ var BABYLON;
             }
             _super.prototype._updateRigCameras.call(this);
         };
-        ArcRotateCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "ArcRotateCamera";
-            if (this.target instanceof BABYLON.Vector3) {
-                serializationObject.target = this.target.asArray();
-            }
-            if (this.target && this.target.id) {
-                serializationObject.lockedTargetId = this.target.id;
-            }
-            serializationObject.checkCollisions = this.checkCollisions;
-            serializationObject.alpha = this.alpha;
-            serializationObject.beta = this.beta;
-            serializationObject.radius = this.radius;
-            return serializationObject;
+        ArcRotateCamera.prototype.getTypeName = function () {
+            return "ArcRotateCamera";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "alpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "beta", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "radius", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], ArcRotateCamera.prototype, "target", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialAlphaOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialBetaOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialRadiusOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerAlphaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperAlphaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerBetaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperBetaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerRadiusLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperRadiusLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "angularSensibilityX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "angularSensibilityY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "wheelPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "pinchPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "panningSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialPanningX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialPanningY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysUp", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysDown", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysRight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "zoomOnFactor", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "allowUpsideDown", void 0);
         return ArcRotateCamera;
     })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;
@@ -14895,6 +15096,8 @@ var BABYLON;
                 }
                 // Deep copy
                 BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
+                // Pivot                
+                this.setPivotMatrix(source.getPivotMatrix());
                 this.id = name + "." + source.id;
                 // Material
                 this.material = source.material;
@@ -16886,25 +17089,7 @@ var BABYLON;
             return lineSystem;
         };
         MeshBuilder.CreateLines = function (name, options, scene) {
-            var instance = options.instance;
-            var points = options.points;
-            if (instance) {
-                var positionFunction = function (positions) {
-                    var i = 0;
-                    for (var p = 0; p < points.length; p++) {
-                        positions[i] = points[p].x;
-                        positions[i + 1] = points[p].y;
-                        positions[i + 2] = points[p].z;
-                        i += 3;
-                    }
-                };
-                instance.updateMeshPositions(positionFunction, false);
-                return instance;
-            }
-            // lines creation
-            var lines = new BABYLON.LinesMesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateLines(options);
-            vertexData.applyToMesh(lines, options.updatable);
+            var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
             return lines;
         };
         MeshBuilder.CreateDashedLines = function (name, options, scene) {
@@ -19581,6 +19766,12 @@ var BABYLON;
     BABYLON.FresnelParameters = FresnelParameters;
 })(BABYLON || (BABYLON = {}));
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var MaterialDefines = (function () {
@@ -19640,10 +19831,10 @@ var BABYLON;
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this.disableDepthWrite = false;
             this.fogEnabled = true;
-            this._wasPreviouslyReady = false;
-            this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;
             this.zOffset = 0;
+            this._wasPreviouslyReady = false;
+            this._fillMode = Material.TriangleFillMode;
             this.id = name;
             this._scene = scene;
             if (!doNotAdd) {
@@ -19813,31 +20004,8 @@ var BABYLON;
                 this.onDispose();
             }
         };
-        Material.prototype.copyTo = function (other) {
-            other.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            other.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
-            other.alpha = this.alpha;
-            other.fillMode = this.fillMode;
-            other.backFaceCulling = this.backFaceCulling;
-            other.fogEnabled = this.fogEnabled;
-            other.wireframe = this.wireframe;
-            other.zOffset = this.zOffset;
-            other.alphaMode = this.alphaMode;
-            other.sideOrientation = this.sideOrientation;
-            other.disableDepthWrite = this.disableDepthWrite;
-            other.pointSize = this.pointSize;
-            other.pointsCloud = this.pointsCloud;
-        };
         Material.prototype.serialize = function () {
-            var serializationObject = {};
-            serializationObject.name = this.name;
-            serializationObject.alpha = this.alpha;
-            serializationObject.id = this.id;
-            serializationObject.tags = BABYLON.Tags.GetTags(this);
-            serializationObject.backFaceCulling = this.backFaceCulling;
-            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            serializationObject.disableDepthWrite = this.disableDepthWrite;
-            return serializationObject;
+            return BABYLON.SerializationHelper.Serialize(this);
         };
         Material.ParseMultiMaterial = function (parsedMultiMaterial, scene) {
             var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
@@ -19867,6 +20035,51 @@ var BABYLON;
         Material._PointFillMode = 2;
         Material._ClockWiseSideOrientation = 0;
         Material._CounterClockWiseSideOrientation = 1;
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "id", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "checkReadyOnEveryCall", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "checkReadyOnlyOnce", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "state", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "alpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "backFaceCulling", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "sideOrientation", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "alphaMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "disableDepthWrite", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "fogEnabled", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "pointSize", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "zOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "wireframe", null);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "pointsCloud", null);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "fillMode", null);
         return Material;
     })();
     BABYLON.Material = Material;
@@ -19979,8 +20192,8 @@ var BABYLON;
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             this.specularColor = new BABYLON.Color3(1, 1, 1);
-            this.specularPower = 64;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
+            this.specularPower = 64;
             this.useAlphaFromDiffuseTexture = false;
             this.useEmissiveAsIllumination = false;
             this.linkEmissiveWithDiffuse = false;
@@ -20576,197 +20789,16 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         StandardMaterial.prototype.clone = function (name) {
-            var newStandardMaterial = new StandardMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newStandardMaterial);
-            // Standard material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newStandardMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.ambientTexture && this.ambientTexture.clone) {
-                newStandardMaterial.ambientTexture = this.ambientTexture.clone();
-            }
-            if (this.opacityTexture && this.opacityTexture.clone) {
-                newStandardMaterial.opacityTexture = this.opacityTexture.clone();
-            }
-            if (this.reflectionTexture && this.reflectionTexture.clone) {
-                newStandardMaterial.reflectionTexture = this.reflectionTexture.clone();
-            }
-            if (this.emissiveTexture && this.emissiveTexture.clone) {
-                newStandardMaterial.emissiveTexture = this.emissiveTexture.clone();
-            }
-            if (this.specularTexture && this.specularTexture.clone) {
-                newStandardMaterial.specularTexture = this.specularTexture.clone();
-            }
-            if (this.bumpTexture && this.bumpTexture.clone) {
-                newStandardMaterial.bumpTexture = this.bumpTexture.clone();
-            }
-            if (this.lightmapTexture && this.lightmapTexture.clone) {
-                newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
-                newStandardMaterial.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
-            }
-            if (this.refractionTexture && this.refractionTexture.clone) {
-                newStandardMaterial.refractionTexture = this.refractionTexture.clone();
-            }
-            newStandardMaterial.ambientColor = this.ambientColor.clone();
-            newStandardMaterial.diffuseColor = this.diffuseColor.clone();
-            newStandardMaterial.specularColor = this.specularColor.clone();
-            newStandardMaterial.specularPower = this.specularPower;
-            newStandardMaterial.emissiveColor = this.emissiveColor.clone();
-            newStandardMaterial.useAlphaFromDiffuseTexture = this.useAlphaFromDiffuseTexture;
-            newStandardMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            newStandardMaterial.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
-            newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
-            newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
-            newStandardMaterial.useReflectionOverAlpha = this.useReflectionOverAlpha;
-            newStandardMaterial.roughness = this.roughness;
-            newStandardMaterial.indexOfRefraction = this.indexOfRefraction;
-            newStandardMaterial.invertRefractionY = this.invertRefractionY;
-            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.clone) {
-                newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
-            }
-            if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.clone) {
-                newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
-            }
-            if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.clone) {
-                newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
-            }
-            if (this.refractionFresnelParameters && this.refractionFresnelParameters.clone) {
-                newStandardMaterial.refractionFresnelParameters = this.refractionFresnelParameters.clone();
-            }
-            if (this.opacityFresnelParameters && this.opacityFresnelParameters.clone) {
-                newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
-            }
-            return newStandardMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new StandardMaterial(name, _this.getScene()); }, this);
         };
         StandardMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.ambient = this.ambientColor.asArray();
-            serializationObject.diffuse = this.diffuseColor.asArray();
-            serializationObject.specular = this.specularColor.asArray();
-            serializationObject.specularPower = this.specularPower;
-            serializationObject.emissive = this.emissiveColor.asArray();
-            serializationObject.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
-            serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            serializationObject.indexOfRefraction = this.indexOfRefraction;
-            serializationObject.invertRefractionY = this.invertRefractionY;
-            serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
-            serializationObject.useReflectionOverAlpha = this.useReflectionOverAlpha;
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-            if (this.diffuseFresnelParameters) {
-                serializationObject.diffuseFresnelParameters = this.diffuseFresnelParameters.serialize();
-            }
-            if (this.ambientTexture) {
-                serializationObject.ambientTexture = this.ambientTexture.serialize();
-            }
-            if (this.opacityTexture) {
-                serializationObject.opacityTexture = this.opacityTexture.serialize();
-            }
-            if (this.opacityFresnelParameters) {
-                serializationObject.opacityFresnelParameters = this.diffuseFresnelParameters.serialize();
-            }
-            if (this.reflectionTexture) {
-                serializationObject.reflectionTexture = this.reflectionTexture.serialize();
-            }
-            if (this.reflectionFresnelParameters) {
-                serializationObject.reflectionFresnelParameters = this.reflectionFresnelParameters.serialize();
-            }
-            if (this.refractionFresnelParameters) {
-                serializationObject.refractionFresnelParameters = this.refractionFresnelParameters.serialize();
-            }
-            if (this.emissiveTexture) {
-                serializationObject.emissiveTexture = this.emissiveTexture.serialize();
-            }
-            if (this.lightmapTexture) {
-                serializationObject.lightmapTexture = this.lightmapTexture.serialize();
-                serializationObject.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
-            }
-            if (this.emissiveFresnelParameters) {
-                serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
-            }
-            if (this.specularTexture) {
-                serializationObject.specularTexture = this.specularTexture.serialize();
-            }
-            if (this.bumpTexture) {
-                serializationObject.bumpTexture = this.bumpTexture.serialize();
-            }
-            if (this.refractionTexture) {
-                serializationObject.refractionTexture = this.refractionTexture.serialize();
-            }
-            return serializationObject;
-        };
-        StandardMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new StandardMaterial(source.name, scene);
-            material.ambientColor = BABYLON.Color3.FromArray(source.ambient);
-            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuse);
-            material.specularColor = BABYLON.Color3.FromArray(source.specular);
-            material.specularPower = source.specularPower;
-            material.emissiveColor = BABYLON.Color3.FromArray(source.emissive);
-            material.useReflectionFresnelFromSpecular = source.useReflectionFresnelFromSpecular;
-            material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
-            material.indexOfRefraction = source.indexOfRefraction;
-            material.invertRefractionY = source.invertRefractionY;
-            material.useSpecularOverAlpha = source.useSpecularOverAlpha;
-            material.useReflectionOverAlpha = source.useReflectionOverAlpha;
-            material.alpha = source.alpha;
-            material.id = source.id;
-            if (source.disableDepthWrite) {
-                material.disableDepthWrite = source.disableDepthWrite;
-            }
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            if (source.diffuseTexture) {
-                material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-            if (source.diffuseFresnelParameters) {
-                material.diffuseFresnelParameters = BABYLON.FresnelParameters.Parse(source.diffuseFresnelParameters);
-            }
-            if (source.ambientTexture) {
-                material.ambientTexture = BABYLON.Texture.Parse(source.ambientTexture, scene, rootUrl);
-            }
-            if (source.opacityTexture) {
-                material.opacityTexture = BABYLON.Texture.Parse(source.opacityTexture, scene, rootUrl);
-            }
-            if (source.opacityFresnelParameters) {
-                material.opacityFresnelParameters = BABYLON.FresnelParameters.Parse(source.opacityFresnelParameters);
-            }
-            if (source.reflectionTexture) {
-                material.reflectionTexture = BABYLON.Texture.Parse(source.reflectionTexture, scene, rootUrl);
-            }
-            if (source.reflectionFresnelParameters) {
-                material.reflectionFresnelParameters = BABYLON.FresnelParameters.Parse(source.reflectionFresnelParameters);
-            }
-            if (source.refractionFresnelParameters) {
-                material.refractionFresnelParameters = BABYLON.FresnelParameters.Parse(source.refractionFresnelParameters);
-            }
-            if (source.emissiveTexture) {
-                material.emissiveTexture = BABYLON.Texture.Parse(source.emissiveTexture, scene, rootUrl);
-            }
-            if (source.lightmapTexture) {
-                material.lightmapTexture = BABYLON.Texture.Parse(source.lightmapTexture, scene, rootUrl);
-                material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
-            }
-            if (source.emissiveFresnelParameters) {
-                material.emissiveFresnelParameters = BABYLON.FresnelParameters.Parse(source.emissiveFresnelParameters);
-            }
-            if (source.specularTexture) {
-                material.specularTexture = BABYLON.Texture.Parse(source.specularTexture, scene, rootUrl);
-            }
-            if (source.bumpTexture) {
-                material.bumpTexture = BABYLON.Texture.Parse(source.bumpTexture, scene, rootUrl);
-            }
-            if (source.refractionTexture) {
-                material.refractionTexture = BABYLON.Texture.Parse(source.refractionTexture, scene, rootUrl);
-            }
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            return material;
+            return BABYLON.SerializationHelper.Serialize(this);
         };
         // Statics
+        StandardMaterial.Parse = function (source, scene, rootUrl) {
+            return BABYLON.SerializationHelper.Parse(function () { return new StandardMaterial(source.name, scene); }, source, scene, rootUrl);
+        };
         // Flags used to enable or disable a type of texture for all Standard Materials
         StandardMaterial.DiffuseTextureEnabled = true;
         StandardMaterial.AmbientTextureEnabled = true;
@@ -20778,6 +20810,99 @@ var BABYLON;
         StandardMaterial.FresnelEnabled = true;
         StandardMaterial.LightmapTextureEnabled = true;
         StandardMaterial.RefractionTextureEnabled = true;
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "diffuseTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "ambientTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "opacityTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "reflectionTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "emissiveTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "specularTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "bumpTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "lightmapTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "refractionTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3("ambient")
+        ], StandardMaterial.prototype, "ambientColor", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3("diffuse")
+        ], StandardMaterial.prototype, "diffuseColor", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3("specular")
+        ], StandardMaterial.prototype, "specularColor", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3("emissive")
+        ], StandardMaterial.prototype, "emissiveColor", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "specularPower", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useAlphaFromDiffuseTexture", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useEmissiveAsIllumination", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "linkEmissiveWithDiffuse", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useReflectionFresnelFromSpecular", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useSpecularOverAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useReflectionOverAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "disableLighting", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "roughness", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "indexOfRefraction", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "invertRefractionY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useLightmapAsShadowmap", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "diffuseFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "opacityFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "reflectionFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "refractionFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "emissiveFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useGlossinessFromSpecularMapAlpha", void 0);
         return StandardMaterial;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
@@ -24902,23 +25027,6 @@ var BABYLON;
                     idx++;
                 }
             }
-            var vertexData = new VertexData();
-            vertexData.indices = indices;
-            vertexData.positions = positions;
-            return vertexData;
-        };
-        VertexData.CreateLines = function (options) {
-            var indices = [];
-            var positions = [];
-            var points = options.points;
-            for (var index = 0; index < points.length; index++) {
-                positions.push(points[index].x, points[index].y, points[index].z);
-                if (index > 0) {
-                    indices.push(index - 1);
-                    indices.push(index);
-                }
-            }
-            // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -29968,10 +30076,10 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         ShaderMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.ShaderMaterial";
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;
-            serializationObject.customType = "BABYLON.ShaderMaterial";
             // Texture
             serializationObject.textures = {};
             for (var name in this._textures) {
@@ -30030,7 +30138,7 @@ var BABYLON;
             return serializationObject;
         };
         ShaderMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new ShaderMaterial(source.name, scene, source.shaderPath, source.options);
+            var material = BABYLON.SerializationHelper.Parse(function () { return new ShaderMaterial(source.name, scene, source.shaderPath, source.options); }, source, scene, rootUrl);
             // Texture
             for (var name in source.textures) {
                 material.setTexture(name, BABYLON.Texture.Parse(source.textures[name], scene, rootUrl));
@@ -32896,10 +33004,8 @@ var BABYLON;
             this._leftjoystick.releaseCanvas();
             _super.prototype.dispose.call(this);
         };
-        VirtualJoysticksCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "VirtualJoysticksCamera";
-            return serializationObject;
+        VirtualJoysticksCamera.prototype.getTypeName = function () {
+            return "VirtualJoysticksCamera";
         };
         return VirtualJoysticksCamera;
     })(BABYLON.FreeCamera);
@@ -33231,6 +33337,79 @@ var BABYLON;
     BABYLON.AssetsManager = AssetsManager;
 })(BABYLON || (BABYLON = {}));
 
+var BABYLON;
+(function (BABYLON) {
+    var VRCameraMetrics = (function () {
+        function VRCameraMetrics() {
+            this.compensateDistortion = true;
+        }
+        Object.defineProperty(VRCameraMetrics.prototype, "aspectRatio", {
+            get: function () {
+                return this.hResolution / (2 * this.vResolution);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "aspectRatioFov", {
+            get: function () {
+                return (2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance)));
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "leftHMatrix", {
+            get: function () {
+                var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
+                var h = (4 * meters) / this.hScreenSize;
+                return BABYLON.Matrix.Translation(h, 0, 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "rightHMatrix", {
+            get: function () {
+                var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
+                var h = (4 * meters) / this.hScreenSize;
+                return BABYLON.Matrix.Translation(-h, 0, 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "leftPreViewMatrix", {
+            get: function () {
+                return BABYLON.Matrix.Translation(0.5 * this.interpupillaryDistance, 0, 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRCameraMetrics.prototype, "rightPreViewMatrix", {
+            get: function () {
+                return BABYLON.Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        VRCameraMetrics.GetDefault = function () {
+            var result = new VRCameraMetrics();
+            result.hResolution = 1280;
+            result.vResolution = 800;
+            result.hScreenSize = 0.149759993;
+            result.vScreenSize = 0.0935999975;
+            result.vScreenCenter = 0.0467999987,
+                result.eyeToScreenDistance = 0.0410000011;
+            result.lensSeparationDistance = 0.0635000020;
+            result.interpupillaryDistance = 0.0640000030;
+            result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
+            result.chromaAbCorrection = [0.995999992, -0.00400000019, 1.01400006, 0.0];
+            result.postProcessScaleFactor = 1.714605507808412;
+            result.lensCenterOffset = 0.151976421;
+            return result;
+        };
+        return VRCameraMetrics;
+    })();
+    BABYLON.VRCameraMetrics = VRCameraMetrics;
+})(BABYLON || (BABYLON = {}));
+
 
 
 
@@ -33275,10 +33454,8 @@ var BABYLON;
             _super.prototype.detachControl.call(this, element);
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         };
-        VRDeviceOrientationFreeCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "VRDeviceOrientationFreeCamera";
-            return serializationObject;
+        VRDeviceOrientationFreeCamera.prototype.getTypeName = function () {
+            return "VRDeviceOrientationFreeCamera";
         };
         return VRDeviceOrientationFreeCamera;
     })(BABYLON.FreeCamera);
@@ -33355,10 +33532,8 @@ var BABYLON;
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
         };
-        WebVRFreeCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "WebVRFreeCamera";
-            return serializationObject;
+        WebVRFreeCamera.prototype.getTypeName = function () {
+            return "WebVRFreeCamera";
         };
         return WebVRFreeCamera;
     })(BABYLON.FreeCamera);
@@ -34726,11 +34901,15 @@ var BABYLON;
             this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
             _super.prototype._checkInputs.call(this);
         };
-        DeviceOrientationCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "DeviceOrientationCamera";
-            return serializationObject;
+        DeviceOrientationCamera.prototype.getTypeName = function () {
+            return "DeviceOrientationCamera";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], DeviceOrientationCamera.prototype, "angularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], DeviceOrientationCamera.prototype, "moveSensibility", void 0);
         return DeviceOrientationCamera;
     })(BABYLON.FreeCamera);
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
@@ -38234,11 +38413,15 @@ var BABYLON;
             this._gamepads.dispose();
             _super.prototype.dispose.call(this);
         };
-        UniversalCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "UniversalCamera";
-            return serializationObject;
+        UniversalCamera.prototype.getTypeName = function () {
+            return "UniversalCamera";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], UniversalCamera.prototype, "gamepadAngularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], UniversalCamera.prototype, "gamepadMoveSensibility", void 0);
         return UniversalCamera;
     })(BABYLON.TouchCamera);
     BABYLON.UniversalCamera = UniversalCamera;
@@ -38753,10 +38936,8 @@ var BABYLON;
             BABYLON.Tools.Warn("Deprecated. Please use Universal Camera instead.");
             _super.call(this, name, position, scene);
         }
-        GamepadCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "GamepadCamera";
-            return serializationObject;
+        GamepadCamera.prototype.getTypeName = function () {
+            return "GamepadCamera";
         };
         return GamepadCamera;
     })(BABYLON.UniversalCamera);
@@ -38778,10 +38959,8 @@ var BABYLON;
             this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
-        AnaglyphFreeCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "AnaglyphFreeCamera";
-            return serializationObject;
+        AnaglyphFreeCamera.prototype.getTypeName = function () {
+            return "AnaglyphFreeCamera";
         };
         return AnaglyphFreeCamera;
     })(BABYLON.FreeCamera);
@@ -38790,12 +38969,11 @@ var BABYLON;
         __extends(AnaglyphArcRotateCamera, _super);
         function AnaglyphArcRotateCamera(name, alpha, beta, radius, target, interaxialDistance, scene) {
             _super.call(this, name, alpha, beta, radius, target, scene);
+            this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
-        AnaglyphArcRotateCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "AnaglyphArcRotateCamera";
-            return serializationObject;
+        AnaglyphArcRotateCamera.prototype.getTypeName = function () {
+            return "AnaglyphArcRotateCamera";
         };
         return AnaglyphArcRotateCamera;
     })(BABYLON.ArcRotateCamera);
@@ -38804,58 +38982,84 @@ var BABYLON;
         __extends(AnaglyphGamepadCamera, _super);
         function AnaglyphGamepadCamera(name, position, interaxialDistance, scene) {
             _super.call(this, name, position, scene);
+            this.interaxialDistance = interaxialDistance;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
         }
-        AnaglyphGamepadCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "AnaglyphGamepadCamera";
-            return serializationObject;
+        AnaglyphGamepadCamera.prototype.getTypeName = function () {
+            return "AnaglyphGamepadCamera";
         };
         return AnaglyphGamepadCamera;
     })(BABYLON.GamepadCamera);
     BABYLON.AnaglyphGamepadCamera = AnaglyphGamepadCamera;
+    var AnaglyphUniversalCamera = (function (_super) {
+        __extends(AnaglyphUniversalCamera, _super);
+        function AnaglyphUniversalCamera(name, position, interaxialDistance, scene) {
+            _super.call(this, name, position, scene);
+            this.interaxialDistance = interaxialDistance;
+            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
+        }
+        AnaglyphUniversalCamera.prototype.getTypeName = function () {
+            return "AnaglyphUniversalCamera";
+        };
+        return AnaglyphUniversalCamera;
+    })(BABYLON.UniversalCamera);
+    BABYLON.AnaglyphUniversalCamera = AnaglyphUniversalCamera;
     var StereoscopicFreeCamera = (function (_super) {
         __extends(StereoscopicFreeCamera, _super);
-        function StereoscopicFreeCamera(name, position, interaxialDistance, isSideBySide, scene) {
+        function StereoscopicFreeCamera(name, position, interaxialDistance, isStereoscopicSideBySide, scene) {
             _super.call(this, name, position, scene);
-            this.setCameraRigMode(isSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
+            this.interaxialDistance = interaxialDistance;
+            this.isStereoscopicSideBySide = isStereoscopicSideBySide;
+            this.setCameraRigMode(isStereoscopicSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
-        StereoscopicFreeCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "StereoscopicFreeCamera";
-            return serializationObject;
+        StereoscopicFreeCamera.prototype.getTypeName = function () {
+            return "StereoscopicFreeCamera";
         };
         return StereoscopicFreeCamera;
     })(BABYLON.FreeCamera);
     BABYLON.StereoscopicFreeCamera = StereoscopicFreeCamera;
     var StereoscopicArcRotateCamera = (function (_super) {
         __extends(StereoscopicArcRotateCamera, _super);
-        function StereoscopicArcRotateCamera(name, alpha, beta, radius, target, interaxialDistance, isSideBySide, scene) {
+        function StereoscopicArcRotateCamera(name, alpha, beta, radius, target, interaxialDistance, isStereoscopicSideBySide, scene) {
             _super.call(this, name, alpha, beta, radius, target, scene);
-            this.setCameraRigMode(isSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
+            this.interaxialDistance = interaxialDistance;
+            this.isStereoscopicSideBySide = isStereoscopicSideBySide;
+            this.setCameraRigMode(isStereoscopicSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
-        StereoscopicArcRotateCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "StereoscopicArcRotateCamera";
-            return serializationObject;
+        StereoscopicArcRotateCamera.prototype.getTypeName = function () {
+            return "StereoscopicArcRotateCamera";
         };
         return StereoscopicArcRotateCamera;
     })(BABYLON.ArcRotateCamera);
     BABYLON.StereoscopicArcRotateCamera = StereoscopicArcRotateCamera;
     var StereoscopicGamepadCamera = (function (_super) {
         __extends(StereoscopicGamepadCamera, _super);
-        function StereoscopicGamepadCamera(name, position, interaxialDistance, isSideBySide, scene) {
+        function StereoscopicGamepadCamera(name, position, interaxialDistance, isStereoscopicSideBySide, scene) {
             _super.call(this, name, position, scene);
-            this.setCameraRigMode(isSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
+            this.interaxialDistance = interaxialDistance;
+            this.isStereoscopicSideBySide = isStereoscopicSideBySide;
+            this.setCameraRigMode(isStereoscopicSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
         }
-        StereoscopicGamepadCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "StereoscopicGamepadCamera";
-            return serializationObject;
+        StereoscopicGamepadCamera.prototype.getTypeName = function () {
+            return "StereoscopicGamepadCamera";
         };
         return StereoscopicGamepadCamera;
     })(BABYLON.GamepadCamera);
     BABYLON.StereoscopicGamepadCamera = StereoscopicGamepadCamera;
+    var StereoscopicUniversalCamera = (function (_super) {
+        __extends(StereoscopicUniversalCamera, _super);
+        function StereoscopicUniversalCamera(name, position, interaxialDistance, isStereoscopicSideBySide, scene) {
+            _super.call(this, name, position, scene);
+            this.interaxialDistance = interaxialDistance;
+            this.isStereoscopicSideBySide = isStereoscopicSideBySide;
+            this.setCameraRigMode(isStereoscopicSideBySide ? BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
+        }
+        StereoscopicUniversalCamera.prototype.getTypeName = function () {
+            return "StereoscopicUniversalCamera";
+        };
+        return StereoscopicUniversalCamera;
+    })(BABYLON.UniversalCamera);
+    BABYLON.StereoscopicUniversalCamera = StereoscopicUniversalCamera;
 })(BABYLON || (BABYLON = {}));
 
 var BABYLON;

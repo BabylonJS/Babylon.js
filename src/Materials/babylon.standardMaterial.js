@@ -821,6 +821,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], StandardMaterial.prototype, "useGlossinessFromSpecularMapAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useLogarithmicDepth", null);
         return StandardMaterial;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
