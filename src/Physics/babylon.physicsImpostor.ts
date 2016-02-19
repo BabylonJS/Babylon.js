@@ -177,7 +177,7 @@ module BABYLON {
             this.mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
         }
         
-        //event object due to cannon's architecture.
+        //event and body object due to cannon's event-based architecture.
         public onCollide = (e: { body: any }) => {
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {

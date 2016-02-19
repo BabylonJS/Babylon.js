@@ -32,7 +32,7 @@ var BABYLON;
                 _this.mesh.position.addInPlace(_this._deltaPosition);
                 _this.mesh.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
             };
-            //event object due to cannon's architecture.
+            //event and body object due to cannon's event-based architecture.
             this.onCollide = function (e) {
                 var otherImpostor = _this._physicsEngine.getImpostorWithPhysicsBody(e.body);
                 if (otherImpostor) {

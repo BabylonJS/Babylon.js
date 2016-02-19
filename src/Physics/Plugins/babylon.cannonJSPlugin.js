@@ -626,6 +626,9 @@ var BABYLON;
         CannonJSPlugin.prototype.generateJoint = function (impostorJoint) {
             var mainBody = impostorJoint.mainImpostor.physicsBody;
             var connectedBody = impostorJoint.connectedImpostor.physicsBody;
+            if (!mainBody || !connectedBody) {
+                return;
+            }
             var constraint;
             var jointData = impostorJoint.joint.jointData;
             var constraintData = {
@@ -819,15 +822,6 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.isSupported = function () {
             return window.CANNON !== undefined;
-        };
-        //TODO 
-        CannonJSPlugin.prototype.supports = function (feature) {
-            switch (feature) {
-                case BABYLON.PhysicsFeature.PIVOT_IN_JOINT:
-                    return false;
-                case BABYLON.PhysicsFeature.TRIMESH:
-                    return true;
-            }
         };
         CannonJSPlugin.prototype.dispose = function () {
             //nothing to do, actually.

@@ -638,7 +638,9 @@
         public generateJoint(impostorJoint: PhysicsImpostorJoint) {
             var mainBody = impostorJoint.mainImpostor.physicsBody;
             var connectedBody = impostorJoint.connectedImpostor.physicsBody;
-
+            if (!mainBody || !connectedBody) {
+                return;
+            }
             var constraint;
             var jointData = impostorJoint.joint.jointData;
             var constraintData = {
