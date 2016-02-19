@@ -63,6 +63,8 @@ module BABYLON {
 
         @serializeAsColor3("diffuseColor")
         public diffuseColor = new Color3(1, 1, 1);
+        
+        @serialize()
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -349,42 +351,15 @@ module BABYLON {
             return SerializationHelper.Clone<SimpleMaterial>(() => new SimpleMaterial(name, this.getScene()), this);
         }
         
-        public serialize(): any {		
-            var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.SimpleMaterial";
-            serializationObject.diffuseColor    = this.diffuseColor.asArray();
-            serializationObject.disableLighting = this.disableLighting;
-            
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.SimpleMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): SimpleMaterial {
-            var material = new SimpleMaterial(source.name, scene);
-
-            material.diffuseColor       = Color3.FromArray(source.diffuseColor);
-            material.disableLighting    = source.disableLighting;
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new SimpleMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
 } 
