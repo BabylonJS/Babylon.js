@@ -144,22 +144,15 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(AbstractMesh.prototype, "rotation", {
+            /**
+             * Getting the rotation object.
+             * If rotation quaternion is set, this vector will (almost always) be the Zero vector!
+             */
             get: function () {
-                if (this.rotationQuaternion) {
-                    BABYLON.Tools.Warn("Quaternion rotation is used, the rotation value is probably wrong");
-                }
                 return this._rotation;
             },
             set: function (newRotation) {
                 this._rotation = newRotation;
-                //check if rotationQuaternion exists, and if it does - update it!
-                if (this.rotationQuaternion) {
-                    var len = this._rotation.length();
-                    if (len) {
-                        this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z));
-                        this._rotation.copyFromFloats(0, 0, 0);
-                    }
-                }
             },
             enumerable: true,
             configurable: true
@@ -183,6 +176,7 @@ var BABYLON;
             },
             set: function (quaternion) {
                 this._rotationQuaternion = quaternion;
+                //reset the rotation vector. 
                 if (this.rotation.length()) {
                     this.rotation.copyFromFloats(0, 0, 0);
                 }

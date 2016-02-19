@@ -158,16 +158,12 @@
 
         /**
          * Getting the rotation object. 
-         * If rotation quaternion is set, the euler angels of the quaternion will be sent back.
-         * This is not 100% accurate. Avoid using rotation if the wuaternion is set.
+         * If rotation quaternion is set, this vector will (almost always) be the Zero vector!
          */
         public get rotation(): Vector3 {
-            if (this.rotationQuaternion) {
-                return this._rotationQuaternion.toEulerAngles();
-            }
             return this._rotation;
         }
-        
+
         public set rotation(newRotation: Vector3) {
             this._rotation = newRotation;
         }
@@ -178,20 +174,20 @@
 
         public set scaling(newScaling: Vector3) {
             this._scaling = newScaling;
-            if(this.physicImpostor) {
+            if (this.physicImpostor) {
                 this.physicImpostor.forceUpdate();
             }
         }
-        
+
         public get rotationQuaternion() {
             return this._rotationQuaternion;
         }
-        
+
         public set rotationQuaternion(quaternion: Quaternion) {
             this._rotationQuaternion = quaternion;
-            //reset the rotation vector.
-            if(this.rotation.length()) {
-                this.rotation.copyFromFloats(0,0,0);
+            //reset the rotation vector. 
+            if (this.rotation.length()) {
+                this.rotation.copyFromFloats(0, 0, 0);
             }
         }
 
