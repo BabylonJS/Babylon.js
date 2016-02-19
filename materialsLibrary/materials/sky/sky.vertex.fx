@@ -9,6 +9,7 @@ attribute vec4 color;
 
 // Uniforms
 uniform mat4 world;
+uniform mat4 view;
 uniform mat4 viewProjection;
 
 #ifdef POINTSIZE
