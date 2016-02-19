@@ -78,12 +78,8 @@ module BABYLON {
             this._vrEnabled = false;
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "WebVRFreeCamera";
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "WebVRFreeCamera";
         }
     }
 }

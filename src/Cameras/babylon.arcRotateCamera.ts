@@ -2,29 +2,85 @@
     var eventPrefix = Tools.GetPointerPrefix();
 
     export class ArcRotateCamera extends TargetCamera {
+        @serialize()
+        public alpha: number;
+
+        @serialize()
+        public beta: number;
+
+        @serialize()
+        public radius: number;
+
+        @serializeAsVector3()
+        public target: Vector3;
+
+        @serialize()
         public inertialAlphaOffset = 0;
+
+        @serialize()
         public inertialBetaOffset = 0;
+
+        @serialize()
         public inertialRadiusOffset = 0;
+
+        @serialize()
         public lowerAlphaLimit = null;
+
+        @serialize()
         public upperAlphaLimit = null;
+
+        @serialize()
         public lowerBetaLimit = 0.01;
+
+        @serialize()
         public upperBetaLimit = Math.PI;
+
+        @serialize()
         public lowerRadiusLimit = null;
+
+        @serialize()
         public upperRadiusLimit = null;
+
+        @serialize()
         public angularSensibilityX = 1000.0;
+
+        @serialize()
         public angularSensibilityY = 1000.0;
+
+        @serialize()
         public wheelPrecision = 3.0;
+
+        @serialize()
         public pinchPrecision = 2.0;
+
+        @serialize()
         public panningSensibility: number = 50.0;
+
+        @serialize()
         public inertialPanningX: number = 0;
+
+        @serialize()
         public inertialPanningY: number = 0;
+
+        @serialize()
         public keysUp = [38];
+
+        @serialize()
         public keysDown = [40];
+
+        @serialize()
         public keysLeft = [37];
+
+        @serialize()
         public keysRight = [39];
+
+        @serialize()
         public zoomOnFactor = 1;
+
         public targetScreenOffset = Vector2.Zero();
         public pinchInwards = true;
+
+        @serialize()
         public allowUpsideDown = true;
 
         private _keys = [];
@@ -79,18 +135,20 @@
             this.angularSensibilityY = value;
         }
 
-        constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
             if (!this.target) {
                 this.target = Vector3.Zero();
+            } else {
+                this.target = target;
             }
 
-            this.getViewMatrix();
-        }
+            this.alpha = alpha;
+            this.beta = beta;
+            this.radius = radius;
 
-        public _getTargetPosition(): Vector3 {
-            return this.target.getAbsolutePosition ? this.target.getAbsolutePosition() : this.target;
+            this.getViewMatrix();
         }
 
         // Cache
@@ -108,7 +166,7 @@
                 super._updateCache();
             }
 
-            this._cache.target.copyFrom(this._getTargetPosition());
+            this._cache.target.copyFrom(this.target);
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
@@ -120,7 +178,7 @@
             if (!super._isSynchronizedViewMatrix())
                 return false;
 
-            return this._cache.target.equals(this._getTargetPosition())
+            return this._cache.target.equals(this.target)
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
@@ -493,7 +551,7 @@
         }
 
         public rebuildAnglesAndRadius() {
-            var radiusv3 = this.position.subtract(this._getTargetPosition());
+            var radiusv3 = this.position.subtract(this.target);
             this.radius = radiusv3.length();
 
             // Alpha
@@ -537,7 +595,7 @@
                 sinb = 0.0001;
             }
 
-            var target = this._getTargetPosition();
+            var target = this.target;
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
@@ -586,7 +644,7 @@
                 sinb = 0.0001;
             }
 
-            var target = this._getTargetPosition();
+            var target = this.target;
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             this.position.copyFrom(this._newPosition);
 
@@ -674,26 +732,8 @@
             super._updateRigCameras();
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "ArcRotateCamera";
-
-            if (this.target instanceof Vector3) {
-                serializationObject.target = this.target.asArray();
-            }
-
-            if (this.target && this.target.id) {
-                serializationObject.lockedTargetId = this.target.id;
-            }
-
-            serializationObject.checkCollisions = this.checkCollisions;
-
-            serializationObject.alpha = this.alpha;
-            serializationObject.beta = this.beta;
-            serializationObject.radius = this.radius;
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "ArcRotateCamera";
         }
     }
 } 

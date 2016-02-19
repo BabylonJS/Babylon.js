@@ -67,10 +67,8 @@ var BABYLON;
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
         };
-        WebVRFreeCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "WebVRFreeCamera";
-            return serializationObject;
+        WebVRFreeCamera.prototype.getTypeName = function () {
+            return "WebVRFreeCamera";
         };
         return WebVRFreeCamera;
     })(BABYLON.FreeCamera);

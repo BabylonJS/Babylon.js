@@ -95,6 +95,9 @@
                 // Deep copy
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
 
+                // Pivot                
+                this.setPivotMatrix(source.getPivotMatrix());
+
                 this.id = name + "." + source.id;
 
                 // Material

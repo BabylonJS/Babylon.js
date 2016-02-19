@@ -45,10 +45,8 @@ var BABYLON;
             this._leftjoystick.releaseCanvas();
             _super.prototype.dispose.call(this);
         };
-        VirtualJoysticksCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "VirtualJoysticksCamera";
-            return serializationObject;
+        VirtualJoysticksCamera.prototype.getTypeName = function () {
+            return "VirtualJoysticksCamera";
         };
         return VirtualJoysticksCamera;
     })(BABYLON.FreeCamera);

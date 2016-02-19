@@ -12,10 +12,8 @@ var BABYLON;
             BABYLON.Tools.Warn("Deprecated. Please use Universal Camera instead.");
             _super.call(this, name, position, scene);
         }
-        GamepadCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "GamepadCamera";
-            return serializationObject;
+        GamepadCamera.prototype.getTypeName = function () {
+            return "GamepadCamera";
         };
         return GamepadCamera;
     })(BABYLON.UniversalCamera);

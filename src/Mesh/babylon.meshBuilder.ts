@@ -181,7 +181,7 @@
         }
 
         public static CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: LinesMesh }, scene: Scene): LinesMesh {
-            var lines = MeshBuilder.CreateLineSystem(name, {lines: [options.points], updatable: options.updatable, instance: options.instance}, scene);
+            var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
             return lines;
         }
 
@@ -824,3 +824,4 @@
         }
     }
 }
+

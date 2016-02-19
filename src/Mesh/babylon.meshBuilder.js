@@ -152,25 +152,7 @@ var BABYLON;
             return lineSystem;
         };
         MeshBuilder.CreateLines = function (name, options, scene) {
-            var instance = options.instance;
-            var points = options.points;
-            if (instance) {
-                var positionFunction = function (positions) {
-                    var i = 0;
-                    for (var p = 0; p < points.length; p++) {
-                        positions[i] = points[p].x;
-                        positions[i + 1] = points[p].y;
-                        positions[i + 2] = points[p].z;
-                        i += 3;
-                    }
-                };
-                instance.updateMeshPositions(positionFunction, false);
-                return instance;
-            }
-            // lines creation
-            var lines = new BABYLON.LinesMesh(name, scene);
-            var vertexData = BABYLON.VertexData.CreateLines(options);
-            vertexData.applyToMesh(lines, options.updatable);
+            var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
             return lines;
         };
         MeshBuilder.CreateDashedLines = function (name, options, scene) {

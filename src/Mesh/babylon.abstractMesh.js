@@ -860,6 +860,11 @@ var BABYLON;
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
             var index;
+            // Action manager
+            if (this.actionManager) {
+                this.actionManager.dispose();
+                this.actionManager = null;
+            }
             // Skeleton
             this.skeleton = null;
             // Animations

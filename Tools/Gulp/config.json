@@ -148,6 +148,7 @@
       "../../src/PostProcess/babylon.anaglyphPostProcess.js",
       "../../src/Rendering/babylon.outlineRenderer.js",
       "../../src/Tools/babylon.assetsManager.js",
+      "../../src/cameras/vr/babylon.vrCameraMetrics.js",
       "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",
       "../../src/Cameras/VR/babylon.webVRCamera.js",
       "../../src/Tools/babylon.sceneOptimizer.js",
