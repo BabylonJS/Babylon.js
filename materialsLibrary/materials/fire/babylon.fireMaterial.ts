@@ -10,12 +10,10 @@ module BABYLON {
         public POINTSIZE = false;
         public FOG = false;
         public UV1 = false;
-        public NORMAL = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public BONES = false;
-        public BONES4 = false;
         public BonesPerMesh = 0;
+        public NUM_BONE_INFLUENCERS = 0;
         public INSTANCES = false;
 
         constructor() {
@@ -25,13 +23,19 @@ module BABYLON {
     }
 
     export class FireMaterial extends Material {
+        @serializeAsTexture()
         public diffuseTexture: BaseTexture;
-        public distortionTexture: BaseTexture;
-        public opacityTexture: BaseTexture;
-
-        public diffuseColor = new Color3(1, 1, 1);
-        public disableLighting = false;
         
+        @serializeAsTexture()
+        public distortionTexture: BaseTexture;
+        
+        @serializeAsTexture()
+        public opacityTexture: BaseTexture;
+        
+        @serialize("diffuseColor")
+        public diffuseColor = new Color3(1, 1, 1);
+        
+        @serialize()
         public speed = 1.0;
         
         private _scaledDiffuse = new Color3();
@@ -131,9 +135,6 @@ module BABYLON {
             
             // Attribs
             if (mesh) {
-                if (needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    this._defines.NORMAL = true;
-                }
                 if (needUVs) {
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         this._defines.UV1 = true;
@@ -147,9 +148,8 @@ module BABYLON {
                     }
                 }
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.BONES = true;
+                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                    this._defines.BONES4 = true;
                 }
 
                 // Instances
@@ -169,17 +169,13 @@ module BABYLON {
                 if (this._defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-             
-                if (this._defines.BONES4) {
-                    fallbacks.addFallback(0, "BONES4");
+                
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
                 }
 
                 //Attributes
                 var attribs = [VertexBuffer.PositionKind];
-
-                if (this._defines.NORMAL) {
-                    attribs.push(VertexBuffer.NormalKind);
-                }
 
                 if (this._defines.UV1) {
                     attribs.push(VertexBuffer.UVKind);
@@ -189,17 +185,8 @@ module BABYLON {
                     attribs.push(VertexBuffer.ColorKind);
                 }
 
-                if (this._defines.BONES) {
-                    attribs.push(VertexBuffer.MatricesIndicesKind);
-                    attribs.push(VertexBuffer.MatricesWeightsKind);
-                }
-
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
+                MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
 
                 // Legacy browser patch
                 var shaderName = "fire";
@@ -252,9 +239,7 @@ module BABYLON {
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
-            }
+            MaterialHelper.BindBonesParameters(mesh, this._effect);
 
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
@@ -290,10 +275,7 @@ module BABYLON {
             }
             
             // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
+            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
             
             // Time
             this._lastTime += scene.getEngine().getDeltaTime();
@@ -333,24 +315,7 @@ module BABYLON {
         }
 
         public clone(name: string): FireMaterial {
-            var newMaterial = new FireMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Fire material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.distortionTexture && this.distortionTexture.clone) {
-                newMaterial.distortionTexture = this.distortionTexture.clone();
-            }
-            if (this.opacityTexture && this.opacityTexture.clone) {
-                newMaterial.opacityTexture = this.opacityTexture.clone();
-            }
-
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            return SerializationHelper.Clone<FireMaterial>(() => new FireMaterial(name, this.getScene()), this);
         }
 		
 		public serialize(): any {
@@ -359,7 +324,6 @@ module BABYLON {
             serializationObject.customType      = "BABYLON.FireMaterial";
             serializationObject.diffuseColor    = this.diffuseColor.asArray();
             serializationObject.speed           = this.speed;
-            serializationObject.disableLighting = this.disableLighting;
 
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
@@ -381,7 +345,6 @@ module BABYLON {
 
             material.diffuseColor   = Color3.FromArray(source.diffuseColor);
             material.speed          = source.speed;
-            material.disableLighting    = source.disableLighting;
 
             material.alpha          = source.alpha;
 
