@@ -10,7 +10,7 @@
         private _onChangeTriggers: Array<(changedObject: ChangableMathObject) => void> = [];
 
         public registerOnChange(func: (changedObject: ChangableMathObject) => void) {
-            if(!this._onChangeTriggers) {
+            if (!this._onChangeTriggers) {
                 this._onChangeTriggers = [];
             }
             this._onChangeTriggers.push(func);
@@ -620,35 +620,8 @@
 
     export class Vector3 extends ChangableMathObject {
 
-        constructor(private _x: number, private _y: number, private _z: number) {
+        constructor(public x: number, public y: number, public z: number) {
             super();
-        }
-
-        public get x() {
-            return this._x;
-        }
-
-        public set x(x: number) {
-            this._x = x;
-            this.triggerChange();
-        }
-
-        public get y() {
-            return this._y;
-        }
-
-        public set y(y: number) {
-            this._y = y;
-            this.triggerChange();
-        }
-
-        public get z() {
-            return this._z;
-        }
-
-        public set z(z: number) {
-            this._z = z;
-            this.triggerChange();
         }
 
         public toString(): string {
@@ -1576,45 +1549,8 @@
         }
     }
 
-    export class Quaternion extends ChangableMathObject {
-        constructor(private _x: number = 0, private _y: number = 0, private _z: number = 0, private _w: number = 1) {
-            super();
-        }
-        
-        public get x() {
-            return this._x;
-        }
-
-        public set x(x: number) {
-            this._x = x;
-            this.triggerChange();
-        }
-
-        public get y() {
-            return this._y;
-        }
-
-        public set y(y: number) {
-            this._y = y;
-            this.triggerChange();
-        }
-
-        public get z() {
-            return this._z;
-        }
-
-        public set z(z: number) {
-            this._z = z;
-            this.triggerChange();
-        }
-        
-        public get w() {
-            return this._w;
-        }
-
-        public set w(w: number) {
-            this._w = w;
-            this.triggerChange();
+    export class Quaternion {
+        constructor(public x: number = 0, public y: number = 0, public z: number = 0, public w: number = 1) {
         }
 
         public toString(): string {

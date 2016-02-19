@@ -163,7 +163,7 @@
         public set position(newPosition: Vector3) {
             this._position = newPosition;
             if (this.physicImpostor) {
-                this.position.registerOnChange(this.physicImpostor.transformationUpdated);
+                //this.position.registerOnChange(this.physicImpostor.transformationUpdated);
                 this.physicImpostor.transformationUpdated();
             }
         }
@@ -202,7 +202,7 @@
         public set rotationQuaternion(quaternion: Quaternion) {
             this._rotationQuaternion = quaternion;
             if (this.physicImpostor) {
-                this.position.registerOnChange(this.physicImpostor.transformationUpdated);
+                //this.position.registerOnChange(this.physicImpostor.transformationUpdated);
                 this.physicImpostor.transformationUpdated();
             }
         }

@@ -19,8 +19,8 @@ module BABYLON {
         private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
         private _onPhysicsCollideCallbacks = new Array<(collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void>();
 
-        private _deltaPosition: Vector3;
-        private _deltaRotation: Quaternion;
+        private _deltaPosition: Vector3 = Vector3.Zero();
+        private _deltaRotation: Quaternion = new Quaternion();
         
         //If set, this is this impostor's parent
         private _parent: PhysicsImpostor;
@@ -162,7 +162,18 @@ module BABYLON {
             }
         }
 
+        private _tmpPositionWithDelta: Vector3 = Vector3.Zero();
+        private _tmpRotationWithDelta: Quaternion = new Quaternion();
+
         public beforeStep = () => {
+            
+            this.mesh.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
+            //conjugate deltaRotation
+            this._tmpRotationWithDelta.copyFrom(this._deltaRotation);
+            this._tmpRotationWithDelta.multiplyInPlace(this.mesh.rotationQuaternion);
+            
+            this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
+            
             this._onBeforePhysicsStepCallbacks.forEach((func) => {
                 func(this);
             });
@@ -173,19 +184,10 @@ module BABYLON {
                 func(this);
             });
             
-            //update the mesh's position and rotation
-            var bodyX = this.physicsBody.position.x,
-                bodyY = this.physicsBody.position.y,
-                bodyZ = this.physicsBody.position.z;
-
-            this._mesh.position.x = bodyX + this._deltaPosition.x;
-            this._mesh.position.y = bodyY + this._deltaPosition.y;
-            this._mesh.position.z = bodyZ + this._deltaPosition.z;
-
-            this._mesh.rotationQuaternion.copyFrom(this.physicsBody.quaternion);
-            if (this._deltaRotation) {
-                this._mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
-            }
+            this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
+            
+            this.mesh.position.addInPlace(this._deltaPosition)
+            this.mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
         }
         
         //event object due to cannon's architecture.
@@ -237,11 +239,11 @@ module BABYLON {
         }
         
         public setDeltaPosition(position: Vector3) {
-            this._deltaPosition = position;
+            this._deltaPosition.copyFrom(position);
         }
         
         public setDeltaRotation(rotation: Quaternion) {
-            this._deltaRotation = rotation;
+            this._deltaRotation.copyFrom(rotation);
         }
         
         //Impostor types

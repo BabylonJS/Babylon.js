@@ -11,7 +11,16 @@ var BABYLON;
             this._onBeforePhysicsStepCallbacks = new Array();
             this._onAfterPhysicsStepCallbacks = new Array();
             this._onPhysicsCollideCallbacks = new Array();
+            this._deltaPosition = BABYLON.Vector3.Zero();
+            this._deltaRotation = new BABYLON.Quaternion();
+            this._tmpPositionWithDelta = BABYLON.Vector3.Zero();
+            this._tmpRotationWithDelta = new BABYLON.Quaternion();
             this.beforeStep = function () {
+                _this.mesh.position.subtractToRef(_this._deltaPosition, _this._tmpPositionWithDelta);
+                //conjugate deltaRotation
+                _this._tmpRotationWithDelta.copyFrom(_this._deltaRotation);
+                _this._tmpRotationWithDelta.multiplyInPlace(_this.mesh.rotationQuaternion);
+                _this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(_this, _this._tmpPositionWithDelta, _this._tmpRotationWithDelta);
                 _this._onBeforePhysicsStepCallbacks.forEach(function (func) {
                     func(_this);
                 });
@@ -20,15 +29,9 @@ var BABYLON;
                 _this._onAfterPhysicsStepCallbacks.forEach(function (func) {
                     func(_this);
                 });
-                //update the mesh's position and rotation
-                var bodyX = _this.physicsBody.position.x, bodyY = _this.physicsBody.position.y, bodyZ = _this.physicsBody.position.z;
-                _this._mesh.position.x = bodyX + _this._deltaPosition.x;
-                _this._mesh.position.y = bodyY + _this._deltaPosition.y;
-                _this._mesh.position.z = bodyZ + _this._deltaPosition.z;
-                _this._mesh.rotationQuaternion.copyFrom(_this.physicsBody.quaternion);
-                if (_this._deltaRotation) {
-                    _this._mesh.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
-                }
+                _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
+                _this.mesh.position.addInPlace(_this._deltaPosition);
+                _this.mesh.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
             };
             //event object due to cannon's architecture.
             this.onCollide = function (e) {
@@ -197,10 +200,10 @@ var BABYLON;
             }
         };
         PhysicsImpostor.prototype.setDeltaPosition = function (position) {
-            this._deltaPosition = position;
+            this._deltaPosition.copyFrom(position);
         };
         PhysicsImpostor.prototype.setDeltaRotation = function (rotation) {
-            this._deltaRotation = rotation;
+            this._deltaRotation.copyFrom(rotation);
         };
         //Impostor types
         PhysicsImpostor.NoImpostor = 0;

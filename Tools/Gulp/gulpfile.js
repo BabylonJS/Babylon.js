@@ -128,8 +128,8 @@ gulp.task("build", ["workers", "shaders"], function () {
         gulp.src(config.core.files),
         gulp.src(config.extras.files),
         shadersStream,
-        workersStream, 
-        includeShadersStream
+        includeShadersStream,
+        workersStream
         )
         .pipe(concat(config.build.filename))
         .pipe(cleants())

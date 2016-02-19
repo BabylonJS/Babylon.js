@@ -805,6 +805,14 @@
 
             return shape;
         }
+        
+        private _minus90X = new Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
+        private _plus90X = new Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
+        private _tmpPosition: Vector3 = Vector3.Zero();
+        private _tmpQuaternion: Quaternion = new Quaternion();  
+        private _tmpDeltaPosition: Vector3 = Vector3.Zero();
+        private _tmpDeltaRotation: Quaternion = new Quaternion();   
+        private _tmpUnityRotation: Quaternion = new Quaternion();     
 
         private _updatePhysicsBodyTransformation(impostor: PhysicsImpostor) {
             var mesh = impostor.mesh;
@@ -812,18 +820,17 @@
             impostor.mesh.computeWorldMatrix(true);
             // The delta between the mesh position and the mesh bounding box center
             var bbox = mesh.getBoundingInfo().boundingBox;
-            var deltaPosition = mesh.position.subtract(bbox.center);
-            var deltaRotation;
+            this._tmpDeltaPosition.copyFrom(mesh.position.subtract(bbox.center));
 
             var quaternion = mesh.rotationQuaternion;
-            var position = mesh.getBoundingInfo().boundingBox.center.clone();
+            this._tmpPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center);
             //is shape is a plane or a heightmap, it must be rotated 90 degs in the X axis.
             if (impostor.type === PhysicsEngine.PlaneImpostor || impostor.type === PhysicsEngine.HeightmapImpostor) {
                 //-90 DEG in X, precalculated
-                var tmpQ = new Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
-                quaternion = quaternion.multiply(tmpQ);
+                quaternion = quaternion.multiply(this._minus90X);
                 //Invert! (Precalculated, 90 deg in X)
-                deltaRotation = new Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
+                //No need to clone. this will never change.
+                impostor.setDeltaRotation(this._plus90X);
             }
             
             //If it is a heightfield, if should be centered.
@@ -831,7 +838,7 @@
                 
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
-                mesh.rotationQuaternion = new Quaternion();
+                mesh.rotationQuaternion = this._tmpUnityRotation;
                 mesh.computeWorldMatrix(true);
                 
                 //get original center with no rotation
@@ -850,24 +857,32 @@
                 //calculate the translation
                 var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
 
-                position.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
+                this._tmpPosition.copyFromFloats(translation.x, translation.y - mesh.getBoundingInfo().boundingBox.extendSize.y, translation.z);
                 //add it inverted to the delta 
-                deltaPosition = mesh.getBoundingInfo().boundingBox.center.subtract(center);
-                deltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
+                this._tmpDeltaPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center.subtract(center));
+                this._tmpDeltaPosition.y += mesh.getBoundingInfo().boundingBox.extendSize.y;
 
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             } else if (impostor.type === PhysicsEngine.MeshImpostor) {
-                deltaPosition = Vector3.Zero();
-                position.copyFrom(mesh.position);
+                this._tmpDeltaPosition.copyFromFloats(0,0,0);
+                this._tmpPosition.copyFrom(mesh.position);
             }
             
-            
-            impostor.setDeltaPosition(deltaPosition);
-            impostor.setDeltaRotation(deltaRotation);
+            impostor.setDeltaPosition(this._tmpDeltaPosition);
             //Now update the impostor object
-            impostor.physicsBody.position.copy(position);
+            impostor.physicsBody.position.copy(this._tmpPosition);
             impostor.physicsBody.quaternion.copy(quaternion);
+        }
+        
+        public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
+            impostor.mesh.position.copyFrom(impostor.physicsBody.position);
+            impostor.mesh.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+        }
+        
+        public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition:Vector3, newRotation: Quaternion) {
+            impostor.physicsBody.position.copy(newPosition);
+            impostor.physicsBody.quaternion.copy(newRotation);
         }
 
         public isSupported(): boolean {
