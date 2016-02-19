@@ -58,8 +58,10 @@ module BABYLON {
     }
 
     export class SimpleMaterial extends Material {
+        @serializeAsTexture()
         public diffuseTexture: BaseTexture;
 
+        @serializeAsColor3("diffuseColor")
         public diffuseColor = new Color3(1, 1, 1);
         public disableLighting = false;
 
@@ -344,18 +346,7 @@ module BABYLON {
         }
 
         public clone(name: string): SimpleMaterial {
-            var newMaterial = new SimpleMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Simple material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            return SerializationHelper.Clone<SimpleMaterial>(() => new SimpleMaterial(name, this.getScene()), this);
         }
         
         public serialize(): any {		

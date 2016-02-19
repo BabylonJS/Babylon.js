@@ -1,5 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
+    switch (arguments.length) {
+        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+    }
+};
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
@@ -278,15 +286,8 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         SimpleMaterial.prototype.clone = function (name) {
-            var newMaterial = new SimpleMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newMaterial);
-            // Simple material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new SimpleMaterial(name, _this.getScene()); }, this);
         };
         SimpleMaterial.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
@@ -315,6 +316,12 @@ var BABYLON;
             }
             return material;
         };
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], SimpleMaterial.prototype, "diffuseTexture");
+        __decorate([
+            BABYLON.serializeAsColor3("diffuseColor")
+        ], SimpleMaterial.prototype, "diffuseColor");
         return SimpleMaterial;
     })(BABYLON.Material);
     BABYLON.SimpleMaterial = SimpleMaterial;

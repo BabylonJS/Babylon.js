@@ -860,9 +860,17 @@
                     }
                     else if (semantic === "POSITION") {
                         tempVertexData.positions = [];
-                        for (var j = 0; j < buffer.length; j++) {
-                            (<number[]>tempVertexData.positions).push(buffer[j]);
+
+                        var count = 3;
+                        if (GLTFFileLoader.HomogeneousCoordinates) {
+                            count = 4;
                         }
+                        for (var j = 0; j < buffer.length; j += count) {
+                            (<number[]>tempVertexData.positions).push(buffer[j]);
+                            (<number[]>tempVertexData.positions).push(buffer[j+1]);
+                            (<number[]>tempVertexData.positions).push(buffer[j+2]);
+                        }
+
                         verticesCounts.push(tempVertexData.positions.length);
                     }
                     else if (semantic.indexOf("TEXCOORD_") !== -1) {
@@ -1658,6 +1666,7 @@
         * Static members
         */
         public static MakeYUP: boolean = false;
+        public static HomogeneousCoordinates: boolean = false;
 
         /**
         * Import meshes
