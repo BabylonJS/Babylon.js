@@ -29,9 +29,9 @@
 
         // Properties
         public definedFacingForward = true; // orientation for POV movement & rotation
-        private _position = new Vector3(0, 0, 0);
+        public position = new Vector3(0, 0, 0);
         private _rotation = new Vector3(0, 0, 0);
-        private _rotationQuaternion: Quaternion;
+        public rotationQuaternion: Quaternion;
         private _scaling = new Vector3(1, 1, 1);
         public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
@@ -156,18 +156,6 @@
             scene.addMesh(this);
         }
 
-        public get position(): Vector3 {
-            return this._position;
-        }
-
-        public set position(newPosition: Vector3) {
-            this._position = newPosition;
-            if (this.physicImpostor) {
-                //this.position.registerOnChange(this.physicImpostor.transformationUpdated);
-                this.physicImpostor.transformationUpdated();
-            }
-        }
-
         public get rotation(): Vector3 {
             if (this.rotationQuaternion) {
                 Tools.Warn("Quaternion rotation is used, the rotation value is probably wrong");
@@ -178,10 +166,10 @@
         public set rotation(newRotation: Vector3) {
             this._rotation = newRotation;
             //check if rotationQuaternion exists, and if it does - update it!
-            if (this._rotationQuaternion) {
+            if (this.rotationQuaternion) {
                 var len = this._rotation.length();
                 if (len) {
-                    this._rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z))
+                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z))
                     this._rotation.copyFromFloats(0, 0, 0);
                 }
             }
@@ -193,17 +181,8 @@
 
         public set scaling(newScaling: Vector3) {
             this._scaling = newScaling;
-        }
-
-        public get rotationQuaternion(): Quaternion {
-            return this._rotationQuaternion;
-        }
-
-        public set rotationQuaternion(quaternion: Quaternion) {
-            this._rotationQuaternion = quaternion;
-            if (this.physicImpostor) {
-                //this.position.registerOnChange(this.physicImpostor.transformationUpdated);
-                this.physicImpostor.transformationUpdated();
+            if(this.physicImpostor) {
+                this.physicImpostor.forceUpdate();
             }
         }
 

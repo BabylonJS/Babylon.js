@@ -98,7 +98,7 @@
             //check if any mesh has no body / requires an update
             this._impostors.forEach((impostor) => {
 
-                if (impostor.isUpdateRequired()) {
+                if (impostor.isBodyInitRequired()) {
                     this._physicsPlugin.generatePhysicsBody(impostor);
                 }
             });
