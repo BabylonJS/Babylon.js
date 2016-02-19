@@ -126,6 +126,31 @@ var BABYLON;
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
         };
+        MeshBuilder.CreateLineSystem = function (name, options, scene) {
+            var instance = options.instance;
+            var lines = options.lines;
+            if (instance) {
+                var positionFunction = function (positions) {
+                    var i = 0;
+                    for (var l = 0; l < lines.length; l++) {
+                        var points = lines[l];
+                        for (var p = 0; p < points.length; p++) {
+                            positions[i] = points[p].x;
+                            positions[i + 1] = points[p].y;
+                            positions[i + 2] = points[p].z;
+                            i += 3;
+                        }
+                    }
+                };
+                instance.updateMeshPositions(positionFunction, false);
+                return instance;
+            }
+            // line system creation
+            var lineSystem = new BABYLON.LinesMesh(name, scene);
+            var vertexData = BABYLON.VertexData.CreateLineSystem(options);
+            vertexData.applyToMesh(lineSystem, options.updatable);
+            return lineSystem;
+        };
         MeshBuilder.CreateLines = function (name, options, scene) {
             var instance = options.instance;
             var points = options.points;

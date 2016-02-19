@@ -243,6 +243,7 @@ var BABYLON;
         TargetCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
             serializationObject.speed = this.speed;
+            serializationObject.type = "TargetCamera";
             if (this.rotation) {
                 serializationObject.rotation = this.rotation.asArray();
             }

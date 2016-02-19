@@ -267,6 +267,7 @@
         public serialize(): any {
             var serializationObject = super.serialize();
 
+            serializationObject.type = "FreeCamera";
             serializationObject.checkCollisions = this.checkCollisions;
             serializationObject.applyGravity = this.applyGravity;
             serializationObject.ellipsoid = this.ellipsoid.asArray();

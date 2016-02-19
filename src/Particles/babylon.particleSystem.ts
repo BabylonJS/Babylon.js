@@ -451,12 +451,13 @@
             var serializationObject: any = {};
 
             serializationObject.name = this.name;
+            serializationObject.id = this.id;
 
             // Emitter
             if (this.emitter.position) {
                 serializationObject.emitterId = this.emitter.id;
             } else {
-                serializationObject.emitter = this.emitter.asArray();;
+                serializationObject.emitter = this.emitter.asArray();
             }
 
             serializationObject.capacity = this.getCapacity();
@@ -497,6 +498,10 @@
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var name = parsedParticleSystem.name;
             var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+
+            if (parsedParticleSystem.id) {
+                particleSystem.id = parsedParticleSystem.id;
+            }
 
             // Texture
             if (parsedParticleSystem.textureName) {

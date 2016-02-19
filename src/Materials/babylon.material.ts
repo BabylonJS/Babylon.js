@@ -80,32 +80,49 @@
             return Material._CounterClockWiseSideOrientation;
         }
 
+        @serialize()
         public id: string;
+
+        @serialize()
         public checkReadyOnEveryCall = false;
+
+        @serialize()
         public checkReadyOnlyOnce = false;
+
+        @serialize()
         public state = "";
+
+        @serialize()
         public alpha = 1.0;
+
+        @serialize()
         public backFaceCulling = true;
+
+        @serialize()
         public sideOrientation = Material.CounterClockWiseSideOrientation;
+
         public onCompiled: (effect: Effect) => void;
         public onError: (effect: Effect, errors: string) => void;
         public onDispose: () => void;
         public onBind: (material: Material, mesh: Mesh) => void;
         public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+
+        @serialize()
         public alphaMode = Engine.ALPHA_COMBINE;
+
+        @serialize()
         public disableDepthWrite = false;
+
+        @serialize()
         public fogEnabled = true;
 
-        public _effect: Effect;
-        public _wasPreviouslyReady = false;
-        private _scene: Scene;
-        private _fillMode = Material.TriangleFillMode;
-        private _cachedDepthWriteState: boolean;
-
+        @serialize()
         public pointSize = 1.0;
 
+        @serialize()
         public zOffset = 0;
 
+        @serialize()
         public get wireframe(): boolean {
             return this._fillMode === Material.WireFrameFillMode;
         }
@@ -114,6 +131,7 @@
             this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
         }
 
+        @serialize()
         public get pointsCloud(): boolean {
             return this._fillMode === Material.PointFillMode;
         }
@@ -122,6 +140,7 @@
             this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
         }
 
+        @serialize()
         public get fillMode(): number {
             return this._fillMode;
         }
@@ -129,6 +148,13 @@
         public set fillMode(value: number) {
             this._fillMode = value;
         }
+
+        public _effect: Effect;
+        public _wasPreviouslyReady = false;
+        private _scene: Scene;
+        private _fillMode = Material.TriangleFillMode;
+        private _cachedDepthWriteState: boolean;
+
 
         constructor(public name: string, scene: Scene, doNotAdd?: boolean) {
             this.id = name;
@@ -263,35 +289,8 @@
             }
         }
 
-        public copyTo(other: Material): void {
-            other.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            other.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
-            other.alpha = this.alpha;
-            other.fillMode = this.fillMode;
-            other.backFaceCulling = this.backFaceCulling;
-            other.fogEnabled = this.fogEnabled;
-            other.wireframe = this.wireframe;
-            other.zOffset = this.zOffset;
-            other.alphaMode = this.alphaMode;
-            other.sideOrientation = this.sideOrientation;
-            other.disableDepthWrite = this.disableDepthWrite;
-            other.pointSize = this.pointSize;
-            other.pointsCloud = this.pointsCloud;
-        }
-
         public serialize(): any {
-            var serializationObject: any = {};
-
-            serializationObject.name = this.name;
-            serializationObject.alpha = this.alpha;
-
-            serializationObject.id = this.id;
-            serializationObject.tags = Tags.GetTags(this);
-            serializationObject.backFaceCulling = this.backFaceCulling;
-            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            serializationObject.disableDepthWrite = this.disableDepthWrite;
-
-            return serializationObject;
+            return SerializationHelper.Serialize(this);
         }
 
         public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {

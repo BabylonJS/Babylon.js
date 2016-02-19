@@ -65,9 +65,7 @@ uniform vec2 vBumpInfos;
 uniform mat4 bumpMatrix;
 #endif
 
-#ifdef POINTSIZE
-uniform float pointSize;
-#endif
+#include<pointCloudVertexDeclaration>
 
 // Output
 varying vec3 vPositionW;
@@ -209,11 +207,7 @@ void main(void) {
 	vColor = color;
 #endif
 
-	// Point size
-#ifdef POINTSIZE
-	gl_PointSize = pointSize;
-#endif
-
+#include<pointCloudVertex>
 #include<logDepthVertex>
 
 }

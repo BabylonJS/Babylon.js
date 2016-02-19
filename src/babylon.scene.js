@@ -311,6 +311,8 @@ var BABYLON;
             var canvasRect = this._engine.getRenderingCanvasClientRect();
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
+            this._unTranslatedPointerX = this._pointerX;
+            this._unTranslatedPointerY = this._pointerY;
             if (this.cameraToUseForPointers) {
                 this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
                 this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
@@ -329,7 +331,7 @@ var BABYLON;
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
                 // Meshes
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); }, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); }, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
@@ -343,7 +345,7 @@ var BABYLON;
                 else {
                     _this.setPointerOverMesh(null);
                     // Sprites
-                    pickResult = _this.pickSprite(_this._pointerX, _this._pointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
                         _this.setPointerOverSprite(pickResult.pickedSprite);
@@ -374,7 +376,7 @@ var BABYLON;
                         return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
                     };
                 }
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, predicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         _this._pickedDownMesh = pickResult.pickedMesh;
@@ -395,7 +397,7 @@ var BABYLON;
                         if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)) {
                             var that = _this;
                             window.setTimeout(function () {
-                                var pickResult = that.pick(that._pointerX, that._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger); }, false, that.cameraToUseForPointers);
+                                var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger); }, false, that.cameraToUseForPointers);
                                 if (pickResult.hit && pickResult.pickedMesh) {
                                     if (pickResult.pickedMesh.actionManager) {
                                         if (that._startingPointerTime !== 0 && ((new Date().getTime() - that._startingPointerTime) > BABYLON.ActionManager.LongPressDelay) && (Math.abs(that._startingPointerPosition.x - that._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(that._startingPointerPosition.y - that._pointerY) < BABYLON.ActionManager.DragMovementThreshold)) {
@@ -414,7 +416,7 @@ var BABYLON;
                 // Sprites
                 _this._pickedDownSprite = null;
                 if (_this.spriteManagers.length > 0) {
-                    pickResult = _this.pickSprite(_this._pointerX, _this._pointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
                             _this._pickedDownSprite = pickResult.pickedSprite;
@@ -446,7 +448,7 @@ var BABYLON;
                     };
                 }
                 // Meshes
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, predicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (_this.onPointerPick && _this._pickedDownMesh != null && pickResult.pickedMesh == _this._pickedDownMesh) {
                         _this.onPointerPick(evt, pickResult);
@@ -467,7 +469,7 @@ var BABYLON;
                 _this._startingPointerTime = 0;
                 // Sprites
                 if (_this.spriteManagers.length > 0) {
-                    pickResult = _this.pickSprite(_this._pointerX, _this._pointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
                             pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));

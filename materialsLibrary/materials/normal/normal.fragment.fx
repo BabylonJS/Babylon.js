@@ -60,7 +60,10 @@ void main(void) {
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
-baseColor = mix(baseColor, vec4(vNormalW, 1.0), 0.5);
+#ifdef NORMAL
+    baseColor = mix(baseColor, vec4(vNormalW, 1.0), 0.5);
+#endif
+
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
 #endif

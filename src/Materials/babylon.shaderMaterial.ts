@@ -294,11 +294,12 @@
         }
 
         public serialize(): any {
-            var serializationObject = super.serialize();
-            serializationObject.options = this._options;
-            serializationObject.shaderPath = this._shaderPath;
+            var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.ShaderMaterial";
 			
+            serializationObject.options = this._options;
+            serializationObject.shaderPath = this._shaderPath;
+
             // Texture
             serializationObject.textures = {};
             for (var name in this._textures) {
@@ -369,7 +370,7 @@
         }
 
         public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
-            var material = new ShaderMaterial(source.name, scene, source.shaderPath, source.options);
+            var material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options), source, scene, rootUrl);
 			
             // Texture
             for (var name in source.textures) {
