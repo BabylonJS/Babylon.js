@@ -67,7 +67,8 @@ gulp.task('typescript-compile', function () {
             noExternalResolve: true,
             target: 'ES5',
             declarationFiles: true,
-            typescript: require('typescript')
+            typescript: require('typescript'),
+            experimentalDecorators: true
         }));
     return merge2([
         tsResult.dts
@@ -85,7 +86,8 @@ gulp.task('typescript-sourcemaps', function () {
             noExternalResolve: true,
             target: 'ES5',
             declarationFiles: true,
-            typescript: require('typescript')
+            typescript: require('typescript'),
+            experimentalDecorators: true
         }));
     return tsResult.js
         .pipe(sourcemaps.write("./")) // sourcemaps are written.

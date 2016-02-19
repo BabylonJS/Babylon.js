@@ -3050,6 +3050,123 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    function generateSerializableMember(type, sourceName) {
+        return function (target, propertyKey) {
+            if (!target.__serializableMembers) {
+                target.__serializableMembers = {};
+            }
+            target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+        };
+    }
+    function serialize(sourceName) {
+        return generateSerializableMember(0, sourceName); // value member
+    }
+    BABYLON.serialize = serialize;
+    function serializeAsTexture(sourceName) {
+        return generateSerializableMember(1, sourceName); // texture member
+    }
+    BABYLON.serializeAsTexture = serializeAsTexture;
+    function serializeAsColor3(sourceName) {
+        return generateSerializableMember(2, sourceName); // color3 member
+    }
+    BABYLON.serializeAsColor3 = serializeAsColor3;
+    function serializeAsFresnelParameters(sourceName) {
+        return generateSerializableMember(3, sourceName); // fresnel parameters member
+    }
+    BABYLON.serializeAsFresnelParameters = serializeAsFresnelParameters;
+    var SerializationHelper = (function () {
+        function SerializationHelper() {
+        }
+        SerializationHelper.Serialize = function (entity, serializationObject) {
+            if (!serializationObject) {
+                serializationObject = {};
+            }
+            // Tags
+            serializationObject.tags = BABYLON.Tags.GetTags(entity);
+            // Properties
+            for (var property in entity.__serializableMembers) {
+                var propertyDescriptor = entity.__serializableMembers[property];
+                var targetPropertyName = propertyDescriptor.sourceName || property;
+                var propertyType = propertyDescriptor.type;
+                var sourceProperty = entity[property];
+                if (sourceProperty !== undefined && sourceProperty !== null) {
+                    switch (propertyType) {
+                        case 0:
+                            serializationObject[targetPropertyName] = sourceProperty;
+                            break;
+                        case 1:
+                            serializationObject[targetPropertyName] = sourceProperty.serialize();
+                            break;
+                        case 2:
+                            serializationObject[targetPropertyName] = sourceProperty.asArray();
+                            break;
+                        case 3:
+                            serializationObject[targetPropertyName] = sourceProperty.serialize();
+                            break;
+                    }
+                }
+            }
+            return serializationObject;
+        };
+        SerializationHelper.Parse = function (creationFunction, source, scene, rootUrl) {
+            var destination = creationFunction();
+            // Tags
+            BABYLON.Tags.AddTagsTo(destination, source.tags);
+            // Properties
+            for (var property in destination.__serializableMembers) {
+                var propertyDescriptor = destination.__serializableMembers[property];
+                var sourceProperty = source[propertyDescriptor.sourceName || property];
+                var propertyType = propertyDescriptor.type;
+                if (sourceProperty !== undefined && sourceProperty !== null) {
+                    switch (propertyType) {
+                        case 0:
+                            destination[property] = sourceProperty;
+                            break;
+                        case 1:
+                            destination[property] = BABYLON.Texture.Parse(sourceProperty, scene, rootUrl);
+                            break;
+                        case 2:
+                            destination[property] = BABYLON.Color3.FromArray(sourceProperty);
+                            break;
+                        case 3:
+                            destination[property] = BABYLON.FresnelParameters.Parse(sourceProperty);
+                            break;
+                    }
+                }
+            }
+            return destination;
+        };
+        SerializationHelper.Clone = function (creationFunction, source) {
+            var destination = creationFunction();
+            // Tags
+            BABYLON.Tags.AddTagsTo(destination, source.tags);
+            // Properties
+            for (var property in destination.__serializableMembers) {
+                var propertyDescriptor = destination.__serializableMembers[property];
+                var sourceProperty = source[property];
+                var propertyType = propertyDescriptor.type;
+                if (sourceProperty !== undefined && sourceProperty !== null) {
+                    switch (propertyType) {
+                        case 0:
+                            destination[property] = sourceProperty;
+                            break;
+                        case 1: // Texture
+                        case 2: // Color3
+                        case 3:
+                            destination[property] = sourceProperty.clone();
+                            break;
+                    }
+                }
+            }
+            return destination;
+        };
+        return SerializationHelper;
+    })();
+    BABYLON.SerializationHelper = SerializationHelper;
+})(BABYLON || (BABYLON = {}));
+
+var BABYLON;
+(function (BABYLON) {
     var Database = (function () {
         function Database(urlToScene, callbackManifestChecked) {
             // Handling various flavors of prefixed version of IndexedDB
@@ -19581,6 +19698,12 @@ var BABYLON;
     BABYLON.FresnelParameters = FresnelParameters;
 })(BABYLON || (BABYLON = {}));
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var MaterialDefines = (function () {
@@ -19640,10 +19763,10 @@ var BABYLON;
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this.disableDepthWrite = false;
             this.fogEnabled = true;
-            this._wasPreviouslyReady = false;
-            this._fillMode = Material.TriangleFillMode;
             this.pointSize = 1.0;
             this.zOffset = 0;
+            this._wasPreviouslyReady = false;
+            this._fillMode = Material.TriangleFillMode;
             this.id = name;
             this._scene = scene;
             if (!doNotAdd) {
@@ -19813,31 +19936,8 @@ var BABYLON;
                 this.onDispose();
             }
         };
-        Material.prototype.copyTo = function (other) {
-            other.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            other.checkReadyOnEveryCall = this.checkReadyOnEveryCall;
-            other.alpha = this.alpha;
-            other.fillMode = this.fillMode;
-            other.backFaceCulling = this.backFaceCulling;
-            other.fogEnabled = this.fogEnabled;
-            other.wireframe = this.wireframe;
-            other.zOffset = this.zOffset;
-            other.alphaMode = this.alphaMode;
-            other.sideOrientation = this.sideOrientation;
-            other.disableDepthWrite = this.disableDepthWrite;
-            other.pointSize = this.pointSize;
-            other.pointsCloud = this.pointsCloud;
-        };
         Material.prototype.serialize = function () {
-            var serializationObject = {};
-            serializationObject.name = this.name;
-            serializationObject.alpha = this.alpha;
-            serializationObject.id = this.id;
-            serializationObject.tags = BABYLON.Tags.GetTags(this);
-            serializationObject.backFaceCulling = this.backFaceCulling;
-            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-            serializationObject.disableDepthWrite = this.disableDepthWrite;
-            return serializationObject;
+            return BABYLON.SerializationHelper.Serialize(this);
         };
         Material.ParseMultiMaterial = function (parsedMultiMaterial, scene) {
             var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
@@ -19867,6 +19967,51 @@ var BABYLON;
         Material._PointFillMode = 2;
         Material._ClockWiseSideOrientation = 0;
         Material._CounterClockWiseSideOrientation = 1;
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "id", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "checkReadyOnEveryCall", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "checkReadyOnlyOnce", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "state", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "alpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "backFaceCulling", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "sideOrientation", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "alphaMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "disableDepthWrite", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "fogEnabled", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "pointSize", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "zOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "wireframe", null);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "pointsCloud", null);
+        __decorate([
+            BABYLON.serialize()
+        ], Material.prototype, "fillMode", null);
         return Material;
     })();
     BABYLON.Material = Material;
@@ -19979,8 +20124,8 @@ var BABYLON;
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
             this.diffuseColor = new BABYLON.Color3(1, 1, 1);
             this.specularColor = new BABYLON.Color3(1, 1, 1);
-            this.specularPower = 64;
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
+            this.specularPower = 64;
             this.useAlphaFromDiffuseTexture = false;
             this.useEmissiveAsIllumination = false;
             this.linkEmissiveWithDiffuse = false;
@@ -20576,195 +20721,14 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         StandardMaterial.prototype.clone = function (name) {
-            var newStandardMaterial = new StandardMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newStandardMaterial);
-            // Standard material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newStandardMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.ambientTexture && this.ambientTexture.clone) {
-                newStandardMaterial.ambientTexture = this.ambientTexture.clone();
-            }
-            if (this.opacityTexture && this.opacityTexture.clone) {
-                newStandardMaterial.opacityTexture = this.opacityTexture.clone();
-            }
-            if (this.reflectionTexture && this.reflectionTexture.clone) {
-                newStandardMaterial.reflectionTexture = this.reflectionTexture.clone();
-            }
-            if (this.emissiveTexture && this.emissiveTexture.clone) {
-                newStandardMaterial.emissiveTexture = this.emissiveTexture.clone();
-            }
-            if (this.specularTexture && this.specularTexture.clone) {
-                newStandardMaterial.specularTexture = this.specularTexture.clone();
-            }
-            if (this.bumpTexture && this.bumpTexture.clone) {
-                newStandardMaterial.bumpTexture = this.bumpTexture.clone();
-            }
-            if (this.lightmapTexture && this.lightmapTexture.clone) {
-                newStandardMaterial.lightmapTexture = this.lightmapTexture.clone();
-                newStandardMaterial.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
-            }
-            if (this.refractionTexture && this.refractionTexture.clone) {
-                newStandardMaterial.refractionTexture = this.refractionTexture.clone();
-            }
-            newStandardMaterial.ambientColor = this.ambientColor.clone();
-            newStandardMaterial.diffuseColor = this.diffuseColor.clone();
-            newStandardMaterial.specularColor = this.specularColor.clone();
-            newStandardMaterial.specularPower = this.specularPower;
-            newStandardMaterial.emissiveColor = this.emissiveColor.clone();
-            newStandardMaterial.useAlphaFromDiffuseTexture = this.useAlphaFromDiffuseTexture;
-            newStandardMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            newStandardMaterial.useGlossinessFromSpecularMapAlpha = this.useGlossinessFromSpecularMapAlpha;
-            newStandardMaterial.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
-            newStandardMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
-            newStandardMaterial.useReflectionOverAlpha = this.useReflectionOverAlpha;
-            newStandardMaterial.roughness = this.roughness;
-            newStandardMaterial.indexOfRefraction = this.indexOfRefraction;
-            newStandardMaterial.invertRefractionY = this.invertRefractionY;
-            if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.clone) {
-                newStandardMaterial.diffuseFresnelParameters = this.diffuseFresnelParameters.clone();
-            }
-            if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.clone) {
-                newStandardMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
-            }
-            if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.clone) {
-                newStandardMaterial.reflectionFresnelParameters = this.reflectionFresnelParameters.clone();
-            }
-            if (this.refractionFresnelParameters && this.refractionFresnelParameters.clone) {
-                newStandardMaterial.refractionFresnelParameters = this.refractionFresnelParameters.clone();
-            }
-            if (this.opacityFresnelParameters && this.opacityFresnelParameters.clone) {
-                newStandardMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
-            }
-            return newStandardMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new StandardMaterial(name, _this.getScene()); }, this);
         };
         StandardMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.ambient = this.ambientColor.asArray();
-            serializationObject.diffuse = this.diffuseColor.asArray();
-            serializationObject.specular = this.specularColor.asArray();
-            serializationObject.specularPower = this.specularPower;
-            serializationObject.emissive = this.emissiveColor.asArray();
-            serializationObject.useReflectionFresnelFromSpecular = this.useReflectionFresnelFromSpecular;
-            serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            serializationObject.indexOfRefraction = this.indexOfRefraction;
-            serializationObject.invertRefractionY = this.invertRefractionY;
-            serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
-            serializationObject.useReflectionOverAlpha = this.useReflectionOverAlpha;
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-            if (this.diffuseFresnelParameters) {
-                serializationObject.diffuseFresnelParameters = this.diffuseFresnelParameters.serialize();
-            }
-            if (this.ambientTexture) {
-                serializationObject.ambientTexture = this.ambientTexture.serialize();
-            }
-            if (this.opacityTexture) {
-                serializationObject.opacityTexture = this.opacityTexture.serialize();
-            }
-            if (this.opacityFresnelParameters) {
-                serializationObject.opacityFresnelParameters = this.diffuseFresnelParameters.serialize();
-            }
-            if (this.reflectionTexture) {
-                serializationObject.reflectionTexture = this.reflectionTexture.serialize();
-            }
-            if (this.reflectionFresnelParameters) {
-                serializationObject.reflectionFresnelParameters = this.reflectionFresnelParameters.serialize();
-            }
-            if (this.refractionFresnelParameters) {
-                serializationObject.refractionFresnelParameters = this.refractionFresnelParameters.serialize();
-            }
-            if (this.emissiveTexture) {
-                serializationObject.emissiveTexture = this.emissiveTexture.serialize();
-            }
-            if (this.lightmapTexture) {
-                serializationObject.lightmapTexture = this.lightmapTexture.serialize();
-                serializationObject.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
-            }
-            if (this.emissiveFresnelParameters) {
-                serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
-            }
-            if (this.specularTexture) {
-                serializationObject.specularTexture = this.specularTexture.serialize();
-            }
-            if (this.bumpTexture) {
-                serializationObject.bumpTexture = this.bumpTexture.serialize();
-            }
-            if (this.refractionTexture) {
-                serializationObject.refractionTexture = this.refractionTexture.serialize();
-            }
-            return serializationObject;
+            return BABYLON.SerializationHelper.Serialize(this);
         };
         StandardMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new StandardMaterial(source.name, scene);
-            material.ambientColor = BABYLON.Color3.FromArray(source.ambient);
-            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuse);
-            material.specularColor = BABYLON.Color3.FromArray(source.specular);
-            material.specularPower = source.specularPower;
-            material.emissiveColor = BABYLON.Color3.FromArray(source.emissive);
-            material.useReflectionFresnelFromSpecular = source.useReflectionFresnelFromSpecular;
-            material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
-            material.indexOfRefraction = source.indexOfRefraction;
-            material.invertRefractionY = source.invertRefractionY;
-            material.useSpecularOverAlpha = source.useSpecularOverAlpha;
-            material.useReflectionOverAlpha = source.useReflectionOverAlpha;
-            material.alpha = source.alpha;
-            material.id = source.id;
-            if (source.disableDepthWrite) {
-                material.disableDepthWrite = source.disableDepthWrite;
-            }
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            if (source.diffuseTexture) {
-                material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-            if (source.diffuseFresnelParameters) {
-                material.diffuseFresnelParameters = BABYLON.FresnelParameters.Parse(source.diffuseFresnelParameters);
-            }
-            if (source.ambientTexture) {
-                material.ambientTexture = BABYLON.Texture.Parse(source.ambientTexture, scene, rootUrl);
-            }
-            if (source.opacityTexture) {
-                material.opacityTexture = BABYLON.Texture.Parse(source.opacityTexture, scene, rootUrl);
-            }
-            if (source.opacityFresnelParameters) {
-                material.opacityFresnelParameters = BABYLON.FresnelParameters.Parse(source.opacityFresnelParameters);
-            }
-            if (source.reflectionTexture) {
-                material.reflectionTexture = BABYLON.Texture.Parse(source.reflectionTexture, scene, rootUrl);
-            }
-            if (source.reflectionFresnelParameters) {
-                material.reflectionFresnelParameters = BABYLON.FresnelParameters.Parse(source.reflectionFresnelParameters);
-            }
-            if (source.refractionFresnelParameters) {
-                material.refractionFresnelParameters = BABYLON.FresnelParameters.Parse(source.refractionFresnelParameters);
-            }
-            if (source.emissiveTexture) {
-                material.emissiveTexture = BABYLON.Texture.Parse(source.emissiveTexture, scene, rootUrl);
-            }
-            if (source.lightmapTexture) {
-                material.lightmapTexture = BABYLON.Texture.Parse(source.lightmapTexture, scene, rootUrl);
-                material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
-            }
-            if (source.emissiveFresnelParameters) {
-                material.emissiveFresnelParameters = BABYLON.FresnelParameters.Parse(source.emissiveFresnelParameters);
-            }
-            if (source.specularTexture) {
-                material.specularTexture = BABYLON.Texture.Parse(source.specularTexture, scene, rootUrl);
-            }
-            if (source.bumpTexture) {
-                material.bumpTexture = BABYLON.Texture.Parse(source.bumpTexture, scene, rootUrl);
-            }
-            if (source.refractionTexture) {
-                material.refractionTexture = BABYLON.Texture.Parse(source.refractionTexture, scene, rootUrl);
-            }
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            return material;
+            return BABYLON.SerializationHelper.Parse(function () { return new StandardMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         // Statics
         // Flags used to enable or disable a type of texture for all Standard Materials
@@ -20778,6 +20742,99 @@ var BABYLON;
         StandardMaterial.FresnelEnabled = true;
         StandardMaterial.LightmapTextureEnabled = true;
         StandardMaterial.RefractionTextureEnabled = true;
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "diffuseTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "ambientTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "opacityTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "reflectionTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "emissiveTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "specularTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "bumpTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "lightmapTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], StandardMaterial.prototype, "refractionTexture", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3("ambient")
+        ], StandardMaterial.prototype, "ambientColor", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3("diffuse")
+        ], StandardMaterial.prototype, "diffuseColor", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3("specular")
+        ], StandardMaterial.prototype, "specularColor", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3("emissive")
+        ], StandardMaterial.prototype, "emissiveColor", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "specularPower", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useAlphaFromDiffuseTexture", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useEmissiveAsIllumination", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "linkEmissiveWithDiffuse", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useReflectionFresnelFromSpecular", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useSpecularOverAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useReflectionOverAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "disableLighting", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "roughness", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "indexOfRefraction", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "invertRefractionY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useLightmapAsShadowmap", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "diffuseFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "opacityFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "reflectionFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "refractionFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], StandardMaterial.prototype, "emissiveFresnelParameters", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useGlossinessFromSpecularMapAlpha", void 0);
         return StandardMaterial;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
@@ -29968,10 +30025,10 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         ShaderMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.ShaderMaterial";
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;
-            serializationObject.customType = "BABYLON.ShaderMaterial";
             // Texture
             serializationObject.textures = {};
             for (var name in this._textures) {
@@ -30030,7 +30087,7 @@ var BABYLON;
             return serializationObject;
         };
         ShaderMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new ShaderMaterial(source.name, scene, source.shaderPath, source.options);
+            var material = BABYLON.SerializationHelper.Parse(function () { return new ShaderMaterial(source.name, scene, source.shaderPath, source.options); }, source, scene, rootUrl);
             // Texture
             for (var name in source.textures) {
                 material.setTexture(name, BABYLON.Texture.Parse(source.textures[name], scene, rootUrl));
