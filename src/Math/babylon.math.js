@@ -503,45 +503,12 @@ var BABYLON;
     BABYLON.Vector2 = Vector2;
     var Vector3 = (function (_super) {
         __extends(Vector3, _super);
-        function Vector3(_x, _y, _z) {
+        function Vector3(x, y, z) {
             _super.call(this);
-            this._x = _x;
-            this._y = _y;
-            this._z = _z;
+            this.x = x;
+            this.y = y;
+            this.z = z;
         }
-        Object.defineProperty(Vector3.prototype, "x", {
-            get: function () {
-                return this._x;
-            },
-            set: function (x) {
-                this._x = x;
-                this.triggerChange();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vector3.prototype, "y", {
-            get: function () {
-                return this._y;
-            },
-            set: function (y) {
-                this._y = y;
-                this.triggerChange();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vector3.prototype, "z", {
-            get: function () {
-                return this._z;
-            },
-            set: function (z) {
-                this._z = z;
-                this.triggerChange();
-            },
-            enumerable: true,
-            configurable: true
-        });
         Vector3.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
         };
@@ -1292,63 +1259,17 @@ var BABYLON;
         return Vector4;
     }());
     BABYLON.Vector4 = Vector4;
-    var Quaternion = (function (_super) {
-        __extends(Quaternion, _super);
-        function Quaternion(_x, _y, _z, _w) {
-            if (_x === void 0) { _x = 0; }
-            if (_y === void 0) { _y = 0; }
-            if (_z === void 0) { _z = 0; }
-            if (_w === void 0) { _w = 1; }
-            _super.call(this);
-            this._x = _x;
-            this._y = _y;
-            this._z = _z;
-            this._w = _w;
+    var Quaternion = (function () {
+        function Quaternion(x, y, z, w) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            if (z === void 0) { z = 0; }
+            if (w === void 0) { w = 1; }
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
         }
-        Object.defineProperty(Quaternion.prototype, "x", {
-            get: function () {
-                return this._x;
-            },
-            set: function (x) {
-                this._x = x;
-                this.triggerChange();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Quaternion.prototype, "y", {
-            get: function () {
-                return this._y;
-            },
-            set: function (y) {
-                this._y = y;
-                this.triggerChange();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Quaternion.prototype, "z", {
-            get: function () {
-                return this._z;
-            },
-            set: function (z) {
-                this._z = z;
-                this.triggerChange();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Quaternion.prototype, "w", {
-            get: function () {
-                return this._w;
-            },
-            set: function (w) {
-                this._w = w;
-                this.triggerChange();
-            },
-            enumerable: true,
-            configurable: true
-        });
         Quaternion.prototype.toString = function () {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
         };
@@ -1608,7 +1529,7 @@ var BABYLON;
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         };
         return Quaternion;
-    }(ChangableMathObject));
+    }());
     BABYLON.Quaternion = Quaternion;
     var Matrix = (function () {
         function Matrix() {

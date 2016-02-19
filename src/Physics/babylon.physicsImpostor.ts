@@ -12,7 +12,6 @@ module BABYLON {
         private _physicsEngine: PhysicsEngine;
         //The native cannon/oimo/energy physics body object.
         private _physicsBody: any;
-        private _transformationUpdated: boolean = false;
         private _bodyUpdateRequired: boolean = false;
 
         private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
@@ -61,17 +60,6 @@ module BABYLON {
             return this._bodyUpdateRequired || (!this._physicsBody && !this._parent);
         }
 
-        public isUpdateRequired(): boolean {
-            return this._transformationUpdated || this.isBodyInitRequired();
-        }
-
-        public transformationUpdated() : void {
-            this._transformationUpdated = true;
-            if (this._parent) {
-                this._parent.transformationUpdated();
-            }
-        }
-
         public setScalingUpdated(updated: boolean) {
             this.forceUpdate();
         }
@@ -104,7 +92,6 @@ module BABYLON {
         }
 
         public resetUpdateFlags() {
-            this._transformationUpdated = false;
             this._bodyUpdateRequired = false;
         }
 

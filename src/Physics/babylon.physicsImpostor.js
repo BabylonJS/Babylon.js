@@ -6,7 +6,6 @@ var BABYLON;
             this._mesh = _mesh;
             this.type = type;
             this._options = _options;
-            this._transformationUpdated = false;
             this._bodyUpdateRequired = false;
             this._onBeforePhysicsStepCallbacks = new Array();
             this._onAfterPhysicsStepCallbacks = new Array();
@@ -68,15 +67,6 @@ var BABYLON;
         PhysicsImpostor.prototype.isBodyInitRequired = function () {
             return this._bodyUpdateRequired || (!this._physicsBody && !this._parent);
         };
-        PhysicsImpostor.prototype.isUpdateRequired = function () {
-            return this._transformationUpdated || this.isBodyInitRequired();
-        };
-        PhysicsImpostor.prototype.transformationUpdated = function () {
-            this._transformationUpdated = true;
-            if (this._parent) {
-                this._parent.transformationUpdated();
-            }
-        };
         PhysicsImpostor.prototype.setScalingUpdated = function (updated) {
             this.forceUpdate();
         };
@@ -115,7 +105,6 @@ var BABYLON;
             configurable: true
         });
         PhysicsImpostor.prototype.resetUpdateFlags = function () {
-            this._transformationUpdated = false;
             this._bodyUpdateRequired = false;
         };
         PhysicsImpostor.prototype.getOptions = function () {

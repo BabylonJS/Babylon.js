@@ -61,7 +61,7 @@ var BABYLON;
             var _this = this;
             //check if any mesh has no body / requires an update
             this._impostors.forEach(function (impostor) {
-                if (impostor.isUpdateRequired()) {
+                if (impostor.isBodyInitRequired()) {
                     _this._physicsPlugin.generatePhysicsBody(impostor);
                 }
             });

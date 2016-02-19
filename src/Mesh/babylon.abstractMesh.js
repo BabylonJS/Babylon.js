@@ -13,7 +13,7 @@ var BABYLON;
             _super.call(this, name, scene);
             // Properties
             this.definedFacingForward = true; // orientation for POV movement & rotation
-            this._position = new BABYLON.Vector3(0, 0, 0);
+            this.position = new BABYLON.Vector3(0, 0, 0);
             this._rotation = new BABYLON.Vector3(0, 0, 0);
             this._scaling = new BABYLON.Vector3(1, 1, 1);
             this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
@@ -143,20 +143,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(AbstractMesh.prototype, "position", {
-            get: function () {
-                return this._position;
-            },
-            set: function (newPosition) {
-                this._position = newPosition;
-                if (this.physicImpostor) {
-                    this.position.registerOnChange(this.physicImpostor.transformationUpdated);
-                    this.physicImpostor.transformationUpdated();
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(AbstractMesh.prototype, "rotation", {
             get: function () {
                 if (this.rotationQuaternion) {
@@ -167,10 +153,10 @@ var BABYLON;
             set: function (newRotation) {
                 this._rotation = newRotation;
                 //check if rotationQuaternion exists, and if it does - update it!
-                if (this._rotationQuaternion) {
+                if (this.rotationQuaternion) {
                     var len = this._rotation.length();
                     if (len) {
-                        this._rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z));
+                        this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this._rotation.y, this._rotation.x, this._rotation.z));
                         this._rotation.copyFromFloats(0, 0, 0);
                     }
                 }
@@ -184,19 +170,8 @@ var BABYLON;
             },
             set: function (newScaling) {
                 this._scaling = newScaling;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(AbstractMesh.prototype, "rotationQuaternion", {
-            get: function () {
-                return this._rotationQuaternion;
-            },
-            set: function (quaternion) {
-                this._rotationQuaternion = quaternion;
                 if (this.physicImpostor) {
-                    this.position.registerOnChange(this.physicImpostor.transformationUpdated);
-                    this.physicImpostor.transformationUpdated();
+                    this.physicImpostor.forceUpdate();
                 }
             },
             enumerable: true,
