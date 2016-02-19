@@ -1,42 +1,7 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var BABYLON;
 (function (BABYLON) {
     BABYLON.ToGammaSpace = 1 / 2.2;
     BABYLON.ToLinearSpace = 2.2;
-    var ChangableMathObject = (function () {
-        function ChangableMathObject() {
-            this._onChangeTriggers = [];
-        }
-        ChangableMathObject.prototype.registerOnChange = function (func) {
-            if (!this._onChangeTriggers) {
-                this._onChangeTriggers = [];
-            }
-            this._onChangeTriggers.push(func);
-        };
-        ChangableMathObject.prototype.unregisterOnChange = function (func) {
-            var index = this._onChangeTriggers.indexOf(func);
-            if (index > -1) {
-                this._onChangeTriggers.splice(index, 1);
-            }
-            else {
-                BABYLON.Tools.Warn("Function to remove was not found");
-            }
-        };
-        ChangableMathObject.prototype.triggerChange = function () {
-            var _this = this;
-            if (this._onChangeTriggers) {
-                this._onChangeTriggers.forEach(function (func) {
-                    func(_this);
-                });
-            }
-        };
-        return ChangableMathObject;
-    }());
-    BABYLON.ChangableMathObject = ChangableMathObject;
     var Color3 = (function () {
         function Color3(r, g, b) {
             if (r === void 0) { r = 0; }
@@ -501,10 +466,8 @@ var BABYLON;
         return Vector2;
     }());
     BABYLON.Vector2 = Vector2;
-    var Vector3 = (function (_super) {
-        __extends(Vector3, _super);
+    var Vector3 = (function () {
         function Vector3(x, y, z) {
-            _super.call(this);
             this.x = x;
             this.y = y;
             this.z = z;
@@ -1000,7 +963,7 @@ var BABYLON;
             ref.z = roll;
         };
         return Vector3;
-    }(ChangableMathObject));
+    }());
     BABYLON.Vector3 = Vector3;
     //Vector4 class created for EulerAngle class conversion to Quaternion
     var Vector4 = (function () {

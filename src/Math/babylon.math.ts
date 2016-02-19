@@ -5,36 +5,6 @@
     export const ToGammaSpace = 1 / 2.2;
     export const ToLinearSpace = 2.2;
 
-    export class ChangableMathObject {
-
-        private _onChangeTriggers: Array<(changedObject: ChangableMathObject) => void> = [];
-
-        public registerOnChange(func: (changedObject: ChangableMathObject) => void) {
-            if (!this._onChangeTriggers) {
-                this._onChangeTriggers = [];
-            }
-            this._onChangeTriggers.push(func);
-        }
-
-        public unregisterOnChange(func: (changedObject: ChangableMathObject) => void) {
-            var index = this._onChangeTriggers.indexOf(func);
-
-            if (index > -1) {
-                this._onChangeTriggers.splice(index, 1);
-            } else {
-                Tools.Warn("Function to remove was not found");
-            }
-        }
-
-        protected triggerChange() {
-            if (this._onChangeTriggers) {
-                this._onChangeTriggers.forEach((func) => {
-                    func(this);
-                })
-            }
-        }
-    }
-
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
         }
@@ -618,10 +588,10 @@
         }
     }
 
-    export class Vector3 extends ChangableMathObject {
+    export class Vector3 {
 
         constructor(public x: number, public y: number, public z: number) {
-            super();
+            
         }
 
         public toString(): string {
