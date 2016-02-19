@@ -65,6 +65,11 @@ var BABYLON;
             this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
             _super.prototype._checkInputs.call(this);
         };
+        DeviceOrientationCamera.prototype.serialize = function () {
+            var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "DeviceOrientationCamera";
+            return serializationObject;
+        };
         return DeviceOrientationCamera;
     })(BABYLON.FreeCamera);
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;

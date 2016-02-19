@@ -3,6 +3,7 @@
     - New refraction channel for Standard material (including fresnel support). Refraction texture can be provided by a reflection probe or a refraction texture. [See demo here](http://www.babylonjs.com/Demos/refraction/) ([deltakosh](https://github.com/deltakosh))
     - Added support for HDR cubemaps ([sebavan](https://github.com/sebavan))
     - Support for shaders includes ([deltakosh](https://github.com/deltakosh))
+    - new mesh type : `LineSystem` ([jerome](https://github.com/jbousquie))
   - **Updates**
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
     - New SPS method `digest()` ([jerome](https://github.com/jbousquie))    

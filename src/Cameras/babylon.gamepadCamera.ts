@@ -5,5 +5,13 @@ module BABYLON {
             Tools.Warn("Deprecated. Please use Universal Camera instead.");
             super(name, position, scene);
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.type = "GamepadCamera";
+
+            return serializationObject;
+        }
     }
 }

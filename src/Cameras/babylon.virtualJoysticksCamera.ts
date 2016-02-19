@@ -46,5 +46,13 @@
             this._leftjoystick.releaseCanvas();
             super.dispose();
         }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.type = "VirtualJoysticksCamera";
+
+            return serializationObject;
+        }
     }
 }

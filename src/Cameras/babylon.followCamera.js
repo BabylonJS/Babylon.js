@@ -57,6 +57,7 @@ var BABYLON;
         };
         FollowCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "FollowCamera";
             serializationObject.radius = this.radius;
             serializationObject.heightOffset = this.heightOffset;
             serializationObject.rotationOffset = this.rotationOffset;
@@ -89,6 +90,7 @@ var BABYLON;
         };
         ArcFollowCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "ArcFollowCamera";
             serializationObject.radius = this.radius;
             return serializationObject;
         };

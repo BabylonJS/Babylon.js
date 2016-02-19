@@ -70,13 +70,7 @@ uniform sampler2D specularSampler;
 #endif
 
 // Fresnel
-#ifdef FRESNEL
-float computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float power)
-{
-	float fresnelTerm = pow(bias + abs(dot(viewDirection, worldNormal)), power);
-	return clamp(fresnelTerm, 0., 1.);
-}
-#endif
+#include<fresnelFunction>
 
 #ifdef DIFFUSEFRESNEL
 uniform vec4 diffuseLeftColor;

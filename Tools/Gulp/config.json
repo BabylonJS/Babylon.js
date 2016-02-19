@@ -16,6 +16,7 @@
     ],
     "files": [
       "../../src/Math/babylon.math.js",
+      "../../src/Tools/babylon.decorators.js",
       "../../src/Tools/babylon.database.js",
       "../../src/Tools/babylon.tools.tga.js",
       "../../src/Tools/babylon.smartArray.js",
@@ -62,7 +63,8 @@
       "../../src/Materials/Textures/babylon.videoTexture.js",
       "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js",
       "../../src/Materials/babylon.effect.js",
-      "../../src/Materials/babylon.materialHelper.js",
+      "../../src/Materials/babylon.materialHelper.js",      
+      "../../src/Materials/babylon.fresnelParameters.js",
       "../../src/Materials/babylon.material.js",
       "../../src/Materials/babylon.standardMaterial.js",
       "../../src/Materials/babylon.multiMaterial.js",

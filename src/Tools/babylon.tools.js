@@ -30,12 +30,6 @@ var BABYLON;
             }
             return fn;
         };
-        Tools.GetConstructorName = function (obj) {
-            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
-            var cname = str.match(/function\s(\w*)/)[1];
-            var aliases = ["", "anonymous", "Anonymous"];
-            return aliases.indexOf(cname) > -1 ? "Function" : cname;
-        };
         Tools.ToHex = function (i) {
             var str = i.toString(16);
             if (i <= 15) {
@@ -496,7 +490,7 @@ var BABYLON;
                     var a = window.document.createElement("a");
                     a.href = base64Image;
                     var date = new Date();
-                    var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                    var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
                     a.setAttribute("download", "screenshot_" + stringDate + ".png");
                     window.document.body.appendChild(a);
                     a.addEventListener("click", function () {

@@ -70,6 +70,9 @@ var BABYLON;
                 var sina = Math.sin(_this.alpha);
                 var cosb = Math.cos(_this.beta);
                 var sinb = Math.sin(_this.beta);
+                if (sinb === 0) {
+                    sinb = 0.0001;
+                }
                 var target = _this._getTargetPosition();
                 target.addToRef(new BABYLON.Vector3(_this.radius * cosa * sinb, _this.radius * cosb, _this.radius * sina * sinb), _this._newPosition);
                 _this.position.copyFrom(_this._newPosition);
@@ -484,6 +487,9 @@ var BABYLON;
             var sina = Math.sin(this.alpha);
             var cosb = Math.cos(this.beta);
             var sinb = Math.sin(this.beta);
+            if (sinb === 0) {
+                sinb = 0.0001;
+            }
             var target = this._getTargetPosition();
             target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
@@ -570,6 +576,7 @@ var BABYLON;
         };
         ArcRotateCamera.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
+            serializationObject.type = "ArcRotateCamera";
             if (this.target instanceof BABYLON.Vector3) {
                 serializationObject.target = this.target.asArray();
             }

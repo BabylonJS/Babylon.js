@@ -269,6 +269,17 @@ vec3 toGammaSpace(vec3 color)
     return vec3(pow(color.r, 1.0 / 2.2), pow(color.g, 1.0 / 2.2), pow(color.b, 1.0 / 2.2));
 }
 
+float computeLightFalloff(vec3 lightOffset, float lightDistanceSquared, float range)
+{
+    #ifdef USEPHYSICALLIGHTFALLOFF
+        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001));
+        return lightDistanceFalloff;
+    #else
+        float lightFalloff = max(0., 1.0 - length(lightOffset) / range);
+        return lightFalloff;
+    #endif
+}
+
 #ifdef CAMERATONEMAP
     vec3 toneMaps(vec3 color)
     {
@@ -367,13 +378,7 @@ uniform sampler2D reflectivitySampler;
 #endif
 
 // Fresnel
-#ifdef FRESNEL
-float computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float power)
-{
-    float fresnelTerm = pow(bias + abs(dot(viewDirection, worldNormal)), power);
-    return clamp(fresnelTerm, 0., 1.);
-}
-#endif
+#include<fresnelFunction>
 
 #ifdef OPACITYFRESNEL
 uniform vec4 opacityParts;
@@ -423,67 +428,7 @@ varying vec3 vPositionUVW;
     #endif
 #endif
 
-vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
-{
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
-    vec3 direction = normalize(vDirectionW);
-
-    float t = clamp(direction.y * -0.5 + 0.5, 0., 1.0);
-    float s = atan(direction.z, direction.x) * RECIPROCAL_PI2 + 0.5;
-
-    return vec3(s, t, 0);
-#endif
-
-#ifdef REFLECTIONMAP_EQUIRECTANGULAR
-
-	vec3 cameraToVertex = normalize(worldPos.xyz - vEyePosition);
-	vec3 r = reflect(cameraToVertex, worldNormal);
-	float t = clamp(r.y * -0.5 + 0.5, 0., 1.0);
-	float s = atan(r.z, r.x) * RECIPROCAL_PI2 + 0.5;
-
-	return vec3(s, t, 0);
-#endif
-
-#ifdef REFLECTIONMAP_SPHERICAL
-    vec3 viewDir = normalize(vec3(view * worldPos));
-    vec3 viewNormal = normalize(vec3(view * vec4(worldNormal, 0.0)));
-
-    vec3 r = reflect(viewDir, viewNormal);
-    r.z = r.z - 1.0;
-
-    float m = 2.0 * length(r);
-
-    return vec3(r.x / m + 0.5, 1.0 - r.y / m - 0.5, 0);
-#endif
-
-#ifdef REFLECTIONMAP_PLANAR
-    vec3 viewDir = worldPos.xyz - vEyePosition;
-    vec3 coords = normalize(reflect(viewDir, worldNormal));
-
-    return vec3(reflectionMatrix * vec4(coords, 1));
-#endif
-
-#ifdef REFLECTIONMAP_CUBIC
-    vec3 viewDir = worldPos.xyz - vEyePosition;
-    vec3 coords = reflect(viewDir, worldNormal);
-#ifdef INVERTCUBICMAP
-    coords.y = 1.0 - coords.y;
-#endif
-    return vec3(reflectionMatrix * vec4(coords, 0));
-#endif
-
-#ifdef REFLECTIONMAP_PROJECTION
-    return vec3(reflectionMatrix * (view * worldPos));
-#endif
-
-#ifdef REFLECTIONMAP_SKYBOX
-    return vPositionUVW;
-#endif
-
-#ifdef REFLECTIONMAP_EXPLICIT
-    return vec3(0, 0, 0);
-#endif
-}
+#include<reflectionFunction>
 
 #endif
 
@@ -686,11 +631,8 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     if (lightData.w == 0.)
     {
         vec3 lightOffset = lightData.xyz - vPositionW;
-        
-        // Inverse squared falloff.
         float lightDistanceSquared = dot(lightOffset, lightOffset);
-        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001) * range);
-        attenuation = lightDistanceFalloff;
+        attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, range);
         
         lightDistance = sqrt(lightDistanceSquared);
         lightDirection = normalize(lightOffset);
@@ -739,8 +681,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
         
         // Inverse squared falloff.
         float lightDistanceSquared = dot(lightOffset, lightOffset);
-        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001) * range);
-        float attenuation = lightDistanceFalloff;
+        float attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, range);
         
         // Directional falloff.
         attenuation *= cosAngle;
@@ -1130,10 +1071,10 @@ void main(void) {
 vec3 surfaceRefractionColor = vec3(0., 0., 0.);
 
 // Go mat -> blurry reflexion according to microSurface
-#ifndef LODBASEDMICROSFURACE
-    float bias = 20. * (1.0 - microSurface);
-#else
+#ifdef LODBASEDMICROSFURACE
     float alphaG = convertRoughnessToAverageSlope(roughness);
+#else
+    float bias = 20. * (1.0 - microSurface);
 #endif
         
 #ifdef REFRACTION
@@ -1168,7 +1109,7 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
         #ifdef LODBASEDMICROSFURACE
             surfaceRefractionColor = texture2DLodEXT(refraction2DSampler, refractionCoords, lodRefraction).rgb * vRefractionInfos.x;
         #else
-            surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+            surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords, bias).rgb * vRefractionInfos.x;
         #endif    
         
         surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
@@ -1219,9 +1160,9 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
 
         coords.y = 1.0 - coords.y;
         #ifdef LODBASEDMICROSFURACE
-            environmentRadiance = texture2DLodExt(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
+            environmentRadiance = texture2DLodEXT(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
         #else
-            environmentRadiance = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+            environmentRadiance = texture2D(reflection2DSampler, coords, bias).rgb * vReflectionInfos.x;
         #endif
     
         environmentRadiance = toLinearSpace(environmentRadiance.rgb);
@@ -1339,12 +1280,12 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
     vec3 finalSpecular = vec3(0.0);
 #endif
 
-#ifdef OVERLOADEDSHADOWVALUES
-    finalSpecular = mix(finalSpecular, vec3(0.0), (1.0 - vOverloadedShadowIntensity.y));
+#ifdef SPECULAROVERALPHA
+    alpha = clamp(alpha + getLuminance(finalSpecular), 0., 1.);
 #endif
 
-#ifdef SPECULAROVERALPHA
-    alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);
+#ifdef RADIANCEOVERALPHA
+    alpha = clamp(alpha + getLuminance(environmentRadiance), 0., 1.);
 #endif
 
 // Composition
