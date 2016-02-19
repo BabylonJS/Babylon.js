@@ -60,17 +60,27 @@ module BABYLON {
     export class GradientMaterial extends Material {
 
         // The gradient top color, red by default
+        @serializeAsColor3()
         public topColor = new Color3(1, 0, 0);
+        
+        @serialize()
         public topColorAlpha = 1.0;
 
         // The gradient top color, blue by default
+        @serializeAsColor3()
         public bottomColor = new Color3(0, 0, 1);
+        
+        @serialize()
         public bottomColorAlpha = 1.0;
 
         // Gradient offset
+        @serialize()
         public offset = 0;
+        
+        @serialize()
         public smoothness = 1.0;
 
+        @serialize()
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -335,50 +345,18 @@ module BABYLON {
         }
 
         public clone(name: string): GradientMaterial {
-            var newMaterial = new GradientMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Gradient material
-            newMaterial.topColor = this.topColor.clone();
-            newMaterial.bottomColor = this.bottomColor.clone();
-            newMaterial.offset = this.offset;
-            return newMaterial;
+            return SerializationHelper.Clone(() => new GradientMaterial(name, this.getScene()), this);
         }
-        
-        public serialize(): any {		
-            var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.GradientMaterial";
-            serializationObject.topColor        = this.topColor.asArray();
-            serializationObject.bottomColor     = this.bottomColor.asArray();
-            serializationObject.offset          = this.offset;
-            serializationObject.disableLighting = this.disableLighting;
 
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.GradientMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): GradientMaterial {
-            var material = new GradientMaterial(source.name, scene);
-
-            material.topColor               = Color3.FromArray(source.topColor);
-            material.bottomColor            = Color3.FromArray(source.bottomColor);
-            material.offset                 = source.offset;
-            material.disableLighting        = source.disableLighting;
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new GradientMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
 } 

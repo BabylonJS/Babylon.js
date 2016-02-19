@@ -58,17 +58,33 @@ module BABYLON {
     }
 
     export class LavaMaterial extends Material {
+        @serializeAsTexture()
         public diffuseTexture: BaseTexture;
+        
+        @serializeAsTexture()
         public noiseTexture: BaseTexture;
+        
+        @serializeAsColor3()
         public fogColor: Color3;
+        
+        @serialize()
         public speed : number = 1;
+        
+        @serialize()
         public movingSpeed : number = 1;
+        
+        @serialize()
         public lowFrequencySpeed : number = 1;
+        
+        @serialize()
         public fogDensity : number = 0.15;
 
         private _lastTime : number = 0;
 
+        @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
+        
+        @serialize()
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -378,78 +394,18 @@ module BABYLON {
         }
 
         public clone(name: string): LavaMaterial {
-            var newMaterial = new LavaMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Lava material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.noiseTexture && this.noiseTexture.clone) {
-                newMaterial.noiseTexture = this.noiseTexture.clone();
-            }
-            if (this.fogColor && this.fogColor.clone) {
-                newMaterial.fogColor = this.fogColor.clone();
-            }
-
-            return newMaterial;
+            return SerializationHelper.Clone(() => new LavaMaterial(name, this.getScene()), this);
         }
 
-
         public serialize(): any {
-            var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.LavaMaterial";
-            serializationObject.diffuseColor    = this.diffuseColor.asArray();
-            serializationObject.fogColor        = this.fogColor.asArray();
-            serializationObject.speed           = this.speed;
-            serializationObject.movingSpeed     = this.movingSpeed;
-            serializationObject.lowFrequencySpeed = this.lowFrequencySpeed;
-            serializationObject.fogDensity      = this.fogDensity;
-            serializationObject.checkReadyOnlyOnce = this.checkReadyOnlyOnce;
-
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-            if (this.noiseTexture) {
-                serializationObject.noiseTexture = this.noiseTexture.serialize();
-            }
-
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.LavaMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): LavaMaterial {
-            var material = new LavaMaterial(source.name, scene);
-
-            material.diffuseColor   = Color3.FromArray(source.diffuseColor);
-            material.speed          = source.speed;
-            material.fogColor       = Color3.FromArray(source.fogColor);
-            material.movingSpeed    = source.movingSpeed;
-            material.lowFrequencySpeed = source.lowFrequencySpeed;
-            material.fogDensity     =  source.lowFrequencySpeed;
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-
-            if (source.noiseTexture) {
-                material.noiseTexture = Texture.Parse(source.noiseTexture, scene, rootUrl);
-            }
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new LavaMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
 } 

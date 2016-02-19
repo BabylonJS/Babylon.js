@@ -61,19 +61,37 @@ module BABYLON {
     }
 
     export class TerrainMaterial extends Material {
+        @serializeAsTexture()
         public mixTexture: BaseTexture;
         
+        @serializeAsTexture()
         public diffuseTexture1: Texture;
+        
+        @serializeAsTexture()
         public diffuseTexture2: Texture;
+        
+        @serializeAsTexture()
         public diffuseTexture3: Texture;
         
+        @serializeAsTexture()
         public bumpTexture1: Texture;
+        
+        @serializeAsTexture()
         public bumpTexture2: Texture;
+        
+        @serializeAsTexture()
         public bumpTexture3: Texture;
         
+        @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
+        
+        @serializeAsColor3()
         public specularColor = new Color3(0, 0, 0);
+        
+        @serialize()
         public specularPower = 64;
+        
+        @serialize()
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -557,107 +575,20 @@ module BABYLON {
 
             super.dispose(forceDisposeEffect);
         }
-
+        
         public clone(name: string): TerrainMaterial {
-            var newMaterial = new TerrainMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Simple material
-            if (this.mixTexture && this.mixTexture.clone) {
-                newMaterial.mixTexture = this.mixTexture.clone();
-            }
-
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            return SerializationHelper.Clone(() => new TerrainMaterial(name, this.getScene()), this);
         }
-		
-		public serialize(): any {
-		
-            var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.TerrainMaterial";
-            serializationObject.diffuseColor    = this.diffuseColor.asArray();
-			serializationObject.specularColor   = this.specularColor.asArray();
-            serializationObject.specularPower   = this.specularPower;
-            serializationObject.disableLighting = this.disableLighting;
 
-            if (this.diffuseTexture1) {
-                serializationObject.diffuseTexture1 = this.diffuseTexture1.serialize();
-            }
-			
-			if (this.diffuseTexture2) {
-                serializationObject.diffuseTexture2 = this.diffuseTexture2.serialize();
-            }
-			
-			if (this.diffuseTexture3) {
-                serializationObject.diffuseTexture3 = this.diffuseTexture3.serialize();
-            }
-			
-			if (this.bumpTexture1) {
-                serializationObject.bumpTexture1 = this.bumpTexture1.serialize();
-            }
-			
-			if (this.bumpTexture2) {
-                serializationObject.bumpTexture2 = this.bumpTexture2.serialize();
-            }
-			
-			if (this.bumpTexture3) {
-                serializationObject.bumpTexture3 = this.bumpTexture3.serialize();
-            }
-            
-			if (this.mixTexture) {
-                serializationObject.mixTexture = this.mixTexture.serialize();
-            }
-
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.TerrainMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): TerrainMaterial {
-            var material = new TerrainMaterial(source.name, scene);
-
-            material.diffuseColor   = Color3.FromArray(source.diffuseColor);
-			material.specularColor   = Color3.FromArray(source.specularColor);
-            material.specularPower          = source.specularPower;
-            material.disableLighting    = source.disableLighting;
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.diffuseTexture1) {
-                material.diffuseTexture1 = <Texture>Texture.Parse(source.diffuseTexture1, scene, rootUrl);
-            }
-			
-			if (source.diffuseTexture2) {
-                material.diffuseTexture2 = <Texture>Texture.Parse(source.diffuseTexture2, scene, rootUrl);
-            }
-
-			if (source.diffuseTexture3) {
-                material.diffuseTexture3 = <Texture>Texture.Parse(source.diffuseTexture3, scene, rootUrl);
-            }
-			
-			if (source.bumpTexture1) {
-                material.bumpTexture1 = <Texture>Texture.Parse(source.bumpTexture1, scene, rootUrl);
-            }
-			
-			if (source.bumpTexture2) {
-                material.bumpTexture2 = <Texture> Texture.Parse(source.bumpTexture2, scene, rootUrl);
-            }
-			
-			if (source.bumpTexture3) {
-                material.bumpTexture3 = <Texture> Texture.Parse(source.bumpTexture3, scene, rootUrl);
-            }
-
-            if (source.mixTexture) {
-                material.mixTexture = Texture.Parse(source.mixTexture, scene, rootUrl);
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new TerrainMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
 } 

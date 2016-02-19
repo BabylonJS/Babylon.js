@@ -56,9 +56,13 @@ module BABYLON {
     }
 
     export class NormalMaterial extends Material {
+        @serializeAsTexture()
         public diffuseTexture: BaseTexture;
 
+        @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
+        
+        @serialize()
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -341,56 +345,18 @@ module BABYLON {
         }
 
         public clone(name: string): NormalMaterial {
-            var newMaterial = new NormalMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Normal material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            return SerializationHelper.Clone(() => new NormalMaterial(name, this.getScene()), this);
         }
-        
-        public serialize(): any {		
-            var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.NormalMaterial";
-            serializationObject.diffuseColor    = this.diffuseColor.asArray();
-            serializationObject.disableLighting = this.disableLighting;
-            
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
 
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.NormalMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): NormalMaterial {
-            var material = new NormalMaterial(source.name, scene);
-
-            material.diffuseColor       = Color3.FromArray(source.diffuseColor);
-            material.disableLighting    = source.disableLighting;
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new NormalMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
 } 

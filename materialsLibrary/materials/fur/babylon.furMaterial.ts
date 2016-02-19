@@ -61,22 +61,42 @@ module BABYLON {
     }
 
     export class FurMaterial extends Material {
+        
         public diffuseTexture: BaseTexture;
         public heightTexture: BaseTexture;
         public diffuseColor = new Color3(1, 1, 1);
         
+        @serialize()
         public furLength: number = 1;
+        
+        @serialize()
         public furAngle: number = 0;
+        
+        @serializeAsColor3()
         public furColor = new Color3(0.44,0.21,0.02);
         
+        @serialize()
         public furOffset: number = 0.0;
+        
+        @serialize()
         public furSpacing: number = 12;
+        
+        @serializeAsVector3()
         public furGravity = new Vector3(0, 0, 0);
+        
+        @serialize()
         public furSpeed: number = 100;
+        
+        @serialize()
         public furDensity: number = 20;
+        
+        @serializeAsTexture()
         public furTexture: DynamicTexture;
         
+        @serialize()
         public disableLighting = false;
+        
+        @serialize()
         public highLevelFur: boolean = true;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -94,6 +114,7 @@ module BABYLON {
             this._cachedDefines.BonesPerMesh = -1;
         }
         
+        @serialize()
         public get furTime() {
             return this._furTime;
         }
@@ -561,87 +582,20 @@ module BABYLON {
 
             super.dispose(forceDisposeEffect);
         }
-
-        public clone(name: string): FurMaterial {
-            var newMaterial = new FurMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Fur material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.heightTexture && this.heightTexture.clone) {
-                newMaterial.heightTexture = this.heightTexture.clone();
-            }
-            if (this.diffuseColor && this.diffuseColor.clone) {
-                newMaterial.diffuseColor = this.diffuseColor.clone();
-            }
-            
-            return newMaterial;
-        }
         
-        public serialize(): any {		
-            var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.FurMaterial";
-            serializationObject.diffuseColor    = this.diffuseColor.asArray();
-            serializationObject.disableLighting = this.disableLighting;
-            
-            serializationObject.furLength = this.furLength;
-            serializationObject.furAngle  = this.furAngle;
-            serializationObject.furColor  = this.furColor.asArray();
-            
-            serializationObject.furGravity = this.furGravity.asArray();
-            serializationObject.furSpacing = this.furSpacing;
-            serializationObject.furSpeed   = this.furSpeed;
-            serializationObject.furDensity = this.furDensity;
-            
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-            
-            if (this.heightTexture) {
-                serializationObject.heightTexture = this.heightTexture.serialize();
-            }
+        public clone(name: string): FurMaterial {
+            return SerializationHelper.Clone(() => new FurMaterial(name, this.getScene()), this);
+        }
 
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.FurMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {
-            var material = new FurMaterial(source.name, scene);
-            
-            material.diffuseColor       = Color3.FromArray(source.diffuseColor);
-            material.furLength          = source.furLength;
-            material.furAngle           = source.furAngle;
-            material.furColor           = Color3.FromArray(source.furColor);
-            material.furGravity         = Vector3.FromArray(source.furGravity);
-            material.furSpacing         = source.furSpacing;
-            material.furSpeed           = source.furSpeed;
-            material.furDensity         = source.furDensity;
-            material.disableLighting    = source.disableLighting;
-
-            material.alpha              = source.alpha;
-
-            material.id                 = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.diffuseTexture) {
-                material.diffuseTexture = Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-            
-            if (source.heightTexture) {
-                material.heightTexture = Texture.Parse(source.heightTexture, scene, rootUrl);
-            }
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new FurMaterial(source.name, scene), source, scene, rootUrl);
         }
         
         public static GenerateTexture(name: string, scene: Scene): DynamicTexture {

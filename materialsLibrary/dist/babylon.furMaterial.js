@@ -1,5 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
+    switch (arguments.length) {
+        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+    }
+};
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
@@ -467,67 +475,17 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         FurMaterial.prototype.clone = function (name) {
-            var newMaterial = new FurMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newMaterial);
-            // Fur material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.heightTexture && this.heightTexture.clone) {
-                newMaterial.heightTexture = this.heightTexture.clone();
-            }
-            if (this.diffuseColor && this.diffuseColor.clone) {
-                newMaterial.diffuseColor = this.diffuseColor.clone();
-            }
-            return newMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new FurMaterial(name, _this.getScene()); }, this);
         };
         FurMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.FurMaterial";
-            serializationObject.diffuseColor = this.diffuseColor.asArray();
-            serializationObject.disableLighting = this.disableLighting;
-            serializationObject.furLength = this.furLength;
-            serializationObject.furAngle = this.furAngle;
-            serializationObject.furColor = this.furColor.asArray();
-            serializationObject.furGravity = this.furGravity.asArray();
-            serializationObject.furSpacing = this.furSpacing;
-            serializationObject.furSpeed = this.furSpeed;
-            serializationObject.furDensity = this.furDensity;
-            if (this.diffuseTexture) {
-                serializationObject.diffuseTexture = this.diffuseTexture.serialize();
-            }
-            if (this.heightTexture) {
-                serializationObject.heightTexture = this.heightTexture.serialize();
-            }
             return serializationObject;
         };
+        // Statics
         FurMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new FurMaterial(source.name, scene);
-            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
-            material.furLength = source.furLength;
-            material.furAngle = source.furAngle;
-            material.furColor = BABYLON.Color3.FromArray(source.furColor);
-            material.furGravity = BABYLON.Vector3.FromArray(source.furGravity);
-            material.furSpacing = source.furSpacing;
-            material.furSpeed = source.furSpeed;
-            material.furDensity = source.furDensity;
-            material.disableLighting = source.disableLighting;
-            material.alpha = source.alpha;
-            material.id = source.id;
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            if (source.diffuseTexture) {
-                material.diffuseTexture = BABYLON.Texture.Parse(source.diffuseTexture, scene, rootUrl);
-            }
-            if (source.heightTexture) {
-                material.heightTexture = BABYLON.Texture.Parse(source.heightTexture, scene, rootUrl);
-            }
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            return material;
+            return BABYLON.SerializationHelper.Parse(function () { return new FurMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         FurMaterial.GenerateTexture = function (name, scene) {
             // Generate fur textures
@@ -573,6 +531,43 @@ var BABYLON;
             }
             return meshes;
         };
+        __decorate([
+            BABYLON.serialize()
+        ], FurMaterial.prototype, "furLength");
+        __decorate([
+            BABYLON.serialize()
+        ], FurMaterial.prototype, "furAngle");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], FurMaterial.prototype, "furColor");
+        __decorate([
+            BABYLON.serialize()
+        ], FurMaterial.prototype, "furOffset");
+        __decorate([
+            BABYLON.serialize()
+        ], FurMaterial.prototype, "furSpacing");
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], FurMaterial.prototype, "furGravity");
+        __decorate([
+            BABYLON.serialize()
+        ], FurMaterial.prototype, "furSpeed");
+        __decorate([
+            BABYLON.serialize()
+        ], FurMaterial.prototype, "furDensity");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], FurMaterial.prototype, "furTexture");
+        __decorate([
+            BABYLON.serialize()
+        ], FurMaterial.prototype, "disableLighting");
+        __decorate([
+            BABYLON.serialize()
+        ], FurMaterial.prototype, "highLevelFur");
+        Object.defineProperty(FurMaterial.prototype, "furTime",
+            __decorate([
+                BABYLON.serialize()
+            ], FurMaterial.prototype, "furTime", Object.getOwnPropertyDescriptor(FurMaterial.prototype, "furTime")));
         return FurMaterial;
     })(BABYLON.Material);
     BABYLON.FurMaterial = FurMaterial;

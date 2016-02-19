@@ -24,13 +24,17 @@
     export function serializeAsFresnelParameters(sourceName?: string) {
         return generateSerializableMember(3, sourceName); // fresnel parameters member
     }
+    
+    export function serializeAsVector2(sourceName?: string) {
+        return generateSerializableMember(4, sourceName); // vector2 member
+    }
 
     export function serializeAsVector3(sourceName?: string) {
-        return generateSerializableMember(4, sourceName); // vector3 member
+        return generateSerializableMember(5, sourceName); // vector3 member
     }
 
     export function serializeAsMeshReference(sourceName?: string) {
-        return generateSerializableMember(5, sourceName); // mesh reference member
+        return generateSerializableMember(6, sourceName); // mesh reference member
     }
 
     export class SerializationHelper {
@@ -64,10 +68,13 @@
                         case 3:     // FresnelParameters
                             serializationObject[targetPropertyName] = sourceProperty.serialize();
                             break;
-                        case 4:     // Vector3
+                        case 4:     // Vector2
                             serializationObject[targetPropertyName] = sourceProperty.asArray();
                             break;
-                        case 5:     // Mesh reference
+                        case 5:     // Vector3
+                            serializationObject[targetPropertyName] = sourceProperty.asArray();
+                            break;
+                        case 6:     // Mesh reference
                             serializationObject[targetPropertyName] = sourceProperty.id;
                             break;
                     }
@@ -103,10 +110,13 @@
                         case 3:     // FresnelParameters
                             destination[property] = FresnelParameters.Parse(sourceProperty);
                             break;
-                        case 4:     // Vector3
+                        case 4:     // Vector2
+                            destination[property] = Vector2.FromArray(sourceProperty);
+                            break;
+                        case 5:     // Vector3
                             destination[property] = Vector3.FromArray(sourceProperty);
                             break;
-                        case 5:     // Mesh reference
+                        case 6:     // Mesh reference
                             destination[property] = scene.getLastMeshByID(sourceProperty);
                             break;
                     }
@@ -131,13 +141,14 @@
                 if (sourceProperty !== undefined && sourceProperty !== null) {
                     switch (propertyType) {
                         case 0:     // Value
-                        case 5:     // Mesh reference
+                        case 6:     // Mesh reference
                             destination[property] = sourceProperty;
                             break;
                         case 1:     // Texture
                         case 2:     // Color3
                         case 3:     // FresnelParameters
-                        case 4:     // Vector3
+                        case 4:     // Vector2
+                        case 5:     // Vector3
                             destination[property] = sourceProperty.clone();
                             break;
                     }

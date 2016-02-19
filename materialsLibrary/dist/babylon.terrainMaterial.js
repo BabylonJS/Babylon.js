@@ -1,5 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
+    switch (arguments.length) {
+        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+    }
+};
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
@@ -460,80 +468,51 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         TerrainMaterial.prototype.clone = function (name) {
-            var newMaterial = new TerrainMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newMaterial);
-            // Simple material
-            if (this.mixTexture && this.mixTexture.clone) {
-                newMaterial.mixTexture = this.mixTexture.clone();
-            }
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new TerrainMaterial(name, _this.getScene()); }, this);
         };
         TerrainMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.TerrainMaterial";
-            serializationObject.diffuseColor = this.diffuseColor.asArray();
-            serializationObject.specularColor = this.specularColor.asArray();
-            serializationObject.specularPower = this.specularPower;
-            serializationObject.disableLighting = this.disableLighting;
-            if (this.diffuseTexture1) {
-                serializationObject.diffuseTexture1 = this.diffuseTexture1.serialize();
-            }
-            if (this.diffuseTexture2) {
-                serializationObject.diffuseTexture2 = this.diffuseTexture2.serialize();
-            }
-            if (this.diffuseTexture3) {
-                serializationObject.diffuseTexture3 = this.diffuseTexture3.serialize();
-            }
-            if (this.bumpTexture1) {
-                serializationObject.bumpTexture1 = this.bumpTexture1.serialize();
-            }
-            if (this.bumpTexture2) {
-                serializationObject.bumpTexture2 = this.bumpTexture2.serialize();
-            }
-            if (this.bumpTexture3) {
-                serializationObject.bumpTexture3 = this.bumpTexture3.serialize();
-            }
-            if (this.mixTexture) {
-                serializationObject.mixTexture = this.mixTexture.serialize();
-            }
             return serializationObject;
         };
+        // Statics
         TerrainMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new TerrainMaterial(source.name, scene);
-            material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
-            material.specularColor = BABYLON.Color3.FromArray(source.specularColor);
-            material.specularPower = source.specularPower;
-            material.disableLighting = source.disableLighting;
-            material.alpha = source.alpha;
-            material.id = source.id;
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            if (source.diffuseTexture1) {
-                material.diffuseTexture1 = BABYLON.Texture.Parse(source.diffuseTexture1, scene, rootUrl);
-            }
-            if (source.diffuseTexture2) {
-                material.diffuseTexture2 = BABYLON.Texture.Parse(source.diffuseTexture2, scene, rootUrl);
-            }
-            if (source.diffuseTexture3) {
-                material.diffuseTexture3 = BABYLON.Texture.Parse(source.diffuseTexture3, scene, rootUrl);
-            }
-            if (source.bumpTexture1) {
-                material.bumpTexture1 = BABYLON.Texture.Parse(source.bumpTexture1, scene, rootUrl);
-            }
-            if (source.bumpTexture2) {
-                material.bumpTexture2 = BABYLON.Texture.Parse(source.bumpTexture2, scene, rootUrl);
-            }
-            if (source.bumpTexture3) {
-                material.bumpTexture3 = BABYLON.Texture.Parse(source.bumpTexture3, scene, rootUrl);
-            }
-            if (source.mixTexture) {
-                material.mixTexture = BABYLON.Texture.Parse(source.mixTexture, scene, rootUrl);
-            }
-            return material;
+            return BABYLON.SerializationHelper.Parse(function () { return new TerrainMaterial(source.name, scene); }, source, scene, rootUrl);
         };
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], TerrainMaterial.prototype, "mixTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], TerrainMaterial.prototype, "diffuseTexture1");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], TerrainMaterial.prototype, "diffuseTexture2");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], TerrainMaterial.prototype, "diffuseTexture3");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], TerrainMaterial.prototype, "bumpTexture1");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], TerrainMaterial.prototype, "bumpTexture2");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], TerrainMaterial.prototype, "bumpTexture3");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], TerrainMaterial.prototype, "diffuseColor");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], TerrainMaterial.prototype, "specularColor");
+        __decorate([
+            BABYLON.serialize()
+        ], TerrainMaterial.prototype, "specularPower");
+        __decorate([
+            BABYLON.serialize()
+        ], TerrainMaterial.prototype, "disableLighting");
         return TerrainMaterial;
     })(BABYLON.Material);
     BABYLON.TerrainMaterial = TerrainMaterial;

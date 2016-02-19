@@ -1,5 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
+    switch (arguments.length) {
+        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+    }
+};
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
@@ -844,243 +852,183 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         PBRMaterial.prototype.clone = function (name) {
-            var newPBRMaterial = new PBRMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newPBRMaterial);
-            newPBRMaterial.directIntensity = this.directIntensity;
-            newPBRMaterial.emissiveIntensity = this.emissiveIntensity;
-            newPBRMaterial.environmentIntensity = this.environmentIntensity;
-            newPBRMaterial.specularIntensity = this.specularIntensity;
-            newPBRMaterial.cameraExposure = this.cameraExposure;
-            newPBRMaterial.cameraContrast = this.cameraContrast;
-            newPBRMaterial.overloadedShadowIntensity = this.overloadedShadowIntensity;
-            newPBRMaterial.overloadedShadeIntensity = this.overloadedShadeIntensity;
-            newPBRMaterial.overloadedAmbientIntensity = this.overloadedAmbientIntensity;
-            newPBRMaterial.overloadedAlbedoIntensity = this.overloadedAlbedoIntensity;
-            newPBRMaterial.overloadedReflectivityIntensity = this.overloadedReflectivityIntensity;
-            newPBRMaterial.overloadedEmissiveIntensity = this.overloadedEmissiveIntensity;
-            newPBRMaterial.overloadedAmbient = this.overloadedAmbient;
-            newPBRMaterial.overloadedAlbedo = this.overloadedAlbedo;
-            newPBRMaterial.overloadedReflectivity = this.overloadedReflectivity;
-            newPBRMaterial.overloadedEmissive = this.overloadedEmissive;
-            newPBRMaterial.overloadedReflection = this.overloadedReflection;
-            newPBRMaterial.overloadedMicroSurface = this.overloadedMicroSurface;
-            newPBRMaterial.overloadedMicroSurfaceIntensity = this.overloadedMicroSurfaceIntensity;
-            newPBRMaterial.overloadedReflectionIntensity = this.overloadedReflectionIntensity;
-            newPBRMaterial.disableBumpMap = this.disableBumpMap;
-            // Standard material
-            if (this.albedoTexture && this.albedoTexture.clone) {
-                newPBRMaterial.albedoTexture = this.albedoTexture.clone();
-            }
-            if (this.ambientTexture && this.ambientTexture.clone) {
-                newPBRMaterial.ambientTexture = this.ambientTexture.clone();
-            }
-            if (this.opacityTexture && this.opacityTexture.clone) {
-                newPBRMaterial.opacityTexture = this.opacityTexture.clone();
-            }
-            if (this.reflectionTexture && this.reflectionTexture.clone) {
-                newPBRMaterial.reflectionTexture = this.reflectionTexture.clone();
-            }
-            if (this.emissiveTexture && this.emissiveTexture.clone) {
-                newPBRMaterial.emissiveTexture = this.emissiveTexture.clone();
-            }
-            if (this.reflectivityTexture && this.reflectivityTexture.clone) {
-                newPBRMaterial.reflectivityTexture = this.reflectivityTexture.clone();
-            }
-            if (this.bumpTexture && this.bumpTexture.clone) {
-                newPBRMaterial.bumpTexture = this.bumpTexture.clone();
-            }
-            if (this.lightmapTexture && this.lightmapTexture.clone) {
-                newPBRMaterial.lightmapTexture = this.lightmapTexture.clone();
-                newPBRMaterial.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
-            }
-            if (this.refractionTexture && this.refractionTexture.clone) {
-                newPBRMaterial.refractionTexture = this.refractionTexture.clone();
-                newPBRMaterial.linkRefractionWithTransparency = this.linkRefractionWithTransparency;
-            }
-            newPBRMaterial.ambientColor = this.ambientColor.clone();
-            newPBRMaterial.albedoColor = this.albedoColor.clone();
-            newPBRMaterial.reflectivityColor = this.reflectivityColor.clone();
-            newPBRMaterial.reflectionColor = this.reflectionColor.clone();
-            newPBRMaterial.microSurface = this.microSurface;
-            newPBRMaterial.emissiveColor = this.emissiveColor.clone();
-            newPBRMaterial.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
-            newPBRMaterial.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            newPBRMaterial.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
-            newPBRMaterial.useAutoMicroSurfaceFromReflectivityMap = this.useAutoMicroSurfaceFromReflectivityMap;
-            newPBRMaterial.useScalarInLinearSpace = this.useScalarInLinearSpace;
-            newPBRMaterial.useSpecularOverAlpha = this.useSpecularOverAlpha;
-            newPBRMaterial.indexOfRefraction = this.indexOfRefraction;
-            newPBRMaterial.invertRefractionY = this.invertRefractionY;
-            newPBRMaterial.usePhysicalLightFalloff = this.usePhysicalLightFalloff;
-            newPBRMaterial.useRadianceOverAlpha = this.useRadianceOverAlpha;
-            newPBRMaterial.emissiveFresnelParameters = this.emissiveFresnelParameters.clone();
-            newPBRMaterial.opacityFresnelParameters = this.opacityFresnelParameters.clone();
-            return newPBRMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new PBRMaterial(name, _this.getScene()); }, this);
         };
         PBRMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.PBRMaterial";
-            serializationObject.directIntensity = this.directIntensity;
-            serializationObject.emissiveIntensity = this.emissiveIntensity;
-            serializationObject.environmentIntensity = this.environmentIntensity;
-            serializationObject.specularIntensity = this.specularIntensity;
-            serializationObject.cameraExposure = this.cameraExposure;
-            serializationObject.cameraContrast = this.cameraContrast;
-            serializationObject.overloadedShadowIntensity = this.overloadedShadowIntensity;
-            serializationObject.overloadedShadeIntensity = this.overloadedShadeIntensity;
-            serializationObject.overloadedAmbientIntensity = this.overloadedAmbientIntensity;
-            serializationObject.overloadedAlbedoIntensity = this.overloadedAlbedoIntensity;
-            serializationObject.overloadedReflectivityIntensity = this.overloadedReflectivityIntensity;
-            serializationObject.overloadedEmissiveIntensity = this.overloadedEmissiveIntensity;
-            serializationObject.overloadedAmbient = this.overloadedAmbient.asArray();
-            serializationObject.overloadedAlbedo = this.overloadedAlbedo.asArray();
-            serializationObject.overloadedReflectivity = this.overloadedReflectivity.asArray();
-            serializationObject.overloadedEmissive = this.overloadedEmissive.asArray();
-            serializationObject.overloadedReflection = this.overloadedReflection.asArray();
-            serializationObject.overloadedMicroSurface = this.overloadedMicroSurface;
-            serializationObject.overloadedMicroSurfaceIntensity = this.overloadedMicroSurfaceIntensity;
-            serializationObject.overloadedReflectionIntensity = this.overloadedReflectionIntensity;
-            serializationObject.disableBumpMap = this.disableBumpMap;
-            // Standard material
-            if (this.albedoTexture) {
-                serializationObject.albedoTexture = this.albedoTexture.serialize();
-            }
-            if (this.ambientTexture) {
-                serializationObject.ambientTexture = this.ambientTexture.serialize();
-            }
-            if (this.opacityTexture) {
-                serializationObject.opacityTexture = this.opacityTexture.serialize();
-            }
-            if (this.reflectionTexture) {
-                serializationObject.reflectionTexture = this.reflectionTexture.serialize();
-            }
-            if (this.emissiveTexture) {
-                serializationObject.emissiveTexture = this.emissiveTexture.serialize();
-            }
-            if (this.reflectivityTexture) {
-                serializationObject.reflectivityTexture = this.reflectivityTexture.serialize();
-            }
-            if (this.bumpTexture) {
-                serializationObject.bumpTexture = this.bumpTexture.serialize();
-            }
-            if (this.lightmapTexture) {
-                serializationObject.lightmapTexture = this.lightmapTexture.serialize();
-                serializationObject.useLightmapAsShadowmap = this.useLightmapAsShadowmap;
-            }
-            if (this.refractionTexture) {
-                serializationObject.refractionTexture = this.refractionTexture;
-                serializationObject.linkRefractionWithTransparency = this.linkRefractionWithTransparency;
-            }
-            serializationObject.ambientColor = this.ambientColor.asArray();
-            serializationObject.albedoColor = this.albedoColor.asArray();
-            serializationObject.reflectivityColor = this.reflectivityColor.asArray();
-            serializationObject.reflectionColor = this.reflectionColor.asArray();
-            serializationObject.microSurface = this.microSurface;
-            serializationObject.emissiveColor = this.emissiveColor.asArray();
-            serializationObject.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
-            serializationObject.useEmissiveAsIllumination = this.useEmissiveAsIllumination;
-            serializationObject.useMicroSurfaceFromReflectivityMapAlpha = this.useMicroSurfaceFromReflectivityMapAlpha;
-            serializationObject.useAutoMicroSurfaceFromReflectivityMap = this.useAutoMicroSurfaceFromReflectivityMap;
-            serializationObject.useScalarInLinear = this.useScalarInLinearSpace;
-            serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
-            serializationObject.indexOfRefraction = this.indexOfRefraction;
-            serializationObject.invertRefractionY = this.invertRefractionY;
-            serializationObject.usePhysicalLightFalloff = this.usePhysicalLightFalloff;
-            serializationObject.useRadianceOverAlpha = this.useRadianceOverAlpha;
-            serializationObject.emissiveFresnelParameters = this.emissiveFresnelParameters.serialize();
-            serializationObject.opacityFresnelParameters = this.opacityFresnelParameters.serialize();
             return serializationObject;
         };
+        // Statics
         PBRMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new PBRMaterial(source.name, scene);
-            material.alpha = source.alpha;
-            material.id = source.id;
-            if (source.disableDepthWrite) {
-                material.disableDepthWrite = source.disableDepthWrite;
-            }
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            BABYLON.Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-            material.directIntensity = source.directIntensity;
-            material.emissiveIntensity = source.emissiveIntensity;
-            material.environmentIntensity = source.environmentIntensity;
-            material.specularIntensity = source.specularIntensity;
-            material.cameraExposure = source.cameraExposure;
-            material.cameraContrast = source.cameraContrast;
-            material.overloadedShadowIntensity = source.overloadedShadowIntensity;
-            material.overloadedShadeIntensity = source.overloadedShadeIntensity;
-            material.overloadedAmbientIntensity = source.overloadedAmbientIntensity;
-            material.overloadedAlbedoIntensity = source.overloadedAlbedoIntensity;
-            material.overloadedReflectivityIntensity = source.overloadedReflectivityIntensity;
-            material.overloadedEmissiveIntensity = source.overloadedEmissiveIntensity;
-            material.overloadedAmbient = BABYLON.Color3.FromArray(source.overloadedAmbient);
-            material.overloadedAlbedo = BABYLON.Color3.FromArray(source.overloadedAlbedo);
-            material.overloadedReflectivity = BABYLON.Color3.FromArray(source.overloadedReflectivity);
-            material.overloadedEmissive = BABYLON.Color3.FromArray(source.overloadedEmissive);
-            material.overloadedReflection = BABYLON.Color3.FromArray(source.overloadedReflection);
-            material.overloadedMicroSurface = source.overloadedMicroSurface;
-            material.overloadedMicroSurfaceIntensity = source.overloadedMicroSurfaceIntensity;
-            material.overloadedReflectionIntensity = source.overloadedReflectionIntensity;
-            material.disableBumpMap = source.disableBumpMap;
-            // Standard material
-            if (source.albedoTexture) {
-                material.albedoTexture = BABYLON.Texture.Parse(source.albedoTexture, scene, rootUrl);
-            }
-            if (source.ambientTexture) {
-                material.ambientTexture = BABYLON.Texture.Parse(source.ambientTexture, scene, rootUrl);
-            }
-            if (source.opacityTexture) {
-                material.opacityTexture = BABYLON.Texture.Parse(source.opacityTexture, scene, rootUrl);
-            }
-            if (source.reflectionTexture) {
-                material.reflectionTexture = BABYLON.Texture.Parse(source.reflectionTexture, scene, rootUrl);
-            }
-            if (source.emissiveTexture) {
-                material.emissiveTexture = BABYLON.Texture.Parse(source.emissiveTexture, scene, rootUrl);
-            }
-            if (source.reflectivityTexture) {
-                material.reflectivityTexture = BABYLON.Texture.Parse(source.reflectivityTexture, scene, rootUrl);
-            }
-            if (source.bumpTexture) {
-                material.bumpTexture = BABYLON.Texture.Parse(source.bumpTexture, scene, rootUrl);
-            }
-            if (source.lightmapTexture) {
-                material.lightmapTexture = BABYLON.Texture.Parse(source.lightmapTexture, scene, rootUrl);
-                material.useLightmapAsShadowmap = source.useLightmapAsShadowmap;
-            }
-            if (source.refractionTexture) {
-                material.refractionTexture = BABYLON.Texture.Parse(source.refractionTexture, scene, rootUrl);
-                material.linkRefractionWithTransparency = source.linkRefractionWithTransparency;
-            }
-            material.ambientColor = BABYLON.Color3.FromArray(source.ambient);
-            material.albedoColor = BABYLON.Color3.FromArray(source.albedo);
-            material.reflectivityColor = BABYLON.Color3.FromArray(source.reflectivity);
-            material.reflectionColor = BABYLON.Color3.FromArray(source.reflectionColor);
-            material.microSurface = source.microSurface;
-            material.emissiveColor = BABYLON.Color3.FromArray(source.emissive);
-            material.useAlphaFromAlbedoTexture = source.useAlphaFromAlbedoTexture;
-            material.useEmissiveAsIllumination = source.useEmissiveAsIllumination;
-            material.useMicroSurfaceFromReflectivityMapAlpha = source.useMicroSurfaceFromReflectivityMapAlpha;
-            material.useAutoMicroSurfaceFromReflectivityMap = source.useAutoMicroSurfaceFromReflectivityMap;
-            material.useScalarInLinearSpace = source.useScalarInLinear;
-            material.useSpecularOverAlpha = source.useSpecularOverAlpha;
-            material.indexOfRefraction = source.indexOfRefraction;
-            material.invertRefractionY = source.invertRefractionY;
-            material.usePhysicalLightFalloff = source.usePhysicalLightFalloff;
-            material.useRadianceOverAlpha = source.useRadianceOverAlpha;
-            material.emissiveFresnelParameters = BABYLON.FresnelParameters.Parse(source.emissiveFresnelParameters);
-            material.opacityFresnelParameters = BABYLON.FresnelParameters.Parse(source.opacityFresnelParameters);
-            return material;
+            return BABYLON.SerializationHelper.Parse(function () { return new PBRMaterial(source.name, scene); }, source, scene, rootUrl);
         };
         PBRMaterial._scaledAlbedo = new BABYLON.Color3();
         PBRMaterial._scaledReflectivity = new BABYLON.Color3();
         PBRMaterial._scaledEmissive = new BABYLON.Color3();
         PBRMaterial._scaledReflection = new BABYLON.Color3();
         PBRMaterial._lightRadiuses = [1, 1, 1, 1];
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "directIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "emissiveIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "environmentIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "specularIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedShadowIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedShadeIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "cameraExposure");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "cameraContrast");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedAmbientIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedAlbedoIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedReflectivityIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedEmissiveIntensity");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedAmbient");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedAlbedo");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedReflectivity");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedEmissive");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedReflection");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedMicroSurface");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedMicroSurfaceIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedReflectionIntensity");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "disableBumpMap");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "albedoTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "ambientTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "opacityTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "reflectionTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "emissiveTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "reflectivityTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "bumpTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "lightmapTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], PBRMaterial.prototype, "refractionTexture");
+        __decorate([
+            BABYLON.serializeAsColor3("ambient")
+        ], PBRMaterial.prototype, "ambientColor");
+        __decorate([
+            BABYLON.serializeAsColor3("albedo")
+        ], PBRMaterial.prototype, "albedoColor");
+        __decorate([
+            BABYLON.serializeAsColor3("reflectivity")
+        ], PBRMaterial.prototype, "reflectivityColor");
+        __decorate([
+            BABYLON.serializeAsColor3("reflection")
+        ], PBRMaterial.prototype, "reflectionColor");
+        __decorate([
+            BABYLON.serializeAsColor3("emissivie")
+        ], PBRMaterial.prototype, "emissiveColor");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "microSurface");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "indexOfRefraction");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "invertRefractionY");
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], PBRMaterial.prototype, "opacityFresnelParameters");
+        __decorate([
+            BABYLON.serializeAsFresnelParameters()
+        ], PBRMaterial.prototype, "emissiveFresnelParameters");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "linkRefractionWithTransparency");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "linkEmissiveWithAlbedo");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useLightmapAsShadowmap");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useEmissiveAsIllumination");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useAlphaFromAlbedoTexture");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useSpecularOverAlpha");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useMicroSurfaceFromReflectivityMapAlpha");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useAutoMicroSurfaceFromReflectivityMap");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useScalarInLinearSpace");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "usePhysicalLightFalloff");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "useRadianceOverAlpha");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "disableLighting");
+        Object.defineProperty(PBRMaterial.prototype, "useLogarithmicDepth",
+            __decorate([
+                BABYLON.serialize()
+            ], PBRMaterial.prototype, "useLogarithmicDepth", Object.getOwnPropertyDescriptor(PBRMaterial.prototype, "useLogarithmicDepth")));
         return PBRMaterial;
     })(BABYLON.Material);
     BABYLON.PBRMaterial = PBRMaterial;
