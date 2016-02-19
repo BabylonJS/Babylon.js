@@ -147,7 +147,7 @@ module BABYLON {
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
-                    ["world", "viewProjection",
+                    ["world", "viewProjection", "view",
                         "vFogInfos", "vFogColor", "pointSize", "vClipPlane",
                         "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition"
                     ],
@@ -233,23 +233,6 @@ module BABYLON {
         }
 
         public clone(name: string): SkyMaterial {
-            /*
-            var newMaterial = new SkyMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-            
-            newMaterial.luminance = this.luminance;
-            newMaterial.turbidity = this.turbidity;
-            newMaterial.rayleigh = this.rayleigh;
-            newMaterial.mieCoefficient = this.mieCoefficient;
-            newMaterial.mieDirectionalG = this.mieDirectionalG;
-            newMaterial.distance = this.distance;
-            newMaterial.inclination = this.inclination;
-            newMaterial.azimuth = this.azimuth;
-            
-            return newMaterial;
-            */
             return SerializationHelper.Clone<SkyMaterial>(() => new SkyMaterial(name, this.getScene()), this);
         }
 		
