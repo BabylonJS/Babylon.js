@@ -26,8 +26,12 @@ BABYLON.SceneLoader.ImportMesh(["myMesh1", "myMesh2", "..."], "./", "duck.gltf",
 
 In order the fix the UP vector (Y with Babylon.js) if you want to play with physics, you can customize the loader:
 ```
-var plugin = BABYLON.SceneLoader.GetPluginForExtension(".gltf");
-plugin.MakeYUP = true; // Which is false by default
+BABYLON.GLTFFileLoader.MakeYUP = true; // false by default
+```
+
+In order to work with homogeneous coordinates (that can be available with some converters and exporters):
+```
+BABYLON.GLTFFileLoader.HomogeneousCoordinates = true; // false by default
 ```
 
 ## Supported features
