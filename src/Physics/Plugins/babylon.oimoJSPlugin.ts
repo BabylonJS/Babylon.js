@@ -2,6 +2,288 @@ module BABYLON {
     declare var OIMO;
 
     export class OimoJSPlugin {
+
+        public world: any;
+        public name: string = "OimoJSPlugin";
+
+        constructor(iterations?: number) {
+            this.world = new OIMO.World(null, null, iterations);
+            this.world.clear();
+        }
+
+        public setGravity(gravity: Vector3) {
+            this.world.gravity.copy(gravity);
+        }
+
+        private _tmpImpostorsArray: Array<PhysicsImpostor> = [];
+
+        public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
+
+            impostors.forEach(function(impostor) {
+                impostor.beforeStep();
+            });
+
+            this.world.step();
+
+            impostors.forEach(function(impostor) {
+                impostor.afterStep();
+                //update the ordered impostors array
+                this._tmpImpostorsArray[impostor.mesh.uniqueId] = impostor;
+            });
+            
+            //check for collisions
+            var contact = this.world.contacts;
+
+            while (contact !== null) {
+                if (contact.touching && !contact.body1.sleeping && !contact.body2.sleeping) {
+                    continue;
+                }
+                //is this body colliding with any other? get the impostor
+                var mainImpostor = this._tmpImpostorsArray[+contact.body1.name];
+                var collidingImpostor = this._tmpImpostorsArray[+contact.body2.name];
+
+                if (!mainImpostor || !collidingImpostor) continue;
+                mainImpostor.onCollide({ body: collidingImpostor.physicsBody });
+                collidingImpostor.onCollide({ body: mainImpostor.physicsBody });
+                contact = contact.next;
+            }
+
+        }
+
+        public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
+            impostor.physicsBody.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
+
+        }
+        public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
+            Tools.Warn("Oimo doesn't support applying force. Using impule instead.");
+            this.applyImpulse(impostor, force, contactPoint);
+        }
+        public generatePhysicsBody(impostor: PhysicsImpostor) {
+            //parent-child relationship. Does this impostor has a parent impostor?
+            if (impostor.parent) {
+                if (impostor.physicsBody) {
+                    this.removePhysicsBody(impostor);
+                    //TODO is that needed?
+                    impostor.forceUpdate();
+                }
+                return;
+            }
+
+            impostor.mesh.computeWorldMatrix(true);
+
+            if (impostor.isBodyInitRequired()) {
+                if (!impostor.mesh.rotationQuaternion) {
+                    impostor.mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(impostor.mesh.rotation.y, impostor.mesh.rotation.x, impostor.mesh.rotation.z);
+                }
+
+                var deltaPosition = impostor.mesh.position.subtract(impostor.mesh.getBoundingInfo().boundingBox.center);
+            
+                //calculate rotation to fit Oimo's needs (Euler...)
+                
+                
+                var bodyConfig: any = {
+                    name: impostor.mesh.uniqueId,
+                    //pos: [bbox.center.x, bbox.center.y, bbox.center.z],
+                    //rot: [rot.x / OIMO.TO_RAD, rot.y / OIMO.TO_RAD, rot.z / OIMO.TO_RAD],
+                    config: [impostor.getParam("mass"), impostor.getParam("friction"), impostor.getParam("restitution")],
+                    size: [],
+                    type: [],
+                    pos: [],
+                    rot: []
+                };
+
+                var impostors = [impostor];
+                function addToArray(parent: AbstractMesh) {
+                    parent.getChildMeshes().forEach(function(m) {
+                        if (m.physicImpostor) {
+                            impostors.push(m.physicImpostor);
+                        }
+                    });
+                }
+                addToArray(impostor.mesh)
+
+                impostors.forEach(function(i) {
+                    
+                    //get the correct bounding box
+                    var oldQuaternion = i.mesh.rotationQuaternion;
+                    i.mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
+                    i.mesh.computeWorldMatrix(true);
+
+
+                    var bbox = i.mesh.getBoundingInfo().boundingBox;
+                    var rot = new OIMO.Euler().setFromQuaternion({ x: impostor.mesh.rotationQuaternion.x, y: impostor.mesh.rotationQuaternion.y, z: impostor.mesh.rotationQuaternion.z, s: impostor.mesh.rotationQuaternion.w });
+                    
+                    if (i === impostor) {
+                        //Can also use Array.prototype.push.apply
+                        bodyConfig.pos.push(bbox.center.x);
+                        bodyConfig.pos.push(bbox.center.y);
+                        bodyConfig.pos.push(bbox.center.z);
+                    } else {
+                        bodyConfig.pos.push(i.mesh.position.x);
+                        bodyConfig.pos.push(i.mesh.position.y);
+                        bodyConfig.pos.push(i.mesh.position.z);
+                    }
+
+                    bodyConfig.rot.push(rot.x / OIMO.TO_RAD);
+                    bodyConfig.rot.push(rot.y / OIMO.TO_RAD);
+                    bodyConfig.rot.push(rot.z / OIMO.TO_RAD);
+                    
+                    // register mesh
+                    switch (i.type) {
+                        case PhysicsEngine.SphereImpostor:
+                            var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
+                            var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
+                            var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
+
+                            var size = Math.max(
+                                this._checkWithEpsilon(radiusX),
+                                this._checkWithEpsilon(radiusY),
+                                this._checkWithEpsilon(radiusZ)) / 2;
+
+                            bodyConfig.type.push('sphere');
+                            //due to the way oimo works with compounds, add 3 times
+                            bodyConfig.size.push(size);
+                            bodyConfig.size.push(size);
+                            bodyConfig.size.push(size);
+                            break;
+
+                        case PhysicsEngine.PlaneImpostor:
+                        //TODO Oimo now supports cylinder!
+                        case PhysicsEngine.CylinderImpostor:
+                        case PhysicsEngine.BoxImpostor:
+
+                            var min = bbox.minimumWorld;
+                            var max = bbox.maximumWorld;
+                            var box = max.subtract(min);
+                            var sizeX = this._checkWithEpsilon(box.x);
+                            var sizeY = this._checkWithEpsilon(box.y);
+                            var sizeZ = this._checkWithEpsilon(box.z);
+
+                            bodyConfig.type.push('box');
+                            bodyConfig.size.push(sizeX);
+                            bodyConfig.size.push(sizeY);
+                            bodyConfig.size.push(sizeZ);
+                            break;
+                    }
+                    
+                    //actually not needed, but hey...
+                    i.mesh.rotationQuaternion = oldQuaternion;
+                });
+
+                impostor.physicsBody = this.world.add(bodyConfig);
+                
+                impostor.setDeltaPosition(deltaPosition);
+
+            } else {
+                this._tmpPositionVector.copyFromFloats(0, 0, 0);
+            }
+            this._tmpPositionVector.addInPlace(impostor.mesh.getBoundingInfo().boundingBox.center);
+            this.setPhysicsBodyTransformation(impostor, this._tmpPositionVector, impostor.mesh.rotationQuaternion);
+        }
+
+        private _checkWithEpsilon(value: number): number {
+            return value < PhysicsEngine.Epsilon ? PhysicsEngine.Epsilon : value;
+        }
+
+        private _tmpPositionVector: Vector3 = Vector3.Zero();
+
+        public removePhysicsBody(impostor: PhysicsImpostor) {
+            this.world.removeRigidBody(impostor.physicsBody);
+        }
+
+        public generateJoint(impostorJoint: PhysicsImpostorJoint) {
+            var mainBody = impostorJoint.mainImpostor.physicsBody;
+            var connectedBody = impostorJoint.connectedImpostor.physicsBody;
+
+            if (!mainBody || !connectedBody) {
+                return;
+            }
+            var jointData = impostorJoint.joint.jointData;
+            var options = jointData.nativeParams || {};
+            var type;
+            switch (impostorJoint.joint.type) {
+                case PhysicsJoint.BallAndSocketJoint:
+                    type = "jointBall";
+                    break;
+                case PhysicsJoint.DistanceJoint:
+                    type = "jointDistance";
+                    break;
+                case PhysicsJoint.PrismaticJoint:
+                    type = "jointPrisme";
+                    break;
+                case PhysicsJoint.SliderJoint:
+                    type = "jointSlide";
+                    break;
+                case PhysicsJoint.WheelJoint:
+                    type = "jointWheel";
+                    break;
+                case PhysicsJoint.HingeJoint:
+                default:
+                    type = "jointHinge";
+                    break;
+            }
+            impostorJoint.joint.physicsJoint = this.world.add({
+                type: type,
+                body1: mainBody.body,
+                body2: connectedBody.body,
+                min: options.min,
+                max: options.max,
+                axe1: jointData.mainAxis ? jointData.mainAxis.asArray() : null,
+                axe2: jointData.connectedAxis ? jointData.connectedAxis.asArray() : null,
+                pos1: jointData.mainPivot ? jointData.mainPivot.asArray() : null,
+                pos2: jointData.connectedPivot ? jointData.connectedPivot.asArray() : null,
+                collision: options.collision,
+                spring: options.spring
+            });
+        }
+
+        public removeJoint(joint: PhysicsImpostorJoint) {
+            //TODO
+        }
+
+        public isSupported(): boolean {
+            return OIMO !== undefined;
+        }
+
+        public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
+            if (!impostor.physicsBody.sleeping) {
+                //TODO check that
+                if (impostor.physicsBody.shapes.next) {
+                    var parentShape = this._getLastShape(impostor.physicsBody);
+                    impostor.mesh.position.x = parentShape.position.x * OIMO.WORLD_SCALE;
+                    impostor.mesh.position.y = parentShape.position.y * OIMO.WORLD_SCALE;
+                    impostor.mesh.position.z = parentShape.position.z * OIMO.WORLD_SCALE;
+                } else {
+                    impostor.mesh.position.copyFrom(impostor.physicsBody.getPosition());
+
+                }
+                impostor.mesh.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+            }
+        }
+
+        public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
+            var body = impostor.physicsBody;
+            body.setPosition(newPosition);
+            body.setQuaternion(newRotation);
+            body.sleeping = false;
+            //force Oimo to update the body's position
+            body.updatePosition(1);
+        }
+
+        private _getLastShape(body: any): any {
+            var lastShape = body.shapes;
+            while (lastShape.next) {
+                lastShape = lastShape.next;
+            }
+            return lastShape;
+        }
+
+        public dispose() {
+            this.world.clear();
+        }
+    }
+
+    /*export class OldOimoJSPlugin {
         private _world;
         private _registeredMeshes = [];
 
@@ -50,11 +332,14 @@ module BABYLON {
 
             var bodyConfig: any = {
                 name: mesh.uniqueId,
-                pos: [bbox.center.x, bbox.center.y, bbox.center.z],
-                rot: [rot.x / OIMO.TO_RAD, rot.y / OIMO.TO_RAD, rot.z / OIMO.TO_RAD],
+                //pos: [bbox.center.x, bbox.center.y, bbox.center.z],
+                //rot: [rot.x / OIMO.TO_RAD, rot.y / OIMO.TO_RAD, rot.z / OIMO.TO_RAD],
                 move: options.mass != 0,
                 config: [options.mass, options.friction, options.restitution],
-                world: this._world
+                type: [],
+                shape: [],
+                pos: [],
+                rot: []
             };
 
             // register mesh
@@ -240,11 +525,7 @@ module BABYLON {
             }
         }
 
-        /**
-         * Update the body position according to the mesh position
-         * @param mesh
-         */
-        public updateBodyPosition = function (mesh: AbstractMesh): void {
+        public updateBodyPosition = function(mesh: AbstractMesh): void {
 
             for (var index = 0; index < this._registeredMeshes.length; index++) {
                 var registeredMesh = this._registeredMeshes[index];
@@ -397,17 +678,17 @@ module BABYLON {
                     var contact = this._world.contacts;
                     while (contact !== null) {
                         //is this body colliding with any other?
-                        if ((contact.body1.name == mesh.uniqueId || contact.body2.name == mesh.uniqueId) && contact.touching && /* !contact.sleeping*/ !contact.body1.sleeping && !contact.body2.sleeping) {
+                        if ((contact.body1.name == mesh.uniqueId || contact.body2.name == mesh.uniqueId) && contact.touching && !contact.body1.sleeping && !contact.body2.sleeping) {
                             var otherUniqueId = contact.body1.name == mesh.uniqueId ? contact.body2.name : contact.body1.name;
                             //get the mesh and execute the callback
                             var otherMesh = mesh.getScene().getMeshByUniqueID(otherUniqueId);
                             if (otherMesh)
-                                mesh.onPhysicsCollide(otherMesh, contact); 
+                                mesh.onPhysicsCollide(otherMesh, contact);
                         }
                         contact = contact.next;
                     }
                 }
             }
         }
-    }
+    }*/
 }
