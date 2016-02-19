@@ -1131,29 +1131,6 @@
             return vertexData;
         }
 
-        public static CreateLines(options: { points: Vector3[] }): VertexData {
-            var indices = [];
-            var positions = [];
-            var points = options.points;
-
-            for (var index = 0; index < points.length; index++) {
-                positions.push(points[index].x, points[index].y, points[index].z);
-
-                if (index > 0) {
-                    indices.push(index - 1);
-                    indices.push(index);
-                }
-            }
-
-            // Result
-            var vertexData = new VertexData();
-
-            vertexData.indices = indices;
-            vertexData.positions = positions;
-
-            return vertexData;
-        }
-
         public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
             var dashSize = options.dashSize || 3;
             var gapSize = options.gapSize || 1;
