@@ -215,10 +215,10 @@ module BABYLON {
                 this.parent.forceUpdate();
             } else {
                 this.mesh.getChildMeshes().forEach(function(mesh) {
-                    if (mesh.physicImpostor) {
+                    if (mesh.physicsImpostor) {
                         if (disposeChildren) {
-                            mesh.physicImpostor.dispose();
-                            mesh.physicImpostor = null;
+                            mesh.physicsImpostor.dispose();
+                            mesh.physicsImpostor = null;
                         }
                     }
                 })

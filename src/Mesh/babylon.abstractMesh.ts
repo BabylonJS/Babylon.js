@@ -69,7 +69,7 @@
         public alwaysSelectAsActiveMesh = false;
 
         // Physics
-        public physicImpostor: BABYLON.PhysicsImpostor;
+        public physicsImpostor: BABYLON.PhysicsImpostor;
         //Deprecated, Legacy support
         public onPhysicsCollide: (collidedMesh: AbstractMesh, contact: any) => void; 
 
@@ -174,8 +174,8 @@
 
         public set scaling(newScaling: Vector3) {
             this._scaling = newScaling;
-            if (this.physicImpostor) {
-                this.physicImpostor.forceUpdate();
+            if (this.physicsImpostor) {
+                this.physicsImpostor.forceUpdate();
             }
         }
 
@@ -772,32 +772,32 @@
          *  @Deprecated. Use new PhysicsImpostor instead.
          * */
         public setPhysicsState(impostor?: any, options?: PhysicsImpostorParameters): any {
-            this.physicImpostor = new PhysicsImpostor(this, impostor, options);
+            this.physicsImpostor = new PhysicsImpostor(this, impostor, options);
         }
 
         public getPhysicsImpostor(): PhysicsImpostor {
-            return this.physicImpostor;
+            return this.physicsImpostor;
         }
 
         /**
          * @Deprecated. Use getPhysicsImpostor().getParam("mass");
          */
         public getPhysicsMass(): number {
-            return this.physicImpostor.getParam("mass")
+            return this.physicsImpostor.getParam("mass")
         }
 
         /**
          * @Deprecated. Use getPhysicsImpostor().getParam("friction");
          */
         public getPhysicsFriction(): number {
-            return this.physicImpostor.getParam("friction")
+            return this.physicsImpostor.getParam("friction")
         }
 
         /**
          * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
          */
         public getPhysicsRestitution(): number {
-            return this.physicImpostor.getParam("resitution")
+            return this.physicsImpostor.getParam("resitution")
         }
 
         public getPositionInCameraSpace(camera?: Camera): Vector3 {
@@ -817,19 +817,19 @@
         }
 
         public applyImpulse(force: Vector3, contactPoint: Vector3): void {
-            if (!this.physicImpostor) {
+            if (!this.physicsImpostor) {
                 return;
             }
 
-            this.physicImpostor.applyImpulse(force, contactPoint);
+            this.physicsImpostor.applyImpulse(force, contactPoint);
         }
 
         public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): void {
-            if (!this.physicImpostor || !otherMesh.physicImpostor) {
+            if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
                 return;
             }
 
-            this.physicImpostor.createJoint(otherMesh.physicImpostor, PhysicsJoint.HingeJoint, {
+            this.physicsImpostor.createJoint(otherMesh.physicsImpostor, PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,
                 connectedPivot: pivot2
             })
@@ -1079,8 +1079,8 @@
             this.getScene().stopAnimation(this);
 
             // Physics
-            if (this.physicImpostor) {
-                this.physicImpostor.dispose(!doNotRecurse);
+            if (this.physicsImpostor) {
+                this.physicsImpostor.dispose(!doNotRecurse);
             }
 
             // Intersections in progress

@@ -163,8 +163,8 @@ var BABYLON;
             },
             set: function (newScaling) {
                 this._scaling = newScaling;
-                if (this.physicImpostor) {
-                    this.physicImpostor.forceUpdate();
+                if (this.physicsImpostor) {
+                    this.physicsImpostor.forceUpdate();
                 }
             },
             enumerable: true,
@@ -485,6 +485,14 @@ var BABYLON;
             // Scaling
             BABYLON.Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, BABYLON.Tmp.Matrix[1]);
             // Rotation
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                var len = this.rotation.length();
+                if (len) {
+                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z));
+                    this.rotation.copyFromFloats(0, 0, 0);
+                }
+            }
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(BABYLON.Tmp.Matrix[0]);
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
@@ -674,28 +682,28 @@ var BABYLON;
          *  @Deprecated. Use new PhysicsImpostor instead.
          * */
         AbstractMesh.prototype.setPhysicsState = function (impostor, options) {
-            this.physicImpostor = new BABYLON.PhysicsImpostor(this, impostor, options);
+            this.physicsImpostor = new BABYLON.PhysicsImpostor(this, impostor, options);
         };
         AbstractMesh.prototype.getPhysicsImpostor = function () {
-            return this.physicImpostor;
+            return this.physicsImpostor;
         };
         /**
          * @Deprecated. Use getPhysicsImpostor().getParam("mass");
          */
         AbstractMesh.prototype.getPhysicsMass = function () {
-            return this.physicImpostor.getParam("mass");
+            return this.physicsImpostor.getParam("mass");
         };
         /**
          * @Deprecated. Use getPhysicsImpostor().getParam("friction");
          */
         AbstractMesh.prototype.getPhysicsFriction = function () {
-            return this.physicImpostor.getParam("friction");
+            return this.physicsImpostor.getParam("friction");
         };
         /**
          * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
          */
         AbstractMesh.prototype.getPhysicsRestitution = function () {
-            return this.physicImpostor.getParam("resitution");
+            return this.physicsImpostor.getParam("resitution");
         };
         AbstractMesh.prototype.getPositionInCameraSpace = function (camera) {
             if (!camera) {
@@ -710,16 +718,16 @@ var BABYLON;
             return this.absolutePosition.subtract(camera.position).length();
         };
         AbstractMesh.prototype.applyImpulse = function (force, contactPoint) {
-            if (!this.physicImpostor) {
+            if (!this.physicsImpostor) {
                 return;
             }
-            this.physicImpostor.applyImpulse(force, contactPoint);
+            this.physicsImpostor.applyImpulse(force, contactPoint);
         };
         AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2, options) {
-            if (!this.physicImpostor || !otherMesh.physicImpostor) {
+            if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
                 return;
             }
-            this.physicImpostor.createJoint(otherMesh.physicImpostor, BABYLON.PhysicsJoint.HingeJoint, {
+            this.physicsImpostor.createJoint(otherMesh.physicsImpostor, BABYLON.PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,
                 connectedPivot: pivot2
             });
@@ -911,8 +919,8 @@ var BABYLON;
             // Animations
             this.getScene().stopAnimation(this);
             // Physics
-            if (this.physicImpostor) {
-                this.physicImpostor.dispose(!doNotRecurse);
+            if (this.physicsImpostor) {
+                this.physicsImpostor.dispose(!doNotRecurse);
             }
             // Intersections in progress
             for (index = 0; index < this._intersectionsInProgress.length; index++) {
