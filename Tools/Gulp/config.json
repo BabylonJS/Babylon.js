@@ -186,7 +186,7 @@
       "../../src/tools/hdr/babylon.tools.cubemaptosphericalpolynomial.js",
       "../../src/tools/hdr/babylon.tools.panoramatocubemap.js",
       "../../src/tools/hdr/babylon.tools.hdr.js",
-      "../../src/tools/hdr/babylon.tools.pmremgenerator.js",
+      "../../src/tools/hdr/babylon.tools.pmremGenerator.js",
       "../../src/materials/textures/babylon.hdrcubetexture.js"
     ]
   }
