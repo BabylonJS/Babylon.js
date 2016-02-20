@@ -636,14 +636,6 @@ var BABYLON;
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
-            //rotate, if quaternion is set and rotation was used
-            if (this.rotationQuaternion) {
-                var len = this.rotation.length();
-                if (len) {
-                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z));
-                    this.rotation.copyFromFloats(0, 0, 0);
-                }
-            }
             var callbackIndex;
             for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex](this);

@@ -5,13 +5,15 @@ var BABYLON;
             this.name = "OimoJSPlugin";
             this._tmpImpostorsArray = [];
             this._tmpPositionVector = BABYLON.Vector3.Zero();
-            this.world = new OIMO.World(null, null, iterations);
+            this.world = new OIMO.World(1 / 60, 2, iterations);
             this.world.clear();
+            this.world.isNoStat = true;
         }
         OimoJSPlugin.prototype.setGravity = function (gravity) {
             this.world.gravity.copy(gravity);
         };
         OimoJSPlugin.prototype.executeStep = function (delta, impostors) {
+            var _this = this;
             impostors.forEach(function (impostor) {
                 impostor.beforeStep();
             });
@@ -19,26 +21,29 @@ var BABYLON;
             impostors.forEach(function (impostor) {
                 impostor.afterStep();
                 //update the ordered impostors array
-                this._tmpImpostorsArray[impostor.mesh.uniqueId] = impostor;
+                _this._tmpImpostorsArray[impostor.mesh.uniqueId] = impostor;
             });
             //check for collisions
             var contact = this.world.contacts;
             while (contact !== null) {
                 if (contact.touching && !contact.body1.sleeping && !contact.body2.sleeping) {
+                    contact = contact.next;
                     continue;
                 }
                 //is this body colliding with any other? get the impostor
                 var mainImpostor = this._tmpImpostorsArray[+contact.body1.name];
                 var collidingImpostor = this._tmpImpostorsArray[+contact.body2.name];
-                if (!mainImpostor || !collidingImpostor)
+                if (!mainImpostor || !collidingImpostor) {
+                    contact = contact.next;
                     continue;
+                }
                 mainImpostor.onCollide({ body: collidingImpostor.physicsBody });
                 collidingImpostor.onCollide({ body: mainImpostor.physicsBody });
                 contact = contact.next;
             }
         };
         OimoJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
-            impostor.physicsBody.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
+            impostor.physicsBody.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
         };
         OimoJSPlugin.prototype.applyForce = function (impostor, force, contactPoint) {
             BABYLON.Tools.Warn("Oimo doesn't support applying force. Using impule instead.");
@@ -59,27 +64,30 @@ var BABYLON;
                 if (!impostor.mesh.rotationQuaternion) {
                     impostor.mesh.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(impostor.mesh.rotation.y, impostor.mesh.rotation.x, impostor.mesh.rotation.z);
                 }
-                var deltaPosition = impostor.mesh.position.subtract(impostor.mesh.getBoundingInfo().boundingBox.center);
-                //calculate rotation to fit Oimo's needs (Euler...)
+                impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, this._tmpPositionVector);
                 var bodyConfig = {
                     name: impostor.mesh.uniqueId,
-                    //pos: [bbox.center.x, bbox.center.y, bbox.center.z],
-                    //rot: [rot.x / OIMO.TO_RAD, rot.y / OIMO.TO_RAD, rot.z / OIMO.TO_RAD],
-                    config: [impostor.getParam("mass"), impostor.getParam("friction"), impostor.getParam("restitution")],
+                    //Oimo must have mass, also for static objects.
+                    config: [impostor.getParam("mass") || 1, impostor.getParam("friction"), impostor.getParam("restitution")],
                     size: [],
                     type: [],
                     pos: [],
-                    rot: []
+                    rot: [],
+                    move: impostor.getParam("mass") !== 0
                 };
                 var impostors = [impostor];
                 function addToArray(parent) {
                     parent.getChildMeshes().forEach(function (m) {
-                        if (m.physicImpostor) {
-                            impostors.push(m.physicImpostor);
+                        if (m.physicsImpostor) {
+                            impostors.push(m.physicsImpostor);
                         }
+                        addToArray(m);
                     });
                 }
                 addToArray(impostor.mesh);
+                function checkWithEpsilon(value) {
+                    return Math.max(value, BABYLON.PhysicsEngine.Epsilon);
+                }
                 impostors.forEach(function (i) {
                     //get the correct bounding box
                     var oldQuaternion = i.mesh.rotationQuaternion;
@@ -98,16 +106,16 @@ var BABYLON;
                         bodyConfig.pos.push(i.mesh.position.y);
                         bodyConfig.pos.push(i.mesh.position.z);
                     }
-                    bodyConfig.rot.push(rot.x / OIMO.TO_RAD);
-                    bodyConfig.rot.push(rot.y / OIMO.TO_RAD);
-                    bodyConfig.rot.push(rot.z / OIMO.TO_RAD);
+                    bodyConfig.rot.push(rot.x / OIMO.degtorad);
+                    bodyConfig.rot.push(rot.y / OIMO.degtorad);
+                    bodyConfig.rot.push(rot.z / OIMO.degtorad);
                     // register mesh
                     switch (i.type) {
                         case BABYLON.PhysicsEngine.SphereImpostor:
                             var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                             var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                             var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
-                            var size = Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2;
+                            var size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
                             bodyConfig.type.push('sphere');
                             //due to the way oimo works with compounds, add 3 times
                             bodyConfig.size.push(size);
@@ -118,12 +126,13 @@ var BABYLON;
                         //TODO Oimo now supports cylinder!
                         case BABYLON.PhysicsEngine.CylinderImpostor:
                         case BABYLON.PhysicsEngine.BoxImpostor:
+                        default:
                             var min = bbox.minimumWorld;
                             var max = bbox.maximumWorld;
                             var box = max.subtract(min);
-                            var sizeX = this._checkWithEpsilon(box.x);
-                            var sizeY = this._checkWithEpsilon(box.y);
-                            var sizeZ = this._checkWithEpsilon(box.z);
+                            var sizeX = checkWithEpsilon(box.x);
+                            var sizeY = checkWithEpsilon(box.y);
+                            var sizeZ = checkWithEpsilon(box.z);
                             bodyConfig.type.push('box');
                             bodyConfig.size.push(sizeX);
                             bodyConfig.size.push(sizeY);
@@ -134,16 +143,13 @@ var BABYLON;
                     i.mesh.rotationQuaternion = oldQuaternion;
                 });
                 impostor.physicsBody = this.world.add(bodyConfig);
-                impostor.setDeltaPosition(deltaPosition);
+                impostor.setDeltaPosition(this._tmpPositionVector);
             }
             else {
                 this._tmpPositionVector.copyFromFloats(0, 0, 0);
             }
             this._tmpPositionVector.addInPlace(impostor.mesh.getBoundingInfo().boundingBox.center);
             this.setPhysicsBodyTransformation(impostor, this._tmpPositionVector, impostor.mesh.rotationQuaternion);
-        };
-        OimoJSPlugin.prototype._checkWithEpsilon = function (value) {
-            return value < BABYLON.PhysicsEngine.Epsilon ? BABYLON.PhysicsEngine.Epsilon : value;
         };
         OimoJSPlugin.prototype.removePhysicsBody = function (impostor) {
             this.world.removeRigidBody(impostor.physicsBody);
@@ -215,11 +221,10 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             var body = impostor.physicsBody;
-            body.setPosition(newPosition);
+            if (!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
+                body.setPosition(newPosition);
+            }
             body.setQuaternion(newRotation);
-            body.sleeping = false;
-            //force Oimo to update the body's position
-            body.updatePosition(1);
         };
         OimoJSPlugin.prototype._getLastShape = function (body) {
             var lastShape = body.shapes;
