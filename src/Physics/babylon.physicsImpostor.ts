@@ -135,11 +135,11 @@ module BABYLON {
             }
         }
 
-        public registerOnPhysicsCollide(func: (impostor: PhysicsImpostor) => void): void {
+        public registerOnPhysicsCollide(func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
             this._onPhysicsCollideCallbacks.push(func);
         }
 
-        public unregisterOnPhysicsCollide(func: (impostor: PhysicsImpostor) => void): void {
+        public unregisterOnPhysicsCollide(func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
             var index = this._onPhysicsCollideCallbacks.indexOf(func);
 
             if (index > -1) {

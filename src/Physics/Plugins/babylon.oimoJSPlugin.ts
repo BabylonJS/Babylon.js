@@ -269,10 +269,12 @@ module BABYLON {
             var body = impostor.physicsBody;
             
             if(!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
+                //Doesn't work as expected!
                 body.setPosition(newPosition);
             }
             
             body.setQuaternion(newRotation);
+            //body.awake();
         }
 
         private _getLastShape(body: any): any {
