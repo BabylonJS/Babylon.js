@@ -181,7 +181,8 @@ var BABYLON;
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
             // Viewport
-            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / (window.devicePixelRatio || 1.0) : 1.0;
+            var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
             // Caps
             this._caps = new EngineCapabilities();

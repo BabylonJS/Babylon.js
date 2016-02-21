@@ -68,9 +68,9 @@ var BABYLON;
             var index = this._scene._activeAnimatables.indexOf(this);
             if (index > -1) {
                 this._scene._activeAnimatables.splice(index, 1);
-            }
-            if (this.onAnimationEnd) {
-                this.onAnimationEnd();
+                if (this.onAnimationEnd) {
+                    this.onAnimationEnd();
+                }
             }
         };
         Animatable.prototype._animate = function (delay) {
@@ -105,6 +105,7 @@ var BABYLON;
             }
             if (!running && this.onAnimationEnd) {
                 this.onAnimationEnd();
+                this.onAnimationEnd = null;
             }
             return running;
         };
