@@ -104,8 +104,15 @@ module BABYLON {
                 }
                 return results;
             }
+            
+            var mipmapGenerator = null;
+            if (this._noMipmap)
+            {
+                // TODO. Parameterized num level.
+                mipmapGenerator = new BABYLON.Internals.PMREMGenerator(5);
+            }
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size, Engine.TEXTUREFORMAT_RGB, Engine.TEXTURETYPE_FLOAT, this._noMipmap, callback);
+            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size, Engine.TEXTUREFORMAT_RGB, Engine.TEXTURETYPE_FLOAT, this._noMipmap, callback, mipmapGenerator);
         }
 
         public clone(): HDRCubeTexture {

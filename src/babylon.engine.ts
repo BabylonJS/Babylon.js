@@ -2159,7 +2159,9 @@
             return texture;
         }
 
-        public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer) => ArrayBufferView[]): WebGLTexture {
+        public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+            callback: (ArrayBuffer) => ArrayBufferView[],
+            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
             var gl = this._gl;
             var texture = gl.createTexture();
             scene._addPendingData(texture);
@@ -2201,7 +2203,16 @@
                     gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
                 }
 
-                if (!noMipmap && isPot) {
+                if (!noMipmap && isPot && mipmmapGenerator) {
+                    var mipData = mipmmapGenerator(rgbeDataArrays);
+                    for (var level = 1; level <= mipData.length; level++) {
+                        for (var mipFaceIndex = 0; mipFaceIndex < mipData[level - 1].length; mipFaceIndex++) {
+                            var mipSize = Math.pow(2, Math.log(width) * Math.LOG2E - level);
+                            gl.texImage2D(facesIndex[index], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level - 1][mipFaceIndex]);
+                        }
+                    }
+                }
+                else if (!noMipmap && isPot) {
                     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                 }
                 else {
