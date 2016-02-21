@@ -52,9 +52,13 @@ var BABYLON;
         }
         PhysicsImpostor.prototype._init = function () {
             this._physicsEngine.removeImpostor(this);
+            this.physicsBody = null;
             this._parent = this._parent || this._getPhysicsParent();
             if (!this.parent) {
                 this._physicsEngine.addImpostor(this);
+            }
+            else {
+                this.parent.forceUpdate();
             }
         };
         PhysicsImpostor.prototype._getPhysicsParent = function () {

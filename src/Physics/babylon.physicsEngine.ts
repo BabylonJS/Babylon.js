@@ -73,6 +73,7 @@
                 //Is it needed?
                 if(removed.length) {
                     this._physicsPlugin.removePhysicsBody(removed[0]);
+                    removed[0].physicsBody = null;
                 }
             }
         }

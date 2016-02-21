@@ -92,10 +92,10 @@ var BABYLON;
                 impostors.forEach(function (i) {
                     //get the correct bounding box
                     var oldQuaternion = i.mesh.rotationQuaternion;
+                    var rot = new OIMO.Euler().setFromQuaternion({ x: impostor.mesh.rotationQuaternion.x, y: impostor.mesh.rotationQuaternion.y, z: impostor.mesh.rotationQuaternion.z, s: impostor.mesh.rotationQuaternion.w });
                     i.mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
                     i.mesh.computeWorldMatrix(true);
                     var bbox = i.mesh.getBoundingInfo().boundingBox;
-                    var rot = new OIMO.Euler().setFromQuaternion({ x: impostor.mesh.rotationQuaternion.x, y: impostor.mesh.rotationQuaternion.y, z: impostor.mesh.rotationQuaternion.z, s: impostor.mesh.rotationQuaternion.w });
                     if (i === impostor) {
                         //Can also use Array.prototype.push.apply
                         bodyConfig.pos.push(bbox.center.x);

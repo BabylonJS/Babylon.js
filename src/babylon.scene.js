@@ -2028,7 +2028,7 @@ var BABYLON;
          * @Deprecated
          */
         Scene.prototype.createCompoundImpostor = function (parts, options) {
-            BABYLON.Tools.Warn("This function is deprecated. Please use PhysicsImpostor parent/child");
+            BABYLON.Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child");
             if (parts.parts) {
                 options = parts;
                 parts = parts.parts;

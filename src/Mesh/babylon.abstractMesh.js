@@ -683,9 +683,9 @@ var BABYLON;
          * */
         AbstractMesh.prototype.setPhysicsState = function (impostor, options) {
             //legacy support
-            if (impostor.type) {
+            if (impostor.impostor) {
                 options = impostor;
-                impostor = impostor.type;
+                impostor = impostor.impostor;
             }
             this.physicsImpostor = new BABYLON.PhysicsImpostor(this, impostor, options);
             return this.physicsImpostor.physicsBody;

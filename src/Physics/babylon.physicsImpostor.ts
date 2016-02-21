@@ -41,9 +41,12 @@ module BABYLON {
 
         private _init() {
             this._physicsEngine.removeImpostor(this);
+            this.physicsBody = null;
             this._parent = this._parent || this._getPhysicsParent();
             if (!this.parent) {
                 this._physicsEngine.addImpostor(this);
+            } else {
+                this.parent.forceUpdate();
             }
         }
 
