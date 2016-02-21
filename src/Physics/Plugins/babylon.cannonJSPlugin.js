@@ -558,7 +558,7 @@ var BABYLON;
                 //unregister events, if body is being changed
                 var oldBody = impostor.physicsBody;
                 if (oldBody) {
-                    this.removePhysicsBody(oldBody);
+                    this.removePhysicsBody(impostor);
                 }
                 //create the body and material
                 var material = this._addMaterial(impostor.getOptions().friction, impostor.getOptions().restitution);
@@ -642,12 +642,15 @@ var BABYLON;
                 case BABYLON.PhysicsJoint.HingeJoint:
                     constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
                     break;
+                case BABYLON.PhysicsJoint.DistanceJoint:
+                    constraint = new CANNON.DistanceConstraint(mainBody, connectedBody, jointData.maxDistance || 2);
+                    break;
                 default:
                     constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
             }
+            impostorJoint.joint.physicsJoint = constraint;
             this.world.addConstraint(constraint);
-            return true;
         };
         CannonJSPlugin.prototype.removeJoint = function (joint) {
             //TODO

@@ -60,6 +60,10 @@
 
         public addImpostor(impostor: PhysicsImpostor) {
             this._impostors.push(impostor);
+            //if no parent, generate the body
+            if(!impostor.parent) {
+                this._physicsPlugin.generatePhysicsBody(impostor);
+            }
         }
 
         public removeImpostor(impostor: PhysicsImpostor) {
@@ -74,11 +78,13 @@
         }
 
         public addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
-            this._joints.push({
+            var impostorJoint = {
                 mainImpostor: mainImpostor,
                 connectedImpostor: connectedImpostor,
                 joint: joint
-            });
+            }
+            this._joints.push(impostorJoint);
+            this._physicsPlugin.generateJoint(impostorJoint);
         }
 
         public removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {

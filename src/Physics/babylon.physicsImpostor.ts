@@ -29,11 +29,11 @@ module BABYLON {
             otherImpostor: PhysicsImpostor
         }>;
 
-        constructor(private _mesh: AbstractMesh, public type: number, private _options: PhysicsImpostorParameters) {
+        constructor(private _mesh: AbstractMesh, public type: number, private _options: PhysicsImpostorParameters = {mass: 0}) {
             //default options params
-            _options.mass = (_options.mass === void 0) ? 0 : _options.mass
-            _options.friction = (_options.friction === void 0) ? 0.2 : _options.friction
-            _options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution
+            this._options.mass = (_options.mass === void 0) ? 0 : _options.mass
+            this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction
+            this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
             this._joints = [];
             this._init();
@@ -44,7 +44,6 @@ module BABYLON {
             this._parent = this._parent || this._getPhysicsParent();
             if (!this.parent) {
                 this._physicsEngine.addImpostor(this);
-                this._bodyUpdateRequired = true;
             }
         }
 
@@ -76,7 +75,7 @@ module BABYLON {
         }
 
         public get physicsBody(): any {
-            return this._physicsBody;
+            return this.parent ? this.parent.physicsBody : this._physicsBody;
         }
 
         public get parent() {
@@ -85,7 +84,7 @@ module BABYLON {
 
         public set physicsBody(physicsBody: any) {
             if (this._physicsBody) {
-                this._physicsEngine.getPhysicsPlugin().removePhysicsBody(this._physicsBody);
+                this._physicsEngine.getPhysicsPlugin().removePhysicsBody(this);
             }
             this._physicsBody = physicsBody;
             this.resetUpdateFlags();

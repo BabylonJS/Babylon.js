@@ -1234,13 +1234,6 @@ var BABYLON;
                     mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
                 }
             }
-            // Physics
-            if (parsedMesh.physicsImpostor) {
-                if (!scene.isPhysicsEnabled()) {
-                    scene.enablePhysics();
-                }
-                mesh.setPhysicsState({ impostor: parsedMesh.physicsImpostor, mass: parsedMesh.physicsMass, friction: parsedMesh.physicsFriction, restitution: parsedMesh.physicsRestitution });
-            }
             // Animations
             if (parsedMesh.animations) {
                 for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {

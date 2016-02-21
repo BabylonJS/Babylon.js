@@ -3,6 +3,7 @@ var BABYLON;
     var PhysicsImpostor = (function () {
         function PhysicsImpostor(_mesh, type, _options) {
             var _this = this;
+            if (_options === void 0) { _options = { mass: 0 }; }
             this._mesh = _mesh;
             this.type = type;
             this._options = _options;
@@ -42,9 +43,9 @@ var BABYLON;
                 }
             };
             //default options params
-            _options.mass = (_options.mass === void 0) ? 0 : _options.mass;
-            _options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
-            _options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
+            this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
+            this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
+            this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
             this._joints = [];
             this._init();
@@ -54,7 +55,6 @@ var BABYLON;
             this._parent = this._parent || this._getPhysicsParent();
             if (!this.parent) {
                 this._physicsEngine.addImpostor(this);
-                this._bodyUpdateRequired = true;
             }
         };
         PhysicsImpostor.prototype._getPhysicsParent = function () {
@@ -85,11 +85,11 @@ var BABYLON;
         });
         Object.defineProperty(PhysicsImpostor.prototype, "physicsBody", {
             get: function () {
-                return this._physicsBody;
+                return this.parent ? this.parent.physicsBody : this._physicsBody;
             },
             set: function (physicsBody) {
                 if (this._physicsBody) {
-                    this._physicsEngine.getPhysicsPlugin().removePhysicsBody(this._physicsBody);
+                    this._physicsEngine.getPhysicsPlugin().removePhysicsBody(this);
                 }
                 this._physicsBody = physicsBody;
                 this.resetUpdateFlags();

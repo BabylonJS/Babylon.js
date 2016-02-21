@@ -43,7 +43,8 @@ var BABYLON;
             }
         };
         OimoJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
-            impostor.physicsBody.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
+            var mass = impostor.physicsBody.massInfo.mass;
+            impostor.physicsBody.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
         };
         OimoJSPlugin.prototype.applyForce = function (impostor, force, contactPoint) {
             BABYLON.Tools.Warn("Oimo doesn't support applying force. Using impule instead.");
@@ -163,12 +164,25 @@ var BABYLON;
             var jointData = impostorJoint.joint.jointData;
             var options = jointData.nativeParams || {};
             var type;
+            var nativeJointData = {
+                body1: mainBody,
+                body2: connectedBody,
+                axe1: jointData.mainAxis ? jointData.mainAxis.asArray() : null,
+                axe2: jointData.connectedAxis ? jointData.connectedAxis.asArray() : null,
+                pos1: jointData.mainPivot ? jointData.mainPivot.asArray() : null,
+                pos2: jointData.connectedPivot ? jointData.connectedPivot.asArray() : null,
+                min: options.min,
+                max: options.max,
+                collision: options.collision,
+                spring: options.spring
+            };
             switch (impostorJoint.joint.type) {
                 case BABYLON.PhysicsJoint.BallAndSocketJoint:
                     type = "jointBall";
                     break;
                 case BABYLON.PhysicsJoint.DistanceJoint:
                     type = "jointDistance";
+                    nativeJointData.max = jointData.maxDistance;
                     break;
                 case BABYLON.PhysicsJoint.PrismaticJoint:
                     type = "jointPrisme";
@@ -184,19 +198,8 @@ var BABYLON;
                     type = "jointHinge";
                     break;
             }
-            impostorJoint.joint.physicsJoint = this.world.add({
-                type: type,
-                body1: mainBody.body,
-                body2: connectedBody.body,
-                min: options.min,
-                max: options.max,
-                axe1: jointData.mainAxis ? jointData.mainAxis.asArray() : null,
-                axe2: jointData.connectedAxis ? jointData.connectedAxis.asArray() : null,
-                pos1: jointData.mainPivot ? jointData.mainPivot.asArray() : null,
-                pos2: jointData.connectedPivot ? jointData.connectedPivot.asArray() : null,
-                collision: options.collision,
-                spring: options.spring
-            });
+            nativeJointData.type = type;
+            impostorJoint.joint.physicsJoint = this.world.add(nativeJointData);
         };
         OimoJSPlugin.prototype.removeJoint = function (joint) {
             //TODO
@@ -222,9 +225,11 @@ var BABYLON;
         OimoJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             var body = impostor.physicsBody;
             if (!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
+                //Doesn't work as expected!
                 body.setPosition(newPosition);
             }
             body.setQuaternion(newRotation);
+            //body.awake();
         };
         OimoJSPlugin.prototype._getLastShape = function (body) {
             var lastShape = body.shapes;

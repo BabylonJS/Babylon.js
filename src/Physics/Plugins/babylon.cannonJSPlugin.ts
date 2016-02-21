@@ -564,7 +564,7 @@
                 //unregister events, if body is being changed
                 var oldBody = impostor.physicsBody;
                 if (oldBody) {
-                    this.removePhysicsBody(oldBody);
+                    this.removePhysicsBody(impostor);
                 }
                 
                 //create the body and material
@@ -654,13 +654,15 @@
                 case PhysicsJoint.HingeJoint:
                     constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
                     break;
+                case PhysicsJoint.DistanceJoint:
+                    constraint = new CANNON.DistanceConstraint(mainBody, connectedBody, (<DistanceJointData>jointData).maxDistance || 2)
+                    break;
                 default:
                     constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
             }
+            impostorJoint.joint.physicsJoint = constraint;
             this.world.addConstraint(constraint);
-
-            return true;
         }
 
         public removeJoint(joint: PhysicsImpostorJoint) {
@@ -807,14 +809,14 @@
 
             return shape;
         }
-        
+
         private _minus90X = new Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865475);
         private _plus90X = new Quaternion(0.7071067811865475, 0, 0, 0.7071067811865475);
         private _tmpPosition: Vector3 = Vector3.Zero();
-        private _tmpQuaternion: Quaternion = new Quaternion();  
+        private _tmpQuaternion: Quaternion = new Quaternion();
         private _tmpDeltaPosition: Vector3 = Vector3.Zero();
-        private _tmpDeltaRotation: Quaternion = new Quaternion();   
-        private _tmpUnityRotation: Quaternion = new Quaternion();     
+        private _tmpDeltaRotation: Quaternion = new Quaternion();
+        private _tmpUnityRotation: Quaternion = new Quaternion();
 
         private _updatePhysicsBodyTransformation(impostor: PhysicsImpostor) {
             var mesh = impostor.mesh;
@@ -867,22 +869,22 @@
                 mesh.setPivotMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             } else if (impostor.type === PhysicsEngine.MeshImpostor) {
-                this._tmpDeltaPosition.copyFromFloats(0,0,0);
+                this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
                 this._tmpPosition.copyFrom(mesh.position);
             }
-            
+
             impostor.setDeltaPosition(this._tmpDeltaPosition);
             //Now update the impostor object
             impostor.physicsBody.position.copy(this._tmpPosition);
             impostor.physicsBody.quaternion.copy(quaternion);
         }
-        
+
         public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
             impostor.mesh.position.copyFrom(impostor.physicsBody.position);
             impostor.mesh.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
         }
-        
-        public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition:Vector3, newRotation: Quaternion) {
+
+        public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
             impostor.physicsBody.position.copy(newPosition);
             impostor.physicsBody.quaternion.copy(newRotation);
         }
