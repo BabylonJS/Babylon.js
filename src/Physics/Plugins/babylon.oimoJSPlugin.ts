@@ -7,7 +7,7 @@ module BABYLON {
         public name: string = "OimoJSPlugin";
 
         constructor(iterations?: number) {
-            this.world = new OIMO.World(1/60, 2, iterations);
+            this.world = new OIMO.World(1 / 60, 2, iterations);
             this.world.clear();
             this.world.isNoStat = true;
         }
@@ -48,7 +48,7 @@ module BABYLON {
                     contact = contact.next;
                     continue;
                 }
-                
+
                 mainImpostor.onCollide({ body: collidingImpostor.physicsBody });
                 collidingImpostor.onCollide({ body: mainImpostor.physicsBody });
                 contact = contact.next;
@@ -57,8 +57,8 @@ module BABYLON {
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-            impostor.physicsBody.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE));
-
+            var mass = impostor.physicsBody.massInfo.mass;
+            impostor.physicsBody.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
         }
         public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
             Tools.Warn("Oimo doesn't support applying force. Using impule instead.");
@@ -83,7 +83,7 @@ module BABYLON {
                 }
 
                 impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, this._tmpPositionVector);
-            
+
                 var bodyConfig: any = {
                     name: impostor.mesh.uniqueId,
                     //Oimo must have mass, also for static objects.
@@ -205,12 +205,28 @@ module BABYLON {
             var jointData = impostorJoint.joint.jointData;
             var options = jointData.nativeParams || {};
             var type;
+            var nativeJointData: any = {
+                body1: mainBody,
+                body2: connectedBody,
+
+                axe1: jointData.mainAxis ? jointData.mainAxis.asArray() : null,
+                axe2: jointData.connectedAxis ? jointData.connectedAxis.asArray() : null,
+                pos1: jointData.mainPivot ? jointData.mainPivot.asArray() : null,
+                pos2: jointData.connectedPivot ? jointData.connectedPivot.asArray() : null,
+
+                min: options.min,
+                max: options.max,
+                collision: options.collision,
+                spring: options.spring
+
+            }
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.BallAndSocketJoint:
                     type = "jointBall";
                     break;
                 case PhysicsJoint.DistanceJoint:
                     type = "jointDistance";
+                    nativeJointData.max = (<DistanceJointData>jointData).maxDistance
                     break;
                 case PhysicsJoint.PrismaticJoint:
                     type = "jointPrisme";
@@ -226,19 +242,8 @@ module BABYLON {
                     type = "jointHinge";
                     break;
             }
-            impostorJoint.joint.physicsJoint = this.world.add({
-                type: type,
-                body1: mainBody.body,
-                body2: connectedBody.body,
-                min: options.min,
-                max: options.max,
-                axe1: jointData.mainAxis ? jointData.mainAxis.asArray() : null,
-                axe2: jointData.connectedAxis ? jointData.connectedAxis.asArray() : null,
-                pos1: jointData.mainPivot ? jointData.mainPivot.asArray() : null,
-                pos2: jointData.connectedPivot ? jointData.connectedPivot.asArray() : null,
-                collision: options.collision,
-                spring: options.spring
-            });
+            nativeJointData.type = type;
+            impostorJoint.joint.physicsJoint = this.world.add(nativeJointData);
         }
 
         public removeJoint(joint: PhysicsImpostorJoint) {
@@ -267,12 +272,12 @@ module BABYLON {
 
         public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
             var body = impostor.physicsBody;
-            
-            if(!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
+
+            if (!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
                 //Doesn't work as expected!
                 body.setPosition(newPosition);
             }
-            
+
             body.setQuaternion(newRotation);
             //body.awake();
         }

@@ -537,7 +537,7 @@
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             }
-            
+
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
@@ -772,7 +772,13 @@
          *  @Deprecated. Use new PhysicsImpostor instead.
          * */
         public setPhysicsState(impostor?: any, options?: PhysicsImpostorParameters): any {
+            //legacy support
+            if (impostor.type) {
+                options = impostor;
+                impostor = impostor.type;
+            }
             this.physicsImpostor = new PhysicsImpostor(this, impostor, options);
+            return this.physicsImpostor.physicsBody;
         }
 
         public getPhysicsImpostor(): PhysicsImpostor {
