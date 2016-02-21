@@ -2533,7 +2533,7 @@
          * @Deprecated
          */
         public createCompoundImpostor(parts: any, options: PhysicsImpostorParameters): any {
-            Tools.Warn("This function is deprecated. Please use PhysicsImpostor parent/child")
+            Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child")
 
             if (parts.parts) { // Old API
                 options = parts;
@@ -2549,7 +2549,9 @@
                     mesh.parent = mainMesh;
                 }
                 mesh.physicsImpostor = new PhysicsImpostor(mesh, parts[index].impostor, options)
+
             }
+            mainMesh.physicsImpostor.forceUpdate();
         }
 
         public deleteCompoundImpostor(compound: any): void {

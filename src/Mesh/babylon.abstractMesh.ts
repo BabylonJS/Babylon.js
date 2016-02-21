@@ -773,9 +773,9 @@
          * */
         public setPhysicsState(impostor?: any, options?: PhysicsImpostorParameters): any {
             //legacy support
-            if (impostor.type) {
+            if (impostor.impostor) {
                 options = impostor;
-                impostor = impostor.type;
+                impostor = impostor.impostor;
             }
             this.physicsImpostor = new PhysicsImpostor(this, impostor, options);
             return this.physicsImpostor.physicsBody;
