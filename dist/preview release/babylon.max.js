@@ -5478,7 +5478,8 @@ var BABYLON;
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
             // Viewport
-            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / (window.devicePixelRatio || 1.0) : 1.0;
+            var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
             // Caps
             this._caps = new EngineCapabilities();
@@ -23088,9 +23089,9 @@ var BABYLON;
             var index = this._scene._activeAnimatables.indexOf(this);
             if (index > -1) {
                 this._scene._activeAnimatables.splice(index, 1);
-            }
-            if (this.onAnimationEnd) {
-                this.onAnimationEnd();
+                if (this.onAnimationEnd) {
+                    this.onAnimationEnd();
+                }
             }
         };
         Animatable.prototype._animate = function (delay) {
@@ -23125,6 +23126,7 @@ var BABYLON;
             }
             if (!running && this.onAnimationEnd) {
                 this.onAnimationEnd();
+                this.onAnimationEnd = null;
             }
             return running;
         };
