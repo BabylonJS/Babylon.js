@@ -735,7 +735,8 @@ var BABYLON;
             }
             this.physicsImpostor.createJoint(otherMesh.physicsImpostor, BABYLON.PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,
-                connectedPivot: pivot2
+                connectedPivot: pivot2,
+                nativeParams: options
             });
         };
         /**

@@ -29,6 +29,10 @@ var BABYLON;
         };
         PhysicsEngine.prototype.addImpostor = function (impostor) {
             this._impostors.push(impostor);
+            //if no parent, generate the body
+            if (!impostor.parent) {
+                this._physicsPlugin.generatePhysicsBody(impostor);
+            }
         };
         PhysicsEngine.prototype.removeImpostor = function (impostor) {
             var index = this._impostors.indexOf(impostor);
@@ -36,16 +40,19 @@ var BABYLON;
                 var removed = this._impostors.splice(index, 1);
                 //Is it needed?
                 if (removed.length) {
-                    this._physicsPlugin.removePhysicsBody(removed[0]);
+                    //this will also remove it from the world.
+                    removed[0].physicsBody = null;
                 }
             }
         };
         PhysicsEngine.prototype.addJoint = function (mainImpostor, connectedImpostor, joint) {
-            this._joints.push({
+            var impostorJoint = {
                 mainImpostor: mainImpostor,
                 connectedImpostor: connectedImpostor,
                 joint: joint
-            });
+            };
+            this._joints.push(impostorJoint);
+            this._physicsPlugin.generateJoint(impostorJoint);
         };
         PhysicsEngine.prototype.removeJoint = function (mainImpostor, connectedImpostor, joint) {
             var matchingJoints = this._joints.filter(function (impostorJoint) {
@@ -57,6 +64,9 @@ var BABYLON;
                 this._physicsPlugin.removeJoint(matchingJoints[0]);
             }
         };
+        /**
+         * Called by the scene. no need to call it.
+         */
         PhysicsEngine.prototype._step = function (delta) {
             var _this = this;
             //check if any mesh has no body / requires an update
@@ -102,9 +112,4 @@ var BABYLON;
         return PhysicsEngine;
     }());
     BABYLON.PhysicsEngine = PhysicsEngine;
-    (function (PhysicsFeature) {
-        PhysicsFeature[PhysicsFeature["PIVOT_IN_JOINT"] = 0] = "PIVOT_IN_JOINT";
-        PhysicsFeature[PhysicsFeature["TRIMESH"] = 1] = "TRIMESH";
-    })(BABYLON.PhysicsFeature || (BABYLON.PhysicsFeature = {}));
-    var PhysicsFeature = BABYLON.PhysicsFeature;
 })(BABYLON || (BABYLON = {}));

@@ -837,7 +837,8 @@
 
             this.physicsImpostor.createJoint(otherMesh.physicsImpostor, PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,
-                connectedPivot: pivot2
+                connectedPivot: pivot2,
+                nativeParams: options
             })
         }
 
