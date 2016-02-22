@@ -6,6 +6,7 @@ module BABYLON {
         connectedPivot?: Vector3;
         mainAxis?: Vector3,
         connectedAxis?: Vector3,
+        collision?: boolean //native in oimo, needs this - https://github.com/schteppe/cannon.js/blob/gh-pages/demos/collisionFilter.html in cannon
         //Native Oimo/Cannon/Energy data
         nativeParams?: any;
     }

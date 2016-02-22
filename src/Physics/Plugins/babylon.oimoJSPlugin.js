@@ -185,7 +185,7 @@ var BABYLON;
                 pos2: options.pos2 || (jointData.connectedPivot ? jointData.connectedPivot.asArray() : null),
                 min: options.min,
                 max: options.max,
-                collision: options.collision,
+                collision: options.collision || jointData.collision,
                 spring: options.spring,
                 //supporting older version of Oimo
                 world: this.world
@@ -238,9 +238,7 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             var body = impostor.physicsBody;
-            //if (!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
             body.position.init(newPosition.x * OIMO.INV_SCALE, newPosition.y * OIMO.INV_SCALE, newPosition.z * OIMO.INV_SCALE);
-            //}
             body.orientation.init(newRotation.w, newRotation.x, newRotation.y, newRotation.z);
             body.syncShapes();
             body.awake();
@@ -251,6 +249,9 @@ var BABYLON;
                 lastShape = lastShape.next;
             }
             return lastShape;
+        };
+        OimoJSPlugin.prototype.setVelocity = function (impostor, velocity) {
+            impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
         };
         OimoJSPlugin.prototype.dispose = function () {
             this.world.clear();

@@ -29,7 +29,7 @@ module BABYLON {
             otherImpostor: PhysicsImpostor
         }>;
 
-        constructor(private _mesh: AbstractMesh, public type: number, private _options: PhysicsImpostorParameters = {mass: 0}) {
+        constructor(private _mesh: AbstractMesh, public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }) {
             //default options params
             this._options.mass = (_options.mass === void 0) ? 0 : _options.mass
             this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction
@@ -37,7 +37,7 @@ module BABYLON {
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
             this._joints = [];
             //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
-            if(!this._mesh.parent) {
+            if (!this._mesh.parent) {
                 this._init();
             }
         }
@@ -48,7 +48,7 @@ module BABYLON {
             this._parent = this._parent || this._getPhysicsParent();
             if (!this.parent) {
                 this._physicsEngine.addImpostor(this);
-            } 
+            }
         }
 
         private _getPhysicsParent(): PhysicsImpostor {
@@ -105,9 +105,18 @@ module BABYLON {
         public getParam(paramName: string) {
             return this._options[paramName];
         }
+
         public setParam(paramName: string, value: number) {
             this._options[paramName] = value;
             this._bodyUpdateRequired = true;
+        }
+
+        public setVelocity(velocity: Vector3) {
+            this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
+        }
+        
+        public executeNativeFunction(func: (world: any, physicsBody:any) => void) {
+            func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
         }
 
         public registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
@@ -156,14 +165,14 @@ module BABYLON {
         private _tmpRotationWithDelta: Quaternion = new Quaternion();
 
         public beforeStep = () => {
-            
+
             this.mesh.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
             //conjugate deltaRotation
             this._tmpRotationWithDelta.copyFrom(this._deltaRotation);
             this._tmpRotationWithDelta.multiplyInPlace(this.mesh.rotationQuaternion);
-            
+
             this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
-            
+
             this._onBeforePhysicsStepCallbacks.forEach((func) => {
                 func(this);
             });
@@ -173,9 +182,9 @@ module BABYLON {
             this._onAfterPhysicsStepCallbacks.forEach((func) => {
                 func(this);
             });
-            
+
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
-            
+
             this.mesh.position.addInPlace(this._deltaPosition)
             this.mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
         }
@@ -198,7 +207,7 @@ module BABYLON {
             this._physicsEngine.getPhysicsPlugin().applyImpulse(this, force, contactPoint);
         }
 
-        public createJoint(otherImpostor: PhysicsImpostor, jointType:number,  jointData: PhysicsJointData) {
+        public createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData) {
             var joint = new PhysicsJoint(jointType, jointData);
             this.addJoint(otherImpostor, joint);
         }
@@ -227,11 +236,11 @@ module BABYLON {
                 })
             }
         }
-        
+
         public setDeltaPosition(position: Vector3) {
             this._deltaPosition.copyFrom(position);
         }
-        
+
         public setDeltaRotation(rotation: Quaternion) {
             this._deltaRotation.copyFrom(rotation);
         }

@@ -48,6 +48,7 @@ var BABYLON;
             this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
             this._joints = [];
+            //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
             if (!this._mesh.parent) {
                 this._init();
             }
@@ -119,6 +120,12 @@ var BABYLON;
         PhysicsImpostor.prototype.setParam = function (paramName, value) {
             this._options[paramName] = value;
             this._bodyUpdateRequired = true;
+        };
+        PhysicsImpostor.prototype.setVelocity = function (velocity) {
+            this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
+        };
+        PhysicsImpostor.prototype.executeNativeFunction = function (func) {
+            func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
         };
         PhysicsImpostor.prototype.registerBeforePhysicsStep = function (func) {
             this._onBeforePhysicsStepCallbacks.push(func);
