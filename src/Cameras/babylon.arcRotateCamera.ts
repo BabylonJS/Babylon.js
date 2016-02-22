@@ -138,7 +138,7 @@
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
-            if (!this.target) {
+            if (!target) {
                 this.target = Vector3.Zero();
             } else {
                 this.target = target;
