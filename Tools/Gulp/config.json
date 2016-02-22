@@ -85,6 +85,8 @@
       "../../src/PostProcess/babylon.postProcess.js",
       "../../src/PostProcess/babylon.postProcessManager.js",
       "../../src/PostProcess/babylon.passPostProcess.js",
+      "../../src/Physics/babylon.physicsJoint.js",
+      "../../src/Physics/babylon.physicsImpostor.js",
       "../../src/Physics/babylon.physicsEngine.js",
       "../../src/Mesh/babylon.mesh.vertexData.js",
       "../../src/Tools/babylon.tags.js",
