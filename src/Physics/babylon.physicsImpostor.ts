@@ -42,6 +42,12 @@ module BABYLON {
             }
         }
 
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
         public _init() {
             this._physicsEngine.removeImpostor(this);
             this.physicsBody = null;
@@ -59,6 +65,9 @@ module BABYLON {
             return;
         }
 
+        /**
+         * Should a new body be generated.
+         */
         public isBodyInitRequired(): boolean {
             return this._bodyUpdateRequired || (!this._physicsBody && !this._parent);
         }
@@ -67,6 +76,10 @@ module BABYLON {
             this.forceUpdate();
         }
 
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
         public forceUpdate() {
             this._init();
             if (this.parent) {
@@ -78,14 +91,20 @@ module BABYLON {
             return this._mesh;
         }
 
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
         public get physicsBody(): any {
-            return this.parent ? this.parent.physicsBody : this._physicsBody;
+            return this._parent ? this._parent.physicsBody : this._physicsBody;
         }
 
         public get parent() {
             return this._parent;
         }
 
+        /**
+         * Set the physics body. Used mainly by the physics engine/plugin
+         */
         public set physicsBody(physicsBody: any) {
             if (this._physicsBody) {
                 this._physicsEngine.getPhysicsPlugin().removePhysicsBody(this);
@@ -98,27 +117,39 @@ module BABYLON {
             this._bodyUpdateRequired = false;
         }
 
-        public getOptions() {
-            return this._options;
-        }
-
+        /**
+         * Get a specific parametes from the options parameter.
+         */
         public getParam(paramName: string) {
             return this._options[paramName];
         }
 
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
         public setParam(paramName: string, value: number) {
             this._options[paramName] = value;
             this._bodyUpdateRequired = true;
         }
 
+        /**
+         * Set the body's velocity.
+         */
         public setVelocity(velocity: Vector3) {
             this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
         }
         
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
         public executeNativeFunction(func: (world: any, physicsBody:any) => void) {
             func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
         }
 
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
         public registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
             this._onBeforePhysicsStepCallbacks.push(func);
         }
@@ -133,6 +164,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Register a function that will be executed after the physics step
+         */
         public registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
             this._onAfterPhysicsStepCallbacks.push(func);
         }
@@ -147,6 +181,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
         public registerOnPhysicsCollide(func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
             this._onPhysicsCollideCallbacks.push(func);
         }
@@ -164,6 +201,9 @@ module BABYLON {
         private _tmpPositionWithDelta: Vector3 = Vector3.Zero();
         private _tmpRotationWithDelta: Quaternion = new Quaternion();
 
+        /**
+         * this function is executed by the physics engine.
+         */
         public beforeStep = () => {
 
             this.mesh.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
@@ -178,6 +218,9 @@ module BABYLON {
             });
         }
 
+        /**
+         * this function is executed by the physics engine.
+         */
         public afterStep = () => {
             this._onAfterPhysicsStepCallbacks.forEach((func) => {
                 func(this);
@@ -199,19 +242,31 @@ module BABYLON {
             }
         }
 
+        /**
+         * Apply a force 
+         */
         public applyForce(force: Vector3, contactPoint: Vector3) {
             this._physicsEngine.getPhysicsPlugin().applyForce(this, force, contactPoint);
         }
 
+        /**
+         * Apply an impulse
+         */
         public applyImpulse(force: Vector3, contactPoint: Vector3) {
             this._physicsEngine.getPhysicsPlugin().applyImpulse(this, force, contactPoint);
         }
 
+        /**
+         * A help function to create a joint.
+         */
         public createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData) {
             var joint = new PhysicsJoint(jointType, jointData);
             this.addJoint(otherImpostor, joint);
         }
 
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
         public addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint) {
             this._joints.push({
                 otherImpostor: otherImpostor,
@@ -220,7 +275,6 @@ module BABYLON {
             this._physicsEngine.addJoint(this, otherImpostor, joint);
         }
 
-        //TODO
         public dispose(disposeChildren: boolean = true) {
             this.physicsBody = null;
             if (this.parent) {
