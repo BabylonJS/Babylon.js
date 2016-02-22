@@ -2043,6 +2043,7 @@ var BABYLON;
                 }
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parts[index].impostor, options);
             }
+            mainMesh.physicsImpostor.forceUpdate();
         };
         Scene.prototype.deleteCompoundImpostor = function (compound) {
             var mesh = compound.parts[0].mesh;

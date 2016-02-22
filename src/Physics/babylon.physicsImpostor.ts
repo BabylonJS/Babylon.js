@@ -36,18 +36,19 @@ module BABYLON {
             this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
             this._joints = [];
-            this._init();
+            //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
+            if(!this._mesh.parent) {
+                this._init();
+            }
         }
 
-        private _init() {
+        public _init() {
             this._physicsEngine.removeImpostor(this);
             this.physicsBody = null;
             this._parent = this._parent || this._getPhysicsParent();
             if (!this.parent) {
                 this._physicsEngine.addImpostor(this);
-            } else {
-                this.parent.forceUpdate();
-            }
+            } 
         }
 
         private _getPhysicsParent(): PhysicsImpostor {

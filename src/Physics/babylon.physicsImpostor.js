@@ -48,7 +48,9 @@ var BABYLON;
             this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
             this._joints = [];
-            this._init();
+            if (!this._mesh.parent) {
+                this._init();
+            }
         }
         PhysicsImpostor.prototype._init = function () {
             this._physicsEngine.removeImpostor(this);
@@ -56,9 +58,6 @@ var BABYLON;
             this._parent = this._parent || this._getPhysicsParent();
             if (!this.parent) {
                 this._physicsEngine.addImpostor(this);
-            }
-            else {
-                this.parent.forceUpdate();
             }
         };
         PhysicsImpostor.prototype._getPhysicsParent = function () {

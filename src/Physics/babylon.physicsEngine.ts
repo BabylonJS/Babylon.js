@@ -72,7 +72,7 @@
                 var removed = this._impostors.splice(index, 1);
                 //Is it needed?
                 if(removed.length) {
-                    this._physicsPlugin.removePhysicsBody(removed[0]);
+                    //this will also remove it from the world.
                     removed[0].physicsBody = null;
                 }
             }

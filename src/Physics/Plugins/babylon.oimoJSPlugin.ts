@@ -7,8 +7,9 @@ module BABYLON {
         public name: string = "OimoJSPlugin";
 
         constructor(iterations?: number) {
-            this.world = new OIMO.World(1 / 60, 2, iterations);
+            this.world = new OIMO.World(1 / 60, 2, iterations, true);
             this.world.clear();
+            //making sure no stats are calculated
             this.world.isNoStat = true;
         }
 
@@ -82,8 +83,7 @@ module BABYLON {
                     impostor.mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(impostor.mesh.rotation.y, impostor.mesh.rotation.x, impostor.mesh.rotation.z);
                 }
 
-                impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, this._tmpPositionVector);
-
+                
                 var bodyConfig: any = {
                     name: impostor.mesh.uniqueId,
                     //Oimo must have mass, also for static objects.
@@ -92,7 +92,9 @@ module BABYLON {
                     type: [],
                     pos: [],
                     rot: [],
-                    move: impostor.getParam("mass") !== 0
+                    move: impostor.getParam("mass") !== 0,
+                    //Supporting older versions of Oimo
+                    world: this.world
                 };
 
                 var impostors = [impostor];
@@ -100,6 +102,7 @@ module BABYLON {
                     parent.getChildMeshes().forEach(function(m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
+                            m.physicsImpostor._init();
                         }
                         addToArray(m);
                     });
@@ -110,7 +113,7 @@ module BABYLON {
                     return Math.max(value, PhysicsEngine.Epsilon);
                 }
 
-                impostors.forEach(function(i) {
+                impostors.forEach((i) => {
                     
                     //get the correct bounding box
                     var oldQuaternion = i.mesh.rotationQuaternion;
@@ -118,23 +121,32 @@ module BABYLON {
 
                     i.mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
                     i.mesh.computeWorldMatrix(true);
-
-                    var bbox = i.mesh.getBoundingInfo().boundingBox;
                     
+                    var bbox = i.mesh.getBoundingInfo().boundingBox;
+
                     if (i === impostor) {
+                        
+                        impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, this._tmpPositionVector);
+
                         //Can also use Array.prototype.push.apply
                         bodyConfig.pos.push(bbox.center.x);
                         bodyConfig.pos.push(bbox.center.y);
                         bodyConfig.pos.push(bbox.center.z);
+                        
+                        //tmp solution
+                        bodyConfig.rot.push(rot.x / (OIMO.degtorad || OIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.y / (OIMO.degtorad || OIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.z / (OIMO.degtorad || OIMO.TO_RAD));
                     } else {
                         bodyConfig.pos.push(i.mesh.position.x);
                         bodyConfig.pos.push(i.mesh.position.y);
                         bodyConfig.pos.push(i.mesh.position.z);
+                        
+                        //tmp solution until https://github.com/lo-th/Oimo.js/pull/37 is merged
+                        bodyConfig.rot.push(0);
+                        bodyConfig.rot.push(0);
+                        bodyConfig.rot.push(0);
                     }
-
-                    bodyConfig.rot.push(rot.x / OIMO.degtorad);
-                    bodyConfig.rot.push(rot.y / OIMO.degtorad);
-                    bodyConfig.rot.push(rot.z / OIMO.degtorad);
                     
                     // register mesh
                     switch (i.type) {
@@ -179,20 +191,23 @@ module BABYLON {
                     i.mesh.rotationQuaternion = oldQuaternion;
                 });
 
-                impostor.physicsBody = this.world.add(bodyConfig);
-
-                impostor.setDeltaPosition(this._tmpPositionVector);
+                impostor.physicsBody = new OIMO.Body(bodyConfig).body//this.world.add(bodyConfig);
 
             } else {
                 this._tmpPositionVector.copyFromFloats(0, 0, 0);
             }
-            this._tmpPositionVector.addInPlace(impostor.mesh.getBoundingInfo().boundingBox.center);
-            this.setPhysicsBodyTransformation(impostor, this._tmpPositionVector, impostor.mesh.rotationQuaternion);
+            
+            impostor.setDeltaPosition(this._tmpPositionVector);
+
+            //this._tmpPositionVector.addInPlace(impostor.mesh.getBoundingInfo().boundingBox.center);
+            //this.setPhysicsBodyTransformation(impostor, this._tmpPositionVector, impostor.mesh.rotationQuaternion);
         }
 
         private _tmpPositionVector: Vector3 = Vector3.Zero();
 
         public removePhysicsBody(impostor: PhysicsImpostor) {
+            //impostor.physicsBody.dispose();
+            //Same as : (older oimo versions)
             this.world.removeRigidBody(impostor.physicsBody);
         }
 
@@ -210,15 +225,18 @@ module BABYLON {
                 body1: mainBody,
                 body2: connectedBody,
 
-                axe1: jointData.mainAxis ? jointData.mainAxis.asArray() : null,
-                axe2: jointData.connectedAxis ? jointData.connectedAxis.asArray() : null,
-                pos1: jointData.mainPivot ? jointData.mainPivot.asArray() : null,
-                pos2: jointData.connectedPivot ? jointData.connectedPivot.asArray() : null,
+                axe1: options.axe1 || (jointData.mainAxis ? jointData.mainAxis.asArray() : null),
+                axe2: options.axe2 || (jointData.connectedAxis ? jointData.connectedAxis.asArray() : null),
+                pos1: options.pos1 || (jointData.mainPivot ? jointData.mainPivot.asArray() : null),
+                pos2: options.pos2 || (jointData.connectedPivot ? jointData.connectedPivot.asArray() : null),
 
                 min: options.min,
                 max: options.max,
                 collision: options.collision,
-                spring: options.spring
+                spring: options.spring,
+                
+                //supporting older version of Oimo
+                world: this.world
 
             }
             switch (impostorJoint.joint.type) {
@@ -244,11 +262,11 @@ module BABYLON {
                     break;
             }
             nativeJointData.type = type;
-            impostorJoint.joint.physicsJoint = this.world.add(nativeJointData);
+            impostorJoint.joint.physicsJoint = new OIMO.Link(nativeJointData).joint//this.world.add(nativeJointData);
         }
 
         public removeJoint(joint: PhysicsImpostorJoint) {
-            //TODO
+            joint.joint.physicsJoint.dispose();
         }
 
         public isSupported(): boolean {
@@ -274,13 +292,13 @@ module BABYLON {
         public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
             var body = impostor.physicsBody;
 
-            if (!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
-                //Doesn't work as expected!
-                body.setPosition(newPosition);
-            }
-
-            body.setQuaternion(newRotation);
-            //body.awake();
+            //if (!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
+            body.position.init(newPosition.x * OIMO.INV_SCALE, newPosition.y * OIMO.INV_SCALE, newPosition.z * OIMO.INV_SCALE);
+            //}
+            
+            body.orientation.init(newRotation.w, newRotation.x, newRotation.y, newRotation.z);
+            body.syncShapes();
+            body.awake();
         }
 
         private _getLastShape(body: any): any {

@@ -35,6 +35,6 @@ var BABYLON;
         //TODO check!!
         PhysicsJoint.PointToPointJoint = 8;
         return PhysicsJoint;
-    })();
+    }());
     BABYLON.PhysicsJoint = PhysicsJoint;
 })(BABYLON || (BABYLON = {}));

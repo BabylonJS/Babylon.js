@@ -5,8 +5,9 @@ var BABYLON;
             this.name = "OimoJSPlugin";
             this._tmpImpostorsArray = [];
             this._tmpPositionVector = BABYLON.Vector3.Zero();
-            this.world = new OIMO.World(1 / 60, 2, iterations);
+            this.world = new OIMO.World(1 / 60, 2, iterations, true);
             this.world.clear();
+            //making sure no stats are calculated
             this.world.isNoStat = true;
         }
         OimoJSPlugin.prototype.setGravity = function (gravity) {
@@ -51,6 +52,7 @@ var BABYLON;
             this.applyImpulse(impostor, force, contactPoint);
         };
         OimoJSPlugin.prototype.generatePhysicsBody = function (impostor) {
+            var _this = this;
             //parent-child relationship. Does this impostor has a parent impostor?
             if (impostor.parent) {
                 if (impostor.physicsBody) {
@@ -65,7 +67,6 @@ var BABYLON;
                 if (!impostor.mesh.rotationQuaternion) {
                     impostor.mesh.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(impostor.mesh.rotation.y, impostor.mesh.rotation.x, impostor.mesh.rotation.z);
                 }
-                impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, this._tmpPositionVector);
                 var bodyConfig = {
                     name: impostor.mesh.uniqueId,
                     //Oimo must have mass, also for static objects.
@@ -74,13 +75,16 @@ var BABYLON;
                     type: [],
                     pos: [],
                     rot: [],
-                    move: impostor.getParam("mass") !== 0
+                    move: impostor.getParam("mass") !== 0,
+                    //Supporting older versions of Oimo
+                    world: this.world
                 };
                 var impostors = [impostor];
                 function addToArray(parent) {
                     parent.getChildMeshes().forEach(function (m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
+                            m.physicsImpostor._init();
                         }
                         addToArray(m);
                     });
@@ -97,19 +101,25 @@ var BABYLON;
                     i.mesh.computeWorldMatrix(true);
                     var bbox = i.mesh.getBoundingInfo().boundingBox;
                     if (i === impostor) {
+                        impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, _this._tmpPositionVector);
                         //Can also use Array.prototype.push.apply
                         bodyConfig.pos.push(bbox.center.x);
                         bodyConfig.pos.push(bbox.center.y);
                         bodyConfig.pos.push(bbox.center.z);
+                        //tmp solution
+                        bodyConfig.rot.push(rot.x / (OIMO.degtorad || OIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.y / (OIMO.degtorad || OIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.z / (OIMO.degtorad || OIMO.TO_RAD));
                     }
                     else {
                         bodyConfig.pos.push(i.mesh.position.x);
                         bodyConfig.pos.push(i.mesh.position.y);
                         bodyConfig.pos.push(i.mesh.position.z);
+                        //tmp solution until https://github.com/lo-th/Oimo.js/pull/37 is merged
+                        bodyConfig.rot.push(0);
+                        bodyConfig.rot.push(0);
+                        bodyConfig.rot.push(0);
                     }
-                    bodyConfig.rot.push(rot.x / OIMO.degtorad);
-                    bodyConfig.rot.push(rot.y / OIMO.degtorad);
-                    bodyConfig.rot.push(rot.z / OIMO.degtorad);
                     // register mesh
                     switch (i.type) {
                         case BABYLON.PhysicsEngine.SphereImpostor:
@@ -143,16 +153,18 @@ var BABYLON;
                     //actually not needed, but hey...
                     i.mesh.rotationQuaternion = oldQuaternion;
                 });
-                impostor.physicsBody = this.world.add(bodyConfig);
-                impostor.setDeltaPosition(this._tmpPositionVector);
+                impostor.physicsBody = new OIMO.Body(bodyConfig).body; //this.world.add(bodyConfig);
             }
             else {
                 this._tmpPositionVector.copyFromFloats(0, 0, 0);
             }
-            this._tmpPositionVector.addInPlace(impostor.mesh.getBoundingInfo().boundingBox.center);
-            this.setPhysicsBodyTransformation(impostor, this._tmpPositionVector, impostor.mesh.rotationQuaternion);
+            impostor.setDeltaPosition(this._tmpPositionVector);
+            //this._tmpPositionVector.addInPlace(impostor.mesh.getBoundingInfo().boundingBox.center);
+            //this.setPhysicsBodyTransformation(impostor, this._tmpPositionVector, impostor.mesh.rotationQuaternion);
         };
         OimoJSPlugin.prototype.removePhysicsBody = function (impostor) {
+            //impostor.physicsBody.dispose();
+            //Same as : (older oimo versions)
             this.world.removeRigidBody(impostor.physicsBody);
         };
         OimoJSPlugin.prototype.generateJoint = function (impostorJoint) {
@@ -167,14 +179,16 @@ var BABYLON;
             var nativeJointData = {
                 body1: mainBody,
                 body2: connectedBody,
-                axe1: jointData.mainAxis ? jointData.mainAxis.asArray() : null,
-                axe2: jointData.connectedAxis ? jointData.connectedAxis.asArray() : null,
-                pos1: jointData.mainPivot ? jointData.mainPivot.asArray() : null,
-                pos2: jointData.connectedPivot ? jointData.connectedPivot.asArray() : null,
+                axe1: options.axe1 || (jointData.mainAxis ? jointData.mainAxis.asArray() : null),
+                axe2: options.axe2 || (jointData.connectedAxis ? jointData.connectedAxis.asArray() : null),
+                pos1: options.pos1 || (jointData.mainPivot ? jointData.mainPivot.asArray() : null),
+                pos2: options.pos2 || (jointData.connectedPivot ? jointData.connectedPivot.asArray() : null),
                 min: options.min,
                 max: options.max,
                 collision: options.collision,
-                spring: options.spring
+                spring: options.spring,
+                //supporting older version of Oimo
+                world: this.world
             };
             switch (impostorJoint.joint.type) {
                 case BABYLON.PhysicsJoint.BallAndSocketJoint:
@@ -199,10 +213,10 @@ var BABYLON;
                     break;
             }
             nativeJointData.type = type;
-            impostorJoint.joint.physicsJoint = this.world.add(nativeJointData);
+            impostorJoint.joint.physicsJoint = new OIMO.Link(nativeJointData).joint; //this.world.add(nativeJointData);
         };
         OimoJSPlugin.prototype.removeJoint = function (joint) {
-            //TODO
+            joint.joint.physicsJoint.dispose();
         };
         OimoJSPlugin.prototype.isSupported = function () {
             return OIMO !== undefined;
@@ -224,12 +238,12 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.setPhysicsBodyTransformation = function (impostor, newPosition, newRotation) {
             var body = impostor.physicsBody;
-            if (!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
-                //Doesn't work as expected!
-                body.setPosition(newPosition);
-            }
-            body.setQuaternion(newRotation);
-            //body.awake();
+            //if (!newPosition.equalsWithEpsilon(impostor.mesh.position)) {
+            body.position.init(newPosition.x * OIMO.INV_SCALE, newPosition.y * OIMO.INV_SCALE, newPosition.z * OIMO.INV_SCALE);
+            //}
+            body.orientation.init(newRotation.w, newRotation.x, newRotation.y, newRotation.z);
+            body.syncShapes();
+            body.awake();
         };
         OimoJSPlugin.prototype._getLastShape = function (body) {
             var lastShape = body.shapes;
