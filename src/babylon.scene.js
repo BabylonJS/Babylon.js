@@ -1488,7 +1488,7 @@ var BABYLON;
             // Physics
             if (this._physicsEngine) {
                 BABYLON.Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                this._physicsEngine._step(deltaTime / 1000.0);
                 BABYLON.Tools.EndPerformanceCounter("Physics");
             }
             // Before render
@@ -1992,13 +1992,14 @@ var BABYLON;
             if (this._physicsEngine) {
                 return true;
             }
-            this._physicsEngine = new BABYLON.PhysicsEngine(plugin);
-            if (!this._physicsEngine.isSupported()) {
-                this._physicsEngine = null;
+            try {
+                this._physicsEngine = new BABYLON.PhysicsEngine(gravity, plugin);
+                return true;
+            }
+            catch (e) {
+                BABYLON.Tools.Error(e.message);
                 return false;
             }
-            this._physicsEngine._initialize(gravity);
-            return true;
         };
         Scene.prototype.disablePhysicsEngine = function () {
             if (!this._physicsEngine) {
@@ -2011,38 +2012,43 @@ var BABYLON;
             return this._physicsEngine !== undefined;
         };
         /**
+         *
          * Sets the gravity of the physics engine (and NOT of the scene)
          * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
          */
         Scene.prototype.setGravity = function (gravity) {
+            BABYLON.Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'");
             if (!this._physicsEngine) {
                 return;
             }
-            this._physicsEngine._setGravity(gravity);
+            this._physicsEngine.setGravity(gravity);
         };
+        /**
+         * Legacy support, using the new API
+         * @Deprecated
+         */
         Scene.prototype.createCompoundImpostor = function (parts, options) {
+            BABYLON.Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child");
             if (parts.parts) {
                 options = parts;
                 parts = parts.parts;
             }
-            if (!this._physicsEngine) {
-                return null;
-            }
-            for (var index = 0; index < parts.length; index++) {
+            var mainMesh = parts[0].mesh;
+            mainMesh.physicsImpostor = new BABYLON.PhysicsImpostor(mainMesh, parts[0].impostor, options);
+            for (var index = 1; index < parts.length; index++) {
                 var mesh = parts[index].mesh;
-                mesh._physicImpostor = parts[index].impostor;
-                mesh._physicsMass = options.mass / parts.length;
-                mesh._physicsFriction = options.friction;
-                mesh._physicRestitution = options.restitution;
+                if (mesh.parent !== mainMesh) {
+                    mesh.position = mesh.position.subtract(mainMesh.position);
+                    mesh.parent = mainMesh;
+                }
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parts[index].impostor, options);
             }
-            return this._physicsEngine._registerMeshesAsCompound(parts, options);
+            mainMesh.physicsImpostor.forceUpdate();
         };
         Scene.prototype.deleteCompoundImpostor = function (compound) {
-            for (var index = 0; index < compound.parts.length; index++) {
-                var mesh = compound.parts[index].mesh;
-                mesh._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
-                this._physicsEngine._unregisterMesh(mesh);
-            }
+            var mesh = compound.parts[0].mesh;
+            mesh.physicsImpostor.dispose(true);
+            mesh.physicsImpostor = null;
         };
         // Misc.
         Scene.prototype.createDefaultCameraOrLight = function () {
@@ -2098,6 +2104,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    })();
+    }());
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));

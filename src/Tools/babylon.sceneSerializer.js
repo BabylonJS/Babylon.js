@@ -96,11 +96,11 @@ var BABYLON;
             serializationObject.skeletonId = mesh.skeleton.id;
         }
         // Physics
-        if (mesh.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
+        if (mesh.getPhysicsImpostor().type !== BABYLON.PhysicsEngine.NoImpostor) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
-            switch (mesh.getPhysicsImpostor()) {
+            switch (mesh.getPhysicsImpostor().type) {
                 case BABYLON.PhysicsEngine.BoxImpostor:
                     serializationObject.physicsImpostor = 1;
                     break;
@@ -207,7 +207,7 @@ var BABYLON;
             //Physics
             if (scene.isPhysicsEnabled()) {
                 serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
+                serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
             // Lights

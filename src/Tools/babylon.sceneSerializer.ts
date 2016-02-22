@@ -112,12 +112,12 @@
         }
 
         // Physics
-        if (mesh.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
+        if (mesh.getPhysicsImpostor().type !== PhysicsEngine.NoImpostor) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
 
-            switch (mesh.getPhysicsImpostor()) {
+            switch (mesh.getPhysicsImpostor().type) {
                 case PhysicsEngine.BoxImpostor:
                     serializationObject.physicsImpostor = 1;
                     break;
@@ -235,7 +235,7 @@
             //Physics
             if (scene.isPhysicsEnabled()) {
                 serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
+                serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
 

@@ -1,121 +1,155 @@
 ﻿module BABYLON {
-    export interface IPhysicsEnginePlugin {
-        name: string;
-        initialize(iterations?: number);
-        setGravity(gravity: Vector3): void;
-        getGravity(): Vector3;
-        runOneStep(delta: number): void;
-        registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any;
-        registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any;
-        unregisterMesh(mesh: AbstractMesh);
-        applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void;
-        createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean;
-        dispose(): void;
-        isSupported(): boolean;
-        updateBodyPosition(mesh: AbstractMesh): void;
-        getWorldObject(): any; //Will return the physics world object of the engine used.
-        getPhysicsBodyOfMesh(mesh: AbstractMesh): any;
-    }
 
-    export interface PhysicsBodyCreationOptions {
-        mass: number;
-        friction: number;
-        restitution: number;
-    }
-
-    export interface PhysicsCompoundBodyPart {
-        mesh: Mesh;
-        impostor: number;
+    export interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
     }
 
     export class PhysicsEngine {
+
         public gravity: Vector3;
 
-        private _currentPlugin: IPhysicsEnginePlugin;
-
-        constructor(plugin?: IPhysicsEnginePlugin) {
-            this._currentPlugin = plugin || new OimoJSPlugin();
+        constructor(gravity?: Vector3, private _physicsPlugin: IPhysicsEnginePlugin = new CannonJSPlugin()) {
+            if (!this._physicsPlugin.isSupported()) {
+                throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. "
+                    + "Please make sure it is included.")
+            }
+            gravity = gravity || new Vector3(0, -9.807, 0)
+            this.setGravity(gravity);
         }
 
-        public _initialize(gravity?: Vector3) {
-            this._currentPlugin.initialize();
-            this._setGravity(gravity);
+        public setGravity(gravity: Vector3): void {
+            this.gravity = gravity;
+            this._physicsPlugin.setGravity(this.gravity);
         }
 
-        public _runOneStep(delta: number): void {
+        public dispose(): void {
+            this._impostors.forEach(function(impostor) {
+                impostor.dispose();
+            })
+            this._physicsPlugin.dispose();
+        }
+
+        public getPhysicsPluginName(): string {
+            return this._physicsPlugin.name;
+        }
+
+        // Statics, Legacy support.
+        /**
+         * @Deprecated
+         *  
+         */
+        public static NoImpostor = PhysicsImpostor.NoImpostor;
+        public static SphereImpostor = PhysicsImpostor.SphereImpostor;
+        public static BoxImpostor = PhysicsImpostor.BoxImpostor;
+        public static PlaneImpostor = PhysicsImpostor.PlaneImpostor;
+        public static MeshImpostor = PhysicsImpostor.MeshImpostor;
+        public static CapsuleImpostor = PhysicsImpostor.CapsuleImpostor;
+        public static ConeImpostor = PhysicsImpostor.ConeImpostor;
+        public static CylinderImpostor = PhysicsImpostor.CylinderImpostor;
+        public static ConvexHullImpostor = PhysicsImpostor.ConvexHullImpostor;
+        public static HeightmapImpostor = PhysicsImpostor.HeightmapImpostor;
+
+        public static Epsilon = 0.001;
+        
+        //new methods and parameters
+        
+        private _impostors: Array<PhysicsImpostor> = [];
+        private _joints: Array<PhysicsImpostorJoint> = [];
+
+        public addImpostor(impostor: PhysicsImpostor) {
+            this._impostors.push(impostor);
+            //if no parent, generate the body
+            if(!impostor.parent) {
+                this._physicsPlugin.generatePhysicsBody(impostor);
+            }
+        }
+
+        public removeImpostor(impostor: PhysicsImpostor) {
+            var index = this._impostors.indexOf(impostor);
+            if (index > -1) {
+                var removed = this._impostors.splice(index, 1);
+                //Is it needed?
+                if(removed.length) {
+                    //this will also remove it from the world.
+                    removed[0].physicsBody = null;
+                }
+            }
+        }
+
+        public addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
+            var impostorJoint = {
+                mainImpostor: mainImpostor,
+                connectedImpostor: connectedImpostor,
+                joint: joint
+            }
+            this._joints.push(impostorJoint);
+            this._physicsPlugin.generateJoint(impostorJoint);
+        }
+
+        public removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
+            var matchingJoints = this._joints.filter(function(impostorJoint) {
+                return (impostorJoint.connectedImpostor === connectedImpostor
+                    && impostorJoint.joint === joint
+                    && impostorJoint.mainImpostor === mainImpostor)
+            });
+            if(matchingJoints.length) {
+                this._physicsPlugin.removeJoint(matchingJoints[0]);
+                //TODO remove it from the list as well
+                
+            }
+        }
+
+        /**
+         * Called by the scene. no need to call it.
+         */
+        public _step(delta: number) {
+            //check if any mesh has no body / requires an update
+            this._impostors.forEach((impostor) => {
+
+                if (impostor.isBodyInitRequired()) {
+                    this._physicsPlugin.generatePhysicsBody(impostor);
+                }
+            });
+
             if (delta > 0.1) {
                 delta = 0.1;
             } else if (delta <= 0) {
                 delta = 1.0 / 60.0;
             }
 
-            this._currentPlugin.runOneStep(delta);
+            this._physicsPlugin.executeStep(delta, this._impostors);
         }
 
-        public _setGravity(gravity: Vector3): void {
-            this.gravity = gravity || new Vector3(0, -9.807, 0);
-            this._currentPlugin.setGravity(this.gravity);
+        public getPhysicsPlugin(): IPhysicsEnginePlugin {
+            return this._physicsPlugin;
         }
 
-        public _getGravity(): Vector3 {
-            return this._currentPlugin.getGravity();
+        public getImpostorWithPhysicsBody(body: any): PhysicsImpostor {
+            for (var i = 0; i < this._impostors.length; ++i) {
+                if (this._impostors[i].physicsBody === body) {
+                    return this._impostors[i];
+                }
+            }
         }
+    }
 
-        public _registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any {
-            return this._currentPlugin.registerMesh(mesh, impostor, options);
-        }
-
-        public _registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
-            return this._currentPlugin.registerMeshesAsCompound(parts, options);
-        }
-
-        public _unregisterMesh(mesh: AbstractMesh): void {
-            this._currentPlugin.unregisterMesh(mesh);
-        }
-
-        public _applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void {
-            this._currentPlugin.applyImpulse(mesh, force, contactPoint);
-        }
-
-        public _createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean {
-            return this._currentPlugin.createLink(mesh1, mesh2, pivot1, pivot2, options);
-        }
-
-        public _updateBodyPosition(mesh: AbstractMesh): void {
-            this._currentPlugin.updateBodyPosition(mesh);
-        }
-
-        public dispose(): void {
-            this._currentPlugin.dispose();
-        }
-
-        public isSupported(): boolean {
-            return this._currentPlugin.isSupported();
-        }
-
-        public getPhysicsBodyOfMesh(mesh: AbstractMesh) {
-            return this._currentPlugin.getPhysicsBodyOfMesh(mesh);
-        }
-
-        public getPhysicsPluginName(): string {
-            return this._currentPlugin.name;
-        }
-
-        public getWorldObject(): any {
-            return this._currentPlugin.getWorldObject();
-        }
-
-        // Statics
-        public static NoImpostor = 0;
-        public static SphereImpostor = 1;
-        public static BoxImpostor = 2;
-        public static PlaneImpostor = 3;
-        public static MeshImpostor = 4;
-        public static CapsuleImpostor = 5;
-        public static ConeImpostor = 6;
-        public static CylinderImpostor = 7;
-        public static ConvexHullImpostor = 8;
-        public static HeightmapImpostor = 9;
-        public static Epsilon = 0.001;
+    export interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3);
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void; //not forgetting pre and post events
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
+        generatePhysicsBody(impostor: PhysicsImpostor);
+        removePhysicsBody(impostor: PhysicsImpostor);
+        generateJoint(joint: PhysicsImpostorJoint);
+        removeJoint(joint: PhysicsImpostorJoint)
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor);
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition:Vector3, newRotation: Quaternion);
+        setVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        dispose();
     }
 }
