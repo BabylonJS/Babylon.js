@@ -68,14 +68,14 @@
                 }
                 
                 //create the body and material
-                var material = this._addMaterial(impostor.getOptions().friction, impostor.getOptions().restitution);
+                var material = this._addMaterial(impostor.getParam("friction"), impostor.getParam("restitution"));
 
                 var bodyCreationObject = {
-                    mass: impostor.getOptions().mass,
+                    mass: impostor.getParam("mass"),
                     material: material
                 };
                 // A simple extend, in case native options were used.
-                var nativeOptions = impostor.getOptions().nativeOptions;
+                var nativeOptions = impostor.getParam("nativeOptions");
                 for (var key in nativeOptions) {
                     if (nativeOptions.hasOwnProperty(key)) {
                         bodyCreationObject[key] = nativeOptions[key];
