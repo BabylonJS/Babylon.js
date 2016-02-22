@@ -88,7 +88,7 @@ var BABYLON;
                 _this._viewMatrix.m[13] += _this.targetScreenOffset.y;
                 _this._collisionTriggered = false;
             };
-            if (!this.target) {
+            if (!target) {
                 this.target = BABYLON.Vector3.Zero();
             }
             else {
