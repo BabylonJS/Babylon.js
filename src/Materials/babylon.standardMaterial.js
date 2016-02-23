@@ -23,6 +23,8 @@ var BABYLON;
             this.EMISSIVE = false;
             this.SPECULAR = false;
             this.BUMP = false;
+            this.PARALLAX = false;
+            this.PARALLAXOCCLUSION = false;
             this.SPECULAROVERALPHA = false;
             this.CLIPPLANE = false;
             this.ALPHATEST = false;
@@ -119,6 +121,9 @@ var BABYLON;
             this.useSpecularOverAlpha = false;
             this.useReflectionOverAlpha = false;
             this.disableLighting = false;
+            this.useParallax = false;
+            this.useParallaxOcclusion = false;
+            this.parallaxScaleBias = 0.05;
             this.roughness = 0;
             this.indexOfRefraction = 0.98;
             this.invertRefractionY = true;
@@ -308,6 +313,12 @@ var BABYLON;
                     else {
                         needUVs = true;
                         this._defines.BUMP = true;
+                        if (this.useParallax) {
+                            this._defines.PARALLAX = true;
+                            if (this.useParallaxOcclusion) {
+                                this._defines.PARALLAXOCCLUSION = true;
+                            }
+                        }
                     }
                 }
                 if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -426,6 +437,12 @@ var BABYLON;
                 if (this._defines.BUMP) {
                     fallbacks.addFallback(0, "BUMP");
                 }
+                if (this._defines.PARALLAX) {
+                    fallbacks.addFallback(1, "PARALLAX");
+                }
+                if (this._defines.PARALLAXOCCLUSION) {
+                    fallbacks.addFallback(0, "PARALLAXOCCLUSION");
+                }
                 if (this._defines.SPECULAROVERALPHA) {
                     fallbacks.addFallback(0, "SPECULAROVERALPHA");
                 }
@@ -485,7 +502,7 @@ var BABYLON;
                     "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                     "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                     "vFogInfos", "vFogColor", "pointSize",
-                    "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+                    "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vParallaxScaleBias", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                     "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
@@ -596,6 +613,9 @@ var BABYLON;
                         this._effect.setTexture("bumpSampler", this.bumpTexture);
                         this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
                         this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+                        if (this.useParallax) {
+                            this._effect.setFloat("vParallaxScaleBias", this.parallaxScaleBias);
+                        }
                     }
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                         var depth = 1.0;
@@ -793,6 +813,15 @@ var BABYLON;
         ], StandardMaterial.prototype, "disableLighting", void 0);
         __decorate([
             BABYLON.serialize()
+        ], StandardMaterial.prototype, "useParallax", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useParallaxOcclusion", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "parallaxScaleBias", void 0);
+        __decorate([
+            BABYLON.serialize()
         ], StandardMaterial.prototype, "roughness", void 0);
         __decorate([
             BABYLON.serialize()
@@ -828,3 +857,4 @@ var BABYLON;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.standardMaterial.js.map
