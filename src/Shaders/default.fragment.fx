@@ -1,4 +1,8 @@
-﻿#ifdef BUMP
+﻿#ifdef PARALLAX
+//#extension GL_EXT_shader_texture_lod : enable		// Doesn't work right now with texture2DGradExt...
+#endif
+
+#ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -29,6 +33,9 @@ varying vec3 vNormalW;
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
 #endif
+
+// Helper functions
+#include<helperFunctions>
 
 // Lights
 #include<light0FragmentDeclaration>
@@ -161,6 +168,55 @@ void main(void) {
 	// Alpha
 	float alpha = vDiffuseColor.a;
 
+	// Bump
+#ifdef NORMAL
+	vec3 normalW = normalize(vNormalW);
+#else
+	vec3 normalW = vec3(1.0, 1.0, 1.0);
+#endif
+
+#ifdef DIFFUSE
+	vec2 diffuseUV = vDiffuseUV;
+#endif
+
+#ifdef BUMP
+	vec2 bumpUV = vBumpUV;
+#endif
+
+#if defined(BUMP) || defined(PARALLAX)
+	mat3 TBN = cotangent_frame(vNormalW * vBumpInfos.y, -viewDirectionW, bumpUV);
+#endif
+
+#ifdef PARALLAX
+	mat3 invTBN = transposeMat3(TBN);
+
+#ifdef PARALLAXOCCLUSION
+	vec2 uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, bumpUV, vParallaxScaleBias);
+#else
+	vec2 uvOffset = parallaxOffset(invTBN * viewDirectionW, vParallaxScaleBias);
+#endif
+
+	diffuseUV += uvOffset;
+	bumpUV += uvOffset;
+
+	// Note by Loic:
+	// Parallax mapping apply an offset on the UV, which may leads to out of bound coordinates
+	// If we use texture wrapping we should NOT doing the following test, otherwise this test
+	//  will discard the pixel if we detect an out of bound coordinate.
+	// It makes senses only with occlusion because the fragment is accurately computed.
+	// I'm quite hesitating about keeping this or not, I think future will tell!
+#ifdef PARALLAXOCCLUSION
+	if (diffuseUV.x > 1.0 || diffuseUV.y > 1.0 || diffuseUV.x < 0.0 || diffuseUV.y < 0.0) {
+		discard;
+	}
+#endif
+
+#endif
+
+#ifdef BUMP
+	normalW = perturbNormal(viewDirectionW, TBN, bumpUV);
+#endif
+
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV);
 
@@ -178,18 +234,6 @@ void main(void) {
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
-#endif
-
-	// Bump
-#ifdef NORMAL
-	vec3 normalW = normalize(vNormalW);
-#else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
-#endif
-
-
-#ifdef BUMP
-	normalW = perturbNormal(viewDirectionW);
 #endif
 
 	// Ambient color
