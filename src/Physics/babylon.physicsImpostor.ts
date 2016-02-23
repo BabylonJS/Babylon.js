@@ -16,7 +16,7 @@ module BABYLON {
 
         private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
         private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
-        private _onPhysicsCollideCallbacks = new Array<(collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void>();
+        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostor: PhysicsImpostor }> = []
 
         private _deltaPosition: Vector3 = Vector3.Zero();
         private _deltaRotation: Quaternion = new Quaternion();
@@ -143,7 +143,7 @@ module BABYLON {
          * Execute a function with the physics plugin native code.
          * Provide a function the will have two variables - the world object and the physics body object.
          */
-        public executeNativeFunction(func: (world: any, physicsBody:any) => void) {
+        public executeNativeFunction(func: (world: any, physicsBody: any) => void) {
             func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
         }
 
@@ -184,12 +184,12 @@ module BABYLON {
         /**
          * register a function that will be executed when this impostor collides against a different body.
          */
-        public registerOnPhysicsCollide(func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
-            this._onPhysicsCollideCallbacks.push(func);
+        public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
+            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostor: collideAgainst });
         }
 
-        public unregisterOnPhysicsCollide(func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
-            var index = this._onPhysicsCollideCallbacks.indexOf(func);
+        public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
+            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostor: collideAgainst });
 
             if (index > -1) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
@@ -236,8 +236,10 @@ module BABYLON {
         public onCollide = (e: { body: any }) => {
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {
-                this._onPhysicsCollideCallbacks.forEach((func) => {
-                    func(this, otherImpostor);
+                this._onPhysicsCollideCallbacks.filter((obj) => { 
+                    return obj.otherImpostor === otherImpostor 
+                }).forEach((obj) => {
+                    obj.callback(this, obj.otherImpostor);
                 })
             }
         }
