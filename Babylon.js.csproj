@@ -70,12 +70,13 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="assets\BrickWall.dds" />
-    <Content Include="assets\BrickWall_normal_parallax.dds" />
-    <Content Include="assets\rock_colormap.dds" />
-    <Content Include="assets\rock_normalmap.dds" />
+    <Content Include="assets\BrickWall.png" />
+    <Content Include="assets\brickwall_nh.png" />
+    <Content Include="assets\rock.png" />
+    <Content Include="assets\rock_nh.png" />
     <Content Include="index.html" />
     <Content Include="packages.config" />
+    <Content Include="src\Shaders\ShadersInclude\helperFunctions.fx" />
     <Content Include="src\Shaders\ShadersInclude\bonesDeclaration.fx" />
     <Content Include="src\Shaders\ShadersInclude\bonesVertex.fx" />
     <Content Include="src\Shaders\ShadersInclude\bumpFragmentFunctions.fx" />
