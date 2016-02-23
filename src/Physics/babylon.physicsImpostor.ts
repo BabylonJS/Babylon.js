@@ -132,9 +132,6 @@ module BABYLON {
             this._bodyUpdateRequired = true;
         }
 
-        public getOptions(): any {
-        }
-
         /**
          * Set the body's velocity.
          */
@@ -239,8 +236,8 @@ module BABYLON {
         public onCollide = (e: { body: any }) => {
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {
-                this._onPhysicsCollideCallbacks.filter((obj) => { 
-                    return obj.otherImpostor === otherImpostor 
+                this._onPhysicsCollideCallbacks.filter((obj) => {
+                    return obj.otherImpostor === otherImpostor
                 }).forEach((obj) => {
                     obj.callback(this, obj.otherImpostor);
                 })
@@ -285,7 +282,7 @@ module BABYLON {
             if (this.parent) {
                 this.parent.forceUpdate();
             } else {
-                this.mesh.getChildMeshes().forEach(function(mesh) {
+                this.mesh.getChildMeshes().forEach(function (mesh) {
                     if (mesh.physicsImpostor) {
                         if (disposeChildren) {
                             mesh.physicsImpostor.dispose();

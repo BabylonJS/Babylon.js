@@ -973,7 +973,7 @@
         export class Disc extends _Primitive {
             // Members
 
-            constructor(id: string, scene: Scene, public radius: number,public tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            constructor(id: string, scene: Scene, public radius: number, public tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
                 super(id, scene, canBeRegenerated, mesh);
             }
 
@@ -1195,4 +1195,5 @@
         }
     }
 }
+
 

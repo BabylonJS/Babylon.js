@@ -21,7 +21,7 @@ module BABYLON {
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
 
-            impostors.forEach(function(impostor) {
+            impostors.forEach(function (impostor) {
                 impostor.beforeStep();
             });
 
@@ -83,7 +83,7 @@ module BABYLON {
                     impostor.mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(impostor.mesh.rotation.y, impostor.mesh.rotation.x, impostor.mesh.rotation.z);
                 }
 
-                
+
                 var bodyConfig: any = {
                     name: impostor.mesh.uniqueId,
                     //Oimo must have mass, also for static objects.
@@ -99,7 +99,7 @@ module BABYLON {
 
                 var impostors = [impostor];
                 function addToArray(parent: AbstractMesh) {
-                    parent.getChildMeshes().forEach(function(m) {
+                    parent.getChildMeshes().forEach(function (m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
                             m.physicsImpostor._init();
@@ -120,11 +120,11 @@ module BABYLON {
 
                     i.mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
                     i.mesh.computeWorldMatrix(true);
-                    
+
                     var bbox = i.mesh.getBoundingInfo().boundingBox;
 
                     if (i === impostor) {
-                        
+
                         impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, this._tmpPositionVector);
 
                         //Can also use Array.prototype.push.apply
@@ -195,7 +195,7 @@ module BABYLON {
             } else {
                 this._tmpPositionVector.copyFromFloats(0, 0, 0);
             }
-            
+
             impostor.setDeltaPosition(this._tmpPositionVector);
 
             //this._tmpPositionVector.addInPlace(impostor.mesh.getBoundingInfo().boundingBox.center);
@@ -292,7 +292,7 @@ module BABYLON {
             var body = impostor.physicsBody;
 
             body.position.init(newPosition.x * OIMO.INV_SCALE, newPosition.y * OIMO.INV_SCALE, newPosition.z * OIMO.INV_SCALE);
-            
+
             body.orientation.init(newRotation.w, newRotation.x, newRotation.y, newRotation.z);
             body.syncShapes();
             body.awake();
@@ -305,7 +305,7 @@ module BABYLON {
             }
             return lastShape;
         }
-        
+
         public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
         }

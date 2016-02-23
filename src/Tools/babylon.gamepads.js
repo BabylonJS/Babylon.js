@@ -63,7 +63,7 @@ var BABYLON;
             // Remove the gamepad from the list of gamepads to monitor.
             for (var i in this.babylonGamepads) {
                 if (this.babylonGamepads[i].index == evt.gamepad.index) {
-                    this.babylonGamepads.splice(i, 1);
+                    this.babylonGamepads.splice(+i, 1);
                     break;
                 }
             }

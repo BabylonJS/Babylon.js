@@ -649,34 +649,6 @@ var BABYLON;
             }
             return this._boundingInfo.intersectsPoint(point);
         };
-        AbstractMesh.prototype.getChildMeshes = function () {
-            var _this = this;
-            return this.getScene().meshes.filter(function (m) {
-                return m.parent === _this;
-            });
-        };
-        AbstractMesh.prototype.getChildren = function () {
-            var results = [];
-            for (var index = 0; index < this.getScene().meshes.length; index++) {
-                var mesh = this.getScene().meshes[index];
-                if (mesh.parent === this) {
-                    results.push(mesh);
-                }
-            }
-            for (var index = 0; index < this.getScene().lights.length; index++) {
-                var light = this.getScene().lights[index];
-                if (light.parent === this) {
-                    results.push(mesh);
-                }
-            }
-            for (var index = 0; index < this.getScene().cameras.length; index++) {
-                var camera = this.getScene().cameras[index];
-                if (camera.parent === this) {
-                    results.push(mesh);
-                }
-            }
-            return results;
-        };
         // Physics
         /**
          *  @Deprecated. Use new PhysicsImpostor instead.
