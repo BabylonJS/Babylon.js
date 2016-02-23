@@ -179,7 +179,7 @@
         public _getDescendants(list: Node[], results: Node[], directDecendantsOnly: boolean = false): void {
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
+                if ((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
                     results.push(item);
                 }
             }
@@ -210,7 +210,7 @@
          * Get all child-meshes of this node.
          */
         public getChildMeshes(directDecendantsOnly?: boolean): AbstractMesh[] {
-            var results : Array<AbstractMesh> = [];
+            var results: Array<AbstractMesh> = [];
             this._getDescendants(this._scene.meshes, results, false);
             return results;
         }

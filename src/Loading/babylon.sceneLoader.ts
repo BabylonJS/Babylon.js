@@ -188,7 +188,7 @@
                     scene.executeWhenReady(() => {
                         scene.getEngine().hideLoadingUI();
                     });
-                }                
+                }
             };
 
             var manifestChecked = success => {

@@ -6246,11 +6246,13 @@ var BABYLON;
             // Use program
             this._gl.useProgram(effect.getProgram());
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //make sure this is a number)
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._vertexAttribArrays[i] = false;
-                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArrays[iAsNumber] = false;
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
             var attributesCount = effect.getAttributesCount();
             for (var index = 0; index < attributesCount; index++) {
@@ -7106,10 +7108,12 @@ var BABYLON;
             }
             // Unbind
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //making sure this is a string
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
             this._gl = null;
             // Events
@@ -7357,10 +7361,11 @@ var BABYLON;
             }
             return false;
         };
-        Node.prototype._getDescendants = function (list, results) {
+        Node.prototype._getDescendants = function (list, results, directDecendantsOnly) {
+            if (directDecendantsOnly === void 0) { directDecendantsOnly = false; }
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (item.isDescendantOf(this)) {
+                if ((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
                     results.push(item);
                 }
             }
@@ -7369,11 +7374,26 @@ var BABYLON;
          * Will return all nodes that have this node as parent.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        Node.prototype.getDescendants = function () {
+        Node.prototype.getDescendants = function (directDecendantsOnly) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results);
-            this._getDescendants(this._scene.lights, results);
-            this._getDescendants(this._scene.cameras, results);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
+            this._getDescendants(this._scene.lights, results, directDecendantsOnly);
+            this._getDescendants(this._scene.cameras, results, directDecendantsOnly);
+            return results;
+        };
+        /**
+         * @Deprecated, legacy support.
+         * use getDecendants instead.
+         */
+        Node.prototype.getChildren = function () {
+            return this.getDescendants(true);
+        };
+        /**
+         * Get all child-meshes of this node.
+         */
+        Node.prototype.getChildMeshes = function (directDecendantsOnly) {
+            var results = [];
+            this._getDescendants(this._scene.meshes, results, false);
             return results;
         };
         Node.prototype._setReady = function (state) {
@@ -8637,34 +8657,6 @@ var BABYLON;
                 return false;
             }
             return this._boundingInfo.intersectsPoint(point);
-        };
-        AbstractMesh.prototype.getChildMeshes = function () {
-            var _this = this;
-            return this.getScene().meshes.filter(function (m) {
-                return m.parent === _this;
-            });
-        };
-        AbstractMesh.prototype.getChildren = function () {
-            var results = [];
-            for (var index = 0; index < this.getScene().meshes.length; index++) {
-                var mesh = this.getScene().meshes[index];
-                if (mesh.parent === this) {
-                    results.push(mesh);
-                }
-            }
-            for (var index = 0; index < this.getScene().lights.length; index++) {
-                var light = this.getScene().lights[index];
-                if (light.parent === this) {
-                    results.push(mesh);
-                }
-            }
-            for (var index = 0; index < this.getScene().cameras.length; index++) {
-                var camera = this.getScene().cameras[index];
-                if (camera.parent === this) {
-                    results.push(mesh);
-                }
-            }
-            return results;
         };
         // Physics
         /**
@@ -21178,11 +21170,12 @@ var BABYLON;
                     importMeshFromData(data);
                 }, progressCallBack, database);
             };
-            if (scene.getEngine().enableOfflineSupport) {
+            if (scene.getEngine().enableOfflineSupport && !(sceneFilename.substr && sceneFilename.substr(0, 5) === "data:")) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
                 var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
             }
             else {
+                // If the scene is a data stream or offline support is not enabled, it's a direct load
                 manifestChecked(true);
             }
         };
@@ -24174,7 +24167,7 @@ var BABYLON;
             this._bodyUpdateRequired = false;
             this._onBeforePhysicsStepCallbacks = new Array();
             this._onAfterPhysicsStepCallbacks = new Array();
-            this._onPhysicsCollideCallbacks = new Array();
+            this._onPhysicsCollideCallbacks = [];
             this._deltaPosition = BABYLON.Vector3.Zero();
             this._deltaRotation = new BABYLON.Quaternion();
             this._tmpPositionWithDelta = BABYLON.Vector3.Zero();
@@ -24207,8 +24200,10 @@ var BABYLON;
             this.onCollide = function (e) {
                 var otherImpostor = _this._physicsEngine.getImpostorWithPhysicsBody(e.body);
                 if (otherImpostor) {
-                    _this._onPhysicsCollideCallbacks.forEach(function (func) {
-                        func(_this, otherImpostor);
+                    _this._onPhysicsCollideCallbacks.filter(function (obj) {
+                        return obj.otherImpostor === otherImpostor;
+                    }).forEach(function (obj) {
+                        obj.callback(_this, obj.otherImpostor);
                     });
                 }
             };
@@ -24313,8 +24308,6 @@ var BABYLON;
             this._options[paramName] = value;
             this._bodyUpdateRequired = true;
         };
-        PhysicsImpostor.prototype.getOptions = function () {
-        };
         /**
          * Set the body's velocity.
          */
@@ -24361,11 +24354,11 @@ var BABYLON;
         /**
          * register a function that will be executed when this impostor collides against a different body.
          */
-        PhysicsImpostor.prototype.registerOnPhysicsCollide = function (func) {
-            this._onPhysicsCollideCallbacks.push(func);
+        PhysicsImpostor.prototype.registerOnPhysicsCollide = function (collideAgainst, func) {
+            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostor: collideAgainst });
         };
-        PhysicsImpostor.prototype.unregisterOnPhysicsCollide = function (func) {
-            var index = this._onPhysicsCollideCallbacks.indexOf(func);
+        PhysicsImpostor.prototype.unregisterOnPhysicsCollide = function (collideAgainst, func) {
+            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostor: collideAgainst });
             if (index > -1) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
             }
@@ -28654,10 +28647,11 @@ var BABYLON;
             /// Abstract class
             var _Primitive = (function (_super) {
                 __extends(_Primitive, _super);
-                function _Primitive(id, scene, vertexData, canBeRegenerated, mesh) {
+                function _Primitive(id, scene, _canBeRegenerated, mesh) {
+                    _super.call(this, id, scene, null, false, mesh); // updatable = false to be sure not to update vertices
+                    this._canBeRegenerated = _canBeRegenerated;
                     this._beingRegenerated = true;
-                    this._canBeRegenerated = canBeRegenerated;
-                    _super.call(this, id, scene, vertexData, false, mesh); // updatable = false to be sure not to update vertices
+                    this.regenerate();
                     this._beingRegenerated = false;
                 }
                 _Primitive.prototype.canBeRegenerated = function () {
@@ -28705,14 +28699,15 @@ var BABYLON;
             Primitives._Primitive = _Primitive;
             var Ribbon = (function (_super) {
                 __extends(Ribbon, _super);
+                // Members
                 function Ribbon(id, scene, pathArray, closeArray, closePath, offset, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.pathArray = pathArray;
                     this.closeArray = closeArray;
                     this.closePath = closePath;
                     this.offset = offset;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Ribbon.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
@@ -28725,11 +28720,12 @@ var BABYLON;
             Primitives.Ribbon = Ribbon;
             var Box = (function (_super) {
                 __extends(Box, _super);
+                // Members
                 function Box(id, scene, size, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.size = size;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Box.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateBox({ size: this.size, sideOrientation: this.side });
@@ -28758,10 +28754,10 @@ var BABYLON;
                 __extends(Sphere, _super);
                 function Sphere(id, scene, segments, diameter, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.segments = segments;
                     this.diameter = diameter;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Sphere.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateSphere({ segments: this.segments, diameter: this.diameter, sideOrientation: this.side });
@@ -28789,12 +28785,13 @@ var BABYLON;
             Primitives.Sphere = Sphere;
             var Disc = (function (_super) {
                 __extends(Disc, _super);
+                // Members
                 function Disc(id, scene, radius, tessellation, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.radius = radius;
                     this.tessellation = tessellation;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Disc.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
@@ -28810,13 +28807,13 @@ var BABYLON;
                 function Cylinder(id, scene, height, diameterTop, diameterBottom, tessellation, subdivisions, canBeRegenerated, mesh, side) {
                     if (subdivisions === void 0) { subdivisions = 1; }
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.height = height;
                     this.diameterTop = diameterTop;
                     this.diameterBottom = diameterBottom;
                     this.tessellation = tessellation;
                     this.subdivisions = subdivisions;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Cylinder.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateCylinder({ height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side });
@@ -28848,11 +28845,11 @@ var BABYLON;
                 __extends(Torus, _super);
                 function Torus(id, scene, diameter, thickness, tessellation, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.diameter = diameter;
                     this.thickness = thickness;
                     this.tessellation = tessellation;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Torus.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateTorus({ diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side });
@@ -28882,10 +28879,10 @@ var BABYLON;
             var Ground = (function (_super) {
                 __extends(Ground, _super);
                 function Ground(id, scene, width, height, subdivisions, canBeRegenerated, mesh) {
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.width = width;
                     this.height = height;
                     this.subdivisions = subdivisions;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Ground.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateGround({ width: this.width, height: this.height, subdivisions: this.subdivisions });
@@ -28915,13 +28912,13 @@ var BABYLON;
             var TiledGround = (function (_super) {
                 __extends(TiledGround, _super);
                 function TiledGround(id, scene, xmin, zmin, xmax, zmax, subdivisions, precision, canBeRegenerated, mesh) {
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.xmin = xmin;
                     this.zmin = zmin;
                     this.xmax = xmax;
                     this.zmax = zmax;
                     this.subdivisions = subdivisions;
                     this.precision = precision;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 TiledGround.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
@@ -28936,9 +28933,9 @@ var BABYLON;
                 __extends(Plane, _super);
                 function Plane(id, scene, size, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.size = size;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Plane.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreatePlane({ size: this.size, sideOrientation: this.side });
@@ -28967,6 +28964,7 @@ var BABYLON;
                 __extends(TorusKnot, _super);
                 function TorusKnot(id, scene, radius, tube, radialSegments, tubularSegments, p, q, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.radius = radius;
                     this.tube = tube;
                     this.radialSegments = radialSegments;
@@ -28974,7 +28972,6 @@ var BABYLON;
                     this.p = p;
                     this.q = q;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 TorusKnot.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateTorusKnot({ radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side });
@@ -30934,14 +30931,14 @@ var BABYLON;
         };
         CannonJSPlugin.prototype._processChildMeshes = function (mainImpostor) {
             var _this = this;
-            var meshChildren = mainImpostor.mesh.getChildMeshes();
+            var meshChildren = mainImpostor.mesh.getChildMeshes(true);
             if (meshChildren.length) {
-                var processMesh = function (localPosition, mesh) {
+                var processMesh = function (relativePosition, mesh) {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position;
+                            var localPosition = mesh.position.add(relativePosition);
                             if (childImpostor.physicsBody) {
                                 _this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
@@ -30953,7 +30950,7 @@ var BABYLON;
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes().forEach(processMesh.bind(_this, mesh.position));
+                    mesh.getChildMeshes(true).forEach(processMesh.bind(_this, mesh.position));
                 };
                 meshChildren.forEach(processMesh.bind(this, BABYLON.Vector3.Zero()));
             }
@@ -31281,7 +31278,6 @@ var BABYLON;
                             impostors.push(m.physicsImpostor);
                             m.physicsImpostor._init();
                         }
-                        addToArray(m);
                     });
                 }
                 addToArray(impostor.mesh);
@@ -37730,23 +37726,24 @@ var BABYLON;
     ;
     var TonemapPostProcess = (function (_super) {
         __extends(TonemapPostProcess, _super);
-        function TonemapPostProcess(name, operator, exposureAdjustment, camera, samplingMode, engine, textureFormat) {
+        function TonemapPostProcess(name, _operator, exposureAdjustment, camera, samplingMode, engine, textureFormat) {
             var _this = this;
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
             if (textureFormat === void 0) { textureFormat = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
-            this._operator = operator;
+            _super.call(this, name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, defines, textureFormat);
+            this._operator = _operator;
             this.exposureAdjustment = exposureAdjustment;
-            var params = ["_ExposureAdjustment"];
             var defines = "#define ";
-            if (operator === TonemappingOperator.Hable)
+            if (this._operator === TonemappingOperator.Hable)
                 defines += "HABLE_TONEMAPPING";
-            else if (operator === TonemappingOperator.Reinhard)
+            else if (this._operator === TonemappingOperator.Reinhard)
                 defines += "REINHARD_TONEMAPPING";
-            else if (operator === TonemappingOperator.HejiDawson)
+            else if (this._operator === TonemappingOperator.HejiDawson)
                 defines += "OPTIMIZED_HEJIDAWSON_TONEMAPPING";
-            else if (operator === TonemappingOperator.Photographic)
+            else if (this._operator === TonemappingOperator.Photographic)
                 defines += "PHOTOGRAPHIC_TONEMAPPING";
-            _super.call(this, name, "tonemap", params, null, 1.0, camera, samplingMode, engine, true, defines, textureFormat);
+            //sadly a second call to create the effect.
+            this.updateEffect(defines);
             this.onApply = function (effect) {
                 effect.setFloat("_ExposureAdjustment", _this.exposureAdjustment);
             };
@@ -38852,7 +38849,7 @@ var BABYLON;
             // Remove the gamepad from the list of gamepads to monitor.
             for (var i in this.babylonGamepads) {
                 if (this.babylonGamepads[i].index == evt.gamepad.index) {
-                    this.babylonGamepads.splice(i, 1);
+                    this.babylonGamepads.splice(+i, 1);
                     break;
                 }
             }

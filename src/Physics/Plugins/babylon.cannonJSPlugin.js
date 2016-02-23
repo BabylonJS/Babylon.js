@@ -95,14 +95,14 @@ var BABYLON;
         };
         CannonJSPlugin.prototype._processChildMeshes = function (mainImpostor) {
             var _this = this;
-            var meshChildren = mainImpostor.mesh.getChildMeshes();
+            var meshChildren = mainImpostor.mesh.getChildMeshes(true);
             if (meshChildren.length) {
-                var processMesh = function (localPosition, mesh) {
+                var processMesh = function (relativePosition, mesh) {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position;
+                            var localPosition = mesh.position.add(relativePosition);
                             if (childImpostor.physicsBody) {
                                 _this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
@@ -114,7 +114,7 @@ var BABYLON;
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes().forEach(processMesh.bind(_this, mesh.position));
+                    mesh.getChildMeshes(true).forEach(processMesh.bind(_this, mesh.position));
                 };
                 meshChildren.forEach(processMesh.bind(this, BABYLON.Vector3.Zero()));
             }

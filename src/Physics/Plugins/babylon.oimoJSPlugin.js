@@ -86,7 +86,6 @@ var BABYLON;
                             impostors.push(m.physicsImpostor);
                             m.physicsImpostor._init();
                         }
-                        addToArray(m);
                     });
                 }
                 addToArray(impostor.mesh);

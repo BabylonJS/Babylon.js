@@ -10,7 +10,7 @@ var BABYLON;
             this._bodyUpdateRequired = false;
             this._onBeforePhysicsStepCallbacks = new Array();
             this._onAfterPhysicsStepCallbacks = new Array();
-            this._onPhysicsCollideCallbacks = new Array();
+            this._onPhysicsCollideCallbacks = [];
             this._deltaPosition = BABYLON.Vector3.Zero();
             this._deltaRotation = new BABYLON.Quaternion();
             this._tmpPositionWithDelta = BABYLON.Vector3.Zero();
@@ -43,8 +43,10 @@ var BABYLON;
             this.onCollide = function (e) {
                 var otherImpostor = _this._physicsEngine.getImpostorWithPhysicsBody(e.body);
                 if (otherImpostor) {
-                    _this._onPhysicsCollideCallbacks.forEach(function (func) {
-                        func(_this, otherImpostor);
+                    _this._onPhysicsCollideCallbacks.filter(function (obj) {
+                        return obj.otherImpostor === otherImpostor;
+                    }).forEach(function (obj) {
+                        obj.callback(_this, obj.otherImpostor);
                     });
                 }
             };
@@ -149,8 +151,6 @@ var BABYLON;
             this._options[paramName] = value;
             this._bodyUpdateRequired = true;
         };
-        PhysicsImpostor.prototype.getOptions = function () {
-        };
         /**
          * Set the body's velocity.
          */
@@ -197,11 +197,11 @@ var BABYLON;
         /**
          * register a function that will be executed when this impostor collides against a different body.
          */
-        PhysicsImpostor.prototype.registerOnPhysicsCollide = function (func) {
-            this._onPhysicsCollideCallbacks.push(func);
+        PhysicsImpostor.prototype.registerOnPhysicsCollide = function (collideAgainst, func) {
+            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostor: collideAgainst });
         };
-        PhysicsImpostor.prototype.unregisterOnPhysicsCollide = function (func) {
-            var index = this._onPhysicsCollideCallbacks.indexOf(func);
+        PhysicsImpostor.prototype.unregisterOnPhysicsCollide = function (collideAgainst, func) {
+            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostor: collideAgainst });
             if (index > -1) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
             }

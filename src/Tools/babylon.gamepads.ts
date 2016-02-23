@@ -5,8 +5,8 @@
 
         private isMonitoring: boolean = false;
         private gamepadEventSupported: boolean = 'GamepadEvent' in window;
-        private gamepadSupportAvailable: boolean = <boolean> (navigator.getGamepads ||
-        !!navigator.webkitGetGamepads || !!navigator.msGetGamepads || !!navigator.webkitGamepads);
+        private gamepadSupportAvailable: boolean = <boolean>(navigator.getGamepads ||
+            !!navigator.webkitGetGamepads || !!navigator.msGetGamepads || !!navigator.webkitGamepads);
 
         private _callbackGamepadConnected: (gamepad: Gamepad) => void;
 
@@ -187,7 +187,7 @@
     }
 
     export class GenericPad extends Gamepad {
-        private _buttons: Array<number>; 
+        private _buttons: Array<number>;
         private _onbuttondown: (buttonPressed: number) => void;
         private _onbuttonup: (buttonReleased: number) => void;
 
@@ -442,20 +442,9 @@
     }
 }
 
-// Mixins
-//interface Window {
-//    webkitRequestAnimationFrame(func: any): any;
-//    mozRequestAnimationFrame(func: any): any;
-//    oRequestAnimationFrame(func: any): any;
-//    WebGLRenderingContext: WebGLRenderingContext;
-//    MSGesture: MSGesture;
-//    ongamepadconnected(func?: any): any;
-//}
-
 interface Navigator {
     getGamepads(func?: any): any;
     webkitGetGamepads(func?: any): any
     msGetGamepads(func?: any): any;
     webkitGamepads(func?: any): any;
 }
-
