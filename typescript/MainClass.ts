@@ -40,9 +40,9 @@
             //var normalsHeightTexture = new BABYLON.Texture("assets/BrickWall_nh.png", this.scene);
             var material = new BABYLON.StandardMaterial("mtl01", this.scene);
             material.diffuseTexture = diffuseTexture;
-            //material.bumpTexture = normalsHeightTexture;
-            //material.useParallax = true;
-            //material.specularPower = 500.0;
+            material.bumpTexture = normalsHeightTexture;
+            material.useParallax = true;
+            material.specularPower = 500.0;
 
             mesh.material = material;
             material.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
@@ -55,35 +55,35 @@
                         break;
                     case "bump":
                         material.bumpTexture = normalsHeightTexture;
-                        //material.useParallax = false;
+                        material.useParallax = false;
                         break;
                     case "parallax":
                         material.bumpTexture = normalsHeightTexture;
-                        //material.useParallax = true;
-                        //material.useParallaxOcclusion = false;
+                        material.useParallax = true;
+                        material.useParallaxOcclusion = false;
                         break;
                     case "POM":
                         material.bumpTexture = normalsHeightTexture;
-                        //material.useParallax = true;
-                        //material.useParallaxOcclusion = true;
+                        material.useParallax = true;
+                        material.useParallaxOcclusion = true;
                         break;
                 }
                 material.markDirty();
             };
 
-            //var label = <HTMLLabelElement>document.querySelector("#scaleBiasLabel");
-            //label.innerHTML = "Scale Bias: " + material.parallaxScaleBias;
+            var label = <HTMLLabelElement>document.querySelector("#scaleBiasLabel");
+            label.innerHTML = "Scale Bias: " + material.parallaxScaleBias;
 
-            //document.addEventListener("keydown", (event) => {
-            //    if (event.key == "Up") {
-            //        material.parallaxScaleBias += 0.01;
-            //        label.innerHTML = "Scale Bias: " + material.parallaxScaleBias.toFixed(2);
-            //    }
-            //    else if (event.key == "Down") {
-            //        material.parallaxScaleBias -= 0.01;
-            //        label.innerHTML = "Scale Bias: " + material.parallaxScaleBias.toFixed(2);
-            //    }
-            //});
+            document.addEventListener("keydown", (event) => {
+                if (event.key == "Up") {
+                    material.parallaxScaleBias += 0.01;
+                    label.innerHTML = "Scale Bias: " + material.parallaxScaleBias.toFixed(2);
+                }
+                else if (event.key == "Down") {
+                    material.parallaxScaleBias -= 0.01;
+                    label.innerHTML = "Scale Bias: " + material.parallaxScaleBias.toFixed(2);
+                }
+            });
 
             //this.scene.debugLayer.show();
 
