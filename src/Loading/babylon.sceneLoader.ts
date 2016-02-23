@@ -123,11 +123,12 @@
                 }, progressCallBack, database);
             };
 
-            if (scene.getEngine().enableOfflineSupport) {
+            if (scene.getEngine().enableOfflineSupport && !(sceneFilename.substr && sceneFilename.substr(0, 5) === "data:")) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
                 var database = new Database(rootUrl + sceneFilename, manifestChecked);
             }
             else {
+                // If the scene is a data stream or offline support is not enabled, it's a direct load
                 manifestChecked(true);
             }
         }
