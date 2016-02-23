@@ -132,6 +132,9 @@ module BABYLON {
             this._bodyUpdateRequired = true;
         }
 
+        public getOptions(): any {
+        }
+
         /**
          * Set the body's velocity.
          */
