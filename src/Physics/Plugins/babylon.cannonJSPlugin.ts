@@ -103,14 +103,14 @@
         }
 
         private _processChildMeshes(mainImpostor: PhysicsImpostor) {
-            var meshChildren = mainImpostor.mesh.getChildMeshes();
+            var meshChildren = mainImpostor.mesh.getChildMeshes(true);
             if (meshChildren.length) {
-                var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
+                var processMesh = (relativePosition: Vector3, mesh: AbstractMesh) => {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position;
+                            var localPosition = mesh.position.add(relativePosition);
                             if (childImpostor.physicsBody) {
                                 this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
@@ -122,7 +122,7 @@
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes().forEach(processMesh.bind(this, mesh.position));
+                    mesh.getChildMeshes(true).forEach(processMesh.bind(this, mesh.position));
                 }
                 meshChildren.forEach(processMesh.bind(this, Vector3.Zero()));
             }
