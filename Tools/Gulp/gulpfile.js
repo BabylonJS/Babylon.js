@@ -70,13 +70,25 @@ gulp.task('typescript-compile', function () {
             typescript: require('typescript'),
             experimentalDecorators: true
         }));
+    //If this gulp task is running on travis, file the build!
+    if (process.env.TRAVIS) {
+        var error = false;
+        tsResult.on('error', function () {
+            error = true;
+        }).on('end', function () {
+            if (error) {
+                console.log('Typescript compile failed');
+                process.exit(1);
+            }
+        });
+    }
     return merge2([
         tsResult.dts
             .pipe(concat(config.build.declarationFilename))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
             .pipe(gulp.dest(config.build.srcOutputDirectory))
-    ]);
+    ])
 });
 
 gulp.task('typescript-sourcemaps', function () {
@@ -97,7 +109,7 @@ gulp.task('typescript-sourcemaps', function () {
 gulp.task("buildCore", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files),
-        shadersStream, 
+        shadersStream,
         includeShadersStream
         )
         .pipe(concat(config.build.minCoreFilename))
@@ -112,7 +124,7 @@ gulp.task("buildNoWorker", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files),
         gulp.src(config.extras.files),
-        shadersStream, 
+        shadersStream,
         includeShadersStream
         )
         .pipe(concat(config.build.minNoWorkerFilename))
@@ -142,14 +154,14 @@ gulp.task("build", ["workers", "shaders"], function () {
 });
 
 gulp.task("typescript", function (cb) {
-    runSequence("typescript-compile", "default");
+    runSequence("typescript-compile", "default", cb);
 });
 
 /**
  * The default task, call the tasks: build
  */
-gulp.task('default', function () {
-    return runSequence("buildNoWorker", "build", "buildCore");
+gulp.task('default', function (cb) {
+    runSequence("buildNoWorker", "build", "buildCore", cb);
 });
 
 /**
