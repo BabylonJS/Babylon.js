@@ -15,6 +15,9 @@ var BABYLON;
             this._deltaRotation = new BABYLON.Quaternion();
             this._tmpPositionWithDelta = BABYLON.Vector3.Zero();
             this._tmpRotationWithDelta = new BABYLON.Quaternion();
+            /**
+             * this function is executed by the physics engine.
+             */
             this.beforeStep = function () {
                 _this.mesh.position.subtractToRef(_this._deltaPosition, _this._tmpPositionWithDelta);
                 //conjugate deltaRotation
@@ -25,6 +28,9 @@ var BABYLON;
                     func(_this);
                 });
             };
+            /**
+             * this function is executed by the physics engine.
+             */
             this.afterStep = function () {
                 _this._onAfterPhysicsStepCallbacks.forEach(function (func) {
                     func(_this);
@@ -53,6 +59,12 @@ var BABYLON;
                 this._init();
             }
         }
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
         PhysicsImpostor.prototype._init = function () {
             this._physicsEngine.removeImpostor(this);
             this.physicsBody = null;
@@ -68,12 +80,19 @@ var BABYLON;
             }
             return;
         };
+        /**
+         * Should a new body be generated.
+         */
         PhysicsImpostor.prototype.isBodyInitRequired = function () {
             return this._bodyUpdateRequired || (!this._physicsBody && !this._parent);
         };
         PhysicsImpostor.prototype.setScalingUpdated = function (updated) {
             this.forceUpdate();
         };
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
         PhysicsImpostor.prototype.forceUpdate = function () {
             this._init();
             if (this.parent) {
@@ -88,9 +107,15 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(PhysicsImpostor.prototype, "physicsBody", {
+            /**
+             * Gets the body that holds this impostor. Either its own, or its parent.
+             */
             get: function () {
-                return this.parent ? this.parent.physicsBody : this._physicsBody;
+                return this._parent ? this._parent.physicsBody : this._physicsBody;
             },
+            /**
+             * Set the physics body. Used mainly by the physics engine/plugin
+             */
             set: function (physicsBody) {
                 if (this._physicsBody) {
                     this._physicsEngine.getPhysicsPlugin().removePhysicsBody(this);
@@ -111,22 +136,37 @@ var BABYLON;
         PhysicsImpostor.prototype.resetUpdateFlags = function () {
             this._bodyUpdateRequired = false;
         };
-        PhysicsImpostor.prototype.getOptions = function () {
-            return this._options;
-        };
+        /**
+         * Get a specific parametes from the options parameter.
+         */
         PhysicsImpostor.prototype.getParam = function (paramName) {
             return this._options[paramName];
         };
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
         PhysicsImpostor.prototype.setParam = function (paramName, value) {
             this._options[paramName] = value;
             this._bodyUpdateRequired = true;
         };
+        PhysicsImpostor.prototype.getOptions = function () {
+        };
+        /**
+         * Set the body's velocity.
+         */
         PhysicsImpostor.prototype.setVelocity = function (velocity) {
             this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
         };
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
         PhysicsImpostor.prototype.executeNativeFunction = function (func) {
             func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
         };
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
         PhysicsImpostor.prototype.registerBeforePhysicsStep = function (func) {
             this._onBeforePhysicsStepCallbacks.push(func);
         };
@@ -139,6 +179,9 @@ var BABYLON;
                 BABYLON.Tools.Warn("Function to remove was not found");
             }
         };
+        /**
+         * Register a function that will be executed after the physics step
+         */
         PhysicsImpostor.prototype.registerAfterPhysicsStep = function (func) {
             this._onAfterPhysicsStepCallbacks.push(func);
         };
@@ -151,6 +194,9 @@ var BABYLON;
                 BABYLON.Tools.Warn("Function to remove was not found");
             }
         };
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
         PhysicsImpostor.prototype.registerOnPhysicsCollide = function (func) {
             this._onPhysicsCollideCallbacks.push(func);
         };
@@ -163,16 +209,28 @@ var BABYLON;
                 BABYLON.Tools.Warn("Function to remove was not found");
             }
         };
+        /**
+         * Apply a force
+         */
         PhysicsImpostor.prototype.applyForce = function (force, contactPoint) {
             this._physicsEngine.getPhysicsPlugin().applyForce(this, force, contactPoint);
         };
+        /**
+         * Apply an impulse
+         */
         PhysicsImpostor.prototype.applyImpulse = function (force, contactPoint) {
             this._physicsEngine.getPhysicsPlugin().applyImpulse(this, force, contactPoint);
         };
+        /**
+         * A help function to create a joint.
+         */
         PhysicsImpostor.prototype.createJoint = function (otherImpostor, jointType, jointData) {
             var joint = new BABYLON.PhysicsJoint(jointType, jointData);
             this.addJoint(otherImpostor, joint);
         };
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
         PhysicsImpostor.prototype.addJoint = function (otherImpostor, joint) {
             this._joints.push({
                 otherImpostor: otherImpostor,
@@ -180,7 +238,6 @@ var BABYLON;
             });
             this._physicsEngine.addJoint(this, otherImpostor, joint);
         };
-        //TODO
         PhysicsImpostor.prototype.dispose = function (disposeChildren) {
             if (disposeChildren === void 0) { disposeChildren = true; }
             this.physicsBody = null;
@@ -216,6 +273,6 @@ var BABYLON;
         PhysicsImpostor.ConvexHullImpostor = 8;
         PhysicsImpostor.HeightmapImpostor = 9;
         return PhysicsImpostor;
-    }());
+    })();
     BABYLON.PhysicsImpostor = PhysicsImpostor;
 })(BABYLON || (BABYLON = {}));

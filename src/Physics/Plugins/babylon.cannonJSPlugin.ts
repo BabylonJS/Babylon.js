@@ -68,14 +68,14 @@
                 }
                 
                 //create the body and material
-                var material = this._addMaterial(impostor.getOptions().friction, impostor.getOptions().restitution);
+                var material = this._addMaterial(impostor.getParam("friction"), impostor.getParam("restitution"));
 
                 var bodyCreationObject = {
-                    mass: impostor.getOptions().mass,
+                    mass: impostor.getParam("mass"),
                     material: material
                 };
                 // A simple extend, in case native options were used.
-                var nativeOptions = impostor.getOptions().nativeOptions;
+                var nativeOptions = impostor.getParam("nativeOptions");
                 for (var key in nativeOptions) {
                     if (nativeOptions.hasOwnProperty(key)) {
                         bodyCreationObject[key] = nativeOptions[key];
@@ -91,7 +91,7 @@
                 //try to keep the body moving in the right direction by taking old properties.
                 //Should be tested!
                 if (oldBody) {
-                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
+                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function (param) {
                         impostor.physicsBody[param].copy(oldBody[param]);
                     });
                 }
@@ -151,13 +151,13 @@
                 axisB: jointData.connectedAxis ? new CANNON.Vec3().copy(jointData.connectedAxis) : null,
                 maxForce: jointData.nativeParams.maxForce
             };
-            if(!jointData.collision) {
+            if (!jointData.collision) {
                 //add 1st body to a collision group of its own, if it is not in 1
-                if(mainBody.collisionFilterGroup === 1) {
+                if (mainBody.collisionFilterGroup === 1) {
                     mainBody.collisionFilterGroup = this._currentCollisionGroup;
                     this._currentCollisionGroup <<= 1;
                 }
-                if(connectedBody.collisionFilterGroup === 1) {
+                if (connectedBody.collisionFilterGroup === 1) {
                     connectedBody.collisionFilterGroup = this._currentCollisionGroup;
                     this._currentCollisionGroup <<= 1;
                 }
@@ -407,7 +407,7 @@
         public isSupported(): boolean {
             return window.CANNON !== undefined;
         }
-        
+
         public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.velocity.copy(velocity);
         }
@@ -417,4 +417,5 @@
         }
     }
 }
+
 

@@ -75,7 +75,7 @@ var BABYLON;
                 if (sinb === 0) {
                     sinb = 0.0001;
                 }
-                var target = _this.target;
+                var target = _this._getTargetPosition();
                 target.addToRef(new BABYLON.Vector3(_this.radius * cosa * sinb, _this.radius * cosb, _this.radius * sina * sinb), _this._newPosition);
                 _this.position.copyFrom(_this._newPosition);
                 var up = _this.upVector;
@@ -127,11 +127,17 @@ var BABYLON;
             if (!ignoreParentClass) {
                 _super.prototype._updateCache.call(this);
             }
-            this._cache.target.copyFrom(this.target);
+            this._cache.target.copyFrom(this._getTargetPosition());
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
             this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
+        };
+        ArcRotateCamera.prototype._getTargetPosition = function () {
+            if (this.target.getAbsolutePosition) {
+                return this.target.getAbsolutePosition();
+            }
+            return this.target;
         };
         // Synchronized
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
@@ -461,7 +467,7 @@ var BABYLON;
             }
         };
         ArcRotateCamera.prototype.rebuildAnglesAndRadius = function () {
-            var radiusv3 = this.position.subtract(this.target);
+            var radiusv3 = this.position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
             // Alpha
             this.alpha = Math.acos(radiusv3.x / Math.sqrt(Math.pow(radiusv3.x, 2) + Math.pow(radiusv3.z, 2)));
@@ -480,7 +486,7 @@ var BABYLON;
             this.rebuildAnglesAndRadius();
         };
         ArcRotateCamera.prototype.setTarget = function (target) {
-            if (this.target.equals(target)) {
+            if (this._getTargetPosition().equals(target)) {
                 return;
             }
             this.target = target;
@@ -495,7 +501,7 @@ var BABYLON;
             if (sinb === 0) {
                 sinb = 0.0001;
             }
-            var target = this.target;
+            var target = this._getTargetPosition();
             target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;

@@ -166,11 +166,19 @@
                 super._updateCache();
             }
 
-            this._cache.target.copyFrom(this.target);
+            this._cache.target.copyFrom(this._getTargetPosition());
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
             this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
+        }
+
+        private _getTargetPosition(): Vector3 {
+            if ((<any>this.target).getAbsolutePosition) {
+                return (<any>this.target).getAbsolutePosition();
+            }
+
+            return this.target;
         }
 
         // Synchronized
@@ -551,7 +559,7 @@
         }
 
         public rebuildAnglesAndRadius() {
-            var radiusv3 = this.position.subtract(this.target);
+            var radiusv3 = this.position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
 
             // Alpha
@@ -577,7 +585,7 @@
         }
 
         public setTarget(target: Vector3): void {
-            if (this.target.equals(target)) {
+            if (this._getTargetPosition().equals(target)) {
                 return;
             }
             this.target = target;
@@ -595,7 +603,7 @@
                 sinb = 0.0001;
             }
 
-            var target = this.target;
+            var target = this._getTargetPosition();
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 this._collider.radius = this.collisionRadius;
@@ -644,7 +652,7 @@
                 sinb = 0.0001;
             }
 
-            var target = this.target;
+            var target = this._getTargetPosition();
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             this.position.copyFrom(this._newPosition);
 
