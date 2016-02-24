@@ -68,7 +68,7 @@
                 }
                 
                 //create the body and material
-                var material = this._addMaterial(impostor.getParam("friction"), impostor.getParam("restitution"));
+                var material = this._addMaterial("mat-" + impostor.mesh.uniqueId, impostor.getParam("friction"), impostor.getParam("restitution"));
 
                 var bodyCreationObject = {
                     mass: impostor.getParam("mass"),
@@ -184,7 +184,7 @@
             //TODO
         }
 
-        private _addMaterial(friction: number, restitution: number) {
+        private _addMaterial(name: string, friction: number, restitution: number) {
             var index;
             var mat;
 
@@ -197,16 +197,10 @@
             }
 
             var currentMat = new CANNON.Material("mat");
+            currentMat.friction = friction;
+            currentMat.restitution = restitution;
+            
             this._physicsMaterials.push(currentMat);
-
-            for (index = 0; index < this._physicsMaterials.length; index++) {
-                mat = this._physicsMaterials[index];
-
-                var contactMaterial = new CANNON.ContactMaterial(mat, currentMat, { friction: friction, restitution: restitution });
-
-                this.world.addContactMaterial(contactMaterial);
-            }
-
             return currentMat;
         }
 
