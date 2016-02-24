@@ -18,7 +18,7 @@ You can help by testing or contributing to the next version.
 - **2.4-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release)
 - We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/generals/Approved_Naming_Conventions)
 - Before submitting your PR, just check that everything goes well by [creating the minified version](http://doc.babylonjs.com/generals/Creating_the_Mini-fied_Version)
-- Need help to contribute? We have a [documentation for you](http://pixelcodr.com/tutos/contribute/contribute.html)
+- Need help to contribute? We have a [general purpose documentation for you](http://pixelcodr.com/tutos/contribute/contribute.html) and a [Visual Studio specific one](http://doc.babylonjs.com/generals/setup_visualStudio)
 
 ## Documentation
 - [Documentation](http://doc.babylonjs.com)
