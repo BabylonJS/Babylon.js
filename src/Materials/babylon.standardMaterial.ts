@@ -792,7 +792,7 @@
                     if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                         this._effect.setTexture("bumpSampler", this.bumpTexture);
 
-                        this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
+                        this._effect.setFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
                         this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
 
                         if (this.useParallax) {

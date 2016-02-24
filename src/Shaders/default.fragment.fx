@@ -184,27 +184,22 @@ void main(void) {
 #endif
 
 #if defined(BUMP) || defined(PARALLAX)
-	mat3 TBN = cotangent_frame(vNormalW * vBumpInfos.y, -viewDirectionW, bumpUV);
+	mat3 TBN = cotangent_frame(normalW * vBumpInfos.y, -viewDirectionW, bumpUV);
 #endif
 
 #ifdef PARALLAX
 	mat3 invTBN = transposeMat3(TBN);
 
 #ifdef PARALLAXOCCLUSION
-	vec2 uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, bumpUV, vParallaxScaleBias);
+	vec2 uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, bumpUV, vBumpInfos.z);
 #else
-	vec2 uvOffset = parallaxOffset(invTBN * viewDirectionW, vParallaxScaleBias);
+	vec2 uvOffset = parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z);
 #endif
 
 	diffuseUV += uvOffset;
 	bumpUV += uvOffset;
 
-	// Note by Loic:
-	// Parallax mapping apply an offset on the UV, which may leads to out of bound coordinates
-	// If we use texture wrapping we should NOT doing the following test, otherwise this test
-	//  will discard the pixel if we detect an out of bound coordinate.
-	// It makes senses only with occlusion because the fragment is accurately computed.
-	// I'm quite hesitating about keeping this or not, I think future will tell!
+	// Note by Loic: won't be nice with wrapping textures...
 #ifdef PARALLAXOCCLUSION
 	if (diffuseUV.x > 1.0 || diffuseUV.y > 1.0 || diffuseUV.x < 0.0 || diffuseUV.y < 0.0) {
 		discard;
@@ -218,7 +213,7 @@ void main(void) {
 #endif
 
 #ifdef DIFFUSE
-	baseColor = texture2D(diffuseSampler, vDiffuseUV);
+	baseColor = texture2D(diffuseSampler, diffuseUV);
 
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
