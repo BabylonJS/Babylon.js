@@ -8,6 +8,8 @@
         public EMISSIVE = false;
         public SPECULAR = false;
         public BUMP = false;
+        public PARALLAX = false;
+        public PARALLAXOCCLUSION = false;
         public SPECULAROVERALPHA = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
@@ -153,6 +155,15 @@
 
         @serialize()
         public disableLighting = false;
+
+        @serialize()
+        public useParallax = false;
+
+        @serialize()
+        public useParallaxOcclusion = false;
+
+        @serialize()
+        public parallaxScaleBias = 0.05;
 
         @serialize()
         public roughness = 0;
@@ -398,6 +409,13 @@
                     } else {
                         needUVs = true;
                         this._defines.BUMP = true;
+
+                        if (this.useParallax) {
+                            this._defines.PARALLAX = true;
+                            if (this.useParallaxOcclusion) {
+                                this._defines.PARALLAXOCCLUSION = true;
+                            }
+                        }
                     }
                 }
 
@@ -544,6 +562,14 @@
                     fallbacks.addFallback(0, "BUMP");
                 }
 
+                if (this._defines.PARALLAX) {
+                    fallbacks.addFallback(1, "PARALLAX");
+                }
+
+                if (this._defines.PARALLAXOCCLUSION) {
+                    fallbacks.addFallback(0, "PARALLAXOCCLUSION");
+                }
+
                 if (this._defines.SPECULAROVERALPHA) {
                     fallbacks.addFallback(0, "SPECULAROVERALPHA");
                 }
@@ -622,7 +648,7 @@
                         "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
                         "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
                         "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+                        "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vParallaxScaleBias", "vLightmapInfos", "vRefractionInfos",
                         "mBones",
                         "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                         "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
@@ -766,8 +792,12 @@
                     if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                         this._effect.setTexture("bumpSampler", this.bumpTexture);
 
-                        this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
+                        this._effect.setFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
                         this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
+
+                        if (this.useParallax) {
+                            this._effect.setFloat("vParallaxScaleBias", this.parallaxScaleBias);
+                        }
                     }
 
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
