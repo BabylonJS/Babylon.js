@@ -11,6 +11,8 @@ FBX Exporter produces a babylon scene file from an FBX asset
 
 ##Prerequisites
 To use this tool, you need to download the Visual C++ 2015 redistribuable package : http://www.microsoft.com/en-us/download/details.aspx?id=48145
+
+To build from source you need to install the Autodesk FBX SDK 2016.1 and copy the lib folder from the SDK install location to 3rdParty\Fbx2016.1\
 ##Usage
 FbxExporter.exe "fbx file" "outdir" [/fps:60|30|24] [/skipemptynodes]
 - fbx file : path to the source FBX asset
