@@ -1,8 +1,4 @@
-﻿#ifdef PARALLAX
-//#extension GL_EXT_shader_texture_lod : enable		// Doesn't work right now with texture2DGradExt...
-#endif
-
-#ifdef BUMP
+﻿#ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -179,38 +175,7 @@ void main(void) {
 	vec2 diffuseUV = vDiffuseUV;
 #endif
 
-#ifdef BUMP
-	vec2 bumpUV = vBumpUV;
-#endif
-
-#if defined(BUMP) || defined(PARALLAX)
-	mat3 TBN = cotangent_frame(normalW * vBumpInfos.y, -viewDirectionW, bumpUV);
-#endif
-
-#ifdef PARALLAX
-	mat3 invTBN = transposeMat3(TBN);
-
-#ifdef PARALLAXOCCLUSION
-	vec2 uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, bumpUV, vBumpInfos.z);
-#else
-	vec2 uvOffset = parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z);
-#endif
-
-	diffuseUV += uvOffset;
-	bumpUV += uvOffset;
-
-	// Note by Loic: won't be nice with wrapping textures...
-#ifdef PARALLAXOCCLUSION
-	if (diffuseUV.x > 1.0 || diffuseUV.y > 1.0 || diffuseUV.x < 0.0 || diffuseUV.y < 0.0) {
-		discard;
-	}
-#endif
-
-#endif
-
-#ifdef BUMP
-	normalW = perturbNormal(viewDirectionW, TBN, bumpUV);
-#endif
+#include<bumpFragment>
 
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, diffuseUV);
@@ -298,14 +263,14 @@ void main(void) {
 
 #ifdef REFLECTIONMAP_3D
 #ifdef ROUGHNESS
-	 float bias = vReflectionInfos.y;
+	float bias = vReflectionInfos.y;
 
 	#ifdef SPECULARTERM
-	#ifdef SPECULAR
-	#ifdef GLOSSINESS
-		bias *= (1.0 - specularMapColor.a);
-	#endif
-	#endif
+		#ifdef SPECULAR
+			#ifdef GLOSSINESS
+				bias *= (1.0 - specularMapColor.a);
+			#endif
+		#endif
 	#endif
 
 	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
