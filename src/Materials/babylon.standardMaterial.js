@@ -854,4 +854,3 @@ var BABYLON;
     })(BABYLON.Material);
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.standardMaterial.js.map
