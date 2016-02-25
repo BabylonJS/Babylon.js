@@ -16,7 +16,7 @@ module BABYLON {
 
         private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
         private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
-        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostor: PhysicsImpostor }> = []
+        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = []
 
         private _deltaPosition: Vector3 = Vector3.Zero();
         private _deltaRotation: Quaternion = new Quaternion();
@@ -184,12 +184,14 @@ module BABYLON {
         /**
          * register a function that will be executed when this impostor collides against a different body.
          */
-        public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
-            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostor: collideAgainst });
+        public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
+            var collidedAgainstList : Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>> collideAgainst : [<PhysicsImpostor>collideAgainst]
+            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
         }
 
-        public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
-            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostor: collideAgainst });
+        public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void {
+            var collidedAgainstList : Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>> collideAgainst : [<PhysicsImpostor>collideAgainst]
+            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostors: collidedAgainstList });
 
             if (index > -1) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
@@ -237,9 +239,9 @@ module BABYLON {
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {
                 this._onPhysicsCollideCallbacks.filter((obj) => {
-                    return obj.otherImpostor === otherImpostor
+                    return obj.otherImpostors.indexOf(otherImpostor) !== -1
                 }).forEach((obj) => {
-                    obj.callback(this, obj.otherImpostor);
+                    obj.callback(this, otherImpostor);
                 })
             }
         }
