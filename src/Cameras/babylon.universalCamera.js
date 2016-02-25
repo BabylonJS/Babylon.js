@@ -70,4 +70,3 @@ var BABYLON;
     })(BABYLON.TouchCamera);
     BABYLON.UniversalCamera = UniversalCamera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.universalCamera.js.map

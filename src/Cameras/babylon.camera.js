@@ -610,4 +610,3 @@ var BABYLON;
     })(BABYLON.Node);
     BABYLON.Camera = Camera;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.camera.js.map

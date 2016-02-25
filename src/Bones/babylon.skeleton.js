@@ -263,4 +263,3 @@ var BABYLON;
     })();
     BABYLON.Skeleton = Skeleton;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.skeleton.js.map

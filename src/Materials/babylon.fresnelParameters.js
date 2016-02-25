@@ -35,4 +35,3 @@ var BABYLON;
     })();
     BABYLON.FresnelParameters = FresnelParameters;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.fresnelParameters.js.map
