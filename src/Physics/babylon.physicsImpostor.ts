@@ -276,6 +276,20 @@ module BABYLON {
             })
             this._physicsEngine.addJoint(this, otherImpostor, joint);
         }
+        
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        public sleep() {
+            this._physicsEngine.getPhysicsPlugin().sleepBody(this);
+        }
+        
+        /**
+         * Wake the body up.
+         */
+        public wakeUp() {
+            this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
+        }
 
         public dispose(disposeChildren: boolean = true) {
             this.physicsBody = null;

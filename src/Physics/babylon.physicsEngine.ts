@@ -61,7 +61,7 @@
         public addImpostor(impostor: PhysicsImpostor) {
             this._impostors.push(impostor);
             //if no parent, generate the body
-            if(!impostor.parent) {
+            if (!impostor.parent) {
                 this._physicsPlugin.generatePhysicsBody(impostor);
             }
         }
@@ -71,7 +71,7 @@
             if (index > -1) {
                 var removed = this._impostors.splice(index, 1);
                 //Is it needed?
-                if(removed.length) {
+                if (removed.length) {
                     //this will also remove it from the world.
                     removed[0].physicsBody = null;
                 }
@@ -94,7 +94,7 @@
                     && impostorJoint.joint === joint
                     && impostorJoint.mainImpostor === mainImpostor)
             });
-            if(matchingJoints.length) {
+            if (matchingJoints.length) {
                 this._physicsPlugin.removeJoint(matchingJoints[0]);
                 //TODO remove it from the list as well
                 
@@ -148,8 +148,10 @@
         removeJoint(joint: PhysicsImpostorJoint)
         isSupported(): boolean;
         setTransformationFromPhysicsBody(impostor: PhysicsImpostor);
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition:Vector3, newRotation: Quaternion);
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion);
         setVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        sleepBody(impostor: PhysicsImpostor);
+        wakeUpBody(impostor: PhysicsImpostor);
         dispose();
     }
 }
