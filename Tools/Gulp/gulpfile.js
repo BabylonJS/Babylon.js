@@ -11,6 +11,7 @@ var cleants = require('gulp-clean-ts-extends');
 var changed = require('gulp-changed');
 var runSequence = require('run-sequence');
 var replace = require("gulp-replace");
+var uncommentShader = require("./gulp-removeShaderComments");
 
 var config = require("./config.json");
 
@@ -33,7 +34,9 @@ function includeShadersName(filename) {
 
 gulp.task("includeShaders", function (cb) {
     includeShadersStream = config.includeShadersDirectories.map(function (shadersDef) {
-        return gulp.src(shadersDef.files).pipe(srcToVariable({
+        return gulp.src(shadersDef.files).
+            pipe(uncommentShader()).
+            pipe(srcToVariable({
             variableName: shadersDef.variable, asMap: true, namingCallback: includeShadersName
         }));
     });
@@ -42,7 +45,9 @@ gulp.task("includeShaders", function (cb) {
 
 gulp.task("shaders", ["includeShaders"], function (cb) {
     shadersStream = config.shadersDirectories.map(function (shadersDef) {
-        return gulp.src(shadersDef.files).pipe(srcToVariable({
+        return gulp.src(shadersDef.files).
+            pipe(uncommentShader()).
+            pipe(srcToVariable({
             variableName: shadersDef.variable, asMap: true, namingCallback: shadersName
         }));
     });
