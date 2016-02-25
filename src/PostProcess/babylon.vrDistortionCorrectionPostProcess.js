@@ -37,3 +37,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.VRDistortionCorrectionPostProcess = VRDistortionCorrectionPostProcess;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.vrDistortionCorrectionPostProcess.js.map

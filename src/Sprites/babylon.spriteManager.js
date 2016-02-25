@@ -198,3 +198,4 @@ var BABYLON;
     })();
     BABYLON.SpriteManager = SpriteManager;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.spriteManager.js.map

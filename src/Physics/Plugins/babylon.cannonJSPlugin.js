@@ -63,7 +63,7 @@ var BABYLON;
                     this.removePhysicsBody(impostor);
                 }
                 //create the body and material
-                var material = this._addMaterial(impostor.getParam("friction"), impostor.getParam("restitution"));
+                var material = this._addMaterial("mat-" + impostor.mesh.uniqueId, impostor.getParam("friction"), impostor.getParam("restitution"));
                 var bodyCreationObject = {
                     mass: impostor.getParam("mass"),
                     material: material
@@ -95,14 +95,14 @@ var BABYLON;
         };
         CannonJSPlugin.prototype._processChildMeshes = function (mainImpostor) {
             var _this = this;
-            var meshChildren = mainImpostor.mesh.getChildMeshes(true);
+            var meshChildren = mainImpostor.mesh.getChildMeshes();
             if (meshChildren.length) {
-                var processMesh = function (relativePosition, mesh) {
+                var processMesh = function (localPosition, mesh) {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position.add(relativePosition);
+                            var localPosition = mesh.position;
                             if (childImpostor.physicsBody) {
                                 _this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
@@ -114,7 +114,7 @@ var BABYLON;
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes(true).forEach(processMesh.bind(_this, mesh.position));
+                    mesh.getChildMeshes().forEach(processMesh.bind(_this, mesh.position));
                 };
                 meshChildren.forEach(processMesh.bind(this, BABYLON.Vector3.Zero()));
             }
@@ -172,7 +172,7 @@ var BABYLON;
         CannonJSPlugin.prototype.removeJoint = function (joint) {
             //TODO
         };
-        CannonJSPlugin.prototype._addMaterial = function (friction, restitution) {
+        CannonJSPlugin.prototype._addMaterial = function (name, friction, restitution) {
             var index;
             var mat;
             for (index = 0; index < this._physicsMaterials.length; index++) {
@@ -182,12 +182,9 @@ var BABYLON;
                 }
             }
             var currentMat = new CANNON.Material("mat");
+            currentMat.friction = friction;
+            currentMat.restitution = restitution;
             this._physicsMaterials.push(currentMat);
-            for (index = 0; index < this._physicsMaterials.length; index++) {
-                mat = this._physicsMaterials[index];
-                var contactMaterial = new CANNON.ContactMaterial(mat, currentMat, { friction: friction, restitution: restitution });
-                this.world.addContactMaterial(contactMaterial);
-            }
             return currentMat;
         };
         CannonJSPlugin.prototype._checkWithEpsilon = function (value) {
@@ -353,3 +350,4 @@ var BABYLON;
     })();
     BABYLON.CannonJSPlugin = CannonJSPlugin;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.cannonJSPlugin.js.map

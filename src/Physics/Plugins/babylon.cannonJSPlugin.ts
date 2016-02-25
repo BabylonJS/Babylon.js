@@ -103,14 +103,14 @@
         }
 
         private _processChildMeshes(mainImpostor: PhysicsImpostor) {
-            var meshChildren = mainImpostor.mesh.getChildMeshes(true);
+            var meshChildren = mainImpostor.mesh.getChildMeshes();
             if (meshChildren.length) {
-                var processMesh = (relativePosition: Vector3, mesh: AbstractMesh) => {
+                var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position.add(relativePosition);
+                            var localPosition = mesh.position;
                             if (childImpostor.physicsBody) {
                                 this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
@@ -122,7 +122,7 @@
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes(true).forEach(processMesh.bind(this, mesh.position));
+                    mesh.getChildMeshes().forEach(processMesh.bind(this, mesh.position));
                 }
                 meshChildren.forEach(processMesh.bind(this, Vector3.Zero()));
             }
@@ -199,7 +199,7 @@
             var currentMat = new CANNON.Material("mat");
             currentMat.friction = friction;
             currentMat.restitution = restitution;
-            
+
             this._physicsMaterials.push(currentMat);
             return currentMat;
         }
@@ -411,3 +411,6 @@
         }
     }
 }
+
+
+
