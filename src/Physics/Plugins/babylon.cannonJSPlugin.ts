@@ -405,6 +405,14 @@
         public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.velocity.copy(velocity);
         }
+        
+        public sleepBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.sleep();    
+        }
+        
+        public wakeUpBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.wakeUp(); 
+        }
 
         public dispose() {
             //nothing to do, actually.
