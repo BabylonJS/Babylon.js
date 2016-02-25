@@ -115,3 +115,4 @@ var BABYLON;
     })(BABYLON.TargetCamera);
     BABYLON.ArcFollowCamera = ArcFollowCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.followCamera.js.map

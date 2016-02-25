@@ -38,3 +38,4 @@ var BABYLON;
     })();
     BABYLON.PhysicsJoint = PhysicsJoint;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.physicsJoint.js.map

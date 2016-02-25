@@ -147,3 +147,4 @@ var BABYLON;
     })();
     BABYLON.SerializationHelper = SerializationHelper;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.decorators.js.map

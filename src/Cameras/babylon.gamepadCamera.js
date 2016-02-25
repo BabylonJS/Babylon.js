@@ -19,3 +19,4 @@ var BABYLON;
     })(BABYLON.UniversalCamera);
     BABYLON.GamepadCamera = GamepadCamera;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.gamepadCamera.js.map

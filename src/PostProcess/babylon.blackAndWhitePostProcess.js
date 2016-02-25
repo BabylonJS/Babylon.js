@@ -14,3 +14,4 @@ var BABYLON;
     })(BABYLON.PostProcess);
     BABYLON.BlackAndWhitePostProcess = BlackAndWhitePostProcess;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.blackAndWhitePostProcess.js.map
