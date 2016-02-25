@@ -309,6 +309,14 @@ module BABYLON {
         public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
         }
+        
+        public sleepBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.sleep();    
+        }
+        
+        public wakeUpBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.awake(); 
+        }
 
         public dispose() {
             this.world.clear();
