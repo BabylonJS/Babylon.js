@@ -50,4 +50,3 @@ var BABYLON;
     })(BABYLON.RenderTargetTexture);
     BABYLON.RefractionTexture = RefractionTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.refractionTexture.js.map

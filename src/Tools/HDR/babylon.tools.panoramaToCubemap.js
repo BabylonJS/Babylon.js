@@ -125,4 +125,3 @@ var BABYLON;
         Internals.PanoramaToCubeMapTools = PanoramaToCubeMapTools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.tools.panoramaToCubemap.js.map

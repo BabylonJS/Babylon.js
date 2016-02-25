@@ -70,4 +70,3 @@ var BABYLON;
     })();
     BABYLON.VRCameraMetrics = VRCameraMetrics;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.vrCameraMetrics.js.map

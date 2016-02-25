@@ -276,4 +276,3 @@ var BABYLON;
     })();
     BABYLON.PhysicsImpostor = PhysicsImpostor;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.physicsImpostor.js.map
