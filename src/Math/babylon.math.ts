@@ -1592,6 +1592,23 @@
 
             return this;
         }
+        
+        public conjugateToRef(ref: Quaternion) {
+            ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
+            return this;
+        }
+        
+        public conjugateInPlace() {
+            this.x *= -1;
+            this.y *= -1;
+            this.z *= -1;
+            return this;
+        }
+        
+        public conjugate() {
+            var result = new Quaternion(-this.x, -this.y, -this.z, this.w);
+            return result;
+        }
 
         public length(): number {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
