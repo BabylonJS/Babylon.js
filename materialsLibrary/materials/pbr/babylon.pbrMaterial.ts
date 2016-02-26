@@ -91,6 +91,8 @@ module BABYLON {
         public LODBASEDMICROSFURACE = false;
         public USEPHYSICALLIGHTFALLOFF = false;
         public RADIANCEOVERALPHA = false;
+        public USEPMREMREFLECTION = false;
+        public USEPMREMREFRACTION = false;
 
         constructor() {
             super();
@@ -517,6 +519,10 @@ module BABYLON {
                             if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
                                 this._defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 needNormals = true;
+                                
+                                if ((<HDRCubeTexture>this.reflectionTexture).isPMREM) {
+                                    this._defines.USEPMREMREFLECTION = true;
+                                }
                             }
                         }
                     }
@@ -574,6 +580,10 @@ module BABYLON {
                         }
                         if (this.refractionTexture instanceof HDRCubeTexture) {
                             this._defines.REFRACTIONMAPINLINEARSPACE = true;
+                            
+                            if ((<HDRCubeTexture>this.refractionTexture).isPMREM) {
+                                this._defines.USEPMREMREFRACTION = true;
+                            }
                         }
                     }
                 }
@@ -711,6 +721,10 @@ module BABYLON {
                 var fallbacks = new EffectFallbacks();
                 if (this._defines.REFLECTION) {
                     fallbacks.addFallback(0, "REFLECTION");
+                }
+                
+                if (this._defines.REFRACTION) {
+                    fallbacks.addFallback(0, "REFRACTION");
                 }
 
                 if (this._defines.REFLECTIVITY) {
@@ -897,7 +911,7 @@ module BABYLON {
                     }
 
                     if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        this._microsurfaceTextureLods.x = Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E;
+                        this._microsurfaceTextureLods.x = Math.round(Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E);
                         
                         if (this.reflectionTexture.isCube) {
                             this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
@@ -968,7 +982,7 @@ module BABYLON {
                     }
 
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        this._microsurfaceTextureLods.y = Math.log(this.refractionTexture.getSize().width) * Math.LOG2E;
+                        this._microsurfaceTextureLods.y = Math.round(Math.log(this.refractionTexture.getSize().width) * Math.LOG2E);
                         
                         var depth = 1.0;
                         if (this.refractionTexture.isCube) {

@@ -172,6 +172,14 @@ float getMipMapIndexFromAverageSlope(float maxMipLevel, float alpha)
     return clamp(mip, 0., maxMipLevel);
 }
 
+float getMipMapIndexFromAverageSlopeWithPMREM(float maxMipLevel, float alphaG)
+{
+    float specularPower = clamp(2. / alphaG - 2., 0.000001, 2048.);
+    
+    // Based on CubeMapGen for cosine power with 2048 spec default and 0.25 dropoff 
+    return clamp(- 0.5 * log2(specularPower) + 5.5, 0., maxMipLevel);
+}
+
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
 float smithVisibilityG1_TrowbridgeReitzGGX(float dot, float alphaG)
 {
@@ -1078,10 +1086,15 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
 #endif
         
 #ifdef REFRACTION
-	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+	//vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+    vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
     
     #ifdef LODBASEDMICROSFURACE
-        float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, alphaG);
+        #ifdef USEPMREMREFRACTION
+            float lodRefraction = getMipMapIndexFromAverageSlopeWithPMREM(vMicrosurfaceTextureLods.y, alphaG);
+        #else
+            float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, alphaG);
+        #endif
     #endif
     
     #ifdef REFRACTIONMAP_3D
@@ -1090,6 +1103,19 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
         if (dot(refractionVector, viewDirectionW) < 1.0)
         {
             #ifdef LODBASEDMICROSFURACE
+                #ifdef USEPMREMREFRACTION
+                    // Empiric Threshold
+                    if (microSurface > 0.5)
+                    {
+                        // Bend to not reach edges.
+                        float scaleRefraction = 1. - exp2(lodRefraction) / exp2(vMicrosurfaceTextureLods.y); // CubemapSize is the size of the base mipmap
+                        float maxRefraction = max(max(abs(refractionVector.x), abs(refractionVector.y)), abs(refractionVector.z));
+                        if (abs(refractionVector.x) != maxRefraction) refractionVector.x *= scaleRefraction;
+                        if (abs(refractionVector.y) != maxRefraction) refractionVector.y *= scaleRefraction;
+                        if (abs(refractionVector.z) != maxRefraction) refractionVector.z *= scaleRefraction;
+                    }
+                #endif
+                
                 surfaceRefractionColor = textureCubeLodEXT(refractionCubeSampler, refractionVector, lodRefraction).rgb * vRefractionInfos.x;
             #else
                 surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, bias).rgb * vRefractionInfos.x;
@@ -1124,12 +1150,29 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
     vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
     #ifdef LODBASEDMICROSFURACE
-        float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, alphaG);
+        #ifdef USEPMREMREFLECTION
+            float lodReflection = getMipMapIndexFromAverageSlopeWithPMREM(vMicrosurfaceTextureLods.x, alphaG);
+        #else
+            float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, alphaG);
+        #endif
     #endif
     
     #ifdef REFLECTIONMAP_3D
         
         #ifdef LODBASEDMICROSFURACE
+            #ifdef USEPMREMREFLECTION
+                // Empiric Threshold
+                if (microSurface > 0.5)
+                {
+                    // Bend to not reach edges.
+                    float scaleReflection = 1. - exp2(lodReflection) / exp2(vMicrosurfaceTextureLods.x); // CubemapSize is the size of the base mipmap
+                    float maxReflection = max(max(abs(vReflectionUVW.x), abs(vReflectionUVW.y)), abs(vReflectionUVW.z));
+                    if (abs(vReflectionUVW.x) != maxReflection) vReflectionUVW.x *= scaleReflection;
+                    if (abs(vReflectionUVW.y) != maxReflection) vReflectionUVW.y *= scaleReflection;
+                    if (abs(vReflectionUVW.z) != maxReflection) vReflectionUVW.z *= scaleReflection;
+                }
+            #endif
+                
             environmentRadiance = textureCubeLodEXT(reflectionCubeSampler, vReflectionUVW, lodReflection).rgb * vReflectionInfos.x;
         #else
             environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;

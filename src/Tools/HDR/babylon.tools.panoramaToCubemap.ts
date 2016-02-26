@@ -23,25 +23,25 @@ module BABYLON.Internals {
             new Vector3(1.0, 1.0, 1.0),
             new Vector3(-1.0, 1.0, 1.0)
         ];
-        private static FACE_LEFT = [
+        private static FACE_RIGHT = [
             new Vector3(1.0, -1.0, -1.0),
             new Vector3(1.0, -1.0, 1.0),
             new Vector3(1.0, 1.0, -1.0),
             new Vector3(1.0, 1.0, 1.0)
         ];
-        private static FACE_RIGHT = [
+        private static FACE_LEFT = [
             new Vector3(-1.0, -1.0, 1.0),
             new Vector3(-1.0, -1.0, -1.0),
             new Vector3(-1.0, 1.0, 1.0),
             new Vector3(-1.0, 1.0, -1.0)
         ];
-        private static FACE_UP = [
+        private static FACE_DOWN = [
             new Vector3(-1.0, 1.0, -1.0),
             new Vector3(1.0, 1.0, -1.0),
             new Vector3(-1.0, 1.0, 1.0),
             new Vector3(1.0, 1.0, 1.0)
         ];
-        private static FACE_DOWN = [
+        private static FACE_UP = [
             new Vector3(-1.0, -1.0, 1.0),
             new Vector3(1.0, -1.0, 1.0),
             new Vector3(-1.0, -1.0, -1.0),
