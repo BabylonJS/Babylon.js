@@ -96,25 +96,25 @@ var BABYLON;
                 new BABYLON.Vector3(1.0, 1.0, 1.0),
                 new BABYLON.Vector3(-1.0, 1.0, 1.0)
             ];
-            PanoramaToCubeMapTools.FACE_LEFT = [
+            PanoramaToCubeMapTools.FACE_RIGHT = [
                 new BABYLON.Vector3(1.0, -1.0, -1.0),
                 new BABYLON.Vector3(1.0, -1.0, 1.0),
                 new BABYLON.Vector3(1.0, 1.0, -1.0),
                 new BABYLON.Vector3(1.0, 1.0, 1.0)
             ];
-            PanoramaToCubeMapTools.FACE_RIGHT = [
+            PanoramaToCubeMapTools.FACE_LEFT = [
                 new BABYLON.Vector3(-1.0, -1.0, 1.0),
                 new BABYLON.Vector3(-1.0, -1.0, -1.0),
                 new BABYLON.Vector3(-1.0, 1.0, 1.0),
                 new BABYLON.Vector3(-1.0, 1.0, -1.0)
             ];
-            PanoramaToCubeMapTools.FACE_UP = [
+            PanoramaToCubeMapTools.FACE_DOWN = [
                 new BABYLON.Vector3(-1.0, 1.0, -1.0),
                 new BABYLON.Vector3(1.0, 1.0, -1.0),
                 new BABYLON.Vector3(-1.0, 1.0, 1.0),
                 new BABYLON.Vector3(1.0, 1.0, 1.0)
             ];
-            PanoramaToCubeMapTools.FACE_DOWN = [
+            PanoramaToCubeMapTools.FACE_UP = [
                 new BABYLON.Vector3(-1.0, -1.0, 1.0),
                 new BABYLON.Vector3(1.0, -1.0, 1.0),
                 new BABYLON.Vector3(-1.0, -1.0, -1.0),
