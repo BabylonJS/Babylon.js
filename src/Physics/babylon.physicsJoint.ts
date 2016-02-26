@@ -6,29 +6,29 @@ module BABYLON {
         connectedPivot?: Vector3;
         mainAxis?: Vector3,
         connectedAxis?: Vector3,
-        collision?: boolean //native in oimo, needs this - https://github.com/schteppe/cannon.js/blob/gh-pages/demos/collisionFilter.html in cannon
+        collision?: boolean 
         //Native Oimo/Cannon/Energy data
         nativeParams?: any;
     }
 
     export class PhysicsJoint {
-        
+
         private _physicsJoint;
-        
+
         constructor(public type: number, public jointData: PhysicsJointData) {
             jointData.nativeParams = jointData.nativeParams || {};
         }
-        
+
         public get physicsJoint() {
             return this._physicsJoint;
         }
-        
+
         public set physicsJoint(newJoint: any) {
-            
-            if(this._physicsJoint) {
+
+            if (this._physicsJoint) {
                 //remove from the wolrd
             }
-            
+
             this._physicsJoint = newJoint;
         }
         
@@ -50,12 +50,20 @@ module BABYLON {
         //Similar to a Ball-Joint. Different in params
         //TODO check!!
         public static PointToPointJoint = 8;
+        //Cannon only at the moment
+        public static SpringJoint = 9;
 
     }
-    
+
     export interface DistanceJointData extends PhysicsJointData {
         maxDistance: number;
         //Oimo - minDistance
         //Cannon - maxForce
+    }
+    
+    export interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
     }
 }
