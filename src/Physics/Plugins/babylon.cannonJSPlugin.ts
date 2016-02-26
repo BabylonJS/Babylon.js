@@ -91,7 +91,7 @@
                 //try to keep the body moving in the right direction by taking old properties.
                 //Should be tested!
                 if (oldBody) {
-                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function (param) {
+                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
                         impostor.physicsBody[param].copy(oldBody[param]);
                     });
                 }
@@ -173,6 +173,16 @@
                     break;
                 case PhysicsJoint.DistanceJoint:
                     constraint = new CANNON.DistanceConstraint(mainBody, connectedBody, (<DistanceJointData>jointData).maxDistance || 2)
+                    break;
+                case PhysicsJoint.SpringJoint:
+                    var springData = <SpringJointData>jointData;
+                    constraint = new CANNON.Spring(mainBody, connectedBody, {
+                        restLength: springData.length,
+                        stiffness: springData.stiffness,
+                        damping: springData.damping,
+                        localAnchorA: constraintData.pivotA,
+                        localAnchorB: constraintData.pivotB
+                    });
                     break;
                 default:
                     constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
@@ -409,13 +419,13 @@
         public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.velocity.copy(velocity);
         }
-        
+
         public sleepBody(impostor: PhysicsImpostor) {
-            impostor.physicsBody.sleep();    
+            impostor.physicsBody.sleep();
         }
-        
+
         public wakeUpBody(impostor: PhysicsImpostor) {
-            impostor.physicsBody.wakeUp(); 
+            impostor.physicsBody.wakeUp();
         }
 
         public dispose() {

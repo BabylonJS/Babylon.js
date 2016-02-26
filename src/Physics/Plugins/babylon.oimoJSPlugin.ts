@@ -21,7 +21,7 @@ module BABYLON {
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
 
-            impostors.forEach(function (impostor) {
+            impostors.forEach(function(impostor) {
                 impostor.beforeStep();
             });
 
@@ -99,7 +99,7 @@ module BABYLON {
 
                 var impostors = [impostor];
                 function addToArray(parent: AbstractMesh) {
-                    parent.getChildMeshes().forEach(function (m) {
+                    parent.getChildMeshes().forEach(function(m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
                             m.physicsImpostor._init();
@@ -242,6 +242,12 @@ module BABYLON {
                 case PhysicsJoint.BallAndSocketJoint:
                     type = "jointBall";
                     break;
+                case PhysicsJoint.SpringJoint:
+                    Tools.Warn("Oimo.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
+                    var springData = <SpringJointData>jointData;
+                    nativeJointData.min = springData.length || nativeJointData.min;
+                    //Max should also be set, just make sure it is at least min
+                    nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
                 case PhysicsJoint.DistanceJoint:
                     type = "jointDistance";
                     nativeJointData.max = (<DistanceJointData>jointData).maxDistance
@@ -309,13 +315,13 @@ module BABYLON {
         public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
         }
-        
+
         public sleepBody(impostor: PhysicsImpostor) {
-            impostor.physicsBody.sleep();    
+            impostor.physicsBody.sleep();
         }
-        
+
         public wakeUpBody(impostor: PhysicsImpostor) {
-            impostor.physicsBody.awake(); 
+            impostor.physicsBody.awake();
         }
 
         public dispose() {
