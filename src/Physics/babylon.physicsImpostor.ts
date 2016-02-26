@@ -213,6 +213,8 @@ module BABYLON {
             //conjugate deltaRotation
             if (this._deltaRotationConjugated) {
                 this.mesh.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this._tmpRotationWithDelta);
+            } else {
+                this._tmpRotationWithDelta.copyFrom(this.mesh.rotationQuaternion);
             }
 
             this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
