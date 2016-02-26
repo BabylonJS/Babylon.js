@@ -7,21 +7,25 @@ var BABYLON;
 (function (BABYLON) {
     var HDRCubeTexture = (function (_super) {
         __extends(HDRCubeTexture, _super);
-        function HDRCubeTexture(url, scene, size, noMipmap, generateHarmonics, useInGammaSpace) {
+        function HDRCubeTexture(url, scene, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
             if (noMipmap === void 0) { noMipmap = false; }
             if (generateHarmonics === void 0) { generateHarmonics = true; }
             if (useInGammaSpace === void 0) { useInGammaSpace = false; }
+            if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
             _super.call(this, scene);
             this.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
             this._useInGammaSpace = false;
             this._generateHarmonics = true;
             this.sphericalPolynomial = null;
+            this.isPMREM = false;
             this.name = url;
             this.url = url;
             this._noMipmap = noMipmap;
             this.hasAlpha = false;
             this._size = size;
             this._useInGammaSpace = useInGammaSpace;
+            this._usePMREMGenerator = usePMREMGenerator;
+            this.isPMREM = usePMREMGenerator;
             if (!url) {
                 return;
             }
@@ -84,10 +88,17 @@ var BABYLON;
                 }
                 return results;
             };
-            this._texture = this.getScene().getEngine().createRawCubeTexture(this.url, this.getScene(), this._size, BABYLON.Engine.TEXTUREFORMAT_RGB, BABYLON.Engine.TEXTURETYPE_FLOAT, this._noMipmap, callback);
+            var mipmapGenerator = null;
+            if (!this._noMipmap && this._usePMREMGenerator) {
+                mipmapGenerator = function (data) {
+                    var generator = new BABYLON.Internals.PMREMGenerator(data, _this._size, _this._size, 0, 3, _this.getScene().getEngine().getCaps().textureFloat, 2048, 0.25, false, true);
+                    return generator.filterCubeMap();
+                };
+            }
+            this._texture = this.getScene().getEngine().createRawCubeTexture(this.url, this.getScene(), this._size, BABYLON.Engine.TEXTUREFORMAT_RGB, BABYLON.Engine.TEXTURETYPE_FLOAT, this._noMipmap, callback, mipmapGenerator);
         };
         HDRCubeTexture.prototype.clone = function () {
-            var newTexture = new HDRCubeTexture(this.url, this.getScene(), this._size, this._noMipmap, this._generateHarmonics, this._useInGammaSpace);
+            var newTexture = new HDRCubeTexture(this.url, this.getScene(), this._size, this._noMipmap, this._generateHarmonics, this._useInGammaSpace, this._usePMREMGenerator);
             // Base texture
             newTexture.level = this.level;
             newTexture.wrapU = this.wrapU;
@@ -113,7 +124,7 @@ var BABYLON;
         HDRCubeTexture.Parse = function (parsedTexture, scene, rootUrl) {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
-                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.size, texture.generateHarmonics, texture.useInGammaSpace);
+                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.size, texture.generateHarmonics, texture.useInGammaSpace, texture.usePMREMGenerator);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;
                 texture.level = parsedTexture.level;
@@ -134,14 +145,15 @@ var BABYLON;
             serializationObject.coordinatesMode = this.coordinatesMode;
             serializationObject.useInGammaSpace = this._useInGammaSpace;
             serializationObject.generateHarmonics = this._generateHarmonics;
+            serializationObject.usePMREMGenerator = this._usePMREMGenerator;
             return serializationObject;
         };
         HDRCubeTexture._facesMapping = [
-            "left",
-            "down",
-            "front",
             "right",
             "up",
+            "front",
+            "left",
+            "down",
             "back"
         ];
         return HDRCubeTexture;

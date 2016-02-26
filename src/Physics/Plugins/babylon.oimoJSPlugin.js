@@ -252,6 +252,12 @@ var BABYLON;
         OimoJSPlugin.prototype.setVelocity = function (impostor, velocity) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
         };
+        OimoJSPlugin.prototype.sleepBody = function (impostor) {
+            impostor.physicsBody.sleep();
+        };
+        OimoJSPlugin.prototype.wakeUpBody = function (impostor) {
+            impostor.physicsBody.awake();
+        };
         OimoJSPlugin.prototype.dispose = function () {
             this.world.clear();
         };

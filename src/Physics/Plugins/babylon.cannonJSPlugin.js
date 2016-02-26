@@ -343,6 +343,12 @@ var BABYLON;
         CannonJSPlugin.prototype.setVelocity = function (impostor, velocity) {
             impostor.physicsBody.velocity.copy(velocity);
         };
+        CannonJSPlugin.prototype.sleepBody = function (impostor) {
+            impostor.physicsBody.sleep();
+        };
+        CannonJSPlugin.prototype.wakeUpBody = function (impostor) {
+            impostor.physicsBody.wakeUp();
+        };
         CannonJSPlugin.prototype.dispose = function () {
             //nothing to do, actually.
         };

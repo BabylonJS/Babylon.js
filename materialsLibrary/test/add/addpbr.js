@@ -6,6 +6,9 @@ window.preparePBR = function() {
 	pbr.albedoTexture.vScale = 5;
     
     var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 512);
+    
+    // Uncomment for PMREM Generation
+    // var hdrTexture = new BABYLON.HDRCubeTexture("textures/hdr/environment.hdr", scene, 128, false, true, false, true);
     pbr.reflectionTexture = hdrTexture;
     pbr.refractionTexture = hdrTexture;
     pbr.linkRefractionWithTransparency = true;
