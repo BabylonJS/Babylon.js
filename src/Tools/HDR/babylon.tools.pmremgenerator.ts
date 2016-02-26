@@ -9,62 +9,60 @@ namespace BABYLON.Internals {
     class CMGBoundinBox {
         private static MAX = Number.MAX_VALUE;
         private static MIN = Number.MIN_VALUE;
-        
+
         public min: Vector3;
         public max: Vector3;
-        
+
         constructor() {
             this.min = new Vector3(0, 0, 0);
             this.max = new Vector3(0, 0, 0);
-            
+
             this.clear()
         }
-        
+
         public clear(): void {
             this.min.x = CMGBoundinBox.MAX;
             this.min.y = CMGBoundinBox.MAX;
             this.min.z = CMGBoundinBox.MAX;
-            
+
             this.max.x = CMGBoundinBox.MIN;
             this.max.y = CMGBoundinBox.MIN;
             this.max.z = CMGBoundinBox.MIN;
         }
-        
+
         public augment(x: number, y: number, z: number): void {
-            this.min.x = Math.min(this.min.x, x );
-            this.min.y = Math.min(this.min.y, y );
-            this.min.z = Math.min(this.min.z, z );
-            this.max.x = Math.max(this.max.x, x );
-            this.max.y = Math.max(this.max.y, y );
-            this.max.z = Math.max(this.max.z, z );
+            this.min.x = Math.min(this.min.x, x);
+            this.min.y = Math.min(this.min.y, y);
+            this.min.z = Math.min(this.min.z, z);
+            this.max.x = Math.max(this.max.x, x);
+            this.max.y = Math.max(this.max.y, y);
+            this.max.z = Math.max(this.max.z, z);
         }
-        
+
         public clampMin(x: number, y: number, z: number): void {
-            this.min.x = Math.max( this.min.x, x );
-            this.min.y = Math.max( this.min.y, y );
-            this.min.z = Math.max( this.min.z, z );
+            this.min.x = Math.max(this.min.x, x);
+            this.min.y = Math.max(this.min.y, y);
+            this.min.z = Math.max(this.min.z, z);
         }
-        
+
         public clampMax(x: number, y: number, z: number): void {
-            this.max.x = Math.min( this.max.x, x );
-            this.max.y = Math.min( this.max.y, y );
-            this.max.z = Math.min( this.max.z, z );
+            this.max.x = Math.min(this.max.x, x);
+            this.max.y = Math.min(this.max.y, y);
+            this.max.z = Math.min(this.max.z, z);
         }
-        
+
         public empty(): boolean {
-            if( (this.min.x > this.max.y) ||
+            if ((this.min.x > this.max.y) ||
                 (this.min.y > this.max.y) ||
-                (this.min.z > this.max.y) )
-            {
+                (this.min.z > this.max.y)) {
                 return true;
             }
-            else
-            {
-                return false;    
+            else {
+                return false;
             }
         }
     }
-    
+
     export class PMREMGenerator {
         private static CP_MAX_MIPLEVELS = 16;
 
@@ -167,35 +165,35 @@ namespace BABYLON.Internals {
         private static _sgCubeNgh =
         [
             //XPOS face
-            [[PMREMGenerator.CP_FACE_Z_POS, PMREMGenerator.CP_EDGE_RIGHT ],
-            [PMREMGenerator.CP_FACE_Z_NEG, PMREMGenerator.CP_EDGE_LEFT  ],
-            [PMREMGenerator.CP_FACE_Y_POS, PMREMGenerator.CP_EDGE_RIGHT ],
-            [PMREMGenerator.CP_FACE_Y_NEG, PMREMGenerator.CP_EDGE_RIGHT ]],
+            [[PMREMGenerator.CP_FACE_Z_POS, PMREMGenerator.CP_EDGE_RIGHT],
+                [PMREMGenerator.CP_FACE_Z_NEG, PMREMGenerator.CP_EDGE_LEFT],
+                [PMREMGenerator.CP_FACE_Y_POS, PMREMGenerator.CP_EDGE_RIGHT],
+                [PMREMGenerator.CP_FACE_Y_NEG, PMREMGenerator.CP_EDGE_RIGHT]],
             //XNEG face
-            [[PMREMGenerator.CP_FACE_Z_NEG, PMREMGenerator.CP_EDGE_RIGHT ],
-            [PMREMGenerator.CP_FACE_Z_POS, PMREMGenerator.CP_EDGE_LEFT  ],
-            [PMREMGenerator.CP_FACE_Y_POS, PMREMGenerator.CP_EDGE_LEFT  ],
-            [PMREMGenerator.CP_FACE_Y_NEG, PMREMGenerator.CP_EDGE_LEFT  ]],
+            [[PMREMGenerator.CP_FACE_Z_NEG, PMREMGenerator.CP_EDGE_RIGHT],
+                [PMREMGenerator.CP_FACE_Z_POS, PMREMGenerator.CP_EDGE_LEFT],
+                [PMREMGenerator.CP_FACE_Y_POS, PMREMGenerator.CP_EDGE_LEFT],
+                [PMREMGenerator.CP_FACE_Y_NEG, PMREMGenerator.CP_EDGE_LEFT]],
             //YPOS face
-            [[PMREMGenerator.CP_FACE_X_NEG, PMREMGenerator.CP_EDGE_TOP ],
-            [PMREMGenerator.CP_FACE_X_POS, PMREMGenerator.CP_EDGE_TOP ],
-            [PMREMGenerator.CP_FACE_Z_NEG, PMREMGenerator.CP_EDGE_TOP ],
-            [PMREMGenerator.CP_FACE_Z_POS, PMREMGenerator.CP_EDGE_TOP ]],
+            [[PMREMGenerator.CP_FACE_X_NEG, PMREMGenerator.CP_EDGE_TOP],
+                [PMREMGenerator.CP_FACE_X_POS, PMREMGenerator.CP_EDGE_TOP],
+                [PMREMGenerator.CP_FACE_Z_NEG, PMREMGenerator.CP_EDGE_TOP],
+                [PMREMGenerator.CP_FACE_Z_POS, PMREMGenerator.CP_EDGE_TOP]],
             //YNEG face
             [[PMREMGenerator.CP_FACE_X_NEG, PMREMGenerator.CP_EDGE_BOTTOM],
-            [PMREMGenerator.CP_FACE_X_POS, PMREMGenerator.CP_EDGE_BOTTOM],
-            [PMREMGenerator.CP_FACE_Z_POS, PMREMGenerator.CP_EDGE_BOTTOM],
-            [PMREMGenerator.CP_FACE_Z_NEG, PMREMGenerator.CP_EDGE_BOTTOM]],
+                [PMREMGenerator.CP_FACE_X_POS, PMREMGenerator.CP_EDGE_BOTTOM],
+                [PMREMGenerator.CP_FACE_Z_POS, PMREMGenerator.CP_EDGE_BOTTOM],
+                [PMREMGenerator.CP_FACE_Z_NEG, PMREMGenerator.CP_EDGE_BOTTOM]],
             //ZPOS face
-            [[PMREMGenerator.CP_FACE_X_NEG, PMREMGenerator.CP_EDGE_RIGHT  ],
-            [PMREMGenerator.CP_FACE_X_POS, PMREMGenerator.CP_EDGE_LEFT   ],
-            [PMREMGenerator.CP_FACE_Y_POS, PMREMGenerator.CP_EDGE_BOTTOM ],
-            [PMREMGenerator.CP_FACE_Y_NEG, PMREMGenerator.CP_EDGE_TOP    ]],
+            [[PMREMGenerator.CP_FACE_X_NEG, PMREMGenerator.CP_EDGE_RIGHT],
+                [PMREMGenerator.CP_FACE_X_POS, PMREMGenerator.CP_EDGE_LEFT],
+                [PMREMGenerator.CP_FACE_Y_POS, PMREMGenerator.CP_EDGE_BOTTOM],
+                [PMREMGenerator.CP_FACE_Y_NEG, PMREMGenerator.CP_EDGE_TOP]],
             //ZNEG face
-            [[PMREMGenerator.CP_FACE_X_POS, PMREMGenerator.CP_EDGE_RIGHT  ],
-            [PMREMGenerator.CP_FACE_X_NEG, PMREMGenerator.CP_EDGE_LEFT   ],
-            [PMREMGenerator.CP_FACE_Y_POS, PMREMGenerator.CP_EDGE_TOP    ],
-            [PMREMGenerator.CP_FACE_Y_NEG, PMREMGenerator.CP_EDGE_BOTTOM ]]
+            [[PMREMGenerator.CP_FACE_X_POS, PMREMGenerator.CP_EDGE_RIGHT],
+                [PMREMGenerator.CP_FACE_X_NEG, PMREMGenerator.CP_EDGE_LEFT],
+                [PMREMGenerator.CP_FACE_Y_POS, PMREMGenerator.CP_EDGE_TOP],
+                [PMREMGenerator.CP_FACE_Y_NEG, PMREMGenerator.CP_EDGE_BOTTOM]]
         ];
         
         //The 12 edges of the cubemap, (entries are used to index into the neighbor table)
@@ -221,12 +219,12 @@ namespace BABYLON.Internals {
         //  the 4 corners in each cube face
         //  the order is upper left, upper right, lower left, lower right
         private static _sgCubeCornerList = [
-            [ PMREMGenerator.CP_CORNER_PPP, PMREMGenerator.CP_CORNER_PPN, PMREMGenerator.CP_CORNER_PNP, PMREMGenerator.CP_CORNER_PNN ], // XPOS face
-            [ PMREMGenerator.CP_CORNER_NPN, PMREMGenerator.CP_CORNER_NPP, PMREMGenerator.CP_CORNER_NNN, PMREMGenerator.CP_CORNER_NNP ], // XNEG face
-            [ PMREMGenerator.CP_CORNER_NPN, PMREMGenerator.CP_CORNER_PPN, PMREMGenerator.CP_CORNER_NPP, PMREMGenerator.CP_CORNER_PPP ], // YPOS face
-            [ PMREMGenerator.CP_CORNER_NNP, PMREMGenerator.CP_CORNER_PNP, PMREMGenerator.CP_CORNER_NNN, PMREMGenerator.CP_CORNER_PNN ], // YNEG face
-            [ PMREMGenerator.CP_CORNER_NPP, PMREMGenerator.CP_CORNER_PPP, PMREMGenerator.CP_CORNER_NNP, PMREMGenerator.CP_CORNER_PNP ], // ZPOS face
-            [ PMREMGenerator.CP_CORNER_PPN, PMREMGenerator.CP_CORNER_NPN, PMREMGenerator.CP_CORNER_PNN, PMREMGenerator.CP_CORNER_NNN ]  // ZNEG face
+            [PMREMGenerator.CP_CORNER_PPP, PMREMGenerator.CP_CORNER_PPN, PMREMGenerator.CP_CORNER_PNP, PMREMGenerator.CP_CORNER_PNN], // XPOS face
+            [PMREMGenerator.CP_CORNER_NPN, PMREMGenerator.CP_CORNER_NPP, PMREMGenerator.CP_CORNER_NNN, PMREMGenerator.CP_CORNER_NNP], // XNEG face
+            [PMREMGenerator.CP_CORNER_NPN, PMREMGenerator.CP_CORNER_PPN, PMREMGenerator.CP_CORNER_NPP, PMREMGenerator.CP_CORNER_PPP], // YPOS face
+            [PMREMGenerator.CP_CORNER_NNP, PMREMGenerator.CP_CORNER_PNP, PMREMGenerator.CP_CORNER_NNN, PMREMGenerator.CP_CORNER_PNN], // YNEG face
+            [PMREMGenerator.CP_CORNER_NPP, PMREMGenerator.CP_CORNER_PPP, PMREMGenerator.CP_CORNER_NNP, PMREMGenerator.CP_CORNER_PNP], // ZPOS face
+            [PMREMGenerator.CP_CORNER_PPN, PMREMGenerator.CP_CORNER_NPN, PMREMGenerator.CP_CORNER_PNN, PMREMGenerator.CP_CORNER_NNN]  // ZNEG face
         ];
 
         private _outputSurface: ArrayBufferView[][] = [];
@@ -334,7 +332,7 @@ namespace BABYLON.Internals {
             
             // Note that we need to filter the first level before generating mipmap
             // So LevelIndex == 0 is base filtering hen LevelIndex > 0 is mipmap generation
-            for(var levelIndex = 0; levelIndex < this._numMipLevels; levelIndex++) {
+            for (var levelIndex = 0; levelIndex < this._numMipLevels; levelIndex++) {
                 // TODO : Write a function to copy and scale the base mipmap in output
                 // I am just lazy here and just put a high specular power value, and do some if.
                 if (this.excludeBase && (levelIndex == 0)) {
@@ -378,7 +376,7 @@ namespace BABYLON.Internals {
             // That's: acos(epsilon^(1/cosinePower))
             const threshold = 0.000001;  // Empirical threshold (Work perfectly, didn't check for a more big number, may get some performance and still god approximation)
             var angle = 180.0;
-            angle = Math.acos(Math.pow(threshold, 1.0 / cosinePower)); 
+            angle = Math.acos(Math.pow(threshold, 1.0 / cosinePower));
             angle *= 180.0 / Math.PI; // Convert to degree
             angle *= 2.0; // * 2.0f because PMREMGenerator divide by 2 later
             
@@ -540,38 +538,38 @@ namespace BABYLON.Internals {
             var absY = Math.abs(y);
             var absZ = Math.abs(z);
 
-            if(absX >= absY && absX >= absZ) {
+            if (absX >= absY && absX >= absZ) {
                 maxCoord = absX;
 
-                if(x >= 0) //face = XPOS
+                if (x >= 0) //face = XPOS
                 {
-                    faceIdx = PMREMGenerator.CP_FACE_X_POS;            
-                }    
+                    faceIdx = PMREMGenerator.CP_FACE_X_POS;
+                }
                 else {
-                    faceIdx = PMREMGenerator.CP_FACE_X_NEG;                    
+                    faceIdx = PMREMGenerator.CP_FACE_X_NEG;
                 }
             }
             else if (absY >= absX && absY >= absZ) {
                 maxCoord = absY;
 
-                if(y >= 0) //face = XPOS
+                if (y >= 0) //face = XPOS
                 {
-                    faceIdx = PMREMGenerator.CP_FACE_Y_POS;            
-                }    
+                    faceIdx = PMREMGenerator.CP_FACE_Y_POS;
+                }
                 else {
-                    faceIdx = PMREMGenerator.CP_FACE_Y_NEG;                    
-                }    
+                    faceIdx = PMREMGenerator.CP_FACE_Y_NEG;
+                }
             }
             else {
                 maxCoord = absZ;
 
-                if(z >= 0) //face = XPOS
+                if (z >= 0) //face = XPOS
                 {
-                    faceIdx = PMREMGenerator.CP_FACE_Z_POS;            
-                }    
+                    faceIdx = PMREMGenerator.CP_FACE_Z_POS;
+                }
                 else {
-                    faceIdx = PMREMGenerator.CP_FACE_Z_NEG;                    
-                }    
+                    faceIdx = PMREMGenerator.CP_FACE_Z_NEG;
+                }
             }
 
             //divide through by max coord so face vector lies on cube face
@@ -579,27 +577,27 @@ namespace BABYLON.Internals {
             x *= scale;
             y *= scale;
             z *= scale;
-            
+
             var temp = PMREMGenerator._sgFace2DMapping[faceIdx][PMREMGenerator.CP_UDIR];
             var nvcU = temp[0] * x + temp[1] * y + temp[2] * z;
-            
+
             temp = PMREMGenerator._sgFace2DMapping[faceIdx][PMREMGenerator.CP_VDIR];
             var nvcV = temp[0] * x + temp[1] * y + temp[2] * z;
 
             // Modify original AMD code to return value from 0 to Size - 1
-            var u = Math.floor( (size - 1) * 0.5 * (nvcU + 1.0) );
-            var v = Math.floor( (size - 1) * 0.5 * (nvcV + 1.0) );
+            var u = Math.floor((size - 1) * 0.5 * (nvcU + 1.0));
+            var v = Math.floor((size - 1) * 0.5 * (nvcV + 1.0));
 
             PMREMGenerator._vectorTemp.x = faceIdx;
             PMREMGenerator._vectorTemp.y = u;
             PMREMGenerator._vectorTemp.z = v;
-            
+
             return PMREMGenerator._vectorTemp;
         }
         
         //--------------------------------------------------------------------------------------
-        //Original code from Ignacio CastaÃ’o
-        // This formula is from Manne Ã·hrstrË†m's thesis.
+        //Original code from Ignacio CastaÒo
+        // This formula is from Manne ÷hrstrˆm's thesis.
         // Take two coordiantes in the range [-1, 1] that define a portion of a
         // cube face and return the area of the projection of that portion on the
         // surface of the sphere.
@@ -650,7 +648,7 @@ namespace BABYLON.Internals {
             var v: number;
             
             // bounding box per face to specify region to process
-            var filterExtents: CMGBoundinBox[] = [];   
+            var filterExtents: CMGBoundinBox[] = [];
             for (iCubeFace = 0; iCubeFace < 6; iCubeFace++) {
                 filterExtents.push(new CMGBoundinBox());
             }
@@ -874,9 +872,8 @@ namespace BABYLON.Internals {
         //  Process bounding box in each cube face 
         //
         //--------------------------------------------------------------------------------------
-        private processFilterExtents(centerTapDir: Vector4, dotProdThresh: number, filterExtents: CMGBoundinBox[], 
-            srcCubeMap: ArrayBufferView[], srcSize: number, specularPower: number) : Vector4
-        {
+        private processFilterExtents(centerTapDir: Vector4, dotProdThresh: number, filterExtents: CMGBoundinBox[],
+            srcCubeMap: ArrayBufferView[], srcSize: number, specularPower: number): Vector4 {
             //accumulators are 64-bit floats in order to have the precision needed 
             // over a summation of a large number of pixels 
             var dstAccum = [0, 0, 0, 0];
@@ -895,10 +892,10 @@ namespace BABYLON.Internals {
             //(a_LightingModel == CP_LIGHTINGMODEL_PHONG_BRDF || a_LightingModel == CP_LIGHTINGMODEL_BLINN_BRDF) ? 1 : 0; // This value will be added to the specular power
 
             // iterate over cubefaces
-            for(var iFaceIdx = 0; iFaceIdx < 6; iFaceIdx++) {
+            for (var iFaceIdx = 0; iFaceIdx < 6; iFaceIdx++) {
                 
                 //if bbox is non empty
-                if(!filterExtents[iFaceIdx].empty()) {
+                if (!filterExtents[iFaceIdx].empty()) {
                     var uStart = filterExtents[iFaceIdx].min.x;
                     var vStart = filterExtents[iFaceIdx].min.y;
                     var uEnd = filterExtents[iFaceIdx].max.x;
@@ -908,11 +905,11 @@ namespace BABYLON.Internals {
                     var startIndexSrcCubeMap = (this.numChannels * ((vStart * faceWidth) + uStart));
 
                     //note that <= is used to ensure filter extents always encompass at least one pixel if bbox is non empty
-                    for(var v = vStart; v <= vEnd; v++) {
+                    for (var v = vStart; v <= vEnd; v++) {
                         var normCubeRowWalk = 0;
                         var srcCubeRowWalk = 0;
 
-                        for(var u = uStart; u <= uEnd; u++) {
+                        for (var u = uStart; u <= uEnd; u++) {
                             //pointer to direction in cube map associated with texel
                             var texelVectX = this._normCubeMap[iFaceIdx][startIndexNormCubeMap + normCubeRowWalk + 0];
                             var texelVectY = this._normCubeMap[iFaceIdx][startIndexNormCubeMap + normCubeRowWalk + 1];
@@ -923,7 +920,7 @@ namespace BABYLON.Internals {
                                 texelVectY * centerTapDir.y +
                                 texelVectZ * centerTapDir.z;
 
-                            if(tapDotProd >= dotProdThresh && tapDotProd > 0.0) {
+                            if (tapDotProd >= dotProdThresh && tapDotProd > 0.0) {
                                 //solid angle stored in 4th channel of normalizer/solid angle cube map
                                 var weight = this._normCubeMap[iFaceIdx][startIndexNormCubeMap + normCubeRowWalk + 3]; 
 
@@ -933,17 +930,17 @@ namespace BABYLON.Internals {
                                 weight *= Math.pow(tapDotProd, (specularPower + IsPhongBRDF));
 
                                 //iterate over channels
-                                for(k = 0; k < nSrcChannels; k++)   //(aSrcCubeMap[iFaceIdx].m_NumChannels) //up to 4 channels 
+                                for (k = 0; k < nSrcChannels; k++)   //(aSrcCubeMap[iFaceIdx].m_NumChannels) //up to 4 channels 
                                 {
                                     dstAccum[k] += weight * srcCubeMap[iFaceIdx][startIndexSrcCubeMap + srcCubeRowWalk];
                                     srcCubeRowWalk++;
-                                } 
+                                }
 
                                 weightAccum += weight; //accumulate weight
                             }
                             else {   
                                 //step across source pixel
-                                srcCubeRowWalk += nSrcChannels;                    
+                                srcCubeRowWalk += nSrcChannels;
                             }
 
                             normCubeRowWalk += 4; // 4 channels per norm cube map.
@@ -951,12 +948,12 @@ namespace BABYLON.Internals {
 
                         startIndexNormCubeMap += normCubePitch;
                         startIndexSrcCubeMap += srcCubePitch;
-                    }       
+                    }
                 }
             }
 
             //divide through by weights if weight is non zero
-            if(weightAccum != 0.0) {
+            if (weightAccum != 0.0) {
                 PMREMGenerator._vectorTemp.x = (dstAccum[0] / weightAccum);
                 PMREMGenerator._vectorTemp.y = (dstAccum[1] / weightAccum);
                 PMREMGenerator._vectorTemp.z = (dstAccum[2] / weightAccum);
@@ -976,7 +973,7 @@ namespace BABYLON.Internals {
                     PMREMGenerator._vectorTemp.z = srcCubeMap[coord.x][this.numChannels * (coord.z * srcSize + coord.y) + 3];
                 }
             }
-            
+
             return PMREMGenerator._vectorTemp;
         }
         
@@ -986,13 +983,13 @@ namespace BABYLON.Internals {
         // average texels on cube map faces across the edges
         // WARP/BENT Method Only.
         //--------------------------------------------------------------------------------------
-        private fixupCubeEdges(cubeMap:ArrayBufferView[], cubeMapSize: number): void {
+        private fixupCubeEdges(cubeMap: ArrayBufferView[], cubeMapSize: number): void {
             var k: number;
             var j: number;
             var i: number;
             var iFace: number;
             var iCorner = 0;
-            
+
             var cornerNumPtrs = [0, 0, 0, 0, 0, 0, 0, 0];   //indexed by corner and face idx
             var faceCornerStartIndicies = [[], [], [], []]; //corner pointers for face keeping track of the face they belong to.
 
@@ -1006,22 +1003,22 @@ namespace BABYLON.Internals {
                 [[], [], []],
                 [[], [], []],
                 [[], [], []],
-                [[], [], []]  
+                [[], [], []]
             ];
 
             //if there is no fixup, or fixup width = 0, do nothing
-            if(cubeMapSize < 1) {
+            if (cubeMapSize < 1) {
                 return;
             }
 
             //special case 1x1 cubemap, average face colors
-            if(cubeMapSize == 1 ) {
+            if (cubeMapSize == 1) {
                 //iterate over channels
-                for(k = 0; k < this.numChannels; k++) {   
+                for (k = 0; k < this.numChannels; k++) {
                     var accum = 0.0;
 
                     //iterate over faces to accumulate face colors
-                    for(iFace = 0; iFace < 6; iFace++) {
+                    for (iFace = 0; iFace < 6; iFace++) {
                         accum += cubeMap[iFace][k];
                     }
 
@@ -1029,7 +1026,7 @@ namespace BABYLON.Internals {
                     accum /= 6.0;
 
                     //iterate over faces to distribute face colors
-                    for(iFace = 0; iFace < 6; iFace++) {
+                    for (iFace = 0; iFace < 6; iFace++) {
                         cubeMap[iFace][k] = accum;
                     }
                 }
@@ -1038,43 +1035,43 @@ namespace BABYLON.Internals {
             }
 
             //iterate over faces to collect list of corner texel pointers
-            for(iFace = 0; iFace < 6; iFace++) {
+            for (iFace = 0; iFace < 6; iFace++) {
                 //the 4 corner pointers for this face
                 faceCornerStartIndicies[0] = [iFace, 0];
-                faceCornerStartIndicies[1] = [iFace, ( (cubeMapSize - 1) * this.numChannels )];
-                faceCornerStartIndicies[2] = [iFace, ( (cubeMapSize) * (cubeMapSize - 1) * this.numChannels )];
-                faceCornerStartIndicies[3] = [iFace, ( (((cubeMapSize) * (cubeMapSize - 1)) + (cubeMapSize - 1)) * this.numChannels )];
+                faceCornerStartIndicies[1] = [iFace, ((cubeMapSize - 1) * this.numChannels)];
+                faceCornerStartIndicies[2] = [iFace, ((cubeMapSize) * (cubeMapSize - 1) * this.numChannels)];
+                faceCornerStartIndicies[3] = [iFace, ((((cubeMapSize) * (cubeMapSize - 1)) + (cubeMapSize - 1)) * this.numChannels)];
 
                 //iterate over face corners to collect cube corner pointers
-                for(iCorner = 0; iCorner < 4; iCorner++) {
-                    var corner = PMREMGenerator._sgCubeCornerList[iFace][iCorner];   
-                    cornerPtr[corner][ cornerNumPtrs[corner] ] = faceCornerStartIndicies[iCorner];
+                for (iCorner = 0; iCorner < 4; iCorner++) {
+                    var corner = PMREMGenerator._sgCubeCornerList[iFace][iCorner];
+                    cornerPtr[corner][cornerNumPtrs[corner]] = faceCornerStartIndicies[iCorner];
                     cornerNumPtrs[corner]++;
                 }
             }
 
             //iterate over corners to average across corner tap values
-            for(iCorner = 0; iCorner < 8; iCorner++) {
-                for(k = 0; k < this.numChannels; k++) {             
+            for (iCorner = 0; iCorner < 8; iCorner++) {
+                for (k = 0; k < this.numChannels; k++) {
                     var cornerTapAccum = 0.0;
 
                     //iterate over corner texels and average results
-                    for(i = 0; i < 3; i++) {
-                        cornerTapAccum += cubeMap [cornerPtr[iCorner][i][0]] [cornerPtr[iCorner][i][1] + k]; // Get in the cube map face the start point + channel.
+                    for (i = 0; i < 3; i++) {
+                        cornerTapAccum += cubeMap[cornerPtr[iCorner][i][0]][cornerPtr[iCorner][i][1] + k]; // Get in the cube map face the start point + channel.
                     }
 
                     //divide by 3 to compute average of corner tap values
                     cornerTapAccum *= (1.0 / 3.0);
 
                     //iterate over corner texels and average results
-                    for(i = 0; i < 3; i++) {
-                        cubeMap [cornerPtr[iCorner][i][0]] [cornerPtr[iCorner][i][1] + k] = cornerTapAccum;
+                    for (i = 0; i < 3; i++) {
+                        cubeMap[cornerPtr[iCorner][i][0]][cornerPtr[iCorner][i][1] + k] = cornerTapAccum;
                     }
                 }
             }
 
             //iterate over the twelve edges of the cube to average across edges
-            for(i = 0; i < 12; i++) {
+            for (i = 0; i < 12; i++) {
                 var face = PMREMGenerator._sgCubeEdgeList[i][0];
                 var edge = PMREMGenerator._sgCubeEdgeList[i][1];
 
@@ -1088,8 +1085,7 @@ namespace BABYLON.Internals {
 
                 //Determine walking pointers based on edge type
                 // e.g. CP_EDGE_LEFT, CP_EDGE_RIGHT, CP_EDGE_TOP, CP_EDGE_BOTTOM
-                switch(edge)
-                {
+                switch (edge) {
                     case PMREMGenerator.CP_EDGE_LEFT:
                         // no change to faceEdgeStartPtr  
                         edgeWalk = this.numChannels * cubeMapSize;
@@ -1122,16 +1118,14 @@ namespace BABYLON.Internals {
                 // 
                 //If the edge enums are the same, or the sum of the enums == 3, 
                 //  the neighbor edge walk needs to be flipped
-                if( (edge == neighborEdge) || ((edge + neighborEdge) == 3))
-                {   //swapped direction neighbor edge walk
-                    switch(neighborEdge)
-                    {
+                if ((edge == neighborEdge) || ((edge + neighborEdge) == 3)) {   //swapped direction neighbor edge walk
+                    switch (neighborEdge) {
                         case PMREMGenerator.CP_EDGE_LEFT:  //start at lower left and walk up
-                            neighborEdgeStartIndex += (cubeMapSize - 1) * (cubeMapSize) *  this.numChannels;
+                            neighborEdgeStartIndex += (cubeMapSize - 1) * (cubeMapSize) * this.numChannels;
                             neighborEdgeWalk = -(this.numChannels * cubeMapSize);
                             break;
                         case PMREMGenerator.CP_EDGE_RIGHT: //start at lower right and walk up
-                            neighborEdgeStartIndex += ((cubeMapSize - 1)*(cubeMapSize) + (cubeMapSize - 1)) * this.numChannels;
+                            neighborEdgeStartIndex += ((cubeMapSize - 1) * (cubeMapSize) + (cubeMapSize - 1)) * this.numChannels;
                             neighborEdgeWalk = -(this.numChannels * cubeMapSize);
                             break;
                         case PMREMGenerator.CP_EDGE_TOP:   //start at upper right and walk left
@@ -1139,15 +1133,14 @@ namespace BABYLON.Internals {
                             neighborEdgeWalk = -this.numChannels;
                             break;
                         case PMREMGenerator.CP_EDGE_BOTTOM: //start at lower right and walk left
-                            neighborEdgeStartIndex += ((cubeMapSize - 1)*(cubeMapSize) + (cubeMapSize - 1)) * this.numChannels;
+                            neighborEdgeStartIndex += ((cubeMapSize - 1) * (cubeMapSize) + (cubeMapSize - 1)) * this.numChannels;
                             neighborEdgeWalk = -this.numChannels;
                             break;
-                    }            
+                    }
                 }
                 else { 
                     //swapped direction neighbor edge walk
-                    switch(neighborEdge)
-                    {
+                    switch (neighborEdge) {
                         case PMREMGenerator.CP_EDGE_LEFT: //start at upper left and walk down
                             //no change to neighborEdgeStartPtr for this case since it points 
                             // to the upper left corner already
@@ -1178,10 +1171,10 @@ namespace BABYLON.Internals {
 
                 // note that this loop does not process the corner texels, since they have already been
                 //  averaged across faces across earlier
-                for(j = 1; j < (cubeMapSize - 1); j++) {             
+                for (j = 1; j < (cubeMapSize - 1); j++) {             
                     //for each set of taps along edge, average them
                     // and rewrite the results into the edges
-                    for(k = 0; k < this.numChannels; k++) {
+                    for (k = 0; k < this.numChannels; k++) {
                         var edgeTap = cubeMap[face][edgeStartIndex + k];
                         var neighborEdgeTap = cubeMap[neighborFace][neighborEdgeStartIndex + k];
 
@@ -1195,7 +1188,7 @@ namespace BABYLON.Internals {
 
                     edgeStartIndex += edgeWalk;
                     neighborEdgeStartIndex += neighborEdgeWalk;
-                }        
+                }
             }
         }
     }

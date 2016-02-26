@@ -193,6 +193,12 @@ var BABYLON;
                 case BABYLON.PhysicsJoint.BallAndSocketJoint:
                     type = "jointBall";
                     break;
+                case BABYLON.PhysicsJoint.SpringJoint:
+                    BABYLON.Tools.Warn("Oimo.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
+                    var springData = jointData;
+                    nativeJointData.min = springData.length || nativeJointData.min;
+                    //Max should also be set, just make sure it is at least min
+                    nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
                 case BABYLON.PhysicsJoint.DistanceJoint:
                     type = "jointDistance";
                     nativeJointData.max = jointData.maxDistance;

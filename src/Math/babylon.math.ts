@@ -591,7 +591,7 @@
     export class Vector3 {
 
         constructor(public x: number, public y: number, public z: number) {
-            
+
         }
 
         public toString(): string {
@@ -1592,19 +1592,19 @@
 
             return this;
         }
-        
+
         public conjugateToRef(ref: Quaternion) {
             ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
             return this;
         }
-        
+
         public conjugateInPlace() {
             this.x *= -1;
             this.y *= -1;
             this.z *= -1;
             return this;
         }
-        
+
         public conjugate() {
             var result = new Quaternion(-this.x, -this.y, -this.z, this.w);
             return result;
@@ -3732,4 +3732,5 @@
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
 }
+
 
