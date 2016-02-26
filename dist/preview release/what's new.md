@@ -8,6 +8,7 @@
     - StandardMaterial now supports Parallax and Parallax Occlusion Mapping ([nockawa](https://github.com/nockawa))
     - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#2). More [info here](NEED DOC!) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+    - New scene.pointerDownPredicate, scene.pointerMovePredicate, scene.pointerUpPredicate to define your own predicates for meshes picking selection ([deltakosh](https://github.com/deltakosh))
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
     - New SPS method `digest()` ([jerome](https://github.com/jbousquie))    
     - New SPS property `computeBoundingBox` ([jerome](https://github.com/jbousquie))  

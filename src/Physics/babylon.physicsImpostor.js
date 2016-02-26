@@ -12,7 +12,6 @@ var BABYLON;
             this._onAfterPhysicsStepCallbacks = new Array();
             this._onPhysicsCollideCallbacks = [];
             this._deltaPosition = BABYLON.Vector3.Zero();
-            this._deltaRotation = new BABYLON.Quaternion();
             this._tmpPositionWithDelta = BABYLON.Vector3.Zero();
             this._tmpRotationWithDelta = new BABYLON.Quaternion();
             /**
@@ -21,8 +20,9 @@ var BABYLON;
             this.beforeStep = function () {
                 _this.mesh.position.subtractToRef(_this._deltaPosition, _this._tmpPositionWithDelta);
                 //conjugate deltaRotation
-                _this._tmpRotationWithDelta.copyFrom(_this._deltaRotation);
-                _this._tmpRotationWithDelta.multiplyInPlace(_this.mesh.rotationQuaternion);
+                if (_this._deltaRotationConjugated) {
+                    _this.mesh.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this._tmpRotationWithDelta);
+                }
                 _this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(_this, _this._tmpPositionWithDelta, _this._tmpRotationWithDelta);
                 _this._onBeforePhysicsStepCallbacks.forEach(function (func) {
                     func(_this);
@@ -37,7 +37,9 @@ var BABYLON;
                 });
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
                 _this.mesh.position.addInPlace(_this._deltaPosition);
-                _this.mesh.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
+                if (_this._deltaRotation) {
+                    _this.mesh.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
+                }
             };
             //event and body object due to cannon's event-based architecture.
             this.onCollide = function (e) {
@@ -273,7 +275,11 @@ var BABYLON;
             this._deltaPosition.copyFrom(position);
         };
         PhysicsImpostor.prototype.setDeltaRotation = function (rotation) {
+            if (!this._deltaRotation) {
+                this._deltaRotation = new BABYLON.Quaternion();
+            }
             this._deltaRotation.copyFrom(rotation);
+            this._deltaRotationConjugated = this._deltaRotation.conjugate();
         };
         //Impostor types
         PhysicsImpostor.NoImpostor = 0;

@@ -1285,6 +1285,20 @@ var BABYLON;
             this.multiplyToRef(q1, this);
             return this;
         };
+        Quaternion.prototype.conjugateToRef = function (ref) {
+            ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
+            return this;
+        };
+        Quaternion.prototype.conjugateInPlace = function () {
+            this.x *= -1;
+            this.y *= -1;
+            this.z *= -1;
+            return this;
+        };
+        Quaternion.prototype.conjugate = function () {
+            var result = new Quaternion(-this.x, -this.y, -this.z, this.w);
+            return result;
+        };
         Quaternion.prototype.length = function () {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
         };

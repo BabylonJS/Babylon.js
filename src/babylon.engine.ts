@@ -1954,7 +1954,7 @@
 
                 if (!noMipmap && isPot) {
                     if (mipmmapGenerator) {
-                        
+
                         var arrayTemp: ArrayBufferView[] = [];
                         // Data are known to be in +X +Y +Z -X -Y -Z
                         // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
@@ -1984,7 +1984,7 @@
                             var faceData = rgbeDataArrays[index];
                             gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
                         }
-                        
+
                         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                     }
                 }
@@ -2318,7 +2318,3 @@
         }
     }
 }
-
-
-
-

@@ -21,7 +21,7 @@ module BABYLON {
         ];
 
         public sphericalPolynomial: SphericalPolynomial = null;
-        
+
         public isPMREM = false;
 
         constructor(url: string, scene: Scene, size: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false) {
@@ -109,11 +109,10 @@ module BABYLON {
                 }
                 return results;
             }
-            
+
             var mipmapGenerator = null;
-            if (!this._noMipmap && this._usePMREMGenerator)
-            {
-                mipmapGenerator = (data: ArrayBufferView[]) => { 
+            if (!this._noMipmap && this._usePMREMGenerator) {
+                mipmapGenerator = (data: ArrayBufferView[]) => {
                     var generator = new BABYLON.Internals.PMREMGenerator(data,
                         this._size,
                         this._size,
@@ -124,7 +123,7 @@ module BABYLON {
                         0.25,
                         false,
                         true);
-                        
+
                     return generator.filterCubeMap();
                 };
             }
@@ -197,3 +196,4 @@ module BABYLON {
         }
     }
 } 
+
