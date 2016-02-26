@@ -149,9 +149,11 @@
                 pivotB: jointData.connectedPivot ? new CANNON.Vec3().copy(jointData.connectedPivot) : null,
                 axisA: jointData.mainAxis ? new CANNON.Vec3().copy(jointData.mainAxis) : null,
                 axisB: jointData.connectedAxis ? new CANNON.Vec3().copy(jointData.connectedAxis) : null,
-                maxForce: jointData.nativeParams.maxForce
+                maxForce: jointData.nativeParams.maxForce,
+                collideConnected: !!jointData.collision
             };
-            if (!jointData.collision) {
+            //Not needed, Cannon has a collideConnected flag
+            /*if (!jointData.collision) {
                 //add 1st body to a collision group of its own, if it is not in 1
                 if (mainBody.collisionFilterGroup === 1) {
                     mainBody.collisionFilterGroup = this._currentCollisionGroup;
@@ -164,7 +166,7 @@
                 //add their mask to the collisionFilterMask of each other:
                 connectedBody.collisionFilterMask = connectedBody.collisionFilterMask | ~mainBody.collisionFilterGroup;
                 mainBody.collisionFilterMask = mainBody.collisionFilterMask | ~connectedBody.collisionFilterGroup;
-            }
+            }*/
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.HingeJoint:
                     constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
@@ -176,6 +178,8 @@
                     constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
             }
+            //set the collideConnected flag after the creation, since DistanceJoint ignores it.
+            constraint.collideConnected = !!jointData.collision
             impostorJoint.joint.physicsJoint = constraint;
             this.world.addConstraint(constraint);
         }
