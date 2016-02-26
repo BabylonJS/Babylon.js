@@ -44,9 +44,9 @@ var BABYLON;
                 var otherImpostor = _this._physicsEngine.getImpostorWithPhysicsBody(e.body);
                 if (otherImpostor) {
                     _this._onPhysicsCollideCallbacks.filter(function (obj) {
-                        return obj.otherImpostor === otherImpostor;
+                        return obj.otherImpostors.indexOf(otherImpostor) !== -1;
                     }).forEach(function (obj) {
-                        obj.callback(_this, obj.otherImpostor);
+                        obj.callback(_this, otherImpostor);
                     });
                 }
             };
@@ -198,10 +198,12 @@ var BABYLON;
          * register a function that will be executed when this impostor collides against a different body.
          */
         PhysicsImpostor.prototype.registerOnPhysicsCollide = function (collideAgainst, func) {
-            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostor: collideAgainst });
+            var collidedAgainstList = collideAgainst instanceof Array ? collideAgainst : [collideAgainst];
+            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
         };
         PhysicsImpostor.prototype.unregisterOnPhysicsCollide = function (collideAgainst, func) {
-            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostor: collideAgainst });
+            var collidedAgainstList = collideAgainst instanceof Array ? collideAgainst : [collideAgainst];
+            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostors: collidedAgainstList });
             if (index > -1) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
             }
@@ -237,6 +239,18 @@ var BABYLON;
                 joint: joint
             });
             this._physicsEngine.addJoint(this, otherImpostor, joint);
+        };
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        PhysicsImpostor.prototype.sleep = function () {
+            this._physicsEngine.getPhysicsPlugin().sleepBody(this);
+        };
+        /**
+         * Wake the body up.
+         */
+        PhysicsImpostor.prototype.wakeUp = function () {
+            this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
         };
         PhysicsImpostor.prototype.dispose = function (disposeChildren) {
             if (disposeChildren === void 0) { disposeChildren = true; }

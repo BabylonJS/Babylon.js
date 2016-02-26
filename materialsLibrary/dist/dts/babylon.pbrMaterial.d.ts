@@ -58,6 +58,9 @@ declare module BABYLON {
         useScalarInLinearSpace: boolean;
         usePhysicalLightFalloff: boolean;
         useRadianceOverAlpha: boolean;
+        useParallax: boolean;
+        useParallaxOcclusion: boolean;
+        parallaxScaleBias: number;
         disableLighting: boolean;
         private _renderTargets;
         private _worldViewProjectionMatrix;

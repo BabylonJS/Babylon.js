@@ -1913,7 +1913,9 @@
             return texture;
         }
 
-        public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer) => ArrayBufferView[]): WebGLTexture {
+        public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+            callback: (ArrayBuffer) => ArrayBufferView[],
+            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
             var gl = this._gl;
             var texture = gl.createTexture();
             scene._addPendingData(texture);
@@ -1950,13 +1952,41 @@
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
-                for (var index = 0; index < facesIndex.length; index++) {
-                    var faceData = rgbeDataArrays[index];
-                    gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
-                }
-
                 if (!noMipmap && isPot) {
-                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    if (mipmmapGenerator) {
+                        
+                        var arrayTemp: ArrayBufferView[] = [];
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
+                        arrayTemp.push(rgbeDataArrays[0]); // +X
+                        arrayTemp.push(rgbeDataArrays[3]); // -X
+                        arrayTemp.push(rgbeDataArrays[1]); // +Y
+                        arrayTemp.push(rgbeDataArrays[4]); // -Y
+                        arrayTemp.push(rgbeDataArrays[2]); // +Z
+                        arrayTemp.push(rgbeDataArrays[5]); // -Z
+                        
+                        var mipData = mipmmapGenerator(arrayTemp);
+                        for (var level = 0; level < mipData.length; level++) {
+                            var mipSize = width >> level;
+                            
+                            // mipData is order in +X -X +Y -Y +Z -Z
+                            gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                            gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                            gl.texImage2D(facesIndex[2], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                            gl.texImage2D(facesIndex[3], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                            gl.texImage2D(facesIndex[4], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                            gl.texImage2D(facesIndex[5], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                        }
+                    }
+                    else {
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (var index = 0; index < facesIndex.length; index++) {
+                            var faceData = rgbeDataArrays[index];
+                            gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
+                        }
+                        
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
                 }
                 else {
                     noMipmap = true;
