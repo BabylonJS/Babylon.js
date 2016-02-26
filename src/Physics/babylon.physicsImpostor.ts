@@ -19,7 +19,8 @@ module BABYLON {
         private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = []
 
         private _deltaPosition: Vector3 = Vector3.Zero();
-        private _deltaRotation: Quaternion = new Quaternion();
+        private _deltaRotation: Quaternion;
+        private _deltaRotationConjugated: Quaternion;
         
         //If set, this is this impostor's parent
         private _parent: PhysicsImpostor;
@@ -185,12 +186,12 @@ module BABYLON {
          * register a function that will be executed when this impostor collides against a different body.
          */
         public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
-            var collidedAgainstList : Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>> collideAgainst : [<PhysicsImpostor>collideAgainst]
+            var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
             this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
         }
 
         public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void {
-            var collidedAgainstList : Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>> collideAgainst : [<PhysicsImpostor>collideAgainst]
+            var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
             var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostors: collidedAgainstList });
 
             if (index > -1) {
@@ -210,8 +211,9 @@ module BABYLON {
 
             this.mesh.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
             //conjugate deltaRotation
-            this._tmpRotationWithDelta.copyFrom(this._deltaRotation);
-            this._tmpRotationWithDelta.multiplyInPlace(this.mesh.rotationQuaternion);
+            if (this._deltaRotationConjugated) {
+                this.mesh.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this._tmpRotationWithDelta);
+            }
 
             this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
 
@@ -231,7 +233,9 @@ module BABYLON {
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
 
             this.mesh.position.addInPlace(this._deltaPosition)
-            this.mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
+            if(this._deltaRotation) {
+                this.mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
+            }
         }
         
         //event and body object due to cannon's event-based architecture.
@@ -298,7 +302,7 @@ module BABYLON {
             if (this.parent) {
                 this.parent.forceUpdate();
             } else {
-                this.mesh.getChildMeshes().forEach(function (mesh) {
+                this.mesh.getChildMeshes().forEach(function(mesh) {
                     if (mesh.physicsImpostor) {
                         if (disposeChildren) {
                             mesh.physicsImpostor.dispose();
@@ -314,7 +318,11 @@ module BABYLON {
         }
 
         public setDeltaRotation(rotation: Quaternion) {
+            if(!this._deltaRotation) {
+                this._deltaRotation = new Quaternion();
+            }
             this._deltaRotation.copyFrom(rotation);
+            this._deltaRotationConjugated = this._deltaRotation.conjugate();
         }
         
         //Impostor types
