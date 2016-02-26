@@ -802,12 +802,8 @@ void main(void) {
     #else
         vec3 normalW = vec3(1.0, 1.0, 1.0);
     #endif
-
-
-    #ifdef BUMP
-		mat3 TBN = cotangent_frame(vNormalW * vBumpInfos.y, -viewDirectionW, vBumpUV);
-		normalW = perturbNormal(viewDirectionW, TBN, vBumpUV);
-    #endif
+    
+    #include<bumpFragment>
 
     // Ambient color
     vec3 ambientColor = vec3(1., 1., 1.);

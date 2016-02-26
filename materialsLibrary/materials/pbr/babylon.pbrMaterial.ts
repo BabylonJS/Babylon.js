@@ -12,6 +12,8 @@ module BABYLON {
         public EMISSIVE = false;
         public REFLECTIVITY = false;
         public BUMP = false;
+        public PARALLAX = false;
+        public PARALLAXOCCLUSION = false;
         public SPECULAROVERALPHA = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
@@ -266,6 +268,15 @@ module BABYLON {
         
         @serialize()
         public useRadianceOverAlpha = true;
+        
+        @serialize()
+        public useParallax = false;
+
+        @serialize()
+        public useParallaxOcclusion = false;
+
+        @serialize()
+        public parallaxScaleBias = 0.05;
         
         @serialize()
         public disableLighting = false;
@@ -564,6 +575,13 @@ module BABYLON {
                     } else {
                         needUVs = true;
                         this._defines.BUMP = true;
+                        
+                        if (this.useParallax) {
+                            this._defines.PARALLAX = true;
+                            if (this.useParallaxOcclusion) {
+                                this._defines.PARALLAXOCCLUSION = true;
+                            }
+                        }
                     }
                 }
 
@@ -733,6 +751,14 @@ module BABYLON {
 
                 if (this._defines.BUMP) {
                     fallbacks.addFallback(0, "BUMP");
+                }
+                
+                if (this._defines.PARALLAX) {
+                    fallbacks.addFallback(1, "PARALLAX");
+                }
+
+                if (this._defines.PARALLAXOCCLUSION) {
+                    fallbacks.addFallback(0, "PARALLAXOCCLUSION");
                 }
 
                 if (this._defines.SPECULAROVERALPHA) {
@@ -977,7 +1003,7 @@ module BABYLON {
                     if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
                         this._effect.setTexture("bumpSampler", this.bumpTexture);
 
-                        this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
+                        this._effect.setFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
                         this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
                     }
 
