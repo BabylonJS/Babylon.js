@@ -805,7 +805,8 @@ void main(void) {
 
 
     #ifdef BUMP
-        normalW = perturbNormal(viewDirectionW);
+		mat3 TBN = cotangent_frame(vNormalW * vBumpInfos.y, -viewDirectionW, vBumpUV);
+		normalW = perturbNormal(viewDirectionW, TBN, vBumpUV);
     #endif
 
     // Ambient color

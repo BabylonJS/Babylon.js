@@ -23,6 +23,8 @@ var BABYLON;
             this.EMISSIVE = false;
             this.SPECULAR = false;
             this.BUMP = false;
+            this.PARALLAX = false;
+            this.PARALLAXOCCLUSION = false;
             this.SPECULAROVERALPHA = false;
             this.CLIPPLANE = false;
             this.ALPHATEST = false;
@@ -119,6 +121,9 @@ var BABYLON;
             this.useSpecularOverAlpha = false;
             this.useReflectionOverAlpha = false;
             this.disableLighting = false;
+            this.useParallax = false;
+            this.useParallaxOcclusion = false;
+            this.parallaxScaleBias = 0.05;
             this.roughness = 0;
             this.indexOfRefraction = 0.98;
             this.invertRefractionY = true;
@@ -308,6 +313,12 @@ var BABYLON;
                     else {
                         needUVs = true;
                         this._defines.BUMP = true;
+                        if (this.useParallax) {
+                            this._defines.PARALLAX = true;
+                            if (this.useParallaxOcclusion) {
+                                this._defines.PARALLAXOCCLUSION = true;
+                            }
+                        }
                     }
                 }
                 if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -425,6 +436,12 @@ var BABYLON;
                 }
                 if (this._defines.BUMP) {
                     fallbacks.addFallback(0, "BUMP");
+                }
+                if (this._defines.PARALLAX) {
+                    fallbacks.addFallback(1, "PARALLAX");
+                }
+                if (this._defines.PARALLAXOCCLUSION) {
+                    fallbacks.addFallback(0, "PARALLAXOCCLUSION");
                 }
                 if (this._defines.SPECULAROVERALPHA) {
                     fallbacks.addFallback(0, "SPECULAROVERALPHA");
@@ -594,7 +611,7 @@ var BABYLON;
                     }
                     if (this.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                         this._effect.setTexture("bumpSampler", this.bumpTexture);
-                        this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
+                        this._effect.setFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
                         this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
                     }
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -791,6 +808,15 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], StandardMaterial.prototype, "disableLighting", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useParallax", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "useParallaxOcclusion", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], StandardMaterial.prototype, "parallaxScaleBias", void 0);
         __decorate([
             BABYLON.serialize()
         ], StandardMaterial.prototype, "roughness", void 0);

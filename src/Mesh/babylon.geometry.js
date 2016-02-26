@@ -657,10 +657,11 @@ var BABYLON;
             /// Abstract class
             var _Primitive = (function (_super) {
                 __extends(_Primitive, _super);
-                function _Primitive(id, scene, vertexData, canBeRegenerated, mesh) {
+                function _Primitive(id, scene, _canBeRegenerated, mesh) {
+                    _super.call(this, id, scene, null, false, mesh); // updatable = false to be sure not to update vertices
+                    this._canBeRegenerated = _canBeRegenerated;
                     this._beingRegenerated = true;
-                    this._canBeRegenerated = canBeRegenerated;
-                    _super.call(this, id, scene, vertexData, false, mesh); // updatable = false to be sure not to update vertices
+                    this.regenerate();
                     this._beingRegenerated = false;
                 }
                 _Primitive.prototype.canBeRegenerated = function () {
@@ -708,14 +709,15 @@ var BABYLON;
             Primitives._Primitive = _Primitive;
             var Ribbon = (function (_super) {
                 __extends(Ribbon, _super);
+                // Members
                 function Ribbon(id, scene, pathArray, closeArray, closePath, offset, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.pathArray = pathArray;
                     this.closeArray = closeArray;
                     this.closePath = closePath;
                     this.offset = offset;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Ribbon.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
@@ -728,11 +730,12 @@ var BABYLON;
             Primitives.Ribbon = Ribbon;
             var Box = (function (_super) {
                 __extends(Box, _super);
+                // Members
                 function Box(id, scene, size, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.size = size;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Box.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateBox({ size: this.size, sideOrientation: this.side });
@@ -761,10 +764,10 @@ var BABYLON;
                 __extends(Sphere, _super);
                 function Sphere(id, scene, segments, diameter, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.segments = segments;
                     this.diameter = diameter;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Sphere.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateSphere({ segments: this.segments, diameter: this.diameter, sideOrientation: this.side });
@@ -792,12 +795,13 @@ var BABYLON;
             Primitives.Sphere = Sphere;
             var Disc = (function (_super) {
                 __extends(Disc, _super);
+                // Members
                 function Disc(id, scene, radius, tessellation, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.radius = radius;
                     this.tessellation = tessellation;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Disc.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
@@ -813,13 +817,13 @@ var BABYLON;
                 function Cylinder(id, scene, height, diameterTop, diameterBottom, tessellation, subdivisions, canBeRegenerated, mesh, side) {
                     if (subdivisions === void 0) { subdivisions = 1; }
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.height = height;
                     this.diameterTop = diameterTop;
                     this.diameterBottom = diameterBottom;
                     this.tessellation = tessellation;
                     this.subdivisions = subdivisions;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Cylinder.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateCylinder({ height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side });
@@ -851,11 +855,11 @@ var BABYLON;
                 __extends(Torus, _super);
                 function Torus(id, scene, diameter, thickness, tessellation, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.diameter = diameter;
                     this.thickness = thickness;
                     this.tessellation = tessellation;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Torus.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateTorus({ diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side });
@@ -885,10 +889,10 @@ var BABYLON;
             var Ground = (function (_super) {
                 __extends(Ground, _super);
                 function Ground(id, scene, width, height, subdivisions, canBeRegenerated, mesh) {
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.width = width;
                     this.height = height;
                     this.subdivisions = subdivisions;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Ground.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateGround({ width: this.width, height: this.height, subdivisions: this.subdivisions });
@@ -918,13 +922,13 @@ var BABYLON;
             var TiledGround = (function (_super) {
                 __extends(TiledGround, _super);
                 function TiledGround(id, scene, xmin, zmin, xmax, zmax, subdivisions, precision, canBeRegenerated, mesh) {
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.xmin = xmin;
                     this.zmin = zmin;
                     this.xmax = xmax;
                     this.zmax = zmax;
                     this.subdivisions = subdivisions;
                     this.precision = precision;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 TiledGround.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
@@ -939,9 +943,9 @@ var BABYLON;
                 __extends(Plane, _super);
                 function Plane(id, scene, size, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.size = size;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 Plane.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreatePlane({ size: this.size, sideOrientation: this.side });
@@ -970,6 +974,7 @@ var BABYLON;
                 __extends(TorusKnot, _super);
                 function TorusKnot(id, scene, radius, tube, radialSegments, tubularSegments, p, q, canBeRegenerated, mesh, side) {
                     if (side === void 0) { side = BABYLON.Mesh.DEFAULTSIDE; }
+                    _super.call(this, id, scene, canBeRegenerated, mesh);
                     this.radius = radius;
                     this.tube = tube;
                     this.radialSegments = radialSegments;
@@ -977,7 +982,6 @@ var BABYLON;
                     this.p = p;
                     this.q = q;
                     this.side = side;
-                    _super.call(this, id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
                 }
                 TorusKnot.prototype._regenerateVertexData = function () {
                     return BABYLON.VertexData.CreateTorusKnot({ radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side });

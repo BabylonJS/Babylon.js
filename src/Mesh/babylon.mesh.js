@@ -715,16 +715,6 @@ var BABYLON;
             }
             return results;
         };
-        Mesh.prototype.getChildren = function () {
-            var results = [];
-            for (var index = 0; index < this.getScene().meshes.length; index++) {
-                var mesh = this.getScene().meshes[index];
-                if (mesh.parent === this) {
-                    results.push(mesh);
-                }
-            }
-            return results;
-        };
         Mesh.prototype._checkDelayState = function () {
             var _this = this;
             var that = this;
@@ -1245,13 +1235,6 @@ var BABYLON;
                 if (parsedMesh.numBoneInfluencers) {
                     mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
                 }
-            }
-            // Physics
-            if (parsedMesh.physicsImpostor) {
-                if (!scene.isPhysicsEnabled()) {
-                    scene.enablePhysics();
-                }
-                mesh.setPhysicsState({ impostor: parsedMesh.physicsImpostor, mass: parsedMesh.physicsMass, friction: parsedMesh.physicsFriction, restitution: parsedMesh.physicsRestitution });
             }
             // Animations
             if (parsedMesh.animations) {

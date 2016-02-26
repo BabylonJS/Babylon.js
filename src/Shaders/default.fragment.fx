@@ -30,6 +30,9 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
+// Helper functions
+#include<helperFunctions>
+
 // Lights
 #include<light0FragmentDeclaration>
 #include<light1FragmentDeclaration>
@@ -161,8 +164,21 @@ void main(void) {
 	// Alpha
 	float alpha = vDiffuseColor.a;
 
+	// Bump
+#ifdef NORMAL
+	vec3 normalW = normalize(vNormalW);
+#else
+	vec3 normalW = vec3(1.0, 1.0, 1.0);
+#endif
+
 #ifdef DIFFUSE
-	baseColor = texture2D(diffuseSampler, vDiffuseUV);
+	vec2 diffuseUV = vDiffuseUV;
+#endif
+
+#include<bumpFragment>
+
+#ifdef DIFFUSE
+	baseColor = texture2D(diffuseSampler, diffuseUV);
 
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
@@ -178,18 +194,6 @@ void main(void) {
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
-#endif
-
-	// Bump
-#ifdef NORMAL
-	vec3 normalW = normalize(vNormalW);
-#else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
-#endif
-
-
-#ifdef BUMP
-	normalW = perturbNormal(viewDirectionW);
 #endif
 
 	// Ambient color
@@ -259,15 +263,15 @@ void main(void) {
 
 #ifdef REFLECTIONMAP_3D
 #ifdef ROUGHNESS
-	 float bias = vReflectionInfos.y;
+	float bias = vReflectionInfos.y;
 
-	#ifdef SPECULARTERM
+#ifdef SPECULARTERM
 	#ifdef SPECULAR
-	#ifdef GLOSSINESS
-		bias *= (1.0 - specularMapColor.a);
+		#ifdef GLOSSINESS
+			bias *= (1.0 - specularMapColor.a);
+		#endif
 	#endif
-	#endif
-	#endif
+#endif
 
 	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
 #else

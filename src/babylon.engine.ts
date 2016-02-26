@@ -1134,11 +1134,13 @@
             this._gl.useProgram(effect.getProgram());
 
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //make sure this is a number)
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._vertexAttribArrays[i] = false;
-                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArrays[iAsNumber] = false;
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
 
             var attributesCount = effect.getAttributesCount();
@@ -2217,10 +2219,12 @@
 
             // Unbind
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //making sure this is a string
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
 
             this._gl = null;
@@ -2314,6 +2318,7 @@
         }
     }
 }
+
 
 
 

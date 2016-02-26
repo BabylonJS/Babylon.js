@@ -15,23 +15,24 @@ var BABYLON;
     ;
     var TonemapPostProcess = (function (_super) {
         __extends(TonemapPostProcess, _super);
-        function TonemapPostProcess(name, operator, exposureAdjustment, camera, samplingMode, engine, textureFormat) {
+        function TonemapPostProcess(name, _operator, exposureAdjustment, camera, samplingMode, engine, textureFormat) {
             var _this = this;
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
             if (textureFormat === void 0) { textureFormat = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
-            this._operator = operator;
+            _super.call(this, name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, defines, textureFormat);
+            this._operator = _operator;
             this.exposureAdjustment = exposureAdjustment;
-            var params = ["_ExposureAdjustment"];
             var defines = "#define ";
-            if (operator === TonemappingOperator.Hable)
+            if (this._operator === TonemappingOperator.Hable)
                 defines += "HABLE_TONEMAPPING";
-            else if (operator === TonemappingOperator.Reinhard)
+            else if (this._operator === TonemappingOperator.Reinhard)
                 defines += "REINHARD_TONEMAPPING";
-            else if (operator === TonemappingOperator.HejiDawson)
+            else if (this._operator === TonemappingOperator.HejiDawson)
                 defines += "OPTIMIZED_HEJIDAWSON_TONEMAPPING";
-            else if (operator === TonemappingOperator.Photographic)
+            else if (this._operator === TonemappingOperator.Photographic)
                 defines += "PHOTOGRAPHIC_TONEMAPPING";
-            _super.call(this, name, "tonemap", params, null, 1.0, camera, samplingMode, engine, true, defines, textureFormat);
+            //sadly a second call to create the effect.
+            this.updateEffect(defines);
             this.onApply = function (effect) {
                 effect.setFloat("_ExposureAdjustment", _this.exposureAdjustment);
             };
