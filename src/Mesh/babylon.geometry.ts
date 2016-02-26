@@ -820,14 +820,13 @@
 
         /// Abstract class
         export class _Primitive extends Geometry {
-            // Private
-            private _beingRegenerated: boolean;
-            private _canBeRegenerated: boolean;
 
-            constructor(id: string, scene: Scene, vertexData?: VertexData, canBeRegenerated?: boolean, mesh?: Mesh) {
+            private _beingRegenerated: boolean;
+
+            constructor(id: string, scene: Scene, private _canBeRegenerated?: boolean, mesh?: Mesh) {
+                super(id, scene, null, false, mesh); // updatable = false to be sure not to update vertices
                 this._beingRegenerated = true;
-                this._canBeRegenerated = canBeRegenerated;
-                super(id, scene, vertexData, false, mesh); // updatable = false to be sure not to update vertices
+                this.regenerate();
                 this._beingRegenerated = false;
             }
 
@@ -884,20 +883,9 @@
 
         export class Ribbon extends _Primitive {
             // Members
-            public pathArray: Vector3[][];
-            public closeArray: boolean;
-            public closePath: boolean;
-            public offset: number;
-            public side: number;
 
-            constructor(id: string, scene: Scene, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
-                this.pathArray = pathArray;
-                this.closeArray = closeArray;
-                this.closePath = closePath;
-                this.offset = offset;
-                this.side = side;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public pathArray: Vector3[][], public closeArray: boolean, public closePath: boolean, public offset: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -911,14 +899,8 @@
 
         export class Box extends _Primitive {
             // Members
-            public size: number;
-            public side: number;
-
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
-                this.size = size;
-                this.side = side;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -952,17 +934,9 @@
         }
 
         export class Sphere extends _Primitive {
-            // Members
-            public segments: number;
-            public diameter: number;
-            public side: number;
 
-            constructor(id: string, scene: Scene, segments: number, diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
-                this.segments = segments;
-                this.diameter = diameter;
-                this.side = side;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public segments: number, public diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -998,16 +972,9 @@
 
         export class Disc extends _Primitive {
             // Members
-            public radius: number;
-            public tessellation: number;
-            public side: number;
 
-            constructor(id: string, scene: Scene, radius: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
-                this.radius = radius;
-                this.tessellation = tessellation;
-                this.side = side;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public radius: number, public tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -1021,23 +988,9 @@
 
 
         export class Cylinder extends _Primitive {
-            // Members
-            public height: number;
-            public diameterTop: number;
-            public diameterBottom: number;
-            public tessellation: number;
-            public subdivisions: number;
-            public side: number;
 
-            constructor(id: string, scene: Scene, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
-                this.height = height;
-                this.diameterTop = diameterTop;
-                this.diameterBottom = diameterBottom;
-                this.tessellation = tessellation;
-                this.subdivisions = subdivisions;
-                this.side = side;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public height: number, public diameterTop: number, public diameterBottom: number, public tessellation: number, public subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -1074,19 +1027,9 @@
         }
 
         export class Torus extends _Primitive {
-            // Members
-            public diameter: number;
-            public thickness: number;
-            public tessellation: number;
-            public side: number;
 
-            constructor(id: string, scene: Scene, diameter: number, thickness: number, tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
-                this.diameter = diameter;
-                this.thickness = thickness;
-                this.tessellation = tessellation;
-                this.side = side;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public diameter: number, public thickness: number, public tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -1122,17 +1065,9 @@
         }
 
         export class Ground extends _Primitive {
-            // Members
-            public width: number;
-            public height: number;
-            public subdivisions: number;
 
-            constructor(id: string, scene: Scene, width: number, height: number, subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh) {
-                this.width = width;
-                this.height = height;
-                this.subdivisions = subdivisions;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public width: number, public height: number, public subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -1168,23 +1103,9 @@
         }
 
         export class TiledGround extends _Primitive {
-            // Members
-            public xmin: number;
-            public zmin: number;
-            public xmax: number;
-            public zmax: number;
-            public subdivisions: { w: number; h: number; };
-            public precision: { w: number; h: number; };
 
-            constructor(id: string, scene: Scene, xmin: number, zmin: number, xmax: number, zmax: number, subdivisions: { w: number; h: number; }, precision: { w: number; h: number; }, canBeRegenerated?: boolean, mesh?: Mesh) {
-                this.xmin = xmin;
-                this.zmin = zmin;
-                this.xmax = xmax;
-                this.zmax = zmax;
-                this.subdivisions = subdivisions;
-                this.precision = precision;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public xmin: number, public zmin: number, public xmax: number, public zmax: number, public subdivisions: { w: number; h: number; }, public precision: { w: number; h: number; }, canBeRegenerated?: boolean, mesh?: Mesh) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -1197,15 +1118,9 @@
         }
 
         export class Plane extends _Primitive {
-            // Members
-            public size: number;
-            public side: number;
 
-            constructor(id: string, scene: Scene, size: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
-                this.size = size;
-                this.side = side;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -1239,25 +1154,9 @@
         }
 
         export class TorusKnot extends _Primitive {
-            // Members
-            public radius: number;
-            public tube: number;
-            public radialSegments: number;
-            public tubularSegments: number;
-            public p: number;
-            public q: number;
-            public side: number;
 
-            constructor(id: string, scene: Scene, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, canBeRegenerated?: boolean, mesh?: Mesh, side: number = Mesh.DEFAULTSIDE) {
-                this.radius = radius;
-                this.tube = tube;
-                this.radialSegments = radialSegments;
-                this.tubularSegments = tubularSegments;
-                this.p = p;
-                this.q = q;
-                this.side = side;
-
-                super(id, scene, this._regenerateVertexData(), canBeRegenerated, mesh);
+            constructor(id: string, scene: Scene, public radius: number, public tube: number, public radialSegments: number, public tubularSegments: number, public p: number, public q: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+                super(id, scene, canBeRegenerated, mesh);
             }
 
             public _regenerateVertexData(): VertexData {
@@ -1296,4 +1195,5 @@
         }
     }
 }
+
 
