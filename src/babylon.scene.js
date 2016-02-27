@@ -637,6 +637,7 @@ var BABYLON;
                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+            animatable.reset();
             return animatable;
         };
         Scene.prototype.beginDirectAnimation = function (target, animations, from, to, loop, speedRatio, onAnimationEnd) {

@@ -49,6 +49,19 @@ var BABYLON;
             this._localDelayOffset = null;
             this._pausedDelay = null;
         };
+        Animatable.prototype.enableBlending = function (blendingSpeed) {
+            var animations = this._animations;
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = true;
+                animations[index].blendingSpeed = blendingSpeed;
+            }
+        };
+        Animatable.prototype.disableBlending = function () {
+            var animations = this._animations;
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = false;
+            }
+        };
         Animatable.prototype.goToFrame = function (frame) {
             var animations = this._animations;
             for (var index = 0; index < animations.length; index++) {
@@ -68,6 +81,10 @@ var BABYLON;
             var index = this._scene._activeAnimatables.indexOf(this);
             if (index > -1) {
                 this._scene._activeAnimatables.splice(index, 1);
+                var animations = this._animations;
+                for (var index = 0; index < animations.length; index++) {
+                    animations[index].reset();
+                }
                 if (this.onAnimationEnd) {
                     this.onAnimationEnd();
                 }
