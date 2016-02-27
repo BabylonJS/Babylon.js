@@ -223,14 +223,28 @@ var BABYLON;
             }
             callback(returnValue);
         };
+        Effect.prototype._processPrecision = function (source) {
+            if (source.indexOf("precision highp float") === -1) {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) {
+                    source = "precision mediump float;\n" + source;
+                }
+                else {
+                    source = "precision highp float;\n" + source;
+                }
+            }
+            else {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) {
+                    source = source.replace("precision highp float", "precision mediump float");
+                }
+            }
+            return source;
+        };
         Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try {
                 var engine = this._engine;
                 // Precision
-                if (!engine.getCaps().highPrecisionShaderSupported) {
-                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
-                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
-                }
+                vertexSourceCode = this._processPrecision(vertexSourceCode);
+                fragmentSourceCode = this._processPrecision(fragmentSourceCode);
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
