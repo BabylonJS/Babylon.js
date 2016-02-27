@@ -18,6 +18,22 @@ function uncomment(str, opts) {
     str = str.replace(/\r\n/g, '\n');
     str = str.replace(/[ \f\t\v]+/g, ' ');
     str = str.replace(/^\s*\n/gm, '');
+    str = str.replace(/ \+ /g, '+');
+    str = str.replace(/ \- /g, '-');
+    str = str.replace(/ \/ /g, '/');
+    str = str.replace(/ \* /g, '*');
+    str = str.replace(/ > /g, '>');
+    str = str.replace(/ < /g, '<');
+    str = str.replace(/ >= /g, '>=');
+    str = str.replace(/ <= /g, '<=');
+    str = str.replace(/ \+= /g, '+=');
+    str = str.replace(/ \-= /g, '-=');
+    str = str.replace(/ \/= /g, '/=');
+    str = str.replace(/ \*= /g, '*=');
+    str = str.replace(/ = /g, '=');
+    str = str.replace(/, /g, ',');
+    str = str.replace(/\n\n/g, '\n');
+    str = str.replace(/\n /g, '\n');
     
 	for (var i = 0; i < str.length; i++) {
 		currentChar = str[i];

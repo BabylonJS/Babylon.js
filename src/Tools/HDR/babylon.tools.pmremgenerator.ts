@@ -1,4 +1,4 @@
-//_______________________________________________________________
+ï»¿//_______________________________________________________________
 // Extracted from CubeMapGen: 
 // https://code.google.com/archive/p/cubemapgen/
 //
@@ -596,8 +596,8 @@ namespace BABYLON.Internals {
         }
         
         //--------------------------------------------------------------------------------------
-        //Original code from Ignacio CastaÒo
-        // This formula is from Manne ÷hrstrˆm's thesis.
+        //Original code from Ignacio CastaÃ’o
+        // This formula is from Manne Ã·hrstrË†m's thesis.
         // Take two coordiantes in the range [-1, 1] that define a portion of a
         // cube face and return the area of the projection of that portion on the
         // surface of the sphere.

@@ -1593,19 +1593,19 @@
             return this;
         }
 
-        public conjugateToRef(ref: Quaternion) {
+        public conjugateToRef(ref: Quaternion): Quaternion {
             ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
             return this;
         }
 
-        public conjugateInPlace() {
+        public conjugateInPlace(): Quaternion {
             this.x *= -1;
             this.y *= -1;
             this.z *= -1;
             return this;
         }
 
-        public conjugate() {
+        public conjugate(): Quaternion {
             var result = new Quaternion(-this.x, -this.y, -this.z, this.w);
             return result;
         }
