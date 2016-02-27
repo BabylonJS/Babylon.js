@@ -20,10 +20,10 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<light0FragmentDeclaration>
-#include<light1FragmentDeclaration>
-#include<light2FragmentDeclaration>
-#include<light3FragmentDeclaration>
+#include<lightFragmentDeclaration>[0]
+#include<lightFragmentDeclaration>[1]
+#include<lightFragmentDeclaration>[2]
+#include<lightFragmentDeclaration>[3]
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
@@ -130,6 +130,7 @@ void main(void) {
 
 	// Lighting
 	vec3 diffuseBase = vec3(0., 0., 0.);
+	lightingInfo info;
 	float glossiness = 0.;
 #ifdef SPECULARTERM
 	vec3 specularBase = vec3(0., 0., 0.);
@@ -137,10 +138,10 @@ void main(void) {
 #endif
 	float shadow = 1.;
 
-#include<light0Fragment>
-#include<light1Fragment>
-#include<light2Fragment>
-#include<light3Fragment>
+#include<lightFragment>[0]
+#include<lightFragment>[1]
+#include<lightFragment>[2]
+#include<lightFragment>[3]
 
 	// Reflection
 	vec3 reflectionColor = vec3(0., 0., 0.);

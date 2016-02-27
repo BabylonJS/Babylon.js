@@ -23,6 +23,9 @@ var BABYLON;
                 if (_this._deltaRotationConjugated) {
                     _this.mesh.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this._tmpRotationWithDelta);
                 }
+                else {
+                    _this._tmpRotationWithDelta.copyFrom(_this.mesh.rotationQuaternion);
+                }
                 _this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(_this, _this._tmpPositionWithDelta, _this._tmpRotationWithDelta);
                 _this._onBeforePhysicsStepCallbacks.forEach(function (func) {
                     func(_this);

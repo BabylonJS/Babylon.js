@@ -235,7 +235,7 @@ module BABYLON {
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
 
             this.mesh.position.addInPlace(this._deltaPosition)
-            if(this._deltaRotation) {
+            if (this._deltaRotation) {
                 this.mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
             }
         }
@@ -304,7 +304,7 @@ module BABYLON {
             if (this.parent) {
                 this.parent.forceUpdate();
             } else {
-                this.mesh.getChildMeshes().forEach(function(mesh) {
+                this.mesh.getChildMeshes().forEach(function (mesh) {
                     if (mesh.physicsImpostor) {
                         if (disposeChildren) {
                             mesh.physicsImpostor.dispose();
@@ -320,7 +320,7 @@ module BABYLON {
         }
 
         public setDeltaRotation(rotation: Quaternion) {
-            if(!this._deltaRotation) {
+            if (!this._deltaRotation) {
                 this._deltaRotation = new Quaternion();
             }
             this._deltaRotation.copyFrom(rotation);

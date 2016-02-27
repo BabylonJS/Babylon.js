@@ -343,10 +343,10 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<light0FragmentDeclaration>
-#include<light1FragmentDeclaration>
-#include<light2FragmentDeclaration>
-#include<light3FragmentDeclaration>
+#include<lightFragmentDeclaration>[0]
+#include<lightFragmentDeclaration>[1]
+#include<lightFragmentDeclaration>[2]
+#include<lightFragmentDeclaration>[3]
 
 // Samplers
 #ifdef ALBEDO
