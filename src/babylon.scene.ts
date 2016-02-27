@@ -851,6 +851,8 @@
                 }
             }
 
+            animatable.reset();
+
             return animatable;
         }
 

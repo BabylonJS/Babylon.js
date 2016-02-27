@@ -6,7 +6,7 @@
     - new mesh type : `LineSystem` ([jerome](https://github.com/jbousquie))
     - SerializationHelper for complex classes using TypeScript decorators  ([deltakosh](https://github.com/deltakosh))
     - StandardMaterial now supports Parallax and Parallax Occlusion Mapping ([nockawa](https://github.com/nockawa))
-    - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#2). More [info here](NEED DOC!) ([deltakosh](https://github.com/deltakosh))
+    - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#3). More [info here](NEED DOC!) ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - New scene.pointerDownPredicate, scene.pointerMovePredicate, scene.pointerUpPredicate to define your own predicates for meshes picking selection ([deltakosh](https://github.com/deltakosh))
     - New OnPickTrigger support for spritesManager ([deltakosh](https://github.com/deltakosh))
