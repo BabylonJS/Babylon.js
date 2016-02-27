@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-#define MAP_PROJECTION	4.
+﻿#define MAP_PROJECTION	4.
 
 // Constants
 uniform vec3 vEyePosition;

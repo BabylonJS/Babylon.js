@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// Attributes
+﻿// Attributes
 attribute vec2 position;
 
 // Uniforms
