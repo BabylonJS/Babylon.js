@@ -13087,7 +13087,7 @@ var BABYLON;
                 _this._startingPointerTime = new Date().getTime();
                 if (!_this.pointerDownPredicate) {
                     _this.pointerDownPredicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
                     };
                 }
                 // Meshes
@@ -13159,7 +13159,7 @@ var BABYLON;
                 _this._updatePointerPosition(evt);
                 if (!_this.pointerUpPredicate) {
                     _this.pointerUpPredicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger));
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)));
                     };
                 }
                 // Meshes
