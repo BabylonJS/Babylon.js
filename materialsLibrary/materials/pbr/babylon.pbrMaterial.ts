@@ -1024,7 +1024,7 @@ module BABYLON {
                         this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
                     
-                    if ((this.reflectionTexture || this.refractionTexture) && this._myScene.getEngine().getCaps().textureLOD) {
+                    if ((this.reflectionTexture || this.refractionTexture)) {
                         this._effect.setFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                     }
                 }

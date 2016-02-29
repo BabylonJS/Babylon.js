@@ -72,7 +72,7 @@ uniform vec4 vCameraInfos;
     }
 #endif
 
-#ifdef LODBASEDMICROSFURACE
+#if defined(REFLECTION) || defined(REFRACTION)
     uniform vec2 vMicrosurfaceTextureLods;
 #endif
 
@@ -343,10 +343,10 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<light0FragmentDeclaration>
-#include<light1FragmentDeclaration>
-#include<light2FragmentDeclaration>
-#include<light3FragmentDeclaration>
+#include<lightFragmentDeclaration>[0]
+#include<lightFragmentDeclaration>[1]
+#include<lightFragmentDeclaration>[2]
+#include<lightFragmentDeclaration>[3]
 
 // Samplers
 #ifdef ALBEDO
@@ -1078,13 +1078,10 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
 // Go mat -> blurry reflexion according to microSurface
 #ifdef LODBASEDMICROSFURACE
     float alphaG = convertRoughnessToAverageSlope(roughness);
-#else
-    float bias = 20. * (1.0 - microSurface);
 #endif
         
 #ifdef REFRACTION
-	//vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
-    vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
+	vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
     
     #ifdef LODBASEDMICROSFURACE
         #ifdef USEPMREMREFRACTION
@@ -1092,6 +1089,8 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
         #else
             float lodRefraction = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.y, alphaG);
         #endif
+    #else
+        float biasRefraction = (vMicrosurfaceTextureLods.y + 2.) * (1.0 - microSurface);
     #endif
     
     #ifdef REFRACTIONMAP_3D
@@ -1115,7 +1114,7 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
                 
                 surfaceRefractionColor = textureCubeLodEXT(refractionCubeSampler, refractionVector, lodRefraction).rgb * vRefractionInfos.x;
             #else
-                surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, bias).rgb * vRefractionInfos.x;
+                surfaceRefractionColor = textureCube(refractionCubeSampler, refractionVector, biasRefraction).rgb * vRefractionInfos.x;
             #endif
         }
         
@@ -1132,7 +1131,7 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
         #ifdef LODBASEDMICROSFURACE
             surfaceRefractionColor = texture2DLodEXT(refraction2DSampler, refractionCoords, lodRefraction).rgb * vRefractionInfos.x;
         #else
-            surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords, bias).rgb * vRefractionInfos.x;
+            surfaceRefractionColor = texture2D(refraction2DSampler, refractionCoords, biasRefraction).rgb * vRefractionInfos.x;
         #endif    
         
         surfaceRefractionColor = toLinearSpace(surfaceRefractionColor.rgb); 
@@ -1152,6 +1151,8 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
         #else
             float lodReflection = getMipMapIndexFromAverageSlope(vMicrosurfaceTextureLods.x, alphaG);
         #endif
+    #else
+        float biasReflection = (vMicrosurfaceTextureLods.x + 2.) * (1.0 - microSurface);
     #endif
     
     #ifdef REFLECTIONMAP_3D
@@ -1172,7 +1173,7 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
                 
             environmentRadiance = textureCubeLodEXT(reflectionCubeSampler, vReflectionUVW, lodReflection).rgb * vReflectionInfos.x;
         #else
-            environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
+            environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, biasReflection).rgb * vReflectionInfos.x;
         #endif
         
         #ifdef PoissonSamplingEnvironment
@@ -1202,7 +1203,7 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
         #ifdef LODBASEDMICROSFURACE
             environmentRadiance = texture2DLodEXT(reflection2DSampler, coords, lodReflection).rgb * vReflectionInfos.x;
         #else
-            environmentRadiance = texture2D(reflection2DSampler, coords, bias).rgb * vReflectionInfos.x;
+            environmentRadiance = texture2D(reflection2DSampler, coords, biasReflection).rgb * vReflectionInfos.x;
         #endif
     
         environmentRadiance = toLinearSpace(environmentRadiance.rgb);

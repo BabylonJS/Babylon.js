@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-vec4 pack(float depth)
+﻿vec4 pack(float depth)
 {
 	const vec4 bit_shift = vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0);
 	const vec4 bit_mask = vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);

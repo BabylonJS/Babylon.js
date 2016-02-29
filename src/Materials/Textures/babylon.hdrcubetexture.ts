@@ -33,8 +33,8 @@ module BABYLON {
             this.hasAlpha = false;
             this._size = size;
             this._useInGammaSpace = useInGammaSpace;
-            this._usePMREMGenerator = usePMREMGenerator;
-            this.isPMREM = usePMREMGenerator;
+            this._usePMREMGenerator = usePMREMGenerator && scene.getEngine().getCaps().textureLOD;
+            this.isPMREM = this._usePMREMGenerator;
 
             if (!url) {
                 return;
@@ -196,4 +196,3 @@ module BABYLON {
         }
     }
 } 
-
