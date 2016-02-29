@@ -191,7 +191,14 @@
             //set the collideConnected flag after the creation, since DistanceJoint ignores it.
             constraint.collideConnected = !!jointData.collision
             impostorJoint.joint.physicsJoint = constraint;
-            this.world.addConstraint(constraint);
+            //don't add spring as constraint, as it is not one.
+            if(impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
+                this.world.addConstraint(constraint);
+            } else {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function() {
+                    constraint.applyForce();
+                });
+            }
         }
 
         public removeJoint(joint: PhysicsImpostorJoint) {
