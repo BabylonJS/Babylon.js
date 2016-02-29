@@ -17,11 +17,22 @@
             }
             gravity = gravity || new Vector3(0, -9.807, 0)
             this.setGravity(gravity);
+            this.setTimeStep();
         }
 
         public setGravity(gravity: Vector3): void {
             this.gravity = gravity;
             this._physicsPlugin.setGravity(this.gravity);
+        }
+        
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60. 
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         */
+        public setTimeStep(newTimeStep: number = 1/60) {
+            this._physicsPlugin.setTimeStep(newTimeStep);
         }
 
         public dispose(): void {
@@ -139,6 +150,7 @@
         world: any;
         name: string;
         setGravity(gravity: Vector3);
+        setTimeStep(timeStep: number);
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void; //not forgetting pre and post events
         applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
         applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
