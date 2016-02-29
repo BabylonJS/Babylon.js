@@ -16,6 +16,10 @@ module BABYLON {
         public setGravity(gravity: Vector3) {
             this.world.gravity.copy(gravity);
         }
+        
+        public setTimeStep(timeStep: number) {
+            this.world.timeStep = timeStep;
+        }
 
         private _tmpImpostorsArray: Array<PhysicsImpostor> = [];
 

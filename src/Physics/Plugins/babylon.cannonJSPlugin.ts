@@ -23,9 +23,13 @@
         public setGravity(gravity: Vector3): void {
             this.world.gravity.copy(gravity);
         }
+        
+        public setTimeStep(timeStep: number) {
+            this._fixedTimeStep = timeStep;
+        }
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
