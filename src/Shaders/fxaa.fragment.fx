@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-#define FXAA_REDUCE_MIN   (1.0/128.0)
+﻿#define FXAA_REDUCE_MIN   (1.0/128.0)
 #define FXAA_REDUCE_MUL   (1.0/8.0)
 #define FXAA_SPAN_MAX     8.0
 

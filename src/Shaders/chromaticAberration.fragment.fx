@@ -1,5 +1,3 @@
-precision highp float;
-
 // samplers
 uniform sampler2D textureSampler;	// original color
 

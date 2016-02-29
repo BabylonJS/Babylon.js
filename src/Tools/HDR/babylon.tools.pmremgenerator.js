@@ -365,8 +365,8 @@ var BABYLON;
                 return PMREMGenerator._vectorTemp;
             };
             //--------------------------------------------------------------------------------------
-            //Original code from Ignacio Casta�o
-            // This formula is from Manne �hrstr�m's thesis.
+            //Original code from Ignacio CastaÒo
+            // This formula is from Manne ÷hrstrˆm's thesis.
             // Take two coordiantes in the range [-1, 1] that define a portion of a
             // cube face and return the area of the projection of that portion on the
             // surface of the sphere.

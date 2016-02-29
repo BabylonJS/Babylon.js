@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-uniform bool alphaTest;
+﻿uniform bool alphaTest;
 
 varying vec4 vColor;
 
