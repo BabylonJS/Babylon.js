@@ -194,6 +194,10 @@
             //don't add spring as constraint, as it is not one.
             if(impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
                 this.world.addConstraint(constraint);
+            } else {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function() {
+                    constraint.applyForce();
+                });
             }
         }
 
