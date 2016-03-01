@@ -23,7 +23,7 @@
         public setGravity(gravity: Vector3): void {
             this.world.gravity.copy(gravity);
         }
-        
+
         public setTimeStep(timeStep: number) {
             this._fixedTimeStep = timeStep;
         }
@@ -95,7 +95,7 @@
                 //try to keep the body moving in the right direction by taking old properties.
                 //Should be tested!
                 if (oldBody) {
-                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
+                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function (param) {
                         impostor.physicsBody[param].copy(oldBody[param]);
                     });
                 }
@@ -196,10 +196,10 @@
             constraint.collideConnected = !!jointData.collision
             impostorJoint.joint.physicsJoint = constraint;
             //don't add spring as constraint, as it is not one.
-            if(impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
+            if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
                 this.world.addConstraint(constraint);
             } else {
-                impostorJoint.mainImpostor.registerAfterPhysicsStep(function() {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function () {
                     constraint.applyForce();
                 });
             }
@@ -444,6 +444,7 @@
         }
     }
 }
+
 
 
 

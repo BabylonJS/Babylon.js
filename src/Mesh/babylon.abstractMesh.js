@@ -177,7 +177,7 @@ var BABYLON;
             set: function (quaternion) {
                 this._rotationQuaternion = quaternion;
                 //reset the rotation vector. 
-                if (this.rotation.length()) {
+                if (quaternion && this.rotation.length()) {
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             },
