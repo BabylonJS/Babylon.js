@@ -13,10 +13,21 @@ var BABYLON;
             }
             gravity = gravity || new BABYLON.Vector3(0, -9.807, 0);
             this.setGravity(gravity);
+            this.setTimeStep();
         }
         PhysicsEngine.prototype.setGravity = function (gravity) {
             this.gravity = gravity;
             this._physicsPlugin.setGravity(this.gravity);
+        };
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         */
+        PhysicsEngine.prototype.setTimeStep = function (newTimeStep) {
+            if (newTimeStep === void 0) { newTimeStep = 1 / 60; }
+            this._physicsPlugin.setTimeStep(newTimeStep);
         };
         PhysicsEngine.prototype.dispose = function () {
             this._impostors.forEach(function (impostor) {
