@@ -1,13 +1,29 @@
 ﻿module BABYLON {
     export class FreeCamera extends TargetCamera {
+        @serializeAsVector3()
         public ellipsoid = new Vector3(0.5, 1, 0.5);
+
+        @serialize()
         public keysUp = [38];
+
+        @serialize()
         public keysDown = [40];
+
+        @serialize()
         public keysLeft = [37];
+
+        @serialize()
         public keysRight = [39];
+
+        @serialize()
         public checkCollisions = false;
+
+        @serialize()
         public applyGravity = false;
+
+        @serialize()
         public angularSensibility = 2000.0;
+
         public onCollide: (collidedMesh: AbstractMesh) => void;
 
         private _keys = [];
@@ -25,13 +41,14 @@
         private _onMouseOut: (e: MouseEvent) => any;
         private _onMouseMove: (e: MouseEvent) => any;
         private _onKeyDown: (e: KeyboardEvent) => any;
-        private _onKeyUp: (e: KeyboardEvent) => any;
-        public _onLostFocus: (e: FocusEvent) => any;
-
-        public _waitingLockedTargetId: string;
-
+        private _onKeyUp: (e: KeyboardEvent) => any;        
+        
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
+        }
+
+        public _onLostFocus(e: FocusEvent): void {
+            this._keys = [];
         }
 
         // Controls
@@ -131,10 +148,6 @@
                     }
                 };
 
-                this._onLostFocus = () => {
-                    this._keys = [];
-                };
-
                 this._reset = () => {
                     this._keys = [];
                     previousPosition = null;
@@ -156,7 +169,7 @@
         }
 
         public detachControl(element: HTMLElement): void {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
 
@@ -189,12 +202,16 @@
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
 
+            //no need for clone, as long as gravity is not on.
+            var actualVelocity = velocity;
+			
             //add gravity to the velocity to prevent the dual-collision checking
             if (this.applyGravity) {
-                velocity.addInPlace(this.getScene().gravity);
+                //this prevents mending with cameraDirection, a global variable of the free camera class.
+                actualVelocity = velocity.add(this.getScene().gravity);
             }
 
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
 
         }
 
@@ -259,6 +276,10 @@
             } else {
                 this.position.addInPlace(this.cameraDirection);
             }
+        }
+
+        public getTypeName(): string {
+            return "FreeCamera";
         }
     }
 } 

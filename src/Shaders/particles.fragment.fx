@@ -1,8 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-// Samplers
+﻿// Samplers
 varying vec2 vUV;
 varying vec4 vColor;
 uniform vec4 textureMask;

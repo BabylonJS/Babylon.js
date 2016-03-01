@@ -19,7 +19,7 @@ var BABYLON;
             this.video.autoplay = false;
             this.video.loop = true;
             this.video.addEventListener("canplaythrough", function () {
-                if (BABYLON.Tools.IsExponantOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponantOfTwo(_this.video.videoHeight)) {
+                if (BABYLON.Tools.IsExponentOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(_this.video.videoHeight)) {
                     _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
                     _this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
                 }

@@ -5,12 +5,21 @@
      */
     export class Node {
         public parent: Node;
+
+        @serialize()
         public name: string;
+
+        @serialize()
         public id: string;
+
+        @serialize()
         public uniqueId: number;
+
+        @serialize()
         public state = "";
 
         public animations = new Array<Animation>();
+        private _ranges: { [name: string]: AnimationRange; } = {};
 
         public onReady: (node: Node) => void;
 
@@ -79,7 +88,7 @@
         public _markSyncedWithParent() {
             this._parentRenderId = this.parent._currentRenderId;
         }
-        
+
         public isSynchronizedWithParent(): boolean {
             if (!this.parent) {
                 return true;
@@ -162,16 +171,15 @@
                     return true;
                 }
 
-
                 return this.parent.isDescendantOf(ancestor);
             }
             return false;
         }
 
-        public _getDescendants(list: Node[], results: Node[]): void {
+        public _getDescendants(list: Node[], results: Node[], directDecendantsOnly: boolean = false): void {
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (item.isDescendantOf(this)) {
+                if ((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
                     results.push(item);
                 }
             }
@@ -181,17 +189,34 @@
          * Will return all nodes that have this node as parent.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        public getDescendants(): Node[] {
+        public getDescendants(directDecendantsOnly?: boolean): Node[] {
             var results = [];
-            this._getDescendants(this._scene.meshes, results);
-            this._getDescendants(this._scene.lights, results);
-            this._getDescendants(this._scene.cameras, results);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
+            this._getDescendants(this._scene.lights, results, directDecendantsOnly);
+            this._getDescendants(this._scene.cameras, results, directDecendantsOnly);
 
+            return results;
+        }
+        
+        /**
+         * @Deprecated, legacy support.
+         * use getDecendants instead.
+         */
+        public getChildren(): Node[] {
+            return this.getDescendants(true);
+        }
+        
+        /**
+         * Get all child-meshes of this node.
+         */
+        public getChildMeshes(directDecendantsOnly?: boolean): AbstractMesh[] {
+            var results: Array<AbstractMesh> = [];
+            this._getDescendants(this._scene.meshes, results, false);
             return results;
         }
 
         public _setReady(state: boolean): void {
-            if (state == this._isReady) {
+            if (state === this._isReady) {
                 return;
             }
 
@@ -203,6 +228,74 @@
             this._isReady = true;
             if (this.onReady) {
                 this.onReady(this);
+            }
+        }
+
+        public getAnimationByName(name: string): Animation {
+            for (var i = 0; i < this.animations.length; i++) {
+                var animation = this.animations[i];
+
+                if (animation.name === name) {
+                    return animation;
+                }
+            }
+
+            return null;
+        }
+
+        public createAnimationRange(name: string, from: number, to: number): void {
+            // check name not already in use
+            if (!this._ranges[name]) {
+                this._ranges[name] = new AnimationRange(name, from, to);
+                for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+                    if (this.animations[i]) {
+                        this.animations[i].createRange(name, from, to);
+                    }
+                }
+            }
+        }
+
+        public deleteAnimationRange(name: string, deleteFrames = true): void {
+            for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+                if (this.animations[i]) {
+                    this.animations[i].deleteRange(name, deleteFrames);
+                }
+            }
+            this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+        }
+
+        public getAnimationRange(name: string): AnimationRange {
+            return this._ranges[name];
+        }
+
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+            var range = this.getAnimationRange(name);
+
+            if (!range) {
+                return null;
+            }
+
+            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        }
+
+        public serializeAnimationRanges(): any {
+            var serializationRanges = [];
+            for (var name in this._ranges) {
+                var range: any = {};
+                range.name = name;
+                range.from = this._ranges[name].from;
+                range.to = this._ranges[name].to;
+                serializationRanges.push(range);
+            }
+            return serializationRanges;
+        }
+
+        public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
+            if (parsedNode.ranges) {
+                for (var index = 0; index < parsedNode.ranges.length; index++) {
+                    var data = parsedNode.ranges[index];
+                    node.createAnimationRange(data.name, data.from, data.to);
+                }
             }
         }
     }

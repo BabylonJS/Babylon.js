@@ -1,70 +1,4 @@
 ﻿module BABYLON {
-
-    export class VRCameraMetrics {
-        public hResolution: number;
-        public vResolution: number;
-        public hScreenSize: number;
-        public vScreenSize: number;
-        public vScreenCenter: number;
-        public eyeToScreenDistance: number;
-        public lensSeparationDistance: number;
-        public interpupillaryDistance: number;
-        public distortionK: number[];
-        public chromaAbCorrection: number[];
-        public postProcessScaleFactor: number;
-        public lensCenterOffset: number;
-        public compensateDistorsion = true;
-
-        public get aspectRatio(): number {
-            return this.hResolution / (2 * this.vResolution);
-        }
-
-        public get aspectRatioFov(): number {
-            return (2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance)));
-        }
-
-        public get leftHMatrix(): Matrix {
-            var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
-            var h = (4 * meters) / this.hScreenSize;
-
-            return Matrix.Translation(h, 0, 0);
-        }
-
-        public get rightHMatrix(): Matrix {
-            var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
-            var h = (4 * meters) / this.hScreenSize;
-
-            return Matrix.Translation(-h, 0, 0);
-        }
-
-        public get leftPreViewMatrix(): Matrix {
-            return Matrix.Translation(0.5 * this.interpupillaryDistance, 0, 0);
-        }
-
-        public get rightPreViewMatrix(): Matrix {
-            return Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);
-        }
-
-        public static GetDefault(): VRCameraMetrics {
-            var result = new VRCameraMetrics();
-
-            result.hResolution = 1280;
-            result.vResolution = 800;
-            result.hScreenSize = 0.149759993;
-            result.vScreenSize = 0.0935999975;
-            result.vScreenCenter = 0.0467999987,
-            result.eyeToScreenDistance = 0.0410000011;
-            result.lensSeparationDistance = 0.0635000020;
-            result.interpupillaryDistance = 0.0640000030;
-            result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
-            result.chromaAbCorrection = [0.995999992, -0.00400000019, 1.01400006, 0.0];
-            result.postProcessScaleFactor = 1.714605507808412;
-            result.lensCenterOffset = 0.151976421;
-
-            return result;
-        }
-    }
-
     export class Camera extends Node {
         // Statics
         private static _PERSPECTIVE_CAMERA = 0;
@@ -121,25 +55,61 @@
         }
         
         // Members
+        @serializeAsVector3()
+        public position: Vector3;
+
+        @serialize()
         public upVector = Vector3.Up();
+
+        @serialize()
         public orthoLeft = null;
+
+        @serialize()
         public orthoRight = null;
+
+        @serialize()
         public orthoBottom = null;
+
+        @serialize()
         public orthoTop = null;
+
+        @serialize()
         public fov = 0.8;
+
+        @serialize()
         public minZ = 1.0;
+
+        @serialize()
         public maxZ = 10000.0;
+
+        @serialize()
         public inertia = 0.9;
+
+        @serialize()
         public mode = Camera.PERSPECTIVE_CAMERA;
         public isIntermediate = false;
+
         public viewport = new Viewport(0, 0, 1.0, 1.0);
+
+        @serialize()
         public layerMask: number = 0x0FFFFFFF;
+
+        @serialize()
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
    
         // Camera rig members
+        @serialize()
         public cameraRigMode = Camera.RIG_MODE_NONE;
+
+        @serialize()
+        public interaxialDistance: number
+
+        @serialize()
+        public isStereoscopicSideBySide: boolean
+
         public _cameraRigParams: any;
         public _rigCameras = new Array<Camera>();
+
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();
@@ -152,7 +122,7 @@
 
         private _globalPosition = Vector3.Zero();
 
-        constructor(name: string, public position: Vector3, scene: Scene) {
+        constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
 
             scene.addCamera(this);
@@ -160,6 +130,8 @@
             if (!scene.activeCamera) {
                 scene.activeCamera = this;
             }
+
+            this.position = position;
         }
 
         public get globalPosition(): Vector3 {
@@ -253,22 +225,22 @@
 
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
                 check = this._cache.fov === this.fov
-                && this._cache.aspectRatio === engine.getAspectRatio(this);
+                    && this._cache.aspectRatio === engine.getAspectRatio(this);
             }
             else {
                 check = this._cache.orthoLeft === this.orthoLeft
-                && this._cache.orthoRight === this.orthoRight
-                && this._cache.orthoBottom === this.orthoBottom
-                && this._cache.orthoTop === this.orthoTop
-                && this._cache.renderWidth === engine.getRenderWidth()
-                && this._cache.renderHeight === engine.getRenderHeight();
+                    && this._cache.orthoRight === this.orthoRight
+                    && this._cache.orthoBottom === this.orthoBottom
+                    && this._cache.orthoTop === this.orthoTop
+                    && this._cache.renderWidth === engine.getRenderWidth()
+                    && this._cache.renderHeight === engine.getRenderHeight();
             }
 
             return check;
         }
 
         // Controls
-        public attachControl(element: HTMLElement): void {
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
         }
 
         public detachControl(element: HTMLElement): void {
@@ -298,13 +270,11 @@
             }
 
             var add = 0;
-
+            var i: number;
+            var start: number;
             if (this._postProcesses[insertAt]) {
-
-                var start = this._postProcesses.length - 1;
-
-
-                for (var i = start; i >= insertAt + 1; --i) {
+                start = this._postProcesses.length - 1;
+                for (i = start; i >= insertAt + 1; --i) {
                     this._postProcesses[i + 1] = this._postProcesses[i];
                 }
 
@@ -324,7 +294,7 @@
                 break;
             }
 
-            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) == -1) {
+            if (!add && this._postProcessesTakenIndices.indexOf(insertAt) === -1) {
                 this._postProcessesTakenIndices.push(insertAt);
             }
 
@@ -337,20 +307,20 @@
 
         public detachPostProcess(postProcess: PostProcess, atIndices: any = null): number[] {
             var result = [];
-
+            var i: number;
+            var index: number;
             if (!atIndices) {
 
                 var length = this._postProcesses.length;
 
-                for (var i = 0; i < length; i++) {
+                for (i = 0; i < length; i++) {
 
                     if (this._postProcesses[i] !== postProcess) {
                         continue;
                     }
 
                     delete this._postProcesses[i];
-
-                    var index = this._postProcessesTakenIndices.indexOf(i);
+                    index = this._postProcessesTakenIndices.indexOf(i);
                     this._postProcessesTakenIndices.splice(index, 1);
                 }
 
@@ -452,6 +422,9 @@
         }
 
         public dispose(): void {
+            // Animations
+            this.getScene().stopAnimation(this);
+
             // Remove from scene
             this.getScene().removeCamera(this);
             while (this._rigCameras.length > 0) {
@@ -526,7 +499,7 @@
                     this._rigCameras[0]._cameraRigParams.vrPreViewMatrix = metrics.leftPreViewMatrix;
                     this._rigCameras[0].getProjectionMatrix = this._rigCameras[0]._getVRProjectionMatrix;
 
-                    if (metrics.compensateDistorsion) {
+                    if (metrics.compensateDistortion) {
                         postProcesses.push(new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics));
                     }
 
@@ -538,7 +511,7 @@
 
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
 
-                    if (metrics.compensateDistorsion) {
+                    if (metrics.compensateDistortion) {
                         postProcesses.push(new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics));
                     }
                     break;
@@ -583,6 +556,116 @@
                 this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
         }
+
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+
+            // Type
+            serializationObject.type = this.getTypeName();
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
+
+            return serializationObject;
+        }
+
+        public getTypeName(): string {
+            return "Camera";
+        }
+
+        public clone(name: string): Camera {
+            return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getTypeName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+        }
+
+        static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
+            switch (type) {
+                case "ArcRotateCamera":
+                    return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
+                case "DeviceOrientationCamera":
+                    return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
+                case "FollowCamera":
+                    return () => new FollowCamera(name, Vector3.Zero(), scene);
+                case "ArcFollowCamera":
+                    return () => new ArcFollowCamera(name, 0, 0, 1.0, null, scene);                    
+                case "GamepadCamera":
+                    return () => new GamepadCamera(name, Vector3.Zero(), scene);
+                case "TouchCamera":
+                    return () => new TouchCamera(name, Vector3.Zero(), scene);
+                case "VirtualJoysticksCamera":
+                    return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
+                case "WebVRFreeCamera":
+                    return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
+                case "VRDeviceOrientationFreeCamera":
+                    return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
+                case "AnaglyphArcRotateCamera":
+                    return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, scene);
+                case "AnaglyphFreeCamera":
+                    return () => new AnaglyphFreeCamera(name, Vector3.Zero(), interaxial_distance, scene);
+                case "AnaglyphGamepadCamera":
+                    return () => new AnaglyphGamepadCamera(name, Vector3.Zero(), interaxial_distance, scene);
+                case "AnaglyphUniversalCamera":
+                    return () => new AnaglyphUniversalCamera(name, Vector3.Zero(), interaxial_distance, scene);
+                case "StereoscopicArcRotateCamera":
+                    return () => new StereoscopicArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
+                case "StereoscopicFreeCamera":
+                    return () => new StereoscopicFreeCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
+                case "StereoscopicGamepadCamera":
+                    return () => new StereoscopicGamepadCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
+                case "StereoscopicUniversalCamera":
+                    return () => new StereoscopicUniversalCamera(name, Vector3.Zero(), interaxial_distance, isStereoscopicSideBySide, scene);
+                case "FreeCamera": // Forcing Universal here
+                    return () => new UniversalCamera(name, Vector3.Zero(), scene);
+                default: // Universal Camera is the default value
+                    return () => new UniversalCamera(name, Vector3.Zero(), scene);
+            }
+        }
+
+        public static Parse(parsedCamera: any, scene: Scene): Camera {
+            var type = parsedCamera.type;
+            var construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);
+           
+            var camera = SerializationHelper.Parse(construct, parsedCamera, scene);
+
+            // Parent
+            if (parsedCamera.parentId) {
+                camera._waitingParentId = parsedCamera.parentId;
+            }
+
+            // Target
+            if (parsedCamera.target) {
+                if ((<any>camera).setTarget) {
+                    (<any>camera).setTarget(Vector3.FromArray(parsedCamera.target));
+                }
+            }
+
+            // Apply 3d rig, when found
+            if (parsedCamera.cameraRigMode) {
+                var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+                camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
+            }
+
+            // Animations
+            if (parsedCamera.animations) {
+                for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedCamera.animations[animationIndex];
+
+                    camera.animations.push(Animation.Parse(parsedAnimation));
+                }
+                Node.ParseAnimationRanges(camera, parsedCamera, scene);
+            }
+
+            if (parsedCamera.autoAnimate) {
+                scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
+            }
+
+            return camera;
+        }
     }
 }
+
 

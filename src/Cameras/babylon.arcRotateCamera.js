@@ -3,6 +3,12 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var eventPrefix = BABYLON.Tools.GetPointerPrefix();
@@ -11,10 +17,6 @@ var BABYLON;
         function ArcRotateCamera(name, alpha, beta, radius, target, scene) {
             var _this = this;
             _super.call(this, name, BABYLON.Vector3.Zero(), scene);
-            this.alpha = alpha;
-            this.beta = beta;
-            this.radius = radius;
-            this.target = target;
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
@@ -41,6 +43,8 @@ var BABYLON;
             this.allowUpsideDown = true;
             this._keys = [];
             this._viewMatrix = new BABYLON.Matrix();
+            // Panning
+            this.panningAxis = new BABYLON.Vector3(1, 1, 0);
             this._isRightClick = false;
             this._isCtrlPushed = false;
             this.checkCollisions = false;
@@ -58,7 +62,7 @@ var BABYLON;
                     _this._previousPosition.copyFrom(_this.position);
                 }
                 else {
-                    _this.setPosition(_this.position);
+                    _this.setPosition(newPosition);
                     if (_this.onCollide) {
                         _this.onCollide(collidedMesh);
                     }
@@ -68,12 +72,15 @@ var BABYLON;
                 var sina = Math.sin(_this.alpha);
                 var cosb = Math.cos(_this.beta);
                 var sinb = Math.sin(_this.beta);
+                if (sinb === 0) {
+                    sinb = 0.0001;
+                }
                 var target = _this._getTargetPosition();
                 target.addToRef(new BABYLON.Vector3(_this.radius * cosa * sinb, _this.radius * cosb, _this.radius * sina * sinb), _this._newPosition);
                 _this.position.copyFrom(_this._newPosition);
                 var up = _this.upVector;
                 if (_this.allowUpsideDown && _this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
                 BABYLON.Matrix.LookAtLHToRef(_this.position, target, up, _this._viewMatrix);
@@ -81,9 +88,15 @@ var BABYLON;
                 _this._viewMatrix.m[13] += _this.targetScreenOffset.y;
                 _this._collisionTriggered = false;
             };
-            if (!this.target) {
+            if (!target) {
                 this.target = BABYLON.Vector3.Zero();
             }
+            else {
+                this.target = target;
+            }
+            this.alpha = alpha;
+            this.beta = beta;
+            this.radius = radius;
             this.getViewMatrix();
         }
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
@@ -101,9 +114,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        ArcRotateCamera.prototype._getTargetPosition = function () {
-            return this.target.position || this.target;
-        };
         // Cache
         ArcRotateCamera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
@@ -111,7 +121,7 @@ var BABYLON;
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
-            this._cache.targetScreenOffset = undefined;
+            this._cache.targetScreenOffset = BABYLON.Vector2.Zero();
         };
         ArcRotateCamera.prototype._updateCache = function (ignoreParentClass) {
             if (!ignoreParentClass) {
@@ -121,13 +131,19 @@ var BABYLON;
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
-            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
+            this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
+        };
+        ArcRotateCamera.prototype._getTargetPosition = function () {
+            if (this.target.getAbsolutePosition) {
+                return this.target.getAbsolutePosition();
+            }
+            return this.target;
         };
         // Synchronized
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
-            return this._cache.target.equals(this._getTargetPosition())
+            return this._cache.target.equals(this.target)
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
@@ -148,7 +164,7 @@ var BABYLON;
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = function (evt) {
                     // Manage panning with right click
-                    _this._isRightClick = evt.button === 2 ? true : false;
+                    _this._isRightClick = evt.button === 2;
                     // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
                     cacheSoloPointer = pointers.item(evt.pointerId);
@@ -177,7 +193,7 @@ var BABYLON;
                     }
                     switch (pointers.count) {
                         case 1:
-                            if ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick)) {
+                            if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick))) {
                                 _this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
                                 _this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
                             }
@@ -376,7 +392,7 @@ var BABYLON;
                 }
             }
             // Inertia
-            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;
@@ -402,9 +418,14 @@ var BABYLON;
                     this.inertialPanningX = 0;
                 if (Math.abs(this.inertialPanningY) < BABYLON.Engine.Epsilon)
                     this.inertialPanningY = 0;
-                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, 0);
+                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+                this._localDirection.multiplyInPlace(this.panningAxis);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
                 BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                //Eliminate y if map panning is enabled (panningAxis == 1,0,1)
+                if (!this.panningAxis.y) {
+                    this._transformedDirection.y = 0;
+                }
                 this.target.addInPlace(this._transformedDirection);
             }
             // Limits
@@ -445,8 +466,8 @@ var BABYLON;
                 this.radius = this.upperRadiusLimit;
             }
         };
-        ArcRotateCamera.prototype.setPosition = function (position) {
-            var radiusv3 = position.subtract(this._getTargetPosition());
+        ArcRotateCamera.prototype.rebuildAnglesAndRadius = function () {
+            var radiusv3 = this.position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
             // Alpha
             this.alpha = Math.acos(radiusv3.x / Math.sqrt(Math.pow(radiusv3.x, 2) + Math.pow(radiusv3.z, 2)));
@@ -457,8 +478,19 @@ var BABYLON;
             this.beta = Math.acos(radiusv3.y / this.radius);
             this._checkLimits();
         };
+        ArcRotateCamera.prototype.setPosition = function (position) {
+            if (this.position.equals(position)) {
+                return;
+            }
+            this.position = position;
+            this.rebuildAnglesAndRadius();
+        };
         ArcRotateCamera.prototype.setTarget = function (target) {
+            if (this._getTargetPosition().equals(target)) {
+                return;
+            }
             this.target = target;
+            this.rebuildAnglesAndRadius();
         };
         ArcRotateCamera.prototype._getViewMatrix = function () {
             // Compute
@@ -466,6 +498,9 @@ var BABYLON;
             var sina = Math.sin(this.alpha);
             var cosb = Math.cos(this.beta);
             var sinb = Math.sin(this.beta);
+            if (sinb === 0) {
+                sinb = 0.0001;
+            }
             var target = this._getTargetPosition();
             target.addToRef(new BABYLON.Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
@@ -478,7 +513,7 @@ var BABYLON;
                 this.position.copyFrom(this._newPosition);
                 var up = this.upVector;
                 if (this.allowUpsideDown && this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
                 BABYLON.Matrix.LookAtLHToRef(this.position, target, up, this._viewMatrix);
@@ -527,6 +562,7 @@ var BABYLON;
                     var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                     return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
             }
+            return null;
         };
         /**
          * @override
@@ -549,6 +585,87 @@ var BABYLON;
             }
             _super.prototype._updateRigCameras.call(this);
         };
+        ArcRotateCamera.prototype.getTypeName = function () {
+            return "ArcRotateCamera";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "alpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "beta", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "radius", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], ArcRotateCamera.prototype, "target", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialAlphaOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialBetaOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialRadiusOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerAlphaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperAlphaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerBetaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperBetaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerRadiusLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperRadiusLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "angularSensibilityX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "angularSensibilityY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "wheelPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "pinchPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "panningSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialPanningX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialPanningY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysUp", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysDown", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysRight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "zoomOnFactor", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "allowUpsideDown", void 0);
         return ArcRotateCamera;
     })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;

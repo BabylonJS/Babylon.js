@@ -1,11 +1,17 @@
 ﻿module BABYLON {
     export class HemisphericLight extends Light {
+        @serializeAsColor3()
         public groundColor = new Color3(0.0, 0.0, 0.0);
+
+        @serializeAsVector3()
+        public direction: Vector3
 
         private _worldMatrix: Matrix;
 
-        constructor(name: string, public direction: Vector3, scene: Scene) {
+        constructor(name: string, direction: Vector3, scene: Scene) {
             super(name, scene);
+
+            this.direction = direction;
         }
 
         public setDirectionToTarget(target: Vector3): Vector3 {
@@ -29,6 +35,10 @@
             }
 
             return this._worldMatrix;
+        }
+
+        public getTypeID(): number {
+            return 3;
         }
     }
 } 

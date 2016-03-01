@@ -1,246 +1,5 @@
 var BABYLON;
 (function (BABYLON) {
-    var _DepthCullingState = (function () {
-        function _DepthCullingState() {
-            this._isDepthTestDirty = false;
-            this._isDepthMaskDirty = false;
-            this._isDepthFuncDirty = false;
-            this._isCullFaceDirty = false;
-            this._isCullDirty = false;
-            this._isZOffsetDirty = false;
-        }
-        Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
-            get: function () {
-                return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "zOffset", {
-            get: function () {
-                return this._zOffset;
-            },
-            set: function (value) {
-                if (this._zOffset === value) {
-                    return;
-                }
-                this._zOffset = value;
-                this._isZOffsetDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "cullFace", {
-            get: function () {
-                return this._cullFace;
-            },
-            set: function (value) {
-                if (this._cullFace === value) {
-                    return;
-                }
-                this._cullFace = value;
-                this._isCullFaceDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "cull", {
-            get: function () {
-                return this._cull;
-            },
-            set: function (value) {
-                if (this._cull === value) {
-                    return;
-                }
-                this._cull = value;
-                this._isCullDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthFunc", {
-            get: function () {
-                return this._depthFunc;
-            },
-            set: function (value) {
-                if (this._depthFunc === value) {
-                    return;
-                }
-                this._depthFunc = value;
-                this._isDepthFuncDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthMask", {
-            get: function () {
-                return this._depthMask;
-            },
-            set: function (value) {
-                if (this._depthMask === value) {
-                    return;
-                }
-                this._depthMask = value;
-                this._isDepthMaskDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthTest", {
-            get: function () {
-                return this._depthTest;
-            },
-            set: function (value) {
-                if (this._depthTest === value) {
-                    return;
-                }
-                this._depthTest = value;
-                this._isDepthTestDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        _DepthCullingState.prototype.reset = function () {
-            this._depthMask = true;
-            this._depthTest = true;
-            this._depthFunc = null;
-            this._cull = null;
-            this._cullFace = null;
-            this._zOffset = 0;
-            this._isDepthTestDirty = true;
-            this._isDepthMaskDirty = true;
-            this._isDepthFuncDirty = false;
-            this._isCullFaceDirty = false;
-            this._isCullDirty = false;
-            this._isZOffsetDirty = false;
-        };
-        _DepthCullingState.prototype.apply = function (gl) {
-            if (!this.isDirty) {
-                return;
-            }
-            // Cull
-            if (this._isCullDirty) {
-                if (this.cull) {
-                    gl.enable(gl.CULL_FACE);
-                }
-                else {
-                    gl.disable(gl.CULL_FACE);
-                }
-                this._isCullDirty = false;
-            }
-            // Cull face
-            if (this._isCullFaceDirty) {
-                gl.cullFace(this.cullFace);
-                this._isCullFaceDirty = false;
-            }
-            // Depth mask
-            if (this._isDepthMaskDirty) {
-                gl.depthMask(this.depthMask);
-                this._isDepthMaskDirty = false;
-            }
-            // Depth test
-            if (this._isDepthTestDirty) {
-                if (this.depthTest) {
-                    gl.enable(gl.DEPTH_TEST);
-                }
-                else {
-                    gl.disable(gl.DEPTH_TEST);
-                }
-                this._isDepthTestDirty = false;
-            }
-            // Depth func
-            if (this._isDepthFuncDirty) {
-                gl.depthFunc(this.depthFunc);
-                this._isDepthFuncDirty = false;
-            }
-            // zOffset
-            if (this._isZOffsetDirty) {
-                if (this.zOffset) {
-                    gl.enable(gl.POLYGON_OFFSET_FILL);
-                    gl.polygonOffset(this.zOffset, 0);
-                }
-                else {
-                    gl.disable(gl.POLYGON_OFFSET_FILL);
-                }
-                this._isZOffsetDirty = false;
-            }
-        };
-        return _DepthCullingState;
-    })();
-    BABYLON._DepthCullingState = _DepthCullingState;
-    var _AlphaState = (function () {
-        function _AlphaState() {
-            this._isAlphaBlendDirty = false;
-            this._isBlendFunctionParametersDirty = false;
-            this._alphaBlend = false;
-            this._blendFunctionParameters = new Array(4);
-        }
-        Object.defineProperty(_AlphaState.prototype, "isDirty", {
-            get: function () {
-                return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_AlphaState.prototype, "alphaBlend", {
-            get: function () {
-                return this._alphaBlend;
-            },
-            set: function (value) {
-                if (this._alphaBlend === value) {
-                    return;
-                }
-                this._alphaBlend = value;
-                this._isAlphaBlendDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        _AlphaState.prototype.setAlphaBlendFunctionParameters = function (value0, value1, value2, value3) {
-            if (this._blendFunctionParameters[0] === value0 &&
-                this._blendFunctionParameters[1] === value1 &&
-                this._blendFunctionParameters[2] === value2 &&
-                this._blendFunctionParameters[3] === value3) {
-                return;
-            }
-            this._blendFunctionParameters[0] = value0;
-            this._blendFunctionParameters[1] = value1;
-            this._blendFunctionParameters[2] = value2;
-            this._blendFunctionParameters[3] = value3;
-            this._isBlendFunctionParametersDirty = true;
-        };
-        _AlphaState.prototype.reset = function () {
-            this._alphaBlend = false;
-            this._blendFunctionParameters[0] = null;
-            this._blendFunctionParameters[1] = null;
-            this._blendFunctionParameters[2] = null;
-            this._blendFunctionParameters[3] = null;
-            this._isAlphaBlendDirty = true;
-            this._isBlendFunctionParametersDirty = false;
-        };
-        _AlphaState.prototype.apply = function (gl) {
-            if (!this.isDirty) {
-                return;
-            }
-            // Alpha blend
-            if (this._isAlphaBlendDirty) {
-                if (this._alphaBlend) {
-                    gl.enable(gl.BLEND);
-                }
-                else {
-                    gl.disable(gl.BLEND);
-                }
-                this._isAlphaBlendDirty = false;
-            }
-            // Alpha function
-            if (this._isBlendFunctionParametersDirty) {
-                gl.blendFuncSeparate(this._blendFunctionParameters[0], this._blendFunctionParameters[1], this._blendFunctionParameters[2], this._blendFunctionParameters[3]);
-                this._isBlendFunctionParametersDirty = false;
-            }
-        };
-        return _AlphaState;
-    })();
-    BABYLON._AlphaState = _AlphaState;
     var compileShader = function (gl, source, type, defines) {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
         gl.shaderSource(shader, (defines ? defines + "\n" : "") + source);
@@ -291,11 +50,11 @@ var BABYLON;
             mag: magFilter
         };
     };
-    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
+    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, onLoad, samplingMode) {
         if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
-        var potWidth = BABYLON.Tools.GetExponantOfTwo(width, engine.getCaps().maxTextureSize);
-        var potHeight = BABYLON.Tools.GetExponantOfTwo(height, engine.getCaps().maxTextureSize);
+        var potWidth = BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
+        var potHeight = BABYLON.Tools.GetExponentOfTwo(height, engine.getCaps().maxTextureSize);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
         texture._baseWidth = width;
@@ -311,10 +70,14 @@ var BABYLON;
             gl.generateMipmap(gl.TEXTURE_2D);
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
-        engine._activeTexturesCache = [];
+        engine.resetTextureCache();
         scene._removePendingData(texture);
+        if (onLoad) {
+            onLoad();
+        }
     };
     var partialLoad = function (url, index, loadedImages, scene, onfinish) {
+        var img;
         var onload = function () {
             loadedImages[index] = img;
             loadedImages._internalCount++;
@@ -326,14 +89,14 @@ var BABYLON;
         var onerror = function () {
             scene._removePendingData(img);
         };
-        var img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
+        img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
     };
-    var cascadeLoad = function (rootUrl, scene, onfinish, extensions) {
+    var cascadeLoad = function (rootUrl, scene, onfinish, files) {
         var loadedImages = [];
         loadedImages._internalCount = 0;
         for (var index = 0; index < 6; index++) {
-            partialLoad(rootUrl + extensions[index], index, loadedImages, scene, onfinish);
+            partialLoad(files[index], index, loadedImages, scene, onfinish);
         }
     };
     var EngineCapabilities = (function () {
@@ -352,8 +115,9 @@ var BABYLON;
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        function Engine(canvas, antialias, options) {
+        function Engine(canvas, antialias, options, adaptToDeviceRatio) {
             var _this = this;
+            if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = true; }
             // Public members
             this.isFullscreen = false;
             this.isPointerLock = false;
@@ -363,7 +127,7 @@ var BABYLON;
             this.enableOfflineSupport = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
-            this._loadingDivBackgroundColor = "black";
+            this._webGLVersion = "1.0";
             this._drawCalls = 0;
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
@@ -373,12 +137,13 @@ var BABYLON;
             this.fps = 60;
             this.deltaTime = 0;
             // States
-            this._depthCullingState = new _DepthCullingState();
-            this._alphaState = new _AlphaState();
+            this._depthCullingState = new BABYLON.Internals._DepthCullingState();
+            this._alphaState = new BABYLON.Internals._AlphaState();
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._loadedTexturesCache = new Array();
-            this._activeTexturesCache = new Array();
+            this._maxTextureChannels = 16;
+            this._activeTexturesCache = new Array(this._maxTextureChannels);
             this._compiledEffects = {};
             this._uintIndicesCurrentlySet = false;
             this._renderingCanvas = canvas;
@@ -388,11 +153,21 @@ var BABYLON;
                 options.preserveDrawingBuffer = false;
             }
             // GL
-            try {
-                this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
-            }
-            catch (e) {
-                throw new Error("WebGL not supported");
+            //try {
+            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+            //    if (this._gl) {
+            //        this._webGLVersion = "2.0";
+            //    }
+            //} catch (e) {
+            //    // Do nothing
+            //}
+            if (!this._gl) {
+                try {
+                    this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                }
+                catch (e) {
+                    throw new Error("WebGL not supported");
+                }
             }
             if (!this._gl) {
                 throw new Error("WebGL not supported");
@@ -406,7 +181,8 @@ var BABYLON;
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
             // Viewport
-            this._hardwareScalingLevel = 1.0 / (window.devicePixelRatio || 1.0);
+            var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
             // Caps
             this._caps = new EngineCapabilities();
@@ -435,10 +211,14 @@ var BABYLON;
             this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
             this._caps.instancedArrays = this._gl.getExtension('ANGLE_instanced_arrays');
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
+            this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
+            this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+            this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
+            this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
-                this._caps.highPrecisionShaderSupported = highp.precision != 0;
+                this._caps.highPrecisionShaderSupported = highp.precision !== 0;
             }
             // Depth buffer
             this.setDepthBuffer(true);
@@ -484,9 +264,11 @@ var BABYLON;
             document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
             document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-            if (!Engine.audioEngine) {
+            if (BABYLON.AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new BABYLON.AudioEngine();
             }
+            //default loading screen
+            this._loadingScreen = new BABYLON.DefaultLoadingScreen(this._renderingCanvas);
             BABYLON.Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
         }
         Object.defineProperty(Engine, "ALPHA_DISABLE", {
@@ -617,7 +399,14 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.2.0-beta";
+                return "2.4.0-alpha";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "webGLVersion", {
+            get: function () {
+                return this._webGLVersion;
             },
             enumerable: true,
             configurable: true
@@ -629,6 +418,11 @@ var BABYLON;
             this._workingCanvas = document.createElement("canvas");
             this._workingContext = this._workingCanvas.getContext("2d");
         };
+        Engine.prototype.resetTextureCache = function () {
+            for (var index = 0; index < this._maxTextureChannels; index++) {
+                this._activeTexturesCache[index] = null;
+            }
+        };
         Engine.prototype.getGlInfo = function () {
             return {
                 vendor: this._glVendor,
@@ -636,18 +430,21 @@ var BABYLON;
                 version: this._glVersion
             };
         };
-        Engine.prototype.getAspectRatio = function (camera) {
+        Engine.prototype.getAspectRatio = function (camera, useScreen) {
+            if (useScreen === void 0) { useScreen = false; }
             var viewport = camera.viewport;
-            return (this.getRenderWidth() * viewport.width) / (this.getRenderHeight() * viewport.height);
+            return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
         };
-        Engine.prototype.getRenderWidth = function () {
-            if (this._currentRenderTarget) {
+        Engine.prototype.getRenderWidth = function (useScreen) {
+            if (useScreen === void 0) { useScreen = false; }
+            if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._width;
             }
             return this._renderingCanvas.width;
         };
-        Engine.prototype.getRenderHeight = function () {
-            if (this._currentRenderTarget) {
+        Engine.prototype.getRenderHeight = function (useScreen) {
+            if (useScreen === void 0) { useScreen = false; }
+            if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget._height;
             }
             return this._renderingCanvas.height;
@@ -709,7 +506,6 @@ var BABYLON;
             }
         };
         Engine.prototype._renderLoop = function () {
-            var _this = this;
             var shouldRender = true;
             if (!this.renderEvenInBackground && this._windowIsBackground) {
                 shouldRender = false;
@@ -726,9 +522,7 @@ var BABYLON;
             }
             if (this._activeRenderLoops.length > 0) {
                 // Register new frame
-                BABYLON.Tools.QueueNewFrame(function () {
-                    _this._renderLoop();
-                });
+                BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction);
             }
             else {
                 this._renderingQueueLaunched = false;
@@ -743,16 +537,14 @@ var BABYLON;
          * })
          */
         Engine.prototype.runRenderLoop = function (renderFunction) {
-            var _this = this;
             if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
                 return;
             }
             this._activeRenderLoops.push(renderFunction);
             if (!this._renderingQueueLaunched) {
                 this._renderingQueueLaunched = true;
-                BABYLON.Tools.QueueNewFrame(function () {
-                    _this._renderLoop();
-                });
+                this._bindedRenderFunction = this._renderLoop.bind(this);
+                BABYLON.Tools.QueueNewFrame(this._bindedRenderFunction);
             }
         };
         /**
@@ -770,15 +562,19 @@ var BABYLON;
         };
         Engine.prototype.clear = function (color, backBuffer, depthStencil) {
             this.applyStates();
-            this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            if (this._depthCullingState.depthMask) {
+            if (backBuffer) {
+                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+            }
+            if (depthStencil && this._depthCullingState.depthMask) {
                 this._gl.clearDepth(1.0);
             }
             var mode = 0;
-            if (backBuffer)
+            if (backBuffer) {
                 mode |= this._gl.COLOR_BUFFER_BIT;
-            if (depthStencil && this._depthCullingState.depthMask)
+            }
+            if (depthStencil && this._depthCullingState.depthMask) {
                 mode |= this._gl.DEPTH_BUFFER_BIT;
+            }
             this._gl.clear(mode);
         };
         /**
@@ -816,6 +612,12 @@ var BABYLON;
             var width = navigator.isCocoonJS ? window.innerWidth : this._renderingCanvas.clientWidth;
             var height = navigator.isCocoonJS ? window.innerHeight : this._renderingCanvas.clientHeight;
             this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
+            for (var index = 0; index < this.scenes.length; index++) {
+                var scene = this.scenes[index];
+                if (scene.debugLayer.isVisible()) {
+                    scene.debugLayer._syncPositions();
+                }
+            }
         };
         /**
          * force a specific size of the canvas
@@ -833,22 +635,37 @@ var BABYLON;
                 }
             }
         };
-        Engine.prototype.bindFramebuffer = function (texture) {
+        Engine.prototype.bindFramebuffer = function (texture, faceIndex) {
             this._currentRenderTarget = texture;
             var gl = this._gl;
             gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
+            if (texture.isCube) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            }
             this._gl.viewport(0, 0, texture._width, texture._height);
             this.wipeCaches();
         };
-        Engine.prototype.unBindFramebuffer = function (texture) {
+        Engine.prototype.unBindFramebuffer = function (texture, disableGenerateMipMaps) {
+            if (disableGenerateMipMaps === void 0) { disableGenerateMipMaps = false; }
             this._currentRenderTarget = null;
-            if (texture.generateMipMaps) {
+            if (texture.generateMipMaps && !disableGenerateMipMaps) {
                 var gl = this._gl;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 gl.bindTexture(gl.TEXTURE_2D, null);
             }
             this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+        };
+        Engine.prototype.generateMipMapsForCubemap = function (texture) {
+            if (texture.generateMipMaps) {
+                var gl = this._gl;
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            }
         };
         Engine.prototype.flushFramebuffer = function () {
             this._gl.flush();
@@ -867,7 +684,12 @@ var BABYLON;
         Engine.prototype.createVertexBuffer = function (vertices) {
             var vbo = this._gl.createBuffer();
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, vbo);
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+            if (vertices instanceof Float32Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, vertices, this._gl.STATIC_DRAW);
+            }
+            else {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(vertices), this._gl.STATIC_DRAW);
+            }
             this._resetVertexBufferBinding();
             vbo.references = 1;
             return vbo;
@@ -1028,6 +850,16 @@ var BABYLON;
             }
             this._gl.drawArrays(this._gl.POINTS, verticesStart, verticesCount);
         };
+        Engine.prototype.drawUnIndexed = function (useTriangles, verticesStart, verticesCount, instancesCount) {
+            // Apply states
+            this.applyStates();
+            this._drawCalls++;
+            if (instancesCount) {
+                this._caps.instancedArrays.drawArraysInstancedANGLE(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount, instancesCount);
+                return;
+            }
+            this._gl.drawArrays(useTriangles ? this._gl.TRIANGLES : this._gl.LINES, verticesStart, verticesCount);
+        };
         // Shaders
         Engine.prototype._releaseEffect = function (effect) {
             if (this._compiledEffects[effect._key]) {
@@ -1106,11 +938,13 @@ var BABYLON;
             // Use program
             this._gl.useProgram(effect.getProgram());
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //make sure this is a number)
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._vertexAttribArrays[i] = false;
-                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArrays[iAsNumber] = false;
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
             var attributesCount = effect.getAttributesCount();
             for (var index = 0; index < attributesCount; index++) {
@@ -1202,12 +1036,16 @@ var BABYLON;
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         };
         // States
-        Engine.prototype.setState = function (culling, zOffset, force) {
+        Engine.prototype.setState = function (culling, zOffset, force, reverseSide) {
             if (zOffset === void 0) { zOffset = 0; }
+            if (reverseSide === void 0) { reverseSide = false; }
             // Culling        
-            if (this._depthCullingState.cull !== culling || force) {
+            var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
+            var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
+            var cullFace = this.cullBackFaces ? showSide : hideSide;
+            if (this._depthCullingState.cull !== culling || force || this._depthCullingState.cullFace !== cullFace) {
                 if (culling) {
-                    this._depthCullingState.cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+                    this._depthCullingState.cullFace = cullFace;
                     this._depthCullingState.cull = true;
                 }
                 else {
@@ -1230,7 +1068,7 @@ var BABYLON;
             this._gl.colorMask(enable, enable, enable, enable);
         };
         Engine.prototype.setAlphaMode = function (mode) {
-            if (this._alphaMode == mode) {
+            if (this._alphaMode === mode) {
                 return;
             }
             switch (mode) {
@@ -1282,7 +1120,7 @@ var BABYLON;
         };
         // Textures
         Engine.prototype.wipeCaches = function () {
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             this._currentEffect = null;
             this._depthCullingState.reset();
             this._alphaState.reset();
@@ -1342,16 +1180,14 @@ var BABYLON;
                     onError();
                 }
             };
+            var callback;
             if (isTGA) {
-                var callback = function (arrayBuffer) {
+                callback = function (arrayBuffer) {
                     var data = new Uint8Array(arrayBuffer);
                     var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
                     prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
                         BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    }, samplingMode);
+                    }, onLoad, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
@@ -1366,10 +1202,7 @@ var BABYLON;
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                     prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
                         BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    }, samplingMode);
+                    }, onLoad, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (data) {
@@ -1403,10 +1236,7 @@ var BABYLON;
                             }
                         }
                         _this._gl.texImage2D(_this._gl.TEXTURE_2D, 0, _this._gl.RGBA, _this._gl.RGBA, _this._gl.UNSIGNED_BYTE, isPot ? img : _this._workingCanvas);
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    }, samplingMode);
+                    }, onLoad, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
@@ -1415,8 +1245,7 @@ var BABYLON;
             }
             return texture;
         };
-        Engine.prototype.updateRawTexture = function (texture, data, format, invertY, compression) {
-            if (compression === void 0) { compression = null; }
+        Engine.prototype._getInternalFormat = function (format) {
             var internalFormat = this._gl.RGBA;
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
@@ -1435,6 +1264,11 @@ var BABYLON;
                     internalFormat = this._gl.RGBA;
                     break;
             }
+            return internalFormat;
+        };
+        Engine.prototype.updateRawTexture = function (texture, data, format, invertY, compression) {
+            if (compression === void 0) { compression = null; }
+            var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             if (compression) {
@@ -1447,7 +1281,7 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode, compression) {
@@ -1475,10 +1309,10 @@ var BABYLON;
             texture._baseWidth = width;
             texture._baseHeight = height;
             if (forceExponantOfTwo) {
-                width = BABYLON.Tools.GetExponantOfTwo(width, this._caps.maxTextureSize);
-                height = BABYLON.Tools.GetExponantOfTwo(height, this._caps.maxTextureSize);
+                width = BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize);
+                height = BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize);
             }
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             texture._width = width;
             texture._height = height;
             texture.isReady = false;
@@ -1491,10 +1325,18 @@ var BABYLON;
         };
         Engine.prototype.updateTextureSamplingMode = function (samplingMode, texture) {
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-            this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            if (texture.isCube) {
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, texture);
+                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+                this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+            }
+            else {
+                this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+                this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
+                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+            }
         };
         Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY) {
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -1504,7 +1346,7 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.updateVideoTexture = function (texture, video, invertY) {
@@ -1542,7 +1384,7 @@ var BABYLON;
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
                 }
                 this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._activeTexturesCache = [];
+                this.resetTextureCache();
                 texture.isReady = true;
             }
             catch (ex) {
@@ -1560,7 +1402,7 @@ var BABYLON;
             var type = Engine.TEXTURETYPE_UNSIGNED_INT;
             var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
             if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipmaps;
+                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
                 generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
                 type = options.type === undefined ? type : options.type;
                 if (options.samplingMode !== undefined) {
@@ -1596,7 +1438,6 @@ var BABYLON;
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             if (generateDepthBuffer) {
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
             }
@@ -1617,18 +1458,67 @@ var BABYLON;
             texture.generateMipMaps = generateMipMaps;
             texture.references = 1;
             texture.samplingMode = samplingMode;
-            this._activeTexturesCache = [];
+            this.resetTextureCache();
             this._loadedTexturesCache.push(texture);
             return texture;
         };
-        Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions, noMipmap) {
+        Engine.prototype.createRenderTargetCubeTexture = function (size, options) {
+            var gl = this._gl;
+            var texture = gl.createTexture();
+            var generateMipMaps = true;
+            var samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE;
+            if (options !== undefined) {
+                generateMipMaps = options.generateMipMaps === undefined ? options : options.generateMipMaps;
+                if (options.samplingMode !== undefined) {
+                    samplingMode = options.samplingMode;
+                }
+            }
+            texture.isCube = true;
+            texture.references = 1;
+            texture.generateMipMaps = generateMipMaps;
+            texture.references = 1;
+            texture.samplingMode = samplingMode;
+            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            for (var face = 0; face < 6; face++) {
+                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            }
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            // Create the depth buffer
+            var depthBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+            // Create the framebuffer
+            var framebuffer = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+            // Mipmaps
+            if (texture.generateMipMaps) {
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            }
+            // Unbind
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            texture._framebuffer = framebuffer;
+            texture._depthBuffer = depthBuffer;
+            this.resetTextureCache();
+            texture._width = size;
+            texture._height = size;
+            texture.isReady = true;
+            return texture;
+        };
+        Engine.prototype.createCubeTexture = function (rootUrl, scene, files, noMipmap) {
             var _this = this;
             var gl = this._gl;
             var texture = gl.createTexture();
             texture.isCube = true;
             texture.url = rootUrl;
             texture.references = 1;
-            this._loadedTexturesCache.push(texture);
             var extension = rootUrl.substr(rootUrl.length - 4, 4).toLowerCase();
             var isDDS = this.getCaps().s3tc && (extension === ".dds");
             if (isDDS) {
@@ -1646,7 +1536,7 @@ var BABYLON;
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                     gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
-                    _this._activeTexturesCache = [];
+                    _this.resetTextureCache();
                     texture._width = info.width;
                     texture._height = info.height;
                     texture.isReady = true;
@@ -1654,7 +1544,7 @@ var BABYLON;
             }
             else {
                 cascadeLoad(rootUrl, scene, function (imgs) {
-                    var width = BABYLON.Tools.GetExponantOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
+                    var width = BABYLON.Tools.GetExponentOfTwo(imgs[0].width, _this._caps.maxCubemapTextureSize);
                     var height = width;
                     _this._prepareWorkingCanvas();
                     _this._workingCanvas.width = width;
@@ -1677,14 +1567,99 @@ var BABYLON;
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                     gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
-                    _this._activeTexturesCache = [];
+                    _this.resetTextureCache();
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
-                }, extensions);
+                }, files);
             }
             return texture;
         };
+        Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback, mipmmapGenerator) {
+            var _this = this;
+            var gl = this._gl;
+            var texture = gl.createTexture();
+            scene._addPendingData(texture);
+            texture.isCube = true;
+            texture.references = 1;
+            texture.url = url;
+            var internalFormat = this._getInternalFormat(format);
+            var textureType = gl.UNSIGNED_BYTE;
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                textureType = gl.FLOAT;
+            }
+            var width = size;
+            var height = width;
+            var isPot = (BABYLON.Tools.IsExponentOfTwo(width) && BABYLON.Tools.IsExponentOfTwo(height));
+            texture._width = width;
+            texture._height = height;
+            var onerror = function () {
+                scene._removePendingData(texture);
+            };
+            var internalCallback = function (data) {
+                var rgbeDataArrays = callback(data);
+                var facesIndex = [
+                    gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                    gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                ];
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+                if (!noMipmap && isPot) {
+                    if (mipmmapGenerator) {
+                        var arrayTemp = [];
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
+                        arrayTemp.push(rgbeDataArrays[0]); // +X
+                        arrayTemp.push(rgbeDataArrays[3]); // -X
+                        arrayTemp.push(rgbeDataArrays[1]); // +Y
+                        arrayTemp.push(rgbeDataArrays[4]); // -Y
+                        arrayTemp.push(rgbeDataArrays[2]); // +Z
+                        arrayTemp.push(rgbeDataArrays[5]); // -Z
+                        var mipData = mipmmapGenerator(arrayTemp);
+                        for (var level = 0; level < mipData.length; level++) {
+                            var mipSize = width >> level;
+                            // mipData is order in +X -X +Y -Y +Z -Z
+                            gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                            gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                            gl.texImage2D(facesIndex[2], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                            gl.texImage2D(facesIndex[3], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                            gl.texImage2D(facesIndex[4], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                            gl.texImage2D(facesIndex[5], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                        }
+                    }
+                    else {
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (var index = 0; index < facesIndex.length; index++) {
+                            var faceData = rgbeDataArrays[index];
+                            gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
+                        }
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
+                }
+                else {
+                    noMipmap = true;
+                }
+                if (textureType == gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                }
+                else {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
+                }
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                texture.isReady = true;
+                _this.resetTextureCache();
+                scene._removePendingData(texture);
+            };
+            BABYLON.Tools.LoadFile(url, function (data) {
+                internalCallback(data);
+            }, onerror, scene.database, true);
+            return texture;
+        };
+        ;
         Engine.prototype._releaseTexture = function (texture) {
             var gl = this._gl;
             if (texture._framebuffer) {
@@ -1695,12 +1670,7 @@ var BABYLON;
             }
             gl.deleteTexture(texture);
             // Unbind channels
-            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
-                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
-                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
-                this._activeTexturesCache[channel] = null;
-            }
+            this.unbindAllTextures();
             var index = this._loadedTexturesCache.indexOf(texture);
             if (index !== -1) {
                 this._loadedTexturesCache.splice(index, 1);
@@ -1723,6 +1693,14 @@ var BABYLON;
         Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
             this._bindTexture(channel, postProcess._textures.data[postProcess._currentRenderTextureInd]);
         };
+        Engine.prototype.unbindAllTextures = function () {
+            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
+                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                this._gl.bindTexture(this._gl.TEXTURE_2D, null);
+                this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, null);
+                this._activeTexturesCache[channel] = null;
+            }
+        };
         Engine.prototype.setTexture = function (channel, texture) {
             if (channel < 0) {
                 return;
@@ -1738,10 +1716,11 @@ var BABYLON;
                 return;
             }
             // Video
+            var alreadyActivated = false;
             if (texture instanceof BABYLON.VideoTexture) {
-                if (texture.update()) {
-                    this._activeTexturesCache[channel] = null;
-                }
+                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+                alreadyActivated = true;
+                texture.update();
             }
             else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 texture.delayLoad();
@@ -1752,7 +1731,9 @@ var BABYLON;
             }
             this._activeTexturesCache[channel] = texture;
             var internalTexture = texture.getInternalTexture();
-            this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+            if (!alreadyActivated) {
+                this._gl.activeTexture(this._gl["TEXTURE" + channel]);
+            }
             if (internalTexture.isCube) {
                 this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, internalTexture);
                 if (internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
@@ -1813,6 +1794,21 @@ var BABYLON;
             this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
         };
+        Engine.prototype.releaseInternalTexture = function (texture) {
+            if (!texture) {
+                return;
+            }
+            texture.references--;
+            // Final reference ?
+            if (texture.references === 0) {
+                var texturesCache = this.getLoadedTexturesCache();
+                var index = texturesCache.indexOf(texture);
+                if (index > -1) {
+                    texturesCache.splice(index, 1);
+                }
+                this._releaseTexture(texture);
+            }
+        };
         // Dispose
         Engine.prototype.dispose = function () {
             this.hideLoadingUI();
@@ -1829,10 +1825,12 @@ var BABYLON;
             }
             // Unbind
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //making sure this is a string
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
             this._gl = null;
             // Events
@@ -1849,111 +1847,35 @@ var BABYLON;
         };
         // Loading screen
         Engine.prototype.displayLoadingUI = function () {
-            var _this = this;
-            this._loadingDiv = document.createElement("div");
-            this._loadingDiv.style.opacity = "0";
-            this._loadingDiv.style.transition = "opacity 1.5s ease";
-            // Loading text
-            this._loadingTextDiv = document.createElement("div");
-            this._loadingTextDiv.style.position = "absolute";
-            this._loadingTextDiv.style.left = "0";
-            this._loadingTextDiv.style.top = "50%";
-            this._loadingTextDiv.style.marginTop = "80px";
-            this._loadingTextDiv.style.width = "100%";
-            this._loadingTextDiv.style.height = "20px";
-            this._loadingTextDiv.style.fontFamily = "Arial";
-            this._loadingTextDiv.style.fontSize = "14px";
-            this._loadingTextDiv.style.color = "white";
-            this._loadingTextDiv.style.textAlign = "center";
-            this._loadingTextDiv.innerHTML = "Loading";
-            this._loadingDiv.appendChild(this._loadingTextDiv);
-            // Loading img
-            var imgBack = new Image();
-            imgBack.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAARbSURBVHhe7Z09aFNRFMc716kuLrq4FdyLq4Wi4CAoRQcR0UJBUBdRiuLSIYMo6CA4FF2sgw6CFAdFUOpSQYcWO4hD26UQCfXrIQrx/JJzw1OSWq3NPeL/B4Fy+0jg/HO+7j3vpUcI8b/Q39+/49ihfWdPHT94Yf/e3Se3bd263f8lus218TPn6vV6Ya8Wi/MzNRNmj18iusX9W1evmP1/EKNEIVG6CMbG6E3bt+fT++pHha8NoHdT72bLE8NDg7tGU64gLLndV4Wc4m8j/pS+vr4tGB/DT16v3Fyr8dvBe/jbit8BL0AES9LX1iPAz+BR/hFiLVCynj95dPzNy6fv3IZ/k4L3948Sq7FzYGBg4vLFGxitabuOFCbWNKGrMnbiUuo18KaV6tIHv6YtvL9/nOgE31jCktmrY7k6+/zhE4yP4Vf7hiNqh/BWWEl8mzDol4p22Lf7cIdvdUMEvv0Y2S9fE5S1hLzpqTsPkiep//gFGPnR3Yl7GL5p/xYFBrTwM+iXio3GqpwDGL5p/xYNIX7XG8Q6IJRgdIzf1KBBgafII7oMidhyQtVFaMA2Bt7il4huQRhaXphbcR2g4RXqBzKAGHiCCwGFVUAj/m/RTRDj29cvn10I0PZ3LghH5f4CL1EFlQmqqXK3jDDKFxmhQ3Yt6oQseUZGKmMnTpsOqc8o1F9kBOMjQlOLeqEeIyOc6JV6jYLJD/+XyIFvnzdgl9aXRQ5I2qZDK1SpospMqaoqON/wZZGDciLnMMiXRS7IF4hhqMTNTdk7CFu+LHLhR7BQqBvPDJUUQqCGvCMATHUgBmhWNgApmdOda9YpM+VwRYfuyyIXDK8hBlilNerLIheMZCKGwlUAyru6GlwOgPUbRxADdJ9FAChxXY864viyyEXqPxhc0M2TAfAbatSdRyHtXymhByEdRnE3ky+JnHAIhSA0h74kckETmHoQbSgGwJrCIRMEPSRIBCRIMAhZaYhaggQhJXUJEoRU9mofKwh+F22dLRRfEjlJM7w6KQwCoQpBOKTyJZETjmwRxKqtGV8SOSkNOGjKPQppBEgDDkFgpxdBVGkFgaYQQXRIFQSObk0P5ZFIpAZRHXsQ0r0hCluBWKkuvVbYCkQaCdL5ehBScudJP4yY+rLISdps1NBDEJKXMMmoSfggWC4ZQRR17oFYXph7hSiquIKQ+hJGTX1J5MYSPD/GVdNzsgLBwZVCVyAQAkF0ohiI/c1fS6tNXq9UfEnkhudmIQolsS+J3Hh/UtNDzQLhj42VKJFInqLwFYiUU5ToA+HdfI0JevUpQUAIn+vSz2lHIuUV/dJOIHhOY/IWVWGBIHQtzs88s9zyWBuTgcBLzGOmeNnfF/QslSDgMeQW85i3DOQxuipxAkCyZ8SIm4Omp+7MMlCB59j6sKZcMoM4iIEoeI2J9AKxrFobZx0v4vYInuHFS4J1GQRCAGaLEYQXfyMML5XSQgghhBBCCCH+cXp6vgNhKpSKX/XdOAAAAABJRU5ErkJggg==";
-            imgBack.style.position = "absolute";
-            imgBack.style.left = "50%";
-            imgBack.style.top = "50%";
-            imgBack.style.marginLeft = "-50px";
-            imgBack.style.marginTop = "-50px";
-            imgBack.style.transition = "transform 1.0s ease";
-            imgBack.style.webkitTransition = "-webkit-transform 1.0s ease";
-            var deg = 360;
-            var onTransitionEnd = function () {
-                deg += 360;
-                imgBack.style.transform = "rotateZ(" + deg + "deg)";
-                imgBack.style.webkitTransform = "rotateZ(" + deg + "deg)";
-            };
-            imgBack.addEventListener("transitionend", onTransitionEnd);
-            imgBack.addEventListener("webkitTransitionEnd", onTransitionEnd);
-            this._loadingDiv.appendChild(imgBack);
-            // front image
-            var imgFront = new Image();
-            imgFront.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAYJSURBVHhe7Zy/qx1FFMff/2Av2Nvbi4WFiiAEY/OQ2IgQsbCJQoqkCAgpFLXyoZURLfwBIiIpgqZJoYQYlWelNsIrNOxDJcrzfHe+G97dnTl75u7euzv7zgcWHrlnZmfOmXPmzI/NjuM4juM4juM4juM4juM4juM4juM4juM45fPic08/uHf5/CvffH7lnT8PfrtxdHS0n3p+/fHGl5+89/prr5599iEWd8bg0rkXHoFyqehKnlxQpjYSDHTm9JMPsGrHylOPPXofvICKXMcIGtXdf/76AYbm6xyNW9e/eAtKC7rbKLXnvHHx5Sf4auc4Ek7OQkFU1Dap/vv37k/wSjblZANFiFIGzw98hhizwqBgs04mCBdQRNCHidoAEtY+lLIvtSdoGFeyql2ZH57HBH4sE7O+o/r9l+8/ZXUni68+2jsHBQQ9qNRGeP/tSxdSYQX/roUcpL4/f3vtM9TD+jTq92n1LQ7jxF1hhGPtwWL3gGccy8JuS1r8sVWBGXNVdSKMYjBGPUJjCzooiGuSpnwlnnOGP2dhHRSLNgpHp2oMKIriK8TmG4Qh/rwW8D6pps9b9im+LDDipXOqMVJrAngBfg9i98gevWKA+/nnCod3Dr5GfaHaDgidVym6HKRjGIkpqthcAVKGxNqBImbEo66kjCih8AOpNmkUmbMuUrR8kEqiU6FvHZLGAPJ71JCYSyhiBqmwFE2GoD6jLGIfDHtG6EzoU4dK21PCqIRMEF0FGRjFzGDtIkXVAdATvsqfT9CJ0JcOFdYiFIsiMlqYy1YOFpQo2OddqBtyEaq9y+efoVh5oPHoROjLKn0j3JIE5Ka8UqZRtGrMnneX6yVofOhDh94MSbznTcpqmDOt1vyQzOgaJAF4F3JBfIXesrNEGWWmjIX7UBZ6jRJbBMLg/DmJiKUGVHleIpnVNTa+jakzkAviJqLhi4MC9XQGBrZeKJZESSrKy7ik0VGFWhQBRDTHIACKQ5l9nAjy75gya4a2w+Jhs0FJdc0xX/GwUbAqFBkZi7QpJ2w16WUbjFyK9MJF3KaoEM74KhVtLrQOrsmRxkbdHEqmSC/c+EuGnIFkjW7Ih2Kr4CCMIvNG2hrrgLpCjiFloooYCjyYrzCRyvhyBthkIPuQtsZGdnbMTezyDiU71KTC5zr7aVsHbsz2tllrEkS5UHwU1tq1HbtPW4UbeB0O7xx8R5EsMJql+BheUmHjkNVmIRP7LutoM3+D4O4tG7vCkNO9ESZ4lL3J6rKRMPx4qKbD/A0icf8CG7tC7kTahnMTwleuYSrsS7GatRAvfZh1tTm5BmmQCdZ8a0Sefe28xUrRBkmFLKy8KTIKUDRX0Y1xagPgwbaIdeFnQULmKak3xvwNMkVGgok/N5XNoehJvejRlCDl9escI28dJU0tZ++nBTJE9mEF647x5Ehbo4s5hDOKFIU0PdofeA5F5k1q63zIWmQqNI/P3ZubjFTqKxQ3jyjHAOX0RdlgVO9hzRFpczRcjZ3Gbxxpc7Qj6+5pTYF2OFXawNI+yDGf1k2NcvOlzBQeDQ/t7zD7DsEDpJ2xATXaNtDWUS4IzP4DS2ljajAVu57SUkYw245ptxZxA5JiZaJ0DswudGn3kYUy54426EjoT4dZfYbccxC2nI92cDkZHQr96jD4AGkMDKeSy/COBsRe6VTSKFN6irLeaCh3IteQjt1E5+oudsG/b/2DfZ5AqsYo8vMDK9LB1HzSsLWvlGThdxXvC6+NsqyPPWP0pMINtbdsajfVeC6f/GZ+cdAofQoB1d+Hf9waY98I7+RXWab3Lt4zYkjHtTnlOLXHYMsCh1zWeQYehu1zfNPOOiys/d91LAKEBSgh6MJMbSA82AaHofDgAIwbgvVvlLNS11nModMm4UZergLHZBZrodmBuA3lBB1thdorSjkOmATMDwg/UBQVtglqQyx6fbEJ+H3IWIapjYAjAfeIgeCMHldueJvFaqDaAHhwf8qNsEEQ1iQbOoUUGIbCLRc8+Bvfp4jyd2FEijuO4ziO4ziO4ziO4ziO4ziO4ziO4ziOUzw7O/8D0P7rcZ/GEboAAAAASUVORK5CYII=";
-            imgFront.style.position = "absolute";
-            imgFront.style.left = "50%";
-            imgFront.style.top = "50%";
-            imgFront.style.marginLeft = "-50px";
-            imgFront.style.marginTop = "-50px";
-            this._loadingDiv.appendChild(imgFront);
-            // Resize
-            this._resizeLoadingUI = function () {
-                var canvasRect = _this.getRenderingCanvasClientRect();
-                _this._loadingDiv.style.position = "absolute";
-                _this._loadingDiv.style.left = canvasRect.left + "px";
-                _this._loadingDiv.style.top = canvasRect.top + "px";
-                _this._loadingDiv.style.width = canvasRect.width + "px";
-                _this._loadingDiv.style.height = canvasRect.height + "px";
-            };
-            this._resizeLoadingUI();
-            window.addEventListener("resize", this._resizeLoadingUI);
-            this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
-            document.body.appendChild(this._loadingDiv);
-            setTimeout(function () {
-                _this._loadingDiv.style.opacity = "1";
-                imgBack.style.transform = "rotateZ(360deg)";
-                imgBack.style.webkitTransform = "rotateZ(360deg)";
-            }, 0);
+            this._loadingScreen.displayLoadingUI();
         };
+        Engine.prototype.hideLoadingUI = function () {
+            this._loadingScreen.hideLoadingUI();
+        };
+        Object.defineProperty(Engine.prototype, "loadingScreen", {
+            get: function () {
+                return this._loadingScreen;
+            },
+            set: function (loadingScreen) {
+                this._loadingScreen = loadingScreen;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine.prototype, "loadingUIText", {
             set: function (text) {
-                if (!this._loadingDiv) {
-                    return;
-                }
-                this._loadingTextDiv.innerHTML = text;
+                this._loadingScreen.loadingUIText = text;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Engine.prototype, "loadingUIBackgroundColor", {
-            get: function () {
-                return this._loadingDivBackgroundColor;
-            },
             set: function (color) {
-                this._loadingDivBackgroundColor = color;
-                if (!this._loadingDiv) {
-                    return;
-                }
-                this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+                this._loadingScreen.loadingUIBackgroundColor = color;
             },
             enumerable: true,
             configurable: true
         });
-        Engine.prototype.hideLoadingUI = function () {
-            var _this = this;
-            if (!this._loadingDiv) {
-                return;
-            }
-            var onTransitionEnd = function () {
-                if (!_this._loadingDiv) {
-                    return;
-                }
-                document.body.removeChild(_this._loadingDiv);
-                window.removeEventListener("resize", _this._resizeLoadingUI);
-                _this._loadingDiv = null;
-            };
-            this._loadingDiv.style.opacity = "0";
-            this._loadingDiv.addEventListener("transitionend", onTransitionEnd);
-        };
         // FPS
         Engine.prototype.getFps = function () {
             return this.fps;

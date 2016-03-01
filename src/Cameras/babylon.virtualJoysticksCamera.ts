@@ -46,5 +46,9 @@
             this._leftjoystick.releaseCanvas();
             super.dispose();
         }
+
+        public getTypeName(): string {
+            return "VirtualJoysticksCamera";
+        }
     }
 }

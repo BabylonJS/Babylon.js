@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-uniform vec4 color;
+﻿uniform vec4 color;
 
 #ifdef ALPHATEST
 varying vec2 vUV;

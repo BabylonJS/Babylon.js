@@ -9,6 +9,8 @@
     }
 
     export class EdgesRenderer {
+        public edgesWidthScalerForOrthographic = 1000.0;
+        public edgesWidthScalerForPerspective = 50.0;
         private _source: AbstractMesh;
         private _linesPositions = new Array<number>();
         private _linesNormals = new Array<number>();
@@ -284,7 +286,13 @@
 
             scene.resetCachedMaterial();
             this._lineShader.setColor4("color", this._source.edgesColor);
-            this._lineShader.setFloat("width", this._source.edgesWidth / 50.0);
+
+            if (scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+                this._lineShader.setFloat("width", this._source.edgesWidth / this.edgesWidthScalerForOrthographic);
+            } else {
+                this._lineShader.setFloat("width", this._source.edgesWidth / this.edgesWidthScalerForPerspective);
+            }
+
             this._lineShader.setFloat("aspectRatio", engine.getAspectRatio(scene.activeCamera));
             this._lineShader.bind(this._source.getWorldMatrix());
 

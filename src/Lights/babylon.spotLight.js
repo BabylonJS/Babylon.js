@@ -3,6 +3,12 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var SpotLight = (function (_super) {
@@ -21,11 +27,17 @@ var BABYLON;
             var activeCamera = this.getScene().activeCamera;
             BABYLON.Matrix.PerspectiveFovLHToRef(this.angle, 1.0, activeCamera.minZ, activeCamera.maxZ, matrix);
         };
+        SpotLight.prototype.needCube = function () {
+            return false;
+        };
         SpotLight.prototype.supportsVSM = function () {
             return true;
         };
         SpotLight.prototype.needRefreshPerFrame = function () {
             return false;
+        };
+        SpotLight.prototype.getShadowDirection = function (faceIndex) {
+            return this.direction;
         };
         SpotLight.prototype.setDirectionToTarget = function (target) {
             this.direction = BABYLON.Vector3.Normalize(target.subtract(this.position));
@@ -65,6 +77,21 @@ var BABYLON;
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
         };
+        SpotLight.prototype.getTypeID = function () {
+            return 2;
+        };
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], SpotLight.prototype, "position", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], SpotLight.prototype, "direction", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], SpotLight.prototype, "angle", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], SpotLight.prototype, "exponent", void 0);
         return SpotLight;
     })(BABYLON.Light);
     BABYLON.SpotLight = SpotLight;

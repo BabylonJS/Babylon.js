@@ -26,7 +26,7 @@ namespace Max2Babylon
             // Finish
             _babylonActionsBuilderAction = babylonActionsBuilderAction;
         }
-         
+        
         private void ActionsBuilderForm_Load(object sender, EventArgs e)
         {
             if (Loader.Core.SelNodeCount > 0)
@@ -41,7 +41,7 @@ namespace Max2Babylon
             }
             _objectName = _node.Name;
 
-            // Set url (webview)
+            // Set url (web view)
             string assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
             ActionsBuilderWebView.Url = new Uri(string.Format("{0}/BabylonActionsBuilder/index.html", assemblyPath), System.UriKind.Absolute);
         }
@@ -83,7 +83,7 @@ namespace Max2Babylon
             // Set common properties (name, is scene or object, etc.)
             _document = ActionsBuilderWebView.Document;
 
-            // Update screen
+            // Update version (no buttons for 3ds Max)
             _document.InvokeScript("hideButtons");
 
             // Set object name

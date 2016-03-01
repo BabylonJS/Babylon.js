@@ -9,6 +9,7 @@ var BABYLON;
             this.renderingGroupId = 0;
             this.layerMask = 0x0FFFFFFF;
             this.fogEnabled = true;
+            this.isPickable = false;
             this._vertexDeclaration = [4, 4, 4, 4];
             this._vertexStrideSize = 16 * 4; // 15 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color)
             this._capacity = capacity;
@@ -37,6 +38,16 @@ var BABYLON;
             this._effectBase = this._scene.getEngine().createEffect("sprites", ["position", "options", "cellInfo", "color"], ["view", "projection", "textureInfos", "alphaTest"], ["diffuseSampler"], "");
             this._effectFog = this._scene.getEngine().createEffect("sprites", ["position", "options", "cellInfo", "color"], ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"], ["diffuseSampler"], "#define FOG");
         }
+        Object.defineProperty(SpriteManager.prototype, "texture", {
+            get: function () {
+                return this._spriteTexture;
+            },
+            set: function (value) {
+                this._spriteTexture = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         SpriteManager.prototype._appendSpriteVertex = function (index, sprite, offsetX, offsetY, rowSize) {
             var arrayOffset = index * 16;
             if (offsetX === 0)
@@ -65,6 +76,50 @@ var BABYLON;
             this._vertices[arrayOffset + 13] = sprite.color.g;
             this._vertices[arrayOffset + 14] = sprite.color.b;
             this._vertices[arrayOffset + 15] = sprite.color.a;
+        };
+        SpriteManager.prototype.intersects = function (ray, camera, predicate, fastCheck) {
+            var count = Math.min(this._capacity, this.sprites.length);
+            var min = BABYLON.Vector3.Zero();
+            var max = BABYLON.Vector3.Zero();
+            var distance = Number.MAX_VALUE;
+            var currentSprite;
+            var cameraSpacePosition = BABYLON.Vector3.Zero();
+            var cameraView = camera.getViewMatrix();
+            for (var index = 0; index < count; index++) {
+                var sprite = this.sprites[index];
+                if (!sprite) {
+                    continue;
+                }
+                if (predicate) {
+                    if (!predicate(sprite)) {
+                        continue;
+                    }
+                }
+                else if (!sprite.isPickable) {
+                    continue;
+                }
+                BABYLON.Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
+                min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
+                max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
+                if (ray.intersectsBoxMinMax(min, max)) {
+                    var currentDistance = BABYLON.Vector3.Distance(cameraSpacePosition, ray.origin);
+                    if (distance > currentDistance) {
+                        distance = currentDistance;
+                        currentSprite = sprite;
+                        if (fastCheck) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (currentSprite) {
+                var result = new BABYLON.PickingInfo();
+                result.hit = true;
+                result.pickedSprite = currentSprite;
+                result.distance = distance;
+                return result;
+            }
+            return null;
         };
         SpriteManager.prototype.render = function () {
             // Check

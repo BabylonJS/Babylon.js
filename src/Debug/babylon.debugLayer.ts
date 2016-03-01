@@ -19,8 +19,9 @@
         private _treeSubsetDiv: HTMLDivElement;
         private _drawingCanvas: HTMLCanvasElement;
         private _drawingContext: CanvasRenderingContext2D;
+        private _rootElement: HTMLElement;
 
-        private _syncPositions: () => void;
+        public _syncPositions: () => void;
         private _syncData: () => void;
         private _syncUI: () => void;
         private _onCanvasClick: (evt: MouseEvent) => void;
@@ -146,13 +147,13 @@
 
                     // Meshes
                     var meshes = this._camera.getActiveMeshes();
-                    for (var index = 0; index < meshes.length; index++) {
+                    var index: number;
+                    var projectedPosition: Vector3;
+                    for (index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
 
                         var position = mesh.getBoundingInfo().boundingSphere.center;
-
-                        var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), this._transformationMatrix, globalViewport);
-
+                        projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), this._transformationMatrix, globalViewport);
                         if (mesh.renderOverlay || this.shouldDisplayAxis && this.shouldDisplayAxis(mesh)) {
                             this._renderAxis(projectedPosition, mesh, globalViewport);
                         }
@@ -340,9 +341,7 @@
 
             this._scene.unregisterBeforeRender(this._syncData);
             this._scene.unregisterAfterRender(this._syncUI);
-            document.body.removeChild(this._globalDiv);
-
-            window.removeEventListener("resize", this._syncPositions);
+            this._rootElement.removeChild(this._globalDiv);
 
             this._scene.forceShowBoundingBoxes = false;
             this._scene.forceWireframe = false;
@@ -354,6 +353,8 @@
             StandardMaterial.BumpTextureEnabled = true;
             StandardMaterial.OpacityTextureEnabled = true;
             StandardMaterial.ReflectionTextureEnabled = true;
+            StandardMaterial.LightmapTextureEnabled = true;
+            StandardMaterial.RefractionTextureEnabled = true;
 
             this._scene.shadowsEnabled = true;
             this._scene.particlesEnabled = true;
@@ -364,11 +365,12 @@
             this._scene.lensFlaresEnabled = true;
             this._scene.proceduralTexturesEnabled = true;
             this._scene.renderTargetsEnabled = true;
+            this._scene.probesEnabled = true;
 
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         }
 
-        public show(showUI: boolean = true, camera: Camera = null) {
+        public show(showUI: boolean = true, camera: Camera = null, rootElement: HTMLElement = null) {
             if (this._enabled) {
                 return;
             }
@@ -387,11 +389,12 @@
 
             this._globalDiv = document.createElement("div");
 
-            document.body.appendChild(this._globalDiv);
+            this._rootElement = rootElement || document.body;
+
+            this._rootElement.appendChild(this._globalDiv);
 
             this._generateDOMelements();
 
-            window.addEventListener("resize", this._syncPositions);
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
 
             this._syncPositions();
@@ -484,11 +487,13 @@
             var button = document.createElement("button");
             button.innerHTML = title;
             button.style.height = "24px";
+            button.style.width = "150px";
+            button.style.marginBottom = "5px";
             button.style.color = "#444444";
-            button.style.border = "1px solid white"; 
+            button.style.border = "1px solid white";
             button.className = "debugLayerButton";
 
-            button.addEventListener("click",(evt: Event) => {
+            button.addEventListener("click", (evt: Event) => {
                 task(evt.target, tag);
             });
 
@@ -527,6 +532,7 @@
             this._drawingCanvas.id = "DebugLayerDrawingCanvas";
             this._drawingCanvas.style.position = "absolute";
             this._drawingCanvas.style.pointerEvents = "none";
+            this._drawingCanvas.style.backgroundColor = "transparent";
             this._drawingContext = this._drawingCanvas.getContext("2d");
             this._globalDiv.appendChild(this._drawingCanvas);
 
@@ -656,6 +662,8 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Bump", StandardMaterial.BumpTextureEnabled, (element) => { StandardMaterial.BumpTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Opacity", StandardMaterial.OpacityTextureEnabled, (element) => { StandardMaterial.OpacityTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", StandardMaterial.ReflectionTextureEnabled, (element) => { StandardMaterial.ReflectionTextureEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Refraction", StandardMaterial.RefractionTextureEnabled, (element) => { StandardMaterial.RefractionTextureEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", StandardMaterial.LightmapTextureEnabled, (element) => { StandardMaterial.LightmapTextureEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", StandardMaterial.FresnelEnabled, (element) => { StandardMaterial.FresnelEnabled = element.checked });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
@@ -666,13 +674,14 @@
                 this._generateCheckBox(this._optionsSubsetDiv, "Lights", this._scene.lightsEnabled, (element) => { this._scene.lightsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Particles", this._scene.particlesEnabled, (element) => { this._scene.particlesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Post-processes", this._scene.postProcessesEnabled, (element) => { this._scene.postProcessesEnabled = element.checked });
+                this._generateCheckBox(this._optionsSubsetDiv, "Probes", this._scene.probesEnabled, (element) => { this._scene.probesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Procedural textures", this._scene.proceduralTexturesEnabled, (element) => { this._scene.proceduralTexturesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Render targets", this._scene.renderTargetsEnabled, (element) => { this._scene.renderTargetsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Shadows", this._scene.shadowsEnabled, (element) => { this._scene.shadowsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, (element) => { this._scene.skeletonsEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, (element) => { this._scene.spritesEnabled = element.checked });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, (element) => { this._scene.texturesEnabled = element.checked });
-                if (Engine.audioEngine.canUseWebAudio) {
+                if (AudioEngine && Engine.audioEngine.canUseWebAudio) {
                     this._optionsSubsetDiv.appendChild(document.createElement("br"));
                     this._generateTexBox(this._optionsSubsetDiv, "<b>Audio:</b>", this.accentColor);
                     this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", this._scene.headphone, (element) => {
@@ -692,8 +701,16 @@
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
+                this._generateButton(this._optionsSubsetDiv, "Run SceneOptimizer", (element) => { SceneOptimizer.OptimizeAsync(this._scene); });
+                this._generateButton(this._optionsSubsetDiv, "Log camera object", (element) => {
+                    if (this._camera) {
+                        console.log(this._camera);
+                    } else {
+                        console.warn("No camera defined, or debug layer created before camera creation!");
+                    }
+                });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
-  
+
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
                 this._globalDiv.appendChild(this._optionsDiv);
@@ -707,41 +724,48 @@
             var glInfo = engine.getGlInfo();
 
             this._statsSubsetDiv.innerHTML = "Babylon.js v" + Engine.Version + " - <b>" + Tools.Format(engine.getFps(), 0) + " fps</b><br><br>"
-                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
-                + "<b>Count</b><br>"
-                + "Total meshes: " + scene.meshes.length + "<br>"
-                + "Total vertices: " + scene.getTotalVertices() + "<br>"
-                + "Total materials: " + scene.materials.length + "<br>"
-                + "Total textures: " + scene.textures.length + "<br>"
-                + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
-                + "Active indices: " + scene.getActiveIndices() + "<br>"
-                + "Active bones: " + scene.getActiveBones() + "<br>"
-                + "Active particles: " + scene.getActiveParticles() + "<br>"
-                + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
-                + "<b>Duration</b><br>"
-                + "Meshes selection:</i> " + Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
-                + "Render Targets: " + Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
-                + "Particles: " + Tools.Format(scene.getParticlesDuration()) + " ms<br>"
-                + "Sprites: " + Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
-                + "Render: <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
-                + "Frame: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
-                + "Potential FPS: " + Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
-                + "</div>"
-                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
-                + "<b>Extensions</b><br>"
-                + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
-                + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
-                + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
-                + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
-                + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
-                + "<b>Caps.</b><br>"
-                + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
-                + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
-                + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>"
-                + "</div><br>"
-                + "<b>Info</b><br>"
-                + glInfo.version + "<br>"
-                + glInfo.renderer + "<br>";
+            + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+            + "<b>Count</b><br>"
+            + "Total meshes: " + scene.meshes.length + "<br>"
+            + "Total vertices: " + scene.getTotalVertices() + "<br>"
+            + "Total materials: " + scene.materials.length + "<br>"
+            + "Total textures: " + scene.textures.length + "<br>"
+            + "Active meshes: " + scene.getActiveMeshes().length + "<br>"
+            + "Active indices: " + scene.getActiveIndices() + "<br>"
+            + "Active bones: " + scene.getActiveBones() + "<br>"
+            + "Active particles: " + scene.getActiveParticles() + "<br>"
+            + "<b>Draw calls: " + engine.drawCalls + "</b><br><br><br>"
+            + "<b>Duration</b><br>"
+            + "Meshes selection:</i> " + Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
+            + "Render Targets: " + Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
+            + "Particles: " + Tools.Format(scene.getParticlesDuration()) + " ms<br>"
+            + "Sprites: " + Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
+            + "Render: <b>" + Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
+            + "Frame: " + Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
+            + "Potential FPS: " + Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br>"
+            + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br>"
+            + "</div>"
+            + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+            + "<b>Extensions</b><br>"
+            + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
+            + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
+            + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
+            + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br><br>"
+            + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
+            + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
+            + "High precision shaders: " + (engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No") + "<br>"
+            + "Draw buffers: " + (engine.getCaps().drawBuffersExtension ? "Yes" : "No") + "<br>"
+            + "</div><br>"
+            + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
+            + "<b>Caps.</b><br>"
+            + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
+            + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
+            + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br>"
+            + "<b>Info</b><br>"
+            + "WebGL feature level: " + engine.webGLVersion + "<br>"
+            + glInfo.version + "<br>"
+            + "</div><br>"
+            + glInfo.renderer + "<br>";
 
             if (this.customStatsFunction) {
                 this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;

@@ -272,10 +272,10 @@
                 if (bbox.maximum.x - vPos.x < this.boundingBoxEpsilon || vPos.x - bbox.minimum.x > this.boundingBoxEpsilon)
                     ++count;
 
-                if (bbox.maximum.y == vPos.y || vPos.y == bbox.minimum.y)
+                if (bbox.maximum.y === vPos.y || vPos.y === bbox.minimum.y)
                     ++count;
 
-                if (bbox.maximum.z == vPos.z || vPos.z == bbox.minimum.z)
+                if (bbox.maximum.z === vPos.z || vPos.z === bbox.minimum.z)
                     ++count;
 
                 if (count > 1) {
@@ -338,14 +338,14 @@
                                     continue;
 
                                 var uniqueArray = [];
-                                delTr.forEach(function (deletedT) {
+                                delTr.forEach(deletedT => {
                                     if (uniqueArray.indexOf(deletedT) === -1) {
                                         deletedT.deletePending = true;
                                         uniqueArray.push(deletedT);
                                     }
                                 });
 
-                                if (uniqueArray.length % 2 != 0) {
+                                if (uniqueArray.length % 2 !== 0) {
                                     continue;
                                 }
 
@@ -424,7 +424,7 @@
 
                 var vertex = findInVertices(position) || new DecimationVertex(position, this.vertices.length);
                 vertex.originalOffsets.push(offset);
-                if (vertex.id == this.vertices.length) {
+                if (vertex.id === this.vertices.length) {
                     this.vertices.push(vertex);
                 }
                 vertexReferences.push(vertex.id);
@@ -495,10 +495,10 @@
                 }
             }
 
-            var newPositionData = this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind) || [];
-            var newNormalData = this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind) || [];
-            var newUVsData = this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || [];
-            var newColorsData = this._reconstructedMesh.getVerticesData(VertexBuffer.ColorKind) || [];
+            var newPositionData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind) || []);
+            var newNormalData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind) || []);
+            var newUVsData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || []);
+            var newColorsData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.ColorKind) || []);
 
             var normalData = this._mesh.getVerticesData(VertexBuffer.NormalKind);
             var uvs = this._mesh.getVerticesData(VertexBuffer.UVKind);
@@ -509,7 +509,7 @@
                 var vertex = this.vertices[i];
                 vertex.id = vertexCount;
                 if (vertex.triangleCount) {
-                    vertex.originalOffsets.forEach(function (originalOffset) {
+                    vertex.originalOffsets.forEach(originalOffset => {
                         newPositionData.push(vertex.position.x);
                         newPositionData.push(vertex.position.y);
                         newPositionData.push(vertex.position.z);
@@ -536,12 +536,11 @@
             var submeshesArray = this._reconstructedMesh.subMeshes;
             this._reconstructedMesh.subMeshes = [];
 
-            var newIndicesArray: Array<number> = this._reconstructedMesh.getIndices(); //[];
+            var newIndicesArray: number[] = <number[]>this._reconstructedMesh.getIndices(); //[];
             var originalIndices = this._mesh.getIndices();
             for (i = 0; i < newTriangles.length; ++i) {
-                var t = newTriangles[i];
-                //now get the new referencing point for each vertex
-                [0, 1, 2].forEach(function (idx) {
+                t = newTriangles[i]; //now get the new referencing point for each vertex
+                [0, 1, 2].forEach(idx => {
                     var id = originalIndices[t.originalOffset + idx]
                     var offset = t.vertices[idx].originalOffsets.indexOf(id);
                     if (offset < 0) offset = 0;
@@ -563,7 +562,7 @@
             var originalSubmesh = this._mesh.subMeshes[submeshIndex];
             if (submeshIndex > 0) {
                 this._reconstructedMesh.subMeshes = [];
-                submeshesArray.forEach(function (submesh) {
+                submeshesArray.forEach(submesh => {
                     new SubMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount,/* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
                 });
                 var newSubmesh = new SubMesh(originalSubmesh.materialIndex, startingVertex, vertexCount,/* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
@@ -575,6 +574,7 @@
             this._reconstructedMesh.material = this._mesh.material;
             this._reconstructedMesh.parent = this._mesh.parent;
             this._reconstructedMesh.isVisible = false;
+            this._reconstructedMesh.renderingGroupId = this._mesh.renderingGroupId; 
         }
 
         private isFlipped(vertex1: DecimationVertex, vertex2: DecimationVertex, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {

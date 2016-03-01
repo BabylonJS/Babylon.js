@@ -1,317 +1,311 @@
 module BABYLON {
     declare var OIMO;
 
-    export class OimoJSPlugin implements IPhysicsEnginePlugin {
-        private _world;
-        private _registeredMeshes = [];
+    export class OimoJSPlugin {
 
-        private _checkWithEpsilon(value: number): number {
-            return value < PhysicsEngine.Epsilon ? PhysicsEngine.Epsilon : value;
+        public world: any;
+        public name: string = "OimoJSPlugin";
+
+        constructor(iterations?: number) {
+            this.world = new OIMO.World(1 / 60, 2, iterations, true);
+            this.world.clear();
+            //making sure no stats are calculated
+            this.world.isNoStat = true;
         }
 
-        public initialize(iterations?: number): void {
-            this._world = new OIMO.World();
-            this._world.clear();
+        public setGravity(gravity: Vector3) {
+            this.world.gravity.copy(gravity);
         }
 
-        public setGravity(gravity: Vector3): void {
-            this._world.gravity = gravity;
+        public setTimeStep(timeStep: number) {
+            this.world.timeStep = timeStep;
         }
 
-        public registerMesh(mesh: AbstractMesh, impostor: number, options: PhysicsBodyCreationOptions): any {
-            var body = null;
-            this.unregisterMesh(mesh);
-            mesh.computeWorldMatrix(true);
+        private _tmpImpostorsArray: Array<PhysicsImpostor> = [];
 
+        public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
 
-            var initialRotation = null;
-            if (mesh.rotationQuaternion) {
-                initialRotation = mesh.rotationQuaternion.clone();
-                mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
-                mesh.computeWorldMatrix(true);
+            impostors.forEach(function (impostor) {
+                impostor.beforeStep();
+            });
+
+            this.world.step();
+
+            impostors.forEach((impostor) => {
+                impostor.afterStep();
+                //update the ordered impostors array
+                this._tmpImpostorsArray[impostor.mesh.uniqueId] = impostor;
+            });
+            
+            //check for collisions
+            var contact = this.world.contacts;
+
+            while (contact !== null) {
+                if (contact.touching && !contact.body1.sleeping && !contact.body2.sleeping) {
+                    contact = contact.next;
+                    continue;
+                }
+                //is this body colliding with any other? get the impostor
+                var mainImpostor = this._tmpImpostorsArray[+contact.body1.name];
+                var collidingImpostor = this._tmpImpostorsArray[+contact.body2.name];
+
+                if (!mainImpostor || !collidingImpostor) {
+                    contact = contact.next;
+                    continue;
+                }
+
+                mainImpostor.onCollide({ body: collidingImpostor.physicsBody });
+                collidingImpostor.onCollide({ body: mainImpostor.physicsBody });
+                contact = contact.next;
             }
 
-            var bbox = mesh.getBoundingInfo().boundingBox;
+        }
 
-            // The delta between the mesh position and the mesh bounding box center
-            var deltaPosition = mesh.position.subtract(bbox.center);
-
-            // Transform delta position with the rotation
-            if (initialRotation) {
-                var m = new Matrix();
-                initialRotation.toRotationMatrix(m);
-                deltaPosition = Vector3.TransformCoordinates(deltaPosition, m);
+        public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
+            var mass = impostor.physicsBody.massInfo.mass;
+            impostor.physicsBody.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
+        }
+        public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
+            Tools.Warn("Oimo doesn't support applying force. Using impule instead.");
+            this.applyImpulse(impostor, force, contactPoint);
+        }
+        public generatePhysicsBody(impostor: PhysicsImpostor) {
+            //parent-child relationship. Does this impostor has a parent impostor?
+            if (impostor.parent) {
+                if (impostor.physicsBody) {
+                    this.removePhysicsBody(impostor);
+                    //TODO is that needed?
+                    impostor.forceUpdate();
+                }
+                return;
             }
 
-            // register mesh
-            switch (impostor) {
-                case PhysicsEngine.SphereImpostor:
+            impostor.mesh.computeWorldMatrix(true);
+
+            if (impostor.isBodyInitRequired()) {
+                if (!impostor.mesh.rotationQuaternion) {
+                    impostor.mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(impostor.mesh.rotation.y, impostor.mesh.rotation.x, impostor.mesh.rotation.z);
+                }
 
 
-                    var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
-                    var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
-                    var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
+                var bodyConfig: any = {
+                    name: impostor.mesh.uniqueId,
+                    //Oimo must have mass, also for static objects.
+                    config: [impostor.getParam("mass") || 1, impostor.getParam("friction"), impostor.getParam("restitution")],
+                    size: [],
+                    type: [],
+                    pos: [],
+                    rot: [],
+                    move: impostor.getParam("mass") !== 0,
+                    //Supporting older versions of Oimo
+                    world: this.world
+                };
 
-                    var size = Math.max(
-                        this._checkWithEpsilon(radiusX),
-                        this._checkWithEpsilon(radiusY),
-                        this._checkWithEpsilon(radiusZ)) / 2;
-
-                    body = new OIMO.Body({
-                        type: 'sphere',
-                        size: [size],
-                        pos: [bbox.center.x, bbox.center.y, bbox.center.z],
-                        rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
-                        move: options.mass != 0,
-                        config: [options.mass, options.friction, options.restitution],
-                        world: this._world
+                var impostors = [impostor];
+                function addToArray(parent: AbstractMesh) {
+                    parent.getChildMeshes().forEach(function (m) {
+                        if (m.physicsImpostor) {
+                            impostors.push(m.physicsImpostor);
+                            m.physicsImpostor._init();
+                        }
                     });
+                }
+                addToArray(impostor.mesh)
 
-                    break;
+                function checkWithEpsilon(value: number): number {
+                    return Math.max(value, PhysicsEngine.Epsilon);
+                }
 
-                case PhysicsEngine.PlaneImpostor:
-                //Oimo "fakes" a cylinder as a box, so why don't we!
-                case PhysicsEngine.CylinderImpostor:
-                case PhysicsEngine.BoxImpostor:
+                impostors.forEach((i) => {
+                    
+                    //get the correct bounding box
+                    var oldQuaternion = i.mesh.rotationQuaternion;
+                    var rot = new OIMO.Euler().setFromQuaternion({ x: impostor.mesh.rotationQuaternion.x, y: impostor.mesh.rotationQuaternion.y, z: impostor.mesh.rotationQuaternion.z, s: impostor.mesh.rotationQuaternion.w });
 
-                    var min = bbox.minimumWorld;
-                    var max = bbox.maximumWorld;
-                    var box = max.subtract(min);
-                    var sizeX = this._checkWithEpsilon(box.x);
-                    var sizeY = this._checkWithEpsilon(box.y);
-                    var sizeZ = this._checkWithEpsilon(box.z);
+                    i.mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
+                    i.mesh.computeWorldMatrix(true);
 
-                    body = new OIMO.Body({
-                        type: 'box',
-                        size: [sizeX, sizeY, sizeZ],
-                        pos: [bbox.center.x, bbox.center.y, bbox.center.z],
-                        rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD],
-                        move: options.mass != 0,
-                        config: [options.mass, options.friction, options.restitution],
-                        world: this._world
-                    });
+                    var bbox = i.mesh.getBoundingInfo().boundingBox;
 
-                    break;
-            }
+                    if (i === impostor) {
 
-            //If quaternion was set as the rotation of the object
-            if (initialRotation) {
-                //We have to access the rigid body's properties to set the quaternion. 
-                //The setQuaternion function of Oimo only sets the newOrientation that is only set after an impulse is given or a collision.
-                body.body.orientation = new OIMO.Quat(initialRotation.w, initialRotation.x, initialRotation.y, initialRotation.z);
-                //update the internal rotation matrix
-                body.body.syncShapes();
-            }
+                        impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, this._tmpPositionVector);
 
-            this._registeredMeshes.push({
-                mesh: mesh,
-                body: body,
-                delta: deltaPosition
-            });
-
-            return body;
-        }
-
-        public registerMeshesAsCompound(parts: PhysicsCompoundBodyPart[], options: PhysicsBodyCreationOptions): any {
-            var types = [],
-                sizes = [],
-                positions = [],
-                rotations = [];
-
-            var initialMesh = parts[0].mesh;
-
-            for (var index = 0; index < parts.length; index++) {
-                var part = parts[index];
-                var bodyParameters = this._createBodyAsCompound(part, options, initialMesh);
-                types.push(bodyParameters.type);
-                sizes.push.apply(sizes, bodyParameters.size);
-                positions.push.apply(positions, bodyParameters.pos);
-                rotations.push.apply(rotations, bodyParameters.rot);
-            }
-
-            var body = new OIMO.Body({
-                type: types,
-                size: sizes,
-                pos: positions,
-                rot: rotations,
-                move: options.mass != 0,
-                config: [options.mass, options.friction, options.restitution],
-                world: this._world
-            });
-
-            this._registeredMeshes.push({
-                mesh: initialMesh,
-                body: body
-            });
-
-            return body;
-        }
-
-        private _createBodyAsCompound(part: PhysicsCompoundBodyPart, options: PhysicsBodyCreationOptions, initialMesh: AbstractMesh): any {
-            var bodyParameters = null;
-            var mesh = part.mesh;
-            // We need the bounding box/sphere info to compute the physics body
-            mesh.computeWorldMatrix();
-
-            switch (part.impostor) {
-                case PhysicsEngine.SphereImpostor:
-                    var bbox = mesh.getBoundingInfo().boundingBox;
-                    var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
-                    var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
-                    var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
-
-                    var size = Math.max(
-                        this._checkWithEpsilon(radiusX),
-                        this._checkWithEpsilon(radiusY),
-                        this._checkWithEpsilon(radiusZ)) / 2;
-                    bodyParameters = {
-                        type: 'sphere',
-                        /* bug with oimo : sphere needs 3 sizes in this case */
-                        size: [size, -1, -1],
-                        pos: [mesh.position.x, mesh.position.y, mesh.position.z],
-                        rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD]
-                    };
-                    break;
-
-                case PhysicsEngine.PlaneImpostor:
-                case PhysicsEngine.BoxImpostor:
-                    bbox = mesh.getBoundingInfo().boundingBox;
-                    var min = bbox.minimumWorld;
-                    var max = bbox.maximumWorld;
-                    var box = max.subtract(min);
-                    var sizeX = this._checkWithEpsilon(box.x);
-                    var sizeY = this._checkWithEpsilon(box.y);
-                    var sizeZ = this._checkWithEpsilon(box.z);
-                    var relativePosition = mesh.position;
-                    bodyParameters = {
-                        type: 'box',
-                        size: [sizeX, sizeY, sizeZ],
-                        pos: [relativePosition.x, relativePosition.y, relativePosition.z],
-                        rot: [mesh.rotation.x / OIMO.TO_RAD, mesh.rotation.y / OIMO.TO_RAD, mesh.rotation.z / OIMO.TO_RAD]
-                    };
-                    break;
-            }
-
-            return bodyParameters;
-        }
-
-        public unregisterMesh(mesh: AbstractMesh): void {
-            for (var index = 0; index < this._registeredMeshes.length; index++) {
-                var registeredMesh = this._registeredMeshes[index];
-                if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                    if (registeredMesh.body) {
-                        this._world.removeRigidBody(registeredMesh.body.body);
-                        this._unbindBody(registeredMesh.body);
+                        //Can also use Array.prototype.push.apply
+                        bodyConfig.pos.push(bbox.center.x);
+                        bodyConfig.pos.push(bbox.center.y);
+                        bodyConfig.pos.push(bbox.center.z);
+                        
+                        //tmp solution
+                        bodyConfig.rot.push(rot.x / (OIMO.degtorad || OIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.y / (OIMO.degtorad || OIMO.TO_RAD));
+                        bodyConfig.rot.push(rot.z / (OIMO.degtorad || OIMO.TO_RAD));
+                    } else {
+                        bodyConfig.pos.push(i.mesh.position.x);
+                        bodyConfig.pos.push(i.mesh.position.y);
+                        bodyConfig.pos.push(i.mesh.position.z);
+                        
+                        //tmp solution until https://github.com/lo-th/Oimo.js/pull/37 is merged
+                        bodyConfig.rot.push(0);
+                        bodyConfig.rot.push(0);
+                        bodyConfig.rot.push(0);
                     }
-                    this._registeredMeshes.splice(index, 1);
-                    return;
-                }
+                    
+                    // register mesh
+                    switch (i.type) {
+                        case PhysicsEngine.SphereImpostor:
+                            var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
+                            var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
+                            var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
+
+                            var size = Math.max(
+                                checkWithEpsilon(radiusX),
+                                checkWithEpsilon(radiusY),
+                                checkWithEpsilon(radiusZ)) / 2;
+
+                            bodyConfig.type.push('sphere');
+                            //due to the way oimo works with compounds, add 3 times
+                            bodyConfig.size.push(size);
+                            bodyConfig.size.push(size);
+                            bodyConfig.size.push(size);
+                            break;
+
+                        case PhysicsEngine.PlaneImpostor:
+                        //TODO Oimo now supports cylinder!
+                        case PhysicsEngine.CylinderImpostor:
+                        case PhysicsEngine.BoxImpostor:
+                        default:
+
+                            var min = bbox.minimumWorld;
+                            var max = bbox.maximumWorld;
+                            var box = max.subtract(min);
+                            var sizeX = checkWithEpsilon(box.x);
+                            var sizeY = checkWithEpsilon(box.y);
+                            var sizeZ = checkWithEpsilon(box.z);
+
+                            bodyConfig.type.push('box');
+                            bodyConfig.size.push(sizeX);
+                            bodyConfig.size.push(sizeY);
+                            bodyConfig.size.push(sizeZ);
+                            break;
+                    }
+                    
+                    //actually not needed, but hey...
+                    i.mesh.rotationQuaternion = oldQuaternion;
+                });
+
+                impostor.physicsBody = new OIMO.Body(bodyConfig).body//this.world.add(bodyConfig);
+
+            } else {
+                this._tmpPositionVector.copyFromFloats(0, 0, 0);
             }
+
+            impostor.setDeltaPosition(this._tmpPositionVector);
+
+            //this._tmpPositionVector.addInPlace(impostor.mesh.getBoundingInfo().boundingBox.center);
+            //this.setPhysicsBodyTransformation(impostor, this._tmpPositionVector, impostor.mesh.rotationQuaternion);
         }
 
-        private _unbindBody(body: any): void {
-            for (var index = 0; index < this._registeredMeshes.length; index++) {
-                var registeredMesh = this._registeredMeshes[index];
-                if (registeredMesh.body === body) {
-                    registeredMesh.body = null;
-                }
-            }
+        private _tmpPositionVector: Vector3 = Vector3.Zero();
+
+        public removePhysicsBody(impostor: PhysicsImpostor) {
+            //impostor.physicsBody.dispose();
+            //Same as : (older oimo versions)
+            this.world.removeRigidBody(impostor.physicsBody);
         }
 
-        /**
-         * Update the body position according to the mesh position
-         * @param mesh
-         */
-        public updateBodyPosition = function (mesh: AbstractMesh): void {
+        public generateJoint(impostorJoint: PhysicsImpostorJoint) {
+            var mainBody = impostorJoint.mainImpostor.physicsBody;
+            var connectedBody = impostorJoint.connectedImpostor.physicsBody;
 
-            for (var index = 0; index < this._registeredMeshes.length; index++) {
-                var registeredMesh = this._registeredMeshes[index];
-                if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                    var body = registeredMesh.body.body;
-                    mesh.computeWorldMatrix(true);
-
-                    var center = mesh.getBoundingInfo().boundingBox.center;
-                    body.setPosition(new OIMO.Vec3(center.x, center.y, center.z));
-                    body.setRotation(new OIMO.Vec3(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z));
-                    body.sleeping = false;
-                    return;
-                }
-                // Case where the parent has been updated
-                if (registeredMesh.mesh.parent === mesh) {
-                    mesh.computeWorldMatrix(true);
-                    registeredMesh.mesh.computeWorldMatrix(true);
-
-                    var absolutePosition = registeredMesh.mesh.getAbsolutePosition();
-                    var absoluteRotation = mesh.rotation;
-
-                    body = registeredMesh.body.body;
-                    body.setPosition(new OIMO.Vec3(absolutePosition.x, absolutePosition.y, absolutePosition.z));
-                    body.setRotation(new OIMO.Vec3(absoluteRotation.x, absoluteRotation.y, absoluteRotation.z));
-                    body.sleeping = false;
-                    return;
-                }
+            if (!mainBody || !connectedBody) {
+                return;
             }
-        }
+            var jointData = impostorJoint.joint.jointData;
+            var options = jointData.nativeParams || {};
+            var type;
+            var nativeJointData: any = {
+                body1: mainBody,
+                body2: connectedBody,
 
-        public applyImpulse(mesh: AbstractMesh, force: Vector3, contactPoint: Vector3): void {
-            for (var index = 0; index < this._registeredMeshes.length; index++) {
-                var registeredMesh = this._registeredMeshes[index];
-                if (registeredMesh.mesh === mesh || registeredMesh.mesh === mesh.parent) {
-                    // Get object mass to have a behaviour similar to cannon.js
-                    var mass = registeredMesh.body.body.massInfo.mass;
-                    // The force is scaled with the mass of object
-                    registeredMesh.body.body.applyImpulse(contactPoint.scale(OIMO.INV_SCALE), force.scale(OIMO.INV_SCALE * mass));
-                    return;
-                }
-            }
-        }
+                axe1: options.axe1 || (jointData.mainAxis ? jointData.mainAxis.asArray() : null),
+                axe2: options.axe2 || (jointData.connectedAxis ? jointData.connectedAxis.asArray() : null),
+                pos1: options.pos1 || (jointData.mainPivot ? jointData.mainPivot.asArray() : null),
+                pos2: options.pos2 || (jointData.connectedPivot ? jointData.connectedPivot.asArray() : null),
 
-        public createLink(mesh1: AbstractMesh, mesh2: AbstractMesh, pivot1: Vector3, pivot2: Vector3, options?: any): boolean {
-            var body1 = null,
-                body2 = null;
-            for (var index = 0; index < this._registeredMeshes.length; index++) {
-                var registeredMesh = this._registeredMeshes[index];
-                if (registeredMesh.mesh === mesh1) {
-                    body1 = registeredMesh.body.body;
-                } else if (registeredMesh.mesh === mesh2) {
-                    body2 = registeredMesh.body.body;
-                }
-            }
-            if (!body1 || !body2) {
-                return false;
-            }
-            if (!options) {
-                options = {};
-            }
-
-            new OIMO.Link({
-                type: options.type,
-                body1: body1,
-                body2: body2,
                 min: options.min,
                 max: options.max,
-                axe1: options.axe1,
-                axe2: options.axe2,
-                pos1: [pivot1.x, pivot1.y, pivot1.z],
-                pos2: [pivot2.x, pivot2.y, pivot2.z],
-                collision: options.collision,
+                collision: options.collision || jointData.collision,
                 spring: options.spring,
-                world: this._world
-            });
+                
+                //supporting older version of Oimo
+                world: this.world
 
-            return true;
-
+            }
+            switch (impostorJoint.joint.type) {
+                case PhysicsJoint.BallAndSocketJoint:
+                    type = "jointBall";
+                    break;
+                case PhysicsJoint.SpringJoint:
+                    Tools.Warn("Oimo.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
+                    var springData = <SpringJointData>jointData;
+                    nativeJointData.min = springData.length || nativeJointData.min;
+                    //Max should also be set, just make sure it is at least min
+                    nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
+                case PhysicsJoint.DistanceJoint:
+                    type = "jointDistance";
+                    nativeJointData.max = (<DistanceJointData>jointData).maxDistance
+                    break;
+                case PhysicsJoint.PrismaticJoint:
+                    type = "jointPrisme";
+                    break;
+                case PhysicsJoint.SliderJoint:
+                    type = "jointSlide";
+                    break;
+                case PhysicsJoint.WheelJoint:
+                    type = "jointWheel";
+                    break;
+                case PhysicsJoint.HingeJoint:
+                default:
+                    type = "jointHinge";
+                    break;
+            }
+            nativeJointData.type = type;
+            impostorJoint.joint.physicsJoint = new OIMO.Link(nativeJointData).joint//this.world.add(nativeJointData);
         }
 
-        public dispose(): void {
-            this._world.clear();
-            while (this._registeredMeshes.length) {
-                this.unregisterMesh(this._registeredMeshes[0].mesh);
-            }
+        public removeJoint(joint: PhysicsImpostorJoint) {
+            joint.joint.physicsJoint.dispose();
         }
 
         public isSupported(): boolean {
             return OIMO !== undefined;
+        }
+
+        public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
+            if (!impostor.physicsBody.sleeping) {
+                //TODO check that
+                if (impostor.physicsBody.shapes.next) {
+                    var parentShape = this._getLastShape(impostor.physicsBody);
+                    impostor.mesh.position.x = parentShape.position.x * OIMO.WORLD_SCALE;
+                    impostor.mesh.position.y = parentShape.position.y * OIMO.WORLD_SCALE;
+                    impostor.mesh.position.z = parentShape.position.z * OIMO.WORLD_SCALE;
+                } else {
+                    impostor.mesh.position.copyFrom(impostor.physicsBody.getPosition());
+
+                }
+                impostor.mesh.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+            }
+        }
+
+        public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
+            var body = impostor.physicsBody;
+
+            body.position.init(newPosition.x * OIMO.INV_SCALE, newPosition.y * OIMO.INV_SCALE, newPosition.z * OIMO.INV_SCALE);
+
+            body.orientation.init(newRotation.w, newRotation.x, newRotation.y, newRotation.z);
+            body.syncShapes();
+            body.awake();
         }
 
         private _getLastShape(body: any): any {
@@ -322,60 +316,21 @@ module BABYLON {
             return lastShape;
         }
 
-        public runOneStep(time: number): void {
-            this._world.step();
+        public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+            impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
+        }
 
-            // Update the position of all registered meshes
-            var i = this._registeredMeshes.length;
-            var m;
-            while (i--) {
+        public sleepBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.sleep();
+        }
 
-                var body = this._registeredMeshes[i].body.body;
-                var mesh = this._registeredMeshes[i].mesh;
-                var delta = this._registeredMeshes[i].delta;
+        public wakeUpBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.awake();
+        }
 
-                if (!body.sleeping) {
-
-                    if (body.shapes.next) {
-                        var parentShape = this._getLastShape(body);
-                        mesh.position.x = parentShape.position.x * OIMO.WORLD_SCALE;
-                        mesh.position.y = parentShape.position.y * OIMO.WORLD_SCALE;
-                        mesh.position.z = parentShape.position.z * OIMO.WORLD_SCALE;
-                        var mtx = Matrix.FromArray(body.getMatrix());
-
-                        if (!mesh.rotationQuaternion) {
-                            mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
-                        }
-                        mesh.rotationQuaternion.fromRotationMatrix(mtx);
-                        mesh.computeWorldMatrix();
-
-                    } else {
-                        m = body.getMatrix();
-                        mtx = Matrix.FromArray(m);
-
-                        // Body position
-                        var bodyX = mtx.m[12],
-                            bodyY = mtx.m[13],
-                            bodyZ = mtx.m[14];
-
-                        if (!delta) {
-                            mesh.position.x = bodyX;
-                            mesh.position.y = bodyY;
-                            mesh.position.z = bodyZ;
-                        } else {
-                            mesh.position.x = bodyX + delta.x;
-                            mesh.position.y = bodyY + delta.y;
-                            mesh.position.z = bodyZ + delta.z;
-                        }
-
-                        if (!mesh.rotationQuaternion) {
-                            mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
-                        }
-                        Quaternion.FromRotationMatrixToRef(mtx, mesh.rotationQuaternion);
-                        mesh.computeWorldMatrix();
-                    }
-                }
-            }
+        public dispose() {
+            this.world.clear();
         }
     }
 }
+

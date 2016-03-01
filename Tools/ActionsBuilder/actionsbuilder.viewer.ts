@@ -94,6 +94,7 @@
 
             // Finish
             this.parameters.parametersHelpElement.textContent = Viewer._DEFAULT_INFO_MESSAGE;
+            this.onResize(null);
         }
 
         /*

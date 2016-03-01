@@ -1,15 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-#define MAP_EXPLICIT	0.
-#define MAP_SPHERICAL	1.
-#define MAP_PLANAR		2.
-#define MAP_CUBIC		3.
-#define MAP_PROJECTION	4.
-#define MAP_SKYBOX		5.
-
-// Attributes
+﻿// Attributes
 attribute vec3 position;
 attribute vec3 normal;
 #ifdef UV1
@@ -21,10 +10,7 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-#ifdef BONES
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
-#endif
+#include<bonesDeclaration>
 
 // Uniforms
 uniform mat4 world;
@@ -49,13 +35,6 @@ uniform mat4 opacityMatrix;
 uniform vec2 vOpacityInfos;
 #endif
 
-#ifdef REFLECTION
-uniform vec3 vEyePosition;
-varying vec3 vReflectionUVW;
-uniform vec3 vReflectionInfos;
-uniform mat4 reflectionMatrix;
-#endif
-
 #ifdef EMISSIVE
 varying vec2 vEmissiveUV;
 uniform vec2 vEmissiveInfos;
@@ -74,10 +53,6 @@ uniform vec2 vBumpInfos;
 uniform mat4 bumpMatrix;
 #endif
 
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
-#endif
-
 // Output
 varying vec3 vPositionW;
 varying vec3 vNormalW;
@@ -86,88 +61,57 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
-
-#ifdef FOG
-varying float fFogDistance;
-#endif
-
-#ifdef SHADOWS
-#ifdef LIGHT0
-uniform mat4 lightMatrix0;
-varying vec4 vPositionFromLight0;
-#endif
-#ifdef LIGHT1
-uniform mat4 lightMatrix1;
-varying vec4 vPositionFromLight1;
-#endif
-#ifdef LIGHT2
-uniform mat4 lightMatrix2;
-varying vec4 vPositionFromLight2;
-#endif
-#ifdef LIGHT3
-uniform mat4 lightMatrix3;
-varying vec4 vPositionFromLight3;
-#endif
-#endif
+#include<clipPlaneVertexDeclaration>
+#include<fogVertexDeclaration>
+#include<shadowsVertexDeclaration>
 
 #ifdef REFLECTION
-vec3 computeReflectionCoords(float mode, vec4 worldPos, vec3 worldNormal)
+uniform vec3 vEyePosition;
+varying vec3 vReflectionUVW;
+uniform mat4 reflectionMatrix;
+
+vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
-	if (mode == MAP_SPHERICAL)
-	{
-		vec3 coords = vec3(view * vec4(worldNormal, 0.0));
+#ifdef REFLECTIONMAP_SPHERICAL
+	vec3 coords = vec3(view * vec4(worldNormal, 0.0));
 
-		return vec3(reflectionMatrix * vec4(coords, 1.0));
-	}
-	else if (mode == MAP_PLANAR)
-	{
-		vec3 viewDir = worldPos.xyz - vEyePosition;
-		vec3 coords = normalize(reflect(viewDir, worldNormal));
+	return vec3(reflectionMatrix * vec4(coords, 1.0));
+#endif
 
-		return vec3(reflectionMatrix * vec4(coords, 1));
-	}
-	else if (mode == MAP_CUBIC)
-	{
-		vec3 viewDir = worldPos.xyz - vEyePosition;
-		vec3 coords = reflect(viewDir, worldNormal);
+#ifdef REFLECTIONMAP_PLANAR
+	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 coords = normalize(reflect(viewDir, worldNormal));
 
-		return vec3(reflectionMatrix * vec4(coords, 0));
-	}
-	else if (mode == MAP_PROJECTION)
-	{
-		return vec3(reflectionMatrix * (view * worldPos));
-	}
-	else if (mode == MAP_SKYBOX)
-	{
-		return position;
-	}
+	return vec3(reflectionMatrix * vec4(coords, 1));
+#endif
 
+#ifdef REFLECTIONMAP_CUBIC
+	vec3 viewDir = worldPos.xyz - vEyePosition;
+	vec3 coords = reflect(viewDir, worldNormal);
+#ifdef INVERTCUBICMAP
+	coords.y = 1.0 - coords.y;
+#endif
+	return vec3(reflectionMatrix * vec4(coords, 0));
+#endif
+
+#ifdef REFLECTIONMAP_PROJECTION
+	return vec3(reflectionMatrix * (view * worldPos));
+#endif
+
+#ifdef REFLECTIONMAP_SKYBOX
+	return position;
+#endif
+
+#ifdef REFLECTIONMAP_EXPLICIT
 	return vec3(0, 0, 0);
+#endif
 }
 #endif
 
 void main(void) {
-	mat4 finalWorld;
+	mat4 finalWorld = world;
 
-#ifdef BONES
-	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
-	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
-	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
-
-#ifdef BONES4
-	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = world * (m0 + m1 + m2 + m3);
-#else
-	finalWorld = world * (m0 + m1 + m2);
-#endif 
-
-#else
-	finalWorld = world;
-#endif
+#include<bonesVertex>
 
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
@@ -215,9 +159,9 @@ void main(void) {
 		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
-
+	
 #ifdef REFLECTION
-	vReflectionUVW = computeReflectionCoords(vReflectionInfos.x, vec4(vPositionW, 1.0), vNormalW);
+	vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), vNormalW);
 #endif
 
 #ifdef EMISSIVE
@@ -253,31 +197,9 @@ void main(void) {
 	}
 #endif
 
-	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
-
-	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
-
-	// Shadows
-#ifdef SHADOWS
-#ifdef LIGHT0
-	vPositionFromLight0 = lightMatrix0 * worldPos;
-#endif
-#ifdef LIGHT1
-	vPositionFromLight1 = lightMatrix1 * worldPos;
-#endif
-#ifdef LIGHT2
-	vPositionFromLight2 = lightMatrix2 * worldPos;
-#endif
-#ifdef LIGHT3
-	vPositionFromLight3 = lightMatrix3 * worldPos;
-#endif
-#endif
+#include<clipPlaneVertex>
+#include<fogVertex>
+#include<shadowsVertex>
 
 	// Vertex color
 #ifdef VERTEXCOLOR

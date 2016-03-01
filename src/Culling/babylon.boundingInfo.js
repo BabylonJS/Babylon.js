@@ -21,11 +21,25 @@ var BABYLON;
         function BoundingInfo(minimum, maximum) {
             this.minimum = minimum;
             this.maximum = maximum;
+            this._isLocked = false;
             this.boundingBox = new BABYLON.BoundingBox(minimum, maximum);
             this.boundingSphere = new BABYLON.BoundingSphere(minimum, maximum);
         }
+        Object.defineProperty(BoundingInfo.prototype, "isLocked", {
+            get: function () {
+                return this._isLocked;
+            },
+            set: function (value) {
+                this._isLocked = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
-        BoundingInfo.prototype._update = function (world) {
+        BoundingInfo.prototype.update = function (world) {
+            if (this._isLocked) {
+                return;
+            }
             this.boundingBox._update(world);
             this.boundingSphere._update(world);
         };

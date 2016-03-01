@@ -96,10 +96,12 @@ var BABYLON;
                     var globalViewport = viewport.toGlobal(engine);
                     // Meshes
                     var meshes = _this._camera.getActiveMeshes();
-                    for (var index = 0; index < meshes.length; index++) {
+                    var index;
+                    var projectedPosition;
+                    for (index = 0; index < meshes.length; index++) {
                         var mesh = meshes.data[index];
                         var position = mesh.getBoundingInfo().boundingSphere.center;
-                        var projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), _this._transformationMatrix, globalViewport);
+                        projectedPosition = BABYLON.Vector3.Project(position, mesh.getWorldMatrix(), _this._transformationMatrix, globalViewport);
                         if (mesh.renderOverlay || _this.shouldDisplayAxis && _this.shouldDisplayAxis(mesh)) {
                             _this._renderAxis(projectedPosition, mesh, globalViewport);
                         }
@@ -237,8 +239,7 @@ var BABYLON;
             var engine = this._scene.getEngine();
             this._scene.unregisterBeforeRender(this._syncData);
             this._scene.unregisterAfterRender(this._syncUI);
-            document.body.removeChild(this._globalDiv);
-            window.removeEventListener("resize", this._syncPositions);
+            this._rootElement.removeChild(this._globalDiv);
             this._scene.forceShowBoundingBoxes = false;
             this._scene.forceWireframe = false;
             BABYLON.StandardMaterial.DiffuseTextureEnabled = true;
@@ -248,6 +249,8 @@ var BABYLON;
             BABYLON.StandardMaterial.BumpTextureEnabled = true;
             BABYLON.StandardMaterial.OpacityTextureEnabled = true;
             BABYLON.StandardMaterial.ReflectionTextureEnabled = true;
+            BABYLON.StandardMaterial.LightmapTextureEnabled = true;
+            BABYLON.StandardMaterial.RefractionTextureEnabled = true;
             this._scene.shadowsEnabled = true;
             this._scene.particlesEnabled = true;
             this._scene.postProcessesEnabled = true;
@@ -257,11 +260,13 @@ var BABYLON;
             this._scene.lensFlaresEnabled = true;
             this._scene.proceduralTexturesEnabled = true;
             this._scene.renderTargetsEnabled = true;
+            this._scene.probesEnabled = true;
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
         };
-        DebugLayer.prototype.show = function (showUI, camera) {
+        DebugLayer.prototype.show = function (showUI, camera, rootElement) {
             if (showUI === void 0) { showUI = true; }
             if (camera === void 0) { camera = null; }
+            if (rootElement === void 0) { rootElement = null; }
             if (this._enabled) {
                 return;
             }
@@ -275,9 +280,9 @@ var BABYLON;
             this._showUI = showUI;
             var engine = this._scene.getEngine();
             this._globalDiv = document.createElement("div");
-            document.body.appendChild(this._globalDiv);
+            this._rootElement = rootElement || document.body;
+            this._rootElement.appendChild(this._globalDiv);
             this._generateDOMelements();
-            window.addEventListener("resize", this._syncPositions);
             engine.getRenderingCanvas().addEventListener("click", this._onCanvasClick);
             this._syncPositions();
             this._scene.registerBeforeRender(this._syncData);
@@ -352,6 +357,8 @@ var BABYLON;
             var button = document.createElement("button");
             button.innerHTML = title;
             button.style.height = "24px";
+            button.style.width = "150px";
+            button.style.marginBottom = "5px";
             button.style.color = "#444444";
             button.style.border = "1px solid white";
             button.className = "debugLayerButton";
@@ -388,6 +395,7 @@ var BABYLON;
             this._drawingCanvas.id = "DebugLayerDrawingCanvas";
             this._drawingCanvas.style.position = "absolute";
             this._drawingCanvas.style.pointerEvents = "none";
+            this._drawingCanvas.style.backgroundColor = "transparent";
             this._drawingContext = this._drawingCanvas.getContext("2d");
             this._globalDiv.appendChild(this._drawingCanvas);
             if (this._showUI) {
@@ -511,6 +519,8 @@ var BABYLON;
                 this._generateCheckBox(this._optionsSubsetDiv, "Bump", BABYLON.StandardMaterial.BumpTextureEnabled, function (element) { BABYLON.StandardMaterial.BumpTextureEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Opacity", BABYLON.StandardMaterial.OpacityTextureEnabled, function (element) { BABYLON.StandardMaterial.OpacityTextureEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Reflection", BABYLON.StandardMaterial.ReflectionTextureEnabled, function (element) { BABYLON.StandardMaterial.ReflectionTextureEnabled = element.checked; });
+                this._generateCheckBox(this._optionsSubsetDiv, "Refraction", BABYLON.StandardMaterial.RefractionTextureEnabled, function (element) { BABYLON.StandardMaterial.RefractionTextureEnabled = element.checked; });
+                this._generateCheckBox(this._optionsSubsetDiv, "Lightmap", BABYLON.StandardMaterial.LightmapTextureEnabled, function (element) { BABYLON.StandardMaterial.LightmapTextureEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Fresnel", BABYLON.StandardMaterial.FresnelEnabled, function (element) { BABYLON.StandardMaterial.FresnelEnabled = element.checked; });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Options:</b>", this.accentColor);
@@ -521,13 +531,14 @@ var BABYLON;
                 this._generateCheckBox(this._optionsSubsetDiv, "Lights", this._scene.lightsEnabled, function (element) { _this._scene.lightsEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Particles", this._scene.particlesEnabled, function (element) { _this._scene.particlesEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Post-processes", this._scene.postProcessesEnabled, function (element) { _this._scene.postProcessesEnabled = element.checked; });
+                this._generateCheckBox(this._optionsSubsetDiv, "Probes", this._scene.probesEnabled, function (element) { _this._scene.probesEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Procedural textures", this._scene.proceduralTexturesEnabled, function (element) { _this._scene.proceduralTexturesEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Render targets", this._scene.renderTargetsEnabled, function (element) { _this._scene.renderTargetsEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Shadows", this._scene.shadowsEnabled, function (element) { _this._scene.shadowsEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", this._scene.skeletonsEnabled, function (element) { _this._scene.skeletonsEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Sprites", this._scene.spritesEnabled, function (element) { _this._scene.spritesEnabled = element.checked; });
                 this._generateCheckBox(this._optionsSubsetDiv, "Textures", this._scene.texturesEnabled, function (element) { _this._scene.texturesEnabled = element.checked; });
-                if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                if (BABYLON.AudioEngine && BABYLON.Engine.audioEngine.canUseWebAudio) {
                     this._optionsSubsetDiv.appendChild(document.createElement("br"));
                     this._generateTexBox(this._optionsSubsetDiv, "<b>Audio:</b>", this.accentColor);
                     this._generateRadio(this._optionsSubsetDiv, "Headphones", "panningModel", this._scene.headphone, function (element) {
@@ -547,6 +558,15 @@ var BABYLON;
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", function (element) { _this._scene.dumpNextRenderTargets = true; });
+                this._generateButton(this._optionsSubsetDiv, "Run SceneOptimizer", function (element) { BABYLON.SceneOptimizer.OptimizeAsync(_this._scene); });
+                this._generateButton(this._optionsSubsetDiv, "Log camera object", function (element) {
+                    if (_this._camera) {
+                        console.log(_this._camera);
+                    }
+                    else {
+                        console.warn("No camera defined, or debug layer created before camera creation!");
+                    }
+                });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._globalDiv.appendChild(this._statsDiv);
                 this._globalDiv.appendChild(this._logDiv);
@@ -569,7 +589,7 @@ var BABYLON;
                 + "Active indices: " + scene.getActiveIndices() + "<br>"
                 + "Active bones: " + scene.getActiveBones() + "<br>"
                 + "Active particles: " + scene.getActiveParticles() + "<br>"
-                + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
+                + "<b>Draw calls: " + engine.drawCalls + "</b><br><br><br>"
                 + "<b>Duration</b><br>"
                 + "Meshes selection:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
                 + "Render Targets: " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
@@ -577,22 +597,29 @@ var BABYLON;
                 + "Sprites: " + BABYLON.Tools.Format(scene.getSpritesDuration()) + " ms<br><br>"
                 + "Render: <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
                 + "Frame: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
-                + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br><br>"
+                + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br>"
+                + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br>"
                 + "</div>"
                 + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Extensions</b><br>"
                 + "Std derivatives: " + (engine.getCaps().standardDerivatives ? "Yes" : "No") + "<br>"
                 + "Compressed textures: " + (engine.getCaps().s3tc ? "Yes" : "No") + "<br>"
                 + "Hardware instances: " + (engine.getCaps().instancedArrays ? "Yes" : "No") + "<br>"
-                + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br>"
+                + "Texture float: " + (engine.getCaps().textureFloat ? "Yes" : "No") + "<br><br>"
                 + "32bits indices: " + (engine.getCaps().uintIndices ? "Yes" : "No") + "<br>"
+                + "Fragment depth: " + (engine.getCaps().fragmentDepthSupported ? "Yes" : "No") + "<br>"
+                + "High precision shaders: " + (engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No") + "<br>"
+                + "Draw buffers: " + (engine.getCaps().drawBuffersExtension ? "Yes" : "No") + "<br>"
+                + "</div><br>"
+                + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Caps.</b><br>"
                 + "Max textures units: " + engine.getCaps().maxTexturesImageUnits + "<br>"
                 + "Max textures size: " + engine.getCaps().maxTextureSize + "<br>"
-                + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br><br><br>"
-                + "</div><br>"
+                + "Max anisotropy: " + engine.getCaps().maxAnisotropy + "<br>"
                 + "<b>Info</b><br>"
+                + "WebGL feature level: " + engine.webGLVersion + "<br>"
                 + glInfo.version + "<br>"
+                + "</div><br>"
                 + glInfo.renderer + "<br>";
             if (this.customStatsFunction) {
                 this._statsSubsetDiv.innerHTML += this._statsSubsetDiv.innerHTML;

@@ -349,3 +349,4 @@ var ActionsBuilder;
     Elements.FLOW_CONTROLS.push({ name: "StateCondition", text: "state condition", properties: [{ targetType: "MeshProperties", text: "target", value: "" }, { text: "value", value: "" }], description: "A condition checking if the target object's state is equal to the given state. See \"set state\" action to set a state to an object." });
     Elements.FLOW_CONTROLS.push({ name: "Hub", text: "hub", properties: [], description: "The hub is internally used by the Combine Action. It allows to add children to the Combine Action" });
 })(ActionsBuilder || (ActionsBuilder = {}));
+//# sourceMappingURL=actionsbuilder.js.map

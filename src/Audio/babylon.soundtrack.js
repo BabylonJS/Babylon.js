@@ -4,28 +4,32 @@ var BABYLON;
         function SoundTrack(scene, options) {
             this.id = -1;
             this._isMainTrack = false;
+            this._isInitialized = false;
             this._scene = scene;
-            this._audioEngine = BABYLON.Engine.audioEngine;
             this.soundCollection = new Array();
-            if (this._audioEngine.canUseWebAudio) {
-                this._outputAudioNode = this._audioEngine.audioContext.createGain();
-                this._outputAudioNode.connect(this._audioEngine.masterGain);
-                if (options) {
-                    if (options.volume) {
-                        this._outputAudioNode.gain.value = options.volume;
-                    }
-                    if (options.mainTrack) {
-                        this._isMainTrack = options.mainTrack;
-                    }
-                }
-            }
+            this._options = options;
             if (!this._isMainTrack) {
                 this._scene.soundTracks.push(this);
                 this.id = this._scene.soundTracks.length - 1;
             }
         }
+        SoundTrack.prototype._initializeSoundTrackAudioGraph = function () {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                this._outputAudioNode = BABYLON.Engine.audioEngine.audioContext.createGain();
+                this._outputAudioNode.connect(BABYLON.Engine.audioEngine.masterGain);
+                if (this._options) {
+                    if (this._options.volume) {
+                        this._outputAudioNode.gain.value = this._options.volume;
+                    }
+                    if (this._options.mainTrack) {
+                        this._isMainTrack = this._options.mainTrack;
+                    }
+                }
+                this._isInitialized = true;
+            }
+        };
         SoundTrack.prototype.dispose = function () {
-            if (this._audioEngine.canUseWebAudio) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 if (this._connectedAnalyser) {
                     this._connectedAnalyser.stopDebugCanvas();
                 }
@@ -39,6 +43,9 @@ var BABYLON;
             }
         };
         SoundTrack.prototype.AddSound = function (sound) {
+            if (!this._isInitialized) {
+                this._initializeSoundTrackAudioGraph();
+            }
             if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 sound.connectToSoundTrackAudioNode(this._outputAudioNode);
             }
@@ -60,7 +67,7 @@ var BABYLON;
             }
         };
         SoundTrack.prototype.setVolume = function (newVolume) {
-            if (this._audioEngine.canUseWebAudio) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 this._outputAudioNode.gain.value = newVolume;
             }
         };
@@ -83,9 +90,9 @@ var BABYLON;
                 this._connectedAnalyser.stopDebugCanvas();
             }
             this._connectedAnalyser = analyser;
-            if (this._audioEngine.canUseWebAudio) {
+            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
                 this._outputAudioNode.disconnect();
-                this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, this._audioEngine.masterGain);
+                this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, BABYLON.Engine.audioEngine.masterGain);
             }
         };
         return SoundTrack;

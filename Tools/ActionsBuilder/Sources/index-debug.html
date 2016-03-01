@@ -79,7 +79,10 @@
         ActionsBuilder.SceneElements.MESHES.push("Julien");
         ActionsBuilder.SceneElements.MESHES.push("DavRous");
 
-        var structureTest = '{"type":3,"name":"Unnamed Object","detached":false,"children":[{"type":0,"name":"OnPointerOverTrigger","detached":false,"children":[{"type":1,"name":"SetValueAction","detached":false,"children":[{"type":2,"name":"ValueCondition","detached":false,"children":[{"type":1,"name":"SetValueAction","detached":false,"children":[],"combine":[],"properties":[{"name":"target","value":"Unnamed Object","targetType":"MeshProperties"},{"name":"propertyPath","value":""},{"name":"value","value":""}]}],"combine":[],"properties":[{"name":"target","value":"Unnamed Object","targetType":"MeshProperties"},{"name":"propertyPath","value":""},{"name":"value","value":""},{"name":"operator","value":"IsEqual"}]}],"combine":[],"properties":[{"name":"target","value":"Unnamed Object","targetType":"MeshProperties"},{"name":"propertyPath","value":""},{"name":"value","value":""}]}],"combine":[],"properties":[]},{"type":0,"name":"OnPointerOutTrigger","detached":false,"children":[],"combine":[],"properties":[]}],"combine":[],"properties":[]}';
+        ActionsBuilder.SceneElements.LIGHTS.push("Light1");
+        ActionsBuilder.SceneElements.LIGHTS.push("Light2");
+
+        var structureTest = '{"name":"Unnamed Object","type":3,"detached":false,"children":[{"name":"OnLeftPickTrigger","type":0,"detached":false,"children":[{"name":"InterpolateValueAction","type":1,"detached":false,"children":[],"combine":[],"properties":[{"name":"target","value":"Box001","targetType":"MeshProperties"},{"name":"propertyPath","value":"position","targetType":null},{"name":"value","value":"0,0,0","targetType":null},{"name":"duration","value":"1000","targetType":null},{"name":"stopOtherAnimations","value":"false","targetType":null}]}],"combine":[],"properties":[]},{"name":"OnLeftPickTrigger","type":0,"detached":false,"children":[{"name":"SetValueAction","type":1,"detached":false,"children":[],"combine":[],"properties":[{"name":"target","value":"","targetType":"LightProperties"},{"name":"propertyPath","value":"intensity","targetType":null},{"name":"value","value":"0","targetType":null}]}],"combine":[],"properties":[]}],"combine":[],"properties":[]}';
         actionsBuilderJsonInput.value = structureTest;
 
         loadFromJSON();

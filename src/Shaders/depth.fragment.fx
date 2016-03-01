@@ -1,8 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-#ifdef ALPHATEST
+﻿#ifdef ALPHATEST
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif

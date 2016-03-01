@@ -11,6 +11,9 @@
         public static CUBIC_MODE = 3;
         public static PROJECTION_MODE = 4;
         public static SKYBOX_MODE = 5;
+        public static INVCUBIC_MODE = 6;
+        public static EQUIRECTANGULAR_MODE = 7;
+        public static FIXED_EQUIRECTANGULAR_MODE = 8;
 
         public static CLAMP_ADDRESSMODE = 0;
         public static WRAP_ADDRESSMODE = 1;
@@ -46,6 +49,8 @@
         public _samplingMode: number;
         private _buffer: any;
         private _deleteBuffer: boolean;
+        private _delayedOnLoad: () => void;
+        private _delayedOnError: () => void;
 
         constructor(url: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null, buffer: any = null, deleteBuffer: boolean = false) {
             super(scene);
@@ -72,6 +77,9 @@
                     }
                 } else {
                     this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+
+                    this._delayedOnLoad = onLoad;
+                    this._delayedOnError = onError;
                 }
             } else {
                 Tools.SetImmediate(() => {
@@ -91,7 +99,7 @@
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
             if (!this._texture) {
-                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, null, null, this._buffer);
+                this._texture = this.getScene().getEngine().createTexture(this.url, this._noMipmap, this._invertY, this.getScene(), this._samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer);
                 if (this._deleteBuffer) {
                     delete this._buffer;
                 }
@@ -107,17 +115,17 @@
         }
 
         private _prepareRowForTextureGeneration(x: number, y: number, z: number, t: Vector3): void {
-            x -= this.uOffset + 0.5;
-            y -= this.vOffset + 0.5;
+            x *= this.uScale;
+            y *= this.vScale;
+
+            x -= 0.5 * this.uScale;
+            y -= 0.5 * this.vScale;
             z -= 0.5;
 
             Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix, t);
 
-            t.x *= this.uScale;
-            t.y *= this.vScale;
-
-            t.x += 0.5;
-            t.y += 0.5;
+            t.x += 0.5 * this.uScale + this.uOffset;
+            t.y += 0.5 * this.vScale + this.vOffset;
             t.z += 0.5;
         }
 
@@ -184,13 +192,6 @@
             this._cachedCoordinatesMode = this.coordinatesMode;
 
             switch (this.coordinatesMode) {
-                case Texture.SPHERICAL_MODE:
-                    Matrix.IdentityToRef(this._cachedTextureMatrix);
-                    this._cachedTextureMatrix[0] = -0.5 * this.uScale;
-                    this._cachedTextureMatrix[5] = -0.5 * this.vScale;
-                    this._cachedTextureMatrix[12] = 0.5 + this.uOffset;
-                    this._cachedTextureMatrix[13] = 0.5 + this.vOffset;
-                    break;
                 case Texture.PLANAR_MODE:
                     Matrix.IdentityToRef(this._cachedTextureMatrix);
                     this._cachedTextureMatrix[0] = this.uScale;
@@ -241,9 +242,83 @@
             return newTexture;
         }
 
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject = super.serialize();
+
+            serializationObject.uOffset = this.uOffset;
+            serializationObject.vOffset = this.vOffset;
+            serializationObject.uScale = this.uScale;
+            serializationObject.vScale = this.vScale;
+            serializationObject.uAng = this.uAng;
+            serializationObject.vAng = this.vAng;
+            serializationObject.wAng = this.wAng;
+
+            return serializationObject;
+        }
+
         // Statics
         public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: () => void = null, onError: () => void = null): Texture {
             return new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data);
+        }
+        
+        public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BaseTexture {
+            if (parsedTexture.isCube) {
+                return CubeTexture.Parse(parsedTexture, scene, rootUrl);
+            }
+
+            if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+                return null;
+            }
+
+            var texture;
+
+            if (parsedTexture.mirrorPlane) {
+                texture = new MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                texture._waitingRenderList = parsedTexture.renderList;
+                texture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
+            } else if (parsedTexture.isRenderTarget) {
+                texture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                texture._waitingRenderList = parsedTexture.renderList;
+            } else {
+                if (parsedTexture.base64String) {
+                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                } else {
+                    texture = new Texture(rootUrl + parsedTexture.name, scene);
+                }
+            }
+
+            texture.name = parsedTexture.name;
+            texture.hasAlpha = parsedTexture.hasAlpha;
+            texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
+            texture.level = parsedTexture.level;
+
+            texture.coordinatesIndex = parsedTexture.coordinatesIndex;
+            texture.coordinatesMode = parsedTexture.coordinatesMode;
+            texture.uOffset = parsedTexture.uOffset;
+            texture.vOffset = parsedTexture.vOffset;
+            texture.uScale = parsedTexture.uScale;
+            texture.vScale = parsedTexture.vScale;
+            texture.uAng = parsedTexture.uAng;
+            texture.vAng = parsedTexture.vAng;
+            texture.wAng = parsedTexture.wAng;
+
+            texture.wrapU = parsedTexture.wrapU;
+            texture.wrapV = parsedTexture.wrapV;
+
+            // Animations
+            if (parsedTexture.animations) {
+                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedTexture.animations[animationIndex];
+
+                    texture.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
+            return texture;
         }
     }
 } 

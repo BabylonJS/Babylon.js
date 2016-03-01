@@ -6,7 +6,7 @@ var BABYLON;
             this.maximum = maximum;
             this.vectors = new Array();
             this.vectorsWorld = new Array();
-            // Bounding vectors            
+            // Bounding vectors
             this.vectors.push(this.minimum.clone());
             this.vectors.push(this.maximum.clone());
             this.vectors.push(this.minimum.clone());
@@ -36,6 +36,10 @@ var BABYLON;
         // Methods
         BoundingBox.prototype.getWorldMatrix = function () {
             return this._worldMatrix;
+        };
+        BoundingBox.prototype.setWorldMatrix = function (matrix) {
+            this._worldMatrix.copyFrom(matrix);
+            return this;
         };
         BoundingBox.prototype._update = function (world) {
             BABYLON.Vector3.FromFloatsToRef(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, this.minimumWorld);

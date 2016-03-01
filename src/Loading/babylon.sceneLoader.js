@@ -39,6 +39,15 @@ var BABYLON;
             return this._registeredPlugins[this._registeredPlugins.length - 1];
         };
         // Public functions
+        SceneLoader.GetPluginForExtension = function (extension) {
+            for (var index = 0; index < this._registeredPlugins.length; index++) {
+                var plugin = this._registeredPlugins[index];
+                if (plugin.extensions.indexOf(extension) !== -1) {
+                    return plugin;
+                }
+            }
+            return null;
+        };
         SceneLoader.RegisterPlugin = function (plugin) {
             plugin.extensions = plugin.extensions.toLowerCase();
             SceneLoader._registeredPlugins.push(plugin);
@@ -88,11 +97,12 @@ var BABYLON;
                     importMeshFromData(data);
                 }, progressCallBack, database);
             };
-            if (scene.getEngine().enableOfflineSupport) {
+            if (scene.getEngine().enableOfflineSupport && !(sceneFilename.substr && sceneFilename.substr(0, 5) === "data:")) {
                 // Checking if a manifest file has been set for this scene and if offline mode has been requested
                 var database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
             }
             else {
+                // If the scene is a data stream or offline support is not enabled, it's a direct load
                 manifestChecked(true);
             }
         };

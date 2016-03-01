@@ -7,8 +7,8 @@ var BABYLON;
 (function (BABYLON) {
     var WebVRFreeCamera = (function (_super) {
         __extends(WebVRFreeCamera, _super);
-        function WebVRFreeCamera(name, position, scene, compensateDistorsion) {
-            if (compensateDistorsion === void 0) { compensateDistorsion = true; }
+        function WebVRFreeCamera(name, position, scene, compensateDistortion) {
+            if (compensateDistortion === void 0) { compensateDistortion = true; }
             _super.call(this, name, position, scene);
             this._hmdDevice = null;
             this._sensorDevice = null;
@@ -17,7 +17,7 @@ var BABYLON;
             this._cacheRotation = BABYLON.Vector3.Zero();
             this._vrEnabled = false;
             var metrics = BABYLON.VRCameraMetrics.GetDefault();
-            metrics.compensateDistorsion = compensateDistorsion;
+            metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
             this._getWebVRDevices = this._getWebVRDevices.bind(this);
         }
@@ -66,6 +66,9 @@ var BABYLON;
         WebVRFreeCamera.prototype.detachControl = function (element) {
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
+        };
+        WebVRFreeCamera.prototype.getTypeName = function () {
+            return "WebVRFreeCamera";
         };
         return WebVRFreeCamera;
     })(BABYLON.FreeCamera);

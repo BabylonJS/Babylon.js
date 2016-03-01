@@ -282,6 +282,9 @@ var ActionsBuilder;
                 if (this._viewer.root.type === ActionsBuilder.Type.OBJECT && excludedTriggers.indexOf(i) !== -1) {
                     continue;
                 }
+                else if (this._viewer.root.type === ActionsBuilder.Type.SCENE && excludedTriggers.indexOf(i) === -1) {
+                    continue;
+                }
                 var trigger = this._createListElement(this.triggersList, yPosition, element.text, ActionsBuilder.Type.TRIGGER, textColor, true, element);
                 trigger.rect.attr("fill", Raphael.rgb(133, 154, 185));
                 yPosition += List.ELEMENT_HEIGHT;
@@ -427,7 +430,8 @@ var ActionsBuilder;
                         alert("Please add a trigger before.");
                         return;
                     }
-                    if (element.type === ActionsBuilder.Type.FLOW_CONTROL && (dragResult.action === _this._viewer.root || (dragResult.action.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    //if (element.type === Type.FLOW_CONTROL && (dragResult.action === this._viewer.root || (dragResult.action.type === Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    if (element.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action === _this._viewer.root) {
                         return;
                     }
                     if (element.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action.combineArray !== null) {
@@ -464,6 +468,7 @@ this.createJSON = function () {
     var structure = viewer.utils.createJSON(viewer.root);
     var asText = JSON.stringify(structure);
     actionsBuilderJsonInput.value = asText;
+    console.log(asText);
 };
 this.loadFromJSON = function () {
     var json = actionsBuilderJsonInput.value;
@@ -550,6 +555,8 @@ this.run = function () {
     list.setColorTheme("rgb(64, 64, 64)");
     list.createListsElements();
     list.onResize();
+    // 3ds Max fix
+    viewer.onResize();
 };
 var ActionsBuilder;
 (function (ActionsBuilder) {
@@ -601,6 +608,9 @@ var ActionsBuilder;
             var targetParameterNameSelect = null;
             var propertyPathSelect = null;
             var propertyPathOptionalSelect = null;
+            var booleanSelect = null;
+            var propertyInput = null;
+            var propertyPathIndice = -1;
             if (properties.length === 0) {
                 return;
             }
@@ -633,6 +643,7 @@ var ActionsBuilder;
                     targetParameterNameSelect.onchange = this._parameterTargetNameChanged(targetParameterSelect, targetParameterNameSelect, i);
                 }
                 else if (properties[i].text === "propertyPath") {
+                    propertyPathIndice = i;
                     // Create property path select
                     propertyPathSelect = document.createElement("select");
                     propertyPathSelect.className = "ParametersElementSelectClass";
@@ -642,7 +653,7 @@ var ActionsBuilder;
                     propertyPathOptionalSelect.className = "ParametersElementSelectClass";
                     this.parametersContainer.appendChild(propertyPathOptionalSelect);
                     // Events and configure
-                    (this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, i))(null);
+                    (this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, null, null, i))(null);
                     var property = this._action.propertiesResults[i].value.split(".");
                     if (property.length > 0) {
                         if (property.length === 1) {
@@ -664,7 +675,7 @@ var ActionsBuilder;
                         }
                     }
                     targetParameterSelect.onchange = this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i - 1);
-                    propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, i);
+                    propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, null, null, i);
                     propertyPathOptionalSelect.onchange = this._additionalPropertyPathSelectChanged(propertyPathSelect, propertyPathOptionalSelect, i);
                 }
                 else if (properties[i].text === "operator") {
@@ -686,22 +697,40 @@ var ActionsBuilder;
                     soundSelect.onchange = this._soundSelectChanged(soundSelect, i);
                 }
                 else {
-                    if (propertiesResults[i].value === "true" || propertiesResults[i].value === "false") {
-                        var booleanSelect = document.createElement("select");
-                        booleanSelect.className = "ParametersElementSelectClass";
-                        this.parametersContainer.appendChild(booleanSelect);
-                        // Configure event
-                        (this._booleanSelectChanged(booleanSelect, i))(null);
-                        booleanSelect.value = propertiesResults[i].value;
-                        booleanSelect.onchange = this._booleanSelectChanged(booleanSelect, i);
+                    var isBoolean = propertiesResults[i].value === "true" || propertiesResults[i].value === "false";
+                    var object = this._getObjectFromType(targetParameterSelect.value);
+                    if (object !== null) {
+                        var property = this._action.propertiesResults[i - 1].value.split(".");
+                        for (var j = 0; j < property.length && object !== undefined; j++) {
+                            object = object[property[j]];
+                            if (j === property.length - 1) {
+                                isBoolean = isBoolean || typeof object === "boolean";
+                            }
+                        }
+                    }
+                    booleanSelect = document.createElement("select");
+                    booleanSelect.className = "ParametersElementSelectClass";
+                    this.parametersContainer.appendChild(booleanSelect);
+                    // Configure event
+                    (this._booleanSelectChanged(booleanSelect, i))(null);
+                    booleanSelect.value = propertiesResults[i].value;
+                    booleanSelect.onchange = this._booleanSelectChanged(booleanSelect, i);
+                    propertyInput = document.createElement("input");
+                    propertyInput.value = propertiesResults[i].value;
+                    propertyInput.className = "ParametersElementInputClass";
+                    this.parametersContainer.appendChild(propertyInput);
+                    // Configure event
+                    propertyInput.onkeyup = this._propertyInputChanged(propertyInput, i);
+                    if (propertyPathIndice !== -1 && properties[i].text === "value") {
+                        propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, booleanSelect, propertyInput, propertyPathIndice);
+                    }
+                    if (isBoolean) {
+                        this._viewer.utils.setElementVisible(booleanSelect, true);
+                        this._viewer.utils.setElementVisible(propertyInput, false);
                     }
                     else {
-                        var propertyInput = document.createElement("input");
-                        propertyInput.value = propertiesResults[i].value;
-                        propertyInput.className = "ParametersElementInputClass";
-                        this.parametersContainer.appendChild(propertyInput);
-                        // Configure event
-                        propertyInput.onkeyup = this._propertyInputChanged(propertyInput, i);
+                        this._viewer.utils.setElementVisible(booleanSelect, false);
+                        this._viewer.utils.setElementVisible(propertyInput, true);
                     }
                 }
             }
@@ -795,7 +824,7 @@ var ActionsBuilder;
         * @param additionalPropertyPathSelect: the additional propertyPath select element
         * @param indice: the properties indice in action.properties
         */
-        Parameters.prototype._propertyPathSelectChanged = function (targetParameterSelect, propertyPathSelect, additionalPropertyPathSelect, indice) {
+        Parameters.prototype._propertyPathSelectChanged = function (targetParameterSelect, propertyPathSelect, additionalPropertyPathSelect, booleanSelect, propertyInput, indice) {
             var _this = this;
             return function (event) {
                 if (propertyPathSelect.options.length === 0) {
@@ -812,6 +841,27 @@ var ActionsBuilder;
                 else {
                     // Set property
                     _this._action.propertiesResults[indice].value = propertyPathSelect.value;
+                    if (booleanSelect !== null && propertyInput !== null) {
+                        var object = _this._getObjectFromType(targetParameterSelect.value);
+                        var isBoolean = false;
+                        if (object !== null) {
+                            var property = _this._action.propertiesResults[indice].value.split(".");
+                            for (var j = 0; j < property.length; j++) {
+                                object = object[property[j]];
+                                if (j === property.length - 1) {
+                                    isBoolean = isBoolean || typeof object === "boolean";
+                                }
+                            }
+                        }
+                        if (isBoolean) {
+                            _this._viewer.utils.setElementVisible(booleanSelect, true);
+                            _this._viewer.utils.setElementVisible(propertyInput, false);
+                        }
+                        else {
+                            _this._viewer.utils.setElementVisible(booleanSelect, false);
+                            _this._viewer.utils.setElementVisible(propertyInput, true);
+                        }
+                    }
                 }
                 // Configure addition property
                 _this._fillAdditionalPropertyPath(targetParameterSelect, propertyPathSelect, additionalPropertyPathSelect);
@@ -897,10 +947,17 @@ var ActionsBuilder;
                         option.value = options[i].targetType;
                         targetParameterSelect.options.add(option);
                     }
+                    targetParameterSelect.value = _this._action.propertiesResults[indice].targetType;
                 }
                 else {
                     _this._action.propertiesResults[indice].targetType = targetParameterSelect.value;
-                    _this._action.propertiesResults[indice].value = "";
+                    var names = _this._getListFromType(targetParameterSelect.value);
+                    if (names !== null && names.length > 0) {
+                        _this._action.propertiesResults[indice].value = names[0];
+                    }
+                    else {
+                        _this._action.propertiesResults[indice].value = "";
+                    }
                     if (propertyPathSelect !== null) {
                         _this._action.propertiesResults[indice + 1].value = ""; // propertyPath
                     }
@@ -915,11 +972,12 @@ var ActionsBuilder;
                         targetParameterNameSelect.options.add(option);
                     }
                 }
+                targetParameterNameSelect.value = _this._action.propertiesResults[indice].value;
                 // Clear property path
                 if (propertyPathSelect !== null) {
                     propertyPathSelect.options.length = 0;
                     additionalPropertyPathSelect.options.length = 0;
-                    _this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, additionalPropertyPathSelect, indice + 1)(null);
+                    _this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, additionalPropertyPathSelect, null, null, indice + 1)(null);
                 }
                 _this._sortList(targetParameterNameSelect);
                 _this._sortList(targetParameterSelect);
@@ -970,21 +1028,37 @@ var ActionsBuilder;
             }
             return null;
         };
+        Parameters.prototype._getListFromType = function (type) {
+            if (type === "MeshProperties" || type === "Mesh") {
+                return ActionsBuilder.SceneElements.MESHES;
+            }
+            if (type === "LightProperties" || type === "Light") {
+                return ActionsBuilder.SceneElements.LIGHTS;
+            }
+            if (type === "CameraProperties" || type === "Camera") {
+                return ActionsBuilder.SceneElements.CAMERAS;
+            }
+            return null;
+        };
         /*
         * Returns the object in function of the given type
         * @param type: the target type
         */
         Parameters.prototype._getObjectFromType = function (type) {
             if (type === "MeshProperties" || type === "Mesh") {
+                this._currentObject = ActionsBuilder.SceneElements.MESH;
                 return ActionsBuilder.SceneElements.MESH;
             }
             if (type === "LightProperties" || type === "Light") {
+                this._currentObject = ActionsBuilder.SceneElements.LIGHT;
                 return ActionsBuilder.SceneElements.LIGHT;
             }
             if (type === "CameraProperties" || type === "Camera") {
+                this._currentObject = ActionsBuilder.SceneElements.CAMERA;
                 return ActionsBuilder.SceneElements.CAMERA;
             }
             if (type === "SceneProperties" || type === "Scene") {
+                this._currentObject = ActionsBuilder.SceneElements.SCENE;
                 return ActionsBuilder.SceneElements.SCENE;
             }
             return null;
@@ -1941,6 +2015,7 @@ var ActionsBuilder;
             this.utils = new ActionsBuilder.Utils(this);
             // Finish
             this.parameters.parametersHelpElement.textContent = Viewer._DEFAULT_INFO_MESSAGE;
+            this.onResize(null);
         }
         Object.defineProperty(Viewer, "NODE_WIDTH", {
             get: function () {

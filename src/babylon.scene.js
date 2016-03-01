@@ -18,7 +18,12 @@ var BABYLON;
             this.forcePointsCloud = false;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
+            this.constantlyUpdateMeshUnderPointer = false;
+            // Animations
+            this.animations = [];
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
+            this._startingPointerPosition = new BABYLON.Vector2(0, 0);
+            this._startingPointerTime = 0;
             // Fog
             /**
             * is fog enabled on this scene.
@@ -95,6 +100,9 @@ var BABYLON;
             this.customRenderTargets = new Array();
             // Imported meshes
             this.importedMeshesFiles = new Array();
+            // Probes
+            this.probesEnabled = true;
+            this.reflectionProbes = new Array();
             this._actionManagers = new Array();
             this._meshesForIntersections = new BABYLON.SmartArray(256);
             // Procedural textures
@@ -137,12 +145,18 @@ var BABYLON;
             this.postProcessManager = new BABYLON.PostProcessManager(this);
             this.postProcessRenderPipelineManager = new BABYLON.PostProcessRenderPipelineManager();
             this._boundingBoxRenderer = new BABYLON.BoundingBoxRenderer(this);
-            this._outlineRenderer = new BABYLON.OutlineRenderer(this);
+            if (BABYLON.OutlineRenderer) {
+                this._outlineRenderer = new BABYLON.OutlineRenderer(this);
+            }
             this.attachControl();
             this._debugLayer = new BABYLON.DebugLayer(this);
-            this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
+            if (BABYLON.SoundTrack) {
+                this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
+            }
             //simplification queue
-            this.simplificationQueue = new BABYLON.SimplificationQueue();
+            if (BABYLON.SimplificationQueue) {
+                this.simplificationQueue = new BABYLON.SimplificationQueue();
+            }
             //collision coordinator initialization. For now legacy per default.
             this.workerCollisions = false; //(!!Worker && (!!BABYLON.CollisionWorker || BABYLON.WorkerIncluded));
         }
@@ -175,7 +189,7 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Scene.prototype, "debugLayer", {
-            // Properties 
+            // Properties
             get: function () {
                 return this._debugLayer;
             },
@@ -211,7 +225,7 @@ var BABYLON;
              * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
              */
             get: function () {
-                return this._meshUnderPointer;
+                return this._pointerOverMesh;
             },
             enumerable: true,
             configurable: true
@@ -297,6 +311,8 @@ var BABYLON;
             var canvasRect = this._engine.getRenderingCanvasClientRect();
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
+            this._unTranslatedPointerX = this._pointerX;
+            this._unTranslatedPointerY = this._pointerY;
             if (this.cameraToUseForPointers) {
                 this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
                 this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
@@ -305,14 +321,24 @@ var BABYLON;
         // Pointers handling
         Scene.prototype.attachControl = function () {
             var _this = this;
+            var spritePredicate = function (sprite) {
+                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
+            };
             this._onPointerMove = function (evt) {
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
+                }
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady(); }, false, _this.cameraToUseForPointers);
-                if (pickResult.hit) {
-                    _this._meshUnderPointer = pickResult.pickedMesh;
+                if (!_this.pointerMovePredicate) {
+                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); };
+                }
+                // Meshes
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerMovePredicate, false, _this.cameraToUseForPointers);
+                if (pickResult.hit && pickResult.pickedMesh) {
+                    _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
-                    if (_this._meshUnderPointer.actionManager && _this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                    if (_this._pointerOverMesh.actionManager && _this._pointerOverMesh.actionManager.hasPointerTriggers) {
                         canvas.style.cursor = "pointer";
                     }
                     else {
@@ -321,55 +347,141 @@ var BABYLON;
                 }
                 else {
                     _this.setPointerOverMesh(null);
-                    canvas.style.cursor = "";
-                    _this._meshUnderPointer = null;
+                    // Sprites
+                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        canvas.style.cursor = "pointer";
+                        _this.setPointerOverSprite(pickResult.pickedSprite);
+                    }
+                    else {
+                        _this.setPointerOverSprite(null);
+                        // Restore pointer
+                        canvas.style.cursor = "";
+                    }
+                }
+                if (_this.onPointerMove) {
+                    _this.onPointerMove(evt, pickResult);
                 }
             };
             this._onPointerDown = function (evt) {
-                var predicate = null;
-                if (!_this.onPointerDown) {
-                    predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPickTriggers;
-                    };
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
                 }
                 _this._updatePointerPosition(evt);
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
-                if (pickResult.hit) {
+                _this._startingPointerPosition.x = _this._pointerX;
+                _this._startingPointerPosition.y = _this._pointerY;
+                _this._startingPointerTime = new Date().getTime();
+                if (!_this.pointerDownPredicate) {
+                    _this.pointerDownPredicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
+                    };
+                }
+                // Meshes
+                _this._pickedDownMesh = null;
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerDownPredicate, false, _this.cameraToUseForPointers);
+                if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
-                        switch (evt.button) {
-                            case 0:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                break;
-                            case 1:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                break;
-                            case 2:
-                                pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
-                                break;
+                        _this._pickedDownMesh = pickResult.pickedMesh;
+                        if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
+                            switch (evt.button) {
+                                case 0:
+                                    pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    break;
+                                case 1:
+                                    pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    break;
+                                case 2:
+                                    pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                    break;
+                            }
+                            pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                         }
-                        pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)) {
+                            var that = _this;
+                            window.setTimeout(function () {
+                                var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger); }, false, that.cameraToUseForPointers);
+                                if (pickResult.hit && pickResult.pickedMesh) {
+                                    if (pickResult.pickedMesh.actionManager) {
+                                        if (that._startingPointerTime !== 0 && ((new Date().getTime() - that._startingPointerTime) > BABYLON.ActionManager.LongPressDelay) && (Math.abs(that._startingPointerPosition.x - that._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(that._startingPointerPosition.y - that._pointerY) < BABYLON.ActionManager.DragMovementThreshold)) {
+                                            that._startingPointerTime = 0;
+                                            pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnLongPressTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                        }
+                                    }
+                                }
+                            }, BABYLON.ActionManager.LongPressDelay);
+                        }
                     }
                 }
                 if (_this.onPointerDown) {
                     _this.onPointerDown(evt, pickResult);
                 }
+                // Sprites
+                _this._pickedDownSprite = null;
+                if (_this.spriteManagers.length > 0) {
+                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        if (pickResult.pickedSprite.actionManager) {
+                            _this._pickedDownSprite = pickResult.pickedSprite;
+                            switch (evt.button) {
+                                case 0:
+                                    pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnLeftPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                                    break;
+                                case 1:
+                                    pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnCenterPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                                    break;
+                                case 2:
+                                    pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnRightPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                                    break;
+                            }
+                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                        }
+                    }
+                }
             };
             this._onPointerUp = function (evt) {
-                var predicate = null;
-                if (!_this.onPointerUp) {
-                    predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnPickUpTrigger);
-                    };
+                if (!_this.cameraToUseForPointers && !_this.activeCamera) {
+                    return;
                 }
                 _this._updatePointerPosition(evt);
-                var pickResult = _this.pick(_this._pointerX, _this._pointerY, predicate, false, _this.cameraToUseForPointers);
-                if (pickResult.hit) {
+                if (!_this.pointerUpPredicate) {
+                    _this.pointerUpPredicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)));
+                    };
+                }
+                // Meshes
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerUpPredicate, false, _this.cameraToUseForPointers);
+                if (pickResult.hit && pickResult.pickedMesh) {
+                    if (_this.onPointerPick && _this._pickedDownMesh != null && pickResult.pickedMesh == _this._pickedDownMesh) {
+                        _this.onPointerPick(evt, pickResult);
+                    }
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < BABYLON.ActionManager.DragMovementThreshold) {
+                            pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                        }
                     }
+                }
+                if (_this._pickedDownMesh && _this._pickedDownMesh !== pickResult.pickedMesh) {
+                    _this._pickedDownMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNew(_this._pickedDownMesh, evt));
                 }
                 if (_this.onPointerUp) {
                     _this.onPointerUp(evt, pickResult);
+                }
+                _this._startingPointerTime = 0;
+                // Sprites
+                if (_this.spriteManagers.length > 0) {
+                    pickResult = _this.pickSprite(_this._unTranslatedPointerX, _this._unTranslatedPointerY, spritePredicate, false, _this.cameraToUseForPointers);
+                    if (pickResult.hit && pickResult.pickedSprite) {
+                        if (pickResult.pickedSprite.actionManager) {
+                            pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                            if (Math.abs(_this._startingPointerPosition.x - _this._pointerX) < BABYLON.ActionManager.DragMovementThreshold && Math.abs(_this._startingPointerPosition.y - _this._pointerY) < BABYLON.ActionManager.DragMovementThreshold) {
+                                pickResult.pickedSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickTrigger, BABYLON.ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, _this, evt));
+                            }
+                        }
+                    }
+                    if (_this._pickedDownSprite && _this._pickedDownSprite !== pickResult.pickedSprite) {
+                        _this._pickedDownSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPickOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(_this._pickedDownSprite, _this, evt));
+                    }
                 }
             };
             this._onKeyDown = function (evt) {
@@ -509,9 +621,7 @@ var BABYLON;
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
-            if (speedRatio === undefined) {
-                speedRatio = 1.0;
-            }
+            if (speedRatio === void 0) { speedRatio = 1.0; }
             this.stopAnimation(target);
             if (!animatable) {
                 animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
@@ -527,6 +637,7 @@ var BABYLON;
                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+            animatable.reset();
             return animatable;
         };
         Scene.prototype.beginDirectAnimation = function (target, animations, from, to, loop, speedRatio, onAnimationEnd) {
@@ -544,6 +655,13 @@ var BABYLON;
             }
             return null;
         };
+        Object.defineProperty(Scene.prototype, "Animatables", {
+            get: function () {
+                return this._activeAnimatables;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Will stop the animation of the given target
          * @param target - the target
@@ -556,10 +674,13 @@ var BABYLON;
             }
         };
         Scene.prototype._animate = function () {
-            if (!this.animationsEnabled) {
+            if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
             }
             if (!this._animationStartDate) {
+                if (this._pendingData.length > 0) {
+                    return;
+                }
                 this._animationStartDate = BABYLON.Tools.Now;
             }
             // Getting time
@@ -604,6 +725,14 @@ var BABYLON;
             this.collisionCoordinator.onMeshRemoved(toRemove);
             if (this.onMeshRemoved) {
                 this.onMeshRemoved(toRemove);
+            }
+            return index;
+        };
+        Scene.prototype.removeSkeleton = function (toRemove) {
+            var index = this.skeletons.indexOf(toRemove);
+            if (index !== -1) {
+                // Remove from the scene if mesh found 
+                this.skeletons.splice(index, 1);
             }
             return index;
         };
@@ -656,6 +785,20 @@ var BABYLON;
             var position = this.cameras.push(newCamera);
             if (this.onNewCameraAdded) {
                 this.onNewCameraAdded(newCamera, position, this);
+            }
+        };
+        /**
+         * Switch active camera
+         * @param {Camera} newCamera - new active camera
+         * @param {boolean} attachControl - call attachControl for the new active camera (default: true)
+         */
+        Scene.prototype.swithActiveCamera = function (newCamera, attachControl) {
+            if (attachControl === void 0) { attachControl = true; }
+            var canvas = this._engine.getRenderingCanvas();
+            this.activeCamera.detachControl(canvas);
+            this.activeCamera = newCamera;
+            if (attachControl) {
+                newCamera.attachControl(canvas);
             }
         };
         /**
@@ -750,6 +893,38 @@ var BABYLON;
             return null;
         };
         /**
+         * get a bone using its id
+         * @param {string} the bone's id
+         * @return {BABYLON.Bone|null} the bone or null if not found
+         */
+        Scene.prototype.getBoneByID = function (id) {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].id === id) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+            return null;
+        };
+        /**
+        * get a bone using its id
+        * @param {string} the bone's name
+        * @return {BABYLON.Bone|null} the bone or null if not found
+        */
+        Scene.prototype.getBoneByName = function (name) {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].name === name) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+            return null;
+        };
+        /**
          * get a light node using its name
          * @param {string} the light's name
          * @return {BABYLON.Light|null} the light or null if none found.
@@ -784,6 +959,19 @@ var BABYLON;
             for (var index = 0; index < this.lights.length; index++) {
                 if (this.lights[index].uniqueId === uniqueId) {
                     return this.lights[index];
+                }
+            }
+            return null;
+        };
+        /**
+         * get a particle system by id
+         * @param id {number} the particle system id
+         * @return {BABYLON.ParticleSystem|null} the corresponding system or null if none found.
+         */
+        Scene.prototype.getParticleSystemByID = function (id) {
+            for (var index = 0; index < this.particleSystems.length; index++) {
+                if (this.particleSystems[index].id === id) {
+                    return this.particleSystems[index];
                 }
             }
             return null;
@@ -912,7 +1100,12 @@ var BABYLON;
             if (light) {
                 return light;
             }
-            return this.getCameraByID(id);
+            var camera = this.getCameraByID(id);
+            if (camera) {
+                return camera;
+            }
+            var bone = this.getBoneByID(id);
+            return bone;
         };
         Scene.prototype.getNodeByName = function (name) {
             var mesh = this.getMeshByName(name);
@@ -923,7 +1116,12 @@ var BABYLON;
             if (light) {
                 return light;
             }
-            return this.getCameraByName(name);
+            var camera = this.getCameraByName(name);
+            if (camera) {
+                return camera;
+            }
+            var bone = this.getBoneByName(name);
+            return bone;
         };
         Scene.prototype.getMeshByName = function (name) {
             for (var index = 0; index < this.meshes.length; index++) {
@@ -935,15 +1133,17 @@ var BABYLON;
         };
         Scene.prototype.getSoundByName = function (name) {
             var index;
-            for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
-                if (this.mainSoundTrack.soundCollection[index].name === name) {
-                    return this.mainSoundTrack.soundCollection[index];
+            if (BABYLON.AudioEngine) {
+                for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
+                    if (this.mainSoundTrack.soundCollection[index].name === name) {
+                        return this.mainSoundTrack.soundCollection[index];
+                    }
                 }
-            }
-            for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
-                for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
-                    if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
-                        return this.soundTracks[sdIndex].soundCollection[index];
+                for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+                    for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
+                        if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
+                            return this.soundTracks[sdIndex].soundCollection[index];
+                        }
                     }
                 }
             }
@@ -987,7 +1187,7 @@ var BABYLON;
                     if (material.getRenderTargetTextures) {
                         if (this._processedMaterials.indexOf(material) === -1) {
                             this._processedMaterials.push(material);
-                            this._renderTargets.concat(material.getRenderTargetTextures());
+                            this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
                         }
                     }
                     // Dispatch
@@ -1137,7 +1337,7 @@ var BABYLON;
             }
             // Render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
-            if (this.renderTargetsEnabled) {
+            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 BABYLON.Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
@@ -1149,9 +1349,7 @@ var BABYLON;
                 }
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 this._renderId++;
-            }
-            if (this._renderTargets.length > 0) {
-                engine.restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
             this._renderTargetsDuration += BABYLON.Tools.Now - beforeRenderTargetDate;
             // Prepare Frame
@@ -1282,16 +1480,8 @@ var BABYLON;
                 this.actionManager.processTrigger(BABYLON.ActionManager.OnEveryFrameTrigger, null);
             }
             //Simplification Queue
-            if (!this.simplificationQueue.running) {
+            if (this.simplificationQueue && !this.simplificationQueue.running) {
                 this.simplificationQueue.executeNext();
-            }
-            // Before render
-            if (this.beforeRender) {
-                this.beforeRender();
-            }
-            var callbackIndex;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
             }
             // Animations
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
@@ -1300,8 +1490,16 @@ var BABYLON;
             // Physics
             if (this._physicsEngine) {
                 BABYLON.Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                this._physicsEngine._step(deltaTime / 1000.0);
                 BABYLON.Tools.EndPerformanceCounter("Physics");
+            }
+            // Before render
+            if (this.beforeRender) {
+                this.beforeRender();
+            }
+            var callbackIndex;
+            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
+                this._onBeforeRenderCallbacks[callbackIndex]();
             }
             // Customs render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
@@ -1365,6 +1563,9 @@ var BABYLON;
                 var currentRenderId = this._renderId;
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     this._renderId = currentRenderId;
+                    if (cameraIndex > 0) {
+                        this._engine.clear(0, false, true);
+                    }
                     this._processSubCameras(this.activeCameras[cameraIndex]);
                 }
             }
@@ -1377,7 +1578,9 @@ var BABYLON;
             // Intersection checks
             this._checkIntersections();
             // Update the audio listener attached to the camera
-            this._updateAudioParameters();
+            if (BABYLON.AudioEngine) {
+                this._updateAudioParameters();
+            }
             // After render
             if (this.afterRender) {
                 this.afterRender();
@@ -1398,7 +1601,7 @@ var BABYLON;
             this._lastFrameDuration = BABYLON.Tools.Now - startDate;
         };
         Scene.prototype._updateAudioParameters = function () {
-            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 0)) {
+            if (!this.audioEnabled || (this.mainSoundTrack.soundCollection.length === 0 && this.soundTracks.length === 1)) {
                 return;
             }
             var listeningCamera;
@@ -1439,11 +1642,13 @@ var BABYLON;
             },
             set: function (value) {
                 this._audioEnabled = value;
-                if (this._audioEnabled) {
-                    this._enableAudio();
-                }
-                else {
-                    this._disableAudio();
+                if (BABYLON.AudioEngine) {
+                    if (this._audioEnabled) {
+                        this._enableAudio();
+                    }
+                    else {
+                        this._disableAudio();
+                    }
                 }
             },
             enumerable: true,
@@ -1481,11 +1686,13 @@ var BABYLON;
             },
             set: function (value) {
                 this._headphone = value;
-                if (this._headphone) {
-                    this._switchAudioModeForHeadphones();
-                }
-                else {
-                    this._switchAudioModeForNormalSpeakers();
+                if (BABYLON.AudioEngine) {
+                    if (this._headphone) {
+                        this._switchAudioModeForHeadphones();
+                    }
+                    else {
+                        this._switchAudioModeForNormalSpeakers();
+                    }
                 }
             },
             enumerable: true,
@@ -1517,6 +1724,16 @@ var BABYLON;
             this._depthRenderer.dispose();
             this._depthRenderer = null;
         };
+        Scene.prototype.freezeMaterials = function () {
+            for (var i = 0; i < this.materials.length; i++) {
+                this.materials[i].freeze();
+            }
+        };
+        Scene.prototype.unfreezeMaterials = function () {
+            for (var i = 0; i < this.materials.length; i++) {
+                this.materials[i].unfreeze();
+            }
+        };
         Scene.prototype.dispose = function () {
             this.beforeRender = null;
             this.afterRender = null;
@@ -1535,7 +1752,9 @@ var BABYLON;
             this._onAfterRenderCallbacks = [];
             this.detachControl();
             // Release sounds & sounds tracks
-            this.disposeSounds();
+            if (BABYLON.AudioEngine) {
+                this.disposeSounds();
+            }
             // Detach cameras
             var canvas = this._engine.getRenderingCanvas();
             var index;
@@ -1623,7 +1842,8 @@ var BABYLON;
             return this._selectionOctree;
         };
         // Picking
-        Scene.prototype.createPickingRay = function (x, y, world, camera) {
+        Scene.prototype.createPickingRay = function (x, y, world, camera, cameraViewSpace) {
+            if (cameraViewSpace === void 0) { cameraViewSpace = false; }
             var engine = this._engine;
             if (!camera) {
                 if (!this.activeCamera)
@@ -1635,8 +1855,23 @@ var BABYLON;
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
-            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), cameraViewSpace ? BABYLON.Matrix.Identity() : camera.getViewMatrix(), camera.getProjectionMatrix());
             //       return BABYLON.Ray.CreateNew(x / window.devicePixelRatio, y / window.devicePixelRatio, viewport.width, viewport.height, world ? world : BABYLON.Matrix.Identity(), camera.getViewMatrix(), camera.getProjectionMatrix());
+        };
+        Scene.prototype.createPickingRayInCameraSpace = function (x, y, camera) {
+            var engine = this._engine;
+            if (!camera) {
+                if (!this.activeCamera)
+                    throw new Error("Active camera not set");
+                camera = this.activeCamera;
+            }
+            var cameraViewport = camera.viewport;
+            var viewport = cameraViewport.toGlobal(engine);
+            var identity = BABYLON.Matrix.Identity();
+            // Moving coordinates to local viewport world
+            x = x / this._engine.getHardwareScalingLevel() - viewport.x;
+            y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
+            return BABYLON.Ray.CreateNew(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
         };
         Scene.prototype._internalPick = function (rayFunction, predicate, fastCheck) {
             var pickingInfo = null;
@@ -1664,6 +1899,28 @@ var BABYLON;
             }
             return pickingInfo || new BABYLON.PickingInfo();
         };
+        Scene.prototype._internalPickSprites = function (ray, predicate, fastCheck, camera) {
+            var pickingInfo = null;
+            camera = camera || this.activeCamera;
+            if (this.spriteManagers.length > 0) {
+                for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
+                    var spriteManager = this.spriteManagers[spriteIndex];
+                    if (!spriteManager.isPickable) {
+                        continue;
+                    }
+                    var result = spriteManager.intersects(ray, camera, predicate, fastCheck);
+                    if (!result || !result.hit)
+                        continue;
+                    if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance)
+                        continue;
+                    pickingInfo = result;
+                    if (fastCheck) {
+                        break;
+                    }
+                }
+            }
+            return pickingInfo || new BABYLON.PickingInfo();
+        };
         Scene.prototype.pick = function (x, y, predicate, fastCheck, camera) {
             var _this = this;
             /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
@@ -1673,6 +1930,15 @@ var BABYLON;
             /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
             /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
             return this._internalPick(function (world) { return _this.createPickingRay(x, y, world, camera); }, predicate, fastCheck);
+        };
+        Scene.prototype.pickSprite = function (x, y, predicate, fastCheck, camera) {
+            /// <summary>Launch a ray to try to pick a mesh in the scene</summary>
+            /// <param name="x">X position on screen</param>
+            /// <param name="y">Y position on screen</param>
+            /// <param name="predicate">Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true</param>
+            /// <param name="fastCheck">Launch a fast check only using the bounding boxes. Can be set to null.</param>
+            /// <param name="camera">camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used</param>
+            return this._internalPickSprites(this.createPickingRayInCameraSpace(x, y, camera), predicate, fastCheck, camera);
         };
         Scene.prototype.pickWithRay = function (ray, predicate, fastCheck) {
             var _this = this;
@@ -1699,21 +1965,43 @@ var BABYLON;
         Scene.prototype.getPointerOverMesh = function () {
             return this._pointerOverMesh;
         };
+        Scene.prototype.setPointerOverSprite = function (sprite) {
+            if (this._pointerOverSprite === sprite) {
+                return;
+            }
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOutTrigger, BABYLON.ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+            this._pointerOverSprite = sprite;
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(BABYLON.ActionManager.OnPointerOverTrigger, BABYLON.ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+        };
+        Scene.prototype.getPointerOverSprite = function () {
+            return this._pointerOverSprite;
+        };
         // Physics
         Scene.prototype.getPhysicsEngine = function () {
             return this._physicsEngine;
         };
+        /**
+         * Enables physics to the current scene
+         * @param {BABYLON.Vector3} [gravity] - the scene's gravity for the physics engine
+         * @param {BABYLON.IPhysicsEnginePlugin} [plugin] - The physics engine to be used. defaults to OimoJS.
+         * @return {boolean} was the physics engine initialized
+         */
         Scene.prototype.enablePhysics = function (gravity, plugin) {
             if (this._physicsEngine) {
                 return true;
             }
-            this._physicsEngine = new BABYLON.PhysicsEngine(plugin);
-            if (!this._physicsEngine.isSupported()) {
-                this._physicsEngine = null;
+            try {
+                this._physicsEngine = new BABYLON.PhysicsEngine(gravity, plugin);
+                return true;
+            }
+            catch (e) {
+                BABYLON.Tools.Error(e.message);
                 return false;
             }
-            this._physicsEngine._initialize(gravity);
-            return true;
         };
         Scene.prototype.disablePhysicsEngine = function () {
             if (!this._physicsEngine) {
@@ -1725,35 +2013,44 @@ var BABYLON;
         Scene.prototype.isPhysicsEnabled = function () {
             return this._physicsEngine !== undefined;
         };
+        /**
+         *
+         * Sets the gravity of the physics engine (and NOT of the scene)
+         * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
+         */
         Scene.prototype.setGravity = function (gravity) {
+            BABYLON.Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'");
             if (!this._physicsEngine) {
                 return;
             }
-            this._physicsEngine._setGravity(gravity);
+            this._physicsEngine.setGravity(gravity);
         };
+        /**
+         * Legacy support, using the new API
+         * @Deprecated
+         */
         Scene.prototype.createCompoundImpostor = function (parts, options) {
+            BABYLON.Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child");
             if (parts.parts) {
                 options = parts;
                 parts = parts.parts;
             }
-            if (!this._physicsEngine) {
-                return null;
-            }
-            for (var index = 0; index < parts.length; index++) {
+            var mainMesh = parts[0].mesh;
+            mainMesh.physicsImpostor = new BABYLON.PhysicsImpostor(mainMesh, parts[0].impostor, options);
+            for (var index = 1; index < parts.length; index++) {
                 var mesh = parts[index].mesh;
-                mesh._physicImpostor = parts[index].impostor;
-                mesh._physicsMass = options.mass / parts.length;
-                mesh._physicsFriction = options.friction;
-                mesh._physicRestitution = options.restitution;
+                if (mesh.parent !== mainMesh) {
+                    mesh.position = mesh.position.subtract(mainMesh.position);
+                    mesh.parent = mainMesh;
+                }
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parts[index].impostor, options);
             }
-            return this._physicsEngine._registerMeshesAsCompound(parts, options);
+            mainMesh.physicsImpostor.forceUpdate();
         };
         Scene.prototype.deleteCompoundImpostor = function (compound) {
-            for (var index = 0; index < compound.parts.length; index++) {
-                var mesh = compound.parts[index].mesh;
-                mesh._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
-                this._physicsEngine._unregisterMesh(mesh);
-            }
+            var mesh = compound.parts[0].mesh;
+            mesh.physicsImpostor.dispose(true);
+            mesh.physicsImpostor = null;
         };
         // Misc.
         Scene.prototype.createDefaultCameraOrLight = function () {

@@ -1,8 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-// Samplers
+﻿// Samplers
 varying vec2 vUV;
 uniform sampler2D textureSampler;
 uniform vec2 LensCenter;

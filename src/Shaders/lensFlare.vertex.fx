@@ -1,8 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-// Attributes
+﻿// Attributes
 attribute vec2 position;
 
 // Uniforms

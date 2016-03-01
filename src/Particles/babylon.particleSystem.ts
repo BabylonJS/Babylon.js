@@ -9,12 +9,14 @@
         return ((random * (max - min)) + min);
     }
 
-    export class ParticleSystem implements IDisposable {
+    export class ParticleSystem implements IDisposable, IAnimatable {
         // Statics
         public static BLENDMODE_ONEONE = 0;
         public static BLENDMODE_STANDARD = 1;
 
         // Members
+        public animations: Animation[] = [];
+
         public id: string;
         public renderingGroupId = 0;
         public emitter = null;
@@ -55,8 +57,8 @@
         public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
         public colorDead = new Color4(0, 0, 0, 1.0);
         public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
-        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3) => void;
-        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3) => void;
+        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
         private particles = new Array<Particle>();
 
@@ -115,7 +117,7 @@
             this._vertices = new Float32Array(capacity * this._vertexStrideSize);
 
             // Default behaviors
-            this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3): void => {
+            this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
                 var randX = randomNumber(this.direction1.x, this.direction2.x);
                 var randY = randomNumber(this.direction1.y, this.direction2.y);
                 var randZ = randomNumber(this.direction1.z, this.direction2.z);
@@ -123,7 +125,7 @@
                 Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
             }
 
-            this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3): void => {
+            this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
                 var randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
                 var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
                 var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
@@ -220,14 +222,14 @@
             } else {
                 worldMatrix = Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
             }
-
+            var particle: Particle;
             for (var index = 0; index < newParticles; index++) {
                 if (this.particles.length === this._capacity) {
                     break;
                 }
 
                 if (this._stockParticles.length !== 0) {
-                    var particle = this._stockParticles.pop();
+                    particle = this._stockParticles.pop();
                     particle.age = 0;
                 } else {
                     particle = new Particle();
@@ -236,14 +238,14 @@
 
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
 
-                this.startDirectionFunction(emitPower, worldMatrix, particle.direction);
+                this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
 
                 particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = randomNumber(this.minSize, this.maxSize);
                 particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
 
-                this.startPositionFunction(worldMatrix, particle.position);
+                this.startPositionFunction(worldMatrix, particle.position, particle);
 
                 var step = randomNumber(0, 1.0);
 
@@ -299,17 +301,16 @@
             this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
 
             // determine the number of particles we need to create   
-            var emitCout;
+            var newParticles;
 
             if (this.manualEmitCount > -1) {
-                emitCout = this.manualEmitCount;
+                newParticles = this.manualEmitCount;
+                this._newPartsExcess = 0;
                 this.manualEmitCount = 0;
             } else {
-                emitCout = this.emitRate;
+                newParticles = ((this.emitRate * this._scaledUpdateSpeed) >> 0);
+                this._newPartsExcess += this.emitRate * this._scaledUpdateSpeed - newParticles;
             }
-
-            var newParticles = ((emitCout * this._scaledUpdateSpeed) >> 0);
-            this._newPartsExcess += emitCout * this._scaledUpdateSpeed - newParticles;
 
             if (this._newPartsExcess > 1.0) {
                 newParticles += this._newPartsExcess >> 0;
@@ -445,5 +446,109 @@
 
             return result;
         }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+
+            // Emitter
+            if (this.emitter.position) {
+                serializationObject.emitterId = this.emitter.id;
+            } else {
+                serializationObject.emitter = this.emitter.asArray();
+            }
+
+            serializationObject.capacity = this.getCapacity();
+
+            if (this.particleTexture) {
+                serializationObject.textureName = this.particleTexture.name;
+            }
+            
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+
+            // Particle system
+            serializationObject.minAngularSpeed = this.minAngularSpeed;
+            serializationObject.maxAngularSpeed = this.maxAngularSpeed;
+            serializationObject.minSize = this.minSize;
+            serializationObject.maxSize = this.maxSize;
+            serializationObject.minEmitPower = this.minEmitPower;
+            serializationObject.maxEmitPower = this.maxEmitPower;
+            serializationObject.minLifeTime = this.minLifeTime;
+            serializationObject.maxLifeTime = this.maxLifeTime;
+            serializationObject.emitRate = this.emitRate;
+            serializationObject.minEmitBox = this.minEmitBox.asArray();
+            serializationObject.maxEmitBox = this.maxEmitBox.asArray();
+            serializationObject.gravity = this.gravity.asArray();
+            serializationObject.direction1 = this.direction1.asArray();
+            serializationObject.direction2 = this.direction2.asArray();
+            serializationObject.color1 = this.color1.asArray();
+            serializationObject.color2 = this.color2.asArray();
+            serializationObject.colorDead = this.colorDead.asArray();
+            serializationObject.updateSpeed = this.updateSpeed;
+            serializationObject.targetStopDuration = this.targetStopDuration;
+            serializationObject.textureMask = this.textureMask.asArray();
+            serializationObject.blendMode = this.blendMode;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
+            var name = parsedParticleSystem.name;
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene);
+
+            if (parsedParticleSystem.id) {
+                particleSystem.id = parsedParticleSystem.id;
+            }
+
+            // Texture
+            if (parsedParticleSystem.textureName) {
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture.name = parsedParticleSystem.textureName;
+            }
+
+            // Emitter
+            if (parsedParticleSystem.emitterId) {
+                particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            } else {
+                particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
+            }
+
+            // Animations
+            if (parsedParticleSystem.animations) {
+                for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedParticleSystem.animations[animationIndex];
+                    particleSystem.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
+            // Particle system
+            particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
+            particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;
+            particleSystem.minSize = parsedParticleSystem.minSize;
+            particleSystem.maxSize = parsedParticleSystem.maxSize;
+            particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
+            particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
+            particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;
+            particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
+            particleSystem.emitRate = parsedParticleSystem.emitRate;
+            particleSystem.minEmitBox = Vector3.FromArray(parsedParticleSystem.minEmitBox);
+            particleSystem.maxEmitBox = Vector3.FromArray(parsedParticleSystem.maxEmitBox);
+            particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
+            particleSystem.direction1 = Vector3.FromArray(parsedParticleSystem.direction1);
+            particleSystem.direction2 = Vector3.FromArray(parsedParticleSystem.direction2);
+            particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
+            particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
+            particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
+            particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
+            particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
+            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
+            particleSystem.blendMode = parsedParticleSystem.blendMode;
+            particleSystem.start();
+
+            return particleSystem;
+        }
     }
-}  
+}

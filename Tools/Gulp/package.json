@@ -10,7 +10,7 @@
     "gulp": "^3.8.11",
     "gulp-uglify": "~1.2.0",
     "gulp-sourcemaps": "~1.5.2",
-    "typescript": "~1.6.2",
+    "typescript": "^1.7.5",
     "gulp-typescript": "~2.9.0",
     "through2": "~0.6.5",
     "gulp-util": "~3.0.4",
@@ -20,6 +20,7 @@
     "gulp-clean-ts-extends": "~0.1.1",
     "gulp-changed": "~1.2.1",
     "run-sequence": "~1.1.0",
-    "gulp-replace": "~0.5.3"
+    "gulp-replace": "~0.5.3",
+    "gulp-content-to-variable": "^0.1.0"
   }
 }

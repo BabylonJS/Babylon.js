@@ -71,6 +71,12 @@ var BABYLON;
             this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
             // Configure
             this._createPass(scene, ratio.passRatio || ratio);
+            this.onActivate = function (camera) {
+                if (!_this.isSupported) {
+                    _this.dispose(camera);
+                }
+                _this.onActivate = null;
+            };
             this.onApply = function (effect) {
                 _this._updateMeshScreenCoordinates(scene);
                 effect.setTexture("lightScatteringSampler", _this._volumetricLightScatteringRTT);
@@ -130,8 +136,11 @@ var BABYLON;
             if (mesh.useBones && mesh.computeBonesUsingShaders) {
                 attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
                 attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-                defines.push("#define BONES");
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+            }
+            else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
             // Instances
             if (useInstances) {
@@ -237,7 +246,7 @@ var BABYLON;
                     }
                     // Bones
                     if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        _this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                        _this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
                     // Draw
                     mesh._processRendering(subMesh, _this._volumetricLightScatteringPass, BABYLON.Material.TriangleFillMode, batch, hardwareInstancedRendering, function (isInstance, world) { return _this._volumetricLightScatteringPass.setMatrix("world", world); });
@@ -300,7 +309,8 @@ var BABYLON;
         };
         VolumetricLightScatteringPostProcess.prototype._updateMeshScreenCoordinates = function (scene) {
             var transform = scene.getTransformMatrix();
-            var pos = BABYLON.Vector3.Project(this.useCustomMeshPosition ? this._customMeshPosition : this.mesh.position, BABYLON.Matrix.Identity(), transform, this._viewPort);
+            var meshPosition = this.mesh.parent ? this.mesh.getAbsolutePosition() : this.mesh.position;
+            var pos = BABYLON.Vector3.Project(this.useCustomMeshPosition ? this._customMeshPosition : meshPosition, BABYLON.Matrix.Identity(), transform, this._viewPort);
             this._screenCoordinates.x = pos.x / this._viewPort.width;
             this._screenCoordinates.y = pos.y / this._viewPort.height;
             if (this.invert)

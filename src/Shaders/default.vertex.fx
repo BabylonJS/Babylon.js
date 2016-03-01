@@ -1,8 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-// Attributes
+﻿// Attributes
 attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
@@ -16,21 +12,11 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-#ifdef BONES
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
-#endif
+
+#include<bonesDeclaration>
 
 // Uniforms
-
-#ifdef INSTANCES
-attribute vec4 world0;
-attribute vec4 world1;
-attribute vec4 world2;
-attribute vec4 world3;
-#else
-uniform mat4 world;
-#endif
+#include<instancesDeclaration>
 
 uniform mat4 view;
 uniform mat4 viewProjection;
@@ -59,6 +45,12 @@ uniform vec2 vEmissiveInfos;
 uniform mat4 emissiveMatrix;
 #endif
 
+#ifdef LIGHTMAP
+varying vec2 vLightmapUV;
+uniform vec2 vLightmapInfos;
+uniform mat4 lightmapMatrix;
+#endif
+
 #if defined(SPECULAR) && defined(SPECULARTERM)
 varying vec2 vSpecularUV;
 uniform vec2 vSpecularInfos;
@@ -67,17 +59,11 @@ uniform mat4 specularMatrix;
 
 #ifdef BUMP
 varying vec2 vBumpUV;
-uniform vec2 vBumpInfos;
+uniform vec3 vBumpInfos;
 uniform mat4 bumpMatrix;
 #endif
 
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
-#endif
-
-#ifdef POINTSIZE
-uniform float pointSize;
-#endif
+#include<pointCloudVertexDeclaration>
 
 // Output
 varying vec3 vPositionW;
@@ -89,64 +75,29 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
+#include<clipPlaneVertexDeclaration>
 
-#ifdef FOG
-varying float fFogDistance;
-#endif
+#include<fogVertexDeclaration>
+#include<shadowsVertexDeclaration>
 
-#ifdef SHADOWS
-#ifdef LIGHT0
-uniform mat4 lightMatrix0;
-varying vec4 vPositionFromLight0;
-#endif
-#ifdef LIGHT1
-uniform mat4 lightMatrix1;
-varying vec4 vPositionFromLight1;
-#endif
-#ifdef LIGHT2
-uniform mat4 lightMatrix2;
-varying vec4 vPositionFromLight2;
-#endif
-#ifdef LIGHT3
-uniform mat4 lightMatrix3;
-varying vec4 vPositionFromLight3;
-#endif
-#endif
-
-#ifdef REFLECTION
+#ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
 #endif
 
-void main(void) {
-	mat4 finalWorld;
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+varying vec3 vDirectionW;
+#endif
 
-#ifdef REFLECTION
+#include<logDepthDeclaration>
+
+void main(void) {
+#ifdef REFLECTIONMAP_SKYBOX
 	vPositionUVW = position;
 #endif 
 
-#ifdef INSTANCES
-	finalWorld = mat4(world0, world1, world2, world3);
-#else
-	finalWorld = world;
-#endif
+#include<instancesVertex>
+#include<bonesVertex>
 
-#ifdef BONES
-	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
-	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
-	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
-
-#ifdef BONES4
-	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
-#else
-	finalWorld = finalWorld * (m0 + m1 + m2);
-#endif 
-
-#endif
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
@@ -154,6 +105,10 @@ void main(void) {
 
 #ifdef NORMAL
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
+#endif
+
+#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+	vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
 #endif
 
 	// Texture coordinates
@@ -208,6 +163,17 @@ void main(void) {
 	}
 #endif
 
+#ifdef LIGHTMAP
+	if (vLightmapInfos.x == 0.)
+	{
+		vLightmapUV = vec2(lightmapMatrix * vec4(uv, 1.0, 0.0));
+	}
+	else
+	{
+		vLightmapUV = vec2(lightmapMatrix * vec4(uv2, 1.0, 0.0));
+	}
+#endif
+
 #if defined(SPECULAR) && defined(SPECULARTERM)
 	if (vSpecularInfos.x == 0.)
 	{
@@ -230,39 +196,16 @@ void main(void) {
 	}
 #endif
 
-	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
-
-	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
-
-	// Shadows
-#ifdef SHADOWS
-#ifdef LIGHT0
-	vPositionFromLight0 = lightMatrix0 * worldPos;
-#endif
-#ifdef LIGHT1
-	vPositionFromLight1 = lightMatrix1 * worldPos;
-#endif
-#ifdef LIGHT2
-	vPositionFromLight2 = lightMatrix2 * worldPos;
-#endif
-#ifdef LIGHT3
-	vPositionFromLight3 = lightMatrix3 * worldPos;
-#endif
-#endif
+#include<clipPlaneVertex>
+#include<fogVertex>
+#include<shadowsVertex>
 
 	// Vertex color
 #ifdef VERTEXCOLOR
 	vColor = color;
 #endif
 
-	// Point size
-#ifdef POINTSIZE
-	gl_PointSize = pointSize;
-#endif
+#include<pointCloudVertex>
+#include<logDepthVertex>
+
 }

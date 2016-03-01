@@ -78,6 +78,9 @@ var ActionsBuilder;
                 if (this._viewer.root.type === ActionsBuilder.Type.OBJECT && excludedTriggers.indexOf(i) !== -1) {
                     continue;
                 }
+                else if (this._viewer.root.type === ActionsBuilder.Type.SCENE && excludedTriggers.indexOf(i) === -1) {
+                    continue;
+                }
                 var trigger = this._createListElement(this.triggersList, yPosition, element.text, ActionsBuilder.Type.TRIGGER, textColor, true, element);
                 trigger.rect.attr("fill", Raphael.rgb(133, 154, 185));
                 yPosition += List.ELEMENT_HEIGHT;
@@ -223,7 +226,8 @@ var ActionsBuilder;
                         alert("Please add a trigger before.");
                         return;
                     }
-                    if (element.type === ActionsBuilder.Type.FLOW_CONTROL && (dragResult.action === _this._viewer.root || (dragResult.action.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    //if (element.type === Type.FLOW_CONTROL && (dragResult.action === this._viewer.root || (dragResult.action.type === Type.FLOW_CONTROL && dragResult.action.parent.hub === null))) {
+                    if (element.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action === _this._viewer.root) {
                         return;
                     }
                     if (element.type === ActionsBuilder.Type.FLOW_CONTROL && dragResult.action.combineArray !== null) {
@@ -249,3 +253,4 @@ var ActionsBuilder;
     })();
     ActionsBuilder.List = List;
 })(ActionsBuilder || (ActionsBuilder = {}));
+//# sourceMappingURL=actionsbuilder.list.js.map

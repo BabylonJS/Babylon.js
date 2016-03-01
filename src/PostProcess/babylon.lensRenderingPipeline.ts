@@ -1,3 +1,9 @@
+// BABYLON.JS Chromatic Aberration GLSL Shader
+// Author: Olivier Guyot
+// Separates very slightly R, G and B colors on the edges of the screen
+// Inspired by Francois Tarlier & Martins Upitis
+
+
 module BABYLON {
     export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
@@ -109,7 +115,7 @@ module BABYLON {
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, () => { return this._highlightsPostProcess; }, true));
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, () => { return this._depthOfFieldPostProcess; }, true));
 
-            if (this._highlightsGain == -1) {
+            if (this._highlightsGain === -1) {
                 this._disableEffect(this.HighlightsEnhancingEffect, null);
             }
 
@@ -134,15 +140,19 @@ module BABYLON {
         public disableDepthOfField() { this._dofDistance = -1; }
         public setAperture(amount: number) { this._dofAperture = amount; }
         public setDarkenOutOfFocus(amount: number) { this._dofDarken = amount; }
-        public enablePentagonBokeh() { this._dofPentagon = true; }
-        public disablePentagonBokeh() { this._dofPentagon = false; }
+        public enablePentagonBokeh() {
+            this._highlightsPostProcess.updateEffect("#define PENTAGON\n");
+        }
+        public disablePentagonBokeh() {
+            this._highlightsPostProcess.updateEffect();
+        }
         public enableNoiseBlur() { this._blurNoise = true; }
         public disableNoiseBlur() { this._blurNoise = false; }
         public setHighlightsGain(amount: number) {
             this._highlightsGain = amount;
         }
         public setHighlightsThreshold(amount: number) {
-            if (this._highlightsGain == -1) {
+            if (this._highlightsGain === -1) {
                 this._highlightsGain = 1.0;
             }
             this._highlightsThreshold = amount;
@@ -185,15 +195,15 @@ module BABYLON {
         // highlights enhancing
         private _createHighlightsPostProcess(ratio: number): void {
             this._highlightsPostProcess = new PostProcess("LensHighlights", "lensHighlights",
-                ["pentagon", "gain", "threshold", "screen_width", "screen_height"],      // uniforms
+                ["gain", "threshold", "screen_width", "screen_height"],      // uniforms
                 [],     // samplers
-                ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
-                this._scene.getEngine(), false);
+                ratio,
+                null, Texture.TRILINEAR_SAMPLINGMODE,
+                this._scene.getEngine(), false, this._dofPentagon ? "#define PENTAGON\n" : "");
 
             this._highlightsPostProcess.onApply = (effect: Effect) => {
                 effect.setFloat('gain', this._highlightsGain);
                 effect.setFloat('threshold', this._highlightsThreshold);
-                effect.setBool('pentagon', this._dofPentagon);
                 effect.setTextureFromPostProcess("textureSampler", this._chromaticAberrationPostProcess);
                 effect.setFloat('screen_width', this._scene.getEngine().getRenderingCanvas().width);
                 effect.setFloat('screen_height', this._scene.getEngine().getRenderingCanvas().height);
@@ -226,14 +236,14 @@ module BABYLON {
 
                 effect.setFloat('distortion', this._distortion);
 
-                effect.setBool('dof_enabled', (this._dofDistance != -1));
+                effect.setBool('dof_enabled', (this._dofDistance !== -1));
                 effect.setFloat('screen_distance', 1.0 / (0.1 - 1.0 / this._dofDistance));
                 effect.setFloat('aperture', this._dofAperture);
                 effect.setFloat('darken', this._dofDarken);
 
                 effect.setFloat('edge_blur', this._edgeBlur);
 
-                effect.setBool('highlights', (this._highlightsGain != -1));
+                effect.setBool('highlights', (this._highlightsGain !== -1));
 
                 effect.setFloat('near', this._scene.activeCamera.minZ);
                 effect.setFloat('far', this._scene.activeCamera.maxZ);
@@ -264,6 +274,5 @@ module BABYLON {
             }
             (<DynamicTexture>this._grainTexture).update(false);
         }
-
     }
 }

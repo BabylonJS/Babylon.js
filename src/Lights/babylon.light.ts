@@ -1,8 +1,8 @@
 ﻿module BABYLON {
 
     export interface IShadowLight {
+        id: string;
         position: Vector3;
-        direction: Vector3;
         transformedPosition: Vector3;
         name: string;
 
@@ -13,19 +13,36 @@
 
         supportsVSM(): boolean;
         needRefreshPerFrame(): boolean;
+        needCube(): boolean;
+
+        getShadowDirection(faceIndex?: number): Vector3;
 
         _shadowGenerator: ShadowGenerator;
     }
 
     export class Light extends Node {
+        @serializeAsColor3()
         public diffuse = new Color3(1.0, 1.0, 1.0);
+
+        @serializeAsColor3()
         public specular = new Color3(1.0, 1.0, 1.0);
+
+        @serialize()
         public intensity = 1.0;
+
+        @serialize()
         public range = Number.MAX_VALUE;
+
+        @serialize()
         public includeOnlyWithLayerMask = 0;
+
         public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
         public excludeWithLayerMask = 0;
+
+        // PBR Properties.
+        @serialize()
+        public radius = 0.00001;
 
         public _shadowGenerator: ShadowGenerator;
         private _parentedWorldMatrix: Matrix;
@@ -70,7 +87,6 @@
                 return false;
             }
 
-
             if (this.excludeWithLayerMask !== 0 && this.excludeWithLayerMask & mesh.layerMask) {
                 return false;
             }
@@ -104,8 +120,84 @@
                 this._shadowGenerator = null;
             }
 
+            // Animations
+            this.getScene().stopAnimation(this);
+
             // Remove from scene
             this.getScene().removeLight(this);
         }
+
+        public getTypeID(): number {
+            return 0;
+        }
+
+        public clone(name: string): Light {
+            return SerializationHelper.Clone(Light.GetConstructorFromName(this.getTypeID(), name, this.getScene()), this);
+        }
+
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+
+            // Type
+            serializationObject.type = this.getTypeID();
+
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+
+            // Animations  
+            Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();  
+
+            return serializationObject;
+        }
+
+        static GetConstructorFromName(type: number, name: string, scene: Scene): () => Light {
+            switch (type) {
+                case 0:
+                    return () => new PointLight(name, Vector3.Zero(), scene);
+                case 1:
+                    return () => new DirectionalLight(name, Vector3.Zero(), scene);
+                case 2:
+                    return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
+                case 3:
+                    return () => new HemisphericLight(name, Vector3.Zero(), scene);
+            }
+        }
+
+        public static Parse(parsedLight: any, scene: Scene): Light {            
+            var light = SerializationHelper.Parse(Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene), parsedLight, scene);
+
+            // Inclusion / exclusions
+            if (parsedLight.excludedMeshesIds) {
+                light._excludedMeshesIds = parsedLight.excludedMeshesIds;
+            }
+
+            if (parsedLight.includedOnlyMeshesIds) {
+                light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
+            }
+
+            // Parent
+            if (parsedLight.parentId) {
+                light._waitingParentId = parsedLight.parentId;
+            }
+
+            // Animations
+            if (parsedLight.animations) {
+                for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedLight.animations[animationIndex];
+
+                    light.animations.push(Animation.Parse(parsedAnimation));
+                }
+                Node.ParseAnimationRanges(light, parsedLight, scene);
+            }
+
+            if (parsedLight.autoAnimate) {
+                scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
+            }
+
+            return light;
+        }
     }
-} 
+}
