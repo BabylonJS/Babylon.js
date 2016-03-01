@@ -50,23 +50,36 @@ var BABYLON;
             this._scene.getEngine().clear(0, false, true);
             this._depthBufferAlreadyCleaned = true;
         };
+        RenderingManager.prototype._renderSpritesAndParticles = function () {
+            if (this._currentRenderSprites) {
+                this._renderSprites(this._currentIndex);
+            }
+            if (this._currentRenderParticles) {
+                this._renderParticles(this._currentIndex, this._currentActiveMeshes);
+            }
+        };
         RenderingManager.prototype.render = function (customRenderFunction, activeMeshes, renderParticles, renderSprites) {
+            this._currentActiveMeshes = activeMeshes;
+            this._currentRenderParticles = renderParticles;
+            this._currentRenderSprites = renderSprites;
             for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
-                this._depthBufferAlreadyCleaned = false;
+                this._depthBufferAlreadyCleaned = index == 0;
                 var renderingGroup = this._renderingGroups[index];
                 var needToStepBack = false;
+                this._currentIndex = index;
                 if (renderingGroup) {
                     this._clearDepthBuffer();
+                    if (!renderingGroup.onBeforeTransparentRendering) {
+                        renderingGroup.onBeforeTransparentRendering = this._renderSpritesAndParticles.bind(this);
+                    }
                     if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
                         needToStepBack = true;
+                        this._renderSpritesAndParticles();
                     }
                 }
-                if (renderSprites) {
-                    this._renderSprites(index);
-                }
-                if (renderParticles) {
-                    this._renderParticles(index, activeMeshes);
+                else {
+                    this._renderSpritesAndParticles();
                 }
                 if (needToStepBack) {
                     index--;

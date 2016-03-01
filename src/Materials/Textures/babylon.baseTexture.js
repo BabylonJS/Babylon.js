@@ -89,24 +89,18 @@ var BABYLON;
         };
         BaseTexture.prototype.delayLoad = function () {
         };
-        BaseTexture.prototype.releaseInternalTexture = function () {
-            if (!this._texture) {
-                return;
-            }
-            var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
-            this._texture.references--;
-            // Final reference ?
-            if (this._texture.references === 0) {
-                var index = texturesCache.indexOf(this._texture);
-                texturesCache.splice(index, 1);
-                this._scene.getEngine()._releaseTexture(this._texture);
-                delete this._texture;
-            }
-        };
         BaseTexture.prototype.clone = function () {
             return null;
         };
+        BaseTexture.prototype.releaseInternalTexture = function () {
+            if (this._texture) {
+                this._scene.getEngine().releaseInternalTexture(this._texture);
+                delete this._texture;
+            }
+        };
         BaseTexture.prototype.dispose = function () {
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             var index = this._scene.textures.indexOf(this);
             if (index >= 0) {
@@ -115,11 +109,28 @@ var BABYLON;
             if (this._texture === undefined) {
                 return;
             }
+            // Release
             this.releaseInternalTexture();
             // Callback
             if (this.onDispose) {
                 this.onDispose();
             }
+        };
+        BaseTexture.prototype.serialize = function () {
+            var serializationObject = {};
+            if (!this.name) {
+                return null;
+            }
+            serializationObject.name = this.name;
+            serializationObject.hasAlpha = this.hasAlpha;
+            serializationObject.level = this.level;
+            serializationObject.coordinatesIndex = this.coordinatesIndex;
+            serializationObject.coordinatesMode = this.coordinatesMode;
+            serializationObject.wrapU = this.wrapU;
+            serializationObject.wrapV = this.wrapV;
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            return serializationObject;
         };
         return BaseTexture;
     })();

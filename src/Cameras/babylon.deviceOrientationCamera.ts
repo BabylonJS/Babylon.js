@@ -10,7 +10,10 @@ module BABYLON {
         private _attachedCanvas: HTMLCanvasElement;
         private _orientationChanged: (e: DeviceOrientationEvent) => any;
 
+        @serialize()
         public angularSensibility: number = 10000.0;
+
+        @serialize()
         public moveSensibility: number = 50.0;
 
         constructor(name: string, position: Vector3, scene: Scene) {
@@ -47,7 +50,7 @@ module BABYLON {
         }
 
         public detachControl(canvas: HTMLCanvasElement): void {
-            if (this._attachedCanvas != canvas) {
+            if (this._attachedCanvas !== canvas) {
                 return;
             }
 
@@ -73,6 +76,10 @@ module BABYLON {
             this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
 
             super._checkInputs();
+        }
+
+        public getTypeName(): string {
+            return "DeviceOrientationCamera";
         }
     }
 }

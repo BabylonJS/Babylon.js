@@ -1,8 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-#if defined(ALPHATEST) || defined(NEED_UV)
+﻿#if defined(ALPHATEST) || defined(NEED_UV)
 varying vec2 vUV;
 #endif
 

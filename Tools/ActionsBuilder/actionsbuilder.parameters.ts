@@ -5,6 +5,7 @@
 
         private _action: Action = null;
         private _viewer: Viewer;
+        private _currentObject: any;
 
         /*
         * Constructor
@@ -61,6 +62,11 @@
             var propertyPathSelect: HTMLSelectElement = null;
             var propertyPathOptionalSelect: HTMLSelectElement = null;
 
+            var booleanSelect: HTMLSelectElement = null;
+            var propertyInput: HTMLInputElement = null;
+
+            var propertyPathIndice = -1;
+
             if (properties.length === 0) {
                 return;
             }
@@ -99,6 +105,8 @@
                     targetParameterNameSelect.onchange = this._parameterTargetNameChanged(targetParameterSelect, targetParameterNameSelect, i);
                 }
                 else if (properties[i].text === "propertyPath") {
+                    propertyPathIndice = i;
+
                     // Create property path select
                     propertyPathSelect = document.createElement("select");
                     propertyPathSelect.className = "ParametersElementSelectClass";
@@ -110,7 +118,7 @@
                     this.parametersContainer.appendChild(propertyPathOptionalSelect);
 
                     // Events and configure
-                    (this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, i))(null);
+                    (this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, null, null, i))(null);
 
                     var property = this._action.propertiesResults[i].value.split(".");
                     if (property.length > 0) {
@@ -136,7 +144,7 @@
                     }
 
                     targetParameterSelect.onchange = this._parameterTargetChanged(targetParameterSelect, targetParameterNameSelect, propertyPathSelect, propertyPathOptionalSelect, i - 1);
-                    propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, i);
+                    propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, null, null, i);
                     propertyPathOptionalSelect.onchange = this._additionalPropertyPathSelectChanged(propertyPathSelect, propertyPathOptionalSelect, i);
                 }
                 else if (properties[i].text === "operator") {
@@ -160,24 +168,48 @@
                     soundSelect.onchange = this._soundSelectChanged(soundSelect, i);
                 }
                 else {
-                    if (propertiesResults[i].value === "true" || propertiesResults[i].value === "false") {
-                        var booleanSelect = document.createElement("select");
-                        booleanSelect.className = "ParametersElementSelectClass";
-                        this.parametersContainer.appendChild(booleanSelect);
+                    var isBoolean = propertiesResults[i].value === "true" || propertiesResults[i].value === "false";
+                    var object = this._getObjectFromType(targetParameterSelect.value);
 
-                        // Configure event
-                        (this._booleanSelectChanged(booleanSelect, i))(null);
-                        booleanSelect.value = propertiesResults[i].value;
-                        booleanSelect.onchange = this._booleanSelectChanged(booleanSelect, i);
+                    if (object !== null) {
+                        var property = this._action.propertiesResults[i - 1].value.split(".");
+
+                        for (var j = 0; j < property.length && object !== undefined; j++) {
+                            object = object[property[j]];
+                            if (j === property.length - 1) {
+                                isBoolean = isBoolean || typeof object === "boolean";
+                            }
+                        }
+                    }
+                    
+                    booleanSelect = document.createElement("select");
+                    booleanSelect.className = "ParametersElementSelectClass";
+                    this.parametersContainer.appendChild(booleanSelect);
+
+                    // Configure event
+                    (this._booleanSelectChanged(booleanSelect, i))(null);
+                    booleanSelect.value = propertiesResults[i].value;
+                    booleanSelect.onchange = this._booleanSelectChanged(booleanSelect, i);
+
+                    propertyInput = document.createElement("input");
+                    propertyInput.value = propertiesResults[i].value;
+                    propertyInput.className = "ParametersElementInputClass";
+                    this.parametersContainer.appendChild(propertyInput);
+
+                    // Configure event
+                    propertyInput.onkeyup = this._propertyInputChanged(propertyInput, i);
+
+                    if (propertyPathIndice !== -1 && properties[i].text === "value") {
+                        propertyPathSelect.onchange = this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, propertyPathOptionalSelect, booleanSelect, propertyInput, propertyPathIndice);
+                    }
+
+                    if (isBoolean) {
+                        this._viewer.utils.setElementVisible(booleanSelect, true);
+                        this._viewer.utils.setElementVisible(propertyInput, false);
                     }
                     else {
-                        var propertyInput = document.createElement("input");
-                        propertyInput.value = propertiesResults[i].value;
-                        propertyInput.className = "ParametersElementInputClass";
-                        this.parametersContainer.appendChild(propertyInput);
-
-                        // Configure event
-                        propertyInput.onkeyup = this._propertyInputChanged(propertyInput, i);
+                        this._viewer.utils.setElementVisible(booleanSelect, false);
+                        this._viewer.utils.setElementVisible(propertyInput, true);
                     }
                 }
             }
@@ -276,7 +308,8 @@
         * @param indice: the properties indice in action.properties
         */
         private _propertyPathSelectChanged(targetParameterSelect: HTMLSelectElement, propertyPathSelect: HTMLSelectElement,
-            additionalPropertyPathSelect: HTMLSelectElement, indice: number): (event: Event) => void
+            additionalPropertyPathSelect: HTMLSelectElement, booleanSelect: HTMLSelectElement, propertyInput: HTMLInputElement,
+            indice: number): (event: Event) => void
         {
             return (event: Event) => {
                 if (propertyPathSelect.options.length === 0) {
@@ -290,10 +323,35 @@
                             propertyPathSelect.options.add(option);
                         }
                     }
-                    
+
                 } else {
                     // Set property
                     this._action.propertiesResults[indice].value = propertyPathSelect.value;
+
+                    if (booleanSelect !== null && propertyInput !== null) {
+                        var object = this._getObjectFromType(targetParameterSelect.value);
+                        var isBoolean = false;
+
+                        if (object !== null) {
+                            var property = this._action.propertiesResults[indice].value.split(".");
+
+                            for (var j = 0; j < property.length; j++) {
+                                object = object[property[j]];
+                                if (j === property.length - 1) {
+                                    isBoolean = isBoolean || typeof object === "boolean";
+                                }
+                            }
+                        }
+
+                        if (isBoolean) {
+                            this._viewer.utils.setElementVisible(booleanSelect, true);
+                            this._viewer.utils.setElementVisible(propertyInput, false);
+                        }
+                        else {
+                            this._viewer.utils.setElementVisible(booleanSelect, false);
+                            this._viewer.utils.setElementVisible(propertyInput, true);
+                        }
+                    }
                 }
 
                 // Configure addition property
@@ -395,9 +453,19 @@
                         option.value = options[i].targetType;
                         targetParameterSelect.options.add(option);
                     }
+
+                    targetParameterSelect.value = this._action.propertiesResults[indice].targetType;
                 } else {
                     this._action.propertiesResults[indice].targetType = targetParameterSelect.value;
-                    this._action.propertiesResults[indice].value = "";
+
+                    var names = this._getListFromType(targetParameterSelect.value);
+
+                    if (names !== null && names.length > 0) {
+                        this._action.propertiesResults[indice].value = names[0];
+                    }
+                    else {
+                        this._action.propertiesResults[indice].value = "";
+                    }
 
                     if (propertyPathSelect !== null) {
                         this._action.propertiesResults[indice + 1].value = ""; // propertyPath
@@ -415,12 +483,13 @@
                         targetParameterNameSelect.options.add(option);
                     }
                 }
+                targetParameterNameSelect.value = this._action.propertiesResults[indice].value;
 
                 // Clear property path
                 if (propertyPathSelect !== null) {
                     propertyPathSelect.options.length = 0;
                     additionalPropertyPathSelect.options.length = 0;
-                    this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, additionalPropertyPathSelect, indice + 1)(null);
+                    this._propertyPathSelectChanged(targetParameterSelect, propertyPathSelect, additionalPropertyPathSelect, null, null, indice + 1)(null);
                 }
 
                 this._sortList(targetParameterNameSelect);
@@ -477,21 +546,39 @@
             return null;
         }
 
+        public _getListFromType(type: string): string[] {
+            if (type === "MeshProperties" || type === "Mesh") {
+                return SceneElements.MESHES;
+            }
+            if (type === "LightProperties" || type === "Light") {
+                return SceneElements.LIGHTS;
+            }
+            if (type === "CameraProperties" || type === "Camera") {
+                return SceneElements.CAMERAS;
+            }
+
+            return null;
+        }
+
         /*
         * Returns the object in function of the given type
         * @param type: the target type
         */
         public _getObjectFromType(type: string): any {
             if (type === "MeshProperties" || type === "Mesh") {
+                this._currentObject = SceneElements.MESH;
                 return SceneElements.MESH;
             }
             if (type === "LightProperties" || type === "Light") {
+                this._currentObject = SceneElements.LIGHT;
                 return SceneElements.LIGHT;
             }
             if (type === "CameraProperties" || type === "Camera") {
+                this._currentObject = SceneElements.CAMERA;
                 return SceneElements.CAMERA;
             }
             if (type === "SceneProperties" || type === "Scene") {
+                this._currentObject = SceneElements.SCENE;
                 return SceneElements.SCENE;
             }
 

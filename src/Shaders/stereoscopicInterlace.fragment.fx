@@ -1,8 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-const vec3 TWO = vec3(2.0, 2.0, 2.0);
+﻿const vec3 TWO = vec3(2.0, 2.0, 2.0);
 
 varying vec2 vUV;
 uniform sampler2D camASampler;

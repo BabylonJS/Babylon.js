@@ -5,6 +5,9 @@
         private _currentRank = 32;
         private _maxRank = -1;
 
+        private _mesh: AbstractMesh;
+        private _meshRank: number;
+
         public addFallback(rank: number, define: string): void {
             if (!this._defines[rank]) {
                 if (rank < this._currentRank) {
@@ -21,6 +24,15 @@
             this._defines[rank].push(define);
         }
 
+        public addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh) {
+            this._meshRank = rank;
+            this._mesh = mesh;
+
+            if (rank > this._maxRank) {
+                this._maxRank = rank;
+            }
+        }
+
         public get isMoreFallbacks(): boolean {
             return this._currentRank <= this._maxRank;
         }
@@ -31,6 +43,12 @@
 
             for (var index = 0; index < currentFallbacks.length; index++) {
                 currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
+            }
+
+            if (this._mesh && this._currentRank === this._meshRank) {
+                this._mesh.computeBonesUsingShaders = false;
+                currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
+                Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
             }
 
             this._currentRank++;
@@ -94,8 +112,12 @@
             }
 
             this._loadVertexShader(vertexSource, vertexCode => {
-                this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                    this._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, fallbacks);
+                this._processIncludes(vertexCode, vertexCodeWithIncludes => {
+                    this._loadFragmentShader(fragmentSource, (fragmentCode) => {
+                        this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
+                            this._prepareEffect(vertexCodeWithIncludes, fragmentCodeWithIncludes, attributesNames, defines, fallbacks);
+                        });
+                    });
                 });
             });
         }
@@ -160,7 +182,7 @@
 
             var vertexShaderUrl;
 
-            if (vertex[0] === "." || vertex[0] === "/") {
+            if (vertex[0] === "." || vertex[0] === "/" || vertex.indexOf("http") > -1) {
                 vertexShaderUrl = vertex;
             } else {
                 vertexShaderUrl = Engine.ShadersRepository + vertex;
@@ -191,7 +213,7 @@
 
             var fragmentShaderUrl;
 
-            if (fragment[0] === "." || fragment[0] === "/") {
+            if (fragment[0] === "." || fragment[0] === "/" || fragment.indexOf("http") > -1) {
                 fragmentShaderUrl = fragment;
             } else {
                 fragmentShaderUrl = Engine.ShadersRepository + fragment;
@@ -201,15 +223,88 @@
             Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
+        private _dumpShadersName(): void {
+            if (this.name.vertexElement) {
+                Tools.Error("Vertex shader:" + this.name.vertexElement);
+                Tools.Error("Fragment shader:" + this.name.fragmentElement);
+            } else if (this.name.vertex) {
+                Tools.Error("Vertex shader:" + this.name.vertex);
+                Tools.Error("Fragment shader:" + this.name.fragment);
+            } else {
+                Tools.Error("Vertex shader:" + this.name);
+                Tools.Error("Fragment shader:" + this.name);
+            }
+        }
+
+        private _processIncludes(sourceCode: string, callback: (data: any) => void): void {
+            var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+            var match = regex.exec(sourceCode);
+
+            var returnValue = new String(sourceCode);
+
+            while (match != null) {
+                var includeFile = match[1];
+
+                if (Effect.IncludesShadersStore[includeFile]) {
+                    // Substitution
+                    var includeContent = Effect.IncludesShadersStore[includeFile];
+                    if (match[2]) {
+                        var splits = match[3].split(",");
+                      
+                        for (var index = 0; index < splits.length; index += 2) {
+                            var source = new RegExp(splits[index], "g");
+                            var dest = splits[index + 1];
+
+                            includeContent = includeContent.replace(source, dest);
+                        }
+                    }
+
+                    if (match[4]) {
+                        includeContent = includeContent.replace(/\{X\}/g, match[5]);
+                    }
+
+                    // Replace
+                    returnValue = returnValue.replace(match[0], includeContent);
+                } else {
+                    var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+
+                    Tools.LoadFile(includeShaderUrl, (fileContent) => {
+                        Effect.IncludesShadersStore[includeFile] = fileContent;
+                        this._processIncludes(<string>returnValue, callback)
+                    });
+                    return;
+                }
+
+                match = regex.exec(sourceCode);
+            }
+
+            callback(returnValue);
+        }
+
+        private _processPrecision(source: string): string {
+            if (source.indexOf("precision highp float") === -1) {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) {
+                    source = "precision mediump float;\n" + source;
+                } else {
+                    source = "precision highp float;\n" + source;
+                }
+            } else {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
+                    source = source.replace("precision highp float", "precision mediump float");
+                }
+            }
+
+            return source;
+        }
+
         private _prepareEffect(vertexSourceCode: string, fragmentSourceCode: string, attributesNames: string[], defines: string, fallbacks?: EffectFallbacks): void {
             try {
                 var engine = this._engine;
 
-                if (!engine.getCaps().highPrecisionShaderSupported) { // Moving highp to mediump
-                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
-                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
-                }
-
+                // Precision
+                vertexSourceCode = this._processPrecision(vertexSourceCode);
+                fragmentSourceCode = this._processPrecision(fragmentSourceCode);
+                
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
 
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
@@ -241,20 +336,13 @@
                 }
                 // Let's go through fallbacks then
                 if (fallbacks && fallbacks.isMoreFallbacks) {
+                    Tools.Error("Unable to compile effect with current defines. Trying next fallback.");
+                    this._dumpShadersName();
                     defines = fallbacks.reduce(defines);
                     this._prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks);
                 } else { // Sorry we did everything we can
                     Tools.Error("Unable to compile effect: ");
-                    if (this.name.vertexElement) {
-                        Tools.Error("Vertex shader:" + this.name.vertexElement);
-                        Tools.Error("Fragment shader:" + this.name.fragmentElement);
-                    } else if (this.name.vertex) {
-                        Tools.Error("Vertex shader:" + this.name.vertex);
-                        Tools.Error("Fragment shader:" + this.name.fragment);
-                    } else {
-                        Tools.Error("Vertex shader:" + this.name);
-                        Tools.Error("Fragment shader:" + this.name);
-                    }
+                    this._dumpShadersName();
                     Tools.Error("Defines: " + defines);
                     Tools.Error("Error: " + e.message);
                     this._compilationError = e.message;
@@ -264,6 +352,10 @@
                     }
                 }
             }
+        }
+
+        public get isSupported(): boolean {
+            return this._compilationError === "";
         }
 
         public _bindTexture(channel: string, texture: WebGLTexture): void {
@@ -278,15 +370,15 @@
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 
-        //public _cacheMatrix(uniformName, matrix) {
-        //    if (!this._valueCache[uniformName]) {
-        //        this._valueCache[uniformName] = new BABYLON.Matrix();
-        //    }
+        public _cacheMatrix(uniformName, matrix) {
+            if (!this._valueCache[uniformName]) {
+                this._valueCache[uniformName] = new Matrix();
+            }
 
-        //    for (var index = 0; index < 16; index++) {
-        //        this._valueCache[uniformName].m[index] = matrix.m[index];
-        //    }
-        //};
+            for (var index = 0; index < 16; index++) {
+                this._valueCache[uniformName].m[index] = matrix.m[index];
+            }
+        }
 
         public _cacheFloat2(uniformName: string, x: number, y: number): void {
             if (!this._valueCache[uniformName]) {
@@ -353,9 +445,9 @@
 
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
             //if (this._valueCache[uniformName] && this._valueCache[uniformName].equals(matrix))
-            //    return;
+            //    return this;
 
-            //this._cacheMatrix(uniformName, matrix);
+           // this._cacheMatrix(uniformName, matrix);
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
 
             return this;
@@ -479,5 +571,6 @@
 
         // Statics
         public static ShadersStore = {};
+        public static IncludesShadersStore = {};
     }
 } 

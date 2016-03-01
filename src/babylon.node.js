@@ -1,3 +1,9 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -12,6 +18,7 @@ var BABYLON;
         function Node(name, scene) {
             this.state = "";
             this.animations = new Array();
+            this._ranges = {};
             this._childrenFlag = -1;
             this._isEnabled = true;
             this._isReady = true;
@@ -124,10 +131,11 @@ var BABYLON;
             }
             return false;
         };
-        Node.prototype._getDescendants = function (list, results) {
+        Node.prototype._getDescendants = function (list, results, directDecendantsOnly) {
+            if (directDecendantsOnly === void 0) { directDecendantsOnly = false; }
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (item.isDescendantOf(this)) {
+                if ((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
                     results.push(item);
                 }
             }
@@ -136,15 +144,30 @@ var BABYLON;
          * Will return all nodes that have this node as parent.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        Node.prototype.getDescendants = function () {
+        Node.prototype.getDescendants = function (directDecendantsOnly) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results);
-            this._getDescendants(this._scene.lights, results);
-            this._getDescendants(this._scene.cameras, results);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
+            this._getDescendants(this._scene.lights, results, directDecendantsOnly);
+            this._getDescendants(this._scene.cameras, results, directDecendantsOnly);
+            return results;
+        };
+        /**
+         * @Deprecated, legacy support.
+         * use getDecendants instead.
+         */
+        Node.prototype.getChildren = function () {
+            return this.getDescendants(true);
+        };
+        /**
+         * Get all child-meshes of this node.
+         */
+        Node.prototype.getChildMeshes = function (directDecendantsOnly) {
+            var results = [];
+            this._getDescendants(this._scene.meshes, results, false);
             return results;
         };
         Node.prototype._setReady = function (state) {
-            if (state == this._isReady) {
+            if (state === this._isReady) {
                 return;
             }
             if (!state) {
@@ -156,6 +179,76 @@ var BABYLON;
                 this.onReady(this);
             }
         };
+        Node.prototype.getAnimationByName = function (name) {
+            for (var i = 0; i < this.animations.length; i++) {
+                var animation = this.animations[i];
+                if (animation.name === name) {
+                    return animation;
+                }
+            }
+            return null;
+        };
+        Node.prototype.createAnimationRange = function (name, from, to) {
+            // check name not already in use
+            if (!this._ranges[name]) {
+                this._ranges[name] = new BABYLON.AnimationRange(name, from, to);
+                for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+                    if (this.animations[i]) {
+                        this.animations[i].createRange(name, from, to);
+                    }
+                }
+            }
+        };
+        Node.prototype.deleteAnimationRange = function (name, deleteFrames) {
+            if (deleteFrames === void 0) { deleteFrames = true; }
+            for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+                if (this.animations[i]) {
+                    this.animations[i].deleteRange(name, deleteFrames);
+                }
+            }
+            this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+        };
+        Node.prototype.getAnimationRange = function (name) {
+            return this._ranges[name];
+        };
+        Node.prototype.beginAnimation = function (name, loop, speedRatio, onAnimationEnd) {
+            var range = this.getAnimationRange(name);
+            if (!range) {
+                return null;
+            }
+            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        };
+        Node.prototype.serializeAnimationRanges = function () {
+            var serializationRanges = [];
+            for (var name in this._ranges) {
+                var range = {};
+                range.name = name;
+                range.from = this._ranges[name].from;
+                range.to = this._ranges[name].to;
+                serializationRanges.push(range);
+            }
+            return serializationRanges;
+        };
+        Node.ParseAnimationRanges = function (node, parsedNode, scene) {
+            if (parsedNode.ranges) {
+                for (var index = 0; index < parsedNode.ranges.length; index++) {
+                    var data = parsedNode.ranges[index];
+                    node.createAnimationRange(data.name, data.from, data.to);
+                }
+            }
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "name", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "id", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "uniqueId", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "state", void 0);
         return Node;
     })();
     BABYLON.Node = Node;

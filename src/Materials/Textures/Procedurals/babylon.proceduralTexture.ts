@@ -7,6 +7,8 @@
         private _currentRefreshId = -1;
         private _refreshRate = 1;
 
+        public onGenerated: () => void;
+
         private _vertexBuffer: WebGLBuffer;
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
@@ -31,7 +33,7 @@
 
         private _fallbackTextureUsed = false;
 
-        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps = true) {
+        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Texture, generateMipMaps = true, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
             scene._proceduralTextures.push(this);
@@ -45,7 +47,13 @@
 
             this._fallbackTexture = fallbackTexture;
 
-            this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+            if (isCube) {
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this.setFloat("face", 0);
+            }
+            else {
+                this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+            }
 
             // VBO
             var vertices = [];
@@ -237,11 +245,6 @@
             var scene = this.getScene();
             var engine = scene.getEngine();
 
-            engine.bindFramebuffer(this._texture);
-
-            // Clear
-            engine.clear(scene.clearColor, true, true);
-
             // Render
             engine.enableEffect(this._effect);
             engine.setState(false);
@@ -290,11 +293,39 @@
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
 
-            // Draw order
-            engine.draw(true, 0, 6);
+            if (this.isCube) {
+                for (var face = 0; face < 6; face++) {
+                    engine.bindFramebuffer(this._texture, face);
+
+                    this._effect.setFloat("face", face);
+
+                    // Clear
+                    engine.clear(scene.clearColor, true, true);
+
+                    // Draw order
+                    engine.draw(true, 0, 6);
+
+                    // Mipmaps
+                    if (face === 5) {
+                        engine.generateMipMapsForCubemap(this._texture);
+                    }
+                }
+            } else {
+                engine.bindFramebuffer(this._texture);
+
+                // Clear
+                engine.clear(scene.clearColor, true, true);
+
+                // Draw order
+                engine.draw(true, 0, 6);
+            }
 
             // Unbind
-            engine.unBindFramebuffer(this._texture);
+            engine.unBindFramebuffer(this._texture, this.isCube);
+
+            if (this.onGenerated) {
+                this.onGenerated();
+            }
         }
 
         public clone(): ProceduralTexture {

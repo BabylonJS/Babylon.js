@@ -10,11 +10,20 @@ module BABYLON {
         private _onPointerUp: (e: PointerEvent) => any;
         private _onPointerMove: (e: PointerEvent) => any;
 
-        public angularSensibility: number = 200000.0;
-        public moveSensibility: number = 500.0;
+        @serialize()
+        public touchAngularSensibility: number = 200000.0;
+
+        @serialize()
+        public touchMoveSensibility: number = 250.0;
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
+        }
+
+        public _onLostFocus(e: FocusEvent): void {
+            this._offsetX = null;
+            this._offsetY = null;
+            super._onLostFocus(e);
         }
 
         public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
@@ -23,11 +32,14 @@ module BABYLON {
             if (this._attachedCanvas) {
                 return;
             }
-            this._attachedCanvas = canvas;
 
             if (this._onPointerDown === undefined) {
 
                 this._onPointerDown = (evt) => {
+
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
 
                     if (!noPreventDefault) {
                         evt.preventDefault();
@@ -46,6 +58,11 @@ module BABYLON {
                 };
 
                 this._onPointerUp = (evt) => {
+
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -66,6 +83,11 @@ module BABYLON {
                 };
 
                 this._onPointerMove = (evt) => {
+
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -84,10 +106,7 @@ module BABYLON {
                     this._offsetY = -(evt.clientY - previousPosition.y);
                 };
 
-                this._onLostFocus = () => {
-                    this._offsetX = null;
-                    this._offsetY = null;
-                };
+                
             }
 
             canvas.addEventListener("pointerdown", this._onPointerDown);
@@ -95,13 +114,11 @@ module BABYLON {
             canvas.addEventListener("pointerout", this._onPointerUp);
             canvas.addEventListener("pointermove", this._onPointerMove);
 
-            Tools.RegisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            super.attachControl(canvas);
         }
 
         public detachControl(canvas: HTMLCanvasElement): void {
-            if (this._attachedCanvas != canvas) {
+            if (this._attachedCanvas !== canvas) {
                 return;
             }
 
@@ -109,24 +126,20 @@ module BABYLON {
             canvas.removeEventListener("pointerup", this._onPointerUp);
             canvas.removeEventListener("pointerout", this._onPointerUp);
             canvas.removeEventListener("pointermove", this._onPointerMove);
-
-            Tools.UnregisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
-
-            this._attachedCanvas = null;
+            
+            super.detachControl(canvas);
         }
 
         public _checkInputs(): void {
             if (this._offsetX) {
 
-                this.cameraRotation.y += this._offsetX / this.angularSensibility;
+                this.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
 
                 if (this._pointerPressed.length > 1) {
-                    this.cameraRotation.x += -this._offsetY / this.angularSensibility;
+                    this.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
                 } else {
                     var speed = this._computeLocalCameraSpeed();
-                    var direction = new Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+                    var direction = new Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
 
                     Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
                     this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
@@ -134,6 +147,10 @@ module BABYLON {
             }
 
             super._checkInputs();
+        }
+
+        public getTypeName(): string {
+            return "TouchCamera";
         }
     }
 }

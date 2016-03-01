@@ -5,6 +5,7 @@
         public layerMask: number = 0x0FFFFFFF;
         public onDispose: () => void;
         public fogEnabled = true;
+        public isPickable = false;
 
         private _capacity: number;
         private _spriteTexture: Texture;
@@ -19,6 +20,14 @@
         private _vertices: Float32Array;
         private _effectBase: Effect;
         private _effectFog: Effect;
+
+        public get texture(): Texture {
+            return this._spriteTexture;
+        }
+
+        public set texture(value: Texture) {
+            this._spriteTexture = value;
+        }
 
         constructor(public name: string, imgUrl: string, capacity: number, public cellSize: number, scene: Scene, epsilon?: number, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             this._capacity = capacity;
@@ -93,6 +102,61 @@
             this._vertices[arrayOffset + 14] = sprite.color.b;
             this._vertices[arrayOffset + 15] = sprite.color.a;
         }
+
+        public intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo {
+            var count = Math.min(this._capacity, this.sprites.length);
+            var min = Vector3.Zero();
+            var max = Vector3.Zero();
+            var distance = Number.MAX_VALUE;
+            var currentSprite: Sprite;
+            var cameraSpacePosition = Vector3.Zero();
+            var cameraView = camera.getViewMatrix();
+
+            for (var index = 0; index < count; index++) {
+                var sprite = this.sprites[index];
+                if (!sprite) {
+                    continue;
+                }
+
+                if (predicate) {
+                    if (!predicate(sprite)) {
+                        continue;
+                    }
+                } else if (!sprite.isPickable) {
+                    continue;
+                }
+
+                Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
+
+                min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
+                max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
+
+                if (ray.intersectsBoxMinMax(min, max)) {
+                    var currentDistance = Vector3.Distance(cameraSpacePosition, ray.origin);
+
+                    if (distance > currentDistance) {
+                        distance = currentDistance;
+                        currentSprite = sprite;
+
+                        if (fastCheck) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (currentSprite) {
+                var result = new PickingInfo();
+
+                result.hit = true;
+                result.pickedSprite = currentSprite;
+                result.distance = distance
+
+                return result;
+            }
+
+            return null;
+        } 
 
         public render(): void {
             // Check

@@ -64,7 +64,7 @@ namespace Max2Babylon
                 wm.MultiplyBy(parentWorld.Inverse);
             }
             var position = wm.Translation;
-            babylonCamera.position = new float[] { position.X, position.Y, position.Z };
+            babylonCamera.position = new [] { position.X, position.Y, position.Z };
 
             // Target
             var target = gameCamera.CameraTarget;
@@ -75,7 +75,7 @@ namespace Max2Babylon
             else
             {
                 var dir = wm.GetRow(3);
-                babylonCamera.target = new float[] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
+                babylonCamera.target = new [] { position.X - dir.X, position.Y - dir.Y, position.Z - dir.Z };
             }
 
             // Animations
@@ -90,7 +90,7 @@ namespace Max2Babylon
                     tm.MultiplyBy(parentWorld.Inverse);
                 }
                 var translation = tm.Translation;
-                return new float[] { translation.X, translation.Y, translation.Z };
+                return new [] { translation.X, translation.Y, translation.Z };
             });
 
             if (gameCamera.CameraTarget == null)

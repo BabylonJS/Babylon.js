@@ -19,6 +19,9 @@
         public _textures = new SmartArray<WebGLTexture>(2);
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
+        private _samplers: string[];
+        private _fragmentUrl: string;
+        private _parameters: string[];
 
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number|any, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             if (camera != null) {
@@ -36,13 +39,20 @@
             this._reusable = reusable || false;
             this._textureType = textureType;
 
-            samplers = samplers || [];
-            samplers.push("textureSampler");
+            this._samplers = samplers || [];
+            this._samplers.push("textureSampler");
 
-            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: fragmentUrl },
+            this._fragmentUrl = fragmentUrl;
+            this._parameters = parameters || [];
+
+            this.updateEffect(defines);
+        }
+
+        public updateEffect(defines?: string) {
+            this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl },
                 ["position"],
-                parameters || [],
-                samplers, defines !== undefined ? defines : "");
+                this._parameters,
+                this._samplers, defines !== undefined ? defines : "");
         }
 
         public isReusable(): boolean {
@@ -58,8 +68,8 @@
             var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
             var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
 
-            desiredWidth = this._renderRatio.width || Tools.GetExponantOfTwo(desiredWidth, maxSize);
-            desiredHeight = this._renderRatio.height || Tools.GetExponantOfTwo(desiredHeight, maxSize);
+            desiredWidth = this._renderRatio.width || Tools.GetExponentOfTwo(desiredWidth, maxSize);
+            desiredHeight = this._renderRatio.height || Tools.GetExponentOfTwo(desiredHeight, maxSize);
 
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
@@ -97,6 +107,10 @@
             if (this._reusable) {
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
             }
+        }
+
+        public get isSupported(): boolean {
+            return this._effect.isSupported;
         }
 
         public apply(): Effect {

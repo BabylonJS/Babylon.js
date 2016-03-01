@@ -1,15 +1,27 @@
 ﻿module BABYLON {
     export class FollowCamera extends TargetCamera {
-
+        @serialize()
         public radius: number = 12;
+
+        @serialize()
         public rotationOffset: number = 0;
+
+        @serialize()
         public heightOffset: number = 4;
+
+        @serialize()
         public cameraAcceleration: number = 0.05;
+
+        @serialize()
         public maxCameraSpeed: number = 20;
+
+        @serializeAsMeshReference("lockedTargetId")
         public target: AbstractMesh;
 
-        constructor(name: string, position: Vector3, scene: Scene) {
+        constructor(name: string, position: Vector3, scene: Scene, target?: AbstractMesh) {
             super(name, position, scene);
+
+            this.target = target;
         }
 
         private getRadians(degrees): number {
@@ -59,6 +71,10 @@
             super._checkInputs();
             this.follow(this.target);
         }
+
+        public getTypeName(): string {
+            return "FollowCamera";
+        }
     }
 
     export class ArcFollowCamera extends TargetCamera {
@@ -82,6 +98,10 @@
         public _checkInputs(): void {
             super._checkInputs();
             this.follow();
+        }
+
+        public getTypeName(): string {
+            return "ArcFollowCamera";
         }
     }
 }

@@ -2,29 +2,85 @@
     var eventPrefix = Tools.GetPointerPrefix();
 
     export class ArcRotateCamera extends TargetCamera {
+        @serialize()
+        public alpha: number;
+
+        @serialize()
+        public beta: number;
+
+        @serialize()
+        public radius: number;
+
+        @serializeAsVector3()
+        public target: Vector3;
+
+        @serialize()
         public inertialAlphaOffset = 0;
+
+        @serialize()
         public inertialBetaOffset = 0;
+
+        @serialize()
         public inertialRadiusOffset = 0;
+
+        @serialize()
         public lowerAlphaLimit = null;
+
+        @serialize()
         public upperAlphaLimit = null;
+
+        @serialize()
         public lowerBetaLimit = 0.01;
+
+        @serialize()
         public upperBetaLimit = Math.PI;
+
+        @serialize()
         public lowerRadiusLimit = null;
+
+        @serialize()
         public upperRadiusLimit = null;
+
+        @serialize()
         public angularSensibilityX = 1000.0;
+
+        @serialize()
         public angularSensibilityY = 1000.0;
+
+        @serialize()
         public wheelPrecision = 3.0;
+
+        @serialize()
         public pinchPrecision = 2.0;
+
+        @serialize()
         public panningSensibility: number = 50.0;
+
+        @serialize()
         public inertialPanningX: number = 0;
+
+        @serialize()
         public inertialPanningY: number = 0;
+
+        @serialize()
         public keysUp = [38];
+
+        @serialize()
         public keysDown = [40];
+
+        @serialize()
         public keysLeft = [37];
+
+        @serialize()
         public keysRight = [39];
+
+        @serialize()
         public zoomOnFactor = 1;
+
         public targetScreenOffset = Vector2.Zero();
         public pinchInwards = true;
+
+        @serialize()
         public allowUpsideDown = true;
 
         private _keys = [];
@@ -46,6 +102,7 @@
         private _MSGestureHandler: MSGesture;
 
         // Panning
+        public panningAxis: Vector3 = new Vector3(1, 1, 0);
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
         private _isRightClick: boolean = false;
@@ -78,18 +135,20 @@
             this.angularSensibilityY = value;
         }
 
-        constructor(name: string, public alpha: number, public beta: number, public radius: number, public target: any, scene: Scene) {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
-            if (!this.target) {
+            if (!target) {
                 this.target = Vector3.Zero();
+            } else {
+                this.target = target;
             }
 
-            this.getViewMatrix();
-        }
+            this.alpha = alpha;
+            this.beta = beta;
+            this.radius = radius;
 
-        public _getTargetPosition(): Vector3 {
-            return this.target.position || this.target;
+            this.getViewMatrix();
         }
 
         // Cache
@@ -99,7 +158,7 @@
             this._cache.alpha = undefined;
             this._cache.beta = undefined;
             this._cache.radius = undefined;
-            this._cache.targetScreenOffset = undefined;
+            this._cache.targetScreenOffset = Vector2.Zero();
         }
 
         public _updateCache(ignoreParentClass?: boolean): void {
@@ -111,7 +170,15 @@
             this._cache.alpha = this.alpha;
             this._cache.beta = this.beta;
             this._cache.radius = this.radius;
-            this._cache.targetScreenOffset = this.targetScreenOffset.clone();
+            this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
+        }
+
+        private _getTargetPosition(): Vector3 {
+            if ((<any>this.target).getAbsolutePosition) {
+                return (<any>this.target).getAbsolutePosition();
+            }
+
+            return this.target;
         }
 
         // Synchronized
@@ -119,7 +186,7 @@
             if (!super._isSynchronizedViewMatrix())
                 return false;
 
-            return this._cache.target.equals(this._getTargetPosition())
+            return this._cache.target.equals(this.target)
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
@@ -142,7 +209,7 @@
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = evt => {
                     // Manage panning with right click
-                    this._isRightClick = evt.button === 2 ? true : false;
+                    this._isRightClick = evt.button === 2;
 
                     // manage pointers
                     pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
@@ -179,7 +246,7 @@
                     switch (pointers.count) {
 
                         case 1: //normal camera rotation
-                            if ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick)) {
+                            if (this.panningSensibility !== 0 && ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick))) {
                                 this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
                                 this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
                             } else {
@@ -408,7 +475,7 @@
             }			
 			
             // Inertia
-            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset != 0) {
+            if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
                 this.beta += this.inertialBetaOffset;
                 this.radius -= this.inertialRadiusOffset;
@@ -438,9 +505,14 @@
                 if (Math.abs(this.inertialPanningY) < Engine.Epsilon)
                     this.inertialPanningY = 0;
 
-                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, 0);
+                this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+                this._localDirection.multiplyInPlace(this.panningAxis);
                 this._viewMatrix.invertToRef(this._cameraTransformMatrix);
                 Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
+                //Eliminate y if map panning is enabled (panningAxis == 1,0,1)
+                if (!this.panningAxis.y) {
+                    this._transformedDirection.y = 0;
+                }
                 this.target.addInPlace(this._transformedDirection);
             }
 
@@ -486,8 +558,8 @@
             }
         }
 
-        public setPosition(position: Vector3): void {
-            var radiusv3 = position.subtract(this._getTargetPosition());
+        public rebuildAnglesAndRadius() {
+            var radiusv3 = this.position.subtract(this._getTargetPosition());
             this.radius = radiusv3.length();
 
             // Alpha
@@ -503,8 +575,21 @@
             this._checkLimits();
         }
 
+        public setPosition(position: Vector3): void {
+            if (this.position.equals(position)) {
+                return;
+            }
+            this.position = position;
+
+            this.rebuildAnglesAndRadius();
+        }
+
         public setTarget(target: Vector3): void {
+            if (this._getTargetPosition().equals(target)) {
+                return;
+            }
             this.target = target;
+            this.rebuildAnglesAndRadius();
         }
 
         public _getViewMatrix(): Matrix {
@@ -513,6 +598,10 @@
             var sina = Math.sin(this.alpha);
             var cosb = Math.cos(this.beta);
             var sinb = Math.sin(this.beta);
+
+            if (sinb === 0) {
+                sinb = 0.0001;
+            }
 
             var target = this._getTargetPosition();
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
@@ -526,7 +615,7 @@
 
                 var up = this.upVector;
                 if (this.allowUpsideDown && this.beta < 0) {
-                    var up = up.clone();
+                    up = up.clone();
                     up = up.negate();
                 }
 
@@ -546,7 +635,7 @@
             if (!collidedMesh) {
                 this._previousPosition.copyFrom(this.position);
             } else {
-                this.setPosition(this.position);
+                this.setPosition(newPosition);
 
                 if (this.onCollide) {
                     this.onCollide(collidedMesh);
@@ -558,13 +647,18 @@
             var sina = Math.sin(this.alpha);
             var cosb = Math.cos(this.beta);
             var sinb = Math.sin(this.beta);
+
+            if (sinb === 0) {
+                sinb = 0.0001;
+            }
+
             var target = this._getTargetPosition();
             target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
             this.position.copyFrom(this._newPosition);
 
             var up = this.upVector;
             if (this.allowUpsideDown && this.beta < 0) {
-                var up = up.clone();
+                up = up.clone();
                 up = up.negate();
             }
 
@@ -621,6 +715,7 @@
                     var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                     return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
             }
+            return null;
         }
         
         /**
@@ -634,8 +729,8 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    var camLeft = <ArcRotateCamera> this._rigCameras[0];
-                    var camRight = <ArcRotateCamera> this._rigCameras[1];
+                    var camLeft = <ArcRotateCamera>this._rigCameras[0];
+                    var camRight = <ArcRotateCamera>this._rigCameras[1];
                     camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                     camLeft.beta = camRight.beta = this.beta;
@@ -643,6 +738,10 @@
                     break;
             }
             super._updateRigCameras();
+        }
+
+        public getTypeName(): string {
+            return "ArcRotateCamera";
         }
     }
 } 

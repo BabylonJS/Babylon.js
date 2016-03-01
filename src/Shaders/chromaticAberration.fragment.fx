@@ -1,12 +1,3 @@
-// BABYLON.JS Chromatic Aberration GLSL Shader
-// Author: Olivier Guyot
-// Separates very slightly R, G and B colors on the edges of the screen
-// Inspired by Francois Tarlier & Martins Upitis
-
-#ifdef GL_ES
-precision highp float;
-#endif
-
 // samplers
 uniform sampler2D textureSampler;	// original color
 

@@ -13,6 +13,7 @@ this.createJSON = () => {
     var structure = viewer.utils.createJSON(viewer.root);
     var asText = JSON.stringify(structure);
     actionsBuilderJsonInput.value = asText;
+    console.log(asText);
 };
 
 this.loadFromJSON = () => {
@@ -102,4 +103,7 @@ this.run = () => {
 
     list.createListsElements();
     list.onResize();
+
+    // 3ds Max fix
+    viewer.onResize();
 };

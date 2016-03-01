@@ -3,7 +3,13 @@
         public texture: Texture;
         public isBackground: boolean;
         public color: Color4;
+        public scale = new Vector2(1, 1);
+        public offset = new Vector2(0, 0);
         public onDispose: () => void;
+        public onBeforeRender: () => void;
+        public onAfterRender: () => void;
+        public alphaBlendingMode = Engine.ALPHA_COMBINE;
+        public alphaTest: boolean;
 
         private _scene: Scene;
         private _vertexDeclaration = [2];
@@ -11,6 +17,7 @@
         private _vertexBuffer: WebGLBuffer;
         private _indexBuffer: WebGLBuffer;
         private _effect: Effect;
+        private _alphaTestEffect: Effect;
 
         constructor(public name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4) {
             this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
@@ -44,35 +51,60 @@
             // Effects
             this._effect = this._scene.getEngine().createEffect("layer",
                 ["position"],
-                ["textureMatrix", "color"],
+                ["textureMatrix", "color", "scale", "offset"],
                 ["textureSampler"], "");
+
+            this._alphaTestEffect = this._scene.getEngine().createEffect("layer",
+                ["position"],
+                ["textureMatrix", "color", "scale", "offset"],
+                ["textureSampler"], "#define ALPHATEST");
         }
 
         public render(): void {
+            var currentEffect = this.alphaTest ? this._alphaTestEffect : this._effect;
+
             // Check
-            if (!this._effect.isReady() || !this.texture || !this.texture.isReady())
+            if (!currentEffect.isReady() || !this.texture || !this.texture.isReady())
                 return;
 
             var engine = this._scene.getEngine();
 
+            if (this.onBeforeRender) {
+                this.onBeforeRender();
+            }
+
             // Render
-            engine.enableEffect(this._effect);
+            engine.enableEffect(currentEffect);
             engine.setState(false);
 
+
             // Texture
-            this._effect.setTexture("textureSampler", this.texture);
-            this._effect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
+            currentEffect.setTexture("textureSampler", this.texture);
+            currentEffect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
 
             // Color
-            this._effect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
+            currentEffect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
+
+            // Scale / offset
+            currentEffect.setVector2("offset", this.offset);
+            currentEffect.setVector2("scale", this.scale);
 
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, currentEffect);
 
             // Draw order
-            engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.draw(true, 0, 6);
-            engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            if (!this._alphaTestEffect) {
+                engine.setAlphaMode(this.alphaBlendingMode);
+                engine.draw(true, 0, 6);
+                engine.setAlphaMode(Engine.ALPHA_DISABLE);
+            }
+            else {
+                engine.draw(true, 0, 6);
+            }
+
+            if (this.onAfterRender) {
+                this.onAfterRender();
+            }
         }
 
         public dispose(): void {

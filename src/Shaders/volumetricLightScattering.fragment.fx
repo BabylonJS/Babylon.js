@@ -1,8 +1,4 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-uniform sampler2D textureSampler;
+﻿uniform sampler2D textureSampler;
 uniform sampler2D lightScatteringSampler;
 
 uniform float decay;

@@ -6,6 +6,11 @@
         private _renderingGroups = new Array<RenderingGroup>();
         private _depthBufferAlreadyCleaned: boolean;
 
+        private _currentIndex: number;
+        private _currentActiveMeshes: AbstractMesh[];
+        private _currentRenderParticles: boolean;
+        private _currentRenderSprites: boolean;
+
         constructor(scene: Scene) {
             this._scene = scene;
         }
@@ -66,27 +71,44 @@
             this._depthBufferAlreadyCleaned = true;
         }
 
+        private _renderSpritesAndParticles() {
+            if (this._currentRenderSprites) {
+                this._renderSprites(this._currentIndex);
+            }
+
+            if (this._currentRenderParticles) {
+                this._renderParticles(this._currentIndex, this._currentActiveMeshes);
+            }
+        }
+
         public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void,
             activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void {
+
+            this._currentActiveMeshes = activeMeshes;
+            this._currentRenderParticles = renderParticles;
+            this._currentRenderSprites = renderSprites;
+
             for (var index = 0; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
-                this._depthBufferAlreadyCleaned = false;
+                this._depthBufferAlreadyCleaned = index == 0;
                 var renderingGroup = this._renderingGroups[index];
                 var needToStepBack = false;
 
+                this._currentIndex = index;
+
                 if (renderingGroup) {
                     this._clearDepthBuffer();
+
+                    if (!renderingGroup.onBeforeTransparentRendering) {
+                        renderingGroup.onBeforeTransparentRendering = this._renderSpritesAndParticles.bind(this);
+                    }
+
                     if (!renderingGroup.render(customRenderFunction)) {
                         this._renderingGroups.splice(index, 1);
                         needToStepBack = true;
+                        this._renderSpritesAndParticles();
                     }
-                }
-
-                if (renderSprites) {
-                    this._renderSprites(index);
-                }
-
-                if (renderParticles) {
-                    this._renderParticles(index, activeMeshes);
+                } else {
+                    this._renderSpritesAndParticles();
                 }
 
                 if (needToStepBack) {
@@ -96,7 +118,7 @@
         }
 
         public reset(): void {
-            this._renderingGroups.forEach(function (renderingGroup, index, array) {
+            this._renderingGroups.forEach((renderingGroup, index, array) => {
                 if (renderingGroup) {
                     renderingGroup.prepare();
                 }

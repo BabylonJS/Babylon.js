@@ -3,11 +3,6 @@
 // Does depth-of-field blur, edge blur
 // Inspired by Francois Tarlier & Martins Upitis
 
-#ifdef GL_ES
-precision highp float;
-#endif
-
-
 // samplers
 uniform sampler2D textureSampler;
 uniform sampler2D highlightsSampler;

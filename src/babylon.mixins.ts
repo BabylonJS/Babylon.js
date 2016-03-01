@@ -18,6 +18,7 @@ interface Window {
     SIMD: any;
     AudioContext: AudioContext;
     webkitAudioContext: AudioContext;
+    PointerEvent: any;
 }
 
 interface HTMLURL {
@@ -103,4 +104,8 @@ interface Navigator {
 interface Screen {
     orientation: string;
     mozOrientation: string;
+}
+
+interface HTMLMediaElement {
+    crossOrigin: string;
 }

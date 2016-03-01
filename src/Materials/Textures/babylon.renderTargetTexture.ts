@@ -1,11 +1,27 @@
 ﻿module BABYLON {
     export class RenderTargetTexture extends Texture {
+        public static _REFRESHRATE_RENDER_ONCE: number = 0;
+        public static _REFRESHRATE_RENDER_ONEVERYFRAME: number = 1;
+        public static _REFRESHRATE_RENDER_ONEVERYTWOFRAMES: number = 2;
+
+        public static get REFRESHRATE_RENDER_ONCE(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONCE;
+        }
+
+        public static get REFRESHRATE_RENDER_ONEVERYFRAME(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME;
+        }
+
+        public static get REFRESHRATE_RENDER_ONEVERYTWOFRAMES(): number {
+            return RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+        }
+
         public renderList = new Array<AbstractMesh>();
         public renderParticles = true;
         public renderSprites = false;
         public coordinatesMode = Texture.PROJECTION_MODE;
-        public onBeforeRender: () => void;
-        public onAfterRender: () => void;
+        public onBeforeRender: (faceIndex: number) => void;
+        public onAfterRender: (faceIndex: number) => void;
         public onAfterUnbind: () => void;
         public onClear: (engine: Engine) => void;
         public activeCamera: Camera;
@@ -18,8 +34,9 @@
         private _doNotChangeAspectRatio: boolean;
         private _currentRefreshId = -1;
         private _refreshRate = 1;
+        private _textureMatrix: Matrix;
 
-        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string, size: any, scene: Scene, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
             this.name = name;
@@ -28,7 +45,13 @@
             this._generateMipMaps = generateMipMaps;
             this._doNotChangeAspectRatio = doNotChangeAspectRatio;
 
-            this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
+            if (isCube) {
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this.coordinatesMode = Texture.INVCUBIC_MODE;
+                this._textureMatrix = Matrix.Identity();
+            } else {
+                this._texture = scene.getEngine().createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, type: type });
+            }
 
             // Rendering groups
             this._renderingManager = new RenderingManager(scene);
@@ -84,14 +107,29 @@
             this.resize(newSize, this._generateMipMaps);
         }
 
-        public resize(size:any, generateMipMaps?: boolean) {
+        public getReflectionTextureMatrix(): Matrix {
+            if (this.isCube) {
+                return this._textureMatrix;
+            }
+
+            return super.getReflectionTextureMatrix();
+        }
+
+        public resize(size: any, generateMipMaps?: boolean) {
             this.releaseInternalTexture();
-            this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
+            if (this.isCube) {
+                this._texture = this.getScene().getEngine().createRenderTargetCubeTexture(size);
+            } else {
+                this._texture = this.getScene().getEngine().createRenderTargetTexture(size, generateMipMaps);
+            }
         }
 
         public render(useCameraPostProcess?: boolean, dumpForDebug?: boolean) {
             var scene = this.getScene();
-            var engine = scene.getEngine();
+
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(true));
+            }
 
             if (this._waitingRenderList) {
                 this.renderList = [];
@@ -107,11 +145,7 @@
                 return;
             }
 
-            // Bind
-            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-                engine.bindFramebuffer(this._texture);
-            }
-
+            // Prepare renderingManager
             this._renderingManager.reset();
 
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
@@ -135,11 +169,44 @@
                             this._renderingManager.dispatch(subMesh);
                         }
                     }
-                }                
+                }
+            }
+
+            if (this.isCube) {
+                for (var face = 0; face < 6; face++) {
+                    this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
+                    scene.incrementRenderId();
+                }
+            } else {
+                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
+            }
+
+            if (this.onAfterUnbind) {
+                this.onAfterUnbind();
+            }
+
+            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+            }
+
+            scene.resetCachedMaterial();
+        }
+
+        renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+            var scene = this.getScene();
+            var engine = scene.getEngine();
+
+            // Bind
+            if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+                if (this.isCube) {
+                    engine.bindFramebuffer(this._texture, faceIndex);
+                } else {
+                    engine.bindFramebuffer(this._texture);
+                }
             }
 
             if (this.onBeforeRender) {
-                this.onBeforeRender();
+                this.onBeforeRender(faceIndex);
             }
 
             // Clear
@@ -157,7 +224,7 @@
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
             if (useCameraPostProcess) {
-                scene.postProcessManager._finalizeFrame(false, this._texture);
+                scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
             }
 
             if (!this._doNotChangeAspectRatio) {
@@ -165,7 +232,7 @@
             }
 
             if (this.onAfterRender) {
-                this.onAfterRender();
+                this.onAfterRender(faceIndex);
             }
 
             // Dump ?
@@ -174,10 +241,15 @@
             }
 
             // Unbind
-            engine.unBindFramebuffer(this._texture);
+            if (!this.isCube || faceIndex === 5) {
+                if (this.isCube) {
 
-            if (this.onAfterUnbind) {
-                this.onAfterUnbind();
+                    if (faceIndex === 5) {
+                        engine.generateMipMapsForCubemap(this._texture);
+                    }
+                }
+
+                engine.unBindFramebuffer(this._texture, this.isCube);
             }
         }
 
@@ -195,5 +267,22 @@
 
             return newTexture;
         }
+
+        public serialize(): any {
+            if (!this.name) {
+                return null;
+            }
+
+            var serializationObject = super.serialize();
+
+            serializationObject.renderTargetSize = this.getRenderSize();
+            serializationObject.renderList = [];
+
+            for (var index = 0; index < this.renderList.length; index++) {
+                serializationObject.renderList.push(this.renderList[index].id);
+            }
+
+            return serializationObject;
+        }
     }
-} 
+}

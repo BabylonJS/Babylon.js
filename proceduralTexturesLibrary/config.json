@@ -1,0 +1,63 @@
+{
+  "proceduralTextures": [
+    {
+      "file": "proceduralTextures/wood/babylon.woodProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/wood/woodProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.woodProceduralTexture.js"
+    },
+    {
+      "file": "proceduralTextures/fire/babylon.fireProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/fire/fireProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.fireProceduralTexture.js"
+    },
+    {
+      "file": "proceduralTextures/cloud/babylon.cloudProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/cloud/cloudProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.cloudProceduralTexture.js"
+    },
+    {
+      "file": "proceduralTextures/grass/babylon.grassProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/grass/grassProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.grassProceduralTexture.js"
+    },
+    {
+      "file": "proceduralTextures/road/babylon.roadProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/road/roadProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.roadProceduralTexture.js"
+    },
+    {
+      "file": "proceduralTextures/brick/babylon.brickProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/brick/brickProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.brickProceduralTexture.js"
+    },
+    {
+      "file": "proceduralTextures/marble/babylon.marbleProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/marble/marbleProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.marbleProceduralTexture.js"
+    },
+    {
+      "file": "proceduralTextures/starfield/babylon.starfieldProceduralTexture.ts",
+      "shaderFiles": [
+        "proceduralTextures/starfield/starfieldProceduralTexture.fragment.fx"
+      ],
+      "output": "babylon.starfieldProceduralTexture.js"
+    }
+  ],
+  "build": {
+    "distOutputDirectory": "dist/"
+  }
+}

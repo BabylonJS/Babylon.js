@@ -3,6 +3,9 @@ var BABYLON;
     var Layer = (function () {
         function Layer(name, imgUrl, scene, isBackground, color) {
             this.name = name;
+            this.scale = new BABYLON.Vector2(1, 1);
+            this.offset = new BABYLON.Vector2(0, 0);
+            this.alphaBlendingMode = BABYLON.Engine.ALPHA_COMBINE;
             this._vertexDeclaration = [2];
             this._vertexStrideSize = 2 * 4;
             this.texture = imgUrl ? new BABYLON.Texture(imgUrl, scene, true) : null;
@@ -27,27 +30,43 @@ var BABYLON;
             indices.push(3);
             this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
             // Effects
-            this._effect = this._scene.getEngine().createEffect("layer", ["position"], ["textureMatrix", "color"], ["textureSampler"], "");
+            this._effect = this._scene.getEngine().createEffect("layer", ["position"], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], "");
+            this._alphaTestEffect = this._scene.getEngine().createEffect("layer", ["position"], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], "#define ALPHATEST");
         }
         Layer.prototype.render = function () {
+            var currentEffect = this.alphaTest ? this._alphaTestEffect : this._effect;
             // Check
-            if (!this._effect.isReady() || !this.texture || !this.texture.isReady())
+            if (!currentEffect.isReady() || !this.texture || !this.texture.isReady())
                 return;
             var engine = this._scene.getEngine();
+            if (this.onBeforeRender) {
+                this.onBeforeRender();
+            }
             // Render
-            engine.enableEffect(this._effect);
+            engine.enableEffect(currentEffect);
             engine.setState(false);
             // Texture
-            this._effect.setTexture("textureSampler", this.texture);
-            this._effect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
+            currentEffect.setTexture("textureSampler", this.texture);
+            currentEffect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
             // Color
-            this._effect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
+            currentEffect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);
+            // Scale / offset
+            currentEffect.setVector2("offset", this.offset);
+            currentEffect.setVector2("scale", this.scale);
             // VBOs
-            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
+            engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, currentEffect);
             // Draw order
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
-            engine.draw(true, 0, 6);
-            engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+            if (!this._alphaTestEffect) {
+                engine.setAlphaMode(this.alphaBlendingMode);
+                engine.draw(true, 0, 6);
+                engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+            }
+            else {
+                engine.draw(true, 0, 6);
+            }
+            if (this.onAfterRender) {
+                this.onAfterRender();
+            }
         };
         Layer.prototype.dispose = function () {
             if (this._vertexBuffer) {

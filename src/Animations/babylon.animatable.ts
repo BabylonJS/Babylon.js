@@ -18,6 +18,10 @@
         }
 
         // Methods
+        public getAnimations(): Animation[] {
+            return this._animations;
+        }
+
         public appendAnimations(target: any, animations: Animation[]): void {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
@@ -48,7 +52,31 @@
 
             this._localDelayOffset = null;
             this._pausedDelay = null;
+        }
 
+        public enableBlending(blendingSpeed: number): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = true;
+                animations[index].blendingSpeed = blendingSpeed;
+            }
+        }
+
+        public disableBlending(): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = false;
+            }
+        }
+
+        public goToFrame(frame: number): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].goToFrame(frame);
+            }
         }
 
         public pause(): void {
@@ -67,15 +95,21 @@
 
             if (index > -1) {
                 this._scene._activeAnimatables.splice(index, 1);
-            }
 
-            if (this.onAnimationEnd) {
-                this.onAnimationEnd();
+                var animations = this._animations;
+                for (var index = 0; index < animations.length; index++) {
+                    animations[index].reset();
+                }
+
+                if (this.onAnimationEnd) {
+                    this.onAnimationEnd();
+                }
             }
         }
 
         public _animate(delay: number): boolean {
             if (this._paused) {
+                this.animationStarted = false;
                 if (!this._pausedDelay) {
                     this._pausedDelay = delay;
                 }
@@ -92,12 +126,15 @@
             // Animating
             var running = false;
             var animations = this._animations;
+            var index: number;
 
-            for (var index = 0; index < animations.length; index++) {
+            for (index = 0; index < animations.length; index++) {
                 var animation = animations[index];
                 var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this.speedRatio);
                 running = running || isRunning;
             }
+
+            this.animationStarted = running;
 
             if (!running) {
                 // Remove from active animatables
@@ -107,6 +144,7 @@
 
             if (!running && this.onAnimationEnd) {
                 this.onAnimationEnd();
+                this.onAnimationEnd = null;
             }
 
             return running;

@@ -71,7 +71,7 @@ var BABYLON;
             engine.setDepthBuffer(true);
             engine.setDepthWrite(true);
         };
-        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, postProcesses) {
+        PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, faceIndex, postProcesses) {
             postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
             var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
             if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
@@ -80,11 +80,11 @@ var BABYLON;
             var engine = this._scene.getEngine();
             for (var index = 0; index < postProcessesTakenIndices.length; index++) {
                 if (index < postProcessesTakenIndices.length - 1) {
-                    postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera);
+                    postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera, targetTexture);
                 }
                 else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture);
+                        engine.bindFramebuffer(targetTexture, faceIndex);
                     }
                     else {
                         engine.restoreDefaultFramebuffer();

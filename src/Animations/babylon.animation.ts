@@ -1,21 +1,42 @@
 ﻿module BABYLON {
+    export class AnimationRange {
+        constructor(public name: string, public from: number, public to: number) {
+        }
+    }
+
+    /**
+     * Composed of a frame, and an action function
+     */
+    export class AnimationEvent {
+        public isDone: boolean = false;
+        constructor(public frame: number, public action: () => void, public onlyOnce?: boolean) {
+        }
+    }
+
     export class Animation {
         private _keys: Array<any>;
         private _offsetsCache = {};
         private _highLimitsCache = {};
         private _stopped = false;
         public _target;
+        private _blendingFactor = 0;
         private _easingFunction: IEasingFunction;
+
+        // The set of event that will be linked to this animation
+        private _events = new Array<AnimationEvent>();
 
         public targetPropertyPath: string[];
         public currentFrame: number;
 
         public allowMatricesInterpolation = false;
 
-        public static CreateAndStartAnimation(name: string, mesh: AbstractMesh, targetProperty: string,
-            framePerSecond: number, totalFrame: number,
-            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction) {
+        public blendingSpeed = 0.01;
+        private _originalBlendValue: any;
 
+        private _ranges: { [name: string]: AnimationRange; } = {};
+
+        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation {
             var dataType = undefined;
 
             if (!isNaN(parseFloat(from)) && isFinite(from)) {
@@ -45,23 +66,90 @@
                 animation.setEasingFunction(easingFunction);
             }
 
-            mesh.animations.push(animation);
-
-            return mesh.getScene().beginAnimation(mesh, 0, totalFrame, (animation.loopMode === 1));
-
+            return animation;
         }
 
-        constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number) {
+        public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
+            framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
+
+            var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        }
+
+        public static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string,
+            framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void) {
+
+            var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            node.animations.push(animation);
+
+            return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        }
+
+        constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number, public enableBlending?: boolean) {
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
 
-        // Methods   
+        // Methods
+        /**
+         * Add an event to this animation.
+         */
+        public addEvent(event: AnimationEvent): void {
+            this._events.push(event);
+        }
+
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        public removeEvents(frame: number): void {
+            for (var index = 0; index < this._events.length; index++) {
+                if (this._events[index].frame === frame) {
+                    this._events.splice(index, 1);
+                    index--;
+                }
+            }
+        }
+
+        public createRange(name: string, from: number, to: number): void {
+            // check name not already in use; could happen for bones after serialized
+            if (!this._ranges[name]) {
+                this._ranges[name] = new AnimationRange(name, from, to);
+            }
+        }
+
+        public deleteRange(name: string, deleteFrames = true): void {
+            if (this._ranges[name]) {
+                if (deleteFrames) {
+                    var from = this._ranges[name].from;
+                    var to = this._ranges[name].to;
+ 
+                    // this loop MUST go high to low for multiple splices to work
+                    for (var key = this._keys.length - 1; key >= 0; key--) {
+                        if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
+                            this._keys.splice(key, 1);
+                        }
+                    }
+                }
+                this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+            }
+        }
+
+        public getRange(name: string): AnimationRange {
+            return this._ranges[name];
+        }
+
         public reset(): void {
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this.currentFrame = 0;
+            this._blendingFactor = 0;
+            this._originalBlendValue = null;
         }
 
         public isStopped(): boolean {
@@ -70,6 +158,17 @@
 
         public getKeys(): any[] {
             return this._keys;
+        }
+
+        public getHighestFrame(): number {
+            var ret = 0;
+
+            for (var key = 0, nKeys = this._keys.length; key < nKeys; key++) {
+                if (ret < this._keys[key].frame) {
+                    ret = this._keys[key].frame;
+                }
+            }
+            return ret;
         }
 
         public getEasingFunction() {
@@ -101,29 +200,15 @@
         }
 
         public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
-            var startScale = new Vector3(0, 0, 0);
-            var startRotation = new Quaternion();
-            var startTranslation = new Vector3(0, 0, 0);
-            startValue.decompose(startScale, startRotation, startTranslation);
-
-            var endScale = new Vector3(0, 0, 0);
-            var endRotation = new Quaternion();
-            var endTranslation = new Vector3(0, 0, 0);
-            endValue.decompose(endScale, endRotation, endTranslation);
-
-            var resultScale = this.vector3InterpolateFunction(startScale, endScale, gradient);
-            var resultRotation = this.quaternionInterpolateFunction(startRotation, endRotation, gradient);
-            var resultTranslation = this.vector3InterpolateFunction(startTranslation, endTranslation, gradient);
-
-            var result = Matrix.Compose(resultScale, resultRotation, resultTranslation);
-
-            return result;
+            return Matrix.Lerp(startValue, endValue, gradient);
         }
 
         public clone(): Animation {
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
 
-            clone.setKeys(this._keys);
+            if (this._keys) {
+                clone.setKeys(this._keys);
+            }
 
             return clone;
         }
@@ -244,8 +329,65 @@
             return this._getKeyValue(this._keys[this._keys.length - 1].value);
         }
 
+        public setValue(currentValue: any, blend: boolean = false): void {
+            // Set value
+            var path: any;
+            var destination: any;
 
-        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean {
+            if (this.targetPropertyPath.length > 1) {
+                var property = this._target[this.targetPropertyPath[0]];
+
+                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
+                    property = property[this.targetPropertyPath[index]];
+                }
+
+                path = this.targetPropertyPath[this.targetPropertyPath.length - 1]
+                destination = property;
+            } else {
+                path = this.targetPropertyPath[0];
+                destination = this._target;
+            }
+
+            // Blending
+            if (this.enableBlending && this._blendingFactor <= 1.0) {
+                if (!this._originalBlendValue) {
+                    this._originalBlendValue = destination[path];
+                }
+
+                if (this._originalBlendValue.prototype) { // Complex value
+                    
+                    if (this._originalBlendValue.prototype.Lerp) { // Lerp supported
+                        destination[path] = this._originalBlendValue.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                    } else { // Blending not supported
+                        destination[path] = currentValue;
+                    }
+
+                } else { // Direct value
+                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
+                }
+                this._blendingFactor += this.blendingSpeed;
+            } else {
+                destination[path] = currentValue;
+            }
+
+            if (this._target.markAsDirty) {
+                this._target.markAsDirty(this.targetProperty);
+            }
+        }
+
+        public goToFrame(frame: number): void {
+            if (frame < this._keys[0].frame) {
+                frame = this._keys[0].frame
+            } else if (frame > this._keys[this._keys.length - 1].frame) {
+                frame = this._keys[this._keys.length - 1].frame;
+            }
+
+            var currentValue = this._interpolate(frame, 0, this.loopMode);
+
+            this.setValue(currentValue);
+        }
+
+        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend: boolean = false): boolean {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
                 this._stopped = true;
                 return false;
@@ -345,22 +487,25 @@
             var currentValue = this._interpolate(currentFrame, repeatCount, this.loopMode, offsetValue, highLimitValue);
 
             // Set value
-            if (this.targetPropertyPath.length > 1) {
-                var property = this._target[this.targetPropertyPath[0]];
-
-                for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
-                    property = property[this.targetPropertyPath[index]];
+            this.setValue(currentValue);
+            // Check events
+            for (var index = 0; index < this._events.length; index++) {
+                if (currentFrame >= this._events[index].frame) {
+                    var event = this._events[index];
+                    if (!event.isDone) {
+                        // If event should be done only once, remove it.
+                        if (event.onlyOnce) {
+                            this._events.splice(index, 1);
+                            index--;
+                        }
+                        event.isDone = true;
+                        event.action();
+                    } // Don't do anything if the event has already be done.
+                } else if (this._events[index].isDone && !this._events[index].onlyOnce) {
+                    // reset event, the animation is looping
+                    this._events[index].isDone = false;
                 }
-
-                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
-            } else {
-                this._target[this.targetPropertyPath[0]] = currentValue;
             }
-
-            if (this._target.markAsDirty) {
-                this._target.markAsDirty(this.targetProperty);
-            }
-
             if (!returnValue) {
                 this._stopped = true;
             }
@@ -368,7 +513,50 @@
             return returnValue;
         }
 
+        public serialize(): any {
+            var serializationObject: any = {};
 
+            serializationObject.name = this.name;
+            serializationObject.property = this.targetProperty;
+            serializationObject.framePerSecond = this.framePerSecond;
+            serializationObject.dataType = this.dataType;
+            serializationObject.loopBehavior = this.loopMode;
+
+            var dataType = this.dataType;
+            serializationObject.keys = [];
+            var keys = this.getKeys();
+            for (var index = 0; index < keys.length; index++) {
+                var animationKey = keys[index];
+
+                var key: any = {};
+                key.frame = animationKey.frame;
+
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        key.values = [animationKey.value];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        key.values = animationKey.value.asArray();
+                        break;
+                }
+
+                serializationObject.keys.push(key);
+            }
+
+            serializationObject.ranges = [];
+            for (var name in this._ranges) {
+                var range: any = {};
+                range.name = name;
+                range.from = this._ranges[name].from;
+                range.to = this._ranges[name].to;
+                serializationObject.ranges.push(range);
+            }
+
+            return serializationObject;
+        }
 
         // Statics
         private static _ANIMATIONTYPE_FLOAT = 0;
@@ -416,6 +604,66 @@
         public static get ANIMATIONLOOPMODE_CONSTANT(): number {
             return Animation._ANIMATIONLOOPMODE_CONSTANT;
         }
+
+        public static Parse(parsedAnimation: any): Animation {
+            var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+
+            var dataType = parsedAnimation.dataType;
+            var keys = [];
+            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+                var key = parsedAnimation.keys[index];
+
+                var data;
+
+                switch (dataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        data = key.values[0];
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        data = Quaternion.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_MATRIX:
+                        data = Matrix.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        data = Color3.FromArray(key.values);
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                    default:
+                        data = Vector3.FromArray(key.values);
+                        break;
+                }
+
+                keys.push({
+                    frame: key.frame,
+                    value: data
+                });
+            }
+
+            animation.setKeys(keys);
+
+            if (parsedAnimation.ranges) {
+                for (var index = 0; index < parsedAnimation.ranges.length; index++) {
+                    data = parsedAnimation.ranges[index];
+                    animation.createRange(data.name, data.from, data.to);
+                }
+            }
+
+            return animation;
+        }
+
+        public static AppendSerializedAnimations(source: IAnimatable, destination: any): any {
+            if (source.animations) {
+                destination.animations = [];
+                for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                    var animation = source.animations[animationIndex];
+
+                    destination.animations.push(animation.serialize());
+                }
+            }
+        }
     }
 } 
+
+
 

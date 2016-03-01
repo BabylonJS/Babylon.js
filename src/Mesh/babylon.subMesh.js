@@ -19,7 +19,17 @@ var BABYLON;
                 mesh.computeWorldMatrix(true);
             }
         }
+        Object.defineProperty(SubMesh.prototype, "IsGlobal", {
+            get: function () {
+                return (this.verticesStart === 0 && this.verticesCount == this._mesh.getTotalVertices());
+            },
+            enumerable: true,
+            configurable: true
+        });
         SubMesh.prototype.getBoundingInfo = function () {
+            if (this.IsGlobal) {
+                return this._mesh.getBoundingInfo();
+            }
             return this._boundingInfo;
         };
         SubMesh.prototype.getMesh = function () {
@@ -41,6 +51,10 @@ var BABYLON;
         };
         // Methods
         SubMesh.prototype.refreshBoundingInfo = function () {
+            this._lastColliderWorldVertices = null;
+            if (this.IsGlobal) {
+                return;
+            }
             var data = this._renderingMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (!data) {
                 this._boundingInfo = this._mesh._boundingInfo;
@@ -48,8 +62,10 @@ var BABYLON;
             }
             var indices = this._renderingMesh.getIndices();
             var extend;
+            //is this the only submesh?
             if (this.indexStart === 0 && this.indexCount === indices.length) {
-                extend = BABYLON.Tools.ExtractMinAndMax(data, this.verticesStart, this.verticesCount);
+                //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
+                extend = { minimum: this._renderingMesh.getBoundingInfo().minimum.clone(), maximum: this._renderingMesh.getBoundingInfo().maximum.clone() };
             }
             else {
                 extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
@@ -57,16 +73,16 @@ var BABYLON;
             this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
         };
         SubMesh.prototype._checkCollision = function (collider) {
-            return this._boundingInfo._checkCollision(collider);
+            return this.getBoundingInfo()._checkCollision(collider);
         };
         SubMesh.prototype.updateBoundingInfo = function (world) {
-            if (!this._boundingInfo) {
+            if (!this.getBoundingInfo()) {
                 this.refreshBoundingInfo();
             }
-            this._boundingInfo._update(world);
+            this.getBoundingInfo().update(world);
         };
         SubMesh.prototype.isInFrustum = function (frustumPlanes) {
-            return this._boundingInfo.isInFrustum(frustumPlanes);
+            return this.getBoundingInfo().isInFrustum(frustumPlanes);
         };
         SubMesh.prototype.render = function (enableAlphaMode) {
             this._renderingMesh.render(this, enableAlphaMode);
@@ -83,7 +99,7 @@ var BABYLON;
             return this._linesIndexBuffer;
         };
         SubMesh.prototype.canIntersects = function (ray) {
-            return ray.intersectsBox(this._boundingInfo.boundingBox);
+            return ray.intersectsBox(this.getBoundingInfo().boundingBox);
         };
         SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
             var intersectInfo = null;
@@ -111,7 +127,9 @@ var BABYLON;
         // Clone    
         SubMesh.prototype.clone = function (newMesh, newRenderingMesh) {
             var result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
-            result._boundingInfo = new BABYLON.BoundingInfo(this._boundingInfo.minimum, this._boundingInfo.maximum);
+            if (!this.IsGlobal) {
+                result._boundingInfo = new BABYLON.BoundingInfo(this.getBoundingInfo().minimum, this.getBoundingInfo().maximum);
+            }
             return result;
         };
         // Dispose

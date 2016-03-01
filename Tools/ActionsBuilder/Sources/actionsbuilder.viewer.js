@@ -36,6 +36,7 @@ var ActionsBuilder;
             this.utils = new ActionsBuilder.Utils(this);
             // Finish
             this.parameters.parametersHelpElement.textContent = Viewer._DEFAULT_INFO_MESSAGE;
+            this.onResize(null);
         }
         Object.defineProperty(Viewer, "NODE_WIDTH", {
             get: function () {
@@ -644,3 +645,4 @@ var ActionsBuilder;
     })();
     ActionsBuilder.Viewer = Viewer;
 })(ActionsBuilder || (ActionsBuilder = {}));
+//# sourceMappingURL=actionsbuilder.viewer.js.map

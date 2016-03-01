@@ -3,6 +3,12 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var FreeCamera = (function (_super) {
@@ -43,6 +49,9 @@ var BABYLON;
                 updatePosition(newPosition);
             };
         }
+        FreeCamera.prototype._onLostFocus = function (e) {
+            this._keys = [];
+        };
         // Controls
         FreeCamera.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -127,9 +136,6 @@ var BABYLON;
                         }
                     }
                 };
-                this._onLostFocus = function () {
-                    _this._keys = [];
-                };
                 this._reset = function () {
                     _this._keys = [];
                     previousPosition = null;
@@ -148,7 +154,7 @@ var BABYLON;
             ]);
         };
         FreeCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement != element) {
+            if (this._attachedElement !== element) {
                 return;
             }
             element.removeEventListener("mousedown", this._onMouseDown);
@@ -175,11 +181,14 @@ var BABYLON;
             }
             globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
             this._collider.radius = this.ellipsoid;
+            //no need for clone, as long as gravity is not on.
+            var actualVelocity = velocity;
             //add gravity to the velocity to prevent the dual-collision checking
             if (this.applyGravity) {
-                velocity.addInPlace(this.getScene().gravity);
+                //this prevents mending with cameraDirection, a global variable of the free camera class.
+                actualVelocity = velocity.add(this.getScene().gravity);
             }
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, velocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         };
         FreeCamera.prototype._checkInputs = function () {
             if (!this._localDirection) {
@@ -219,6 +228,33 @@ var BABYLON;
                 this.position.addInPlace(this.cameraDirection);
             }
         };
+        FreeCamera.prototype.getTypeName = function () {
+            return "FreeCamera";
+        };
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], FreeCamera.prototype, "ellipsoid", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "keysUp", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "keysDown", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "keysLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "keysRight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "checkCollisions", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "applyGravity", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCamera.prototype, "angularSensibility", void 0);
         return FreeCamera;
     })(BABYLON.TargetCamera);
     BABYLON.FreeCamera = FreeCamera;

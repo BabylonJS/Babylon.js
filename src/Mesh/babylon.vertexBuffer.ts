@@ -3,12 +3,12 @@
         private _mesh: Mesh;
         private _engine: Engine;
         private _buffer: WebGLBuffer;
-        private _data: number[];
+        private _data: number[] | Float32Array;
         private _updatable: boolean;
         private _kind: string;
         private _strideSize: number;
 
-        constructor(engine: any, data: number[], kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number) {
+        constructor(engine: any, data: number[] | Float32Array, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
             }
@@ -51,9 +51,11 @@
                     this._strideSize = 4;
                     break;
                 case VertexBuffer.MatricesIndicesKind:
+                case VertexBuffer.MatricesIndicesExtraKind:
                     this._strideSize = 4;
                     break;
                 case VertexBuffer.MatricesWeightsKind:
+                case VertexBuffer.MatricesWeightsExtraKind:
                     this._strideSize = 4;
                     break;
             }
@@ -64,7 +66,7 @@
             return this._updatable;
         }
 
-        public getData(): number[] {
+        public getData(): number[] | Float32Array {
             return this._data;
         }
 
@@ -77,7 +79,7 @@
         }
 
         // Methods
-        public create(data?: number[]): void {
+        public create(data?: number[] | Float32Array): void {
             if (!data && this._buffer) {
                 return; // nothing to do
             }
@@ -98,7 +100,7 @@
             }
         }
 
-        public update(data: number[]): void {
+        public update(data: number[] | Float32Array): void {
             this.create(data);
         }
 
@@ -134,6 +136,8 @@
         private static _ColorKind = "color";
         private static _MatricesIndicesKind = "matricesIndices";
         private static _MatricesWeightsKind = "matricesWeights";
+        private static _MatricesIndicesExtraKind = "matricesIndicesExtra";
+        private static _MatricesWeightsExtraKind = "matricesWeightsExtra";
 
         public static get PositionKind(): string {
             return VertexBuffer._PositionKind;
@@ -177,6 +181,14 @@
 
         public static get MatricesWeightsKind(): string {
             return VertexBuffer._MatricesWeightsKind;
+        }
+
+        public static get MatricesIndicesExtraKind(): string {
+            return VertexBuffer._MatricesIndicesExtraKind;
+        }
+
+        public static get MatricesWeightsExtraKind(): string {
+            return VertexBuffer._MatricesWeightsExtraKind;
         }
     }
 } 

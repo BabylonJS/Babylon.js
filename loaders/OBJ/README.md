@@ -19,7 +19,7 @@ var loader = new BABYLON.AssetsManager(scene);
 var batman = loader.addMeshTask("batman", "", "assets/", "batman.obj");
 ```
 ```
-BABYLON.SceneLoader.ImportMesh("batmanface", "batman.obj", scene, function (meshes) { 
+BABYLON.SceneLoader.ImportMesh("batmanface", "", "batman.obj", scene, function (meshes) { 
    // ...
 });
 ```
@@ -28,6 +28,20 @@ BABYLON.SceneLoader.ImportMesh("batmanface", "batman.obj", scene, function (mesh
 * Your model doesn't have to be triangulated, as this loader will do it automatically.
 * A Babylon.Mesh will be created for each object/group
 * The obj model should be exported with -Z axis forward, and Y axis upward to be compatible with Babylon.js
+
+![Axis](http://geomorph.sourceforge.net/preview/axes.jpg)
+
+* By default, due to optimization in the code for loading time, UVs problems can appear, like this :
+
+![Batman UVs problem](http://i.imgur.com/vjWKNRK.png)
+
+If you meet this problem, set the variable 
+```
+BABYLON.OBJFileLoader.OPTIMIZE_WITH_UV = true;
+```
+Then, you'll have a better texture, but with a longer loading.
+
+![Batman UVs ok](http://i.imgur.com/Dajwlvq.png)
 
 ## Supported
 * Object/group

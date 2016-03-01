@@ -14,7 +14,7 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Check collisions
  * Gravity
  * Ellipsoid
- * Animations
+ * Actions exported as AnimationRanges
  * 3D Camera Rigs
  * All kind of Babylon.js cameras can be chosen from a custom dropdown list
 * **Lights**
@@ -28,9 +28,10 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Diffuse color
  * Specular color
  * Shadow maps, all types (For directional lights)
- * Animations
+ * Actions exported as AnimationRanges
 * **Materials**
  * Name
+ * Name space
  * Ambient color
  * Diffuse color
  * Specular color
@@ -46,6 +47,7 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Bump texture
  * Procedural Texture Baking
  * Cycles Render Baking
+ * Check Ready Only Once
 * **Multi-materials**
  * Name
  * Child materials
@@ -71,11 +73,13 @@ For a discussion of Tower of Babel exporter, along with the difference this expo
  * Texture coordinates (2 channels)
  * Vertex colors
  * Visibility
+ * Load disabled
  * Check collisions
  * Billboard
  * Receive and cast shadows
- * Bones (armatures) and bones' animations
- * Animations
+ * Bones (armatures) and bones' actions
+ 	* Variable Max Bone Influencers / vertex
+ * Actions exported as AnimationRanges
 
 
 

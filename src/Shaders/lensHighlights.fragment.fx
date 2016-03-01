@@ -1,14 +1,9 @@
-#ifdef GL_ES
-precision highp float;
-#endif
-
 // samplers
 uniform sampler2D textureSampler;	// original color
 
 // uniforms
 uniform float gain;
 uniform float threshold;
-uniform bool pentagon;
 uniform float screen_width;
 uniform float screen_height;
 
@@ -49,7 +44,7 @@ void main(void)
 	// compute blurred color
 	vec4 blurred = vec4(0.0, 0.0, 0.0, 0.0);
 
-	if (pentagon) {
+#ifdef PENTAGON
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(-0.84*w, 0.43*h)));
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(0.48*w, -1.29*h)));
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(0.61*w, 1.51*h)));
@@ -89,8 +84,7 @@ void main(void)
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(1.60*w, 3.17*h)));
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(-3.14*w, -1.19*h)));
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(3.00*w, -1.19*h)));
-	}
-	else {
+#else
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(-0.85*w, 0.36*h)));
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(0.52*w, -1.14*h)));
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(0.46*w, 1.42*h)));
@@ -130,7 +124,7 @@ void main(void)
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(1.21*w, 2.88*h)));
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(-2.84*w, -1.30*h)));
 		blurred += highlightColor(texture2D(textureSampler, vUV + vec2(2.98*w, -0.96*h)));
-	}
+#endif
 
 	blurred /= 39.0;
 

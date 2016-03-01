@@ -1,28 +1,12 @@
-﻿#ifdef GL_ES
-precision highp float;
-#endif
-
-// Attribute
+﻿// Attribute
 attribute vec3 position;
-#ifdef BONES
-attribute vec4 matricesIndices;
-attribute vec4 matricesWeights;
-#endif
 
-// Uniform
-#ifdef INSTANCES
-attribute vec4 world0;
-attribute vec4 world1;
-attribute vec4 world2;
-attribute vec4 world3;
-#else
-uniform mat4 world;
-#endif
+#include<bonesDeclaration>
+
+// Uniforms
+#include<instancesDeclaration>
 
 uniform mat4 viewProjection;
-#ifdef BONES
-uniform mat4 mBones[BonesPerMesh];
-#endif
 
 varying vec4 vPosition;
 
@@ -39,22 +23,16 @@ attribute vec2 uv2;
 
 void main(void)
 {
-#ifdef INSTANCES
-	mat4 finalWorld = mat4(world0, world1, world2, world3);
+#include<instancesVertex>
+#include<bonesVertex>
+
+#ifdef CUBEMAP
+	vPosition = finalWorld * vec4(position, 1.0);
+	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 #else
-	mat4 finalWorld = world;
-#endif
-
-#ifdef BONES
-	mat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;
-	mat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;
-	mat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;
-	mat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;
-	finalWorld = finalWorld * (m0 + m1 + m2 + m3);
-#endif
-
 	vPosition = viewProjection * finalWorld * vec4(position, 1.0);
 	gl_Position = vPosition;
+#endif
 
 #ifdef ALPHATEST
 #ifdef UV1

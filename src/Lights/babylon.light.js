@@ -3,6 +3,12 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var Light = (function (_super) {
@@ -17,6 +23,8 @@ var BABYLON;
             this.includedOnlyMeshes = new Array();
             this.excludedMeshes = new Array();
             this.excludeWithLayerMask = 0;
+            // PBR Properties.
+            this.radius = 0.00001;
             this._excludedMeshesIds = new Array();
             this._includedOnlyMeshesIds = new Array();
             scene.addLight(this);
@@ -68,9 +76,86 @@ var BABYLON;
                 this._shadowGenerator.dispose();
                 this._shadowGenerator = null;
             }
+            // Animations
+            this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeLight(this);
         };
+        Light.prototype.getTypeID = function () {
+            return 0;
+        };
+        Light.prototype.clone = function (name) {
+            return BABYLON.SerializationHelper.Clone(Light.GetConstructorFromName(this.getTypeID(), name, this.getScene()), this);
+        };
+        Light.prototype.serialize = function () {
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
+            // Type
+            serializationObject.type = this.getTypeID();
+            // Parent
+            if (this.parent) {
+                serializationObject.parentId = this.parent.id;
+            }
+            // Animations  
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
+            return serializationObject;
+        };
+        Light.GetConstructorFromName = function (type, name, scene) {
+            switch (type) {
+                case 0:
+                    return function () { return new BABYLON.PointLight(name, BABYLON.Vector3.Zero(), scene); };
+                case 1:
+                    return function () { return new BABYLON.DirectionalLight(name, BABYLON.Vector3.Zero(), scene); };
+                case 2:
+                    return function () { return new BABYLON.SpotLight(name, BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero(), 0, 0, scene); };
+                case 3:
+                    return function () { return new BABYLON.HemisphericLight(name, BABYLON.Vector3.Zero(), scene); };
+            }
+        };
+        Light.Parse = function (parsedLight, scene) {
+            var light = BABYLON.SerializationHelper.Parse(Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene), parsedLight, scene);
+            // Inclusion / exclusions
+            if (parsedLight.excludedMeshesIds) {
+                light._excludedMeshesIds = parsedLight.excludedMeshesIds;
+            }
+            if (parsedLight.includedOnlyMeshesIds) {
+                light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
+            }
+            // Parent
+            if (parsedLight.parentId) {
+                light._waitingParentId = parsedLight.parentId;
+            }
+            // Animations
+            if (parsedLight.animations) {
+                for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedLight.animations[animationIndex];
+                    light.animations.push(BABYLON.Animation.Parse(parsedAnimation));
+                }
+                BABYLON.Node.ParseAnimationRanges(light, parsedLight, scene);
+            }
+            if (parsedLight.autoAnimate) {
+                scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
+            }
+            return light;
+        };
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], Light.prototype, "diffuse", void 0);
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], Light.prototype, "specular", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Light.prototype, "intensity", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Light.prototype, "range", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Light.prototype, "includeOnlyWithLayerMask", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Light.prototype, "radius", void 0);
         return Light;
     })(BABYLON.Node);
     BABYLON.Light = Light;

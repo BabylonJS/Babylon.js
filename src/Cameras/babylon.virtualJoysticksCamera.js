@@ -45,6 +45,9 @@ var BABYLON;
             this._leftjoystick.releaseCanvas();
             _super.prototype.dispose.call(this);
         };
+        VirtualJoysticksCamera.prototype.getTypeName = function () {
+            return "VirtualJoysticksCamera";
+        };
         return VirtualJoysticksCamera;
     })(BABYLON.FreeCamera);
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;

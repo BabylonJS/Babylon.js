@@ -3,10 +3,16 @@
 
         public cameraDirection = new Vector3(0, 0, 0);
         public cameraRotation = new Vector2(0, 0);
+
+        @serializeAsVector3()
         public rotation = new Vector3(0, 0, 0);
 
+        @serialize()
         public speed = 2.0;
+
         public noRotationConstraint = false;
+
+        @serializeAsMeshReference("lockedTargetId")
         public lockedTarget = null;
 
         public _currentTarget = Vector3.Zero();
@@ -22,8 +28,6 @@
         public _tempMatrix = Matrix.Zero();
 
         public _reset: () => void;
-
-        public _waitingLockedTargetId: string;
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
@@ -295,6 +299,10 @@
             this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(Matrix.Translation(target.x, target.y, target.z));
 
             Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
+        }
+
+        public getTypeName(): string {
+            return "TargetCamera";
         }
     }
 } 
