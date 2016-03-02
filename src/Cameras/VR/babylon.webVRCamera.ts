@@ -12,7 +12,7 @@ module BABYLON {
 
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true) {
             super(name, position, scene);
-            
+
             var metrics = VRCameraMetrics.GetDefault();
             metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
@@ -83,3 +83,4 @@ module BABYLON {
         }
     }
 }
+
