@@ -620,11 +620,66 @@ var BABYLON;
          * @see BABYLON.Animatable
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
-        Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable) {
+        /* public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
+ 
+             this.stopAnimation(target);
+ 
+             if (!animatable) {
+                 animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+             }
+ 
+             // Local animations
+             if (target.animations) {
+                 animatable.appendAnimations(target, target.animations);
+             }
+ 
+             // Children animations
+             if (target.getAnimatables) {
+                 var animatables = target.getAnimatables();
+                 for (var index = 0; index < animatables.length; index++) {
+                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
+                 }
+             }
+ 
+             animatable.reset();
+ 
+             return animatable;
+         }*/
+        Scene.prototype.GetAllAnimatablesByTarget = function (target) {
+            var AT;
+            AT = [];
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    AT.push(this._activeAnimatables[index]);
+                }
+            }
+            AT.reverse();
+            return AT;
+        };
+        ;
+        Scene.prototype.GetCurrentAnimatableByTarget = function (target) {
+            var AT;
+            AT = [];
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    AT.push(this._activeAnimatables[index]);
+                }
+            }
+            AT.reverse();
+            return AT[0];
+        };
+        ;
+        Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable, transitionSpeed) {
+            //////use Scene.GetCurrentAnimatableByTarget(target) to get current primary playing animatable for target;
             if (speedRatio === void 0) { speedRatio = 1.0; }
-            this.stopAnimation(target);
+            if (transitionSpeed === void 0) { transitionSpeed = 1.0; }
+            //  this.stopAnimation(target);
+            var transitionFunction = null;
+            if (transitionSpeed < 1) {
+                transitionFunction = new BABYLON.LinearFADE(transitionSpeed, this._engine);
+            }
             if (!animatable) {
-                animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+                animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animatable, transitionFunction);
             }
             // Local animations
             if (target.animations) {
@@ -634,10 +689,19 @@ var BABYLON;
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, transitionSpeed);
                 }
             }
             animatable.reset();
+            var maxAnimations = 3;
+            var animtables;
+            animtables = [];
+            animtables = this.GetAllAnimatablesByTarget(target);
+            if (animtables.length > maxAnimations) {
+                for (var i = maxAnimations; i < (animtables.length); i++) {
+                    animtables[i].stop();
+                }
+            }
             return animatable;
         };
         Scene.prototype.beginDirectAnimation = function (target, animations, from, to, loop, speedRatio, onAnimationEnd) {
@@ -2106,6 +2170,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    })();
+    }());
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));

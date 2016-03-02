@@ -67,6 +67,6 @@ var BABYLON;
             BABYLON.serialize()
         ], UniversalCamera.prototype, "gamepadMoveSensibility", void 0);
         return UniversalCamera;
-    })(BABYLON.TouchCamera);
+    }(BABYLON.TouchCamera));
     BABYLON.UniversalCamera = UniversalCamera;
 })(BABYLON || (BABYLON = {}));

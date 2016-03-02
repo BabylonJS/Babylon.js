@@ -7,7 +7,7 @@ var BABYLON;
             this.to = to;
         }
         return AnimationRange;
-    })();
+    }());
     BABYLON.AnimationRange = AnimationRange;
     /**
      * Composed of a frame, and an action function
@@ -20,7 +20,7 @@ var BABYLON;
             this.isDone = false;
         }
         return AnimationEvent;
-    })();
+    }());
     BABYLON.AnimationEvent = AnimationEvent;
     var Animation = (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode, enableBlending) {
@@ -37,6 +37,7 @@ var BABYLON;
             // The set of event that will be linked to this animation
             this._events = new Array();
             this.allowMatricesInterpolation = false;
+            this.transitionFunction = null;
             this.blendingSpeed = 0.01;
             this._ranges = {};
             this.targetPropertyPath = targetProperty.split(".");
@@ -268,6 +269,10 @@ var BABYLON;
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    if (this.transitionFunction) {
+                                        var fraction = this.transitionFunction.fadeIn();
+                                        return this.matrixInterpolateFunction(this._target._matrix, startValue, fraction); ////ease from previousAnimation to CurrentFrame with fraction
+                                    }
                                     if (this.allowMatricesInterpolation) {
                                         return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                     }
@@ -609,6 +614,6 @@ var BABYLON;
         Animation._ANIMATIONLOOPMODE_CYCLE = 1;
         Animation._ANIMATIONLOOPMODE_CONSTANT = 2;
         return Animation;
-    })();
+    }());
     BABYLON.Animation = Animation;
 })(BABYLON || (BABYLON = {}));

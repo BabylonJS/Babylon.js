@@ -813,7 +813,7 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    })();
+    }());
     BABYLON.Tools = Tools;
     /**
      * An implementation of a loop for asynchronous functions.
@@ -897,6 +897,6 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    })();
+    }());
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));

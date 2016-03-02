@@ -330,6 +330,6 @@ var BABYLON;
             return mesh;
         };
         return VolumetricLightScatteringPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.VolumetricLightScatteringPostProcess = VolumetricLightScatteringPostProcess;
 })(BABYLON || (BABYLON = {}));

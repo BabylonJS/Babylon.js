@@ -129,6 +129,6 @@ var BABYLON;
             BABYLON.serialize()
         ], TouchCamera.prototype, "touchMoveSensibility", void 0);
         return TouchCamera;
-    })(BABYLON.FreeCamera);
+    }(BABYLON.FreeCamera));
     BABYLON.TouchCamera = TouchCamera;
 })(BABYLON || (BABYLON = {}));

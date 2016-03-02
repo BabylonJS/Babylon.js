@@ -1,17 +1,19 @@
 var BABYLON;
 (function (BABYLON) {
     var Animatable = (function () {
-        function Animatable(scene, target, fromFrame, toFrame, loopAnimation, speedRatio, onAnimationEnd, animations) {
+        function Animatable(scene, target, fromFrame, toFrame, loopAnimation, speedRatio, onAnimationEnd, animations, transitionFunction) {
             if (fromFrame === void 0) { fromFrame = 0; }
             if (toFrame === void 0) { toFrame = 100; }
             if (loopAnimation === void 0) { loopAnimation = false; }
             if (speedRatio === void 0) { speedRatio = 1.0; }
+            if (transitionFunction === void 0) { transitionFunction = null; }
             this.target = target;
             this.fromFrame = fromFrame;
             this.toFrame = toFrame;
             this.loopAnimation = loopAnimation;
             this.speedRatio = speedRatio;
             this.onAnimationEnd = onAnimationEnd;
+            this.transitionFunction = transitionFunction;
             this._animations = new Array();
             this._paused = false;
             this.animationStarted = false;
@@ -28,6 +30,7 @@ var BABYLON;
         Animatable.prototype.appendAnimations = function (target, animations) {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
+                animation.transitionFunction = this.transitionFunction;
                 animation._target = target;
                 this._animations.push(animation);
             }
@@ -127,6 +130,6 @@ var BABYLON;
             return running;
         };
         return Animatable;
-    })();
+    }());
     BABYLON.Animatable = Animatable;
 })(BABYLON || (BABYLON = {}));

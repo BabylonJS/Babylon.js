@@ -117,6 +117,6 @@ var BABYLON;
             BABYLON.Octree._CreateBlocks(this._minPoint, this._maxPoint, this.entries, this._capacity, this._depth, this._maxDepth, this, this._creationFunc);
         };
         return OctreeBlock;
-    })();
+    }());
     BABYLON.OctreeBlock = OctreeBlock;
 })(BABYLON || (BABYLON = {}));

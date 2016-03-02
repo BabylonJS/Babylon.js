@@ -53,7 +53,7 @@ var BABYLON;
             CMGBoundinBox.MAX = Number.MAX_VALUE;
             CMGBoundinBox.MIN = Number.MIN_VALUE;
             return CMGBoundinBox;
-        })();
+        }());
         var PMREMGenerator = (function () {
             function PMREMGenerator(input, inputSize, outputSize, maxNumMipLevels, numChannels, isFloat, specularPower, cosinePowerDropPerMip, excludeBase, fixup) {
                 this.input = input;
@@ -1023,7 +1023,7 @@ var BABYLON;
                 [PMREMGenerator.CP_CORNER_PPN, PMREMGenerator.CP_CORNER_NPN, PMREMGenerator.CP_CORNER_PNN, PMREMGenerator.CP_CORNER_NNN] // ZNEG face
             ];
             return PMREMGenerator;
-        })();
+        }());
         Internals.PMREMGenerator = PMREMGenerator;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));

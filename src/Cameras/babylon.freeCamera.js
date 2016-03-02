@@ -256,6 +256,6 @@ var BABYLON;
             BABYLON.serialize()
         ], FreeCamera.prototype, "angularSensibility", void 0);
         return FreeCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.FreeCamera = FreeCamera;
 })(BABYLON || (BABYLON = {}));

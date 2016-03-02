@@ -29,7 +29,7 @@
         public currentFrame: number;
 
         public allowMatricesInterpolation = false;
-
+        public transitionFunction = null;
         public blendingSpeed = 0.01;
         private _originalBlendValue: any;
 
@@ -314,6 +314,13 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                
+                                    if(this.transitionFunction)
+                                    {
+                                       var fraction = this.transitionFunction.fadeIn();
+                                        return this.matrixInterpolateFunction(this._target._matrix, startValue, fraction); ////ease from previousAnimation to CurrentFrame with fraction
+                                    }
+                                
                                     if (this.allowMatricesInterpolation) {
                                         return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                     }

@@ -5,15 +5,17 @@
         private _animations = new Array<Animation>();
         private _paused = false;
         private _scene: Scene;
-
+        
+       
         public animationStarted = false;
-
-        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any) {
+      
+        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any,public transitionFunction: any = null) {
             if (animations) {
                 this.appendAnimations(target, animations);
             }
 
             this._scene = scene;
+            
             scene._activeAnimatables.push(this);
         }
 
@@ -22,10 +24,13 @@
             return this._animations;
         }
 
+
+       
+
         public appendAnimations(target: any, animations: Animation[]): void {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
-
+                animation.transitionFunction = this.transitionFunction;
                 animation._target = target;
                 this._animations.push(animation);
             }
@@ -42,6 +47,10 @@
 
             return null;
         }
+
+
+        
+
 
         public reset(): void {
             var animations = this._animations;

@@ -81,6 +81,6 @@ var BABYLON;
             BABYLON.serialize()
         ], DeviceOrientationCamera.prototype, "moveSensibility", void 0);
         return DeviceOrientationCamera;
-    })(BABYLON.FreeCamera);
+    }(BABYLON.FreeCamera));
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));

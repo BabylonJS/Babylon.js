@@ -157,6 +157,6 @@ var BABYLON;
             "back"
         ];
         return HDRCubeTexture;
-    })(BABYLON.BaseTexture);
+    }(BABYLON.BaseTexture));
     BABYLON.HDRCubeTexture = HDRCubeTexture;
 })(BABYLON || (BABYLON = {}));

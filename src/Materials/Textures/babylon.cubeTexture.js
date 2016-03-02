@@ -91,6 +91,6 @@ var BABYLON;
             return serializationObject;
         };
         return CubeTexture;
-    })(BABYLON.BaseTexture);
+    }(BABYLON.BaseTexture));
     BABYLON.CubeTexture = CubeTexture;
 })(BABYLON || (BABYLON = {}));

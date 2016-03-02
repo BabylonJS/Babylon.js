@@ -67,6 +67,6 @@ var BABYLON;
             return this._actionManager._getEffectiveTarget(target, propertyPath);
         };
         return Action;
-    })();
+    }());
     BABYLON.Action = Action;
 })(BABYLON || (BABYLON = {}));

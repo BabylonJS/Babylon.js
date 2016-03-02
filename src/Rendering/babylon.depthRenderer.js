@@ -120,6 +120,6 @@ var BABYLON;
             this._depthMap.dispose();
         };
         return DepthRenderer;
-    })();
+    }());
     BABYLON.DepthRenderer = DepthRenderer;
 })(BABYLON || (BABYLON = {}));
