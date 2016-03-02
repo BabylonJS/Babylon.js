@@ -146,6 +146,10 @@
                 serializationObject.parentId = this.parent.id;
             }
 
+            // Animations  
+            Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();  
+
             return serializationObject;
         }
 

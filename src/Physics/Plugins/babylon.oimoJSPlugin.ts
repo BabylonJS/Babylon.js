@@ -16,7 +16,7 @@ module BABYLON {
         public setGravity(gravity: Vector3) {
             this.world.gravity.copy(gravity);
         }
-        
+
         public setTimeStep(timeStep: number) {
             this.world.timeStep = timeStep;
         }
@@ -25,7 +25,7 @@ module BABYLON {
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
 
-            impostors.forEach(function(impostor) {
+            impostors.forEach(function (impostor) {
                 impostor.beforeStep();
             });
 
@@ -103,7 +103,7 @@ module BABYLON {
 
                 var impostors = [impostor];
                 function addToArray(parent: AbstractMesh) {
-                    parent.getChildMeshes().forEach(function(m) {
+                    parent.getChildMeshes().forEach(function (m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
                             m.physicsImpostor._init();
@@ -333,3 +333,4 @@ module BABYLON {
         }
     }
 }
+

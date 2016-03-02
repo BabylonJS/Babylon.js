@@ -28,8 +28,11 @@ var BABYLON;
         CannonJSPlugin.prototype.setGravity = function (gravity) {
             this.world.gravity.copy(gravity);
         };
+        CannonJSPlugin.prototype.setTimeStep = function (timeStep) {
+            this._fixedTimeStep = timeStep;
+        };
         CannonJSPlugin.prototype.executeStep = function (delta, impostors) {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
         };
         CannonJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
@@ -181,7 +184,15 @@ var BABYLON;
             //set the collideConnected flag after the creation, since DistanceJoint ignores it.
             constraint.collideConnected = !!jointData.collision;
             impostorJoint.joint.physicsJoint = constraint;
-            this.world.addConstraint(constraint);
+            //don't add spring as constraint, as it is not one.
+            if (impostorJoint.joint.type !== BABYLON.PhysicsJoint.SpringJoint) {
+                this.world.addConstraint(constraint);
+            }
+            else {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function () {
+                    constraint.applyForce();
+                });
+            }
         };
         CannonJSPlugin.prototype.removeJoint = function (joint) {
             //TODO

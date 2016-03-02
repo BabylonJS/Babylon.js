@@ -13,6 +13,9 @@ var BABYLON;
         OimoJSPlugin.prototype.setGravity = function (gravity) {
             this.world.gravity.copy(gravity);
         };
+        OimoJSPlugin.prototype.setTimeStep = function (timeStep) {
+            this.world.timeStep = timeStep;
+        };
         OimoJSPlugin.prototype.executeStep = function (delta, impostors) {
             var _this = this;
             impostors.forEach(function (impostor) {
