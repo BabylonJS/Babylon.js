@@ -13371,31 +13371,6 @@ var BABYLON;
          * @see BABYLON.Animatable
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
-        /* public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
- 
-             this.stopAnimation(target);
- 
-             if (!animatable) {
-                 animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
-             }
- 
-             // Local animations
-             if (target.animations) {
-                 animatable.appendAnimations(target, target.animations);
-             }
- 
-             // Children animations
-             if (target.getAnimatables) {
-                 var animatables = target.getAnimatables();
-                 for (var index = 0; index < animatables.length; index++) {
-                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
-                 }
-             }
- 
-             animatable.reset();
- 
-             return animatable;
-         }*/
         Scene.prototype.GetAllAnimatablesByTarget = function (target) {
             var AT;
             AT = [];
