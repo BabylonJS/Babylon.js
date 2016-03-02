@@ -3732,8 +3732,9 @@
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
     ///Simple linear Interpolation from A to B   --> X = speedFactor
-    export class Lerp {
-       constructor(a: number, b: number, x: number) {
+  
+   export class Lerp {
+        constructor(a: number, b: number, x: number) {
             return a + (b - a) * x;
         }
     }
@@ -3766,9 +3767,7 @@
                                      
                                                                 };  
                                                                 
-                                                                
-                                                                                      
-                           }
+                                           }
                       return Easing;
                   })();
             

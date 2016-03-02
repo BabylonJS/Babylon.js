@@ -9,13 +9,13 @@
        
         public animationStarted = false;
       
-        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any,public transitionFunction: any = null) {
+        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any, public transitionFunction: any = null) {
             if (animations) {
                 this.appendAnimations(target, animations);
             }
 
             this._scene = scene;
-            
+             
             scene._activeAnimatables.push(this);
         }
 

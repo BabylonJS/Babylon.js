@@ -21,7 +21,7 @@
         public _target;
         private _blendingFactor = 0;
         private _easingFunction: IEasingFunction;
-
+ 
         // The set of event that will be linked to this animation
         private _events = new Array<AnimationEvent>();
 
@@ -29,7 +29,7 @@
         public currentFrame: number;
 
         public allowMatricesInterpolation = false;
-        public transitionFunction = null;
+         public transitionFunction = null; 
         public blendingSpeed = 0.01;
         private _originalBlendValue: any;
 

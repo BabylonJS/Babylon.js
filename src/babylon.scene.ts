@@ -836,7 +836,7 @@
     ////get all animatables for target reverse order ,,, at[0] is last played animation
    public GetAllAnimatablesByTarget(target: any): Animatable {
             var AT; AT = [];
-            
+             
             for (var index = 0; index < this._activeAnimatables.length; index++) {
                 if (this._activeAnimatables[index].target === target) {
                     AT.push(this._activeAnimatables[index]);
@@ -874,7 +874,7 @@
     
     
      //////use Scene.GetCurrentAnimatableByTarget(target) to get current primary playing animatable for target;
-     
+      
      
           //  this.stopAnimation(target);
             var transitionFunction = null;
