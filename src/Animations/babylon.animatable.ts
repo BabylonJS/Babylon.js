@@ -8,7 +8,7 @@
 
         public animationStarted = false;
 
-        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any) {
+        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any,public transitionFunction: any = null) {
             if (animations) {
                 this.appendAnimations(target, animations);
             }
@@ -25,8 +25,9 @@
         public appendAnimations(target: any, animations: Animation[]): void {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
-
+                
                 animation._target = target;
+                animation.transitionFunction = this.transitionFunction;
                 this._animations.push(animation);
             }
         }
