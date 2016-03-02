@@ -316,8 +316,12 @@ module BABYLON {
             return lastShape;
         }
 
-        public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+        public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
+        }
+        
+        public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+            impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
         }
 
         public sleepBody(impostor: PhysicsImpostor) {
