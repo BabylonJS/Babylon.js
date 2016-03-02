@@ -427,8 +427,12 @@
             return window.CANNON !== undefined;
         }
 
-        public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+        public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.velocity.copy(velocity);
+        }
+        
+        public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+            impostor.physicsBody.angularVelocity.copy(velocity);
         }
 
         public sleepBody(impostor: PhysicsImpostor) {

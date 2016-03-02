@@ -161,7 +161,8 @@
         isSupported(): boolean;
         setTransformationFromPhysicsBody(impostor: PhysicsImpostor);
         setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion);
-        setVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3);
         sleepBody(impostor: PhysicsImpostor);
         wakeUpBody(impostor: PhysicsImpostor);
         dispose();
