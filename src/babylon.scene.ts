@@ -833,7 +833,7 @@
        
     
    
-   
+    ////get all animatables for target reverse order ,,, at[0] is last played animation
    public GetAllAnimatablesByTarget(target: any): Animatable {
             var AT; AT = [];
             
@@ -843,11 +843,12 @@
                     
                 }
             }
-            AT.reverse();
+            if(AT.length)  { AT.reverse() };
             return AT;
            
         };
    
+   //////get current/last existing paused or playing  animatable for target
    public GetCurrentAnimatableByTarget(target: any): Animatable {
             var AT; AT = [];
             
@@ -857,9 +858,16 @@
                     
                 }
             }
-            AT.reverse();
-            return AT[0];
-           
+            
+            if(AT.length)
+            {
+                 AT.reverse();
+                 return AT[0]   
+            }
+            else 
+            {
+                return null ///we have no animatable for target
+            }
         };
    
     public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable,transitionSpeed: number = 1.0 ): Animatable {
@@ -899,7 +907,7 @@
 
             animatable.reset();
 
-               var maxAnimations = 3;
+               var maxAnimations = 2;
               var animtables; animtables = []; animtables = this.GetAllAnimatablesByTarget(target); 
               
 	       if (animtables.length > maxAnimations) {

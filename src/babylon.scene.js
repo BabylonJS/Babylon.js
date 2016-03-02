@@ -620,6 +620,7 @@ var BABYLON;
          * @see BABYLON.Animatable
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
+        ////get all animatables for target reverse order ,,, at[0] is last played animation
         Scene.prototype.GetAllAnimatablesByTarget = function (target) {
             var AT;
             AT = [];
@@ -628,10 +629,14 @@ var BABYLON;
                     AT.push(this._activeAnimatables[index]);
                 }
             }
-            AT.reverse();
+            if (AT.length) {
+                AT.reverse();
+            }
+            ;
             return AT;
         };
         ;
+        //////get current/last existing paused or playing  animatable for target
         Scene.prototype.GetCurrentAnimatableByTarget = function (target) {
             var AT;
             AT = [];
@@ -640,8 +645,13 @@ var BABYLON;
                     AT.push(this._activeAnimatables[index]);
                 }
             }
-            AT.reverse();
-            return AT[0];
+            if (AT.length) {
+                AT.reverse();
+                return AT[0];
+            }
+            else {
+                return null; ///we have no animatable for target
+            }
         };
         ;
         Scene.prototype.beginAnimation = function (target, from, to, loop, speedRatio, onAnimationEnd, animatable, transitionSpeed) {
@@ -668,7 +678,7 @@ var BABYLON;
                 }
             }
             animatable.reset();
-            var maxAnimations = 3;
+            var maxAnimations = 2;
             var animtables;
             animtables = [];
             animtables = this.GetAllAnimatablesByTarget(target);
