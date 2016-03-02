@@ -47,7 +47,7 @@ var BABYLON;
                     source._geometry.applyToMesh(this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
                 // Pivot                
                 this.setPivotMatrix(source.getPivotMatrix());
                 this.id = name + "." + source.id;
