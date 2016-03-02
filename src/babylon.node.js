@@ -163,7 +163,7 @@ var BABYLON;
          */
         Node.prototype.getChildMeshes = function (directDecendantsOnly) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, false);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
             return results;
         };
         Node.prototype._setReady = function (state) {
