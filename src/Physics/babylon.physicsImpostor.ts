@@ -134,10 +134,17 @@ module BABYLON {
         }
 
         /**
-         * Set the body's velocity.
+         * Set the body's linear velocity.
          */
-        public setVelocity(velocity: Vector3) {
-            this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
+        public setLinearVelocity(velocity: Vector3) {
+            this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        }
+        
+        /**
+         * Set the body's linear velocity.
+         */
+        public setAngularVelocity(velocity: Vector3) {
+            this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
         }
         
         /**
