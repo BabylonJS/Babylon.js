@@ -31,12 +31,12 @@
          * To slow it down, enter 1/600 for example.
          * To speed it up, 1/30
          */
-        public setTimeStep(newTimeStep: number = 1/60) {
+        public setTimeStep(newTimeStep: number = 1 / 60) {
             this._physicsPlugin.setTimeStep(newTimeStep);
         }
 
         public dispose(): void {
-            this._impostors.forEach(function(impostor) {
+            this._impostors.forEach(function (impostor) {
                 impostor.dispose();
             })
             this._physicsPlugin.dispose();
@@ -100,7 +100,7 @@
         }
 
         public removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
-            var matchingJoints = this._joints.filter(function(impostorJoint) {
+            var matchingJoints = this._joints.filter(function (impostorJoint) {
                 return (impostorJoint.connectedImpostor === connectedImpostor
                     && impostorJoint.joint === joint
                     && impostorJoint.mainImpostor === mainImpostor)
@@ -167,3 +167,4 @@
         dispose();
     }
 }
+

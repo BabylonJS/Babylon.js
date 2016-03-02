@@ -7432,7 +7432,7 @@ var BABYLON;
          */
         Node.prototype.getChildMeshes = function (directDecendantsOnly) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, false);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
             return results;
         };
         Node.prototype._setReady = function (state) {
@@ -8225,7 +8225,7 @@ var BABYLON;
             set: function (quaternion) {
                 this._rotationQuaternion = quaternion;
                 //reset the rotation vector. 
-                if (this.rotation.length()) {
+                if (quaternion && this.rotation.length()) {
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             },
@@ -9105,6 +9105,9 @@ var BABYLON;
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
+            // Animations  
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
             return serializationObject;
         };
         Light.GetConstructorFromName = function (type, name, scene) {
@@ -15243,7 +15246,7 @@ var BABYLON;
                     source._geometry.applyToMesh(this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
                 // Pivot                
                 this.setPivotMatrix(source.getPivotMatrix());
                 this.id = name + "." + source.id;
@@ -24620,10 +24623,21 @@ var BABYLON;
             }
             gravity = gravity || new BABYLON.Vector3(0, -9.807, 0);
             this.setGravity(gravity);
+            this.setTimeStep();
         }
         PhysicsEngine.prototype.setGravity = function (gravity) {
             this.gravity = gravity;
             this._physicsPlugin.setGravity(this.gravity);
+        };
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         */
+        PhysicsEngine.prototype.setTimeStep = function (newTimeStep) {
+            if (newTimeStep === void 0) { newTimeStep = 1 / 60; }
+            this._physicsPlugin.setTimeStep(newTimeStep);
         };
         PhysicsEngine.prototype.dispose = function () {
             this._impostors.forEach(function (impostor) {
@@ -31035,8 +31049,11 @@ var BABYLON;
         CannonJSPlugin.prototype.setGravity = function (gravity) {
             this.world.gravity.copy(gravity);
         };
+        CannonJSPlugin.prototype.setTimeStep = function (timeStep) {
+            this._fixedTimeStep = timeStep;
+        };
         CannonJSPlugin.prototype.executeStep = function (delta, impostors) {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
         };
         CannonJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
@@ -31188,7 +31205,15 @@ var BABYLON;
             //set the collideConnected flag after the creation, since DistanceJoint ignores it.
             constraint.collideConnected = !!jointData.collision;
             impostorJoint.joint.physicsJoint = constraint;
-            this.world.addConstraint(constraint);
+            //don't add spring as constraint, as it is not one.
+            if (impostorJoint.joint.type !== BABYLON.PhysicsJoint.SpringJoint) {
+                this.world.addConstraint(constraint);
+            }
+            else {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function () {
+                    constraint.applyForce();
+                });
+            }
         };
         CannonJSPlugin.prototype.removeJoint = function (joint) {
             //TODO
@@ -31392,6 +31417,9 @@ var BABYLON;
         }
         OimoJSPlugin.prototype.setGravity = function (gravity) {
             this.world.gravity.copy(gravity);
+        };
+        OimoJSPlugin.prototype.setTimeStep = function (timeStep) {
+            this.world.timeStep = timeStep;
         };
         OimoJSPlugin.prototype.executeStep = function (delta, impostors) {
             var _this = this;
@@ -34068,9 +34096,9 @@ var BABYLON;
                 this._cacheState = this._sensorDevice.getState();
                 this._cacheQuaternion.copyFromFloats(this._cacheState.orientation.x, this._cacheState.orientation.y, this._cacheState.orientation.z, this._cacheState.orientation.w);
                 this._cacheQuaternion.toEulerAnglesToRef(this._cacheRotation);
-                this.rotation.x = -this._cacheRotation.z;
+                this.rotation.x = -this._cacheRotation.x;
                 this.rotation.y = -this._cacheRotation.y;
-                this.rotation.z = this._cacheRotation.x;
+                this.rotation.z = this._cacheRotation.z;
             }
             _super.prototype._checkInputs.call(this);
         };

@@ -95,6 +95,9 @@ var BABYLON;
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
+            // Animations  
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
             return serializationObject;
         };
         Light.GetConstructorFromName = function (type, name, scene) {
