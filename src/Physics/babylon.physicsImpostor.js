@@ -157,6 +157,15 @@ var BABYLON;
             this._bodyUpdateRequired = true;
         };
         /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        PhysicsImpostor.prototype.setMass = function (mass) {
+            if (this.getParam("mass") !== mass) {
+                this.setParam("mass", mass);
+            }
+            this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
+        };
+        /**
          * Set the body's linear velocity.
          */
         PhysicsImpostor.prototype.setLinearVelocity = function (velocity) {

@@ -1936,7 +1936,6 @@ var BABYLON;
         Engine._TEXTURETYPE_UNSIGNED_INT = 0;
         Engine._TEXTURETYPE_FLOAT = 1;
         // Updatable statics so stick with vars here
-        Engine.Epsilon = 0.001;
         Engine.CollisionsEpsilon = 0.001;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";

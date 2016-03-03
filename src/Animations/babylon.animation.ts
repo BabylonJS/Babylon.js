@@ -12,7 +12,7 @@
         constructor(public frame: number, public action: () => void, public onlyOnce?: boolean) {
         }
     }
-    
+
     export class PathCursor {
         private _onchange = new Array<(cursor: PathCursor) => void>();
 
@@ -735,6 +735,5 @@
         }
     }
 } 
-
 
 

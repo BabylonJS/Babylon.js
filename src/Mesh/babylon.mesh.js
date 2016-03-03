@@ -1245,7 +1245,7 @@ var BABYLON;
                 BABYLON.Node.ParseAnimationRanges(mesh, parsedMesh, scene);
             }
             if (parsedMesh.autoAnimate) {
-                scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
+                scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
             }
             // Layer Mask
             if (parsedMesh.layerMask && (!isNaN(parsedMesh.layerMask))) {

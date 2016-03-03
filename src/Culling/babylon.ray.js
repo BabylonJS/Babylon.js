@@ -166,6 +166,6 @@ var BABYLON;
             return new Ray(newOrigin, newDirection, ray.length);
         };
         return Ray;
-    }());
+    })();
     BABYLON.Ray = Ray;
 })(BABYLON || (BABYLON = {}));
