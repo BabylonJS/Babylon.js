@@ -1,4 +1,7 @@
 ﻿module BABYLON.Debug {
+    /**
+    * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+    */
     export class SkeletonViewer {
         public color: Color3 = Color3.White();
 
@@ -107,10 +110,10 @@
             if (!this._debugMesh) {
                 this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true }, this._scene);
                 this._debugMesh.renderingGroupId = this.renderingGroupId;
-                this._debugMesh.color = this.color;
             } else {
                 BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
             }
+            this._debugMesh.color = this.color;
         }
 
         private _updateBoneMatrix(bone: Bone) {
