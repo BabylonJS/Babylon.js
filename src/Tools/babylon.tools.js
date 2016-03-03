@@ -374,11 +374,6 @@ var BABYLON;
             if (v.z > max.z)
                 max.z = v.z;
         };
-        Tools.WithinEpsilon = function (a, b, epsilon) {
-            if (epsilon === void 0) { epsilon = 1.401298E-45; }
-            var num = a - b;
-            return -epsilon <= num && num <= epsilon;
-        };
         Tools.DeepCopy = function (source, destination, doNotCopyList, mustCopyList) {
             for (var prop in source) {
                 if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {

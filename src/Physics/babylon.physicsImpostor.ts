@@ -137,7 +137,7 @@ module BABYLON {
          * Specifically change the body's mass option. Won't recreate the physics body object
          */
         public setMass(mass: number) {
-            if(this.getParam("mass") !== mass) {
+            if (this.getParam("mass") !== mass) {
                 this.setParam("mass", mass);
             }
             this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);

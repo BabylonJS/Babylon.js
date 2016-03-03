@@ -1,4 +1,4 @@
-module BABYLON {
+﻿module BABYLON {
     export class Ray {
         private _edge1: Vector3;
         private _edge2: Vector3;

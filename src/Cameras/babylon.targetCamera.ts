@@ -265,8 +265,8 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    var camLeft = <TargetCamera> this._rigCameras[0];
-                    var camRight = <TargetCamera> this._rigCameras[1];
+                    var camLeft = <TargetCamera>this._rigCameras[0];
+                    var camRight = <TargetCamera>this._rigCameras[1];
 
                     if (this.cameraRigMode === Camera.RIG_MODE_VR) {
                         camLeft.rotation.x = camRight.rotation.x = this.rotation.x;
