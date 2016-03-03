@@ -34,7 +34,8 @@
         private _originalBlendValue: any;
 
         private _ranges: { [name: string]: AnimationRange; } = {};
-
+        public transitionFunction = null; 
+        
         static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation {
             var dataType = undefined;
@@ -314,11 +315,20 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+<<<<<<< HEAD
                                  if(this.transitionFunction)
                                     {
                                        var TWeight = this.transitionFunction.fadeIn();
                                         return this.matrixInterpolateFunction(this._target._matrix, startValue, TWeight); ////ease from previousAnimation to CurrentFrame with fraction
                                     }
+=======
+                                   if(this.transitionFunction)
+                                    {
+                                        var transitionWeight = this.transitionFunction.fadeIn();
+                                        return this.matrixInterpolateFunction(this._target._matrix, startValue, transitionWeight); ////ease from previousAnimation to CurrentFrame with fraction
+                                    }
+                                   
+>>>>>>> 4c3d59b3577d96fc2718d479f3dc3f62d1a29161
                                     if (this.allowMatricesInterpolation) {
                                         return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                     }
