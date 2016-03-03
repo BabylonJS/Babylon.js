@@ -27,7 +27,8 @@
 
         public targetPropertyPath: string[];
         public currentFrame: number;
-
+        
+        public transitionFunction = null; 
         public allowMatricesInterpolation = false;
 
         public blendingSpeed = 0.01;
@@ -314,6 +315,10 @@
                             switch (loopMode) {
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                    if(this.transitionFunction){
+                                        var TWeight = this.transitionFunction.fadeIn();
+                                        return this.matrixInterpolateFunction(this._target._matrix, startValue, TWeight); //will transite into next animatio.
+                                    }
                                     if (this.allowMatricesInterpolation) {
                                         return this.matrixInterpolateFunction(startValue, endValue, gradient);
                                     }

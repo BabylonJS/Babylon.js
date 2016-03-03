@@ -7,7 +7,7 @@
         private _scene: Scene;
 
         public animationStarted = false;
-
+        public transitionFunction =  null;
         constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any) {
             if (animations) {
                 this.appendAnimations(target, animations);
@@ -27,6 +27,7 @@
                 var animation = animations[index];
 
                 animation._target = target;
+                animation.transitionFunction = this.transitionFunction;
                 this._animations.push(animation);
             }
         }
@@ -136,7 +137,7 @@
 
             this.animationStarted = running;
 
-            if (!running) {
+            if (!running && !this.transitionFunction) {
                 // Remove from active animatables
                 index = this._scene._activeAnimatables.indexOf(this);
                 this._scene._activeAnimatables.splice(index, 1);
