@@ -101,7 +101,7 @@
         }
 
         public intersectsPoint(point: Vector3): boolean {
-            var delta = -Engine.Epsilon;
+            var delta = -Epsilon;
 
             if (this.maximumWorld.x - point.x < delta || delta > point.x - this.minimumWorld.x)
                 return false;
