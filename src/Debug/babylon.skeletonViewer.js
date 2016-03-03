@@ -2,6 +2,9 @@ var BABYLON;
 (function (BABYLON) {
     var Debug;
     (function (Debug) {
+        /**
+        * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
+        */
         var SkeletonViewer = (function () {
             function SkeletonViewer(skeleton, mesh, scene, autoUpdateBonesMatrices, renderingGroupId) {
                 if (autoUpdateBonesMatrices === void 0) { autoUpdateBonesMatrices = true; }
@@ -104,11 +107,11 @@ var BABYLON;
                 if (!this._debugMesh) {
                     this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true }, this._scene);
                     this._debugMesh.renderingGroupId = this.renderingGroupId;
-                    this._debugMesh.color = this.color;
                 }
                 else {
                     BABYLON.MeshBuilder.CreateLineSystem(null, { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
                 }
+                this._debugMesh.color = this.color;
             };
             SkeletonViewer.prototype._updateBoneMatrix = function (bone) {
                 if (bone.getParent()) {
