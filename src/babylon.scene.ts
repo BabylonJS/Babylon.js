@@ -830,32 +830,124 @@
          * @see BABYLON.Animatable
          * @see http://doc.babylonjs.com/page.php?p=22081
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
-
-            this.stopAnimation(target);
-
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable,transitionSpeed: number = 1.0 ): Animatable {
+    
+    
+     //////use Scene.GetCurrentAnimatableByTarget(target) to get current primary playing animatable for target;
+      
+     
+          //  this.stopAnimation(target);
+            var transitionFunction = null;
+            if(transitionSpeed < 1)  {
+                                       transitionFunction = new BABYLON.LinearFADE(transitionSpeed,this._engine);
+                                     }
+              
             if (!animatable) {
-                animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+                animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd,animatable,transitionFunction);
+                //animatable.transitionFunction = transitionFunction;
             }
-
             // Local animations
             if (target.animations) {
                 animatable.appendAnimations(target, target.animations);
-            }
-
+               
+           }
             // Children animations
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable,transitionSpeed);
                 }
             }
 
             animatable.reset();
 
+              var maxAnimations = 2;
+              var animtables; animtables = []; animtables = this.GetAllAnimatablesByTarget(target); 
+              
+	       if (animtables.length > maxAnimations) {
+                for (var i = maxAnimations; i < (animtables.length); i++) {
+                    animtables[i].stop();
+                }
+            }
+      
             return animatable;
         }
 
+       
+        public beginTransitionAnimation(target: any, from: number, to: number,startAt: number = 0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void,animatable?: Animatable,transitionSpeed: number = 1.0 ): Animatable {
+    
+    
+           
+            var transitionFunction = null;
+           
+              
+               if(!animatable)
+               {
+                    if(transitionSpeed < 1)  {  transitionFunction = new BABYLON.LinearFADE(transitionSpeed,this._engine); }
+                                       
+                                     
+                   animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
+                   animatable.transitionFunction = transitionFunction;
+               }   
+            
+            // Local animations
+            if (target.animations) {
+                animatable.appendAnimations(target, target.animations);
+                }
+
+            // Children animations
+            if (target.getAnimatables) {
+                var animatables = target.getAnimatables();
+                for (var index = 0; index < animatables.length; index++) {
+                    this.beginTransitionAnimation(animatables[index], from, to,startAt,loop,speedRatio,onAnimationEnd,animatable,transitionSpeed);
+                }
+            }
+
+              animatable.reset();
+              var animtables; animtables = []; animtables = this.GetAllAnimatablesByTarget(target); 
+              if (animtables.length > 2) {
+                for (var i = 2; i < (animtables.length); i++) {
+                    animtables[i].stop();
+                }
+            }
+      
+          if(startAt != 0 && startAt < to) {  animatable.goToFrame(startAt) } 
+
+
+            return animatable;
+        }
+
+
+        public GetAllAnimatablesByTarget(target: any): Animatable {
+            var AT; AT = [];
+             
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    AT.push(this._activeAnimatables[index]);
+                    
+                }
+            }
+            if(AT.length)  { AT.reverse() };
+            return AT;
+           
+        };
+        
+        //////get current/last existing paused or playing  animatable for target
+        public GetCurrentAnimatableByTarget(target: any): Animatable {
+            var AT; AT = [];
+            
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    AT.push(this._activeAnimatables[index]);
+                    
+                }
+            }
+            
+            if(AT.length){   AT.reverse();return AT[0]   }
+            else { return null  }
+        };
+        
+        
         public beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
@@ -875,7 +967,43 @@
 
             return null;
         }
-
+        ////////// later this code can be resolved better,,,
+        public GetAllAnimatablesByTarget(target: any): Animatable {
+            var AT; AT = [];
+             
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    AT.push(this._activeAnimatables[index]);
+                    
+                }
+            }
+            if(AT.length) { AT.reverse() };
+            return AT;
+           
+        };
+        //////////we need this for now to get last current running animatable on target
+        public GetCurrentAnimatableByTarget(target: any): Animatable {
+            var AT; AT = [];
+            
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    AT.push(this._activeAnimatables[index]);
+                    
+                }
+            }
+            
+            if(AT.length)
+            {
+                 AT.reverse();
+                 return AT[0]   
+            }
+            else 
+            {
+                return null ///we have no animatable for target
+            }
+        };
+        
+        
         public get Animatables(): Animatable[] {
             return this._activeAnimatables;
         }

@@ -7,12 +7,17 @@
         private _scene: Scene;
 
         public animationStarted = false;
-
+<<<<<<< HEAD
+        public transitionFunction =  null;
         constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any) {
+=======
+
+        constructor(scene: Scene, public target, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, public speedRatio: number = 1.0, public onAnimationEnd?, animations?: any,public transitionFunction: any = null) {
+>>>>>>> 4c3d59b3577d96fc2718d479f3dc3f62d1a29161
             if (animations) {
                 this.appendAnimations(target, animations);
             }
-
+        
             this._scene = scene;
             scene._activeAnimatables.push(this);
         }
@@ -25,8 +30,9 @@
         public appendAnimations(target: any, animations: Animation[]): void {
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
-
+                
                 animation._target = target;
+                animation.transitionFunction = this.transitionFunction;
                 this._animations.push(animation);
             }
         }
@@ -136,10 +142,10 @@
 
             this.animationStarted = running;
 
-            if (!running) {
+            if (!running && !this.transitionFunction) {
                 // Remove from active animatables
-                index = this._scene._activeAnimatables.indexOf(this);
-                this._scene._activeAnimatables.splice(index, 1);
+               /* index = this._scene._activeAnimatables.indexOf(this);  ///must disable this -- >
+                this._scene._activeAnimatables.splice(index, 1);*/
             }
 
             if (!running && this.onAnimationEnd) {
