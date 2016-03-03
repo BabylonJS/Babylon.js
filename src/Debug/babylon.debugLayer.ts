@@ -21,6 +21,8 @@
         private _drawingContext: CanvasRenderingContext2D;
         private _rootElement: HTMLElement;
 
+        private _skeletonViewers = new Array<Debug.SkeletonViewer>();
+
         public _syncPositions: () => void;
         private _syncData: () => void;
         private _syncUI: () => void;
@@ -368,6 +370,16 @@
             this._scene.probesEnabled = true;
 
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
+
+            this._clearSkeletonViewers();
+        }
+
+        private _clearSkeletonViewers(): void {
+            for (var index = 0; index < this._skeletonViewers.length; index++) {
+                this._skeletonViewers[index].dispose();
+            }
+
+            this._skeletonViewers = [];
         }
 
         public show(showUI: boolean = true, camera: Camera = null, rootElement: HTMLElement = null) {
@@ -698,6 +710,37 @@
                         this._scene.audioEnabled = !element.checked;
                     });
                 }
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Viewers:</b>", this.accentColor);
+                this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", false, (element) => {
+
+                    if (!element.checked) {
+                        this._clearSkeletonViewers();
+                        return;
+                    }
+
+                    for (var index = 0; index < this._scene.meshes.length; index++) {
+                        var mesh = this._scene.meshes[index];
+
+                        if (mesh.skeleton) {
+                            var found = false;
+                            for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
+                                if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (found) {
+                                continue;
+                            }
+
+                            var viewer = new BABYLON.Debug.SkeletonViewer(mesh.skeleton, mesh, this._scene);
+                            viewer.isEnabled = true;
+                            this._skeletonViewers.push(viewer);
+                        }
+                    }
+                });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", (element) => { this._scene.dumpNextRenderTargets = true; });
