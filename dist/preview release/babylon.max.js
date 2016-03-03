@@ -23683,6 +23683,7 @@ var BABYLON;
             // all animation may be coming from a library skeleton, so may need to create animation
             if (this.animations.length === 0) {
                 this.animations.push(new BABYLON.Animation(this.name, "_matrix", source.animations[0].framePerSecond, BABYLON.Animation.ANIMATIONTYPE_MATRIX, 0));
+                this.animations[0].setKeys([{}]);
             }
             // get animation info / verify there is such a range from the source bone
             var sourceRange = source.animations[0].getRange(rangeName);
@@ -24465,10 +24466,16 @@ var BABYLON;
             this._bodyUpdateRequired = true;
         };
         /**
-         * Set the body's velocity.
+         * Set the body's linear velocity.
          */
-        PhysicsImpostor.prototype.setVelocity = function (velocity) {
-            this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
+        PhysicsImpostor.prototype.setLinearVelocity = function (velocity) {
+            this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        };
+        /**
+         * Set the body's linear velocity.
+         */
+        PhysicsImpostor.prototype.setAngularVelocity = function (velocity) {
+            this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
         };
         /**
          * Execute a function with the physics plugin native code.
@@ -29470,6 +29477,7 @@ var BABYLON;
             this._displayStatistics = true;
             this._displayTree = false;
             this._displayLogs = false;
+            this._skeletonViewers = new Array();
             this._identityMatrix = BABYLON.Matrix.Identity();
             this.axisRatio = 0.02;
             this.accentColor = "orange";
@@ -29723,6 +29731,13 @@ var BABYLON;
             this._scene.renderTargetsEnabled = true;
             this._scene.probesEnabled = true;
             engine.getRenderingCanvas().removeEventListener("click", this._onCanvasClick);
+            this._clearSkeletonViewers();
+        };
+        DebugLayer.prototype._clearSkeletonViewers = function () {
+            for (var index = 0; index < this._skeletonViewers.length; index++) {
+                this._skeletonViewers[index].dispose();
+            }
+            this._skeletonViewers = [];
         };
         DebugLayer.prototype.show = function (showUI, camera, rootElement) {
             if (showUI === void 0) { showUI = true; }
@@ -30016,6 +30031,32 @@ var BABYLON;
                         _this._scene.audioEnabled = !element.checked;
                     });
                 }
+                this._optionsSubsetDiv.appendChild(document.createElement("br"));
+                this._generateTexBox(this._optionsSubsetDiv, "<b>Viewers:</b>", this.accentColor);
+                this._generateCheckBox(this._optionsSubsetDiv, "Skeletons", false, function (element) {
+                    if (!element.checked) {
+                        _this._clearSkeletonViewers();
+                        return;
+                    }
+                    for (var index = 0; index < _this._scene.meshes.length; index++) {
+                        var mesh = _this._scene.meshes[index];
+                        if (mesh.skeleton) {
+                            var found = false;
+                            for (var sIndex = 0; sIndex < _this._skeletonViewers.length; sIndex++) {
+                                if (_this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found) {
+                                continue;
+                            }
+                            var viewer = new BABYLON.Debug.SkeletonViewer(mesh.skeleton, mesh, _this._scene);
+                            viewer.isEnabled = true;
+                            _this._skeletonViewers.push(viewer);
+                        }
+                    }
+                });
                 this._optionsSubsetDiv.appendChild(document.createElement("br"));
                 this._generateTexBox(this._optionsSubsetDiv, "<b>Tools:</b>", this.accentColor);
                 this._generateButton(this._optionsSubsetDiv, "Dump rendertargets", function (element) { _this._scene.dumpNextRenderTargets = true; });
@@ -31386,8 +31427,11 @@ var BABYLON;
         CannonJSPlugin.prototype.isSupported = function () {
             return window.CANNON !== undefined;
         };
-        CannonJSPlugin.prototype.setVelocity = function (impostor, velocity) {
+        CannonJSPlugin.prototype.setLinearVelocity = function (impostor, velocity) {
             impostor.physicsBody.velocity.copy(velocity);
+        };
+        CannonJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
+            impostor.physicsBody.angularVelocity.copy(velocity);
         };
         CannonJSPlugin.prototype.sleepBody = function (impostor) {
             impostor.physicsBody.sleep();
@@ -31663,8 +31707,11 @@ var BABYLON;
             }
             return lastShape;
         };
-        OimoJSPlugin.prototype.setVelocity = function (impostor, velocity) {
+        OimoJSPlugin.prototype.setLinearVelocity = function (impostor, velocity) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
+        };
+        OimoJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
+            impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
         };
         OimoJSPlugin.prototype.sleepBody = function (impostor) {
             impostor.physicsBody.sleep();

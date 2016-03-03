@@ -365,8 +365,11 @@ var BABYLON;
         CannonJSPlugin.prototype.isSupported = function () {
             return window.CANNON !== undefined;
         };
-        CannonJSPlugin.prototype.setVelocity = function (impostor, velocity) {
+        CannonJSPlugin.prototype.setLinearVelocity = function (impostor, velocity) {
             impostor.physicsBody.velocity.copy(velocity);
+        };
+        CannonJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
+            impostor.physicsBody.angularVelocity.copy(velocity);
         };
         CannonJSPlugin.prototype.sleepBody = function (impostor) {
             impostor.physicsBody.sleep();
