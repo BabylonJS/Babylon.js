@@ -157,10 +157,16 @@ var BABYLON;
             this._bodyUpdateRequired = true;
         };
         /**
-         * Set the body's velocity.
+         * Set the body's linear velocity.
          */
-        PhysicsImpostor.prototype.setVelocity = function (velocity) {
-            this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
+        PhysicsImpostor.prototype.setLinearVelocity = function (velocity) {
+            this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        };
+        /**
+         * Set the body's linear velocity.
+         */
+        PhysicsImpostor.prototype.setAngularVelocity = function (velocity) {
+            this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
         };
         /**
          * Execute a function with the physics plugin native code.
