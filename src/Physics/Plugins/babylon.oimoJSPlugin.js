@@ -258,8 +258,11 @@ var BABYLON;
             }
             return lastShape;
         };
-        OimoJSPlugin.prototype.setVelocity = function (impostor, velocity) {
+        OimoJSPlugin.prototype.setLinearVelocity = function (impostor, velocity) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
+        };
+        OimoJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
+            impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
         };
         OimoJSPlugin.prototype.sleepBody = function (impostor) {
             impostor.physicsBody.sleep();
