@@ -12,6 +12,77 @@
         constructor(public frame: number, public action: () => void, public onlyOnce?: boolean) {
         }
     }
+    
+    export class PathCursor {
+        private _onchange = new Array<(cursor: PathCursor) => void>();
+
+        value: number = 0;
+        animations = new Array<Animation>();
+
+        constructor(private path: Path2) {
+        }
+
+        public getPoint(): Vector3 {
+            var point = this.path.getPointAtLengthPosition(this.value);
+            return new Vector3(point.x, 0, point.y);
+        }
+
+        public moveAhead(step: number = 0.002): PathCursor {
+            this.move(step);
+
+            return this;
+        }
+
+        public moveBack(step: number = 0.002): PathCursor {
+            this.move(-step);
+
+            return this;
+        }
+
+        public move(step: number): PathCursor {
+
+            if (Math.abs(step) > 1) {
+                throw "step size should be less than 1.";
+            }
+
+            this.value += step;
+            this.ensureLimits();
+            this.raiseOnChange();
+
+            return this;
+        }
+
+        private ensureLimits(): PathCursor {
+            while (this.value > 1) {
+                this.value -= 1;
+            }
+            while (this.value < 0) {
+                this.value += 1;
+            }
+
+            return this;
+        }
+
+        // used by animation engine
+        private markAsDirty(propertyName: string): PathCursor {
+            this.ensureLimits();
+            this.raiseOnChange();
+
+            return this;
+        }
+
+        private raiseOnChange(): PathCursor {
+            this._onchange.forEach(f => f(this));
+
+            return this;
+        }
+
+        public onchange(f: (cursor: PathCursor) => void): PathCursor {
+            this._onchange.push(f);
+
+            return this;
+        }
+    }
 
     export class Animation {
         private _keys: Array<any>;

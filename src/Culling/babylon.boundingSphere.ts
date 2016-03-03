@@ -40,7 +40,7 @@
 
             var distance = Math.sqrt((x * x) + (y * y) + (z * z));
 
-            if (Math.abs(this.radiusWorld - distance) < Engine.Epsilon)
+            if (Math.abs(this.radiusWorld - distance) < Epsilon)
                 return false;
 
             return true;
