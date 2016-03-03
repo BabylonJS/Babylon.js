@@ -482,11 +482,11 @@
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < Engine.Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < Epsilon)
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < Engine.Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < Epsilon)
                     this.inertialBetaOffset = 0;
-                if (Math.abs(this.inertialRadiusOffset) < Engine.Epsilon)
+                if (Math.abs(this.inertialRadiusOffset) < Epsilon)
                     this.inertialRadiusOffset = 0;
             }
 
@@ -500,9 +500,9 @@
                 this.inertialPanningX *= this.inertia;
                 this.inertialPanningY *= this.inertia;
 
-                if (Math.abs(this.inertialPanningX) < Engine.Epsilon)
+                if (Math.abs(this.inertialPanningX) < Epsilon)
                     this.inertialPanningX = 0;
-                if (Math.abs(this.inertialPanningY) < Engine.Epsilon)
+                if (Math.abs(this.inertialPanningY) < Epsilon)
                     this.inertialPanningY = 0;
 
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
