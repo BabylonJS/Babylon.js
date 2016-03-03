@@ -24,6 +24,18 @@ var BABYLON;
         return generateSerializableMember(3, sourceName); // fresnel parameters member
     }
     BABYLON.serializeAsFresnelParameters = serializeAsFresnelParameters;
+    function serializeAsVector2(sourceName) {
+        return generateSerializableMember(4, sourceName); // vector2 member
+    }
+    BABYLON.serializeAsVector2 = serializeAsVector2;
+    function serializeAsVector3(sourceName) {
+        return generateSerializableMember(5, sourceName); // vector3 member
+    }
+    BABYLON.serializeAsVector3 = serializeAsVector3;
+    function serializeAsMeshReference(sourceName) {
+        return generateSerializableMember(6, sourceName); // mesh reference member
+    }
+    BABYLON.serializeAsMeshReference = serializeAsMeshReference;
     var SerializationHelper = (function () {
         function SerializationHelper() {
         }
@@ -53,6 +65,15 @@ var BABYLON;
                         case 3:
                             serializationObject[targetPropertyName] = sourceProperty.serialize();
                             break;
+                        case 4:
+                            serializationObject[targetPropertyName] = sourceProperty.asArray();
+                            break;
+                        case 5:
+                            serializationObject[targetPropertyName] = sourceProperty.asArray();
+                            break;
+                        case 6:
+                            serializationObject[targetPropertyName] = sourceProperty.id;
+                            break;
                     }
                 }
             }
@@ -81,6 +102,15 @@ var BABYLON;
                         case 3:
                             destination[property] = BABYLON.FresnelParameters.Parse(sourceProperty);
                             break;
+                        case 4:
+                            destination[property] = BABYLON.Vector2.FromArray(sourceProperty);
+                            break;
+                        case 5:
+                            destination[property] = BABYLON.Vector3.FromArray(sourceProperty);
+                            break;
+                        case 6:
+                            destination[property] = scene.getLastMeshByID(sourceProperty);
+                            break;
                     }
                 }
             }
@@ -97,12 +127,15 @@ var BABYLON;
                 var propertyType = propertyDescriptor.type;
                 if (sourceProperty !== undefined && sourceProperty !== null) {
                     switch (propertyType) {
-                        case 0:
+                        case 0: // Value
+                        case 6:
                             destination[property] = sourceProperty;
                             break;
                         case 1: // Texture
                         case 2: // Color3
-                        case 3:
+                        case 3: // FresnelParameters
+                        case 4: // Vector2
+                        case 5:
                             destination[property] = sourceProperty.clone();
                             break;
                     }

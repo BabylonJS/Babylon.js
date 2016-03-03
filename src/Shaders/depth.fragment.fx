@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-#ifdef ALPHATEST
+﻿#ifdef ALPHATEST
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif

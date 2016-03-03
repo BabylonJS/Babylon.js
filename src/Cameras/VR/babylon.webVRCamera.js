@@ -48,9 +48,9 @@ var BABYLON;
                 this._cacheState = this._sensorDevice.getState();
                 this._cacheQuaternion.copyFromFloats(this._cacheState.orientation.x, this._cacheState.orientation.y, this._cacheState.orientation.z, this._cacheState.orientation.w);
                 this._cacheQuaternion.toEulerAnglesToRef(this._cacheRotation);
-                this.rotation.x = -this._cacheRotation.z;
+                this.rotation.x = -this._cacheRotation.x;
                 this.rotation.y = -this._cacheRotation.y;
-                this.rotation.z = this._cacheRotation.x;
+                this.rotation.z = this._cacheRotation.z;
             }
             _super.prototype._checkInputs.call(this);
         };
@@ -67,10 +67,8 @@ var BABYLON;
             _super.prototype.detachControl.call(this, element);
             this._vrEnabled = false;
         };
-        WebVRFreeCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "WebVRFreeCamera";
-            return serializationObject;
+        WebVRFreeCamera.prototype.getTypeName = function () {
+            return "WebVRFreeCamera";
         };
         return WebVRFreeCamera;
     })(BABYLON.FreeCamera);

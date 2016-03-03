@@ -1,246 +1,5 @@
 var BABYLON;
 (function (BABYLON) {
-    var _DepthCullingState = (function () {
-        function _DepthCullingState() {
-            this._isDepthTestDirty = false;
-            this._isDepthMaskDirty = false;
-            this._isDepthFuncDirty = false;
-            this._isCullFaceDirty = false;
-            this._isCullDirty = false;
-            this._isZOffsetDirty = false;
-        }
-        Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
-            get: function () {
-                return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "zOffset", {
-            get: function () {
-                return this._zOffset;
-            },
-            set: function (value) {
-                if (this._zOffset === value) {
-                    return;
-                }
-                this._zOffset = value;
-                this._isZOffsetDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "cullFace", {
-            get: function () {
-                return this._cullFace;
-            },
-            set: function (value) {
-                if (this._cullFace === value) {
-                    return;
-                }
-                this._cullFace = value;
-                this._isCullFaceDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "cull", {
-            get: function () {
-                return this._cull;
-            },
-            set: function (value) {
-                if (this._cull === value) {
-                    return;
-                }
-                this._cull = value;
-                this._isCullDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthFunc", {
-            get: function () {
-                return this._depthFunc;
-            },
-            set: function (value) {
-                if (this._depthFunc === value) {
-                    return;
-                }
-                this._depthFunc = value;
-                this._isDepthFuncDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthMask", {
-            get: function () {
-                return this._depthMask;
-            },
-            set: function (value) {
-                if (this._depthMask === value) {
-                    return;
-                }
-                this._depthMask = value;
-                this._isDepthMaskDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthTest", {
-            get: function () {
-                return this._depthTest;
-            },
-            set: function (value) {
-                if (this._depthTest === value) {
-                    return;
-                }
-                this._depthTest = value;
-                this._isDepthTestDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        _DepthCullingState.prototype.reset = function () {
-            this._depthMask = true;
-            this._depthTest = true;
-            this._depthFunc = null;
-            this._cull = null;
-            this._cullFace = null;
-            this._zOffset = 0;
-            this._isDepthTestDirty = true;
-            this._isDepthMaskDirty = true;
-            this._isDepthFuncDirty = false;
-            this._isCullFaceDirty = false;
-            this._isCullDirty = false;
-            this._isZOffsetDirty = false;
-        };
-        _DepthCullingState.prototype.apply = function (gl) {
-            if (!this.isDirty) {
-                return;
-            }
-            // Cull
-            if (this._isCullDirty) {
-                if (this.cull) {
-                    gl.enable(gl.CULL_FACE);
-                }
-                else {
-                    gl.disable(gl.CULL_FACE);
-                }
-                this._isCullDirty = false;
-            }
-            // Cull face
-            if (this._isCullFaceDirty) {
-                gl.cullFace(this.cullFace);
-                this._isCullFaceDirty = false;
-            }
-            // Depth mask
-            if (this._isDepthMaskDirty) {
-                gl.depthMask(this.depthMask);
-                this._isDepthMaskDirty = false;
-            }
-            // Depth test
-            if (this._isDepthTestDirty) {
-                if (this.depthTest) {
-                    gl.enable(gl.DEPTH_TEST);
-                }
-                else {
-                    gl.disable(gl.DEPTH_TEST);
-                }
-                this._isDepthTestDirty = false;
-            }
-            // Depth func
-            if (this._isDepthFuncDirty) {
-                gl.depthFunc(this.depthFunc);
-                this._isDepthFuncDirty = false;
-            }
-            // zOffset
-            if (this._isZOffsetDirty) {
-                if (this.zOffset) {
-                    gl.enable(gl.POLYGON_OFFSET_FILL);
-                    gl.polygonOffset(this.zOffset, 0);
-                }
-                else {
-                    gl.disable(gl.POLYGON_OFFSET_FILL);
-                }
-                this._isZOffsetDirty = false;
-            }
-        };
-        return _DepthCullingState;
-    })();
-    BABYLON._DepthCullingState = _DepthCullingState;
-    var _AlphaState = (function () {
-        function _AlphaState() {
-            this._isAlphaBlendDirty = false;
-            this._isBlendFunctionParametersDirty = false;
-            this._alphaBlend = false;
-            this._blendFunctionParameters = new Array(4);
-        }
-        Object.defineProperty(_AlphaState.prototype, "isDirty", {
-            get: function () {
-                return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_AlphaState.prototype, "alphaBlend", {
-            get: function () {
-                return this._alphaBlend;
-            },
-            set: function (value) {
-                if (this._alphaBlend === value) {
-                    return;
-                }
-                this._alphaBlend = value;
-                this._isAlphaBlendDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        _AlphaState.prototype.setAlphaBlendFunctionParameters = function (value0, value1, value2, value3) {
-            if (this._blendFunctionParameters[0] === value0 &&
-                this._blendFunctionParameters[1] === value1 &&
-                this._blendFunctionParameters[2] === value2 &&
-                this._blendFunctionParameters[3] === value3) {
-                return;
-            }
-            this._blendFunctionParameters[0] = value0;
-            this._blendFunctionParameters[1] = value1;
-            this._blendFunctionParameters[2] = value2;
-            this._blendFunctionParameters[3] = value3;
-            this._isBlendFunctionParametersDirty = true;
-        };
-        _AlphaState.prototype.reset = function () {
-            this._alphaBlend = false;
-            this._blendFunctionParameters[0] = null;
-            this._blendFunctionParameters[1] = null;
-            this._blendFunctionParameters[2] = null;
-            this._blendFunctionParameters[3] = null;
-            this._isAlphaBlendDirty = true;
-            this._isBlendFunctionParametersDirty = false;
-        };
-        _AlphaState.prototype.apply = function (gl) {
-            if (!this.isDirty) {
-                return;
-            }
-            // Alpha blend
-            if (this._isAlphaBlendDirty) {
-                if (this._alphaBlend) {
-                    gl.enable(gl.BLEND);
-                }
-                else {
-                    gl.disable(gl.BLEND);
-                }
-                this._isAlphaBlendDirty = false;
-            }
-            // Alpha function
-            if (this._isBlendFunctionParametersDirty) {
-                gl.blendFuncSeparate(this._blendFunctionParameters[0], this._blendFunctionParameters[1], this._blendFunctionParameters[2], this._blendFunctionParameters[3]);
-                this._isBlendFunctionParametersDirty = false;
-            }
-        };
-        return _AlphaState;
-    })();
-    BABYLON._AlphaState = _AlphaState;
     var compileShader = function (gl, source, type, defines) {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
         gl.shaderSource(shader, (defines ? defines + "\n" : "") + source);
@@ -378,8 +137,8 @@ var BABYLON;
             this.fps = 60;
             this.deltaTime = 0;
             // States
-            this._depthCullingState = new _DepthCullingState();
-            this._alphaState = new _AlphaState();
+            this._depthCullingState = new BABYLON.Internals._DepthCullingState();
+            this._alphaState = new BABYLON.Internals._AlphaState();
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._loadedTexturesCache = new Array();
@@ -422,7 +181,8 @@ var BABYLON;
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
             // Viewport
-            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / (window.devicePixelRatio || 1.0) : 1.0;
+            var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
             // Caps
             this._caps = new EngineCapabilities();
@@ -1178,11 +938,13 @@ var BABYLON;
             // Use program
             this._gl.useProgram(effect.getProgram());
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //make sure this is a number)
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._vertexAttribArrays[i] = false;
-                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArrays[iAsNumber] = false;
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
             var attributesCount = effect.getAttributesCount();
             for (var index = 0; index < attributesCount; index++) {
@@ -1813,7 +1575,7 @@ var BABYLON;
             }
             return texture;
         };
-        Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback) {
+        Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback, mipmmapGenerator) {
             var _this = this;
             var gl = this._gl;
             var texture = gl.createTexture();
@@ -1842,12 +1604,37 @@ var BABYLON;
                 ];
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-                for (var index = 0; index < facesIndex.length; index++) {
-                    var faceData = rgbeDataArrays[index];
-                    gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
-                }
                 if (!noMipmap && isPot) {
-                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    if (mipmmapGenerator) {
+                        var arrayTemp = [];
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
+                        arrayTemp.push(rgbeDataArrays[0]); // +X
+                        arrayTemp.push(rgbeDataArrays[3]); // -X
+                        arrayTemp.push(rgbeDataArrays[1]); // +Y
+                        arrayTemp.push(rgbeDataArrays[4]); // -Y
+                        arrayTemp.push(rgbeDataArrays[2]); // +Z
+                        arrayTemp.push(rgbeDataArrays[5]); // -Z
+                        var mipData = mipmmapGenerator(arrayTemp);
+                        for (var level = 0; level < mipData.length; level++) {
+                            var mipSize = width >> level;
+                            // mipData is order in +X -X +Y -Y +Z -Z
+                            gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                            gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                            gl.texImage2D(facesIndex[2], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                            gl.texImage2D(facesIndex[3], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                            gl.texImage2D(facesIndex[4], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                            gl.texImage2D(facesIndex[5], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                        }
+                    }
+                    else {
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (var index = 0; index < facesIndex.length; index++) {
+                            var faceData = rgbeDataArrays[index];
+                            gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
+                        }
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
                 }
                 else {
                     noMipmap = true;
@@ -2038,10 +1825,12 @@ var BABYLON;
             }
             // Unbind
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //making sure this is a string
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
             this._gl = null;
             // Events

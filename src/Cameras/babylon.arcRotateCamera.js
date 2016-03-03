@@ -3,6 +3,12 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var eventPrefix = BABYLON.Tools.GetPointerPrefix();
@@ -11,10 +17,6 @@ var BABYLON;
         function ArcRotateCamera(name, alpha, beta, radius, target, scene) {
             var _this = this;
             _super.call(this, name, BABYLON.Vector3.Zero(), scene);
-            this.alpha = alpha;
-            this.beta = beta;
-            this.radius = radius;
-            this.target = target;
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
@@ -86,9 +88,15 @@ var BABYLON;
                 _this._viewMatrix.m[13] += _this.targetScreenOffset.y;
                 _this._collisionTriggered = false;
             };
-            if (!this.target) {
+            if (!target) {
                 this.target = BABYLON.Vector3.Zero();
             }
+            else {
+                this.target = target;
+            }
+            this.alpha = alpha;
+            this.beta = beta;
+            this.radius = radius;
             this.getViewMatrix();
         }
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
@@ -106,9 +114,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        ArcRotateCamera.prototype._getTargetPosition = function () {
-            return this.target.getAbsolutePosition ? this.target.getAbsolutePosition() : this.target;
-        };
         // Cache
         ArcRotateCamera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
@@ -128,11 +133,17 @@ var BABYLON;
             this._cache.radius = this.radius;
             this._cache.targetScreenOffset.copyFrom(this.targetScreenOffset);
         };
+        ArcRotateCamera.prototype._getTargetPosition = function () {
+            if (this.target.getAbsolutePosition) {
+                return this.target.getAbsolutePosition();
+            }
+            return this.target;
+        };
         // Synchronized
         ArcRotateCamera.prototype._isSynchronizedViewMatrix = function () {
             if (!_super.prototype._isSynchronizedViewMatrix.call(this))
                 return false;
-            return this._cache.target.equals(this._getTargetPosition())
+            return this._cache.target.equals(this.target)
                 && this._cache.alpha === this.alpha
                 && this._cache.beta === this.beta
                 && this._cache.radius === this.radius
@@ -475,7 +486,7 @@ var BABYLON;
             this.rebuildAnglesAndRadius();
         };
         ArcRotateCamera.prototype.setTarget = function (target) {
-            if (this.target.equals(target)) {
+            if (this._getTargetPosition().equals(target)) {
                 return;
             }
             this.target = target;
@@ -574,21 +585,87 @@ var BABYLON;
             }
             _super.prototype._updateRigCameras.call(this);
         };
-        ArcRotateCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = "ArcRotateCamera";
-            if (this.target instanceof BABYLON.Vector3) {
-                serializationObject.target = this.target.asArray();
-            }
-            if (this.target && this.target.id) {
-                serializationObject.lockedTargetId = this.target.id;
-            }
-            serializationObject.checkCollisions = this.checkCollisions;
-            serializationObject.alpha = this.alpha;
-            serializationObject.beta = this.beta;
-            serializationObject.radius = this.radius;
-            return serializationObject;
+        ArcRotateCamera.prototype.getTypeName = function () {
+            return "ArcRotateCamera";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "alpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "beta", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "radius", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], ArcRotateCamera.prototype, "target", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialAlphaOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialBetaOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialRadiusOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerAlphaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperAlphaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerBetaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperBetaLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "lowerRadiusLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "upperRadiusLimit", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "angularSensibilityX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "angularSensibilityY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "wheelPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "pinchPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "panningSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialPanningX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "inertialPanningY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysUp", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysDown", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "keysRight", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "zoomOnFactor", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCamera.prototype, "allowUpsideDown", void 0);
         return ArcRotateCamera;
     })(BABYLON.TargetCamera);
     BABYLON.ArcRotateCamera = ArcRotateCamera;

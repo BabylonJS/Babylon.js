@@ -65,6 +65,9 @@
         public animations: Animation[] = [];
 
         // Pointers
+        public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
+        public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
+        public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
@@ -479,12 +482,13 @@
 
                 this._updatePointerPosition(evt);
 
-                // Meshes
-                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY,
-                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined),
-                    false,
-                    this.cameraToUseForPointers);
+                if (!this.pointerMovePredicate) {
+                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined);
+                }
 
+                // Meshes
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);
+                    
                 if (pickResult.hit && pickResult.pickedMesh) {
                     this.setPointerOverSprite(null);
 
@@ -525,16 +529,15 @@
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = new Date().getTime();
 
-                var predicate = null;
+                if (!this.pointerDownPredicate) {
+                    this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
+                    };
+                }
 
                 // Meshes
                 this._pickedDownMesh = null;
-                if (!this.onPointerDown && !this.onPointerPick) {
-                    predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
-                    };
-                }
-                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, predicate, false, this.cameraToUseForPointers);
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
@@ -556,7 +559,7 @@
 
                         if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
                             var that = this;
-                            window.setTimeout(function () {
+                            window.setTimeout(function() {
                                 var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY,
                                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
                                     false, that.cameraToUseForPointers);
@@ -607,19 +610,17 @@
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
-
-                var predicate = null;
-
+                
                 this._updatePointerPosition(evt);
 
-                if (!this.onPointerUp && !this.onPointerPick) {
-                    predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger));
+                if (!this.pointerUpPredicate) {
+                    this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)));
                     };
                 }
 
                 // Meshes
-                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, predicate, false, this.cameraToUseForPointers);
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerUpPredicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (this.onPointerPick && this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
@@ -849,6 +850,8 @@
                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+
+            animatable.reset();
 
             return animatable;
         }
@@ -1880,7 +1883,7 @@
             // Physics
             if (this._physicsEngine) {
                 Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                this._physicsEngine._step(deltaTime / 1000.0);
                 Tools.EndPerformanceCounter("Physics");
             }
 
@@ -2491,16 +2494,14 @@
                 return true;
             }
 
-            this._physicsEngine = new PhysicsEngine(plugin);
-
-            if (!this._physicsEngine.isSupported()) {
-                this._physicsEngine = null;
+            try {
+                this._physicsEngine = new PhysicsEngine(gravity, plugin);
+                return true;
+            } catch (e) {
+                Tools.Error(e.message);
                 return false;
             }
 
-            this._physicsEngine._initialize(gravity);
-
-            return true;
         }
 
         public disablePhysicsEngine(): void {
@@ -2517,45 +2518,49 @@
         }
 
         /**
+         * 
          * Sets the gravity of the physics engine (and NOT of the scene)
          * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
          */
         public setGravity(gravity: Vector3): void {
+            Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'")
             if (!this._physicsEngine) {
                 return;
             }
 
-            this._physicsEngine._setGravity(gravity);
+            this._physicsEngine.setGravity(gravity);
         }
 
-        public createCompoundImpostor(parts: any, options: PhysicsBodyCreationOptions): any {
+        /**
+         * Legacy support, using the new API
+         * @Deprecated
+         */
+        public createCompoundImpostor(parts: any, options: PhysicsImpostorParameters): any {
+            Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child")
+
             if (parts.parts) { // Old API
                 options = parts;
                 parts = parts.parts;
             }
 
-            if (!this._physicsEngine) {
-                return null;
+            var mainMesh: AbstractMesh = parts[0].mesh;
+            mainMesh.physicsImpostor = new PhysicsImpostor(mainMesh, parts[0].impostor, options)
+            for (var index = 1; index < parts.length; index++) {
+                var mesh: AbstractMesh = parts[index].mesh;
+                if (mesh.parent !== mainMesh) {
+                    mesh.position = mesh.position.subtract(mainMesh.position);
+                    mesh.parent = mainMesh;
+                }
+                mesh.physicsImpostor = new PhysicsImpostor(mesh, parts[index].impostor, options)
+
             }
-
-            for (var index = 0; index < parts.length; index++) {
-                var mesh = parts[index].mesh;
-
-                mesh._physicImpostor = parts[index].impostor;
-                mesh._physicsMass = options.mass / parts.length;
-                mesh._physicsFriction = options.friction;
-                mesh._physicRestitution = options.restitution;
-            }
-
-            return this._physicsEngine._registerMeshesAsCompound(parts, options);
+            mainMesh.physicsImpostor.forceUpdate();
         }
 
         public deleteCompoundImpostor(compound: any): void {
-            for (var index = 0; index < compound.parts.length; index++) {
-                var mesh = compound.parts[index].mesh;
-                mesh._physicImpostor = PhysicsEngine.NoImpostor;
-                this._physicsEngine._unregisterMesh(mesh);
-            }
+            var mesh: AbstractMesh = compound.parts[0].mesh;
+            mesh.physicsImpostor.dispose(true);
+            mesh.physicsImpostor = null;
         }
 
         // Misc.

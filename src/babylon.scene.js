@@ -330,8 +330,11 @@ var BABYLON;
                 }
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
+                if (!_this.pointerMovePredicate) {
+                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); };
+                }
                 // Meshes
-                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); }, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerMovePredicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
@@ -368,15 +371,14 @@ var BABYLON;
                 _this._startingPointerPosition.x = _this._pointerX;
                 _this._startingPointerPosition.y = _this._pointerY;
                 _this._startingPointerTime = new Date().getTime();
-                var predicate = null;
-                // Meshes
-                _this._pickedDownMesh = null;
-                if (!_this.onPointerDown && !_this.onPointerPick) {
-                    predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
+                if (!_this.pointerDownPredicate) {
+                    _this.pointerDownPredicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
                     };
                 }
-                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, predicate, false, _this.cameraToUseForPointers);
+                // Meshes
+                _this._pickedDownMesh = null;
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerDownPredicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         _this._pickedDownMesh = pickResult.pickedMesh;
@@ -440,15 +442,14 @@ var BABYLON;
                 if (!_this.cameraToUseForPointers && !_this.activeCamera) {
                     return;
                 }
-                var predicate = null;
                 _this._updatePointerPosition(evt);
-                if (!_this.onPointerUp && !_this.onPointerPick) {
-                    predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger));
+                if (!_this.pointerUpPredicate) {
+                    _this.pointerUpPredicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)));
                     };
                 }
                 // Meshes
-                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, predicate, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerUpPredicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (_this.onPointerPick && _this._pickedDownMesh != null && pickResult.pickedMesh == _this._pickedDownMesh) {
                         _this.onPointerPick(evt, pickResult);
@@ -636,6 +637,7 @@ var BABYLON;
                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+            animatable.reset();
             return animatable;
         };
         Scene.prototype.beginDirectAnimation = function (target, animations, from, to, loop, speedRatio, onAnimationEnd) {
@@ -1488,7 +1490,7 @@ var BABYLON;
             // Physics
             if (this._physicsEngine) {
                 BABYLON.Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                this._physicsEngine._step(deltaTime / 1000.0);
                 BABYLON.Tools.EndPerformanceCounter("Physics");
             }
             // Before render
@@ -1992,13 +1994,14 @@ var BABYLON;
             if (this._physicsEngine) {
                 return true;
             }
-            this._physicsEngine = new BABYLON.PhysicsEngine(plugin);
-            if (!this._physicsEngine.isSupported()) {
-                this._physicsEngine = null;
+            try {
+                this._physicsEngine = new BABYLON.PhysicsEngine(gravity, plugin);
+                return true;
+            }
+            catch (e) {
+                BABYLON.Tools.Error(e.message);
                 return false;
             }
-            this._physicsEngine._initialize(gravity);
-            return true;
         };
         Scene.prototype.disablePhysicsEngine = function () {
             if (!this._physicsEngine) {
@@ -2011,38 +2014,43 @@ var BABYLON;
             return this._physicsEngine !== undefined;
         };
         /**
+         *
          * Sets the gravity of the physics engine (and NOT of the scene)
          * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
          */
         Scene.prototype.setGravity = function (gravity) {
+            BABYLON.Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'");
             if (!this._physicsEngine) {
                 return;
             }
-            this._physicsEngine._setGravity(gravity);
+            this._physicsEngine.setGravity(gravity);
         };
+        /**
+         * Legacy support, using the new API
+         * @Deprecated
+         */
         Scene.prototype.createCompoundImpostor = function (parts, options) {
+            BABYLON.Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child");
             if (parts.parts) {
                 options = parts;
                 parts = parts.parts;
             }
-            if (!this._physicsEngine) {
-                return null;
-            }
-            for (var index = 0; index < parts.length; index++) {
+            var mainMesh = parts[0].mesh;
+            mainMesh.physicsImpostor = new BABYLON.PhysicsImpostor(mainMesh, parts[0].impostor, options);
+            for (var index = 1; index < parts.length; index++) {
                 var mesh = parts[index].mesh;
-                mesh._physicImpostor = parts[index].impostor;
-                mesh._physicsMass = options.mass / parts.length;
-                mesh._physicsFriction = options.friction;
-                mesh._physicRestitution = options.restitution;
+                if (mesh.parent !== mainMesh) {
+                    mesh.position = mesh.position.subtract(mainMesh.position);
+                    mesh.parent = mainMesh;
+                }
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parts[index].impostor, options);
             }
-            return this._physicsEngine._registerMeshesAsCompound(parts, options);
+            mainMesh.physicsImpostor.forceUpdate();
         };
         Scene.prototype.deleteCompoundImpostor = function (compound) {
-            for (var index = 0; index < compound.parts.length; index++) {
-                var mesh = compound.parts[index].mesh;
-                mesh._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
-                this._physicsEngine._unregisterMesh(mesh);
-            }
+            var mesh = compound.parts[0].mesh;
+            mesh.physicsImpostor.dispose(true);
+            mesh.physicsImpostor = null;
         };
         // Misc.
         Scene.prototype.createDefaultCameraOrLight = function () {

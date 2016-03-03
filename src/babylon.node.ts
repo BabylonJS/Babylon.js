@@ -5,9 +5,17 @@
      */
     export class Node {
         public parent: Node;
+
+        @serialize()
         public name: string;
+
+        @serialize()
         public id: string;
+
+        @serialize()
         public uniqueId: number;
+
+        @serialize()
         public state = "";
 
         public animations = new Array<Animation>();
@@ -163,16 +171,15 @@
                     return true;
                 }
 
-
                 return this.parent.isDescendantOf(ancestor);
             }
             return false;
         }
 
-        public _getDescendants(list: Node[], results: Node[]): void {
+        public _getDescendants(list: Node[], results: Node[], directDecendantsOnly: boolean = false): void {
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (item.isDescendantOf(this)) {
+                if ((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
                     results.push(item);
                 }
             }
@@ -182,12 +189,29 @@
          * Will return all nodes that have this node as parent.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        public getDescendants(): Node[] {
+        public getDescendants(directDecendantsOnly?: boolean): Node[] {
             var results = [];
-            this._getDescendants(this._scene.meshes, results);
-            this._getDescendants(this._scene.lights, results);
-            this._getDescendants(this._scene.cameras, results);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
+            this._getDescendants(this._scene.lights, results, directDecendantsOnly);
+            this._getDescendants(this._scene.cameras, results, directDecendantsOnly);
 
+            return results;
+        }
+        
+        /**
+         * @Deprecated, legacy support.
+         * use getDecendants instead.
+         */
+        public getChildren(): Node[] {
+            return this.getDescendants(true);
+        }
+        
+        /**
+         * Get all child-meshes of this node.
+         */
+        public getChildMeshes(directDecendantsOnly?: boolean): AbstractMesh[] {
+            var results: Array<AbstractMesh> = [];
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
             return results;
         }
 

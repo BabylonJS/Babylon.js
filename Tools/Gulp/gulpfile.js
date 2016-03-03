@@ -11,6 +11,7 @@ var cleants = require('gulp-clean-ts-extends');
 var changed = require('gulp-changed');
 var runSequence = require('run-sequence');
 var replace = require("gulp-replace");
+var uncommentShader = require("./gulp-removeShaderComments");
 
 var config = require("./config.json");
 
@@ -33,7 +34,9 @@ function includeShadersName(filename) {
 
 gulp.task("includeShaders", function (cb) {
     includeShadersStream = config.includeShadersDirectories.map(function (shadersDef) {
-        return gulp.src(shadersDef.files).pipe(srcToVariable({
+        return gulp.src(shadersDef.files).
+            pipe(uncommentShader()).
+            pipe(srcToVariable({
             variableName: shadersDef.variable, asMap: true, namingCallback: includeShadersName
         }));
     });
@@ -42,7 +45,9 @@ gulp.task("includeShaders", function (cb) {
 
 gulp.task("shaders", ["includeShaders"], function (cb) {
     shadersStream = config.shadersDirectories.map(function (shadersDef) {
-        return gulp.src(shadersDef.files).pipe(srcToVariable({
+        return gulp.src(shadersDef.files).
+            pipe(uncommentShader()).
+            pipe(srcToVariable({
             variableName: shadersDef.variable, asMap: true, namingCallback: shadersName
         }));
     });
@@ -70,13 +75,25 @@ gulp.task('typescript-compile', function () {
             typescript: require('typescript'),
             experimentalDecorators: true
         }));
+    //If this gulp task is running on travis, file the build!
+    if (process.env.TRAVIS) {
+        var error = false;
+        tsResult.on('error', function () {
+            error = true;
+        }).on('end', function () {
+            if (error) {
+                console.log('Typescript compile failed');
+                process.exit(1);
+            }
+        });
+    }
     return merge2([
         tsResult.dts
             .pipe(concat(config.build.declarationFilename))
             .pipe(gulp.dest(config.build.outputDirectory)),
         tsResult.js
             .pipe(gulp.dest(config.build.srcOutputDirectory))
-    ]);
+    ])
 });
 
 gulp.task('typescript-sourcemaps', function () {
@@ -97,7 +114,7 @@ gulp.task('typescript-sourcemaps', function () {
 gulp.task("buildCore", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files),
-        shadersStream, 
+        shadersStream,
         includeShadersStream
         )
         .pipe(concat(config.build.minCoreFilename))
@@ -112,7 +129,7 @@ gulp.task("buildNoWorker", ["shaders"], function () {
     return merge2(
         gulp.src(config.core.files),
         gulp.src(config.extras.files),
-        shadersStream, 
+        shadersStream,
         includeShadersStream
         )
         .pipe(concat(config.build.minNoWorkerFilename))
@@ -128,8 +145,8 @@ gulp.task("build", ["workers", "shaders"], function () {
         gulp.src(config.core.files),
         gulp.src(config.extras.files),
         shadersStream,
-        workersStream, 
-        includeShadersStream
+        includeShadersStream,
+        workersStream
         )
         .pipe(concat(config.build.filename))
         .pipe(cleants())
@@ -142,14 +159,14 @@ gulp.task("build", ["workers", "shaders"], function () {
 });
 
 gulp.task("typescript", function (cb) {
-    runSequence("typescript-compile", "default");
+    runSequence("typescript-compile", "default", cb);
 });
 
 /**
  * The default task, call the tasks: build
  */
-gulp.task('default', function () {
-    return runSequence("buildNoWorker", "build", "buildCore");
+gulp.task('default', function (cb) {
+    runSequence("buildNoWorker", "build", "buildCore", cb);
 });
 
 /**

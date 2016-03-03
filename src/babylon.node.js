@@ -1,3 +1,9 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -125,10 +131,11 @@ var BABYLON;
             }
             return false;
         };
-        Node.prototype._getDescendants = function (list, results) {
+        Node.prototype._getDescendants = function (list, results, directDecendantsOnly) {
+            if (directDecendantsOnly === void 0) { directDecendantsOnly = false; }
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (item.isDescendantOf(this)) {
+                if ((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
                     results.push(item);
                 }
             }
@@ -137,11 +144,26 @@ var BABYLON;
          * Will return all nodes that have this node as parent.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        Node.prototype.getDescendants = function () {
+        Node.prototype.getDescendants = function (directDecendantsOnly) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results);
-            this._getDescendants(this._scene.lights, results);
-            this._getDescendants(this._scene.cameras, results);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
+            this._getDescendants(this._scene.lights, results, directDecendantsOnly);
+            this._getDescendants(this._scene.cameras, results, directDecendantsOnly);
+            return results;
+        };
+        /**
+         * @Deprecated, legacy support.
+         * use getDecendants instead.
+         */
+        Node.prototype.getChildren = function () {
+            return this.getDescendants(true);
+        };
+        /**
+         * Get all child-meshes of this node.
+         */
+        Node.prototype.getChildMeshes = function (directDecendantsOnly) {
+            var results = [];
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
             return results;
         };
         Node.prototype._setReady = function (state) {
@@ -215,6 +237,18 @@ var BABYLON;
                 }
             }
         };
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "name", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "id", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "uniqueId", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Node.prototype, "state", void 0);
         return Node;
     })();
     BABYLON.Node = Node;

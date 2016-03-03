@@ -3,7 +3,11 @@ module BABYLON {
     export class UniversalCamera extends TouchCamera {
         public gamepad: Gamepad;
         private _gamepads: Gamepads;
+
+        @serialize()
         public gamepadAngularSensibility = 200;
+
+        @serialize()
         public gamepadMoveSensibility = 40;
 
         constructor(name: string, position: Vector3, scene: Scene) {
@@ -55,12 +59,8 @@ module BABYLON {
             super.dispose();
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "UniversalCamera";
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "UniversalCamera";
         }
     }
 }

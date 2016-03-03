@@ -6,12 +6,8 @@ module BABYLON {
             super(name, position, scene);
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "GamepadCamera";
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "GamepadCamera";
         }
     }
 }

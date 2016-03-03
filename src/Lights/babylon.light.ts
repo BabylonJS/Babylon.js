@@ -21,16 +21,27 @@
     }
 
     export class Light extends Node {
+        @serializeAsColor3()
         public diffuse = new Color3(1.0, 1.0, 1.0);
+
+        @serializeAsColor3()
         public specular = new Color3(1.0, 1.0, 1.0);
+
+        @serialize()
         public intensity = 1.0;
+
+        @serialize()
         public range = Number.MAX_VALUE;
+
+        @serialize()
         public includeOnlyWithLayerMask = 0;
+
         public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
         public excludeWithLayerMask = 0;
 
         // PBR Properties.
+        @serialize()
         public radius = 0.00001;
 
         public _shadowGenerator: ShadowGenerator;
@@ -116,80 +127,60 @@
             this.getScene().removeLight(this);
         }
 
-        public serialize(): any {
-            var serializationObject: any = {};
-            serializationObject.name = this.name;
-            serializationObject.id = this.id;
-            serializationObject.tags = Tags.GetTags(this);
+        public getTypeID(): number {
+            return 0;
+        }
 
-            if (this.intensity) {
-                serializationObject.intensity = this.intensity;
-            }
-            
+        public clone(name: string): Light {
+            return SerializationHelper.Clone(Light.GetConstructorFromName(this.getTypeID(), name, this.getScene()), this);
+        }
+
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+
+            // Type
+            serializationObject.type = this.getTypeID();
+
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
 
-            serializationObject.range = this.range;
-            serializationObject.radius = this.radius;
-
-            serializationObject.diffuse = this.diffuse.asArray();
-            serializationObject.specular = this.specular.asArray();
+            // Animations  
+            Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();  
 
             return serializationObject;
         }
 
-        public static Parse(parsedLight: any, scene: Scene): Light {
-            var light;
-
-            switch (parsedLight.type) {
+        static GetConstructorFromName(type: number, name: string, scene: Scene): () => Light {
+            switch (type) {
                 case 0:
-                    light = new PointLight(parsedLight.name, Vector3.FromArray(parsedLight.position), scene);
-                    break;
+                    return () => new PointLight(name, Vector3.Zero(), scene);
                 case 1:
-                    light = new DirectionalLight(parsedLight.name, Vector3.FromArray(parsedLight.direction), scene);
-                    light.position = Vector3.FromArray(parsedLight.position);
-                    break;
+                    return () => new DirectionalLight(name, Vector3.Zero(), scene);
                 case 2:
-                    light = new SpotLight(parsedLight.name, Vector3.FromArray(parsedLight.position), Vector3.FromArray(parsedLight.direction), parsedLight.angle, parsedLight.exponent, scene);
-                    break;
+                    return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
                 case 3:
-                    light = new HemisphericLight(parsedLight.name, Vector3.FromArray(parsedLight.direction), scene);
-                    light.groundColor = Color3.FromArray(parsedLight.groundColor);
-                    break;
+                    return () => new HemisphericLight(name, Vector3.Zero(), scene);
             }
+        }
 
-            light.id = parsedLight.id;
+        public static Parse(parsedLight: any, scene: Scene): Light {            
+            var light = SerializationHelper.Parse(Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene), parsedLight, scene);
 
-            Tags.AddTagsTo(light, parsedLight.tags);
-
-            if (parsedLight.intensity !== undefined) {
-                light.intensity = parsedLight.intensity;
-            }
-
-            if (parsedLight.range) {
-                light.range = parsedLight.range;
-            }
-
-            if (parsedLight.radius) {
-                light.radius = parsedLight.radius;
-            }
-
-            light.diffuse = Color3.FromArray(parsedLight.diffuse);
-            light.specular = Color3.FromArray(parsedLight.specular);
-
+            // Inclusion / exclusions
             if (parsedLight.excludedMeshesIds) {
                 light._excludedMeshesIds = parsedLight.excludedMeshesIds;
+            }
+
+            if (parsedLight.includedOnlyMeshesIds) {
+                light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
             }
 
             // Parent
             if (parsedLight.parentId) {
                 light._waitingParentId = parsedLight.parentId;
-            }
-
-            if (parsedLight.includedOnlyMeshesIds) {
-                light._includedOnlyMeshesIds = parsedLight.includedOnlyMeshesIds;
             }
 
             // Animations

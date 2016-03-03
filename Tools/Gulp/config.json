@@ -21,7 +21,9 @@
       "../../src/Tools/babylon.tools.tga.js",
       "../../src/Tools/babylon.smartArray.js",
       "../../src/Tools/babylon.smartCollection.js",
-      "../../src/Tools/babylon.tools.js",
+      "../../src/Tools/babylon.tools.js",      
+      "../../src/states/babylon.alphaCullingState.js",
+      "../../src/states/babylon.depthCullingState.js",
       "../../src/babylon.engine.js",
       "../../src/babylon.node.js",
       "../../src/Tools/babylon.filesInput.js",
@@ -83,6 +85,8 @@
       "../../src/PostProcess/babylon.postProcess.js",
       "../../src/PostProcess/babylon.postProcessManager.js",
       "../../src/PostProcess/babylon.passPostProcess.js",
+      "../../src/Physics/babylon.physicsJoint.js",
+      "../../src/Physics/babylon.physicsImpostor.js",
       "../../src/Physics/babylon.physicsEngine.js",
       "../../src/Mesh/babylon.mesh.vertexData.js",
       "../../src/Tools/babylon.tags.js",
@@ -148,6 +152,7 @@
       "../../src/PostProcess/babylon.anaglyphPostProcess.js",
       "../../src/Rendering/babylon.outlineRenderer.js",
       "../../src/Tools/babylon.assetsManager.js",
+      "../../src/cameras/vr/babylon.vrCameraMetrics.js",
       "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",
       "../../src/Cameras/VR/babylon.webVRCamera.js",
       "../../src/Tools/babylon.sceneOptimizer.js",
@@ -185,6 +190,7 @@
       "../../src/tools/hdr/babylon.tools.cubemaptosphericalpolynomial.js",
       "../../src/tools/hdr/babylon.tools.panoramatocubemap.js",
       "../../src/tools/hdr/babylon.tools.hdr.js",
+      "../../src/tools/hdr/babylon.tools.pmremGenerator.js",
       "../../src/materials/textures/babylon.hdrcubetexture.js"
     ]
   }

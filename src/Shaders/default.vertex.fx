@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// Attributes
+﻿// Attributes
 attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
@@ -61,7 +59,7 @@ uniform mat4 specularMatrix;
 
 #ifdef BUMP
 varying vec2 vBumpUV;
-uniform vec2 vBumpInfos;
+uniform vec3 vBumpInfos;
 uniform mat4 bumpMatrix;
 #endif
 

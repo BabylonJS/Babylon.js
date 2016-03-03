@@ -12,7 +12,7 @@ module BABYLON {
 
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true) {
             super(name, position, scene);
-            
+
             var metrics = VRCameraMetrics.GetDefault();
             metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
@@ -54,9 +54,9 @@ module BABYLON {
                 this._cacheQuaternion.copyFromFloats(this._cacheState.orientation.x, this._cacheState.orientation.y, this._cacheState.orientation.z, this._cacheState.orientation.w);
                 this._cacheQuaternion.toEulerAnglesToRef(this._cacheRotation);
 
-                this.rotation.x = -this._cacheRotation.z;
+                this.rotation.x = -this._cacheRotation.x;
                 this.rotation.y = -this._cacheRotation.y;
-                this.rotation.z = this._cacheRotation.x;
+                this.rotation.z = this._cacheRotation.z;
             }
 
             super._checkInputs();
@@ -78,12 +78,9 @@ module BABYLON {
             this._vrEnabled = false;
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-
-            serializationObject.type = "WebVRFreeCamera";
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "WebVRFreeCamera";
         }
     }
 }
+

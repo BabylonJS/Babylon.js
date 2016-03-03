@@ -93,7 +93,10 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
+
+                // Pivot                
+                this.setPivotMatrix(source.getPivotMatrix());
 
                 this.id = name + "." + source.id;
 
@@ -721,6 +724,7 @@
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
+
             var callbackIndex: number;
             for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
                 this._onBeforeRenderCallbacks[callbackIndex](this);
@@ -813,18 +817,6 @@
                 var particleSystem = this.getScene().particleSystems[index];
                 if (descendants.indexOf(particleSystem.emitter) !== -1) {
                     results.push(particleSystem);
-                }
-            }
-
-            return results;
-        }
-
-        public getChildren(): Node[] {
-            var results = [];
-            for (var index = 0; index < this.getScene().meshes.length; index++) {
-                var mesh = this.getScene().meshes[index];
-                if (mesh.parent === this) {
-                    results.push(mesh);
                 }
             }
 
@@ -1467,15 +1459,6 @@
                 if (parsedMesh.numBoneInfluencers) {
                     mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
                 }
-            }
-
-            // Physics
-            if (parsedMesh.physicsImpostor) {
-                if (!scene.isPhysicsEnabled()) {
-                    scene.enablePhysics();
-                }
-
-                mesh.setPhysicsState({ impostor: parsedMesh.physicsImpostor, mass: parsedMesh.physicsMass, friction: parsedMesh.physicsFriction, restitution: parsedMesh.physicsRestitution });
             }
 
             // Animations

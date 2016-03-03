@@ -1,253 +1,4 @@
 ﻿module BABYLON {
-    export class _DepthCullingState {
-        private _isDepthTestDirty = false;
-        private _isDepthMaskDirty = false;
-        private _isDepthFuncDirty = false;
-        private _isCullFaceDirty = false;
-        private _isCullDirty = false;
-        private _isZOffsetDirty = false;
-
-        private _depthTest: boolean;
-        private _depthMask: boolean;
-        private _depthFunc: number;
-        private _cull: boolean;
-        private _cullFace: number;
-        private _zOffset: number;
-
-        public get isDirty(): boolean {
-            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
-        }
-
-        public get zOffset(): number {
-            return this._zOffset;
-        }
-
-        public set zOffset(value: number) {
-            if (this._zOffset === value) {
-                return;
-            }
-
-            this._zOffset = value;
-            this._isZOffsetDirty = true;
-        }
-
-        public get cullFace(): number {
-            return this._cullFace;
-        }
-
-        public set cullFace(value: number) {
-            if (this._cullFace === value) {
-                return;
-            }
-
-            this._cullFace = value;
-            this._isCullFaceDirty = true;
-        }
-
-        public get cull() {
-            return this._cull;
-        }
-
-        public set cull(value: boolean) {
-            if (this._cull === value) {
-                return;
-            }
-
-            this._cull = value;
-            this._isCullDirty = true;
-        }
-
-        public get depthFunc(): number {
-            return this._depthFunc;
-        }
-
-        public set depthFunc(value: number) {
-            if (this._depthFunc === value) {
-                return;
-            }
-
-            this._depthFunc = value;
-            this._isDepthFuncDirty = true;
-        }
-
-        public get depthMask(): boolean {
-            return this._depthMask;
-        }
-
-        public set depthMask(value: boolean) {
-            if (this._depthMask === value) {
-                return;
-            }
-
-            this._depthMask = value;
-            this._isDepthMaskDirty = true;
-        }
-
-        public get depthTest(): boolean {
-            return this._depthTest;
-        }
-
-        public set depthTest(value: boolean) {
-            if (this._depthTest === value) {
-                return;
-            }
-
-            this._depthTest = value;
-            this._isDepthTestDirty = true;
-        }
-
-        public reset() {
-            this._depthMask = true;
-            this._depthTest = true;
-            this._depthFunc = null;
-            this._cull = null;
-            this._cullFace = null;
-            this._zOffset = 0;
-
-            this._isDepthTestDirty = true;
-            this._isDepthMaskDirty = true;
-            this._isDepthFuncDirty = false;
-            this._isCullFaceDirty = false;
-            this._isCullDirty = false;
-            this._isZOffsetDirty = false;
-        }
-
-        public apply(gl: WebGLRenderingContext) {
-
-            if (!this.isDirty) {
-                return;
-            }
-
-            // Cull
-            if (this._isCullDirty) {
-                if (this.cull) {
-                    gl.enable(gl.CULL_FACE);
-                } else {
-                    gl.disable(gl.CULL_FACE);
-                }
-
-                this._isCullDirty = false;
-            }
-
-            // Cull face
-            if (this._isCullFaceDirty) {
-                gl.cullFace(this.cullFace);
-                this._isCullFaceDirty = false;
-            }
-
-            // Depth mask
-            if (this._isDepthMaskDirty) {
-                gl.depthMask(this.depthMask);
-                this._isDepthMaskDirty = false;
-            }
-
-            // Depth test
-            if (this._isDepthTestDirty) {
-                if (this.depthTest) {
-                    gl.enable(gl.DEPTH_TEST);
-                } else {
-                    gl.disable(gl.DEPTH_TEST);
-                }
-                this._isDepthTestDirty = false;
-            }
-
-            // Depth func
-            if (this._isDepthFuncDirty) {
-                gl.depthFunc(this.depthFunc);
-                this._isDepthFuncDirty = false;
-            }
-
-            // zOffset
-            if (this._isZOffsetDirty) {
-                if (this.zOffset) {
-                    gl.enable(gl.POLYGON_OFFSET_FILL);
-                    gl.polygonOffset(this.zOffset, 0);
-                } else {
-                    gl.disable(gl.POLYGON_OFFSET_FILL);
-                }
-
-                this._isZOffsetDirty = false;
-            }
-        }
-    }
-
-    export class _AlphaState {
-        private _isAlphaBlendDirty = false;
-        private _isBlendFunctionParametersDirty = false;
-        private _alphaBlend = false;
-        private _blendFunctionParameters = new Array<number>(4);
-
-        public get isDirty(): boolean {
-            return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
-        }
-
-        public get alphaBlend(): boolean {
-            return this._alphaBlend;
-        }
-
-        public set alphaBlend(value: boolean) {
-            if (this._alphaBlend === value) {
-                return;
-            }
-
-            this._alphaBlend = value;
-            this._isAlphaBlendDirty = true;
-        }
-
-        public setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void {
-            if (
-                this._blendFunctionParameters[0] === value0 &&
-                this._blendFunctionParameters[1] === value1 &&
-                this._blendFunctionParameters[2] === value2 &&
-                this._blendFunctionParameters[3] === value3
-            ) {
-                return;
-            }
-
-            this._blendFunctionParameters[0] = value0;
-            this._blendFunctionParameters[1] = value1;
-            this._blendFunctionParameters[2] = value2;
-            this._blendFunctionParameters[3] = value3;
-
-            this._isBlendFunctionParametersDirty = true;
-        }
-
-        public reset() {
-            this._alphaBlend = false;
-            this._blendFunctionParameters[0] = null;
-            this._blendFunctionParameters[1] = null;
-            this._blendFunctionParameters[2] = null;
-            this._blendFunctionParameters[3] = null;
-
-            this._isAlphaBlendDirty = true;
-            this._isBlendFunctionParametersDirty = false;
-        }
-
-        public apply(gl: WebGLRenderingContext) {
-
-            if (!this.isDirty) {
-                return;
-            }
-
-            // Alpha blend
-            if (this._isAlphaBlendDirty) {
-                if (this._alphaBlend) {
-                    gl.enable(gl.BLEND);
-                } else {
-                    gl.disable(gl.BLEND);
-                }
-
-                this._isAlphaBlendDirty = false;
-            }
-
-            // Alpha function
-            if (this._isBlendFunctionParametersDirty) {
-                gl.blendFuncSeparate(this._blendFunctionParameters[0], this._blendFunctionParameters[1], this._blendFunctionParameters[2], this._blendFunctionParameters[3]);
-                this._isBlendFunctionParametersDirty = false;
-            }
-        }
-    }
-
     var compileShader = (gl: WebGLRenderingContext, source: string, type: string, defines: string): WebGLShader => {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
@@ -547,8 +298,8 @@
         private deltaTime = 0;
 
         // States
-        private _depthCullingState = new _DepthCullingState();
-        private _alphaState = new _AlphaState();
+        private _depthCullingState = new Internals._DepthCullingState();
+        private _alphaState = new Internals._AlphaState();
         private _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
@@ -576,7 +327,7 @@
          * @param {boolean} [antialias] - enable antialias
          * @param options - further options to be sent to the getContext function
          */
-        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean }, adaptToDeviceRatio = true) {
+        constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean, limitDeviceRatio?: number }, adaptToDeviceRatio = true) {
             this._renderingCanvas = canvas;
 
             options = options || {};
@@ -621,7 +372,8 @@
             window.addEventListener("focus", this._onFocus);
 
             // Viewport
-            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / (window.devicePixelRatio || 1.0) : 1.0;
+            var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
 
             // Caps
@@ -1382,11 +1134,13 @@
             this._gl.useProgram(effect.getProgram());
 
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //make sure this is a number)
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._vertexAttribArrays[i] = false;
-                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArrays[iAsNumber] = false;
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
 
             var attributesCount = effect.getAttributesCount();
@@ -2159,7 +1913,9 @@
             return texture;
         }
 
-        public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer) => ArrayBufferView[]): WebGLTexture {
+        public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+            callback: (ArrayBuffer) => ArrayBufferView[],
+            mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
             var gl = this._gl;
             var texture = gl.createTexture();
             scene._addPendingData(texture);
@@ -2196,13 +1952,41 @@
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
-                for (var index = 0; index < facesIndex.length; index++) {
-                    var faceData = rgbeDataArrays[index];
-                    gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
-                }
-
                 if (!noMipmap && isPot) {
-                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    if (mipmmapGenerator) {
+
+                        var arrayTemp: ArrayBufferView[] = [];
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
+                        arrayTemp.push(rgbeDataArrays[0]); // +X
+                        arrayTemp.push(rgbeDataArrays[3]); // -X
+                        arrayTemp.push(rgbeDataArrays[1]); // +Y
+                        arrayTemp.push(rgbeDataArrays[4]); // -Y
+                        arrayTemp.push(rgbeDataArrays[2]); // +Z
+                        arrayTemp.push(rgbeDataArrays[5]); // -Z
+                        
+                        var mipData = mipmmapGenerator(arrayTemp);
+                        for (var level = 0; level < mipData.length; level++) {
+                            var mipSize = width >> level;
+                            
+                            // mipData is order in +X -X +Y -Y +Z -Z
+                            gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                            gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                            gl.texImage2D(facesIndex[2], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                            gl.texImage2D(facesIndex[3], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                            gl.texImage2D(facesIndex[4], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                            gl.texImage2D(facesIndex[5], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                        }
+                    }
+                    else {
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (var index = 0; index < facesIndex.length; index++) {
+                            var faceData = rgbeDataArrays[index];
+                            gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
+                        }
+
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
                 }
                 else {
                     noMipmap = true;
@@ -2435,10 +2219,12 @@
 
             // Unbind
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //making sure this is a string
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
 
             this._gl = null;
@@ -2532,6 +2318,3 @@
         }
     }
 }
-
-
-

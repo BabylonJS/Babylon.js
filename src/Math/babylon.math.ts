@@ -591,6 +591,7 @@
     export class Vector3 {
 
         constructor(public x: number, public y: number, public z: number) {
+
         }
 
         public toString(): string {
@@ -1520,7 +1521,6 @@
 
     export class Quaternion {
         constructor(public x: number = 0, public y: number = 0, public z: number = 0, public w: number = 1) {
-
         }
 
         public toString(): string {
@@ -1591,6 +1591,23 @@
             this.multiplyToRef(q1, this);
 
             return this;
+        }
+
+        public conjugateToRef(ref: Quaternion): Quaternion {
+            ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
+            return this;
+        }
+
+        public conjugateInPlace(): Quaternion {
+            this.x *= -1;
+            this.y *= -1;
+            this.z *= -1;
+            return this;
+        }
+
+        public conjugate(): Quaternion {
+            var result = new Quaternion(-this.x, -this.y, -this.z, this.w);
+            return result;
         }
 
         public length(): number {
@@ -3715,4 +3732,5 @@
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
 }
+
 

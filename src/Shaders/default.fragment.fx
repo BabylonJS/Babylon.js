@@ -6,8 +6,6 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
-precision highp float;
-
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 
@@ -30,11 +28,14 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
+// Helper functions
+#include<helperFunctions>
+
 // Lights
-#include<light0FragmentDeclaration>
-#include<light1FragmentDeclaration>
-#include<light2FragmentDeclaration>
-#include<light3FragmentDeclaration>
+#include<lightFragmentDeclaration>[0]
+#include<lightFragmentDeclaration>[1]
+#include<lightFragmentDeclaration>[2]
+#include<lightFragmentDeclaration>[3]
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
@@ -161,8 +162,21 @@ void main(void) {
 	// Alpha
 	float alpha = vDiffuseColor.a;
 
+	// Bump
+#ifdef NORMAL
+	vec3 normalW = normalize(vNormalW);
+#else
+	vec3 normalW = vec3(1.0, 1.0, 1.0);
+#endif
+
 #ifdef DIFFUSE
-	baseColor = texture2D(diffuseSampler, vDiffuseUV);
+	vec2 diffuseUV = vDiffuseUV;
+#endif
+
+#include<bumpFragment>
+
+#ifdef DIFFUSE
+	baseColor = texture2D(diffuseSampler, diffuseUV);
 
 #ifdef ALPHATEST
 	if (baseColor.a < 0.4)
@@ -178,18 +192,6 @@ void main(void) {
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
-#endif
-
-	// Bump
-#ifdef NORMAL
-	vec3 normalW = normalize(vNormalW);
-#else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
-#endif
-
-
-#ifdef BUMP
-	normalW = perturbNormal(viewDirectionW);
 #endif
 
 	// Ambient color
@@ -217,15 +219,16 @@ void main(void) {
 
 	// Lighting
 	vec3 diffuseBase = vec3(0., 0., 0.);
+	lightingInfo info;
 #ifdef SPECULARTERM
 	vec3 specularBase = vec3(0., 0., 0.);
 #endif
 	float shadow = 1.;
 
-#include<light0Fragment>
-#include<light1Fragment>
-#include<light2Fragment>
-#include<light3Fragment>
+#include<lightFragment>[0]
+#include<lightFragment>[1]
+#include<lightFragment>[2]
+#include<lightFragment>[3]
 
 	// Refraction
 	vec3 refractionColor = vec3(0., 0., 0.);
@@ -259,15 +262,15 @@ void main(void) {
 
 #ifdef REFLECTIONMAP_3D
 #ifdef ROUGHNESS
-	 float bias = vReflectionInfos.y;
+	float bias = vReflectionInfos.y;
 
-	#ifdef SPECULARTERM
+#ifdef SPECULARTERM
 	#ifdef SPECULAR
-	#ifdef GLOSSINESS
-		bias *= (1.0 - specularMapColor.a);
+		#ifdef GLOSSINESS
+			bias *= (1.0 - specularMapColor.a);
+		#endif
 	#endif
-	#endif
-	#endif
+#endif
 
 	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
 #else

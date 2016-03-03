@@ -23,18 +23,21 @@ var BABYLON;
     })();
     BABYLON.AnimationEvent = AnimationEvent;
     var Animation = (function () {
-        function Animation(name, targetProperty, framePerSecond, dataType, loopMode) {
+        function Animation(name, targetProperty, framePerSecond, dataType, loopMode, enableBlending) {
             this.name = name;
             this.targetProperty = targetProperty;
             this.framePerSecond = framePerSecond;
             this.dataType = dataType;
             this.loopMode = loopMode;
+            this.enableBlending = enableBlending;
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this._stopped = false;
+            this._blendingFactor = 0;
             // The set of event that will be linked to this animation
             this._events = new Array();
             this.allowMatricesInterpolation = false;
+            this.blendingSpeed = 0.01;
             this._ranges = {};
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
@@ -127,6 +130,8 @@ var BABYLON;
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this.currentFrame = 0;
+            this._blendingFactor = 0;
+            this._originalBlendValue = null;
         };
         Animation.prototype.isStopped = function () {
             return this._stopped;
@@ -277,17 +282,43 @@ var BABYLON;
             }
             return this._getKeyValue(this._keys[this._keys.length - 1].value);
         };
-        Animation.prototype.setValue = function (currentValue) {
+        Animation.prototype.setValue = function (currentValue, blend) {
+            if (blend === void 0) { blend = false; }
             // Set value
+            var path;
+            var destination;
             if (this.targetPropertyPath.length > 1) {
                 var property = this._target[this.targetPropertyPath[0]];
                 for (var index = 1; index < this.targetPropertyPath.length - 1; index++) {
                     property = property[this.targetPropertyPath[index]];
                 }
-                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
+                path = this.targetPropertyPath[this.targetPropertyPath.length - 1];
+                destination = property;
             }
             else {
-                this._target[this.targetPropertyPath[0]] = currentValue;
+                path = this.targetPropertyPath[0];
+                destination = this._target;
+            }
+            // Blending
+            if (this.enableBlending && this._blendingFactor <= 1.0) {
+                if (!this._originalBlendValue) {
+                    this._originalBlendValue = destination[path];
+                }
+                if (this._originalBlendValue.prototype) {
+                    if (this._originalBlendValue.prototype.Lerp) {
+                        destination[path] = this._originalBlendValue.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                    }
+                    else {
+                        destination[path] = currentValue;
+                    }
+                }
+                else {
+                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
+                }
+                this._blendingFactor += this.blendingSpeed;
+            }
+            else {
+                destination[path] = currentValue;
             }
             if (this._target.markAsDirty) {
                 this._target.markAsDirty(this.targetProperty);
@@ -303,7 +334,8 @@ var BABYLON;
             var currentValue = this._interpolate(frame, 0, this.loopMode);
             this.setValue(currentValue);
         };
-        Animation.prototype.animate = function (delay, from, to, loop, speedRatio) {
+        Animation.prototype.animate = function (delay, from, to, loop, speedRatio, blend) {
+            if (blend === void 0) { blend = false; }
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
                 this._stopped = true;
                 return false;
