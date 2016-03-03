@@ -246,7 +246,6 @@
         }
 
         // Updatable statics so stick with vars here
-        public static Epsilon = 0.001;
         public static CollisionsEpsilon = 0.001;
         public static CodeRepository = "src/";
         public static ShadersRepository = "src/Shaders/";
