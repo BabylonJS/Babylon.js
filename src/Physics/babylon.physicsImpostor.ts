@@ -132,6 +132,16 @@ module BABYLON {
             this._options[paramName] = value;
             this._bodyUpdateRequired = true;
         }
+        
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        public setMass(mass: number) {
+            if(this.getParam("mass") !== mass) {
+                this.setParam("mass", mass);
+            }
+            this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
+        }
 
         /**
          * Set the body's linear velocity.
