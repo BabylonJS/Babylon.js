@@ -145,7 +145,7 @@
 
                     var engine = this._scene.getEngine();
                     var viewport = this._camera.viewport;
-                    var globalViewport = viewport.toGlobal(engine);
+                    var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
                     // Meshes
                     var meshes = this._camera.getActiveMeshes();

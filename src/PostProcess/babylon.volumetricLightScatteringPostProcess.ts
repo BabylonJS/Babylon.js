@@ -72,7 +72,8 @@
             super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
             scene = (camera === null) ? scene : camera.getScene(); // parameter "scene" can be null.
 
-            this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(scene.getEngine());
+            var engine = scene.getEngine();
+            this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
             // Configure mesh
             this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
