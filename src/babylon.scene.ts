@@ -65,6 +65,9 @@
         public animations: Animation[] = [];
 
         // Pointers
+        public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
+        public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
+        public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
@@ -479,12 +482,13 @@
 
                 this._updatePointerPosition(evt);
 
-                // Meshes
-                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY,
-                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined),
-                    false,
-                    this.cameraToUseForPointers);
+                if (!this.pointerMovePredicate) {
+                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined);
+                }
 
+                // Meshes
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);
+                    
                 if (pickResult.hit && pickResult.pickedMesh) {
                     this.setPointerOverSprite(null);
 
@@ -525,16 +529,15 @@
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = new Date().getTime();
 
-                var predicate = null;
+                if (!this.pointerDownPredicate) {
+                    this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
+                    };
+                }
 
                 // Meshes
                 this._pickedDownMesh = null;
-                if (!this.onPointerDown && !this.onPointerPick) {
-                    predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
-                    };
-                }
-                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, predicate, false, this.cameraToUseForPointers);
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
@@ -607,19 +610,17 @@
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
-
-                var predicate = null;
-
+                
                 this._updatePointerPosition(evt);
 
-                if (!this.onPointerUp && !this.onPointerPick) {
-                    predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger));
+                if (!this.pointerUpPredicate) {
+                    this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)));
                     };
                 }
 
                 // Meshes
-                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, predicate, false, this.cameraToUseForPointers);
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerUpPredicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (this.onPointerPick && this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
@@ -849,6 +850,8 @@
                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+
+            animatable.reset();
 
             return animatable;
         }
@@ -2312,7 +2315,7 @@
             }
 
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
@@ -2332,7 +2335,7 @@
             }
 
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine. getRenderWidth(), engine.getRenderHeight());
             var identity = Matrix.Identity();
 
             // Moving coordinates to local viewport world

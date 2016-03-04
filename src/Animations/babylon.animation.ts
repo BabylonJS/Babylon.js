@@ -13,12 +13,84 @@
         }
     }
 
+    export class PathCursor {
+        private _onchange = new Array<(cursor: PathCursor) => void>();
+
+        value: number = 0;
+        animations = new Array<Animation>();
+
+        constructor(private path: Path2) {
+        }
+
+        public getPoint(): Vector3 {
+            var point = this.path.getPointAtLengthPosition(this.value);
+            return new Vector3(point.x, 0, point.y);
+        }
+
+        public moveAhead(step: number = 0.002): PathCursor {
+            this.move(step);
+
+            return this;
+        }
+
+        public moveBack(step: number = 0.002): PathCursor {
+            this.move(-step);
+
+            return this;
+        }
+
+        public move(step: number): PathCursor {
+
+            if (Math.abs(step) > 1) {
+                throw "step size should be less than 1.";
+            }
+
+            this.value += step;
+            this.ensureLimits();
+            this.raiseOnChange();
+
+            return this;
+        }
+
+        private ensureLimits(): PathCursor {
+            while (this.value > 1) {
+                this.value -= 1;
+            }
+            while (this.value < 0) {
+                this.value += 1;
+            }
+
+            return this;
+        }
+
+        // used by animation engine
+        private markAsDirty(propertyName: string): PathCursor {
+            this.ensureLimits();
+            this.raiseOnChange();
+
+            return this;
+        }
+
+        private raiseOnChange(): PathCursor {
+            this._onchange.forEach(f => f(this));
+
+            return this;
+        }
+
+        public onchange(f: (cursor: PathCursor) => void): PathCursor {
+            this._onchange.push(f);
+
+            return this;
+        }
+    }
+
     export class Animation {
         private _keys: Array<any>;
         private _offsetsCache = {};
         private _highLimitsCache = {};
         private _stopped = false;
         public _target;
+        private _blendingFactor = 0;
         private _easingFunction: IEasingFunction;
 
         // The set of event that will be linked to this animation
@@ -28,6 +100,9 @@
         public currentFrame: number;
 
         public allowMatricesInterpolation = false;
+
+        public blendingSpeed = 0.01;
+        private _originalBlendValue: any;
 
         private _ranges: { [name: string]: AnimationRange; } = {};
 
@@ -85,7 +160,7 @@
             return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         }
 
-        constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number) {
+        constructor(public name: string, public targetProperty: string, public framePerSecond: number, public dataType: number, public loopMode?: number, public enableBlending?: boolean) {
             this.targetPropertyPath = targetProperty.split(".");
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
@@ -144,6 +219,8 @@
             this._offsetsCache = {};
             this._highLimitsCache = {};
             this.currentFrame = 0;
+            this._blendingFactor = 0;
+            this._originalBlendValue = null;
         }
 
         public isStopped(): boolean {
@@ -323,8 +400,11 @@
             return this._getKeyValue(this._keys[this._keys.length - 1].value);
         }
 
-        public setValue(currentValue: any): void {
+        public setValue(currentValue: any, blend: boolean = false): void {
             // Set value
+            var path: any;
+            var destination: any;
+
             if (this.targetPropertyPath.length > 1) {
                 var property = this._target[this.targetPropertyPath[0]];
 
@@ -332,9 +412,33 @@
                     property = property[this.targetPropertyPath[index]];
                 }
 
-                property[this.targetPropertyPath[this.targetPropertyPath.length - 1]] = currentValue;
+                path = this.targetPropertyPath[this.targetPropertyPath.length - 1]
+                destination = property;
             } else {
-                this._target[this.targetPropertyPath[0]] = currentValue;
+                path = this.targetPropertyPath[0];
+                destination = this._target;
+            }
+
+            // Blending
+            if (this.enableBlending && this._blendingFactor <= 1.0) {
+                if (!this._originalBlendValue) {
+                    this._originalBlendValue = destination[path];
+                }
+
+                if (this._originalBlendValue.prototype) { // Complex value
+                    
+                    if (this._originalBlendValue.prototype.Lerp) { // Lerp supported
+                        destination[path] = this._originalBlendValue.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                    } else { // Blending not supported
+                        destination[path] = currentValue;
+                    }
+
+                } else { // Direct value
+                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
+                }
+                this._blendingFactor += this.blendingSpeed;
+            } else {
+                destination[path] = currentValue;
             }
 
             if (this._target.markAsDirty) {
@@ -354,7 +458,7 @@
             this.setValue(currentValue);
         }
 
-        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number): boolean {
+        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend: boolean = false): boolean {
             if (!this.targetPropertyPath || this.targetPropertyPath.length < 1) {
                 this._stopped = true;
                 return false;
@@ -631,6 +735,5 @@
         }
     }
 } 
-
 
 

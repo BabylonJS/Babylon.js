@@ -189,7 +189,7 @@ var BABYLON;
         };
         Effect.prototype._processIncludes = function (sourceCode, callback) {
             var _this = this;
-            var regex = /#include<(.+)>(\((.*)\))*/g;
+            var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
             var match = regex.exec(sourceCode);
             var returnValue = new String(sourceCode);
             while (match != null) {
@@ -198,12 +198,15 @@ var BABYLON;
                     // Substitution
                     var includeContent = Effect.IncludesShadersStore[includeFile];
                     if (match[2]) {
-                        var splits = match[2].substr(1, match[2].length - 2).split(",");
+                        var splits = match[3].split(",");
                         for (var index = 0; index < splits.length; index += 2) {
                             var source = new RegExp(splits[index], "g");
                             var dest = splits[index + 1];
                             includeContent = includeContent.replace(source, dest);
                         }
+                    }
+                    if (match[4]) {
+                        includeContent = includeContent.replace(/\{X\}/g, match[5]);
                     }
                     // Replace
                     returnValue = returnValue.replace(match[0], includeContent);
@@ -220,14 +223,28 @@ var BABYLON;
             }
             callback(returnValue);
         };
+        Effect.prototype._processPrecision = function (source) {
+            if (source.indexOf("precision highp float") === -1) {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) {
+                    source = "precision mediump float;\n" + source;
+                }
+                else {
+                    source = "precision highp float;\n" + source;
+                }
+            }
+            else {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) {
+                    source = source.replace("precision highp float", "precision mediump float");
+                }
+            }
+            return source;
+        };
         Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try {
                 var engine = this._engine;
                 // Precision
-                if (!engine.getCaps().highPrecisionShaderSupported) {
-                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
-                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
-                }
+                vertexSourceCode = this._processPrecision(vertexSourceCode);
+                fragmentSourceCode = this._processPrecision(fragmentSourceCode);
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);

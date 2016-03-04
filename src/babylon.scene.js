@@ -330,8 +330,11 @@ var BABYLON;
                 }
                 var canvas = _this._engine.getRenderingCanvas();
                 _this._updatePointerPosition(evt);
+                if (!_this.pointerMovePredicate) {
+                    _this.pointerMovePredicate = function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); };
+                }
                 // Meshes
-                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, function (mesh) { return mesh.isPickable && mesh.isVisible && mesh.isReady() && (_this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined); }, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerMovePredicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     _this.setPointerOverSprite(null);
                     _this.setPointerOverMesh(pickResult.pickedMesh);
@@ -368,15 +371,14 @@ var BABYLON;
                 _this._startingPointerPosition.x = _this._pointerX;
                 _this._startingPointerPosition.y = _this._pointerY;
                 _this._startingPointerTime = new Date().getTime();
-                var predicate = null;
-                // Meshes
-                _this._pickedDownMesh = null;
-                if (!_this.onPointerDown && !_this.onPointerPick) {
-                    predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
+                if (!_this.pointerDownPredicate) {
+                    _this.pointerDownPredicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
                     };
                 }
-                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, predicate, false, _this.cameraToUseForPointers);
+                // Meshes
+                _this._pickedDownMesh = null;
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerDownPredicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
                         _this._pickedDownMesh = pickResult.pickedMesh;
@@ -440,15 +442,14 @@ var BABYLON;
                 if (!_this.cameraToUseForPointers && !_this.activeCamera) {
                     return;
                 }
-                var predicate = null;
                 _this._updatePointerPosition(evt);
-                if (!_this.onPointerUp && !_this.onPointerPick) {
-                    predicate = function (mesh) {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger));
+                if (!_this.pointerUpPredicate) {
+                    _this.pointerUpPredicate = function (mesh) {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(BABYLON.ActionManager.OnLongPressTrigger)));
                     };
                 }
                 // Meshes
-                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, predicate, false, _this.cameraToUseForPointers);
+                var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerUpPredicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (_this.onPointerPick && _this._pickedDownMesh != null && pickResult.pickedMesh == _this._pickedDownMesh) {
                         _this.onPointerPick(evt, pickResult);
@@ -636,6 +637,7 @@ var BABYLON;
                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+            animatable.reset();
             return animatable;
         };
         Scene.prototype.beginDirectAnimation = function (target, animations, from, to, loop, speedRatio, onAnimationEnd) {
@@ -1849,7 +1851,7 @@ var BABYLON;
                 camera = this.activeCamera;
             }
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
@@ -1864,7 +1866,7 @@ var BABYLON;
                 camera = this.activeCamera;
             }
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             var identity = BABYLON.Matrix.Identity();
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;

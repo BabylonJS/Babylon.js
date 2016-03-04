@@ -118,7 +118,7 @@
 
             var engine = this._scene.getEngine();
             var viewport = this._scene.activeCamera.viewport;
-            var globalViewport = viewport.toScreenGlobal(engine);
+            var globalViewport = viewport.toGlobal(engine.getRenderWidth(true), engine.getRenderHeight(true));
 
             // Position
             if (!this.computeEffectivePosition(globalViewport)) {

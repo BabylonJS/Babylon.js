@@ -66,7 +66,8 @@ var BABYLON;
             */
             this.density = 0.926;
             scene = (camera === null) ? scene : camera.getScene(); // parameter "scene" can be null.
-            this._viewPort = new BABYLON.Viewport(0, 0, 1, 1).toGlobal(scene.getEngine());
+            var engine = scene.getEngine();
+            this._viewPort = new BABYLON.Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             // Configure mesh
             this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
             // Configure

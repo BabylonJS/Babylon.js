@@ -211,7 +211,7 @@
          */
         public getChildMeshes(directDecendantsOnly?: boolean): AbstractMesh[] {
             var results: Array<AbstractMesh> = [];
-            this._getDescendants(this._scene.meshes, results, false);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
             return results;
         }
 

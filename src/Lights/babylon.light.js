@@ -95,6 +95,9 @@ var BABYLON;
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
+            // Animations  
+            BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
+            serializationObject.ranges = this.serializeAnimationRanges();
             return serializationObject;
         };
         Light.GetConstructorFromName = function (type, name, scene) {
@@ -131,7 +134,7 @@ var BABYLON;
                 BABYLON.Node.ParseAnimationRanges(light, parsedLight, scene);
             }
             if (parsedLight.autoAnimate) {
-                scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, 1.0);
+                scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, parsedLight.autoAnimateSpeed || 1.0);
             }
             return light;
         };

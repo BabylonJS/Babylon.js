@@ -177,7 +177,7 @@ var BABYLON;
             set: function (quaternion) {
                 this._rotationQuaternion = quaternion;
                 //reset the rotation vector. 
-                if (this.rotation.length()) {
+                if (quaternion && this.rotation.length()) {
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             },
@@ -526,11 +526,11 @@ var BABYLON;
                 }
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
-                        zero.x = localPosition.x + BABYLON.Engine.Epsilon;
+                        zero.x = localPosition.x + BABYLON.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
-                        zero.y = localPosition.y + 0.001;
+                        zero.y = localPosition.y + BABYLON.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Z)
-                        zero.z = localPosition.z + 0.001;
+                        zero.z = localPosition.z + BABYLON.Epsilon;
                 }
                 BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), BABYLON.Tmp.Matrix[3]);
                 BABYLON.Tmp.Matrix[3].m[12] = BABYLON.Tmp.Matrix[3].m[13] = BABYLON.Tmp.Matrix[3].m[14] = 0;

@@ -93,7 +93,7 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
 
                 // Pivot                
                 this.setPivotMatrix(source.getPivotMatrix());
@@ -1472,7 +1472,7 @@
             }
 
             if (parsedMesh.autoAnimate) {
-                scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
+                scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
             }
 
             // Layer Mask

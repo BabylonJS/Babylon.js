@@ -176,7 +176,7 @@ var BABYLON;
                         _this._hdrOutputLuminance = _this._hdrCurrentLuminance;
                     }
                 }
-                _this._hdrOutputLuminance = BABYLON.Tools.Clamp(_this._hdrOutputLuminance, _this.minimumLuminance, _this.maximumLuminance);
+                _this._hdrOutputLuminance = BABYLON.MathTools.Clamp(_this._hdrOutputLuminance, _this.minimumLuminance, _this.maximumLuminance);
                 hdrLastLuminance += scene.getEngine().getDeltaTime();
                 effect.setTextureFromPostProcess("textureSampler", _this._textureAdderPostProcess);
                 effect.setTextureFromPostProcess("otherSampler", _this._originalPostProcess);
