@@ -181,7 +181,7 @@ var BABYLON;
             this.syncIterations = 5000;
             this.aggressiveness = 7;
             this.decimationIterations = 100;
-            this.boundingBoxEpsilon = BABYLON.Engine.Epsilon;
+            this.boundingBoxEpsilon = BABYLON.Epsilon;
         }
         QuadraticErrorSimplification.prototype.simplify = function (settings, successCallback) {
             var _this = this;

@@ -435,6 +435,11 @@
             impostor.physicsBody.angularVelocity.copy(velocity);
         }
 
+        public setBodyMass(impostor: PhysicsImpostor, mass: number) {
+            impostor.physicsBody.mass = mass;
+            impostor.physicsBody.updateMassProperties();
+        }
+
         public sleepBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.sleep();
         }
@@ -448,5 +453,4 @@
         }
     }
 }
-
 

@@ -243,7 +243,7 @@
         constructor(private _mesh: Mesh) {
             this.aggressiveness = 7;
             this.decimationIterations = 100;
-            this.boundingBoxEpsilon = Engine.Epsilon;
+            this.boundingBoxEpsilon = Epsilon;
         }
 
         public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {

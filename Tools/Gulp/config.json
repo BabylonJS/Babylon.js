@@ -31,6 +31,7 @@
       "../../src/Culling/babylon.boundingSphere.js",
       "../../src/Culling/babylon.boundingBox.js",
       "../../src/Culling/babylon.boundingInfo.js",
+      "../../src/Culling/babylon.ray.js",
       "../../src/Mesh/babylon.abstractMesh.js",
       "../../src/Lights/babylon.light.js",
       "../../src/Lights/babylon.pointLight.js",
