@@ -1851,7 +1851,7 @@ var BABYLON;
                 camera = this.activeCamera;
             }
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
             y = y / this._engine.getHardwareScalingLevel() - (this._engine.getRenderHeight() - viewport.y - viewport.height);
@@ -1866,7 +1866,7 @@ var BABYLON;
                 camera = this.activeCamera;
             }
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             var identity = BABYLON.Matrix.Identity();
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;

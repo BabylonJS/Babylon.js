@@ -12,7 +12,7 @@
             var num = a - b;
             return -epsilon <= num && num <= epsilon;
         }
-        
+
         public static ToHex(i: number): string {
             var str = i.toString(16);
 
@@ -33,7 +33,7 @@
 
             return value > 0 ? 1 : -1;
         }
-        
+
         public static Clamp(value: number, min = 0, max = 1): number {
             return Math.min(max, Math.max(min, value));
         }
@@ -2601,12 +2601,10 @@
             return matrix;
         }
 
-        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode = Camera.FOVMODE_VERTICAL_FIXED): void {
+        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             var tan = 1.0 / (Math.tan(fov * 0.5));
-
-            var v_fixed = (fovMode === Camera.FOVMODE_VERTICAL_FIXED);
-
-            if (v_fixed) {
+            
+            if (isVerticalFovFixed) {
                 result.m[0] = tan / aspect;
             }
             else {
@@ -2615,7 +2613,7 @@
 
             result.m[1] = result.m[2] = result.m[3] = 0.0;
 
-            if (v_fixed) {
+            if (isVerticalFovFixed) {
                 result.m[5] = tan;
             }
             else {
@@ -2847,16 +2845,8 @@
         constructor(public x: number, public y: number, public width: number, public height: number) {
         }
 
-        public toGlobal(engine: Engine): Viewport {
-            var width = engine.getRenderWidth();
-            var height = engine.getRenderHeight();
-            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
-        }
-
-        public toScreenGlobal(engine: Engine): Viewport {
-            var width = engine.getRenderWidth(true);
-            var height = engine.getRenderHeight(true);
-            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
+        public toGlobal(renderWidth: number, renderHeight: number): Viewport {
+            return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         }
     }
 

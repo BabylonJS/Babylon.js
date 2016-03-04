@@ -333,7 +333,7 @@ var BABYLON;
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
-                BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, this.fovMode);
+                BABYLON.Matrix.PerspectiveFovLHToRef(this.fov, engine.getAspectRatio(this), this.minZ, this.maxZ, this._projectionMatrix, this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
                 return this._projectionMatrix;
             }
             var halfWidth = engine.getRenderWidth() / 2.0;

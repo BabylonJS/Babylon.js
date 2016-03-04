@@ -11,6 +11,26 @@ var BABYLON;
             var num = a - b;
             return -epsilon <= num && num <= epsilon;
         };
+        MathTools.ToHex = function (i) {
+            var str = i.toString(16);
+            if (i <= 15) {
+                return ("0" + str).toUpperCase();
+            }
+            return str.toUpperCase();
+        };
+        // Returns -1 when value is a negative number and
+        // +1 when value is a positive number. 
+        MathTools.Sign = function (value) {
+            value = +value; // convert to a number
+            if (value === 0 || isNaN(value))
+                return value;
+            return value > 0 ? 1 : -1;
+        };
+        MathTools.Clamp = function (value, min, max) {
+            if (min === void 0) { min = 0; }
+            if (max === void 0) { max = 1; }
+            return Math.min(max, Math.max(min, value));
+        };
         return MathTools;
     })();
     BABYLON.MathTools = MathTools;
@@ -109,7 +129,7 @@ var BABYLON;
             var intR = (this.r * 255) | 0;
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
-            return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB);
+            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB);
         };
         Color3.prototype.toLinearSpace = function () {
             var convertedColor = new Color3();
@@ -136,7 +156,7 @@ var BABYLON;
         // Statics
         Color3.FromHexString = function (hex) {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
-                BABYLON.Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
+                //Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
             var r = parseInt(hex.substring(1, 3), 16);
@@ -240,12 +260,12 @@ var BABYLON;
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
             var intA = (this.a * 255) | 0;
-            return "#" + BABYLON.Tools.ToHex(intR) + BABYLON.Tools.ToHex(intG) + BABYLON.Tools.ToHex(intB) + BABYLON.Tools.ToHex(intA);
+            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
         };
         // Statics
         Color4.FromHexString = function (hex) {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
-                BABYLON.Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
+                //Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0, 0, 0, 0);
             }
             var r = parseInt(hex.substring(1, 3), 16);
@@ -1731,9 +1751,9 @@ var BABYLON;
             translation.x = this.m[12];
             translation.y = this.m[13];
             translation.z = this.m[14];
-            var xs = BABYLON.Tools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
-            var ys = BABYLON.Tools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
-            var zs = BABYLON.Tools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
+            var xs = MathTools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
+            var ys = MathTools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
+            var zs = MathTools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
             scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
             scale.z = zs * Math.sqrt(this.m[8] * this.m[8] + this.m[9] * this.m[9] + this.m[10] * this.m[10]);
@@ -2053,18 +2073,17 @@ var BABYLON;
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         };
-        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result, fovMode) {
-            if (fovMode === void 0) { fovMode = BABYLON.Camera.FOVMODE_VERTICAL_FIXED; }
+        Matrix.PerspectiveFovLHToRef = function (fov, aspect, znear, zfar, result, isVerticalFovFixed) {
+            if (isVerticalFovFixed === void 0) { isVerticalFovFixed = true; }
             var tan = 1.0 / (Math.tan(fov * 0.5));
-            var v_fixed = (fovMode === BABYLON.Camera.FOVMODE_VERTICAL_FIXED);
-            if (v_fixed) {
+            if (isVerticalFovFixed) {
                 result.m[0] = tan / aspect;
             }
             else {
                 result.m[0] = tan;
             }
             result.m[1] = result.m[2] = result.m[3] = 0.0;
-            if (v_fixed) {
+            if (isVerticalFovFixed) {
                 result.m[5] = tan;
             }
             else {
@@ -2255,15 +2274,8 @@ var BABYLON;
             this.width = width;
             this.height = height;
         }
-        Viewport.prototype.toGlobal = function (engine) {
-            var width = engine.getRenderWidth();
-            var height = engine.getRenderHeight();
-            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
-        };
-        Viewport.prototype.toScreenGlobal = function (engine) {
-            var width = engine.getRenderWidth(true);
-            var height = engine.getRenderHeight(true);
-            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
+        Viewport.prototype.toGlobal = function (renderWidth, renderHeight) {
+            return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         };
         return Viewport;
     })();
@@ -2427,7 +2439,7 @@ var BABYLON;
         }
         Path2.prototype.addLineTo = function (x, y) {
             if (closed) {
-                BABYLON.Tools.Error("cannot add lines to closed paths");
+                //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
             var newPoint = new Vector2(x, y);
@@ -2439,7 +2451,7 @@ var BABYLON;
         Path2.prototype.addArcTo = function (midX, midY, endX, endY, numberOfSegments) {
             if (numberOfSegments === void 0) { numberOfSegments = 36; }
             if (closed) {
-                BABYLON.Tools.Error("cannot add arcs to closed paths");
+                //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
             var startPoint = this._points[this._points.length - 1];
@@ -2476,7 +2488,7 @@ var BABYLON;
         };
         Path2.prototype.getPointAtLengthPosition = function (normalizedLengthPosition) {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
-                BABYLON.Tools.Error("normalized length position should be between 0 and 1.");
+                //Tools.Error("normalized length position should be between 0 and 1.");
                 return Vector2.Zero();
             }
             var lengthPosition = normalizedLengthPosition * this.length();
@@ -2494,7 +2506,7 @@ var BABYLON;
                 }
                 previousOffset = nextOffset;
             }
-            BABYLON.Tools.Error("internal error");
+            //Tools.Error("internal error");
             return Vector2.Zero();
         };
         Path2.StartingAt = function (x, y) {
