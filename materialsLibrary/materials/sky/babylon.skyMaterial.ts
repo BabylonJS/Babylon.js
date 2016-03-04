@@ -42,6 +42,7 @@ module BABYLON {
         
         // Private members
         private _sunPosition: Vector3 = Vector3.Zero();
+        private _cameraPosition: Vector3 = Vector3.Zero();
         
         private _renderId: number;
         
@@ -150,7 +151,8 @@ module BABYLON {
                     attribs,
                     ["world", "viewProjection", "view",
                         "vFogInfos", "vFogColor", "pointSize", "vClipPlane",
-                        "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition"
+                        "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
+                        "cameraPosition"
                     ],
                     [],
                     join, fallbacks, this.onCompiled, this.onError);
@@ -207,6 +209,15 @@ module BABYLON {
             MaterialHelper.BindFogParameters(scene, mesh, this._effect);
             
             // Sky
+            var camera = scene.activeCamera;
+            if (camera) {
+                var cameraWorldMatrix = camera.getWorldMatrix();
+                this._cameraPosition.x = cameraWorldMatrix.m[12];
+                this._cameraPosition.y = cameraWorldMatrix.m[13];
+                this._cameraPosition.z = cameraWorldMatrix.m[14];
+                this._effect.setVector3("cameraPosition", this._cameraPosition);
+            }
+            
             this._effect.setFloat("luminance", this.luminance);
 			this._effect.setFloat("turbidity", this.turbidity);
 			this._effect.setFloat("rayleigh", this.rayleigh);
