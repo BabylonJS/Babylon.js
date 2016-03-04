@@ -4,6 +4,16 @@
 
     export const ToGammaSpace = 1 / 2.2;
     export const ToLinearSpace = 2.2;
+    export const Epsilon = 0.001;
+
+
+    export class MathTools {
+        public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
+            var num = a - b;
+            return -epsilon <= num && num <= epsilon;
+        }
+    }
+
 
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
@@ -450,8 +460,8 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         }
 
-        public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Engine.Epsilon): boolean {
-            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && Tools.WithinEpsilon(this.y, otherVector.y, epsilon);
+        public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
+            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon);
         }
 
         // Properties
@@ -710,8 +720,8 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
-        public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Engine.Epsilon): boolean {
-            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && Tools.WithinEpsilon(this.y, otherVector.y, epsilon) && Tools.WithinEpsilon(this.z, otherVector.z, epsilon);
+        public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Epsilon): boolean {
+            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon) && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon);
         }
 
         public equalsToFloats(x: number, y: number, z: number): boolean {
@@ -1029,7 +1039,7 @@
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (Tools.WithinEpsilon(num, 1.0)) {
+            if (MathTools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -1043,7 +1053,7 @@
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
 
-            if (Tools.WithinEpsilon(num, 1.0)) {
+            if (MathTools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -1119,10 +1129,10 @@
             // Rv3(u) = u1, and u1 belongs to plane xOz
             // Rv3(w) = w1 = w invariant
             var u1: Vector3 = Tmp.Vector3[1];
-            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
+            if (MathTools.WithinEpsilon(w.z, 0, Epsilon)) {
                 z = 1.0;
             }
-            else if (Tools.WithinEpsilon(w.x, 0, Engine.Epsilon)) {
+            else if (MathTools.WithinEpsilon(w.x, 0, Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -1160,7 +1170,7 @@
             y = 0.0;
             z = 0.0;
             sign = -1.0;
-            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
+            if (MathTools.WithinEpsilon(w.z, 0, Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -1325,12 +1335,12 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         }
 
-        public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Engine.Epsilon): boolean {
+        public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Epsilon): boolean {
             return otherVector
-                && Tools.WithinEpsilon(this.x, otherVector.x, epsilon)
-                && Tools.WithinEpsilon(this.y, otherVector.y, epsilon)
-                && Tools.WithinEpsilon(this.z, otherVector.z, epsilon)
-                && Tools.WithinEpsilon(this.w, otherVector.w, epsilon);
+                && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon)
+                && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon)
+                && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon)
+                && MathTools.WithinEpsilon(this.w, otherVector.w, epsilon);
         }
 
         public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
@@ -2883,213 +2893,6 @@
         }
     }
 
-    export class Ray {
-        private _edge1: Vector3;
-        private _edge2: Vector3;
-        private _pvec: Vector3;
-        private _tvec: Vector3;
-        private _qvec: Vector3;
-
-        constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
-        }
-
-        // Methods
-        public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean {
-            var d = 0.0;
-            var maxValue = Number.MAX_VALUE;
-            var inv: number;
-            var min: number;
-            var max: number;
-            var temp: number;
-            if (Math.abs(this.direction.x) < 0.0000001) {
-                if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.x;
-                min = (minimum.x - this.origin.x) * inv;
-                max = (maximum.x - this.origin.x) * inv;
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-
-            if (Math.abs(this.direction.y) < 0.0000001) {
-                if (this.origin.y < minimum.y || this.origin.y > maximum.y) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.y;
-                min = (minimum.y - this.origin.y) * inv;
-                max = (maximum.y - this.origin.y) * inv;
-
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-
-            if (Math.abs(this.direction.z) < 0.0000001) {
-                if (this.origin.z < minimum.z || this.origin.z > maximum.z) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.z;
-                min = (minimum.z - this.origin.z) * inv;
-                max = (maximum.z - this.origin.z) * inv;
-
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public intersectsBox(box: BoundingBox): boolean {
-            return this.intersectsBoxMinMax(box.minimum, box.maximum);
-        }
-
-        public intersectsSphere(sphere): boolean {
-            var x = sphere.center.x - this.origin.x;
-            var y = sphere.center.y - this.origin.y;
-            var z = sphere.center.z - this.origin.z;
-            var pyth = (x * x) + (y * y) + (z * z);
-            var rr = sphere.radius * sphere.radius;
-
-            if (pyth <= rr) {
-                return true;
-            }
-
-            var dot = (x * this.direction.x) + (y * this.direction.y) + (z * this.direction.z);
-            if (dot < 0.0) {
-                return false;
-            }
-
-            var temp = pyth - (dot * dot);
-
-            return temp <= rr;
-        }
-
-        public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo {
-            if (!this._edge1) {
-                this._edge1 = Vector3.Zero();
-                this._edge2 = Vector3.Zero();
-                this._pvec = Vector3.Zero();
-                this._tvec = Vector3.Zero();
-                this._qvec = Vector3.Zero();
-            }
-
-            vertex1.subtractToRef(vertex0, this._edge1);
-            vertex2.subtractToRef(vertex0, this._edge2);
-            Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
-            var det = Vector3.Dot(this._edge1, this._pvec);
-
-            if (det === 0) {
-                return null;
-            }
-
-            var invdet = 1 / det;
-
-            this.origin.subtractToRef(vertex0, this._tvec);
-
-            var bu = Vector3.Dot(this._tvec, this._pvec) * invdet;
-
-            if (bu < 0 || bu > 1.0) {
-                return null;
-            }
-
-            Vector3.CrossToRef(this._tvec, this._edge1, this._qvec);
-
-            var bv = Vector3.Dot(this.direction, this._qvec) * invdet;
-
-            if (bv < 0 || bu + bv > 1.0) {
-                return null;
-            }
-
-            //check if the distance is longer than the predefined length.
-            var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
-            if (distance > this.length) {
-                return null;
-            }
-
-            return new IntersectionInfo(bu, bv, distance);
-        }
-
-        // Statics
-        public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
-            var start = Vector3.Unproject(new Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
-            var end = Vector3.Unproject(new Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
-
-            var direction = end.subtract(start);
-            direction.normalize();
-
-            return new Ray(start, direction);
-        }
-
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        public static CreateNewFromTo(origin: Vector3, end: Vector3, world: Matrix = Matrix.Identity()): Ray {
-            var direction = end.subtract(origin);
-            var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
-            direction.normalize();
-
-            return Ray.Transform(new Ray(origin, direction, length), world);
-        }
-
-        public static Transform(ray: Ray, matrix: Matrix): Ray {
-            var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
-            var newDirection = Vector3.TransformNormal(ray.direction, matrix);
-
-            return new Ray(newOrigin, newDirection, ray.length);
-        }
-    }
-
     export enum Space {
         LOCAL = 0,
         WORLD = 1
@@ -3195,77 +2998,6 @@
 
             this.orientation = (a2 - a1) < 0 ? Orientation.CW : Orientation.CCW;
             this.angle = Angle.FromDegrees(this.orientation === Orientation.CW ? a1 - a3 : a3 - a1);
-        }
-    }
-
-    export class PathCursor {
-        private _onchange = new Array<(cursor: PathCursor) => void>();
-
-        value: number = 0;
-        animations = new Array<Animation>();
-
-        constructor(private path: Path2) {
-        }
-
-        public getPoint(): Vector3 {
-            var point = this.path.getPointAtLengthPosition(this.value);
-            return new Vector3(point.x, 0, point.y);
-        }
-
-        public moveAhead(step: number = 0.002): PathCursor {
-            this.move(step);
-
-            return this;
-        }
-
-        public moveBack(step: number = 0.002): PathCursor {
-            this.move(-step);
-
-            return this;
-        }
-
-        public move(step: number): PathCursor {
-
-            if (Math.abs(step) > 1) {
-                throw "step size should be less than 1.";
-            }
-
-            this.value += step;
-            this.ensureLimits();
-            this.raiseOnChange();
-
-            return this;
-        }
-
-        private ensureLimits(): PathCursor {
-            while (this.value > 1) {
-                this.value -= 1;
-            }
-            while (this.value < 0) {
-                this.value += 1;
-            }
-
-            return this;
-        }
-
-        // used by animation engine
-        private markAsDirty(propertyName: string): PathCursor {
-            this.ensureLimits();
-            this.raiseOnChange();
-
-            return this;
-        }
-
-        private raiseOnChange(): PathCursor {
-            this._onchange.forEach(f => f(this));
-
-            return this;
-        }
-
-        public onchange(f: (cursor: PathCursor) => void): PathCursor {
-            this._onchange.push(f);
-
-            return this;
         }
     }
 
@@ -3517,13 +3249,13 @@
 
             if (va === undefined || va === null) {
                 var point: Vector3;
-                if (!Tools.WithinEpsilon(vt.y, 1, Engine.Epsilon)) {     // search for a point in the plane
+                if (!MathTools.WithinEpsilon(vt.y, 1, Epsilon)) {     // search for a point in the plane
                     point = new Vector3(0, -1, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.x, 1, Engine.Epsilon)) {
+                else if (!MathTools.WithinEpsilon(vt.x, 1, Epsilon)) {
                     point = new Vector3(1, 0, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.z, 1, Engine.Epsilon)) {
+                else if (!MathTools.WithinEpsilon(vt.z, 1, Epsilon)) {
                     point = new Vector3(0, 0, 1);
                 }
                 normal0 = Vector3.Cross(vt, point);
@@ -3732,5 +3464,3 @@
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
 }
-
-

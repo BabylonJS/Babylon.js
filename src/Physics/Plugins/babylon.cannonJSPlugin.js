@@ -371,6 +371,10 @@ var BABYLON;
         CannonJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
             impostor.physicsBody.angularVelocity.copy(velocity);
         };
+        CannonJSPlugin.prototype.setBodyMass = function (impostor, mass) {
+            impostor.physicsBody.mass = mass;
+            impostor.physicsBody.updateMassProperties();
+        };
         CannonJSPlugin.prototype.sleepBody = function (impostor) {
             impostor.physicsBody.sleep();
         };

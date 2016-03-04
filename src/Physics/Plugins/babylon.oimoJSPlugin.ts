@@ -324,6 +324,15 @@ module BABYLON {
             impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
         }
 
+
+        public setBodyMass(impostor: PhysicsImpostor, mass: number) {
+            var staticBody: boolean = mass === 0;
+            //this will actually set the body's density and not its mass.
+            //But this is how oimo treats the mass variable.
+            impostor.physicsBody.shapes.density = staticBody ? 1 : mass;
+            impostor.physicsBody.setupMass(staticBody ? 0x2 : 0x1);
+        }
+
         public sleepBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.sleep();
         }

@@ -399,11 +399,11 @@ var BABYLON;
                 this.inertialAlphaOffset *= this.inertia;
                 this.inertialBetaOffset *= this.inertia;
                 this.inertialRadiusOffset *= this.inertia;
-                if (Math.abs(this.inertialAlphaOffset) < BABYLON.Engine.Epsilon)
+                if (Math.abs(this.inertialAlphaOffset) < BABYLON.Epsilon)
                     this.inertialAlphaOffset = 0;
-                if (Math.abs(this.inertialBetaOffset) < BABYLON.Engine.Epsilon)
+                if (Math.abs(this.inertialBetaOffset) < BABYLON.Epsilon)
                     this.inertialBetaOffset = 0;
-                if (Math.abs(this.inertialRadiusOffset) < BABYLON.Engine.Epsilon)
+                if (Math.abs(this.inertialRadiusOffset) < BABYLON.Epsilon)
                     this.inertialRadiusOffset = 0;
             }
             // Panning inertia
@@ -414,9 +414,9 @@ var BABYLON;
                 }
                 this.inertialPanningX *= this.inertia;
                 this.inertialPanningY *= this.inertia;
-                if (Math.abs(this.inertialPanningX) < BABYLON.Engine.Epsilon)
+                if (Math.abs(this.inertialPanningX) < BABYLON.Epsilon)
                     this.inertialPanningX = 0;
-                if (Math.abs(this.inertialPanningY) < BABYLON.Engine.Epsilon)
+                if (Math.abs(this.inertialPanningY) < BABYLON.Epsilon)
                     this.inertialPanningY = 0;
                 this._localDirection.copyFromFloats(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
                 this._localDirection.multiplyInPlace(this.panningAxis);

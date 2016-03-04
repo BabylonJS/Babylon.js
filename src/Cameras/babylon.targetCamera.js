@@ -135,22 +135,22 @@ var BABYLON;
             }
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.x) < BABYLON.Epsilon) {
                     this.cameraDirection.x = 0;
                 }
-                if (Math.abs(this.cameraDirection.y) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.y) < BABYLON.Epsilon) {
                     this.cameraDirection.y = 0;
                 }
-                if (Math.abs(this.cameraDirection.z) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.z) < BABYLON.Epsilon) {
                     this.cameraDirection.z = 0;
                 }
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraRotation.x) < BABYLON.Epsilon) {
                     this.cameraRotation.x = 0;
                 }
-                if (Math.abs(this.cameraRotation.y) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraRotation.y) < BABYLON.Epsilon) {
                     this.cameraRotation.y = 0;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);

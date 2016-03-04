@@ -543,7 +543,7 @@ var BABYLON;
                 BABYLON.Node.ParseAnimationRanges(camera, parsedCamera, scene);
             }
             if (parsedCamera.autoAnimate) {
-                scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, 1.0);
+                scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
             }
             return camera;
         };
