@@ -12,7 +12,6 @@ var BABYLON;
             this._onAfterPhysicsStepCallbacks = new Array();
             this._onPhysicsCollideCallbacks = [];
             this._deltaPosition = BABYLON.Vector3.Zero();
-            this._deltaRotation = new BABYLON.Quaternion();
             this._tmpPositionWithDelta = BABYLON.Vector3.Zero();
             this._tmpRotationWithDelta = new BABYLON.Quaternion();
             /**
@@ -21,8 +20,12 @@ var BABYLON;
             this.beforeStep = function () {
                 _this.mesh.position.subtractToRef(_this._deltaPosition, _this._tmpPositionWithDelta);
                 //conjugate deltaRotation
-                _this._tmpRotationWithDelta.copyFrom(_this._deltaRotation);
-                _this._tmpRotationWithDelta.multiplyInPlace(_this.mesh.rotationQuaternion);
+                if (_this._deltaRotationConjugated) {
+                    _this.mesh.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this._tmpRotationWithDelta);
+                }
+                else {
+                    _this._tmpRotationWithDelta.copyFrom(_this.mesh.rotationQuaternion);
+                }
                 _this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(_this, _this._tmpPositionWithDelta, _this._tmpRotationWithDelta);
                 _this._onBeforePhysicsStepCallbacks.forEach(function (func) {
                     func(_this);
@@ -37,16 +40,18 @@ var BABYLON;
                 });
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
                 _this.mesh.position.addInPlace(_this._deltaPosition);
-                _this.mesh.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
+                if (_this._deltaRotation) {
+                    _this.mesh.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
+                }
             };
             //event and body object due to cannon's event-based architecture.
             this.onCollide = function (e) {
                 var otherImpostor = _this._physicsEngine.getImpostorWithPhysicsBody(e.body);
                 if (otherImpostor) {
                     _this._onPhysicsCollideCallbacks.filter(function (obj) {
-                        return obj.otherImpostor === otherImpostor;
+                        return obj.otherImpostors.indexOf(otherImpostor) !== -1;
                     }).forEach(function (obj) {
-                        obj.callback(_this, obj.otherImpostor);
+                        obj.callback(_this, otherImpostor);
                     });
                 }
             };
@@ -152,10 +157,25 @@ var BABYLON;
             this._bodyUpdateRequired = true;
         };
         /**
-         * Set the body's velocity.
+         * Specifically change the body's mass option. Won't recreate the physics body object
          */
-        PhysicsImpostor.prototype.setVelocity = function (velocity) {
-            this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
+        PhysicsImpostor.prototype.setMass = function (mass) {
+            if (this.getParam("mass") !== mass) {
+                this.setParam("mass", mass);
+            }
+            this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
+        };
+        /**
+         * Set the body's linear velocity.
+         */
+        PhysicsImpostor.prototype.setLinearVelocity = function (velocity) {
+            this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        };
+        /**
+         * Set the body's linear velocity.
+         */
+        PhysicsImpostor.prototype.setAngularVelocity = function (velocity) {
+            this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
         };
         /**
          * Execute a function with the physics plugin native code.
@@ -198,10 +218,12 @@ var BABYLON;
          * register a function that will be executed when this impostor collides against a different body.
          */
         PhysicsImpostor.prototype.registerOnPhysicsCollide = function (collideAgainst, func) {
-            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostor: collideAgainst });
+            var collidedAgainstList = collideAgainst instanceof Array ? collideAgainst : [collideAgainst];
+            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
         };
         PhysicsImpostor.prototype.unregisterOnPhysicsCollide = function (collideAgainst, func) {
-            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostor: collideAgainst });
+            var collidedAgainstList = collideAgainst instanceof Array ? collideAgainst : [collideAgainst];
+            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostors: collidedAgainstList });
             if (index > -1) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
             }
@@ -238,6 +260,18 @@ var BABYLON;
             });
             this._physicsEngine.addJoint(this, otherImpostor, joint);
         };
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        PhysicsImpostor.prototype.sleep = function () {
+            this._physicsEngine.getPhysicsPlugin().sleepBody(this);
+        };
+        /**
+         * Wake the body up.
+         */
+        PhysicsImpostor.prototype.wakeUp = function () {
+            this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
+        };
         PhysicsImpostor.prototype.dispose = function (disposeChildren) {
             if (disposeChildren === void 0) { disposeChildren = true; }
             this.physicsBody = null;
@@ -259,7 +293,11 @@ var BABYLON;
             this._deltaPosition.copyFrom(position);
         };
         PhysicsImpostor.prototype.setDeltaRotation = function (rotation) {
+            if (!this._deltaRotation) {
+                this._deltaRotation = new BABYLON.Quaternion();
+            }
             this._deltaRotation.copyFrom(rotation);
+            this._deltaRotationConjugated = this._deltaRotation.conjugate();
         };
         //Impostor types
         PhysicsImpostor.NoImpostor = 0;

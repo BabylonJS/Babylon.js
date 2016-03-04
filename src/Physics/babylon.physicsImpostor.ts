@@ -16,10 +16,11 @@ module BABYLON {
 
         private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
         private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
-        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostor: PhysicsImpostor }> = []
+        private _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = []
 
         private _deltaPosition: Vector3 = Vector3.Zero();
-        private _deltaRotation: Quaternion = new Quaternion();
+        private _deltaRotation: Quaternion;
+        private _deltaRotationConjugated: Quaternion;
         
         //If set, this is this impostor's parent
         private _parent: PhysicsImpostor;
@@ -131,12 +132,29 @@ module BABYLON {
             this._options[paramName] = value;
             this._bodyUpdateRequired = true;
         }
+        
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        public setMass(mass: number) {
+            if (this.getParam("mass") !== mass) {
+                this.setParam("mass", mass);
+            }
+            this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
+        }
 
         /**
-         * Set the body's velocity.
+         * Set the body's linear velocity.
          */
-        public setVelocity(velocity: Vector3) {
-            this._physicsEngine.getPhysicsPlugin().setVelocity(this, velocity);
+        public setLinearVelocity(velocity: Vector3) {
+            this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        }
+        
+        /**
+         * Set the body's linear velocity.
+         */
+        public setAngularVelocity(velocity: Vector3) {
+            this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
         }
         
         /**
@@ -184,12 +202,14 @@ module BABYLON {
         /**
          * register a function that will be executed when this impostor collides against a different body.
          */
-        public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
-            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostor: collideAgainst });
+        public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
+            var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
+            this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
         }
 
-        public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
-            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostor: collideAgainst });
+        public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void {
+            var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst]
+            var index = this._onPhysicsCollideCallbacks.indexOf({ callback: func, otherImpostors: collidedAgainstList });
 
             if (index > -1) {
                 this._onPhysicsCollideCallbacks.splice(index, 1);
@@ -208,8 +228,11 @@ module BABYLON {
 
             this.mesh.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
             //conjugate deltaRotation
-            this._tmpRotationWithDelta.copyFrom(this._deltaRotation);
-            this._tmpRotationWithDelta.multiplyInPlace(this.mesh.rotationQuaternion);
+            if (this._deltaRotationConjugated) {
+                this.mesh.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this._tmpRotationWithDelta);
+            } else {
+                this._tmpRotationWithDelta.copyFrom(this.mesh.rotationQuaternion);
+            }
 
             this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
 
@@ -229,7 +252,9 @@ module BABYLON {
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
 
             this.mesh.position.addInPlace(this._deltaPosition)
-            this.mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
+            if (this._deltaRotation) {
+                this.mesh.rotationQuaternion.multiplyInPlace(this._deltaRotation);
+            }
         }
         
         //event and body object due to cannon's event-based architecture.
@@ -237,9 +262,9 @@ module BABYLON {
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {
                 this._onPhysicsCollideCallbacks.filter((obj) => {
-                    return obj.otherImpostor === otherImpostor
+                    return obj.otherImpostors.indexOf(otherImpostor) !== -1
                 }).forEach((obj) => {
-                    obj.callback(this, obj.otherImpostor);
+                    obj.callback(this, otherImpostor);
                 })
             }
         }
@@ -276,6 +301,20 @@ module BABYLON {
             })
             this._physicsEngine.addJoint(this, otherImpostor, joint);
         }
+        
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        public sleep() {
+            this._physicsEngine.getPhysicsPlugin().sleepBody(this);
+        }
+        
+        /**
+         * Wake the body up.
+         */
+        public wakeUp() {
+            this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
+        }
 
         public dispose(disposeChildren: boolean = true) {
             this.physicsBody = null;
@@ -298,7 +337,11 @@ module BABYLON {
         }
 
         public setDeltaRotation(rotation: Quaternion) {
+            if (!this._deltaRotation) {
+                this._deltaRotation = new Quaternion();
+            }
             this._deltaRotation.copyFrom(rotation);
+            this._deltaRotationConjugated = this._deltaRotation.conjugate();
         }
         
         //Impostor types

@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// Attributes
+﻿// Attributes
 attribute vec4 position;
 attribute vec4 options;
 attribute vec4 cellInfo;

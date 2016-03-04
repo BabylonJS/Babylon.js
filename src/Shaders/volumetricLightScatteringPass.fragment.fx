@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-#if defined(ALPHATEST) || defined(NEED_UV)
+﻿#if defined(ALPHATEST) || defined(NEED_UV)
 varying vec2 vUV;
 #endif
 

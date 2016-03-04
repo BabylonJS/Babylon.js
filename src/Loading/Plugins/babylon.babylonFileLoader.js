@@ -214,6 +214,9 @@ var BABYLON;
                         scene.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                     }
                 }
+                if (parsedData.autoAnimate) {
+                    scene.beginAnimation(scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
+                }
                 // Materials
                 if (parsedData.materials) {
                     for (index = 0, cache = parsedData.materials.length; index < cache; index++) {

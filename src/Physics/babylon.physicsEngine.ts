@@ -17,15 +17,26 @@
             }
             gravity = gravity || new Vector3(0, -9.807, 0)
             this.setGravity(gravity);
+            this.setTimeStep();
         }
 
         public setGravity(gravity: Vector3): void {
             this.gravity = gravity;
             this._physicsPlugin.setGravity(this.gravity);
         }
+        
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60. 
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         */
+        public setTimeStep(newTimeStep: number = 1 / 60) {
+            this._physicsPlugin.setTimeStep(newTimeStep);
+        }
 
         public dispose(): void {
-            this._impostors.forEach(function(impostor) {
+            this._impostors.forEach(function (impostor) {
                 impostor.dispose();
             })
             this._physicsPlugin.dispose();
@@ -61,7 +72,7 @@
         public addImpostor(impostor: PhysicsImpostor) {
             this._impostors.push(impostor);
             //if no parent, generate the body
-            if(!impostor.parent) {
+            if (!impostor.parent) {
                 this._physicsPlugin.generatePhysicsBody(impostor);
             }
         }
@@ -71,7 +82,7 @@
             if (index > -1) {
                 var removed = this._impostors.splice(index, 1);
                 //Is it needed?
-                if(removed.length) {
+                if (removed.length) {
                     //this will also remove it from the world.
                     removed[0].physicsBody = null;
                 }
@@ -89,12 +100,12 @@
         }
 
         public removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
-            var matchingJoints = this._joints.filter(function(impostorJoint) {
+            var matchingJoints = this._joints.filter(function (impostorJoint) {
                 return (impostorJoint.connectedImpostor === connectedImpostor
                     && impostorJoint.joint === joint
                     && impostorJoint.mainImpostor === mainImpostor)
             });
-            if(matchingJoints.length) {
+            if (matchingJoints.length) {
                 this._physicsPlugin.removeJoint(matchingJoints[0]);
                 //TODO remove it from the list as well
                 
@@ -139,6 +150,7 @@
         world: any;
         name: string;
         setGravity(gravity: Vector3);
+        setTimeStep(timeStep: number);
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void; //not forgetting pre and post events
         applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
         applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
@@ -148,8 +160,12 @@
         removeJoint(joint: PhysicsImpostorJoint)
         isSupported(): boolean;
         setTransformationFromPhysicsBody(impostor: PhysicsImpostor);
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition:Vector3, newRotation: Quaternion);
-        setVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion);
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        setBodyMass(impostor: PhysicsImpostor, mass: number);
+        sleepBody(impostor: PhysicsImpostor);
+        wakeUpBody(impostor: PhysicsImpostor);
         dispose();
     }
 }

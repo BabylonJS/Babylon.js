@@ -397,6 +397,9 @@ var BABYLON;
                     particleSystem.animations.push(BABYLON.Animation.Parse(parsedAnimation));
                 }
             }
+            if (parsedParticleSystem.autoAnimate) {
+                scene.beginAnimation(particleSystem, parsedParticleSystem.autoAnimateFrom, parsedParticleSystem.autoAnimateTo, parsedParticleSystem.autoAnimateLoop, parsedParticleSystem.autoAnimateSpeed || 1.0);
+            }
             // Particle system
             particleSystem.minAngularSpeed = parsedParticleSystem.minAngularSpeed;
             particleSystem.maxAngularSpeed = parsedParticleSystem.maxAngularSpeed;

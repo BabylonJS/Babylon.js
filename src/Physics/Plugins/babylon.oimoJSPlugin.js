@@ -13,6 +13,9 @@ var BABYLON;
         OimoJSPlugin.prototype.setGravity = function (gravity) {
             this.world.gravity.copy(gravity);
         };
+        OimoJSPlugin.prototype.setTimeStep = function (timeStep) {
+            this.world.timeStep = timeStep;
+        };
         OimoJSPlugin.prototype.executeStep = function (delta, impostors) {
             var _this = this;
             impostors.forEach(function (impostor) {
@@ -193,6 +196,12 @@ var BABYLON;
                 case BABYLON.PhysicsJoint.BallAndSocketJoint:
                     type = "jointBall";
                     break;
+                case BABYLON.PhysicsJoint.SpringJoint:
+                    BABYLON.Tools.Warn("Oimo.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
+                    var springData = jointData;
+                    nativeJointData.min = springData.length || nativeJointData.min;
+                    //Max should also be set, just make sure it is at least min
+                    nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
                 case BABYLON.PhysicsJoint.DistanceJoint:
                     type = "jointDistance";
                     nativeJointData.max = jointData.maxDistance;
@@ -249,8 +258,24 @@ var BABYLON;
             }
             return lastShape;
         };
-        OimoJSPlugin.prototype.setVelocity = function (impostor, velocity) {
+        OimoJSPlugin.prototype.setLinearVelocity = function (impostor, velocity) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
+        };
+        OimoJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
+            impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
+        };
+        OimoJSPlugin.prototype.setBodyMass = function (impostor, mass) {
+            var staticBody = mass === 0;
+            //this will actually set the body's density and not its mass.
+            //But this is how oimo treats the mass variable.
+            impostor.physicsBody.shapes.density = staticBody ? 1 : mass;
+            impostor.physicsBody.setupMass(staticBody ? 0x2 : 0x1);
+        };
+        OimoJSPlugin.prototype.sleepBody = function (impostor) {
+            impostor.physicsBody.sleep();
+        };
+        OimoJSPlugin.prototype.wakeUpBody = function (impostor) {
+            impostor.physicsBody.awake();
         };
         OimoJSPlugin.prototype.dispose = function () {
             this.world.clear();

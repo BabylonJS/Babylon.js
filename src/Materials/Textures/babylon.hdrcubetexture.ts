@@ -9,19 +9,22 @@ module BABYLON {
         private _extensions: string[];
         private _textureMatrix: Matrix;
         private _size: number;
+        private _usePMREMGenerator: boolean;
 
         private static _facesMapping = [
-            "left",
-            "down",
-            "front",
             "right",
             "up",
+            "front",
+            "left",
+            "down",
             "back"
         ];
 
         public sphericalPolynomial: SphericalPolynomial = null;
 
-        constructor(url: string, scene: Scene, size: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false) {
+        public isPMREM = false;
+
+        constructor(url: string, scene: Scene, size: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false) {
             super(scene);
 
             this.name = url;
@@ -30,6 +33,8 @@ module BABYLON {
             this.hasAlpha = false;
             this._size = size;
             this._useInGammaSpace = useInGammaSpace;
+            this._usePMREMGenerator = usePMREMGenerator && scene.getEngine().getCaps().textureLOD;
+            this.isPMREM = this._usePMREMGenerator;
 
             if (!url) {
                 return;
@@ -105,12 +110,30 @@ module BABYLON {
                 return results;
             }
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size, Engine.TEXTUREFORMAT_RGB, Engine.TEXTURETYPE_FLOAT, this._noMipmap, callback);
+            var mipmapGenerator = null;
+            if (!this._noMipmap && this._usePMREMGenerator) {
+                mipmapGenerator = (data: ArrayBufferView[]) => {
+                    var generator = new BABYLON.Internals.PMREMGenerator(data,
+                        this._size,
+                        this._size,
+                        0,
+                        3,
+                        this.getScene().getEngine().getCaps().textureFloat,
+                        2048,
+                        0.25,
+                        false,
+                        true);
+
+                    return generator.filterCubeMap();
+                };
+            }
+
+            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size, Engine.TEXTUREFORMAT_RGB, Engine.TEXTURETYPE_FLOAT, this._noMipmap, callback, mipmapGenerator);
         }
 
         public clone(): HDRCubeTexture {
             var newTexture = new HDRCubeTexture(this.url, this.getScene(), this._size, this._noMipmap,
-                this._generateHarmonics, this._useInGammaSpace);
+                this._generateHarmonics, this._useInGammaSpace, this._usePMREMGenerator);
 
             // Base texture
             newTexture.level = this.level;
@@ -144,7 +167,7 @@ module BABYLON {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.size,
-                    texture.generateHarmonics, texture.useInGammaSpace);
+                    texture.generateHarmonics, texture.useInGammaSpace, texture.usePMREMGenerator);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;
                 texture.level = parsedTexture.level;
@@ -167,6 +190,7 @@ module BABYLON {
             serializationObject.coordinatesMode = this.coordinatesMode;
             serializationObject.useInGammaSpace = this._useInGammaSpace;
             serializationObject.generateHarmonics = this._generateHarmonics;
+            serializationObject.usePMREMGenerator = this._usePMREMGenerator;
 
             return serializationObject;
         }
