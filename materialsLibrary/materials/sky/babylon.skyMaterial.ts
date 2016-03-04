@@ -40,8 +40,13 @@ module BABYLON {
         @serialize()
         public azimuth: number = 0.25;
         
+        @serializeAsVector3()
+        public sunPosition: Vector3 = new Vector3(0, 100, 0);
+        
+        @serialize()
+        public useSunPosition: boolean = false;
+        
         // Private members
-        private _sunPosition: Vector3 = Vector3.Zero();
         private _cameraPosition: Vector3 = Vector3.Zero();
         
         private _renderId: number;
@@ -224,14 +229,16 @@ module BABYLON {
 			this._effect.setFloat("mieCoefficient", this.mieCoefficient);
 			this._effect.setFloat("mieDirectionalG", this.mieDirectionalG);
             
-            var theta = Math.PI * (this.inclination - 0.5);
-			var phi = 2 * Math.PI * (this.azimuth - 0.5);
+            if (!this.useSunPosition) {
+                var theta = Math.PI * (this.inclination - 0.5);
+                var phi = 2 * Math.PI * (this.azimuth - 0.5);
+                
+                this.sunPosition.x = this.distance * Math.cos(phi);
+                this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
+                this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
+            }
             
-            this._sunPosition.x = this.distance * Math.cos( phi );
-			this._sunPosition.y = this.distance * Math.sin( phi ) * Math.sin( theta );
-			this._sunPosition.z = this.distance * Math.sin( phi ) * Math.cos( theta );
-            
-			this._effect.setVector3("sunPosition", this._sunPosition);
+			this._effect.setVector3("sunPosition", this.sunPosition);
 
             super.bind(world, mesh);
         }
