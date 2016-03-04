@@ -22,11 +22,16 @@
             // Now create a basic Babylon Scene object
             this.scene = new BABYLON.Scene(this.engine);
             
+
+            //BABYLON.SceneLoader.ImportMesh(null, "http://localhost:10000/devstoreaccount1/partstore/Parts/Low/", "3673.babylon", this.scene, (meshes) => {
+            //    var mesh = meshes[0];
+            //});
+
             // Change the scene background color to green.
             this.scene.clearColor = new BABYLON.Color3(56/256, 87/256, 145/256);
 
             // This creates and positions a free camera
-            this.camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -100), this.scene);
+            this.camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -50), this.scene);
             this.camera.setTarget(BABYLON.Vector3.Zero());
 
             //this.camera.attachControl(canvas);
@@ -34,16 +39,20 @@
             var mesh = BABYLON.Mesh.CreateBox("box01", 70, this.scene);
             mesh.position = new BABYLON.Vector3(0, -30, 0);
 
-            var diffuseTexture = new BABYLON.Texture("assets/rock.png", this.scene);
-            var normalsHeightTexture = new BABYLON.Texture("assets/rock_nh.png", this.scene);
+            var diffuseTexture = new BABYLON.Texture("assets/pasbrick_d.png", this.scene);
+            var normalsHeightTexture = new BABYLON.Texture("assets/pasbrick_nh.png", this.scene);
+            //var diffuseTexture = new BABYLON.Texture("assets/pasdetai.jpg", this.scene);
+            //var normalsHeightTexture = new BABYLON.Texture("assets/pasdetai.png", this.scene);
+            //var diffuseTexture = new BABYLON.Texture("assets/rock.png", this.scene);
+            //var normalsHeightTexture = new BABYLON.Texture("assets/rock_nh.png", this.scene);
             //var diffuseTexture = new BABYLON.Texture("assets/BrickWall.png", this.scene);
             //var normalsHeightTexture = new BABYLON.Texture("assets/BrickWall_nh.png", this.scene);
             var material = new BABYLON.StandardMaterial("mtl01", this.scene);
             material.diffuseTexture = diffuseTexture;
             material.bumpTexture = normalsHeightTexture;
             material.useParallax = true;
-            material.useParallaxOcclusion;
-            material.parallaxScaleBias
+            material.useParallaxOcclusion = true;
+            material.parallaxScaleBias = 0.1;
             material.specularPower = 500.0;
 
             mesh.material = material;
