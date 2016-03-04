@@ -10,6 +10,7 @@ declare module BABYLON {
         inclination: number;
         azimuth: number;
         private _sunPosition;
+        private _cameraPosition;
         private _renderId;
         private _defines;
         private _cachedDefines;

@@ -10,6 +10,7 @@ varying vec4 vColor;
 #include<clipPlaneFragmentDeclaration>
 
 // Sky
+uniform vec3 cameraPosition;
 uniform float luminance;
 uniform float turbidity;
 uniform float rayleigh;
@@ -95,18 +96,17 @@ void main(void) {
 	* Sky Color
 	*--------------------------------------------------------------------------------------------------
 	*/
-	const vec3 cameraPos = vec3(0.0, 0.0, 0.0);
 	float sunfade = 1.0 - clamp(1.0 - exp((sunPosition.y / 450000.0)), 0.0, 1.0);
 	float rayleighCoefficient = rayleigh - (1.0 * (1.0 - sunfade));
 	vec3 sunDirection = normalize(sunPosition);
 	float sunE = sunIntensity(dot(sunDirection, up));
 	vec3 betaR = simplifiedRayleigh() * rayleighCoefficient;
 	vec3 betaM = totalMie(lambda, K, turbidity) * mieCoefficient;
-	float zenithAngle = acos(max(0.0, dot(up, normalize(vPositionW - cameraPos))));
+	float zenithAngle = acos(max(0.0, dot(up, normalize(vPositionW - cameraPosition))));
 	float sR = rayleighZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));
 	float sM = mieZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));
 	vec3 Fex = exp(-(betaR * sR + betaM * sM));
-	float cosTheta = dot(normalize(vPositionW - cameraPos), sunDirection);
+	float cosTheta = dot(normalize(vPositionW - cameraPosition), sunDirection);
 	float rPhase = rayleighPhase(cosTheta*0.5+0.5);
 	vec3 betaRTheta = betaR * rPhase;
 	float mPhase = hgPhase(cosTheta, mieDirectionalG);
@@ -115,7 +115,7 @@ void main(void) {
 	vec3 Lin = pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * (1.0 - Fex),vec3(1.5));
 	Lin *= mix(vec3(1.0), pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * Fex, vec3(1.0 / 2.0)), clamp(pow(1.0-dot(up, sunDirection), 5.0), 0.0, 1.0));
 
-	vec3 direction = normalize(vPositionW - cameraPos);
+	vec3 direction = normalize(vPositionW - cameraPosition);
 	float theta = acos(direction.y);
 	float phi = atan(direction.z, direction.x);
 	vec2 uv = vec2(phi, theta) / vec2(2.0 * pi, pi) + vec2(0.5, 0.0);
