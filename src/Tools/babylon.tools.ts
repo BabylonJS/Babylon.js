@@ -47,16 +47,6 @@
             return fn;
         }
 
-        public static ToHex(i: number): string {
-            var str = i.toString(16);
-
-            if (i <= 15) {
-                return ("0" + str).toUpperCase();
-            }
-
-            return str.toUpperCase();
-        }
-
         public static SetImmediate(action: () => void) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -418,22 +408,7 @@
             return link;
         }
 
-        // Misc.   
-        public static Clamp(value: number, min = 0, max = 1): number {
-            return Math.min(max, Math.max(min, value));
-        }
-
-        // Returns -1 when value is a negative number and
-        // +1 when value is a positive number. 
-        public static Sign(value: number): number {
-            value = +value; // convert to a number
-
-            if (value === 0 || isNaN(value))
-                return value;
-
-            return value > 0 ? 1 : -1;
-        }
-
+        // Misc.
         public static Format(value: number, decimals: number = 2): string {
             return value.toFixed(decimals);
         }
