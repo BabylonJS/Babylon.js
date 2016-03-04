@@ -12,6 +12,31 @@
             var num = a - b;
             return -epsilon <= num && num <= epsilon;
         }
+        
+        public static ToHex(i: number): string {
+            var str = i.toString(16);
+
+            if (i <= 15) {
+                return ("0" + str).toUpperCase();
+            }
+
+            return str.toUpperCase();
+        }
+        
+        // Returns -1 when value is a negative number and
+        // +1 when value is a positive number. 
+        public static Sign(value: number): number {
+            value = +value; // convert to a number
+
+            if (value === 0 || isNaN(value))
+                return value;
+
+            return value > 0 ? 1 : -1;
+        }
+        
+        public static Clamp(value: number, min = 0, max = 1): number {
+            return Math.min(max, Math.max(min, value));
+        }
     }
 
 
@@ -133,7 +158,7 @@
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
 
-            return "#" + Tools.ToHex(intR) + Tools.ToHex(intG) + Tools.ToHex(intB);
+            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB);
         }
 
         public toLinearSpace(): Color3 {
@@ -167,7 +192,7 @@
         // Statics
         public static FromHexString(hex: string): Color3 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
-                Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
+                //Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
 
@@ -292,13 +317,13 @@
             var intB = (this.b * 255) | 0;
             var intA = (this.a * 255) | 0;
 
-            return "#" + Tools.ToHex(intR) + Tools.ToHex(intG) + Tools.ToHex(intB) + Tools.ToHex(intA);
+            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
         }
 
         // Statics
         public static FromHexString(hex: string): Color4 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
-                Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
+                //Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0, 0, 0, 0);
             }
 
@@ -2127,9 +2152,9 @@
             translation.y = this.m[13];
             translation.z = this.m[14];
 
-            var xs = Tools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
-            var ys = Tools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
-            var zs = Tools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
+            var xs = MathTools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
+            var ys = MathTools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
+            var zs = MathTools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
 
             scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
@@ -3013,7 +3038,7 @@
 
         public addLineTo(x: number, y: number): Path2 {
             if (closed) {
-                Tools.Error("cannot add lines to closed paths");
+                //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
             var newPoint = new Vector2(x, y);
@@ -3025,7 +3050,7 @@
 
         public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
             if (closed) {
-                Tools.Error("cannot add arcs to closed paths");
+                //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
             var startPoint = this._points[this._points.length - 1];
@@ -3070,7 +3095,7 @@
 
         public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
-                Tools.Error("normalized length position should be between 0 and 1.");
+                //Tools.Error("normalized length position should be between 0 and 1.");
                 return Vector2.Zero();
             }
 
@@ -3097,7 +3122,7 @@
                 previousOffset = nextOffset;
             }
 
-            Tools.Error("internal error");
+            //Tools.Error("internal error");
             return Vector2.Zero();
         }
 
