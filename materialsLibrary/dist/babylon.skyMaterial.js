@@ -36,8 +36,9 @@ var BABYLON;
             this.distance = 500;
             this.inclination = 0.49;
             this.azimuth = 0.25;
+            this.sunPosition = new BABYLON.Vector3(0, 100, 0);
+            this.useSunPosition = false;
             // Private members
-            this._sunPosition = BABYLON.Vector3.Zero();
             this._cameraPosition = BABYLON.Vector3.Zero();
             this._defines = new SkyMaterialDefines();
             this._cachedDefines = new SkyMaterialDefines();
@@ -173,12 +174,14 @@ var BABYLON;
             this._effect.setFloat("rayleigh", this.rayleigh);
             this._effect.setFloat("mieCoefficient", this.mieCoefficient);
             this._effect.setFloat("mieDirectionalG", this.mieDirectionalG);
-            var theta = Math.PI * (this.inclination - 0.5);
-            var phi = 2 * Math.PI * (this.azimuth - 0.5);
-            this._sunPosition.x = this.distance * Math.cos(phi);
-            this._sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
-            this._sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
-            this._effect.setVector3("sunPosition", this._sunPosition);
+            if (!this.useSunPosition) {
+                var theta = Math.PI * (this.inclination - 0.5);
+                var phi = 2 * Math.PI * (this.azimuth - 0.5);
+                this.sunPosition.x = this.distance * Math.cos(phi);
+                this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
+                this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
+            }
+            this._effect.setVector3("sunPosition", this.sunPosition);
             _super.prototype.bind.call(this, world, mesh);
         };
         SkyMaterial.prototype.getAnimatables = function () {
@@ -224,6 +227,12 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], SkyMaterial.prototype, "azimuth");
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], SkyMaterial.prototype, "sunPosition");
+        __decorate([
+            BABYLON.serialize()
+        ], SkyMaterial.prototype, "useSunPosition");
         return SkyMaterial;
     })(BABYLON.Material);
     BABYLON.SkyMaterial = SkyMaterial;

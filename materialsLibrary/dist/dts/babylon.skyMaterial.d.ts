@@ -9,7 +9,8 @@ declare module BABYLON {
         distance: number;
         inclination: number;
         azimuth: number;
-        private _sunPosition;
+        sunPosition: Vector3;
+        useSunPosition: boolean;
         private _cameraPosition;
         private _renderId;
         private _defines;
