@@ -17,6 +17,7 @@ var BABYLON;
         ComposableCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
             var _this = this;
             this.camera = camera;
+            this._keys = [];
             if (this._onKeyDown === undefined) {
                 this._onKeyDown = function (evt) {
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
