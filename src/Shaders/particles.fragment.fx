@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// Samplers
+﻿// Samplers
 varying vec2 vUV;
 varying vec4 vColor;
 uniform vec4 textureMask;

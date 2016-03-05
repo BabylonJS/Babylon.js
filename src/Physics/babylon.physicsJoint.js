@@ -34,6 +34,8 @@ var BABYLON;
         //Similar to a Ball-Joint. Different in params
         //TODO check!!
         PhysicsJoint.PointToPointJoint = 8;
+        //Cannon only at the moment
+        PhysicsJoint.SpringJoint = 9;
         return PhysicsJoint;
     })();
     BABYLON.PhysicsJoint = PhysicsJoint;

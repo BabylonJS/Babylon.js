@@ -166,26 +166,26 @@
 
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.x) < Epsilon) {
                     this.cameraDirection.x = 0;
                 }
 
-                if (Math.abs(this.cameraDirection.y) < Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.y) < Epsilon) {
                     this.cameraDirection.y = 0;
                 }
 
-                if (Math.abs(this.cameraDirection.z) < Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.z) < Epsilon) {
                     this.cameraDirection.z = 0;
                 }
 
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < Engine.Epsilon) {
+                if (Math.abs(this.cameraRotation.x) < Epsilon) {
                     this.cameraRotation.x = 0;
                 }
 
-                if (Math.abs(this.cameraRotation.y) < Engine.Epsilon) {
+                if (Math.abs(this.cameraRotation.y) < Epsilon) {
                     this.cameraRotation.y = 0;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);
@@ -265,8 +265,8 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    var camLeft = <TargetCamera> this._rigCameras[0];
-                    var camRight = <TargetCamera> this._rigCameras[1];
+                    var camLeft = <TargetCamera>this._rigCameras[0];
+                    var camRight = <TargetCamera>this._rigCameras[1];
 
                     if (this.cameraRigMode === Camera.RIG_MODE_VR) {
                         camLeft.rotation.x = camRight.rotation.x = this.rotation.x;

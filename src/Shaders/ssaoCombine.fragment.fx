@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-uniform sampler2D textureSampler;
+﻿uniform sampler2D textureSampler;
 uniform sampler2D originalColor;
 
 varying vec2 vUV;

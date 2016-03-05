@@ -1,5 +1,4 @@
-﻿
-mat3 transposeMat3(mat3 inMatrix) {
+﻿mat3 transposeMat3(mat3 inMatrix) {
 	vec3 i0 = inMatrix[0];
 	vec3 i1 = inMatrix[1];
 	vec3 i2 = inMatrix[2];

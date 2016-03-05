@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// Attributes
+﻿// Attributes
 attribute vec3 position;
 attribute vec3 normal;
 #ifdef UV1

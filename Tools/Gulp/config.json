@@ -22,8 +22,8 @@
       "../../src/Tools/babylon.smartArray.js",
       "../../src/Tools/babylon.smartCollection.js",
       "../../src/Tools/babylon.tools.js",      
-      "../../src/states/babylon.alphaCullingState.js",
-      "../../src/states/babylon.depthCullingState.js",
+      "../../src/States/babylon.alphaCullingState.js",
+      "../../src/States/babylon.depthCullingState.js",
       "../../src/babylon.engine.js",
       "../../src/babylon.node.js",
       "../../src/Tools/babylon.filesInput.js",
@@ -31,6 +31,7 @@
       "../../src/Culling/babylon.boundingSphere.js",
       "../../src/Culling/babylon.boundingBox.js",
       "../../src/Culling/babylon.boundingInfo.js",
+      "../../src/Culling/babylon.ray.js",
       "../../src/Mesh/babylon.abstractMesh.js",
       "../../src/Lights/babylon.light.js",
       "../../src/Lights/babylon.pointLight.js",
@@ -191,7 +192,8 @@
       "../../src/tools/hdr/babylon.tools.panoramatocubemap.js",
       "../../src/tools/hdr/babylon.tools.hdr.js",
       "../../src/tools/hdr/babylon.tools.pmremGenerator.js",
-      "../../src/materials/textures/babylon.hdrcubetexture.js"
+      "../../src/materials/textures/babylon.hdrcubetexture.js",
+      "../../src/debug/babylon.skeletonViewer.js"
     ]
   }
 }

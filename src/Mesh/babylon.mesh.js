@@ -47,7 +47,7 @@ var BABYLON;
                     source._geometry.applyToMesh(this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], []);
+                BABYLON.Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances"], ["_poseMatrix"]);
                 // Pivot                
                 this.setPivotMatrix(source.getPivotMatrix());
                 this.id = name + "." + source.id;
@@ -1245,7 +1245,7 @@ var BABYLON;
                 BABYLON.Node.ParseAnimationRanges(mesh, parsedMesh, scene);
             }
             if (parsedMesh.autoAnimate) {
-                scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, 1.0);
+                scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
             }
             // Layer Mask
             if (parsedMesh.layerMask && (!isNaN(parsedMesh.layerMask))) {

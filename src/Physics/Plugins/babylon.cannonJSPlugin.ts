@@ -24,8 +24,12 @@
             this.world.gravity.copy(gravity);
         }
 
+        public setTimeStep(timeStep: number) {
+            this._fixedTimeStep = timeStep;
+        }
+
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
         }
 
         public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -68,7 +72,7 @@
                 }
                 
                 //create the body and material
-                var material = this._addMaterial(impostor.getParam("friction"), impostor.getParam("restitution"));
+                var material = this._addMaterial("mat-" + impostor.mesh.uniqueId, impostor.getParam("friction"), impostor.getParam("restitution"));
 
                 var bodyCreationObject = {
                     mass: impostor.getParam("mass"),
@@ -103,14 +107,14 @@
         }
 
         private _processChildMeshes(mainImpostor: PhysicsImpostor) {
-            var meshChildren = mainImpostor.mesh.getChildMeshes(true);
+            var meshChildren = mainImpostor.mesh.getChildMeshes();
             if (meshChildren.length) {
-                var processMesh = (relativePosition: Vector3, mesh: AbstractMesh) => {
+                var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position.add(relativePosition);
+                            var localPosition = mesh.position;
                             if (childImpostor.physicsBody) {
                                 this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
@@ -122,7 +126,7 @@
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes(true).forEach(processMesh.bind(this, mesh.position));
+                    mesh.getChildMeshes().forEach(processMesh.bind(this, mesh.position));
                 }
                 meshChildren.forEach(processMesh.bind(this, Vector3.Zero()));
             }
@@ -149,9 +153,11 @@
                 pivotB: jointData.connectedPivot ? new CANNON.Vec3().copy(jointData.connectedPivot) : null,
                 axisA: jointData.mainAxis ? new CANNON.Vec3().copy(jointData.mainAxis) : null,
                 axisB: jointData.connectedAxis ? new CANNON.Vec3().copy(jointData.connectedAxis) : null,
-                maxForce: jointData.nativeParams.maxForce
+                maxForce: jointData.nativeParams.maxForce,
+                collideConnected: !!jointData.collision
             };
-            if (!jointData.collision) {
+            //Not needed, Cannon has a collideConnected flag
+            /*if (!jointData.collision) {
                 //add 1st body to a collision group of its own, if it is not in 1
                 if (mainBody.collisionFilterGroup === 1) {
                     mainBody.collisionFilterGroup = this._currentCollisionGroup;
@@ -164,7 +170,7 @@
                 //add their mask to the collisionFilterMask of each other:
                 connectedBody.collisionFilterMask = connectedBody.collisionFilterMask | ~mainBody.collisionFilterGroup;
                 mainBody.collisionFilterMask = mainBody.collisionFilterMask | ~connectedBody.collisionFilterGroup;
-            }
+            }*/
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.HingeJoint:
                     constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
@@ -172,19 +178,38 @@
                 case PhysicsJoint.DistanceJoint:
                     constraint = new CANNON.DistanceConstraint(mainBody, connectedBody, (<DistanceJointData>jointData).maxDistance || 2)
                     break;
+                case PhysicsJoint.SpringJoint:
+                    var springData = <SpringJointData>jointData;
+                    constraint = new CANNON.Spring(mainBody, connectedBody, {
+                        restLength: springData.length,
+                        stiffness: springData.stiffness,
+                        damping: springData.damping,
+                        localAnchorA: constraintData.pivotA,
+                        localAnchorB: constraintData.pivotB
+                    });
+                    break;
                 default:
                     constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
             }
+            //set the collideConnected flag after the creation, since DistanceJoint ignores it.
+            constraint.collideConnected = !!jointData.collision
             impostorJoint.joint.physicsJoint = constraint;
-            this.world.addConstraint(constraint);
+            //don't add spring as constraint, as it is not one.
+            if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
+                this.world.addConstraint(constraint);
+            } else {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function () {
+                    constraint.applyForce();
+                });
+            }
         }
 
         public removeJoint(joint: PhysicsImpostorJoint) {
             //TODO
         }
 
-        private _addMaterial(friction: number, restitution: number) {
+        private _addMaterial(name: string, friction: number, restitution: number) {
             var index;
             var mat;
 
@@ -197,16 +222,10 @@
             }
 
             var currentMat = new CANNON.Material("mat");
+            currentMat.friction = friction;
+            currentMat.restitution = restitution;
+
             this._physicsMaterials.push(currentMat);
-
-            for (index = 0; index < this._physicsMaterials.length; index++) {
-                mat = this._physicsMaterials[index];
-
-                var contactMaterial = new CANNON.ContactMaterial(mat, currentMat, { friction: friction, restitution: restitution });
-
-                this.world.addContactMaterial(contactMaterial);
-            }
-
             return currentMat;
         }
 
@@ -408,8 +427,25 @@
             return window.CANNON !== undefined;
         }
 
-        public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+        public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.velocity.copy(velocity);
+        }
+
+        public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+            impostor.physicsBody.angularVelocity.copy(velocity);
+        }
+
+        public setBodyMass(impostor: PhysicsImpostor, mass: number) {
+            impostor.physicsBody.mass = mass;
+            impostor.physicsBody.updateMassProperties();
+        }
+
+        public sleepBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.sleep();
+        }
+
+        public wakeUpBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.wakeUp();
         }
 
         public dispose() {
@@ -417,3 +453,4 @@
         }
     }
 }
+

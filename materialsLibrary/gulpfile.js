@@ -8,6 +8,7 @@ var cleants = require('gulp-clean-ts-extends');
 var replace = require("gulp-replace");
 var webserver = require('gulp-webserver');
 var uglify = require("gulp-uglify");
+var uncommentShader = require("./gulp-removeShaderComments");
 
 var config = require("./config.json");
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
@@ -52,7 +53,9 @@ gulp.task('default', ["copyReference"], function () {
                 .pipe(gulp.dest(config.build.dtsOutputDirectory));
         }
         
-        var shader = gulp.src(material.shaderFiles).pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
+        var shader = gulp.src(material.shaderFiles)
+                .pipe(uncommentShader())
+                .pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
 
         return merge2(js, shader)
             .pipe(cleants())

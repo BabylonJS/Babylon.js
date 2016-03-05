@@ -28,8 +28,11 @@ var BABYLON;
         CannonJSPlugin.prototype.setGravity = function (gravity) {
             this.world.gravity.copy(gravity);
         };
+        CannonJSPlugin.prototype.setTimeStep = function (timeStep) {
+            this._fixedTimeStep = timeStep;
+        };
         CannonJSPlugin.prototype.executeStep = function (delta, impostors) {
-            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0);
+            this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta * 1000 : 0, 3);
         };
         CannonJSPlugin.prototype.applyImpulse = function (impostor, force, contactPoint) {
             var worldPoint = new CANNON.Vec3(contactPoint.x, contactPoint.y, contactPoint.z);
@@ -63,7 +66,7 @@ var BABYLON;
                     this.removePhysicsBody(impostor);
                 }
                 //create the body and material
-                var material = this._addMaterial(impostor.getParam("friction"), impostor.getParam("restitution"));
+                var material = this._addMaterial("mat-" + impostor.mesh.uniqueId, impostor.getParam("friction"), impostor.getParam("restitution"));
                 var bodyCreationObject = {
                     mass: impostor.getParam("mass"),
                     material: material
@@ -95,14 +98,14 @@ var BABYLON;
         };
         CannonJSPlugin.prototype._processChildMeshes = function (mainImpostor) {
             var _this = this;
-            var meshChildren = mainImpostor.mesh.getChildMeshes(true);
+            var meshChildren = mainImpostor.mesh.getChildMeshes();
             if (meshChildren.length) {
-                var processMesh = function (relativePosition, mesh) {
+                var processMesh = function (localPosition, mesh) {
                     var childImpostor = mesh.getPhysicsImpostor();
                     if (childImpostor) {
                         var parent = childImpostor.parent;
                         if (parent !== mainImpostor) {
-                            var localPosition = mesh.position.add(relativePosition);
+                            var localPosition = mesh.position;
                             if (childImpostor.physicsBody) {
                                 _this.removePhysicsBody(childImpostor);
                                 childImpostor.physicsBody = null;
@@ -114,7 +117,7 @@ var BABYLON;
                             mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                         }
                     }
-                    mesh.getChildMeshes(true).forEach(processMesh.bind(_this, mesh.position));
+                    mesh.getChildMeshes().forEach(processMesh.bind(_this, mesh.position));
                 };
                 meshChildren.forEach(processMesh.bind(this, BABYLON.Vector3.Zero()));
             }
@@ -139,9 +142,11 @@ var BABYLON;
                 pivotB: jointData.connectedPivot ? new CANNON.Vec3().copy(jointData.connectedPivot) : null,
                 axisA: jointData.mainAxis ? new CANNON.Vec3().copy(jointData.mainAxis) : null,
                 axisB: jointData.connectedAxis ? new CANNON.Vec3().copy(jointData.connectedAxis) : null,
-                maxForce: jointData.nativeParams.maxForce
+                maxForce: jointData.nativeParams.maxForce,
+                collideConnected: !!jointData.collision
             };
-            if (!jointData.collision) {
+            //Not needed, Cannon has a collideConnected flag
+            /*if (!jointData.collision) {
                 //add 1st body to a collision group of its own, if it is not in 1
                 if (mainBody.collisionFilterGroup === 1) {
                     mainBody.collisionFilterGroup = this._currentCollisionGroup;
@@ -154,7 +159,7 @@ var BABYLON;
                 //add their mask to the collisionFilterMask of each other:
                 connectedBody.collisionFilterMask = connectedBody.collisionFilterMask | ~mainBody.collisionFilterGroup;
                 mainBody.collisionFilterMask = mainBody.collisionFilterMask | ~connectedBody.collisionFilterGroup;
-            }
+            }*/
             switch (impostorJoint.joint.type) {
                 case BABYLON.PhysicsJoint.HingeJoint:
                     constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
@@ -162,17 +167,37 @@ var BABYLON;
                 case BABYLON.PhysicsJoint.DistanceJoint:
                     constraint = new CANNON.DistanceConstraint(mainBody, connectedBody, jointData.maxDistance || 2);
                     break;
+                case BABYLON.PhysicsJoint.SpringJoint:
+                    var springData = jointData;
+                    constraint = new CANNON.Spring(mainBody, connectedBody, {
+                        restLength: springData.length,
+                        stiffness: springData.stiffness,
+                        damping: springData.damping,
+                        localAnchorA: constraintData.pivotA,
+                        localAnchorB: constraintData.pivotB
+                    });
+                    break;
                 default:
                     constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
             }
+            //set the collideConnected flag after the creation, since DistanceJoint ignores it.
+            constraint.collideConnected = !!jointData.collision;
             impostorJoint.joint.physicsJoint = constraint;
-            this.world.addConstraint(constraint);
+            //don't add spring as constraint, as it is not one.
+            if (impostorJoint.joint.type !== BABYLON.PhysicsJoint.SpringJoint) {
+                this.world.addConstraint(constraint);
+            }
+            else {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function () {
+                    constraint.applyForce();
+                });
+            }
         };
         CannonJSPlugin.prototype.removeJoint = function (joint) {
             //TODO
         };
-        CannonJSPlugin.prototype._addMaterial = function (friction, restitution) {
+        CannonJSPlugin.prototype._addMaterial = function (name, friction, restitution) {
             var index;
             var mat;
             for (index = 0; index < this._physicsMaterials.length; index++) {
@@ -182,12 +207,9 @@ var BABYLON;
                 }
             }
             var currentMat = new CANNON.Material("mat");
+            currentMat.friction = friction;
+            currentMat.restitution = restitution;
             this._physicsMaterials.push(currentMat);
-            for (index = 0; index < this._physicsMaterials.length; index++) {
-                mat = this._physicsMaterials[index];
-                var contactMaterial = new CANNON.ContactMaterial(mat, currentMat, { friction: friction, restitution: restitution });
-                this.world.addContactMaterial(contactMaterial);
-            }
             return currentMat;
         };
         CannonJSPlugin.prototype._checkWithEpsilon = function (value) {
@@ -343,8 +365,21 @@ var BABYLON;
         CannonJSPlugin.prototype.isSupported = function () {
             return window.CANNON !== undefined;
         };
-        CannonJSPlugin.prototype.setVelocity = function (impostor, velocity) {
+        CannonJSPlugin.prototype.setLinearVelocity = function (impostor, velocity) {
             impostor.physicsBody.velocity.copy(velocity);
+        };
+        CannonJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
+            impostor.physicsBody.angularVelocity.copy(velocity);
+        };
+        CannonJSPlugin.prototype.setBodyMass = function (impostor, mass) {
+            impostor.physicsBody.mass = mass;
+            impostor.physicsBody.updateMassProperties();
+        };
+        CannonJSPlugin.prototype.sleepBody = function (impostor) {
+            impostor.physicsBody.sleep();
+        };
+        CannonJSPlugin.prototype.wakeUpBody = function (impostor) {
+            impostor.physicsBody.wakeUp();
         };
         CannonJSPlugin.prototype.dispose = function () {
             //nothing to do, actually.
