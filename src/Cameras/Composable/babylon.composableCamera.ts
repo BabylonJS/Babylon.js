@@ -27,6 +27,7 @@ module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
             this.inputs = new ComposableCameraInputsManager(this);
+            this.inputs.addKeyboard().addMouse();
         }
 
         // Controls
