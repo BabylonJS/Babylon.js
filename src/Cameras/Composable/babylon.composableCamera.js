@@ -43,6 +43,7 @@ var BABYLON;
                 updatePosition(newPosition);
             };
             this.inputs = new BABYLON.ComposableCameraInputsManager(this);
+            this.inputs.addKeyboard().addMouse();
         }
         // Controls
         ComposableCamera.prototype.attachControl = function (element, noPreventDefault) {

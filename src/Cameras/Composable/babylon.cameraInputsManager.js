@@ -60,6 +60,26 @@ var BABYLON;
             this.inputs = {};
             this.checkInputs = function () { };
         };
+        ComposableCameraInputsManager.prototype.addKeyboard = function () {
+            this.add(new BABYLON.ComposableCameraKeyboardMoveInput());
+            return this;
+        };
+        ComposableCameraInputsManager.prototype.addMouse = function () {
+            this.add(new BABYLON.ComposableCameraMouseInput());
+            return this;
+        };
+        ComposableCameraInputsManager.prototype.addGamepad = function () {
+            this.add(new BABYLON.ComposableCameraGamepadInput());
+            return this;
+        };
+        ComposableCameraInputsManager.prototype.addDeviceOrientation = function () {
+            this.add(new BABYLON.ComposableCameraDeviceOrientationInput());
+            return this;
+        };
+        ComposableCameraInputsManager.prototype.addTouch = function () {
+            this.add(new BABYLON.ComposableCameraTouchInput());
+            return this;
+        };
         return ComposableCameraInputsManager;
     }());
     BABYLON.ComposableCameraInputsManager = ComposableCameraInputsManager;

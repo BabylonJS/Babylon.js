@@ -90,5 +90,30 @@ module BABYLON {
             this.inputs = {};
             this.checkInputs = () => { };
         }
+        
+        addKeyboard(){
+            this.add(new ComposableCameraKeyboardMoveInput());
+            return this;
+        }
+        
+        addMouse(){
+            this.add(new ComposableCameraMouseInput());
+            return this;
+        }
+        
+        addGamepad(){
+            this.add(new ComposableCameraGamepadInput());
+            return this;
+        }
+        
+        addDeviceOrientation(){
+            this.add(new ComposableCameraDeviceOrientationInput());
+            return this;
+        }
+        
+        addTouch(){
+            this.add(new ComposableCameraTouchInput());
+            return this;
+        }
     }
 } 
