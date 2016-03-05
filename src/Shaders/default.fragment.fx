@@ -1,16 +1,10 @@
-﻿#ifdef PARALLAX
-//#extension GL_EXT_shader_texture_lod : enable		// Doesn't work right now with texture2DGradExt...
-#endif
-
-#ifdef BUMP
+﻿#ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
 #endif
 
 #ifdef LOGARITHMICDEPTH
 #extension GL_EXT_frag_depth : enable
 #endif
-
-precision highp float;
 
 // Constants
 #define RECIPROCAL_PI2 0.15915494
@@ -38,10 +32,10 @@ varying vec4 vColor;
 #include<helperFunctions>
 
 // Lights
-#include<light0FragmentDeclaration>
-#include<light1FragmentDeclaration>
-#include<light2FragmentDeclaration>
-#include<light3FragmentDeclaration>
+#include<lightFragmentDeclaration>[0]
+#include<lightFragmentDeclaration>[1]
+#include<lightFragmentDeclaration>[2]
+#include<lightFragmentDeclaration>[3]
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
@@ -179,38 +173,7 @@ void main(void) {
 	vec2 diffuseUV = vDiffuseUV;
 #endif
 
-#ifdef BUMP
-	vec2 bumpUV = vBumpUV;
-#endif
-
-#if defined(BUMP) || defined(PARALLAX)
-	mat3 TBN = cotangent_frame(normalW * vBumpInfos.y, -viewDirectionW, bumpUV);
-#endif
-
-#ifdef PARALLAX
-	mat3 invTBN = transposeMat3(TBN);
-
-#ifdef PARALLAXOCCLUSION
-	vec2 uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, bumpUV, vBumpInfos.z);
-#else
-	vec2 uvOffset = parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z);
-#endif
-
-	diffuseUV += uvOffset;
-	bumpUV += uvOffset;
-
-	// Note by Loic: won't be nice with wrapping textures...
-#ifdef PARALLAXOCCLUSION
-	if (diffuseUV.x > 1.0 || diffuseUV.y > 1.0 || diffuseUV.x < 0.0 || diffuseUV.y < 0.0) {
-		discard;
-	}
-#endif
-
-#endif
-
-#ifdef BUMP
-	normalW = perturbNormal(viewDirectionW, TBN, bumpUV);
-#endif
+#include<bumpFragment>
 
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, diffuseUV);
@@ -256,15 +219,16 @@ void main(void) {
 
 	// Lighting
 	vec3 diffuseBase = vec3(0., 0., 0.);
+	lightingInfo info;
 #ifdef SPECULARTERM
 	vec3 specularBase = vec3(0., 0., 0.);
 #endif
 	float shadow = 1.;
 
-#include<light0Fragment>
-#include<light1Fragment>
-#include<light2Fragment>
-#include<light3Fragment>
+#include<lightFragment>[0]
+#include<lightFragment>[1]
+#include<lightFragment>[2]
+#include<lightFragment>[3]
 
 	// Refraction
 	vec3 refractionColor = vec3(0., 0., 0.);

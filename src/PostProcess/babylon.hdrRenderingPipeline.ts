@@ -224,7 +224,7 @@
                     }
                 }
 
-                this._hdrOutputLuminance = Tools.Clamp(this._hdrOutputLuminance, this.minimumLuminance, this.maximumLuminance);
+                this._hdrOutputLuminance = MathTools.Clamp(this._hdrOutputLuminance, this.minimumLuminance, this.maximumLuminance);
                 hdrLastLuminance += scene.getEngine().getDeltaTime();
 
                 effect.setTextureFromPostProcess("textureSampler", this._textureAdderPostProcess);

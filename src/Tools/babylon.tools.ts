@@ -47,16 +47,6 @@
             return fn;
         }
 
-        public static ToHex(i: number): string {
-            var str = i.toString(16);
-
-            if (i <= 15) {
-                return ("0" + str).toUpperCase();
-            }
-
-            return str.toUpperCase();
-        }
-
         public static SetImmediate(action: () => void) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -418,22 +408,7 @@
             return link;
         }
 
-        // Misc.   
-        public static Clamp(value: number, min = 0, max = 1): number {
-            return Math.min(max, Math.max(min, value));
-        }
-
-        // Returns -1 when value is a negative number and
-        // +1 when value is a positive number. 
-        public static Sign(value: number): number {
-            value = +value; // convert to a number
-
-            if (value === 0 || isNaN(value))
-                return value;
-
-            return value > 0 ? 1 : -1;
-        }
-
+        // Misc.
         public static Format(value: number, decimals: number = 2): string {
             return value.toFixed(decimals);
         }
@@ -453,12 +428,7 @@
             if (v.z > max.z)
                 max.z = v.z;
         }
-
-        public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
-            var num = a - b;
-            return -epsilon <= num && num <= epsilon;
-        }
-
+        
         public static DeepCopy(source, destination, doNotCopyList?: string[], mustCopyList?: string[]): void {
             for (var prop in source) {
 
@@ -1004,6 +974,3 @@
         }
     }
 } 
-
-
-

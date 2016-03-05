@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// Attribute
+﻿// Attribute
 attribute vec3 position;
 attribute vec3 normal;
 

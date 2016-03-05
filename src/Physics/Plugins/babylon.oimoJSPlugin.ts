@@ -17,6 +17,10 @@ module BABYLON {
             this.world.gravity.copy(gravity);
         }
 
+        public setTimeStep(timeStep: number) {
+            this.world.timeStep = timeStep;
+        }
+
         private _tmpImpostorsArray: Array<PhysicsImpostor> = [];
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
@@ -242,6 +246,12 @@ module BABYLON {
                 case PhysicsJoint.BallAndSocketJoint:
                     type = "jointBall";
                     break;
+                case PhysicsJoint.SpringJoint:
+                    Tools.Warn("Oimo.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
+                    var springData = <SpringJointData>jointData;
+                    nativeJointData.min = springData.length || nativeJointData.min;
+                    //Max should also be set, just make sure it is at least min
+                    nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
                 case PhysicsJoint.DistanceJoint:
                     type = "jointDistance";
                     nativeJointData.max = (<DistanceJointData>jointData).maxDistance
@@ -306,8 +316,29 @@ module BABYLON {
             return lastShape;
         }
 
-        public setVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+        public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
+        }
+
+        public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
+            impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
+        }
+
+
+        public setBodyMass(impostor: PhysicsImpostor, mass: number) {
+            var staticBody: boolean = mass === 0;
+            //this will actually set the body's density and not its mass.
+            //But this is how oimo treats the mass variable.
+            impostor.physicsBody.shapes.density = staticBody ? 1 : mass;
+            impostor.physicsBody.setupMass(staticBody ? 0x2 : 0x1);
+        }
+
+        public sleepBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.sleep();
+        }
+
+        public wakeUpBody(impostor: PhysicsImpostor) {
+            impostor.physicsBody.awake();
         }
 
         public dispose() {

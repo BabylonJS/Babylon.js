@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-uniform sampler2D textureSampler;
+﻿uniform sampler2D textureSampler;
 uniform sampler2D lightScatteringSampler;
 
 uniform float decay;

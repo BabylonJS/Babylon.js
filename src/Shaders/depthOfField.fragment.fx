@@ -3,9 +3,6 @@
 // Does depth-of-field blur, edge blur
 // Inspired by Francois Tarlier & Martins Upitis
 
-precision highp float;
-
-
 // samplers
 uniform sampler2D textureSampler;
 uniform sampler2D highlightsSampler;

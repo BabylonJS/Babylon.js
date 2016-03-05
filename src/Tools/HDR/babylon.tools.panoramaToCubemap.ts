@@ -23,25 +23,25 @@ module BABYLON.Internals {
             new Vector3(1.0, 1.0, 1.0),
             new Vector3(-1.0, 1.0, 1.0)
         ];
-        private static FACE_LEFT = [
+        private static FACE_RIGHT = [
             new Vector3(1.0, -1.0, -1.0),
             new Vector3(1.0, -1.0, 1.0),
             new Vector3(1.0, 1.0, -1.0),
             new Vector3(1.0, 1.0, 1.0)
         ];
-        private static FACE_RIGHT = [
+        private static FACE_LEFT = [
             new Vector3(-1.0, -1.0, 1.0),
             new Vector3(-1.0, -1.0, -1.0),
             new Vector3(-1.0, 1.0, 1.0),
             new Vector3(-1.0, 1.0, -1.0)
         ];
-        private static FACE_UP = [
+        private static FACE_DOWN = [
             new Vector3(-1.0, 1.0, -1.0),
             new Vector3(1.0, 1.0, -1.0),
             new Vector3(-1.0, 1.0, 1.0),
             new Vector3(1.0, 1.0, 1.0)
         ];
-        private static FACE_DOWN = [
+        private static FACE_UP = [
             new Vector3(-1.0, -1.0, 1.0),
             new Vector3(1.0, -1.0, 1.0),
             new Vector3(-1.0, -1.0, -1.0),
@@ -57,12 +57,12 @@ module BABYLON.Internals {
                 throw "ConvertPanoramaToCubemap: input size is wrong";
             }
 
-            var textureFront  = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight);
-            var textureBack   = this.CreateCubemapTexture(size, this.FACE_BACK, float32Array, inputWidth, inputHeight);
-            var textureLeft   = this.CreateCubemapTexture(size, this.FACE_LEFT, float32Array, inputWidth, inputHeight);
-            var textureRight  = this.CreateCubemapTexture(size, this.FACE_RIGHT, float32Array, inputWidth, inputHeight);
-            var textureUp     = this.CreateCubemapTexture(size, this.FACE_UP, float32Array, inputWidth, inputHeight);
-            var textureDown   = this.CreateCubemapTexture(size, this.FACE_DOWN, float32Array, inputWidth, inputHeight);
+            var textureFront = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight);
+            var textureBack = this.CreateCubemapTexture(size, this.FACE_BACK, float32Array, inputWidth, inputHeight);
+            var textureLeft = this.CreateCubemapTexture(size, this.FACE_LEFT, float32Array, inputWidth, inputHeight);
+            var textureRight = this.CreateCubemapTexture(size, this.FACE_RIGHT, float32Array, inputWidth, inputHeight);
+            var textureUp = this.CreateCubemapTexture(size, this.FACE_UP, float32Array, inputWidth, inputHeight);
+            var textureDown = this.CreateCubemapTexture(size, this.FACE_DOWN, float32Array, inputWidth, inputHeight);
 
             return {
                 front: textureFront,
@@ -112,8 +112,8 @@ module BABYLON.Internals {
 
         private static CalcProjectionSpherical(vDir: Vector3, float32Array: Float32Array, inputWidth: number, inputHeight: number): any {
             var theta = Math.atan2(vDir.z, vDir.x);
-            var phi   = Math.acos(vDir.y);
-            
+            var phi = Math.acos(vDir.y);
+
             while (theta < -Math.PI) theta += 2 * Math.PI;
             while (theta > Math.PI) theta -= 2 * Math.PI;
 

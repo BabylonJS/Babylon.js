@@ -52,7 +52,23 @@
 
             this._localDelayOffset = null;
             this._pausedDelay = null;
+        }
 
+        public enableBlending(blendingSpeed: number): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = true;
+                animations[index].blendingSpeed = blendingSpeed;
+            }
+        }
+
+        public disableBlending(): void {
+            var animations = this._animations;
+
+            for (var index = 0; index < animations.length; index++) {
+                animations[index].enableBlending = false;
+            }
         }
 
         public goToFrame(frame: number): void {
@@ -79,6 +95,11 @@
 
             if (index > -1) {
                 this._scene._activeAnimatables.splice(index, 1);
+
+                var animations = this._animations;
+                for (var index = 0; index < animations.length; index++) {
+                    animations[index].reset();
+                }
 
                 if (this.onAnimationEnd) {
                     this.onAnimationEnd();

@@ -12,6 +12,8 @@ module BABYLON {
         public EMISSIVE = false;
         public REFLECTIVITY = false;
         public BUMP = false;
+        public PARALLAX = false;
+        public PARALLAXOCCLUSION = false;
         public SPECULAROVERALPHA = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
@@ -91,6 +93,8 @@ module BABYLON {
         public LODBASEDMICROSFURACE = false;
         public USEPHYSICALLIGHTFALLOFF = false;
         public RADIANCEOVERALPHA = false;
+        public USEPMREMREFLECTION = false;
+        public USEPMREMREFRACTION = false;
 
         constructor() {
             super();
@@ -264,6 +268,15 @@ module BABYLON {
         
         @serialize()
         public useRadianceOverAlpha = true;
+        
+        @serialize()
+        public useParallax = false;
+
+        @serialize()
+        public useParallaxOcclusion = false;
+
+        @serialize()
+        public parallaxScaleBias = 0.05;
         
         @serialize()
         public disableLighting = false;
@@ -517,6 +530,10 @@ module BABYLON {
                             if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
                                 this._defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 needNormals = true;
+                                
+                                if ((<HDRCubeTexture>this.reflectionTexture).isPMREM) {
+                                    this._defines.USEPMREMREFLECTION = true;
+                                }
                             }
                         }
                     }
@@ -558,6 +575,13 @@ module BABYLON {
                     } else {
                         needUVs = true;
                         this._defines.BUMP = true;
+                        
+                        if (this.useParallax) {
+                            this._defines.PARALLAX = true;
+                            if (this.useParallaxOcclusion) {
+                                this._defines.PARALLAXOCCLUSION = true;
+                            }
+                        }
                     }
                 }
 
@@ -574,6 +598,10 @@ module BABYLON {
                         }
                         if (this.refractionTexture instanceof HDRCubeTexture) {
                             this._defines.REFRACTIONMAPINLINEARSPACE = true;
+                            
+                            if ((<HDRCubeTexture>this.refractionTexture).isPMREM) {
+                                this._defines.USEPMREMREFRACTION = true;
+                            }
                         }
                     }
                 }
@@ -712,6 +740,10 @@ module BABYLON {
                 if (this._defines.REFLECTION) {
                     fallbacks.addFallback(0, "REFLECTION");
                 }
+                
+                if (this._defines.REFRACTION) {
+                    fallbacks.addFallback(0, "REFRACTION");
+                }
 
                 if (this._defines.REFLECTIVITY) {
                     fallbacks.addFallback(0, "REFLECTIVITY");
@@ -719,6 +751,14 @@ module BABYLON {
 
                 if (this._defines.BUMP) {
                     fallbacks.addFallback(0, "BUMP");
+                }
+                
+                if (this._defines.PARALLAX) {
+                    fallbacks.addFallback(1, "PARALLAX");
+                }
+
+                if (this._defines.PARALLAXOCCLUSION) {
+                    fallbacks.addFallback(0, "PARALLAXOCCLUSION");
                 }
 
                 if (this._defines.SPECULAROVERALPHA) {
@@ -897,7 +937,7 @@ module BABYLON {
                     }
 
                     if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        this._microsurfaceTextureLods.x = Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E;
+                        this._microsurfaceTextureLods.x = Math.round(Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E);
                         
                         if (this.reflectionTexture.isCube) {
                             this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
@@ -963,12 +1003,12 @@ module BABYLON {
                     if (this.bumpTexture && this._myScene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled && !this.disableBumpMap) {
                         this._effect.setTexture("bumpSampler", this.bumpTexture);
 
-                        this._effect.setFloat2("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level);
+                        this._effect.setFloat3("vBumpInfos", this.bumpTexture.coordinatesIndex, 1.0 / this.bumpTexture.level, this.parallaxScaleBias);
                         this._effect.setMatrix("bumpMatrix", this.bumpTexture.getTextureMatrix());
                     }
 
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        this._microsurfaceTextureLods.y = Math.log(this.refractionTexture.getSize().width) * Math.LOG2E;
+                        this._microsurfaceTextureLods.y = Math.round(Math.log(this.refractionTexture.getSize().width) * Math.LOG2E);
                         
                         var depth = 1.0;
                         if (this.refractionTexture.isCube) {
@@ -984,7 +1024,7 @@ module BABYLON {
                         this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
                     
-                    if ((this.reflectionTexture || this.refractionTexture) && this._myScene.getEngine().getCaps().textureLOD) {
+                    if ((this.reflectionTexture || this.refractionTexture)) {
                         this._effect.setFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                     }
                 }

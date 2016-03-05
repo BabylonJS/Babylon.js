@@ -30,13 +30,6 @@ var BABYLON;
             }
             return fn;
         };
-        Tools.ToHex = function (i) {
-            var str = i.toString(16);
-            if (i <= 15) {
-                return ("0" + str).toUpperCase();
-            }
-            return str.toUpperCase();
-        };
         Tools.SetImmediate = function (action) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -342,20 +335,7 @@ var BABYLON;
             var link = url.createObjectURL(fileBlob);
             return link;
         };
-        // Misc.   
-        Tools.Clamp = function (value, min, max) {
-            if (min === void 0) { min = 0; }
-            if (max === void 0) { max = 1; }
-            return Math.min(max, Math.max(min, value));
-        };
-        // Returns -1 when value is a negative number and
-        // +1 when value is a positive number. 
-        Tools.Sign = function (value) {
-            value = +value; // convert to a number
-            if (value === 0 || isNaN(value))
-                return value;
-            return value > 0 ? 1 : -1;
-        };
+        // Misc.
         Tools.Format = function (value, decimals) {
             if (decimals === void 0) { decimals = 2; }
             return value.toFixed(decimals);
@@ -373,11 +353,6 @@ var BABYLON;
                 max.y = v.y;
             if (v.z > max.z)
                 max.z = v.z;
-        };
-        Tools.WithinEpsilon = function (a, b, epsilon) {
-            if (epsilon === void 0) { epsilon = 1.401298E-45; }
-            var num = a - b;
-            return -epsilon <= num && num <= epsilon;
         };
         Tools.DeepCopy = function (source, destination, doNotCopyList, mustCopyList) {
             for (var prop in source) {
