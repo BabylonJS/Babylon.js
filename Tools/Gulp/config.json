@@ -198,7 +198,11 @@
       "../../src/cameras/composable/babylon.camerainputsmanager.js",
       "../../src/cameras/composable/babylon.composablecamera.js",
       "../../src/cameras/composable/inputs/babylon.camerainput.mouse.js",
-      "../../src/cameras/composable/inputs/babylon.camerainput.keyboard.js"
+      "../../src/cameras/composable/inputs/babylon.camerainput.keyboard.js",
+      "../../src/cameras/composable/inputs/babylon.camerainput.touch.js",
+      "../../src/cameras/composable/inputs/babylon.camerainput.deviceorientation.js",
+      "../../src/cameras/composable/inputs/babylon.camerainput.gamepad.js",
+      "../../src/cameras/composable/inputs/babylon.camerainput.virtualjoystick.js"
     ]
   }
 }
