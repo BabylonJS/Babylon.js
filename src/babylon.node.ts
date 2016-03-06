@@ -176,17 +176,10 @@
             return false;
         }
 
-        /**
-         * Evaluate a list of nodes and determine if they should be considered as descendants considering the given criterias
-         * @param {BABYLON.Node[]} list the input array of nodes to evaluate
-         * @param {BABYLON.Node[]} results the result array containing the nodes matching the given criterias
-         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
-         */
-        public _getDescendants(list: Node[], results: Node[], directDecendantsOnly: boolean = false, predicate?: (node: Node) => boolean): void {
+        public _getDescendants(list: Node[], results: Node[], directDecendantsOnly: boolean = false): void {
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) && (predicate==null || predicate(item))) {
+                if ((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
                     results.push(item);
                 }
             }
@@ -194,34 +187,31 @@
 
         /**
          * Will return all nodes that have this node as parent.
-         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        public getDescendants(directDecendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
+        public getDescendants(directDecendantsOnly?: boolean): Node[] {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, directDecendantsOnly, predicate);
-            this._getDescendants(this._scene.lights, results, directDecendantsOnly, predicate);
-            this._getDescendants(this._scene.cameras, results, directDecendantsOnly, predicate);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
+            this._getDescendants(this._scene.lights, results, directDecendantsOnly);
+            this._getDescendants(this._scene.cameras, results, directDecendantsOnly);
 
             return results;
         }
         
         /**
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @Deprecated, legacy support.
          * use getDecendants instead.
          */
-        public getChildren(predicate?: (node: Node) => boolean): Node[] {
-            return this.getDescendants(true, predicate);
+        public getChildren(): Node[] {
+            return this.getDescendants(true);
         }
         
         /**
          * Get all child-meshes of this node.
          */
-        public getChildMeshes(directDecendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
+        public getChildMeshes(directDecendantsOnly?: boolean): AbstractMesh[] {
             var results: Array<AbstractMesh> = [];
-            this._getDescendants(this._scene.meshes, results, directDecendantsOnly, predicate);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
             return results;
         }
 
