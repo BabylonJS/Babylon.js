@@ -262,15 +262,15 @@ void main(void) {
 
 #ifdef REFLECTIONMAP_3D
 #ifdef ROUGHNESS
-	 float bias = vReflectionInfos.y;
+	float bias = vReflectionInfos.y;
 
-	#ifdef SPECULARTERM
+#ifdef SPECULARTERM
 	#ifdef SPECULAR
-	#ifdef GLOSSINESS
-		bias *= (1.0 - specularMapColor.a);
+		#ifdef GLOSSINESS
+			bias *= (1.0 - specularMapColor.a);
+		#endif
 	#endif
-	#endif
-	#endif
+#endif
 
 	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
 #else
