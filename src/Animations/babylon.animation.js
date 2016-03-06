@@ -7,7 +7,7 @@ var BABYLON;
             this.to = to;
         }
         return AnimationRange;
-    })();
+    }());
     BABYLON.AnimationRange = AnimationRange;
     /**
      * Composed of a frame, and an action function
@@ -20,7 +20,7 @@ var BABYLON;
             this.isDone = false;
         }
         return AnimationEvent;
-    })();
+    }());
     BABYLON.AnimationEvent = AnimationEvent;
     var PathCursor = (function () {
         function PathCursor(path) {
@@ -77,7 +77,7 @@ var BABYLON;
             return this;
         };
         return PathCursor;
-    })();
+    }());
     BABYLON.PathCursor = PathCursor;
     var Animation = (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode, enableBlending) {
@@ -666,6 +666,6 @@ var BABYLON;
         Animation._ANIMATIONLOOPMODE_CYCLE = 1;
         Animation._ANIMATIONLOOPMODE_CONSTANT = 2;
         return Animation;
-    })();
+    }());
     BABYLON.Animation = Animation;
 })(BABYLON || (BABYLON = {}));

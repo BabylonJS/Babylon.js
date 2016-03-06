@@ -16,6 +16,6 @@ var BABYLON;
             };
         }
         return FilterPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.FilterPostProcess = FilterPostProcess;
 })(BABYLON || (BABYLON = {}));

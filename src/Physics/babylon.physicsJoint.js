@@ -37,6 +37,6 @@ var BABYLON;
         //Cannon only at the moment
         PhysicsJoint.SpringJoint = 9;
         return PhysicsJoint;
-    })();
+    }());
     BABYLON.PhysicsJoint = PhysicsJoint;
 })(BABYLON || (BABYLON = {}));

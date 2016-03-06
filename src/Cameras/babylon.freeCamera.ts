@@ -4,190 +4,53 @@
         public ellipsoid = new Vector3(0.5, 1, 0.5);
 
         @serialize()
-        public keysUp = [38];
-
-        @serialize()
-        public keysDown = [40];
-
-        @serialize()
-        public keysLeft = [37];
-
-        @serialize()
-        public keysRight = [39];
-
-        @serialize()
         public checkCollisions = false;
 
         @serialize()
         public applyGravity = false;
-
-        @serialize()
-        public angularSensibility = 2000.0;
+        
+        public inputs : FreeCameraInputsManager;
 
         public onCollide: (collidedMesh: AbstractMesh) => void;
-
-        private _keys = [];
+        
         private _collider = new Collider();
         private _needMoveForGravity = false;
         private _oldPosition = Vector3.Zero();
         private _diffPosition = Vector3.Zero();
         private _newPosition = Vector3.Zero();
-        private _attachedElement: HTMLElement;
-        private _localDirection: Vector3;
-        private _transformedDirection: Vector3;
-
-        private _onMouseDown: (e: MouseEvent) => any;
-        private _onMouseUp: (e: MouseEvent) => any;
-        private _onMouseOut: (e: MouseEvent) => any;
-        private _onMouseMove: (e: MouseEvent) => any;
-        private _onKeyDown: (e: KeyboardEvent) => any;
-        private _onKeyUp: (e: KeyboardEvent) => any;        
+        public _attachedElement: HTMLElement;
+        public _noPreventDefault: boolean;
+        
+        public _localDirection: Vector3;
+        public _transformedDirection: Vector3;        
         
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
-        }
-
-        public _onLostFocus(e: FocusEvent): void {
-            this._keys = [];
+            this.inputs = new FreeCameraInputsManager(this);
+            this.inputs.addKeyboard().addMouse();
         }
 
         // Controls
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-            var previousPosition;
-            var engine = this.getEngine();
-
             if (this._attachedElement) {
                 return;
             }
+            this._noPreventDefault = noPreventDefault;
             this._attachedElement = element;
 
-            if (this._onMouseDown === undefined) {
-                this._onMouseDown = evt => {
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-
-                this._onMouseUp = evt => {
-                    previousPosition = null;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-
-                this._onMouseOut = evt => {
-                    previousPosition = null;
-                    this._keys = [];
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-
-                this._onMouseMove = evt => {
-                    if (!previousPosition && !engine.isPointerLock) {
-                        return;
-                    }
-
-                    var offsetX;
-                    var offsetY;
-
-                    if (!engine.isPointerLock) {
-                        offsetX = evt.clientX - previousPosition.x;
-                        offsetY = evt.clientY - previousPosition.y;
-                    } else {
-                        offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                        offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    }
-
-                    this.cameraRotation.y += offsetX / this.angularSensibility;
-                    this.cameraRotation.x += offsetY / this.angularSensibility;
-
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-
-                this._onKeyDown = evt => {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = this._keys.indexOf(evt.keyCode);
-
-                        if (index === -1) {
-                            this._keys.push(evt.keyCode);
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                };
-
-                this._onKeyUp = evt => {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = this._keys.indexOf(evt.keyCode);
-
-                        if (index >= 0) {
-                            this._keys.splice(index, 1);
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                };
-
-                this._reset = () => {
-                    this._keys = [];
-                    previousPosition = null;
-                    this.cameraDirection = new Vector3(0, 0, 0);
-                    this.cameraRotation = new Vector2(0, 0);
-                };
-            }
-
-            element.addEventListener("mousedown", this._onMouseDown, false);
-            element.addEventListener("mouseup", this._onMouseUp, false);
-            element.addEventListener("mouseout", this._onMouseOut, false);
-            element.addEventListener("mousemove", this._onMouseMove, false);
-
-            Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
-        }
+            this.inputs.attachElement(element, noPreventDefault);
+        }        
 
         public detachControl(element: HTMLElement): void {
             if (this._attachedElement !== element) {
                 return;
             }
 
-            element.removeEventListener("mousedown", this._onMouseDown);
-            element.removeEventListener("mouseup", this._onMouseUp);
-            element.removeEventListener("mouseout", this._onMouseOut);
-            element.removeEventListener("mousemove", this._onMouseMove);
-
-            Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
-
+            this.inputs.detachElement(this._attachedElement);
             this._attachedElement = null;
-            if (this._reset) {
-                this._reset();
-            }
+            
+            this.cameraDirection = new Vector3(0, 0, 0);
+            this.cameraRotation = new Vector2(0, 0);
         }
 
         public _collideWithWorld(velocity: Vector3): void {
@@ -243,25 +106,7 @@
                 this._transformedDirection = Vector3.Zero();
             }
 
-            // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                var speed = this._computeLocalCameraSpeed();
-
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(-speed, 0, 0);
-                } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(0, 0, speed);
-                } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(speed, 0, 0);
-                } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(0, 0, -speed);
-                }
-
-                this.getViewMatrix().invertToRef(this._cameraTransformMatrix);
-                Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
-                this.cameraDirection.addInPlace(this._transformedDirection);
-            }
+            this.inputs.checkInputs();
 
             super._checkInputs();
         }
@@ -278,8 +123,51 @@
             }
         }
 
+        public dispose(): void {
+            this.inputs.clear();
+            super.dispose();
+        }
+        
         public getTypeName(): string {
             return "FreeCamera";
+        }
+    }
+    
+    export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
+        constructor(camera : FreeCamera){
+            super(camera);    
+        }
+        
+        add(input: ICameraInput<FreeCamera>){
+            super.add(input);
+            if (this.camera._attachedElement && input.attachElement) {
+                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
+            }
+        }
+        
+        addKeyboard(){
+            this.add(new FreeCameraKeyboardMoveInput());
+            return this;
+        }
+        
+        addMouse(){
+            this.add(new FreeCameraMouseInput());
+            return this;
+        }
+        
+        addGamepad(){
+            this.add(new FreeCameraGamepadInput());
+            return this;
+        }
+        
+        addDeviceOrientation(){
+            this.add(new FreeCameraDeviceOrientationInput());
+            return this;
+        }
+        
+        addTouch(){
+            this.add(new FreeCameraTouchInput());
+            return this;
         }
     }
 } 

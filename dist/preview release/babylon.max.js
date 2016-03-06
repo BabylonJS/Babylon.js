@@ -11032,6 +11032,594 @@ var BABYLON;
     BABYLON.Camera = Camera;
 })(BABYLON || (BABYLON = {}));
 
+var BABYLON;
+(function (BABYLON) {
+    var CameraInputsManager = (function () {
+        function CameraInputsManager(camera) {
+            this.inputs = {};
+            this.camera = camera;
+            this.checkInputs = function () { };
+        }
+        CameraInputsManager.prototype.add = function (input) {
+            var type = input.getTypeName();
+            if (this.inputs[type]) {
+                BABYLON.Tools.Warn("camera input of type " + type + " already exists on camera");
+                return;
+            }
+            this.inputs[type] = input;
+            input.attachCamera(this.camera);
+            //for checkInputs, we are dynamically creating a function
+            //the goal is to avoid the performance penalty of looping for inputs in the render loop
+            if (input.checkInputs) {
+                this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
+            }
+        };
+        CameraInputsManager.prototype._addCheckInputs = function (fn) {
+            var current = this.checkInputs;
+            return function () {
+                current();
+                fn();
+            };
+        };
+        CameraInputsManager.prototype.attachElement = function (element, noPreventDefault) {
+            for (var cam in this.inputs) {
+                var input = this.inputs[cam];
+                if (input.attachElement)
+                    this.inputs[cam].attachElement(element, noPreventDefault);
+            }
+        };
+        CameraInputsManager.prototype.detachElement = function (element) {
+            for (var cam in this.inputs) {
+                var input = this.inputs[cam];
+                if (input.detachElement)
+                    this.inputs[cam].detachElement(element);
+            }
+        };
+        CameraInputsManager.prototype.rebuildInputCheck = function (element) {
+            this.checkInputs = function () { };
+            for (var cam in this.inputs) {
+                var input = this.inputs[cam];
+                if (input.checkInputs) {
+                    this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
+                }
+            }
+        };
+        CameraInputsManager.prototype.clear = function () {
+            for (var cam in this.inputs) {
+                this.inputs[cam].detach();
+            }
+            this.inputs = {};
+            this.checkInputs = function () { };
+        };
+        return CameraInputsManager;
+    }());
+    BABYLON.CameraInputsManager = CameraInputsManager;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var FreeCameraMouseInput = (function () {
+        function FreeCameraMouseInput() {
+            this.angularSensibility = 2000.0;
+        }
+        FreeCameraMouseInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        FreeCameraMouseInput.prototype.attachElement = function (element, noPreventDefault) {
+            var _this = this;
+            var previousPosition;
+            this.attachedElement = element;
+            if (this._onMouseDown === undefined) {
+                var camera = this.camera;
+                var engine = this.camera.getEngine();
+                this._onMouseDown = function (evt) {
+                    previousPosition = {
+                        x: evt.clientX,
+                        y: evt.clientY
+                    };
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onMouseUp = function (evt) {
+                    previousPosition = null;
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onMouseOut = function (evt) {
+                    previousPosition = null;
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onMouseMove = function (evt) {
+                    if (!previousPosition && !engine.isPointerLock) {
+                        return;
+                    }
+                    var offsetX;
+                    var offsetY;
+                    if (!engine.isPointerLock) {
+                        offsetX = evt.clientX - previousPosition.x;
+                        offsetY = evt.clientY - previousPosition.y;
+                    }
+                    else {
+                        offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                        offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                    }
+                    camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                    camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                    previousPosition = {
+                        x: evt.clientX,
+                        y: evt.clientY
+                    };
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+            }
+            element.addEventListener("mousedown", this._onMouseDown, false);
+            element.addEventListener("mouseup", this._onMouseUp, false);
+            element.addEventListener("mouseout", this._onMouseOut, false);
+            element.addEventListener("mousemove", this._onMouseMove, false);
+        };
+        FreeCameraMouseInput.prototype.detachElement = function (element) {
+            if (this.attachedElement !== element) {
+                return;
+            }
+            element.removeEventListener("mousedown", this._onMouseDown);
+            element.removeEventListener("mouseup", this._onMouseUp);
+            element.removeEventListener("mouseout", this._onMouseOut);
+            element.removeEventListener("mousemove", this._onMouseMove);
+            this.attachedElement = null;
+        };
+        FreeCameraMouseInput.prototype.detach = function () {
+            if (this.attachedElement) {
+                this.detachElement(this.attachedElement);
+            }
+        };
+        FreeCameraMouseInput.prototype.getTypeName = function () {
+            return "mouse";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraMouseInput.prototype, "angularSensibility", void 0);
+        return FreeCameraMouseInput;
+    }());
+    BABYLON.FreeCameraMouseInput = FreeCameraMouseInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var FreeCameraKeyboardMoveInput = (function () {
+        function FreeCameraKeyboardMoveInput() {
+            this._keys = [];
+            this.keysUp = [38];
+            this.keysDown = [40];
+            this.keysLeft = [37];
+            this.keysRight = [39];
+        }
+        FreeCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
+            var _this = this;
+            this.camera = camera;
+            if (this._onKeyDown === undefined) {
+                this._onKeyDown = function (evt) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                        var index = _this._keys.indexOf(evt.keyCode);
+                        if (index === -1) {
+                            _this._keys.push(evt.keyCode);
+                        }
+                        if (!camera._noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                    }
+                };
+                this._onKeyUp = function (evt) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                        var index = _this._keys.indexOf(evt.keyCode);
+                        if (index >= 0) {
+                            _this._keys.splice(index, 1);
+                        }
+                        if (!camera._noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                    }
+                };
+                BABYLON.Tools.RegisterTopRootEvents([
+                    { name: "keydown", handler: this._onKeyDown },
+                    { name: "keyup", handler: this._onKeyUp },
+                    { name: "blur", handler: this._onLostFocus }
+                ]);
+            }
+        };
+        FreeCameraKeyboardMoveInput.prototype.detach = function () {
+            BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
+                { name: "blur", handler: this._onLostFocus }
+            ]);
+        };
+        FreeCameraKeyboardMoveInput.prototype.checkInputs = function () {
+            var camera = this.camera;
+            // Keyboard
+            for (var index = 0; index < this._keys.length; index++) {
+                var keyCode = this._keys[index];
+                var speed = camera._computeLocalCameraSpeed();
+                if (this.keysLeft.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(-speed, 0, 0);
+                }
+                else if (this.keysUp.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, speed);
+                }
+                else if (this.keysRight.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(speed, 0, 0);
+                }
+                else if (this.keysDown.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, -speed);
+                }
+                camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
+                BABYLON.Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
+                camera.cameraDirection.addInPlace(camera._transformedDirection);
+            }
+        };
+        FreeCameraKeyboardMoveInput.prototype.getTypeName = function () {
+            return "keyboardmove";
+        };
+        FreeCameraKeyboardMoveInput.prototype._onLostFocus = function (e) {
+            this._keys = [];
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraKeyboardMoveInput.prototype, "keysUp", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraKeyboardMoveInput.prototype, "keysDown", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraKeyboardMoveInput.prototype, "keysLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraKeyboardMoveInput.prototype, "keysRight", void 0);
+        return FreeCameraKeyboardMoveInput;
+    }());
+    BABYLON.FreeCameraKeyboardMoveInput = FreeCameraKeyboardMoveInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var FreeCameraTouchInput = (function () {
+        function FreeCameraTouchInput() {
+            this._offsetX = null;
+            this._offsetY = null;
+            this._pointerCount = 0;
+            this._pointerPressed = [];
+            this.touchAngularSensibility = 200000.0;
+            this.touchMoveSensibility = 250.0;
+        }
+        FreeCameraTouchInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        FreeCameraTouchInput.prototype.attachElement = function (element, noPreventDefault) {
+            var _this = this;
+            var previousPosition;
+            if (this._attachedElement) {
+                return;
+            }
+            this._attachedElement = element;
+            if (this._onPointerDown === undefined) {
+                this._onLostFocus = function (evt) {
+                    _this._offsetX = null;
+                    _this._offsetY = null;
+                };
+                this._onPointerDown = function (evt) {
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                    _this._pointerPressed.push(evt.pointerId);
+                    if (_this._pointerPressed.length !== 1) {
+                        return;
+                    }
+                    previousPosition = {
+                        x: evt.clientX,
+                        y: evt.clientY
+                    };
+                };
+                this._onPointerUp = function (evt) {
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                    var index = _this._pointerPressed.indexOf(evt.pointerId);
+                    if (index === -1) {
+                        return;
+                    }
+                    _this._pointerPressed.splice(index, 1);
+                    if (index != 0) {
+                        return;
+                    }
+                    previousPosition = null;
+                    _this._offsetX = null;
+                    _this._offsetY = null;
+                };
+                this._onPointerMove = function (evt) {
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                    if (!previousPosition) {
+                        return;
+                    }
+                    var index = _this._pointerPressed.indexOf(evt.pointerId);
+                    if (index != 0) {
+                        return;
+                    }
+                    _this._offsetX = evt.clientX - previousPosition.x;
+                    _this._offsetY = -(evt.clientY - previousPosition.y);
+                };
+            }
+            element.addEventListener("blur", this._onLostFocus);
+            element.addEventListener("pointerdown", this._onPointerDown);
+            element.addEventListener("pointerup", this._onPointerUp);
+            element.addEventListener("pointerout", this._onPointerUp);
+            element.addEventListener("pointermove", this._onPointerMove);
+        };
+        FreeCameraTouchInput.prototype.detachElement = function (element) {
+            if (this._attachedElement !== element) {
+                return;
+            }
+            element.removeEventListener("blur", this._onLostFocus);
+            element.removeEventListener("pointerdown", this._onPointerDown);
+            element.removeEventListener("pointerup", this._onPointerUp);
+            element.removeEventListener("pointerout", this._onPointerUp);
+            element.removeEventListener("pointermove", this._onPointerMove);
+            this._attachedElement = null;
+        };
+        FreeCameraTouchInput.prototype.checkInputs = function () {
+            if (this._offsetX) {
+                var camera = this.camera;
+                camera.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
+                if (this._pointerPressed.length > 1) {
+                    camera.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
+                }
+                else {
+                    var speed = camera._computeLocalCameraSpeed();
+                    var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
+                    BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
+                    camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
+                }
+            }
+        };
+        FreeCameraTouchInput.prototype.detach = function () {
+            if (this._attachedElement) {
+                this.detachElement(this._attachedElement);
+            }
+        };
+        FreeCameraTouchInput.prototype.getTypeName = function () {
+            return "touch";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraTouchInput.prototype, "touchAngularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraTouchInput.prototype, "touchMoveSensibility", void 0);
+        return FreeCameraTouchInput;
+    }());
+    BABYLON.FreeCameraTouchInput = FreeCameraTouchInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var FreeCameraDeviceOrientationInput = (function () {
+        function FreeCameraDeviceOrientationInput() {
+            this._offsetX = null;
+            this._offsetY = null;
+            this._orientationGamma = 0;
+            this._orientationBeta = 0;
+            this._initialOrientationGamma = 0;
+            this._initialOrientationBeta = 0;
+            this.angularSensibility = 10000.0;
+            this.moveSensibility = 50.0;
+            this._resetOrientationGamma = this.resetOrientationGamma.bind(this);
+            this._orientationChanged = this.orientationChanged.bind(this);
+        }
+        FreeCameraDeviceOrientationInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+            window.addEventListener("resize", this._resetOrientationGamma, false);
+            window.addEventListener("deviceorientation", this._orientationChanged);
+        };
+        FreeCameraDeviceOrientationInput.prototype.resetOrientationGamma = function () {
+            this._initialOrientationGamma = null;
+        };
+        FreeCameraDeviceOrientationInput.prototype.orientationChanged = function (evt) {
+            if (!this._initialOrientationGamma) {
+                this._initialOrientationGamma = evt.gamma;
+                this._initialOrientationBeta = evt.beta;
+            }
+            this._orientationGamma = evt.gamma;
+            this._orientationBeta = evt.beta;
+            this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
+            this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
+        };
+        FreeCameraDeviceOrientationInput.prototype.detach = function () {
+            window.removeEventListener("resize", this._resetOrientationGamma);
+            window.removeEventListener("deviceorientation", this._orientationChanged);
+            this._orientationGamma = 0;
+            this._orientationBeta = 0;
+            this._initialOrientationGamma = 0;
+            this._initialOrientationBeta = 0;
+        };
+        FreeCameraDeviceOrientationInput.prototype.checkInputs = function () {
+            if (!this._offsetX) {
+                return;
+            }
+            var camera = this.camera;
+            camera.cameraRotation.y -= this._offsetX / this.angularSensibility;
+            var speed = camera._computeLocalCameraSpeed();
+            var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+            BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
+            camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
+        };
+        FreeCameraDeviceOrientationInput.prototype.getTypeName = function () {
+            return "deviceorientation";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraDeviceOrientationInput.prototype, "angularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraDeviceOrientationInput.prototype, "moveSensibility", void 0);
+        return FreeCameraDeviceOrientationInput;
+    }());
+    BABYLON.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var FreeCameraGamepadInput = (function () {
+        function FreeCameraGamepadInput() {
+            var _this = this;
+            this.gamepadAngularSensibility = 200;
+            this.gamepadMoveSensibility = 40;
+            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+        }
+        FreeCameraGamepadInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        FreeCameraGamepadInput.prototype.detach = function () {
+        };
+        FreeCameraGamepadInput.prototype.checkInputs = function () {
+            if (this.gamepad) {
+                var camera = this.camera;
+                var LSValues = this.gamepad.leftStick;
+                var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
+                var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
+                LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
+                LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
+                var RSValues = this.gamepad.rightStick;
+                var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
+                var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
+                RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
+                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
+                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+                var speed = camera._computeLocalCameraSpeed() * 50.0;
+                var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
+                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
+                camera.cameraRotation = camera.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
+            }
+        };
+        FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
+            // Only the first gamepad can control the camera
+            if (gamepad.index === 0) {
+                this.gamepad = gamepad;
+            }
+        };
+        FreeCameraGamepadInput.prototype.getTypeName = function () {
+            return "gamepad";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraGamepadInput.prototype, "gamepadAngularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
+        return FreeCameraGamepadInput;
+    }());
+    BABYLON.FreeCameraGamepadInput = FreeCameraGamepadInput;
+})(BABYLON || (BABYLON = {}));
+
+var BABYLON;
+(function (BABYLON) {
+    var FreeCameraVirtualJoystickInput = (function () {
+        function FreeCameraVirtualJoystickInput() {
+        }
+        FreeCameraVirtualJoystickInput.prototype.getLeftJoystick = function () {
+            return this._leftjoystick;
+        };
+        FreeCameraVirtualJoystickInput.prototype.getRightJoystick = function () {
+            return this._rightjoystick;
+        };
+        FreeCameraVirtualJoystickInput.prototype.checkInputs = function () {
+            var camera = this.camera;
+            var speed = camera._computeLocalCameraSpeed() * 50;
+            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
+            camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
+            camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
+            if (!this._leftjoystick.pressed) {
+                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
+            }
+            if (!this._rightjoystick.pressed) {
+                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+            }
+        };
+        FreeCameraVirtualJoystickInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+            this._leftjoystick = new BABYLON.VirtualJoystick(true);
+            this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
+            this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
+            this._leftjoystick.setJoystickSensibility(0.15);
+            this._rightjoystick = new BABYLON.VirtualJoystick(false);
+            this._rightjoystick.setAxisForUpDown(BABYLON.JoystickAxis.X);
+            this._rightjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.Y);
+            this._rightjoystick.reverseUpDown = true;
+            this._rightjoystick.setJoystickSensibility(0.05);
+            this._rightjoystick.setJoystickColor("yellow");
+        };
+        FreeCameraVirtualJoystickInput.prototype.detach = function () {
+            this._leftjoystick.releaseCanvas();
+        };
+        FreeCameraVirtualJoystickInput.prototype.getTypeName = function () {
+            return "touch";
+        };
+        return FreeCameraVirtualJoystickInput;
+    }());
+    BABYLON.FreeCameraVirtualJoystickInput = FreeCameraVirtualJoystickInput;
+})(BABYLON || (BABYLON = {}));
+
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -11308,14 +11896,8 @@ var BABYLON;
             var _this = this;
             _super.call(this, name, position, scene);
             this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
-            this.keysUp = [38];
-            this.keysDown = [40];
-            this.keysLeft = [37];
-            this.keysRight = [39];
             this.checkCollisions = false;
             this.applyGravity = false;
-            this.angularSensibility = 2000.0;
-            this._keys = [];
             this._collider = new BABYLON.Collider();
             this._needMoveForGravity = false;
             this._oldPosition = BABYLON.Vector3.Zero();
@@ -11339,128 +11921,26 @@ var BABYLON;
                 };
                 updatePosition(newPosition);
             };
+            this.inputs = new FreeCameraInputsManager(this);
+            this.inputs.addKeyboard().addMouse();
         }
-        FreeCamera.prototype._onLostFocus = function (e) {
-            this._keys = [];
-        };
         // Controls
         FreeCamera.prototype.attachControl = function (element, noPreventDefault) {
-            var _this = this;
-            var previousPosition;
-            var engine = this.getEngine();
             if (this._attachedElement) {
                 return;
             }
+            this._noPreventDefault = noPreventDefault;
             this._attachedElement = element;
-            if (this._onMouseDown === undefined) {
-                this._onMouseDown = function (evt) {
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseUp = function (evt) {
-                    previousPosition = null;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseOut = function (evt) {
-                    previousPosition = null;
-                    _this._keys = [];
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseMove = function (evt) {
-                    if (!previousPosition && !engine.isPointerLock) {
-                        return;
-                    }
-                    var offsetX;
-                    var offsetY;
-                    if (!engine.isPointerLock) {
-                        offsetX = evt.clientX - previousPosition.x;
-                        offsetY = evt.clientY - previousPosition.y;
-                    }
-                    else {
-                        offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                        offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    }
-                    _this.cameraRotation.y += offsetX / _this.angularSensibility;
-                    _this.cameraRotation.x += offsetY / _this.angularSensibility;
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onKeyDown = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = _this._keys.indexOf(evt.keyCode);
-                        if (index === -1) {
-                            _this._keys.push(evt.keyCode);
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                };
-                this._onKeyUp = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = _this._keys.indexOf(evt.keyCode);
-                        if (index >= 0) {
-                            _this._keys.splice(index, 1);
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                };
-                this._reset = function () {
-                    _this._keys = [];
-                    previousPosition = null;
-                    _this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
-                    _this.cameraRotation = new BABYLON.Vector2(0, 0);
-                };
-            }
-            element.addEventListener("mousedown", this._onMouseDown, false);
-            element.addEventListener("mouseup", this._onMouseUp, false);
-            element.addEventListener("mouseout", this._onMouseOut, false);
-            element.addEventListener("mousemove", this._onMouseMove, false);
-            BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            this.inputs.attachElement(element, noPreventDefault);
         };
         FreeCamera.prototype.detachControl = function (element) {
             if (this._attachedElement !== element) {
                 return;
             }
-            element.removeEventListener("mousedown", this._onMouseDown);
-            element.removeEventListener("mouseup", this._onMouseUp);
-            element.removeEventListener("mouseout", this._onMouseOut);
-            element.removeEventListener("mousemove", this._onMouseMove);
-            BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            this.inputs.detachElement(this._attachedElement);
             this._attachedElement = null;
-            if (this._reset) {
-                this._reset();
-            }
+            this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
+            this.cameraRotation = new BABYLON.Vector2(0, 0);
         };
         FreeCamera.prototype._collideWithWorld = function (velocity) {
             var globalPosition;
@@ -11486,26 +11966,7 @@ var BABYLON;
                 this._localDirection = BABYLON.Vector3.Zero();
                 this._transformedDirection = BABYLON.Vector3.Zero();
             }
-            // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                var speed = this._computeLocalCameraSpeed();
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(-speed, 0, 0);
-                }
-                else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(0, 0, speed);
-                }
-                else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(speed, 0, 0);
-                }
-                else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(0, 0, -speed);
-                }
-                this.getViewMatrix().invertToRef(this._cameraTransformMatrix);
-                BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
-                this.cameraDirection.addInPlace(this._transformedDirection);
-            }
+            this.inputs.checkInputs();
             _super.prototype._checkInputs.call(this);
         };
         FreeCamera.prototype._decideIfNeedsToMove = function () {
@@ -11519,6 +11980,10 @@ var BABYLON;
                 this.position.addInPlace(this.cameraDirection);
             }
         };
+        FreeCamera.prototype.dispose = function () {
+            this.inputs.clear();
+            _super.prototype.dispose.call(this);
+        };
         FreeCamera.prototype.getTypeName = function () {
             return "FreeCamera";
         };
@@ -11527,28 +11992,47 @@ var BABYLON;
         ], FreeCamera.prototype, "ellipsoid", void 0);
         __decorate([
             BABYLON.serialize()
-        ], FreeCamera.prototype, "keysUp", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FreeCamera.prototype, "keysDown", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FreeCamera.prototype, "keysLeft", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FreeCamera.prototype, "keysRight", void 0);
-        __decorate([
-            BABYLON.serialize()
         ], FreeCamera.prototype, "checkCollisions", void 0);
         __decorate([
             BABYLON.serialize()
         ], FreeCamera.prototype, "applyGravity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FreeCamera.prototype, "angularSensibility", void 0);
         return FreeCamera;
     }(BABYLON.TargetCamera));
     BABYLON.FreeCamera = FreeCamera;
+    var FreeCameraInputsManager = (function (_super) {
+        __extends(FreeCameraInputsManager, _super);
+        function FreeCameraInputsManager(camera) {
+            _super.call(this, camera);
+        }
+        FreeCameraInputsManager.prototype.add = function (input) {
+            _super.prototype.add.call(this, input);
+            if (this.camera._attachedElement && input.attachElement) {
+                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
+            }
+        };
+        FreeCameraInputsManager.prototype.addKeyboard = function () {
+            this.add(new BABYLON.FreeCameraKeyboardMoveInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addMouse = function () {
+            this.add(new BABYLON.FreeCameraMouseInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addGamepad = function () {
+            this.add(new BABYLON.FreeCameraGamepadInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addDeviceOrientation = function () {
+            this.add(new BABYLON.FreeCameraDeviceOrientationInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addTouch = function () {
+            this.add(new BABYLON.FreeCameraTouchInput());
+            return this;
+        };
+        return FreeCameraInputsManager;
+    }(BABYLON.CameraInputsManager));
+    BABYLON.FreeCameraInputsManager = FreeCameraInputsManager;
 })(BABYLON || (BABYLON = {}));
 
 
@@ -11666,131 +12150,159 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
     var TouchCamera = (function (_super) {
         __extends(TouchCamera, _super);
+        //         private _offsetX: number = null;
+        //         private _offsetY: number = null;
+        //         private _pointerCount:number = 0;
+        //         private _pointerPressed = [];
+        //         private _attachedCanvas: HTMLCanvasElement;
+        //         private _onPointerDown: (e: PointerEvent) => any;
+        //         private _onPointerUp: (e: PointerEvent) => any;
+        //         private _onPointerMove: (e: PointerEvent) => any;
+        // 
+        //         @serialize()
+        //         public touchAngularSensibility: number = 200000.0;
+        // 
+        //         @serialize()
+        //         public touchMoveSensibility: number = 250.0;
         function TouchCamera(name, position, scene) {
             _super.call(this, name, position, scene);
-            this._offsetX = null;
-            this._offsetY = null;
-            this._pointerCount = 0;
-            this._pointerPressed = [];
-            this.touchAngularSensibility = 200000.0;
-            this.touchMoveSensibility = 250.0;
+            this.inputs.addTouch();
         }
-        TouchCamera.prototype._onLostFocus = function (e) {
-            this._offsetX = null;
-            this._offsetY = null;
-            _super.prototype._onLostFocus.call(this, e);
-        };
-        TouchCamera.prototype.attachControl = function (canvas, noPreventDefault) {
-            var _this = this;
-            var previousPosition;
-            if (this._attachedCanvas) {
-                return;
-            }
-            if (this._onPointerDown === undefined) {
-                this._onPointerDown = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    _this._pointerPressed.push(evt.pointerId);
-                    if (_this._pointerPressed.length !== 1) {
-                        return;
-                    }
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                };
-                this._onPointerUp = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    var index = _this._pointerPressed.indexOf(evt.pointerId);
-                    if (index === -1) {
-                        return;
-                    }
-                    _this._pointerPressed.splice(index, 1);
-                    if (index != 0) {
-                        return;
-                    }
-                    previousPosition = null;
-                    _this._offsetX = null;
-                    _this._offsetY = null;
-                };
-                this._onPointerMove = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    if (!previousPosition) {
-                        return;
-                    }
-                    var index = _this._pointerPressed.indexOf(evt.pointerId);
-                    if (index != 0) {
-                        return;
-                    }
-                    _this._offsetX = evt.clientX - previousPosition.x;
-                    _this._offsetY = -(evt.clientY - previousPosition.y);
-                };
-            }
-            canvas.addEventListener("pointerdown", this._onPointerDown);
-            canvas.addEventListener("pointerup", this._onPointerUp);
-            canvas.addEventListener("pointerout", this._onPointerUp);
-            canvas.addEventListener("pointermove", this._onPointerMove);
-            _super.prototype.attachControl.call(this, canvas);
-        };
-        TouchCamera.prototype.detachControl = function (canvas) {
-            if (this._attachedCanvas !== canvas) {
-                return;
-            }
-            canvas.removeEventListener("pointerdown", this._onPointerDown);
-            canvas.removeEventListener("pointerup", this._onPointerUp);
-            canvas.removeEventListener("pointerout", this._onPointerUp);
-            canvas.removeEventListener("pointermove", this._onPointerMove);
-            _super.prototype.detachControl.call(this, canvas);
-        };
-        TouchCamera.prototype._checkInputs = function () {
-            if (this._offsetX) {
-                this.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
-                if (this._pointerPressed.length > 1) {
-                    this.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
-                }
-                else {
-                    var speed = this._computeLocalCameraSpeed();
-                    var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
-                    BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
-                    this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
-                }
-            }
-            _super.prototype._checkInputs.call(this);
-        };
+        // public _onLostFocus(e: FocusEvent): void {
+        //     this._offsetX = null;
+        //     this._offsetY = null;
+        //     super._onLostFocus(e);
+        // }
+        //         public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
+        //             var previousPosition;
+        // 
+        //             if (this._attachedCanvas) {
+        //                 return;
+        //             }
+        // 
+        //             if (this._onPointerDown === undefined) {
+        // 
+        //                 this._onPointerDown = (evt) => {
+        // 
+        //                     if (evt.pointerType === "mouse") {
+        //                         return;
+        //                     }
+        // 
+        //                     if (!noPreventDefault) {
+        //                         evt.preventDefault();
+        //                     }
+        // 
+        //                     this._pointerPressed.push(evt.pointerId);
+        // 
+        //                     if (this._pointerPressed.length !== 1) {
+        //                         return;
+        //                     }
+        // 
+        //                     previousPosition = {
+        //                         x: evt.clientX,
+        //                         y: evt.clientY
+        //                     };
+        //                 };
+        // 
+        //                 this._onPointerUp = (evt) => {
+        // 
+        //                     if (evt.pointerType === "mouse") {
+        //                         return;
+        //                     }
+        // 
+        //                     if (!noPreventDefault) {
+        //                         evt.preventDefault();
+        //                     }
+        // 
+        //                     var index: number = this._pointerPressed.indexOf(evt.pointerId);
+        // 
+        //                     if (index === -1) {
+        //                         return;
+        //                     }
+        //                     this._pointerPressed.splice(index, 1);
+        // 
+        //                     if (index != 0) {
+        //                         return;
+        //                     }
+        //                     previousPosition = null;
+        //                     this._offsetX = null;
+        //                     this._offsetY = null;
+        //                 };
+        // 
+        //                 this._onPointerMove = (evt) => {
+        // 
+        //                     if (evt.pointerType === "mouse") {
+        //                         return;
+        //                     }
+        // 
+        //                     if (!noPreventDefault) {
+        //                         evt.preventDefault();
+        //                     }
+        // 
+        //                     if (!previousPosition) {
+        //                         return;
+        //                     }
+        // 
+        //                     var index: number = this._pointerPressed.indexOf(evt.pointerId);
+        // 
+        //                     if (index != 0) {
+        //                         return;
+        //                     }
+        // 
+        //                     this._offsetX = evt.clientX - previousPosition.x;
+        //                     this._offsetY = -(evt.clientY - previousPosition.y);
+        //                 };
+        // 
+        //                 
+        //             }
+        // 
+        //             canvas.addEventListener("pointerdown", this._onPointerDown);
+        //             canvas.addEventListener("pointerup", this._onPointerUp);
+        //             canvas.addEventListener("pointerout", this._onPointerUp);
+        //             canvas.addEventListener("pointermove", this._onPointerMove);
+        // 
+        //             super.attachControl(canvas);
+        //         }
+        // 
+        //         public detachControl(canvas: HTMLCanvasElement): void {
+        //             if (this._attachedCanvas !== canvas) {
+        //                 return;
+        //             }
+        // 
+        //             canvas.removeEventListener("pointerdown", this._onPointerDown);
+        //             canvas.removeEventListener("pointerup", this._onPointerUp);
+        //             canvas.removeEventListener("pointerout", this._onPointerUp);
+        //             canvas.removeEventListener("pointermove", this._onPointerMove);
+        //             
+        //             super.detachControl(canvas);
+        //         }
+        // 
+        //         public _checkInputs(): void {
+        //             if (this._offsetX) {
+        // 
+        //                 this.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
+        // 
+        //                 if (this._pointerPressed.length > 1) {
+        //                     this.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
+        //                 } else {
+        //                     var speed = this._computeLocalCameraSpeed();
+        //                     var direction = new Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
+        // 
+        //                     Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
+        //                     this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
+        //                 }
+        //             }
+        // 
+        //             super._checkInputs();
+        //         }
         TouchCamera.prototype.getTypeName = function () {
             return "TouchCamera";
         };
-        __decorate([
-            BABYLON.serialize()
-        ], TouchCamera.prototype, "touchAngularSensibility", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], TouchCamera.prototype, "touchMoveSensibility", void 0);
         return TouchCamera;
     }(BABYLON.FreeCamera));
     BABYLON.TouchCamera = TouchCamera;
@@ -36076,152 +36588,158 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
     var DeviceOrientationCamera = (function (_super) {
         __extends(DeviceOrientationCamera, _super);
+        //         private _offsetX: number = null;
+        //         private _offsetY: number = null;
+        //         private _orientationGamma: number = 0;
+        //         private _orientationBeta: number = 0;
+        //         private _initialOrientationGamma: number = 0;
+        //         private _initialOrientationBeta: number = 0;
+        //         private _attachedCanvas: HTMLCanvasElement;
+        //         private _orientationChanged: (e: DeviceOrientationEvent) => any;
+        // 
+        //         @serialize()
+        //         public angularSensibility: number = 10000.0;
+        // 
+        //         @serialize()
+        //         public moveSensibility: number = 50.0;
         function DeviceOrientationCamera(name, position, scene) {
-            var _this = this;
             _super.call(this, name, position, scene);
-            this._offsetX = null;
-            this._offsetY = null;
-            this._orientationGamma = 0;
-            this._orientationBeta = 0;
-            this._initialOrientationGamma = 0;
-            this._initialOrientationBeta = 0;
-            this.angularSensibility = 10000.0;
-            this.moveSensibility = 50.0;
-            window.addEventListener("resize", function () {
-                _this._initialOrientationGamma = null;
-            }, false);
+            this.inputs.addDeviceOrientation();
+            // window.addEventListener("resize", () => {
+            //     this._initialOrientationGamma = null;
+            // }, false);
         }
-        DeviceOrientationCamera.prototype.attachControl = function (canvas, noPreventDefault) {
-            var _this = this;
-            if (this._attachedCanvas) {
-                return;
-            }
-            this._attachedCanvas = canvas;
-            if (!this._orientationChanged) {
-                this._orientationChanged = function (evt) {
-                    if (!_this._initialOrientationGamma) {
-                        _this._initialOrientationGamma = evt.gamma;
-                        _this._initialOrientationBeta = evt.beta;
-                    }
-                    _this._orientationGamma = evt.gamma;
-                    _this._orientationBeta = evt.beta;
-                    _this._offsetY = (_this._initialOrientationBeta - _this._orientationBeta);
-                    _this._offsetX = (_this._initialOrientationGamma - _this._orientationGamma);
-                };
-            }
-            window.addEventListener("deviceorientation", this._orientationChanged);
-        };
-        DeviceOrientationCamera.prototype.detachControl = function (canvas) {
-            if (this._attachedCanvas !== canvas) {
-                return;
-            }
-            window.removeEventListener("deviceorientation", this._orientationChanged);
-            this._attachedCanvas = null;
-            this._orientationGamma = 0;
-            this._orientationBeta = 0;
-            this._initialOrientationGamma = 0;
-            this._initialOrientationBeta = 0;
-        };
-        DeviceOrientationCamera.prototype._checkInputs = function () {
-            if (!this._offsetX) {
-                return;
-            }
-            this.cameraRotation.y -= this._offsetX / this.angularSensibility;
-            var speed = this._computeLocalCameraSpeed();
-            var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
-            BABYLON.Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
-            this.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
-            _super.prototype._checkInputs.call(this);
-        };
+        //         public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
+        //             if (this._attachedCanvas) {
+        //                 return;
+        //             }
+        //             this._attachedCanvas = canvas;
+        // 
+        //             if (!this._orientationChanged) {
+        //                 this._orientationChanged = (evt) => {
+        // 
+        //                     if (!this._initialOrientationGamma) {
+        //                             this._initialOrientationGamma = evt.gamma;
+        //                             this._initialOrientationBeta = evt.beta;
+        //                     }
+        // 
+        //                     this._orientationGamma = evt.gamma;
+        //                     this._orientationBeta = evt.beta;
+        //  
+        //                     this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
+        //                     this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
+        //                 };
+        //             }
+        // 
+        //             window.addEventListener("deviceorientation", this._orientationChanged);
+        //         }
+        // 
+        //         public detachControl(canvas: HTMLCanvasElement): void {
+        //             if (this._attachedCanvas !== canvas) {
+        //                 return;
+        //             }
+        // 
+        //             window.removeEventListener("deviceorientation", this._orientationChanged);
+        // 
+        //             this._attachedCanvas = null;
+        //             this._orientationGamma = 0;
+        //             this._orientationBeta = 0;
+        //             this._initialOrientationGamma = 0;
+        //             this._initialOrientationBeta = 0;
+        //         }
+        // 
+        //         public _checkInputs(): void {
+        //             if (!this._offsetX) {
+        //                 return;
+        //             }
+        //             this.cameraRotation.y -= this._offsetX / this.angularSensibility;
+        // 
+        //             var speed = this._computeLocalCameraSpeed();
+        //             var direction = new Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+        // 
+        //             Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
+        //             this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
+        // 
+        //             super._checkInputs();
+        //         }
         DeviceOrientationCamera.prototype.getTypeName = function () {
             return "DeviceOrientationCamera";
         };
-        __decorate([
-            BABYLON.serialize()
-        ], DeviceOrientationCamera.prototype, "angularSensibility", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], DeviceOrientationCamera.prototype, "moveSensibility", void 0);
         return DeviceOrientationCamera;
     }(BABYLON.FreeCamera));
     BABYLON.DeviceOrientationCamera = DeviceOrientationCamera;
 })(BABYLON || (BABYLON = {}));
 
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
     var UniversalCamera = (function (_super) {
         __extends(UniversalCamera, _super);
+        //         public gamepad: Gamepad;
+        //         private _gamepads: Gamepads;
+        // 
+        //         @serialize()
+        //         public gamepadAngularSensibility = 200;
+        // 
+        //         @serialize()
+        //         public gamepadMoveSensibility = 40;
         function UniversalCamera(name, position, scene) {
-            var _this = this;
             _super.call(this, name, position, scene);
-            this.gamepadAngularSensibility = 200;
-            this.gamepadMoveSensibility = 40;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+            this.inputs.addGamepad();
+            // this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
         }
-        UniversalCamera.prototype._onNewGameConnected = function (gamepad) {
-            // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
-                this.gamepad = gamepad;
-            }
-        };
-        UniversalCamera.prototype.attachControl = function (canvas, noPreventDefault) {
-            _super.prototype.attachControl.call(this, canvas, false);
-        };
-        UniversalCamera.prototype.detachControl = function (canvas) {
-            _super.prototype.detachControl.call(this, canvas);
-        };
-        UniversalCamera.prototype._checkInputs = function () {
-            if (this.gamepad) {
-                var LSValues = this.gamepad.leftStick;
-                var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
-                var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
-                LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
-                LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
-                var RSValues = this.gamepad.rightStick;
-                var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-                var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
-                RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
-                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-                var speed = this._computeLocalCameraSpeed() * 50.0;
-                var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
-                this.cameraDirection = this.cameraDirection.add(deltaTransform);
-                this.cameraRotation = this.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
-            }
-            _super.prototype._checkInputs.call(this);
-        };
-        UniversalCamera.prototype.dispose = function () {
-            this._gamepads.dispose();
-            _super.prototype.dispose.call(this);
-        };
+        //         private _onNewGameConnected(gamepad: Gamepad) {
+        //             // Only the first gamepad can control the camera
+        //             if (gamepad.index === 0) {
+        //                 this.gamepad = gamepad;
+        //             }
+        //         }
+        // 
+        //         public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
+        //             super.attachControl(canvas, false);
+        //         }
+        // 
+        //         public detachControl(canvas: HTMLCanvasElement): void {
+        //             super.detachControl(canvas);
+        //         }
+        // 
+        //         public _checkInputs(): void {
+        //             if (this.gamepad) {
+        //                 var LSValues = this.gamepad.leftStick;
+        //                 var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
+        //                 var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
+        //                 LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
+        //                 LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
+        // 
+        //                 var RSValues = this.gamepad.rightStick;
+        //                 var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
+        //                 var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
+        //                 RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
+        //                 RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
+        // 
+        //                 var cameraTransform = Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
+        // 
+        //                 var speed = this._computeLocalCameraSpeed() * 50.0;
+        //                 var deltaTransform = Vector3.TransformCoordinates(new Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
+        //                 this.cameraDirection = this.cameraDirection.add(deltaTransform);
+        //                 this.cameraRotation = this.cameraRotation.add(new Vector2(RSValues.y, RSValues.x));
+        //             }
+        //             super._checkInputs();
+        //         }
+        // 
+        //         public dispose(): void {
+        //             this._gamepads.dispose();
+        //             super.dispose();
+        //         }
         UniversalCamera.prototype.getTypeName = function () {
             return "UniversalCamera";
         };
-        __decorate([
-            BABYLON.serialize()
-        ], UniversalCamera.prototype, "gamepadAngularSensibility", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], UniversalCamera.prototype, "gamepadMoveSensibility", void 0);
         return UniversalCamera;
     }(BABYLON.TouchCamera));
     BABYLON.UniversalCamera = UniversalCamera;
@@ -41232,731 +41750,6 @@ var BABYLON;
         }());
         Debug.SkeletonViewer = SkeletonViewer;
     })(Debug = BABYLON.Debug || (BABYLON.Debug = {}));
-})(BABYLON || (BABYLON = {}));
-
-var BABYLON;
-(function (BABYLON) {
-    var ComposableCameraInputsManager = (function () {
-        function ComposableCameraInputsManager(camera) {
-            this.inputs = {};
-            this.camera = camera;
-            this.checkInputs = function () { };
-        }
-        ComposableCameraInputsManager.prototype.add = function (input) {
-            var type = input.getTypeName();
-            if (this.inputs[type]) {
-                BABYLON.Tools.Warn("camera input of type " + type + " already exists on camera");
-                return;
-            }
-            this.inputs[type] = input;
-            input.attachCamera(this.camera);
-            //for checkInputs, we are dynamically creating a function
-            //the goal is to avoid the performance penalty of looping for inputs in the render loop
-            if (input.checkInputs) {
-                this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
-            }
-            if (this.camera._attachedElement && input.attachElement) {
-                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
-            }
-        };
-        ComposableCameraInputsManager.prototype._addCheckInputs = function (fn) {
-            var current = this.checkInputs;
-            return function () {
-                current();
-                fn();
-            };
-        };
-        ComposableCameraInputsManager.prototype.attachElement = function (element, noPreventDefault) {
-            for (var cam in this.inputs) {
-                var input = this.inputs[cam];
-                if (input.attachElement)
-                    this.inputs[cam].attachElement(element, noPreventDefault);
-            }
-        };
-        ComposableCameraInputsManager.prototype.detachElement = function (element) {
-            for (var cam in this.inputs) {
-                var input = this.inputs[cam];
-                if (input.detachElement)
-                    this.inputs[cam].detachElement(element);
-            }
-        };
-        ComposableCameraInputsManager.prototype.rebuildInputCheck = function (element) {
-            this.checkInputs = function () { };
-            for (var cam in this.inputs) {
-                var input = this.inputs[cam];
-                if (input.checkInputs) {
-                    this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
-                }
-            }
-        };
-        ComposableCameraInputsManager.prototype.clear = function () {
-            for (var cam in this.inputs) {
-                this.inputs[cam].detach();
-            }
-            this.inputs = {};
-            this.checkInputs = function () { };
-        };
-        ComposableCameraInputsManager.prototype.addKeyboard = function () {
-            this.add(new BABYLON.ComposableCameraKeyboardMoveInput());
-            return this;
-        };
-        ComposableCameraInputsManager.prototype.addMouse = function () {
-            this.add(new BABYLON.ComposableCameraMouseInput());
-            return this;
-        };
-        ComposableCameraInputsManager.prototype.addGamepad = function () {
-            this.add(new BABYLON.ComposableCameraGamepadInput());
-            return this;
-        };
-        ComposableCameraInputsManager.prototype.addDeviceOrientation = function () {
-            this.add(new BABYLON.ComposableCameraDeviceOrientationInput());
-            return this;
-        };
-        ComposableCameraInputsManager.prototype.addTouch = function () {
-            this.add(new BABYLON.ComposableCameraTouchInput());
-            return this;
-        };
-        return ComposableCameraInputsManager;
-    }());
-    BABYLON.ComposableCameraInputsManager = ComposableCameraInputsManager;
-})(BABYLON || (BABYLON = {}));
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var BABYLON;
-(function (BABYLON) {
-    var ComposableCamera = (function (_super) {
-        __extends(ComposableCamera, _super);
-        function ComposableCamera(name, position, scene) {
-            var _this = this;
-            _super.call(this, name, position, scene);
-            this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
-            this.checkCollisions = false;
-            this.applyGravity = false;
-            this._collider = new BABYLON.Collider();
-            this._needMoveForGravity = false;
-            this._oldPosition = BABYLON.Vector3.Zero();
-            this._diffPosition = BABYLON.Vector3.Zero();
-            this._newPosition = BABYLON.Vector3.Zero();
-            this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
-                if (collidedMesh === void 0) { collidedMesh = null; }
-                //TODO move this to the collision coordinator!
-                if (_this.getScene().workerCollisions)
-                    newPosition.multiplyInPlace(_this._collider.radius);
-                var updatePosition = function (newPos) {
-                    _this._newPosition.copyFrom(newPos);
-                    _this._newPosition.subtractToRef(_this._oldPosition, _this._diffPosition);
-                    var oldPosition = _this.position.clone();
-                    if (_this._diffPosition.length() > BABYLON.Engine.CollisionsEpsilon) {
-                        _this.position.addInPlace(_this._diffPosition);
-                        if (_this.onCollide && collidedMesh) {
-                            _this.onCollide(collidedMesh);
-                        }
-                    }
-                };
-                updatePosition(newPosition);
-            };
-            this.inputs = new BABYLON.ComposableCameraInputsManager(this);
-            this.inputs.addKeyboard().addMouse();
-        }
-        // Controls
-        ComposableCamera.prototype.attachControl = function (element, noPreventDefault) {
-            if (this._attachedElement) {
-                return;
-            }
-            this._noPreventDefault = noPreventDefault;
-            this._attachedElement = element;
-            this.inputs.attachElement(element, noPreventDefault);
-        };
-        ComposableCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement !== element) {
-                return;
-            }
-            this.inputs.detachElement(this._attachedElement);
-            this._attachedElement = null;
-            this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
-            this.cameraRotation = new BABYLON.Vector2(0, 0);
-        };
-        ComposableCamera.prototype._collideWithWorld = function (velocity) {
-            var globalPosition;
-            if (this.parent) {
-                globalPosition = BABYLON.Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
-            }
-            else {
-                globalPosition = this.position;
-            }
-            globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
-            this._collider.radius = this.ellipsoid;
-            //no need for clone, as long as gravity is not on.
-            var actualVelocity = velocity;
-            //add gravity to the velocity to prevent the dual-collision checking
-            if (this.applyGravity) {
-                //this prevents mending with cameraDirection, a global variable of the free camera class.
-                actualVelocity = velocity.add(this.getScene().gravity);
-            }
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPosition, actualVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
-        };
-        ComposableCamera.prototype._checkInputs = function () {
-            if (!this._localDirection) {
-                this._localDirection = BABYLON.Vector3.Zero();
-                this._transformedDirection = BABYLON.Vector3.Zero();
-            }
-            this.inputs.checkInputs();
-            _super.prototype._checkInputs.call(this);
-        };
-        ComposableCamera.prototype._decideIfNeedsToMove = function () {
-            return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
-        };
-        ComposableCamera.prototype._updatePosition = function () {
-            if (this.checkCollisions && this.getScene().collisionsEnabled) {
-                this._collideWithWorld(this.cameraDirection);
-            }
-            else {
-                this.position.addInPlace(this.cameraDirection);
-            }
-        };
-        ComposableCamera.prototype.dispose = function () {
-            this.inputs.clear();
-            _super.prototype.dispose.call(this);
-        };
-        ComposableCamera.prototype.getTypeName = function () {
-            return "FreeCamera";
-        };
-        __decorate([
-            BABYLON.serializeAsVector3()
-        ], ComposableCamera.prototype, "ellipsoid", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCamera.prototype, "checkCollisions", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCamera.prototype, "applyGravity", void 0);
-        return ComposableCamera;
-    }(BABYLON.TargetCamera));
-    BABYLON.ComposableCamera = ComposableCamera;
-})(BABYLON || (BABYLON = {}));
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var BABYLON;
-(function (BABYLON) {
-    var ComposableCameraMouseInput = (function () {
-        function ComposableCameraMouseInput() {
-            this.angularSensibility = 2000.0;
-        }
-        ComposableCameraMouseInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        ComposableCameraMouseInput.prototype.attachElement = function (element, noPreventDefault) {
-            var _this = this;
-            var previousPosition;
-            this.attachedElement = element;
-            if (this._onMouseDown === undefined) {
-                var camera = this.camera;
-                var engine = this.camera.getEngine();
-                this._onMouseDown = function (evt) {
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseUp = function (evt) {
-                    previousPosition = null;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseOut = function (evt) {
-                    previousPosition = null;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseMove = function (evt) {
-                    if (!previousPosition && !engine.isPointerLock) {
-                        return;
-                    }
-                    var offsetX;
-                    var offsetY;
-                    if (!engine.isPointerLock) {
-                        offsetX = evt.clientX - previousPosition.x;
-                        offsetY = evt.clientY - previousPosition.y;
-                    }
-                    else {
-                        offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                        offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    }
-                    camera.cameraRotation.y += offsetX / _this.angularSensibility;
-                    camera.cameraRotation.x += offsetY / _this.angularSensibility;
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-            }
-            element.addEventListener("mousedown", this._onMouseDown, false);
-            element.addEventListener("mouseup", this._onMouseUp, false);
-            element.addEventListener("mouseout", this._onMouseOut, false);
-            element.addEventListener("mousemove", this._onMouseMove, false);
-        };
-        ComposableCameraMouseInput.prototype.detachElement = function (element) {
-            if (this.attachedElement !== element) {
-                return;
-            }
-            element.removeEventListener("mousedown", this._onMouseDown);
-            element.removeEventListener("mouseup", this._onMouseUp);
-            element.removeEventListener("mouseout", this._onMouseOut);
-            element.removeEventListener("mousemove", this._onMouseMove);
-            this.attachedElement = null;
-        };
-        ComposableCameraMouseInput.prototype.detach = function () {
-            if (this.attachedElement) {
-                this.detachElement(this.attachedElement);
-            }
-        };
-        ComposableCameraMouseInput.prototype.getTypeName = function () {
-            return "mouse";
-        };
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraMouseInput.prototype, "angularSensibility", void 0);
-        return ComposableCameraMouseInput;
-    }());
-    BABYLON.ComposableCameraMouseInput = ComposableCameraMouseInput;
-})(BABYLON || (BABYLON = {}));
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var BABYLON;
-(function (BABYLON) {
-    var ComposableCameraKeyboardMoveInput = (function () {
-        function ComposableCameraKeyboardMoveInput() {
-            this._keys = [];
-            this.keysUp = [38];
-            this.keysDown = [40];
-            this.keysLeft = [37];
-            this.keysRight = [39];
-        }
-        ComposableCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
-            var _this = this;
-            this.camera = camera;
-            if (this._onKeyDown === undefined) {
-                this._onKeyDown = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = _this._keys.indexOf(evt.keyCode);
-                        if (index === -1) {
-                            _this._keys.push(evt.keyCode);
-                        }
-                        if (!camera._noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                };
-                this._onKeyUp = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = _this._keys.indexOf(evt.keyCode);
-                        if (index >= 0) {
-                            _this._keys.splice(index, 1);
-                        }
-                        if (!camera._noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                };
-                BABYLON.Tools.RegisterTopRootEvents([
-                    { name: "keydown", handler: this._onKeyDown },
-                    { name: "keyup", handler: this._onKeyUp },
-                    { name: "blur", handler: this._onLostFocus }
-                ]);
-            }
-        };
-        ComposableCameraKeyboardMoveInput.prototype.detach = function () {
-            BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
-        };
-        ComposableCameraKeyboardMoveInput.prototype.checkInputs = function () {
-            var camera = this.camera;
-            // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                var speed = camera._computeLocalCameraSpeed();
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(-speed, 0, 0);
-                }
-                else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, speed);
-                }
-                else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(speed, 0, 0);
-                }
-                else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, -speed);
-                }
-                camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
-                BABYLON.Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
-                camera.cameraDirection.addInPlace(camera._transformedDirection);
-            }
-        };
-        ComposableCameraKeyboardMoveInput.prototype.getTypeName = function () {
-            return "keyboardmove";
-        };
-        ComposableCameraKeyboardMoveInput.prototype._onLostFocus = function (e) {
-            this._keys = [];
-        };
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraKeyboardMoveInput.prototype, "keysUp", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraKeyboardMoveInput.prototype, "keysDown", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraKeyboardMoveInput.prototype, "keysLeft", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraKeyboardMoveInput.prototype, "keysRight", void 0);
-        return ComposableCameraKeyboardMoveInput;
-    }());
-    BABYLON.ComposableCameraKeyboardMoveInput = ComposableCameraKeyboardMoveInput;
-})(BABYLON || (BABYLON = {}));
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var BABYLON;
-(function (BABYLON) {
-    var ComposableCameraTouchInput = (function () {
-        function ComposableCameraTouchInput() {
-            this._offsetX = null;
-            this._offsetY = null;
-            this._pointerCount = 0;
-            this._pointerPressed = [];
-            this.touchAngularSensibility = 200000.0;
-            this.touchMoveSensibility = 250.0;
-        }
-        ComposableCameraTouchInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        ComposableCameraTouchInput.prototype.attachElement = function (element, noPreventDefault) {
-            var _this = this;
-            var previousPosition;
-            if (this._attachedElement) {
-                return;
-            }
-            this._attachedElement = element;
-            if (this._onPointerDown === undefined) {
-                this._onPointerDown = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    _this._pointerPressed.push(evt.pointerId);
-                    if (_this._pointerPressed.length !== 1) {
-                        return;
-                    }
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                };
-                this._onPointerUp = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    var index = _this._pointerPressed.indexOf(evt.pointerId);
-                    if (index === -1) {
-                        return;
-                    }
-                    _this._pointerPressed.splice(index, 1);
-                    if (index != 0) {
-                        return;
-                    }
-                    previousPosition = null;
-                    _this._offsetX = null;
-                    _this._offsetY = null;
-                };
-                this._onPointerMove = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    if (!previousPosition) {
-                        return;
-                    }
-                    var index = _this._pointerPressed.indexOf(evt.pointerId);
-                    if (index != 0) {
-                        return;
-                    }
-                    _this._offsetX = evt.clientX - previousPosition.x;
-                    _this._offsetY = -(evt.clientY - previousPosition.y);
-                };
-            }
-            element.addEventListener("pointerdown", this._onPointerDown);
-            element.addEventListener("pointerup", this._onPointerUp);
-            element.addEventListener("pointerout", this._onPointerUp);
-            element.addEventListener("pointermove", this._onPointerMove);
-        };
-        ComposableCameraTouchInput.prototype.detachElement = function (element) {
-            if (this._attachedElement !== element) {
-                return;
-            }
-            element.removeEventListener("pointerdown", this._onPointerDown);
-            element.removeEventListener("pointerup", this._onPointerUp);
-            element.removeEventListener("pointerout", this._onPointerUp);
-            element.removeEventListener("pointermove", this._onPointerMove);
-            this._attachedElement = null;
-        };
-        ComposableCameraTouchInput.prototype.checkInputs = function () {
-            if (this._offsetX) {
-                var camera = this.camera;
-                camera.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
-                if (this._pointerPressed.length > 1) {
-                    camera.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
-                }
-                else {
-                    var speed = camera._computeLocalCameraSpeed();
-                    var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
-                    BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-                    camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
-                }
-            }
-        };
-        ComposableCameraTouchInput.prototype.detach = function () {
-            if (this._attachedElement) {
-                this.detachElement(this._attachedElement);
-            }
-        };
-        ComposableCameraTouchInput.prototype.getTypeName = function () {
-            return "touch";
-        };
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraTouchInput.prototype, "touchAngularSensibility", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraTouchInput.prototype, "touchMoveSensibility", void 0);
-        return ComposableCameraTouchInput;
-    }());
-    BABYLON.ComposableCameraTouchInput = ComposableCameraTouchInput;
-})(BABYLON || (BABYLON = {}));
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var BABYLON;
-(function (BABYLON) {
-    var ComposableCameraDeviceOrientationInput = (function () {
-        function ComposableCameraDeviceOrientationInput() {
-            this._offsetX = null;
-            this._offsetY = null;
-            this._orientationGamma = 0;
-            this._orientationBeta = 0;
-            this._initialOrientationGamma = 0;
-            this._initialOrientationBeta = 0;
-            this.angularSensibility = 10000.0;
-            this.moveSensibility = 50.0;
-            this._resetOrientationGamma = this.resetOrientationGamma.bind(this);
-            this._orientationChanged = this.orientationChanged.bind(this);
-        }
-        ComposableCameraDeviceOrientationInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-            window.addEventListener("resize", this._resetOrientationGamma, false);
-            window.addEventListener("deviceorientation", this._orientationChanged);
-        };
-        ComposableCameraDeviceOrientationInput.prototype.resetOrientationGamma = function () {
-            this._initialOrientationGamma = null;
-        };
-        ComposableCameraDeviceOrientationInput.prototype.orientationChanged = function (evt) {
-            if (!this._initialOrientationGamma) {
-                this._initialOrientationGamma = evt.gamma;
-                this._initialOrientationBeta = evt.beta;
-            }
-            this._orientationGamma = evt.gamma;
-            this._orientationBeta = evt.beta;
-            this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
-            this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
-        };
-        ComposableCameraDeviceOrientationInput.prototype.detach = function () {
-            window.removeEventListener("resize", this._resetOrientationGamma);
-            window.removeEventListener("deviceorientation", this._orientationChanged);
-            this._orientationGamma = 0;
-            this._orientationBeta = 0;
-            this._initialOrientationGamma = 0;
-            this._initialOrientationBeta = 0;
-        };
-        ComposableCameraDeviceOrientationInput.prototype.checkInputs = function () {
-            if (!this._offsetX) {
-                return;
-            }
-            var camera = this.camera;
-            camera.cameraRotation.y -= this._offsetX / this.angularSensibility;
-            var speed = camera._computeLocalCameraSpeed();
-            var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
-            BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-            camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
-        };
-        ComposableCameraDeviceOrientationInput.prototype.getTypeName = function () {
-            return "deviceorientation";
-        };
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraDeviceOrientationInput.prototype, "angularSensibility", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraDeviceOrientationInput.prototype, "moveSensibility", void 0);
-        return ComposableCameraDeviceOrientationInput;
-    }());
-    BABYLON.ComposableCameraDeviceOrientationInput = ComposableCameraDeviceOrientationInput;
-})(BABYLON || (BABYLON = {}));
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var BABYLON;
-(function (BABYLON) {
-    var ComposableCameraGamepadInput = (function () {
-        function ComposableCameraGamepadInput() {
-            var _this = this;
-            this.gamepadAngularSensibility = 200;
-            this.gamepadMoveSensibility = 40;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
-        }
-        ComposableCameraGamepadInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        ComposableCameraGamepadInput.prototype.detach = function () {
-        };
-        ComposableCameraGamepadInput.prototype.checkInputs = function () {
-            if (this.gamepad) {
-                var camera = this.camera;
-                var LSValues = this.gamepad.leftStick;
-                var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
-                var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
-                LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
-                LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
-                var RSValues = this.gamepad.rightStick;
-                var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-                var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
-                RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
-                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-                var speed = camera._computeLocalCameraSpeed() * 50.0;
-                var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
-                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-                camera.cameraRotation = camera.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
-            }
-        };
-        ComposableCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-            // Only the first gamepad can control the camera
-            if (gamepad.index === 0) {
-                this.gamepad = gamepad;
-            }
-        };
-        ComposableCameraGamepadInput.prototype.getTypeName = function () {
-            return "gamepad";
-        };
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraGamepadInput.prototype, "gamepadAngularSensibility", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ComposableCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
-        return ComposableCameraGamepadInput;
-    }());
-    BABYLON.ComposableCameraGamepadInput = ComposableCameraGamepadInput;
-})(BABYLON || (BABYLON = {}));
-
-var BABYLON;
-(function (BABYLON) {
-    var ComposableCameraVirtualJoystickInput = (function () {
-        function ComposableCameraVirtualJoystickInput() {
-        }
-        ComposableCameraVirtualJoystickInput.prototype.getLeftJoystick = function () {
-            return this._leftjoystick;
-        };
-        ComposableCameraVirtualJoystickInput.prototype.getRightJoystick = function () {
-            return this._rightjoystick;
-        };
-        ComposableCameraVirtualJoystickInput.prototype.checkInputs = function () {
-            var camera = this.camera;
-            var speed = camera._computeLocalCameraSpeed() * 50;
-            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
-            camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-            camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
-            if (!this._leftjoystick.pressed) {
-                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
-            }
-            if (!this._rightjoystick.pressed) {
-                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
-            }
-        };
-        ComposableCameraVirtualJoystickInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-            this._leftjoystick = new BABYLON.VirtualJoystick(true);
-            this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
-            this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
-            this._leftjoystick.setJoystickSensibility(0.15);
-            this._rightjoystick = new BABYLON.VirtualJoystick(false);
-            this._rightjoystick.setAxisForUpDown(BABYLON.JoystickAxis.X);
-            this._rightjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.Y);
-            this._rightjoystick.reverseUpDown = true;
-            this._rightjoystick.setJoystickSensibility(0.05);
-            this._rightjoystick.setJoystickColor("yellow");
-        };
-        ComposableCameraVirtualJoystickInput.prototype.detach = function () {
-            this._leftjoystick.releaseCanvas();
-        };
-        ComposableCameraVirtualJoystickInput.prototype.getTypeName = function () {
-            return "touch";
-        };
-        return ComposableCameraVirtualJoystickInput;
-    }());
-    BABYLON.ComposableCameraVirtualJoystickInput = ComposableCameraVirtualJoystickInput;
 })(BABYLON || (BABYLON = {}));
 
 BABYLON.Effect.ShadersStore={"anaglyphPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D leftSampler;\nvoid main(void)\n{\nvec4 leftFrag=texture2D(leftSampler,vUV);\nleftFrag=vec4(1.0,leftFrag.g,leftFrag.b,1.0);\nvec4 rightFrag=texture2D(textureSampler,vUV);\nrightFrag=vec4(rightFrag.r,1.0,1.0,1.0);\ngl_FragColor=vec4(rightFrag.rgb*leftFrag.rgb,1.0);\n}","blackAndWhitePixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nvoid main(void) \n{\nfloat luminance=dot(texture2D(textureSampler,vUV).rgb,vec3(0.3,0.59,0.11));\ngl_FragColor=vec4(luminance,luminance,luminance,1.0);\n}","blurPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform vec2 screenSize;\nuniform vec2 direction;\nuniform float blurWidth;\nvoid main(void)\n{\nfloat weights[7];\nweights[0]=0.05;\nweights[1]=0.1;\nweights[2]=0.2;\nweights[3]=0.3;\nweights[4]=0.2;\nweights[5]=0.1;\nweights[6]=0.05;\nvec2 texelSize=vec2(1.0/screenSize.x,1.0/screenSize.y);\nvec2 texelStep=texelSize*direction*blurWidth;\nvec2 start=vUV-3.0*texelStep;\nvec4 baseColor=vec4(0.,0.,0.,0.);\nvec2 texelOffset=vec2(0.,0.);\nfor (int i=0; i<7; i++)\n{\nbaseColor+=texture2D(textureSampler,start+texelOffset)*weights[i];\ntexelOffset+=texelStep;\n}\ngl_FragColor=baseColor;\n}","chromaticAberrationPixelShader":"\nuniform sampler2D textureSampler; \n\nuniform float chromatic_aberration;\nuniform float screen_width;\nuniform float screen_height;\n\nvarying vec2 vUV;\nvoid main(void)\n{\nvec2 centered_screen_pos=vec2(vUV.x-0.5,vUV.y-0.5);\nfloat radius2=centered_screen_pos.x*centered_screen_pos.x\n+centered_screen_pos.y*centered_screen_pos.y;\nfloat radius=sqrt(radius2);\nvec4 original=texture2D(textureSampler,vUV);\nif (chromatic_aberration>0.0) {\n\nvec3 ref_indices=vec3(-0.3,0.0,0.3);\nfloat ref_shiftX=chromatic_aberration*radius*17.0/screen_width;\nfloat ref_shiftY=chromatic_aberration*radius*17.0/screen_height;\n\nvec2 ref_coords_r=vec2(vUV.x+ref_indices.r*ref_shiftX,vUV.y+ref_indices.r*ref_shiftY*0.5);\nvec2 ref_coords_g=vec2(vUV.x+ref_indices.g*ref_shiftX,vUV.y+ref_indices.g*ref_shiftY*0.5);\nvec2 ref_coords_b=vec2(vUV.x+ref_indices.b*ref_shiftX,vUV.y+ref_indices.b*ref_shiftY*0.5);\noriginal.r=texture2D(textureSampler,ref_coords_r).r;\noriginal.g=texture2D(textureSampler,ref_coords_g).g;\noriginal.b=texture2D(textureSampler,ref_coords_b).b;\n}\ngl_FragColor=original;\n}","colorPixelShader":"uniform vec4 color;\nvoid main(void) {\ngl_FragColor=color;\n}","colorVertexShader":"\nattribute vec3 position;\n\nuniform mat4 worldViewProjection;\nvoid main(void) {\ngl_Position=worldViewProjection*vec4(position,1.0);\n}","colorCorrectionPixelShader":"\nuniform sampler2D textureSampler; \nuniform sampler2D colorTable; \n\nvarying vec2 vUV;\n\nconst float SLICE_COUNT=16.0; \n\nvec4 sampleAs3DTexture(sampler2D texture,vec3 uv,float width) {\nfloat sliceSize=1.0/width; \nfloat slicePixelSize=sliceSize/width; \nfloat sliceInnerSize=slicePixelSize*(width-1.0); \nfloat zSlice0=min(floor(uv.z*width),width-1.0);\nfloat zSlice1=min(zSlice0+1.0,width-1.0);\nfloat xOffset=slicePixelSize*0.5+uv.x*sliceInnerSize;\nfloat s0=xOffset+(zSlice0*sliceSize);\nfloat s1=xOffset+(zSlice1*sliceSize);\nvec4 slice0Color=texture2D(texture,vec2(s0,uv.y));\nvec4 slice1Color=texture2D(texture,vec2(s1,uv.y));\nfloat zOffset=mod(uv.z*width,1.0);\nvec4 result=mix(slice0Color,slice1Color,zOffset);\nreturn result;\n}\nvoid main(void)\n{\nvec4 screen_color=texture2D(textureSampler,vUV);\ngl_FragColor=sampleAs3DTexture(colorTable,screen_color.rgb,SLICE_COUNT);\n}","convolutionPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform vec2 screenSize;\nuniform float kernel[9];\nvoid main(void)\n{\nvec2 onePixel=vec2(1.0,1.0)/screenSize;\nvec4 colorSum =\ntexture2D(textureSampler,vUV+onePixel*vec2(-1,-1))*kernel[0] +\ntexture2D(textureSampler,vUV+onePixel*vec2(0,-1))*kernel[1] +\ntexture2D(textureSampler,vUV+onePixel*vec2(1,-1))*kernel[2] +\ntexture2D(textureSampler,vUV+onePixel*vec2(-1,0))*kernel[3] +\ntexture2D(textureSampler,vUV+onePixel*vec2(0,0))*kernel[4] +\ntexture2D(textureSampler,vUV+onePixel*vec2(1,0))*kernel[5] +\ntexture2D(textureSampler,vUV+onePixel*vec2(-1,1))*kernel[6] +\ntexture2D(textureSampler,vUV+onePixel*vec2(0,1))*kernel[7] +\ntexture2D(textureSampler,vUV+onePixel*vec2(1,1))*kernel[8];\nfloat kernelWeight =\nkernel[0] +\nkernel[1] +\nkernel[2] +\nkernel[3] +\nkernel[4] +\nkernel[5] +\nkernel[6] +\nkernel[7] +\nkernel[8];\nif (kernelWeight<=0.0) {\nkernelWeight=1.0;\n}\ngl_FragColor=vec4((colorSum/kernelWeight).rgb,1);\n}","defaultPixelShader":"#ifdef BUMP\n#extension GL_OES_standard_derivatives : enable\n#endif\n#ifdef LOGARITHMICDEPTH\n#extension GL_EXT_frag_depth : enable\n#endif\n\n#define RECIPROCAL_PI2 0.15915494\nuniform vec3 vEyePosition;\nuniform vec3 vAmbientColor;\nuniform vec4 vDiffuseColor;\n#ifdef SPECULARTERM\nuniform vec4 vSpecularColor;\n#endif\nuniform vec3 vEmissiveColor;\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<lightFragmentDeclaration>[0]\n#include<lightFragmentDeclaration>[1]\n#include<lightFragmentDeclaration>[2]\n#include<lightFragmentDeclaration>[3]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform sampler2D ambientSampler;\nuniform vec2 vAmbientInfos;\n#endif\n#ifdef OPACITY \nvarying vec2 vOpacityUV;\nuniform sampler2D opacitySampler;\nuniform vec2 vOpacityInfos;\n#endif\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform sampler2D emissiveSampler;\n#endif\n#ifdef LIGHTMAP\nvarying vec2 vLightmapUV;\nuniform vec2 vLightmapInfos;\nuniform sampler2D lightmapSampler;\n#endif\n#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)\nuniform mat4 view;\n#endif\n#ifdef REFRACTION\nuniform vec4 vRefractionInfos;\n#ifdef REFRACTIONMAP_3D\nuniform samplerCube refractionCubeSampler;\n#else\nuniform sampler2D refraction2DSampler;\nuniform mat4 refractionMatrix;\n#endif\n#ifdef REFRACTIONFRESNEL\nuniform vec4 refractionLeftColor;\nuniform vec4 refractionRightColor;\n#endif\n#endif\n#if defined(SPECULAR) && defined(SPECULARTERM)\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform sampler2D specularSampler;\n#endif\n\n#include<fresnelFunction>\n#ifdef DIFFUSEFRESNEL\nuniform vec4 diffuseLeftColor;\nuniform vec4 diffuseRightColor;\n#endif\n#ifdef OPACITYFRESNEL\nuniform vec4 opacityParts;\n#endif\n#ifdef EMISSIVEFRESNEL\nuniform vec4 emissiveLeftColor;\nuniform vec4 emissiveRightColor;\n#endif\n\n#ifdef REFLECTION\nuniform vec2 vReflectionInfos;\n#ifdef REFLECTIONMAP_3D\nuniform samplerCube reflectionCubeSampler;\n#else\nuniform sampler2D reflection2DSampler;\n#endif\n#ifdef REFLECTIONMAP_SKYBOX\nvarying vec3 vPositionUVW;\n#else\n#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED\nvarying vec3 vDirectionW;\n#endif\n#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)\nuniform mat4 reflectionMatrix;\n#endif\n#endif\n#include<reflectionFunction>\n#ifdef REFLECTIONFRESNEL\nuniform vec4 reflectionLeftColor;\nuniform vec4 reflectionRightColor;\n#endif\n#endif\n#include<bumpFragmentFunctions>\n#include<clipPlaneFragmentDeclaration>\n#include<logDepthDeclaration>\n#include<fogFragmentDeclaration>\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n#ifdef DIFFUSE\nvec2 diffuseUV=vDiffuseUV;\n#endif\n#include<bumpFragment>\n#ifdef DIFFUSE\nbaseColor=texture2D(diffuseSampler,diffuseUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#ifdef ALPHAFROMDIFFUSE\nalpha*=baseColor.a;\n#endif\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\nvec3 baseAmbientColor=vec3(1.,1.,1.);\n#ifdef AMBIENT\nbaseAmbientColor=texture2D(ambientSampler,vAmbientUV).rgb*vAmbientInfos.y;\n#endif\n\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularColor=vSpecularColor.rgb;\n#ifdef SPECULAR\nvec4 specularMapColor=texture2D(specularSampler,vSpecularUV);\nspecularColor=specularMapColor.rgb;\n#ifdef GLOSSINESS\nglossiness=glossiness*specularMapColor.a;\n#endif\n#endif\n#else\nfloat glossiness=0.;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\n#ifdef SPECULARTERM\nvec3 specularBase=vec3(0.,0.,0.);\n#endif\nfloat shadow=1.;\n#include<lightFragment>[0]\n#include<lightFragment>[1]\n#include<lightFragment>[2]\n#include<lightFragment>[3]\n\nvec3 refractionColor=vec3(0.,0.,0.);\n#ifdef REFRACTION\nvec3 refractionVector=normalize(refract(-viewDirectionW,normalW,vRefractionInfos.y));\n#ifdef REFRACTIONMAP_3D\nrefractionVector.y=refractionVector.y*vRefractionInfos.w;\nif (dot(refractionVector,viewDirectionW)<1.0)\n{\nrefractionColor=textureCube(refractionCubeSampler,refractionVector).rgb*vRefractionInfos.x;\n}\n#else\nvec3 vRefractionUVW=vec3(refractionMatrix*(view*vec4(vPositionW+refractionVector*vRefractionInfos.z,1.0)));\nvec2 refractionCoords=vRefractionUVW.xy/vRefractionUVW.z;\nrefractionCoords.y=1.0-refractionCoords.y;\nrefractionColor=texture2D(refraction2DSampler,refractionCoords).rgb*vRefractionInfos.x;\n#endif\n#endif\n\nvec3 reflectionColor=vec3(0.,0.,0.);\n#ifdef REFLECTION\nvec3 vReflectionUVW=computeReflectionCoords(vec4(vPositionW,1.0),normalW);\n#ifdef REFLECTIONMAP_3D\n#ifdef ROUGHNESS\nfloat bias=vReflectionInfos.y;\n#ifdef SPECULARTERM\n#ifdef SPECULAR\n#ifdef GLOSSINESS\nbias*=(1.0-specularMapColor.a);\n#endif\n#endif\n#endif\nreflectionColor=textureCube(reflectionCubeSampler,vReflectionUVW,bias).rgb*vReflectionInfos.x;\n#else\nreflectionColor=textureCube(reflectionCubeSampler,vReflectionUVW).rgb*vReflectionInfos.x;\n#endif\n#else\nvec2 coords=vReflectionUVW.xy;\n#ifdef REFLECTIONMAP_PROJECTION\ncoords/=vReflectionUVW.z;\n#endif\ncoords.y=1.0-coords.y;\nreflectionColor=texture2D(reflection2DSampler,coords).rgb*vReflectionInfos.x;\n#endif\n#ifdef REFLECTIONFRESNEL\nfloat reflectionFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);\n#ifdef REFLECTIONFRESNELFROMSPECULAR\n#ifdef SPECULARTERM\nreflectionColor*=specularColor.rgb*(1.0-reflectionFresnelTerm)+reflectionFresnelTerm*reflectionRightColor.rgb;\n#else\nreflectionColor*=reflectionLeftColor.rgb*(1.0-reflectionFresnelTerm)+reflectionFresnelTerm*reflectionRightColor.rgb;\n#endif\n#else\nreflectionColor*=reflectionLeftColor.rgb*(1.0-reflectionFresnelTerm)+reflectionFresnelTerm*reflectionRightColor.rgb;\n#endif\n#endif\n#endif\n#ifdef REFRACTIONFRESNEL\nfloat refractionFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,refractionRightColor.a,refractionLeftColor.a);\nrefractionColor*=refractionLeftColor.rgb*(1.0-refractionFresnelTerm)+refractionFresnelTerm*refractionRightColor.rgb;\n#endif\n#ifdef OPACITY\nvec4 opacityMap=texture2D(opacitySampler,vOpacityUV);\n#ifdef OPACITYRGB\nopacityMap.rgb=opacityMap.rgb*vec3(0.3,0.59,0.11);\nalpha*=(opacityMap.x+opacityMap.y+opacityMap.z)* vOpacityInfos.y;\n#else\nalpha*=opacityMap.a*vOpacityInfos.y;\n#endif\n#endif\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef OPACITYFRESNEL\nfloat opacityFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,opacityParts.z,opacityParts.w);\nalpha+=opacityParts.x*(1.0-opacityFresnelTerm)+opacityFresnelTerm*opacityParts.y;\n#endif\n\nvec3 emissiveColor=vEmissiveColor;\n#ifdef EMISSIVE\nemissiveColor+=texture2D(emissiveSampler,vEmissiveUV).rgb*vEmissiveInfos.y;\n#endif\n#ifdef EMISSIVEFRESNEL\nfloat emissiveFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,emissiveRightColor.a,emissiveLeftColor.a);\nemissiveColor*=emissiveLeftColor.rgb*(1.0-emissiveFresnelTerm)+emissiveFresnelTerm*emissiveRightColor.rgb;\n#endif\n\n#ifdef DIFFUSEFRESNEL\nfloat diffuseFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,diffuseRightColor.a,diffuseLeftColor.a);\ndiffuseBase*=diffuseLeftColor.rgb*(1.0-diffuseFresnelTerm)+diffuseFresnelTerm*diffuseRightColor.rgb;\n#endif\n\n#ifdef EMISSIVEASILLUMINATION\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor+vAmbientColor,0.0,1.0)*baseColor.rgb;\n#else\n#ifdef LINKEMISSIVEWITHDIFFUSE\nvec3 finalDiffuse=clamp((diffuseBase+emissiveColor)*diffuseColor+vAmbientColor,0.0,1.0)*baseColor.rgb;\n#else\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor+emissiveColor+vAmbientColor,0.0,1.0)*baseColor.rgb;\n#endif\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\n#ifdef SPECULAROVERALPHA\nalpha=clamp(alpha+dot(finalSpecular,vec3(0.3,0.59,0.11)),0.,1.);\n#endif\n#ifdef REFLECTIONOVERALPHA\nalpha=clamp(alpha+dot(reflectionColor,vec3(0.3,0.59,0.11)),0.,1.);\n#endif\n\n#ifdef EMISSIVEASILLUMINATION\nvec4 color=vec4(clamp(finalDiffuse*baseAmbientColor+finalSpecular+reflectionColor+emissiveColor+refractionColor,0.0,1.0),alpha);\n#else\nvec4 color=vec4(finalDiffuse*baseAmbientColor+finalSpecular+reflectionColor+refractionColor,alpha);\n#endif\n#ifdef LIGHTMAP\nvec3 lightmapColor=texture2D(lightmapSampler,vLightmapUV).rgb*vLightmapInfos.y;\n#ifdef USELIGHTMAPASSHADOWMAP\ncolor.rgb*=lightmapColor;\n#else\ncolor.rgb+=lightmapColor;\n#endif\n#endif\n#include<logDepthFragment>\n#include<fogFragment>\ngl_FragColor=color;\n}","defaultVertexShader":"\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform mat4 ambientMatrix;\nuniform vec2 vAmbientInfos;\n#endif\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform mat4 emissiveMatrix;\n#endif\n#ifdef LIGHTMAP\nvarying vec2 vLightmapUV;\nuniform vec2 vLightmapInfos;\nuniform mat4 lightmapMatrix;\n#endif\n#if defined(SPECULAR) && defined(SPECULARTERM)\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform mat4 specularMatrix;\n#endif\n#ifdef BUMP\nvarying vec2 vBumpUV;\nuniform vec3 vBumpInfos;\nuniform mat4 bumpMatrix;\n#endif\n#include<pointCloudVertexDeclaration>\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<shadowsVertexDeclaration>\n#ifdef REFLECTIONMAP_SKYBOX\nvarying vec3 vPositionUVW;\n#endif\n#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED\nvarying vec3 vDirectionW;\n#endif\n#include<logDepthDeclaration>\nvoid main(void) {\n#ifdef REFLECTIONMAP_SKYBOX\nvPositionUVW=position;\n#endif \n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n#ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED\nvDirectionW=normalize(vec3(finalWorld*vec4(position,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef AMBIENT\nif (vAmbientInfos.x == 0.)\n{\nvAmbientUV=vec2(ambientMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvAmbientUV=vec2(ambientMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef OPACITY\nif (vOpacityInfos.x == 0.)\n{\nvOpacityUV=vec2(opacityMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvOpacityUV=vec2(opacityMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef EMISSIVE\nif (vEmissiveInfos.x == 0.)\n{\nvEmissiveUV=vec2(emissiveMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvEmissiveUV=vec2(emissiveMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef LIGHTMAP\nif (vLightmapInfos.x == 0.)\n{\nvLightmapUV=vec2(lightmapMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvLightmapUV=vec2(lightmapMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#if defined(SPECULAR) && defined(SPECULARTERM)\nif (vSpecularInfos.x == 0.)\n{\nvSpecularUV=vec2(specularMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvSpecularUV=vec2(specularMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef BUMP\nif (vBumpInfos.x == 0.)\n{\nvBumpUV=vec2(bumpMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvBumpUV=vec2(bumpMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#include<clipPlaneVertex>\n#include<fogVertex>\n#include<shadowsVertex>\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n#include<pointCloudVertex>\n#include<logDepthVertex>\n}","depthPixelShader":"#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\nuniform float far;\nvoid main(void)\n{\n#ifdef ALPHATEST\nif (texture2D(diffuseSampler,vUV).a<0.4)\ndiscard;\n#endif\nfloat depth=(gl_FragCoord.z/gl_FragCoord.w)/far;\ngl_FragColor=vec4(depth,depth*depth,0.0,1.0);\n}","depthVertexShader":"\nattribute vec3 position;\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 viewProjection;\n#if defined(ALPHATEST) || defined(NEED_UV)\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\nvoid main(void)\n{\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\n#if defined(ALPHATEST) || defined(BASIC_RENDER)\n#ifdef UV1\nvUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n#endif\n#ifdef UV2\nvUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n#endif\n#endif\n}","depthBoxBlurPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform vec2 screenSize;\nvoid main(void)\n{\nvec4 colorDepth=vec4(0.0);\nfor (int x=-OFFSET; x<=OFFSET; x++)\nfor (int y=-OFFSET; y<=OFFSET; y++)\ncolorDepth+=texture2D(textureSampler,vUV+vec2(x,y)/screenSize);\ngl_FragColor=(colorDepth/float((OFFSET*2+1)*(OFFSET*2+1)));\n}","depthOfFieldPixelShader":"\n\n\n\n\nuniform sampler2D textureSampler;\nuniform sampler2D highlightsSampler;\nuniform sampler2D depthSampler;\nuniform sampler2D grainSampler;\n\nuniform float grain_amount;\nuniform bool blur_noise;\nuniform float screen_width;\nuniform float screen_height;\nuniform float distortion;\nuniform bool dof_enabled;\n\nuniform float screen_distance; \nuniform float aperture;\nuniform float darken;\nuniform float edge_blur;\nuniform bool highlights;\n\nuniform float near;\nuniform float far;\n\nvarying vec2 vUV;\n\n#define PI 3.14159265\n#define TWOPI 6.28318530\n#define inverse_focal_length 0.1 \n\nvec2 centered_screen_pos;\nvec2 distorted_coords;\nfloat radius2;\nfloat radius;\n\nvec2 rand(vec2 co)\n{\nfloat noise1=(fract(sin(dot(co,vec2(12.9898,78.233)))*43758.5453));\nfloat noise2=(fract(sin(dot(co,vec2(12.9898,78.233)*2.0))*43758.5453));\nreturn clamp(vec2(noise1,noise2),0.0,1.0);\n}\n\nvec2 getDistortedCoords(vec2 coords) {\nif (distortion == 0.0) { return coords; }\nvec2 direction=1.0*normalize(centered_screen_pos);\nvec2 dist_coords=vec2(0.5,0.5);\ndist_coords.x=0.5+direction.x*radius2*1.0;\ndist_coords.y=0.5+direction.y*radius2*1.0;\nfloat dist_amount=clamp(distortion*0.23,0.0,1.0);\ndist_coords=mix(coords,dist_coords,dist_amount);\nreturn dist_coords;\n}\n\nfloat sampleScreen(inout vec4 color,const in vec2 offset,const in float weight) {\n\nvec2 coords=distorted_coords;\nfloat angle=rand(coords*100.0).x*TWOPI;\ncoords+=vec2(offset.x*cos(angle)-offset.y*sin(angle),offset.x*sin(angle)+offset.y*cos(angle));\ncolor+=texture2D(textureSampler,coords)*weight;\nreturn weight;\n}\n\nfloat getBlurLevel(float size) {\nreturn min(3.0,ceil(size/1.0));\n}\n\nvec4 getBlurColor(float size) {\nvec4 col=texture2D(textureSampler,distorted_coords);\nif (size == 0.0) { return col; }\n\n\nfloat blur_level=getBlurLevel(size);\nfloat w=(size/screen_width);\nfloat h=(size/screen_height);\nfloat total_weight=1.0;\nvec2 sample_coords;\ntotal_weight+=sampleScreen(col,vec2(-0.50*w,0.24*h),0.93);\ntotal_weight+=sampleScreen(col,vec2(0.30*w,-0.75*h),0.90);\ntotal_weight+=sampleScreen(col,vec2(0.36*w,0.96*h),0.87);\ntotal_weight+=sampleScreen(col,vec2(-1.08*w,-0.55*h),0.85);\ntotal_weight+=sampleScreen(col,vec2(1.33*w,-0.37*h),0.83);\ntotal_weight+=sampleScreen(col,vec2(-0.82*w,1.31*h),0.80);\ntotal_weight+=sampleScreen(col,vec2(-0.31*w,-1.67*h),0.78);\ntotal_weight+=sampleScreen(col,vec2(1.47*w,1.11*h),0.76);\ntotal_weight+=sampleScreen(col,vec2(-1.97*w,0.19*h),0.74);\ntotal_weight+=sampleScreen(col,vec2(1.42*w,-1.57*h),0.72);\nif (blur_level>1.0) {\ntotal_weight+=sampleScreen(col,vec2(0.01*w,2.25*h),0.70);\ntotal_weight+=sampleScreen(col,vec2(-1.62*w,-1.74*h),0.67);\ntotal_weight+=sampleScreen(col,vec2(2.49*w,0.20*h),0.65);\ntotal_weight+=sampleScreen(col,vec2(-2.07*w,1.61*h),0.63);\ntotal_weight+=sampleScreen(col,vec2(0.46*w,-2.70*h),0.61);\ntotal_weight+=sampleScreen(col,vec2(1.55*w,2.40*h),0.59);\ntotal_weight+=sampleScreen(col,vec2(-2.88*w,-0.75*h),0.56);\ntotal_weight+=sampleScreen(col,vec2(2.73*w,-1.44*h),0.54);\ntotal_weight+=sampleScreen(col,vec2(-1.08*w,3.02*h),0.52);\ntotal_weight+=sampleScreen(col,vec2(-1.28*w,-3.05*h),0.49);\n}\nif (blur_level>2.0) {\ntotal_weight+=sampleScreen(col,vec2(3.11*w,1.43*h),0.46);\ntotal_weight+=sampleScreen(col,vec2(-3.36*w,1.08*h),0.44);\ntotal_weight+=sampleScreen(col,vec2(1.80*w,-3.16*h),0.41);\ntotal_weight+=sampleScreen(col,vec2(0.83*w,3.65*h),0.38);\ntotal_weight+=sampleScreen(col,vec2(-3.16*w,-2.19*h),0.34);\ntotal_weight+=sampleScreen(col,vec2(3.92*w,-0.53*h),0.31);\ntotal_weight+=sampleScreen(col,vec2(-2.59*w,3.12*h),0.26);\ntotal_weight+=sampleScreen(col,vec2(-0.20*w,-4.15*h),0.22);\ntotal_weight+=sampleScreen(col,vec2(3.02*w,3.00*h),0.15);\n}\ncol/=total_weight; \n\nif (darken>0.0) {\ncol.rgb*=clamp(0.3,1.0,1.05-size*0.5*darken);\n}\n\n\n\n\nreturn col;\n}\nvoid main(void)\n{\n\ncentered_screen_pos=vec2(vUV.x-0.5,vUV.y-0.5);\nradius2=centered_screen_pos.x*centered_screen_pos.x+centered_screen_pos.y*centered_screen_pos.y;\nradius=sqrt(radius2);\ndistorted_coords=getDistortedCoords(vUV); \nvec2 texels_coords=vec2(vUV.x*screen_width,vUV.y*screen_height); \nfloat depth=texture2D(depthSampler,distorted_coords).r; \nfloat distance=near+(far-near)*depth; \nvec4 color=texture2D(textureSampler,vUV); \n\n\nfloat coc=abs(aperture*(screen_distance*(inverse_focal_length-1.0/distance)-1.0));\n\nif (dof_enabled == false || coc<0.07) { coc=0.0; }\n\nfloat edge_blur_amount=0.0;\nif (edge_blur>0.0) {\nedge_blur_amount=clamp((radius*2.0-1.0+0.15*edge_blur)*1.5,0.0,1.0)*1.3;\n}\n\nfloat blur_amount=max(edge_blur_amount,coc);\n\nif (blur_amount == 0.0) {\ngl_FragColor=texture2D(textureSampler,distorted_coords);\n}\nelse {\n\ngl_FragColor=getBlurColor(blur_amount*1.7);\n\nif (highlights) {\ngl_FragColor.rgb+=clamp(coc,0.0,1.0)*texture2D(highlightsSampler,distorted_coords).rgb;\n}\nif (blur_noise) {\n\nvec2 noise=rand(distorted_coords)*0.01*blur_amount;\nvec2 blurred_coord=vec2(distorted_coords.x+noise.x,distorted_coords.y+noise.y);\ngl_FragColor=0.04*texture2D(textureSampler,blurred_coord)+0.96*gl_FragColor;\n}\n}\n\nif (grain_amount>0.0) {\nvec4 grain_color=texture2D(grainSampler,texels_coords*0.003);\ngl_FragColor.rgb+=(-0.5+grain_color.rgb)*0.30*grain_amount;\n}\n}\n","displayPassPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D passSampler;\nvoid main(void)\n{\ngl_FragColor=texture2D(passSampler,vUV);\n}","filterPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform mat4 kernelMatrix;\nvoid main(void)\n{\nvec3 baseColor=texture2D(textureSampler,vUV).rgb;\nvec3 updatedColor=(kernelMatrix*vec4(baseColor,1.0)).rgb;\ngl_FragColor=vec4(updatedColor,1.0);\n}","fxaaPixelShader":"#define FXAA_REDUCE_MIN (1.0/128.0)\n#define FXAA_REDUCE_MUL (1.0/8.0)\n#define FXAA_SPAN_MAX 8.0\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform vec2 texelSize;\nvoid main(){\nvec2 localTexelSize=texelSize;\nvec4 rgbNW=texture2D(textureSampler,(vUV+vec2(-1.0,-1.0)*localTexelSize));\nvec4 rgbNE=texture2D(textureSampler,(vUV+vec2(1.0,-1.0)*localTexelSize));\nvec4 rgbSW=texture2D(textureSampler,(vUV+vec2(-1.0,1.0)*localTexelSize));\nvec4 rgbSE=texture2D(textureSampler,(vUV+vec2(1.0,1.0)*localTexelSize));\nvec4 rgbM=texture2D(textureSampler,vUV);\nvec4 luma=vec4(0.299,0.587,0.114,1.0);\nfloat lumaNW=dot(rgbNW,luma);\nfloat lumaNE=dot(rgbNE,luma);\nfloat lumaSW=dot(rgbSW,luma);\nfloat lumaSE=dot(rgbSE,luma);\nfloat lumaM=dot(rgbM,luma);\nfloat lumaMin=min(lumaM,min(min(lumaNW,lumaNE),min(lumaSW,lumaSE)));\nfloat lumaMax=max(lumaM,max(max(lumaNW,lumaNE),max(lumaSW,lumaSE)));\nvec2 dir=vec2(-((lumaNW+lumaNE)-(lumaSW+lumaSE)),((lumaNW+lumaSW)-(lumaNE+lumaSE)));\nfloat dirReduce=max(\n(lumaNW+lumaNE+lumaSW+lumaSE)*(0.25*FXAA_REDUCE_MUL),\nFXAA_REDUCE_MIN);\nfloat rcpDirMin=1.0/(min(abs(dir.x),abs(dir.y))+dirReduce);\ndir=min(vec2(FXAA_SPAN_MAX,FXAA_SPAN_MAX),\nmax(vec2(-FXAA_SPAN_MAX,-FXAA_SPAN_MAX),\ndir*rcpDirMin))*localTexelSize;\nvec4 rgbA=0.5*(\ntexture2D(textureSampler,vUV+dir*(1.0/3.0-0.5)) +\ntexture2D(textureSampler,vUV+dir*(2.0/3.0-0.5)));\nvec4 rgbB=rgbA*0.5+0.25*(\ntexture2D(textureSampler,vUV+dir*-0.5) +\ntexture2D(textureSampler,vUV+dir*0.5));\nfloat lumaB=dot(rgbB,luma);\nif ((lumaB<lumaMin) || (lumaB>lumaMax)) {\ngl_FragColor=rgbA;\n}\nelse {\ngl_FragColor=rgbB;\n}\n}","hdrPixelShader":"uniform sampler2D textureSampler;\nvarying vec2 vUV;\n#if defined(GAUSSIAN_BLUR_H) || defined(GAUSSIAN_BLUR_V)\nuniform float blurOffsets[9];\nuniform float blurWeights[9];\nuniform float multiplier;\nvoid main(void) {\nvec4 color=vec4(0.0,0.0,0.0,0.0);\nfor (int i=0; i<9; i++) {\n#ifdef GAUSSIAN_BLUR_H\ncolor+=(texture2D(textureSampler,vUV+vec2(blurOffsets[i]*multiplier,0.0))*blurWeights[i]);\n#else\ncolor+=(texture2D(textureSampler,vUV+vec2(0.0,blurOffsets[i]*multiplier))*blurWeights[i]);\n#endif\n}\ncolor.a=1.0;\ngl_FragColor=color;\n}\n#endif\n#if defined(TEXTURE_ADDER)\nuniform sampler2D otherSampler;\nvoid main() {\nvec4 sum=texture2D(textureSampler,vUV)+texture2D(otherSampler,vUV);\nsum.a=clamp(sum.a,0.0,1.0);\ngl_FragColor=sum;\n}\n#endif\n#if defined(LUMINANCE_GENERATOR)\nuniform vec2 lumOffsets[4];\nvoid main() {\nfloat average=0.0;\nvec4 color=vec4(0.0,0.0,0.0,0.0);\nfloat maximum=-1e20;\nfor (int i=0; i<4; i++) {\ncolor=texture2D(textureSampler,vUV+lumOffsets[i]);\nfloat GreyValue=length(color.rgb);\nmaximum=max(maximum,GreyValue);\naverage+=(0.25*log(1e-5+GreyValue));\n}\naverage=exp(average);\ngl_FragColor=vec4(average,maximum,0.0,1.0);\n}\n#endif\n#if defined(DOWN_SAMPLE)\nuniform vec2 dsOffsets[9];\nuniform float halfDestPixelSize;\n#ifdef FINAL_DOWN_SAMPLE\nvec4 pack(float value) {\nconst vec4 bit_shift=vec4(255.0*255.0*255.0,255.0*255.0,255.0,1.0);\nconst vec4 bit_mask=vec4(0.0,1.0/255.0,1.0/255.0,1.0/255.0);\nvec4 res=fract(value*bit_shift);\nres-=res.xxyz*bit_mask;\nreturn res;\n}\n#endif\nvoid main() {\nvec4 color=vec4(0.0,0.0,0.0,0.0);\nfloat average=0.0;\nfor (int i=0; i<9; i++) {\ncolor=texture2D(textureSampler,vUV+vec2(halfDestPixelSize,halfDestPixelSize)+dsOffsets[i]);\naverage+=color.r;\n}\naverage/=9.0;\n#ifndef FINAL_DOWN_SAMPLE\ngl_FragColor=vec4(average,average,0.0,1.0);\n#else\ngl_FragColor=pack(average);\n#endif\n}\n#endif\n#if defined(BRIGHT_PASS)\nuniform vec2 dsOffsets[4];\nuniform float brightThreshold;\nvoid main() {\nvec4 average=vec4(0.0,0.0,0.0,0.0);\naverage=texture2D(textureSampler,vUV+vec2(dsOffsets[0].x,dsOffsets[0].y));\naverage+=texture2D(textureSampler,vUV+vec2(dsOffsets[1].x,dsOffsets[1].y));\naverage+=texture2D(textureSampler,vUV+vec2(dsOffsets[2].x,dsOffsets[2].y));\naverage+=texture2D(textureSampler,vUV+vec2(dsOffsets[3].x,dsOffsets[3].y));\naverage*=0.25;\nfloat luminance=length(average.rgb);\nif (luminance<brightThreshold) {\naverage=vec4(0.0,0.0,0.0,1.0);\n}\ngl_FragColor=average;\n}\n#endif\n#if defined(DOWN_SAMPLE_X4)\nuniform vec2 dsOffsets[16];\nvoid main() {\nvec4 average=vec4(0.0,0.0,0.0,0.0);\naverage=texture2D(textureSampler,vUV+dsOffsets[0]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[1]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[2]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[3]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[4]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[5]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[6]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[7]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[8]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[9]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[10]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[11]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[12]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[13]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[14]);\naverage+=texture2D(textureSampler,vUV+dsOffsets[15]);\naverage/=16.0;\ngl_FragColor=average;\n}\n#endif\n#if defined(HDR)\nuniform sampler2D otherSampler;\nuniform float exposure;\nuniform float avgLuminance;\nvoid main() {\nvec4 color=texture2D(textureSampler,vUV)+texture2D(otherSampler,vUV);\nvec4 adjustedColor=color/avgLuminance*exposure;\ncolor=adjustedColor;\ncolor.a=1.0;\ngl_FragColor=color;\n}\n#endif\n","layerPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform vec4 color;\nvoid main(void) {\nvec4 baseColor=texture2D(textureSampler,vUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\ngl_FragColor=baseColor*color;\n}","layerVertexShader":"\nattribute vec2 position;\n\nuniform vec2 scale;\nuniform vec2 offset;\nuniform mat4 textureMatrix;\n\nvarying vec2 vUV;\nconst vec2 madd=vec2(0.5,0.5);\nvoid main(void) { \nvec2 shiftedPosition=position*scale+offset;\nvUV=vec2(textureMatrix*vec4(shiftedPosition*madd+madd,1.0,0.0));\ngl_Position=vec4(shiftedPosition,0.0,1.0);\n}","legacydefaultPixelShader":"#define MAP_PROJECTION 4.\n\nuniform vec3 vEyePosition;\nuniform vec3 vAmbientColor;\nuniform vec4 vDiffuseColor;\n#ifdef SPECULARTERM\nuniform vec4 vSpecularColor;\n#endif\nuniform vec3 vEmissiveColor;\n\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<lightFragmentDeclaration>[0]\n#include<lightFragmentDeclaration>[1]\n#include<lightFragmentDeclaration>[2]\n#include<lightFragmentDeclaration>[3]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform sampler2D ambientSampler;\nuniform vec2 vAmbientInfos;\n#endif\n#ifdef OPACITY \nvarying vec2 vOpacityUV;\nuniform sampler2D opacitySampler;\nuniform vec2 vOpacityInfos;\n#endif\n#ifdef REFLECTION\nvarying vec3 vReflectionUVW;\n#ifdef REFLECTIONMAP_3D\nuniform samplerCube reflectionCubeSampler;\n#else\nuniform sampler2D reflection2DSampler;\n#endif\nuniform vec2 vReflectionInfos;\n#endif\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform sampler2D emissiveSampler;\n#endif\n#if defined(SPECULAR) && defined(SPECULARTERM)\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform sampler2D specularSampler;\n#endif\n\n#include<fresnelFunction>\n#ifdef DIFFUSEFRESNEL\nuniform vec4 diffuseLeftColor;\nuniform vec4 diffuseRightColor;\n#endif\n#ifdef OPACITYFRESNEL\nuniform vec4 opacityParts;\n#endif\n#ifdef REFLECTIONFRESNEL\nuniform vec4 reflectionLeftColor;\nuniform vec4 reflectionRightColor;\n#endif\n#ifdef EMISSIVEFRESNEL\nuniform vec4 emissiveLeftColor;\nuniform vec4 emissiveRightColor;\n#endif\n#include<clipPlaneFragmentDeclaration>\n#include<fogFragmentDeclaration>\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n#ifdef DIFFUSE\nbaseColor=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\nvec3 normalW=normalize(vNormalW);\n\nvec3 baseAmbientColor=vec3(1.,1.,1.);\n#ifdef AMBIENT\nbaseAmbientColor=texture2D(ambientSampler,vAmbientUV).rgb*vAmbientInfos.y;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat glossiness=0.;\n#ifdef SPECULARTERM\nvec3 specularBase=vec3(0.,0.,0.);\nglossiness=vSpecularColor.a;\n#endif\nfloat shadow=1.;\n#include<lightFragment>[0]\n#include<lightFragment>[1]\n#include<lightFragment>[2]\n#include<lightFragment>[3]\n\nvec3 reflectionColor=vec3(0.,0.,0.);\n#ifdef REFLECTION\n#ifdef REFLECTIONMAP_3D\nreflectionColor=textureCube(reflectionCubeSampler,vReflectionUVW).rgb*vReflectionInfos.x;\n#else\nvec2 coords=vReflectionUVW.xy;\n#ifdef REFLECTIONMAP_PROJECTION\ncoords/=vReflectionUVW.z;\n#endif\ncoords.y=1.0-coords.y;\nreflectionColor=texture2D(reflection2DSampler,coords).rgb*vReflectionInfos.x;\n#endif\n#ifdef REFLECTIONFRESNEL\nfloat reflectionFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);\nreflectionColor*=reflectionLeftColor.rgb*(1.0-reflectionFresnelTerm)+reflectionFresnelTerm*reflectionRightColor.rgb;\n#endif\n#endif\n\nfloat alpha=vDiffuseColor.a;\n#ifdef OPACITY\nvec4 opacityMap=texture2D(opacitySampler,vOpacityUV);\n#ifdef OPACITYRGB\nopacityMap.rgb=opacityMap.rgb*vec3(0.3,0.59,0.11);\nalpha*=(opacityMap.x+opacityMap.y+opacityMap.z)* vOpacityInfos.y;\n#else\nalpha*=opacityMap.a*vOpacityInfos.y;\n#endif\n#endif\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef OPACITYFRESNEL\nfloat opacityFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,opacityParts.z,opacityParts.w);\nalpha+=opacityParts.x*(1.0-opacityFresnelTerm)+opacityFresnelTerm*opacityParts.y;\n#endif\n\nvec3 emissiveColor=vEmissiveColor;\n#ifdef EMISSIVE\nemissiveColor+=texture2D(emissiveSampler,vEmissiveUV).rgb*vEmissiveInfos.y;\n#endif\n#ifdef EMISSIVEFRESNEL\nfloat emissiveFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,emissiveRightColor.a,emissiveLeftColor.a);\nemissiveColor*=emissiveLeftColor.rgb*(1.0-emissiveFresnelTerm)+emissiveFresnelTerm*emissiveRightColor.rgb;\n#endif\n\n#ifdef SPECULARTERM\nvec3 specularColor=vSpecularColor.rgb;\n#ifdef SPECULAR\nspecularColor=texture2D(specularSampler,vSpecularUV).rgb*vSpecularInfos.y;\n#endif\n#endif\n\n#ifdef DIFFUSEFRESNEL\nfloat diffuseFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,diffuseRightColor.a,diffuseLeftColor.a);\ndiffuseBase*=diffuseLeftColor.rgb*(1.0-diffuseFresnelTerm)+diffuseFresnelTerm*diffuseRightColor.rgb;\n#endif\n\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor+emissiveColor+vAmbientColor,0.0,1.0)*baseColor.rgb;\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\nvec4 color=vec4(finalDiffuse*baseAmbientColor+finalSpecular+reflectionColor,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}","legacydefaultVertexShader":"\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\nuniform mat4 world;\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef AMBIENT\nvarying vec2 vAmbientUV;\nuniform mat4 ambientMatrix;\nuniform vec2 vAmbientInfos;\n#endif\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\n#ifdef EMISSIVE\nvarying vec2 vEmissiveUV;\nuniform vec2 vEmissiveInfos;\nuniform mat4 emissiveMatrix;\n#endif\n#if defined(SPECULAR) && defined(SPECULARTERM)\nvarying vec2 vSpecularUV;\nuniform vec2 vSpecularInfos;\nuniform mat4 specularMatrix;\n#endif\n#ifdef BUMP\nvarying vec2 vBumpUV;\nuniform vec2 vBumpInfos;\nuniform mat4 bumpMatrix;\n#endif\n\nvarying vec3 vPositionW;\nvarying vec3 vNormalW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<shadowsVertexDeclaration>\n#ifdef REFLECTION\nuniform vec3 vEyePosition;\nvarying vec3 vReflectionUVW;\nuniform mat4 reflectionMatrix;\nvec3 computeReflectionCoords(vec4 worldPos,vec3 worldNormal)\n{\n#ifdef REFLECTIONMAP_SPHERICAL\nvec3 coords=vec3(view*vec4(worldNormal,0.0));\nreturn vec3(reflectionMatrix*vec4(coords,1.0));\n#endif\n#ifdef REFLECTIONMAP_PLANAR\nvec3 viewDir=worldPos.xyz-vEyePosition;\nvec3 coords=normalize(reflect(viewDir,worldNormal));\nreturn vec3(reflectionMatrix*vec4(coords,1));\n#endif\n#ifdef REFLECTIONMAP_CUBIC\nvec3 viewDir=worldPos.xyz-vEyePosition;\nvec3 coords=reflect(viewDir,worldNormal);\n#ifdef INVERTCUBICMAP\ncoords.y=1.0-coords.y;\n#endif\nreturn vec3(reflectionMatrix*vec4(coords,0));\n#endif\n#ifdef REFLECTIONMAP_PROJECTION\nreturn vec3(reflectionMatrix*(view*worldPos));\n#endif\n#ifdef REFLECTIONMAP_SKYBOX\nreturn position;\n#endif\n#ifdef REFLECTIONMAP_EXPLICIT\nreturn vec3(0,0,0);\n#endif\n}\n#endif\nvoid main(void) {\nmat4 finalWorld=world;\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef AMBIENT\nif (vAmbientInfos.x == 0.)\n{\nvAmbientUV=vec2(ambientMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvAmbientUV=vec2(ambientMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef OPACITY\nif (vOpacityInfos.x == 0.)\n{\nvOpacityUV=vec2(opacityMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvOpacityUV=vec2(opacityMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef REFLECTION\nvReflectionUVW=computeReflectionCoords(vec4(vPositionW,1.0),vNormalW);\n#endif\n#ifdef EMISSIVE\nif (vEmissiveInfos.x == 0.)\n{\nvEmissiveUV=vec2(emissiveMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvEmissiveUV=vec2(emissiveMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#if defined(SPECULAR) && defined(SPECULARTERM)\nif (vSpecularInfos.x == 0.)\n{\nvSpecularUV=vec2(specularMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvSpecularUV=vec2(specularMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#ifdef BUMP\nif (vBumpInfos.x == 0.)\n{\nvBumpUV=vec2(bumpMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvBumpUV=vec2(bumpMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n#include<clipPlaneVertex>\n#include<fogVertex>\n#include<shadowsVertex>\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n}","lensFlarePixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform vec4 color;\nvoid main(void) {\nvec4 baseColor=texture2D(textureSampler,vUV);\ngl_FragColor=baseColor*color;\n}","lensFlareVertexShader":"\nattribute vec2 position;\n\nuniform mat4 viewportMatrix;\n\nvarying vec2 vUV;\nconst vec2 madd=vec2(0.5,0.5);\nvoid main(void) { \nvUV=position*madd+madd;\ngl_Position=viewportMatrix*vec4(position,0.0,1.0);\n}","lensHighlightsPixelShader":"\nuniform sampler2D textureSampler; \n\nuniform float gain;\nuniform float threshold;\nuniform float screen_width;\nuniform float screen_height;\n\nvarying vec2 vUV;\n\nvec4 highlightColor(vec4 color) {\nvec4 highlight=color;\nfloat luminance=dot(highlight.rgb,vec3(0.2125,0.7154,0.0721));\nfloat lum_threshold;\nif (threshold>1.0) { lum_threshold=0.94+0.01*threshold; }\nelse { lum_threshold=0.5+0.44*threshold; }\nluminance=clamp((luminance-lum_threshold)*(1.0/(1.0-lum_threshold)),0.0,1.0);\nhighlight*=luminance*gain;\nhighlight.a=1.0;\nreturn highlight;\n}\nvoid main(void)\n{\nvec4 original=texture2D(textureSampler,vUV);\n\nif (gain == -1.0) {\ngl_FragColor=vec4(0.0,0.0,0.0,1.0);\nreturn;\n}\nfloat w=2.0/screen_width;\nfloat h=2.0/screen_height;\nfloat weight=1.0;\n\nvec4 blurred=vec4(0.0,0.0,0.0,0.0);\n#ifdef PENTAGON\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.84*w,0.43*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.48*w,-1.29*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.61*w,1.51*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.55*w,-0.74*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.71*w,-0.52*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.94*w,1.59*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.40*w,-1.87*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.62*w,1.16*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.09*w,0.25*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.46*w,-1.71*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.08*w,2.42*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.85*w,-1.89*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.89*w,0.16*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.29*w,1.88*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.40*w,-2.81*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.54*w,2.26*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.60*w,-0.61*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.31*w,-1.30*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.83*w,2.53*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.12*w,-2.48*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.60*w,1.11*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.82*w,0.99*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.50*w,-2.81*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.85*w,3.33*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.94*w,-1.92*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(3.27*w,-0.53*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.95*w,2.48*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.23*w,-3.04*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.17*w,2.05*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.97*w,-0.04*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.25*w,-2.00*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.31*w,3.08*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.94*w,-2.59*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(3.37*w,0.64*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-3.13*w,1.93*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.03*w,-3.65*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.60*w,3.17*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-3.14*w,-1.19*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(3.00*w,-1.19*h)));\n#else\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.85*w,0.36*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.52*w,-1.14*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.46*w,1.42*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.46*w,-0.83*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.79*w,-0.42*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.11*w,1.62*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.29*w,-2.07*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.69*w,1.39*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.28*w,0.12*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.65*w,-1.69*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.08*w,2.44*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.63*w,-1.90*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.55*w,0.31*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.13*w,1.52*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.56*w,-2.61*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.38*w,2.34*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.64*w,-0.81*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.53*w,-1.21*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.06*w,2.63*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.00*w,-2.69*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.59*w,1.32*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.82*w,0.78*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.57*w,-2.50*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(0.54*w,2.93*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.39*w,-1.81*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(3.01*w,-0.28*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.04*w,2.25*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.02*w,-3.05*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.09*w,2.25*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-3.07*w,-0.25*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.44*w,-1.90*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-0.52*w,3.05*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-1.68*w,-2.61*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(3.01*w,0.79*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.76*w,1.46*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.05*w,-2.94*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(1.21*w,2.88*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(-2.84*w,-1.30*h)));\nblurred+=highlightColor(texture2D(textureSampler,vUV+vec2(2.98*w,-0.96*h)));\n#endif\nblurred/=39.0;\ngl_FragColor=blurred;\n\n}","linePixelShader":"uniform vec4 color;\nvoid main(void) {\ngl_FragColor=color;\n}","lineVertexShader":"\nattribute vec3 position;\nattribute vec4 normal;\n\nuniform mat4 worldViewProjection;\nuniform float width;\nuniform float aspectRatio;\nvoid main(void) {\nvec4 viewPosition=worldViewProjection*vec4(position,1.0);\nvec4 viewPositionNext=worldViewProjection*vec4(normal.xyz,1.0);\nvec2 currentScreen=viewPosition.xy/viewPosition.w;\nvec2 nextScreen=viewPositionNext.xy/viewPositionNext.w;\ncurrentScreen.x*=aspectRatio;\nnextScreen.x*=aspectRatio;\nvec2 dir=normalize(nextScreen-currentScreen);\nvec2 normalDir=vec2(-dir.y,dir.x);\nnormalDir*=width/2.0;\nnormalDir.x/=aspectRatio;\nvec4 offset=vec4(normalDir*normal.w,0.0,0.0);\ngl_Position=viewPosition+offset;\n}","outlinePixelShader":"uniform vec4 color;\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\nvoid main(void) {\n#ifdef ALPHATEST\nif (texture2D(diffuseSampler,vUV).a<0.4)\ndiscard;\n#endif\ngl_FragColor=color;\n}","outlineVertexShader":"\nattribute vec3 position;\nattribute vec3 normal;\n#include<bonesDeclaration>\n\nuniform float offset;\n#include<instancesDeclaration>\nuniform mat4 viewProjection;\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\nvoid main(void)\n{\nvec3 offsetPosition=position+normal*offset;\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(offsetPosition,1.0);\n#ifdef ALPHATEST\n#ifdef UV1\nvUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n#endif\n#ifdef UV2\nvUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n#endif\n#endif\n}\n","particlesPixelShader":"\nvarying vec2 vUV;\nvarying vec4 vColor;\nuniform vec4 textureMask;\nuniform sampler2D diffuseSampler;\n#ifdef CLIPPLANE\nvarying float fClipDistance;\n#endif\nvoid main(void) {\n#ifdef CLIPPLANE\nif (fClipDistance>0.0)\ndiscard;\n#endif\nvec4 baseColor=texture2D(diffuseSampler,vUV);\ngl_FragColor=(baseColor*textureMask+(vec4(1.,1.,1.,1.)-textureMask))*vColor;\n}","particlesVertexShader":"\nattribute vec3 position;\nattribute vec4 color;\nattribute vec4 options;\n\nuniform mat4 view;\nuniform mat4 projection;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\n#ifdef CLIPPLANE\nuniform vec4 vClipPlane;\nuniform mat4 invView;\nvarying float fClipDistance;\n#endif\nvoid main(void) { \nvec3 viewPos=(view*vec4(position,1.0)).xyz; \nvec3 cornerPos;\nfloat size=options.y;\nfloat angle=options.x;\nvec2 offset=options.zw;\ncornerPos=vec3(offset.x-0.5,offset.y-0.5,0.)*size;\n\nvec3 rotatedCorner;\nrotatedCorner.x=cornerPos.x*cos(angle)-cornerPos.y*sin(angle);\nrotatedCorner.y=cornerPos.x*sin(angle)+cornerPos.y*cos(angle);\nrotatedCorner.z=0.;\n\nviewPos+=rotatedCorner;\ngl_Position=projection*vec4(viewPos,1.0); \nvColor=color;\nvUV=offset;\n\n#ifdef CLIPPLANE\nvec4 worldPos=invView*vec4(viewPos,1.0);\nfClipDistance=dot(worldPos,vClipPlane);\n#endif\n}","passPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nvoid main(void) \n{\ngl_FragColor=texture2D(textureSampler,vUV);\n}","postprocessVertexShader":"\nattribute vec2 position;\n\nvarying vec2 vUV;\nconst vec2 madd=vec2(0.5,0.5);\nvoid main(void) { \nvUV=position*madd+madd;\ngl_Position=vec4(position,0.0,1.0);\n}","proceduralVertexShader":"\nattribute vec2 position;\n\nvarying vec2 vPosition;\nvarying vec2 vUV;\nconst vec2 madd=vec2(0.5,0.5);\nvoid main(void) { \nvPosition=position;\nvUV=position*madd+madd;\ngl_Position=vec4(position,0.0,1.0);\n}","refractionPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform sampler2D refractionSampler;\n\nuniform vec3 baseColor;\nuniform float depth;\nuniform float colorLevel;\nvoid main() {\nfloat ref=1.0-texture2D(refractionSampler,vUV).r;\nvec2 uv=vUV-vec2(0.5);\nvec2 offset=uv*depth*ref;\nvec3 sourceColor=texture2D(textureSampler,vUV-offset).rgb;\ngl_FragColor=vec4(sourceColor+sourceColor*ref*colorLevel,1.0);\n}","shadowMapPixelShader":"vec4 pack(float depth)\n{\nconst vec4 bit_shift=vec4(255.0*255.0*255.0,255.0*255.0,255.0,1.0);\nconst vec4 bit_mask=vec4(0.0,1.0/255.0,1.0/255.0,1.0/255.0);\nvec4 res=fract(depth*bit_shift);\nres-=res.xxyz*bit_mask;\nreturn res;\n}\n\nvec2 packHalf(float depth) \n{ \nconst vec2 bitOffset=vec2(1.0/255.,0.);\nvec2 color=vec2(depth,fract(depth*255.));\nreturn color-(color.yy*bitOffset);\n}\nvarying vec4 vPosition;\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n#endif\n#ifdef CUBEMAP\nuniform vec3 lightPosition;\nuniform vec2 depthValues;\n#endif\nvoid main(void)\n{\n#ifdef ALPHATEST\nif (texture2D(diffuseSampler,vUV).a<0.4)\ndiscard;\n#endif\n#ifdef CUBEMAP\nvec3 directionToLight=vPosition.xyz-lightPosition;\nfloat depth=length(directionToLight);\ndepth=(depth-depthValues.x)/(depthValues.y-depthValues.x);\ndepth=clamp(depth,0.,1.0);\n#else\nfloat depth=vPosition.z/vPosition.w;\ndepth=depth*0.5+0.5;\n#endif\n#ifdef VSM\nfloat moment1=depth;\nfloat moment2=moment1*moment1;\ngl_FragColor=vec4(packHalf(moment1),packHalf(moment2));\n#else\ngl_FragColor=pack(depth);\n#endif\n}","shadowMapVertexShader":"\nattribute vec3 position;\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 viewProjection;\nvarying vec4 vPosition;\n#ifdef ALPHATEST\nvarying vec2 vUV;\nuniform mat4 diffuseMatrix;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#endif\nvoid main(void)\n{\n#include<instancesVertex>\n#include<bonesVertex>\n#ifdef CUBEMAP\nvPosition=finalWorld*vec4(position,1.0);\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\n#else\nvPosition=viewProjection*finalWorld*vec4(position,1.0);\ngl_Position=vPosition;\n#endif\n#ifdef ALPHATEST\n#ifdef UV1\nvUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n#endif\n#ifdef UV2\nvUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n#endif\n#endif\n}","spritesPixelShader":"uniform bool alphaTest;\nvarying vec4 vColor;\n\nvarying vec2 vUV;\nuniform sampler2D diffuseSampler;\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\nvec4 color=texture2D(diffuseSampler,vUV);\nif (alphaTest) \n{\nif (color.a<0.95)\ndiscard;\n}\ncolor*=vColor;\n#include<fogFragment>\ngl_FragColor=color;\n}","spritesVertexShader":"\nattribute vec4 position;\nattribute vec4 options;\nattribute vec4 cellInfo;\nattribute vec4 color;\n\nuniform vec2 textureInfos;\nuniform mat4 view;\nuniform mat4 projection;\n\nvarying vec2 vUV;\nvarying vec4 vColor;\n#include<fogVertexDeclaration>\nvoid main(void) { \nvec3 viewPos=(view*vec4(position.xyz,1.0)).xyz; \nvec2 cornerPos;\nfloat angle=position.w;\nvec2 size=vec2(options.x,options.y);\nvec2 offset=options.zw;\nvec2 uvScale=textureInfos.xy;\ncornerPos=vec2(offset.x-0.5,offset.y-0.5)*size;\n\nvec3 rotatedCorner;\nrotatedCorner.x=cornerPos.x*cos(angle)-cornerPos.y*sin(angle);\nrotatedCorner.y=cornerPos.x*sin(angle)+cornerPos.y*cos(angle);\nrotatedCorner.z=0.;\n\nviewPos+=rotatedCorner;\ngl_Position=projection*vec4(viewPos,1.0); \n\nvColor=color;\n\nvec2 uvOffset=vec2(abs(offset.x-cellInfo.x),1.0-abs(offset.y-cellInfo.y));\nvUV=(uvOffset+cellInfo.zw)*uvScale;\n\n#ifdef FOG\nfFogDistance=viewPos.z;\n#endif\n}","ssaoPixelShader":"uniform sampler2D textureSampler;\nuniform sampler2D randomSampler;\nuniform float randTextureTiles;\nuniform float samplesFactor;\nuniform vec3 sampleSphere[SAMPLES];\nuniform float totalStrength;\nuniform float radius;\nuniform float area;\nuniform float fallOff;\nuniform float base;\nvarying vec2 vUV;\nvec3 normalFromDepth(float depth,vec2 coords) {\nvec2 offset1=vec2(0.0,radius);\nvec2 offset2=vec2(radius,0.0);\nfloat depth1=texture2D(textureSampler,coords+offset1).r;\nfloat depth2=texture2D(textureSampler,coords+offset2).r;\nvec3 p1=vec3(offset1,depth1-depth);\nvec3 p2=vec3(offset2,depth2-depth);\nvec3 normal=cross(p1,p2);\nnormal.z=-normal.z;\nreturn normalize(normal);\n}\nvoid main()\n{\nvec3 random=normalize(texture2D(randomSampler,vUV*randTextureTiles).rgb);\nfloat depth=texture2D(textureSampler,vUV).r;\nvec3 position=vec3(vUV,depth);\nvec3 normal=normalFromDepth(depth,vUV);\nfloat radiusDepth=radius/depth;\nfloat occlusion=0.0;\nvec3 ray;\nvec3 hemiRay;\nfloat occlusionDepth;\nfloat difference;\nfor (int i=0; i<SAMPLES; i++)\n{\nray=radiusDepth*reflect(sampleSphere[i],random);\nhemiRay=position+sign(dot(ray,normal))*ray;\nocclusionDepth=texture2D(textureSampler,clamp(hemiRay.xy,vec2(0.001,0.001),vec2(0.999,0.999))).r;\ndifference=depth-occlusionDepth;\nocclusion+=step(fallOff,difference)*(1.0-smoothstep(fallOff,area,difference));\n}\nfloat ao=1.0-totalStrength*occlusion*samplesFactor;\nfloat result=clamp(ao+base,0.0,1.0);\ngl_FragColor.r=result;\ngl_FragColor.g=result;\ngl_FragColor.b=result;\ngl_FragColor.a=1.0;\n}\n","ssaoCombinePixelShader":"uniform sampler2D textureSampler;\nuniform sampler2D originalColor;\nvarying vec2 vUV;\nvoid main(void) {\nvec4 ssaoColor=texture2D(textureSampler,vUV);\nvec4 sceneColor=texture2D(originalColor,vUV);\ngl_FragColor=sceneColor*ssaoColor;\n}\n","stereoscopicInterlacePixelShader":"const vec3 TWO=vec3(2.0,2.0,2.0);\nvarying vec2 vUV;\nuniform sampler2D camASampler;\nuniform sampler2D textureSampler;\nuniform vec2 stepSize;\nvoid main(void)\n{\nbool useCamB;\nvec2 texCoord1;\nvec2 texCoord2;\nvec3 frag1;\nvec3 frag2;\n#ifdef IS_STEREOSCOPIC_HORIZ\nuseCamB=vUV.x>0.5;\ntexCoord1=vec2(useCamB ? (vUV.x-0.5)*2.0 : vUV.x*2.0,vUV.y);\ntexCoord2=vec2(texCoord1.x+stepSize.x,vUV.y);\n#else\nuseCamB=vUV.y>0.5;\ntexCoord1=vec2(vUV.x,useCamB ? (vUV.y-0.5)*2.0 : vUV.y*2.0);\ntexCoord2=vec2(vUV.x,texCoord1.y+stepSize.y);\n#endif\n\nif (useCamB){\nfrag1=texture2D(textureSampler,texCoord1).rgb;\nfrag2=texture2D(textureSampler,texCoord2).rgb;\n}else{\nfrag1=texture2D(camASampler ,texCoord1).rgb;\nfrag2=texture2D(camASampler ,texCoord2).rgb;\n}\ngl_FragColor=vec4((frag1+frag2)/TWO,1.0);\n}","tonemapPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\n\nuniform float _ExposureAdjustment;\n#if defined(HABLE_TONEMAPPING)\nconst float A=0.15;\nconst float B=0.50;\nconst float C=0.10;\nconst float D=0.20;\nconst float E=0.02;\nconst float F=0.30;\nconst float W=11.2;\n#endif\nfloat Luminance(vec3 c)\n{\nreturn dot(c,vec3(0.22,0.707,0.071));\n}\nvoid main(void) \n{\nvec3 colour=texture2D(textureSampler,vUV).rgb;\n#if defined(REINHARD_TONEMAPPING)\nfloat lum=Luminance(colour.rgb); \nfloat lumTm=lum*_ExposureAdjustment;\nfloat scale=lumTm/(1.0+lumTm); \ncolour*=scale/lum;\n#elif defined(HABLE_TONEMAPPING)\ncolour*=_ExposureAdjustment;\nconst float ExposureBias=2.0;\nvec3 x=ExposureBias*colour;\nvec3 curr=((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;\nx=vec3(W,W,W);\nvec3 whiteScale=1.0/(((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F);\ncolour=curr*whiteScale;\n#elif defined(OPTIMIZED_HEJIDAWSON_TONEMAPPING)\ncolour*=_ExposureAdjustment;\nvec3 X=max(vec3(0.0,0.0,0.0),colour-0.004);\nvec3 retColor=(X*(6.2*X+0.5))/(X*(6.2*X+1.7)+0.06);\ncolour=retColor*retColor;\n#elif defined(PHOTOGRAPHIC_TONEMAPPING)\ncolour=vec3(1.0,1.0,1.0)-exp2(-_ExposureAdjustment*colour);\n#endif\ngl_FragColor=vec4(colour.rgb,1.0);\n}","volumetricLightScatteringPixelShader":"uniform sampler2D textureSampler;\nuniform sampler2D lightScatteringSampler;\nuniform float decay;\nuniform float exposure;\nuniform float weight;\nuniform float density;\nuniform vec2 meshPositionOnScreen;\nvarying vec2 vUV;\nvoid main(void) {\nvec2 tc=vUV;\nvec2 deltaTexCoord=(tc-meshPositionOnScreen.xy);\ndeltaTexCoord*=1.0/float(NUM_SAMPLES)*density;\nfloat illuminationDecay=1.0;\nvec4 color=texture2D(lightScatteringSampler,tc)*0.4;\nfor(int i=0; i<NUM_SAMPLES; i++) {\ntc-=deltaTexCoord;\nvec4 sample=texture2D(lightScatteringSampler,tc)*0.4;\nsample*=illuminationDecay*weight;\ncolor+=sample;\nilluminationDecay*=decay;\n}\nvec4 realColor=texture2D(textureSampler,vUV);\ngl_FragColor=((vec4((vec3(color.r,color.g,color.b)*exposure),1))+(realColor*(1.5-0.4)));\n}\n","volumetricLightScatteringPassPixelShader":"#if defined(ALPHATEST) || defined(NEED_UV)\nvarying vec2 vUV;\n#endif\n#if defined(ALPHATEST) || defined(BASIC_RENDER)\nuniform sampler2D diffuseSampler;\n#endif\n#if defined(DIFFUSE_COLOR_RENDER)\nuniform vec3 color;\n#endif\n#if defined(OPACITY)\nuniform sampler2D opacitySampler;\nuniform float opacityLevel;\n#endif\nvoid main(void)\n{\n#if defined(ALPHATEST) || defined(BASIC_RENDER)\nvec4 diffuseColor=texture2D(diffuseSampler,vUV);\n#endif\n#ifdef ALPHATEST\nif (diffuseColor.a<0.4)\ndiscard;\n#endif\n#ifdef OPACITY\nvec4 opacityColor=texture2D(opacitySampler,vUV);\nfloat alpha=1.0;\n#ifdef OPACITYRGB\nopacityColor.rgb=opacityColor.rgb*vec3(0.3,0.59,0.11);\nalpha*=(opacityColor.x+opacityColor.y+opacityColor.z)*opacityLevel;\n#else\nalpha*=opacityColor.a*opacityLevel;\n#endif\n#if defined(BASIC_RENDER)\ngl_FragColor=vec4(diffuseColor.rgb,alpha);\n#elif defined(DIFFUSE_COLOR_RENDER)\ngl_FragColor=vec4(color.rgb,alpha);\n#else\ngl_FragColor=vec4(0.0,0.0,0.0,alpha);\n#endif\ngl_FragColor.a=alpha;\n#else\n#if defined(BASIC_RENDER)\ngl_FragColor=diffuseColor;\n#elif defined(DIFFUSE_COLOR_RENDER)\ngl_FragColor=vec4(color.rgb,1.0);\n#else\ngl_FragColor=vec4(0.0,0.0,0.0,1.0);\n#endif\n#endif\n}\n","vrDistortionCorrectionPixelShader":"\nvarying vec2 vUV;\nuniform sampler2D textureSampler;\nuniform vec2 LensCenter;\nuniform vec2 Scale;\nuniform vec2 ScaleIn;\nuniform vec4 HmdWarpParam;\nvec2 HmdWarp(vec2 in01) {\nvec2 theta=(in01-LensCenter)*ScaleIn; \nfloat rSq=theta.x*theta.x+theta.y*theta.y;\nvec2 rvector=theta*(HmdWarpParam.x+HmdWarpParam.y*rSq+HmdWarpParam.z*rSq*rSq+HmdWarpParam.w*rSq*rSq*rSq);\nreturn LensCenter+Scale*rvector;\n}\nvoid main(void)\n{\nvec2 tc=HmdWarp(vUV);\nif (tc.x <0.0 || tc.x>1.0 || tc.y<0.0 || tc.y>1.0)\ngl_FragColor=vec4(0.0,0.0,0.0,1.0);\nelse{\ngl_FragColor=vec4(texture2D(textureSampler,tc).rgb,1.0);\n}\n}"};

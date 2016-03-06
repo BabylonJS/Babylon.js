@@ -49,6 +49,6 @@ var BABYLON;
             return "VirtualJoysticksCamera";
         };
         return VirtualJoysticksCamera;
-    })(BABYLON.FreeCamera);
+    }(BABYLON.FreeCamera));
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
 })(BABYLON || (BABYLON = {}));

@@ -1,6 +1,6 @@
 module BABYLON {
-    export class ComposableCameraKeyboardMoveInput implements IComposableCameraInput {
-        camera: ComposableCamera;
+    export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
         private _keys = [];
         private _onKeyDown: (e: KeyboardEvent) => any;
         private _onKeyUp: (e: KeyboardEvent) => any;
@@ -17,7 +17,7 @@ module BABYLON {
         @serialize()
         public keysRight = [39];
 
-        attachCamera(camera: ComposableCamera) {
+        attachCamera(camera: FreeCamera) {
             this.camera = camera;
             
             if (this._onKeyDown === undefined) {

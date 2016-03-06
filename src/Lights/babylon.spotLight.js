@@ -93,6 +93,6 @@ var BABYLON;
             BABYLON.serialize()
         ], SpotLight.prototype, "exponent", void 0);
         return SpotLight;
-    })(BABYLON.Light);
+    }(BABYLON.Light));
     BABYLON.SpotLight = SpotLight;
 })(BABYLON || (BABYLON = {}));

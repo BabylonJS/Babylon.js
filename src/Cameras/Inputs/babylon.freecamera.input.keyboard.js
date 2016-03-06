@@ -6,15 +6,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var ComposableCameraKeyboardMoveInput = (function () {
-        function ComposableCameraKeyboardMoveInput() {
+    var FreeCameraKeyboardMoveInput = (function () {
+        function FreeCameraKeyboardMoveInput() {
             this._keys = [];
             this.keysUp = [38];
             this.keysDown = [40];
             this.keysLeft = [37];
             this.keysRight = [39];
         }
-        ComposableCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
+        FreeCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
             var _this = this;
             this.camera = camera;
             if (this._onKeyDown === undefined) {
@@ -53,14 +53,14 @@ var BABYLON;
                 ]);
             }
         };
-        ComposableCameraKeyboardMoveInput.prototype.detach = function () {
+        FreeCameraKeyboardMoveInput.prototype.detach = function () {
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
-        ComposableCameraKeyboardMoveInput.prototype.checkInputs = function () {
+        FreeCameraKeyboardMoveInput.prototype.checkInputs = function () {
             var camera = this.camera;
             // Keyboard
             for (var index = 0; index < this._keys.length; index++) {
@@ -83,25 +83,25 @@ var BABYLON;
                 camera.cameraDirection.addInPlace(camera._transformedDirection);
             }
         };
-        ComposableCameraKeyboardMoveInput.prototype.getTypeName = function () {
+        FreeCameraKeyboardMoveInput.prototype.getTypeName = function () {
             return "keyboardmove";
         };
-        ComposableCameraKeyboardMoveInput.prototype._onLostFocus = function (e) {
+        FreeCameraKeyboardMoveInput.prototype._onLostFocus = function (e) {
             this._keys = [];
         };
         __decorate([
             BABYLON.serialize()
-        ], ComposableCameraKeyboardMoveInput.prototype, "keysUp", void 0);
+        ], FreeCameraKeyboardMoveInput.prototype, "keysUp", void 0);
         __decorate([
             BABYLON.serialize()
-        ], ComposableCameraKeyboardMoveInput.prototype, "keysDown", void 0);
+        ], FreeCameraKeyboardMoveInput.prototype, "keysDown", void 0);
         __decorate([
             BABYLON.serialize()
-        ], ComposableCameraKeyboardMoveInput.prototype, "keysLeft", void 0);
+        ], FreeCameraKeyboardMoveInput.prototype, "keysLeft", void 0);
         __decorate([
             BABYLON.serialize()
-        ], ComposableCameraKeyboardMoveInput.prototype, "keysRight", void 0);
-        return ComposableCameraKeyboardMoveInput;
+        ], FreeCameraKeyboardMoveInput.prototype, "keysRight", void 0);
+        return FreeCameraKeyboardMoveInput;
     }());
-    BABYLON.ComposableCameraKeyboardMoveInput = ComposableCameraKeyboardMoveInput;
+    BABYLON.FreeCameraKeyboardMoveInput = FreeCameraKeyboardMoveInput;
 })(BABYLON || (BABYLON = {}));

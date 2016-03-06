@@ -38,6 +38,6 @@ var BABYLON;
             };
         }
         return TonemapPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.TonemapPostProcess = TonemapPostProcess;
 })(BABYLON || (BABYLON = {}));

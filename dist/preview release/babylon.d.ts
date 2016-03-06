@@ -1890,21 +1890,36 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface ICameraInput<TCamera extends BABYLON.Camera> {
+        camera: TCamera;
+        attachCamera(camera: TCamera): any;
+        detach(): any;
+        getTypeName(): string;
+        attachElement?: (element: HTMLElement, noPreventDefault?: boolean) => void;
+        detachElement?: (element: HTMLElement) => void;
+        checkInputs?: () => void;
+    }
+    interface CameraInputsMap<TCamera extends BABYLON.Camera> {
+        [name: string]: ICameraInput<TCamera>;
+        [idx: number]: ICameraInput<TCamera>;
+    }
+    class CameraInputsManager<TCamera extends BABYLON.Camera> {
+        inputs: CameraInputsMap<TCamera>;
+        camera: TCamera;
+        checkInputs: () => void;
+        constructor(camera: TCamera);
+        add(input: ICameraInput<TCamera>): void;
+        private _addCheckInputs(fn);
+        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachElement(element: HTMLElement): void;
+        rebuildInputCheck(element: HTMLElement): void;
+        clear(): void;
+    }
+}
+
+declare module BABYLON {
     class DeviceOrientationCamera extends FreeCamera {
-        private _offsetX;
-        private _offsetY;
-        private _orientationGamma;
-        private _orientationBeta;
-        private _initialOrientationGamma;
-        private _initialOrientationBeta;
-        private _attachedCanvas;
-        private _orientationChanged;
-        angularSensibility: number;
-        moveSensibility: number;
         constructor(name: string, position: Vector3, scene: Scene);
-        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
-        detachControl(canvas: HTMLCanvasElement): void;
-        _checkInputs(): void;
         getTypeName(): string;
     }
 }
@@ -1939,31 +1954,20 @@ declare module BABYLON {
 declare module BABYLON {
     class FreeCamera extends TargetCamera {
         ellipsoid: Vector3;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
         checkCollisions: boolean;
         applyGravity: boolean;
-        angularSensibility: number;
+        inputs: FreeCameraInputsManager;
         onCollide: (collidedMesh: AbstractMesh) => void;
-        private _keys;
         private _collider;
         private _needMoveForGravity;
         private _oldPosition;
         private _diffPosition;
         private _newPosition;
-        private _attachedElement;
-        private _localDirection;
-        private _transformedDirection;
-        private _onMouseDown;
-        private _onMouseUp;
-        private _onMouseOut;
-        private _onMouseMove;
-        private _onKeyDown;
-        private _onKeyUp;
+        _attachedElement: HTMLElement;
+        _noPreventDefault: boolean;
+        _localDirection: Vector3;
+        _transformedDirection: Vector3;
         constructor(name: string, position: Vector3, scene: Scene);
-        _onLostFocus(e: FocusEvent): void;
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         detachControl(element: HTMLElement): void;
         _collideWithWorld(velocity: Vector3): void;
@@ -1971,7 +1975,17 @@ declare module BABYLON {
         _checkInputs(): void;
         _decideIfNeedsToMove(): boolean;
         _updatePosition(): void;
+        dispose(): void;
         getTypeName(): string;
+    }
+    class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
+        constructor(camera: FreeCamera);
+        add(input: ICameraInput<FreeCamera>): void;
+        addKeyboard(): this;
+        addMouse(): this;
+        addGamepad(): this;
+        addDeviceOrientation(): this;
+        addTouch(): this;
     }
 }
 
@@ -2067,37 +2081,14 @@ declare module BABYLON {
 
 declare module BABYLON {
     class TouchCamera extends FreeCamera {
-        private _offsetX;
-        private _offsetY;
-        private _pointerCount;
-        private _pointerPressed;
-        private _attachedCanvas;
-        private _onPointerDown;
-        private _onPointerUp;
-        private _onPointerMove;
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
         constructor(name: string, position: Vector3, scene: Scene);
-        _onLostFocus(e: FocusEvent): void;
-        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
-        detachControl(canvas: HTMLCanvasElement): void;
-        _checkInputs(): void;
         getTypeName(): string;
     }
 }
 
 declare module BABYLON {
     class UniversalCamera extends TouchCamera {
-        gamepad: Gamepad;
-        private _gamepads;
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
         constructor(name: string, position: Vector3, scene: Scene);
-        private _onNewGameConnected(gamepad);
-        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
-        detachControl(canvas: HTMLCanvasElement): void;
-        _checkInputs(): void;
-        dispose(): void;
         getTypeName(): string;
     }
 }
@@ -5634,27 +5625,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        refreshRate: number;
-        getScene(): Scene;
-        cubeTexture: RenderTargetTexture;
-        renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         constructor(name: string, ratio: number, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean);
     }
@@ -6220,6 +6190,27 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        refreshRate: number;
+        getScene(): Scene;
+        cubeTexture: RenderTargetTexture;
+        renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        dispose(): void;
     }
 }
 
@@ -7107,6 +7098,117 @@ declare module BABYLON {
         private _clearCanvas();
         private _drawVirtualJoystick();
         releaseCanvas(): void;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _offsetX;
+        private _offsetY;
+        private _orientationGamma;
+        private _orientationBeta;
+        private _initialOrientationGamma;
+        private _initialOrientationBeta;
+        private _orientationChanged;
+        private _resetOrientationGamma;
+        angularSensibility: number;
+        moveSensibility: number;
+        constructor();
+        attachCamera(camera: FreeCamera): void;
+        resetOrientationGamma(): void;
+        orientationChanged(evt: any): void;
+        detach(): void;
+        checkInputs(): void;
+        getTypeName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        gamepad: Gamepad;
+        private _gamepads;
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        constructor();
+        attachCamera(camera: FreeCamera): void;
+        detach(): void;
+        checkInputs(): void;
+        private _onNewGameConnected(gamepad);
+        getTypeName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _keys;
+        private _onKeyDown;
+        private _onKeyUp;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        attachCamera(camera: FreeCamera): void;
+        detach(): void;
+        checkInputs(): void;
+        getTypeName(): string;
+        _onLostFocus(e: FocusEvent): void;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        attachedElement: HTMLElement;
+        angularSensibility: number;
+        private _onMouseDown;
+        private _onMouseUp;
+        private _onMouseOut;
+        private _onMouseMove;
+        attachCamera(camera: FreeCamera): void;
+        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachElement(element: HTMLElement): void;
+        detach(): void;
+        getTypeName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _offsetX;
+        private _offsetY;
+        private _pointerCount;
+        private _pointerPressed;
+        private _attachedElement;
+        private _onPointerDown;
+        private _onPointerUp;
+        private _onPointerMove;
+        private _onLostFocus;
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
+        attachCamera(camera: FreeCamera): void;
+        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachElement(element: HTMLElement): void;
+        checkInputs(): void;
+        detach(): void;
+        getTypeName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        getLeftJoystick(): VirtualJoystick;
+        getRightJoystick(): VirtualJoystick;
+        checkInputs(): void;
+        attachCamera(camera: FreeCamera): void;
+        detach(): void;
+        getTypeName(): string;
     }
 }
 

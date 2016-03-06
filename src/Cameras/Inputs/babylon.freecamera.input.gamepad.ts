@@ -1,6 +1,6 @@
 module BABYLON {       
-    export class ComposableCameraGamepadInput implements IComposableCameraInput {
-        camera : ComposableCamera;
+    export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        camera : FreeCamera;
         
         public gamepad: Gamepad;
         private _gamepads: Gamepads;
@@ -15,7 +15,7 @@ module BABYLON {
             this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
         }
         
-        attachCamera(camera : ComposableCamera){
+        attachCamera(camera : FreeCamera){
             this.camera = camera;
         }
         

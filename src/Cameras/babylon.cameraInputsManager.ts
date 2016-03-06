@@ -1,7 +1,7 @@
 module BABYLON {
-    export interface IComposableCameraInput {
-        camera: ComposableCamera;
-        attachCamera(camera: ComposableCamera);
+    export interface ICameraInput<TCamera extends BABYLON.Camera> {
+        camera: TCamera;
+        attachCamera(camera: TCamera);
         detach();        
         getTypeName(): string;
         
@@ -10,23 +10,23 @@ module BABYLON {
         checkInputs?: () => void;
     }
 
-    export interface ComposableCameraInputsMap {
-        [name: string]: IComposableCameraInput;
-        [idx: number]: IComposableCameraInput;
+    export interface CameraInputsMap<TCamera extends BABYLON.Camera> {
+        [name: string]: ICameraInput<TCamera>;
+        [idx: number]: ICameraInput<TCamera>;
     }
 
-    export class ComposableCameraInputsManager {
-        inputs: ComposableCameraInputsMap;
-        camera: ComposableCamera;
+    export class CameraInputsManager<TCamera extends BABYLON.Camera> {
+        inputs: CameraInputsMap<TCamera>;
+        camera: TCamera;
         checkInputs: () => void;
 
-        constructor(camera: ComposableCamera) {
+        constructor(camera: TCamera) {
             this.inputs = {};
             this.camera = camera;
             this.checkInputs = () => { };
         }
 
-        add(input: IComposableCameraInput) {
+        public add(input: ICameraInput<TCamera>) {
             var type = input.getTypeName();
             if (this.inputs[type]) {
                 Tools.Warn("camera input of type " + type + " already exists on camera");
@@ -42,9 +42,7 @@ module BABYLON {
                 this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
             }
 
-            if (this.camera._attachedElement && input.attachElement) {
-                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
-            }
+            
         }
         
         private _addCheckInputs(fn){
@@ -55,7 +53,7 @@ module BABYLON {
             }
         }
 
-        attachElement(element: HTMLElement, noPreventDefault?: boolean) {
+        public attachElement(element: HTMLElement, noPreventDefault?: boolean) {
             for (var cam in this.inputs) {
                 var input = this.inputs[cam];
                 if (input.attachElement)
@@ -63,7 +61,7 @@ module BABYLON {
             }
         }
 
-        detachElement(element: HTMLElement) {
+        public detachElement(element: HTMLElement) {
             for (var cam in this.inputs) {
                 var input = this.inputs[cam];
                 if (input.detachElement)
@@ -71,7 +69,7 @@ module BABYLON {
             }
         }
 
-        rebuildInputCheck(element: HTMLElement) {
+        public rebuildInputCheck(element: HTMLElement) {
             this.checkInputs = () => { };
 
             for (var cam in this.inputs) {
@@ -82,38 +80,13 @@ module BABYLON {
             }
         }
 
-        clear() {
+        public clear() {
             for (var cam in this.inputs) {
                 this.inputs[cam].detach();
             }
 
             this.inputs = {};
             this.checkInputs = () => { };
-        }
-        
-        addKeyboard(){
-            this.add(new ComposableCameraKeyboardMoveInput());
-            return this;
-        }
-        
-        addMouse(){
-            this.add(new ComposableCameraMouseInput());
-            return this;
-        }
-        
-        addGamepad(){
-            this.add(new ComposableCameraGamepadInput());
-            return this;
-        }
-        
-        addDeviceOrientation(){
-            this.add(new ComposableCameraDeviceOrientationInput());
-            return this;
-        }
-        
-        addTouch(){
-            this.add(new ComposableCameraTouchInput());
-            return this;
         }
     }
 } 

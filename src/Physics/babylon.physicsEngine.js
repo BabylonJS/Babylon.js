@@ -121,6 +121,6 @@ var BABYLON;
         PhysicsEngine.HeightmapImpostor = BABYLON.PhysicsImpostor.HeightmapImpostor;
         PhysicsEngine.Epsilon = 0.001;
         return PhysicsEngine;
-    })();
+    }());
     BABYLON.PhysicsEngine = PhysicsEngine;
 })(BABYLON || (BABYLON = {}));

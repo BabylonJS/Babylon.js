@@ -1,6 +1,6 @@
 module BABYLON {
-    export class ComposableCameraTouchInput implements IComposableCameraInput {
-        camera: ComposableCamera;
+    export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
 
         private _offsetX: number = null;
         private _offsetY: number = null;
@@ -10,6 +10,7 @@ module BABYLON {
         private _onPointerDown: (e: PointerEvent) => any;
         private _onPointerUp: (e: PointerEvent) => any;
         private _onPointerMove: (e: PointerEvent) => any;
+        private _onLostFocus: (e: FocusEvent) => any;
 
         @serialize()
         public touchAngularSensibility: number = 200000.0;
@@ -17,10 +18,10 @@ module BABYLON {
         @serialize()
         public touchMoveSensibility: number = 250.0;
 
-        attachCamera(camera: ComposableCamera) {
+        attachCamera(camera: FreeCamera) {
             this.camera = camera;
         }
-
+        
         attachElement(element: HTMLElement, noPreventDefault?: boolean) {
             var previousPosition;
 
@@ -31,7 +32,11 @@ module BABYLON {
             this._attachedElement = element;
 
             if (this._onPointerDown === undefined) {
-
+                this._onLostFocus = (evt) => {
+                    this._offsetX = null;
+                    this._offsetY = null;
+                }
+                
                 this._onPointerDown = (evt) => {
 
                     if (evt.pointerType === "mouse") {
@@ -105,7 +110,7 @@ module BABYLON {
 
 
             }
-
+            element.addEventListener("blur", this._onLostFocus);
             element.addEventListener("pointerdown", this._onPointerDown);
             element.addEventListener("pointerup", this._onPointerUp);
             element.addEventListener("pointerout", this._onPointerUp);
@@ -117,6 +122,7 @@ module BABYLON {
                 return;
             }
 
+            element.removeEventListener("blur", this._onLostFocus);
             element.removeEventListener("pointerdown", this._onPointerDown);
             element.removeEventListener("pointerup", this._onPointerUp);
             element.removeEventListener("pointerout", this._onPointerUp);
