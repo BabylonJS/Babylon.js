@@ -628,7 +628,7 @@ struct lightingInfo
 #endif
 };
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius, out float NdotL) {
     lightingInfo result;
 
     vec3 lightDirection;
@@ -657,7 +657,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     
     // diffuse
     vec3 H = normalize(viewDirectionW + lightDirection);
-    float NdotL = max(0.00000000001, dot(vNormal, lightDirection));
+    NdotL = max(0.00000000001, dot(vNormal, lightDirection));
     float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
 
     float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
@@ -674,7 +674,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius, out float NdotL) {
     lightingInfo result;
 
     vec3 lightOffset = lightData.xyz - vPositionW;
@@ -700,7 +700,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
         
         // Diffuse
         vec3 H = normalize(viewDirectionW - lightDirection.xyz);
-        float NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
+        NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
         float VdotH = clamp(dot(viewDirectionW, H), 0.00000000001, 1.0);
 
         float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
@@ -725,22 +725,22 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, float lightRadius) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, float lightRadius, out float NdotL) {
     lightingInfo result;
 
     // Roughness
     // Do not touch roughness on hemispheric.
 
     // Diffuse
-    float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
-    result.diffuse = mix(groundColor, diffuseColor, ndl);
+    NdotL = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
+    result.diffuse = mix(groundColor, diffuseColor, NdotL);
 
 #ifdef SPECULARTERM
     // Specular
     vec3 lightVectorW = normalize(lightData.xyz);
     vec3 H = normalize(viewDirectionW + lightVectorW);
     float NdotH = max(0.00000000001, dot(vNormal, H));
-    float NdotL = max(0.00000000001, ndl);
+    NdotL = max(0.00000000001, NdotL);
     float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
 
     vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
@@ -866,19 +866,20 @@ void main(void) {
     vec3 lightSpecularContribution= vec3(0., 0., 0.);
 #endif
     float notShadowLevel = 1.; // 1 - shadowLevel
+    float NdotL = -1.;
 
 #ifdef LIGHT0
 #ifndef SPECULARTERM
     vec3 vLightSpecular0 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT0
-    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0]);
+    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0], NdotL);
 #endif
 #ifdef HEMILIGHT0
-    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, roughness, NdotV, vLightRadiuses[0]);
+    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, roughness, NdotV, vLightRadiuses[0], NdotL);
 #endif
 #if defined(POINTLIGHT0) || defined(DIRLIGHT0)
-    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0]);
+    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0], NdotL);
 #endif
 #ifdef SHADOW0
 #ifdef SHADOWVSM0
@@ -903,6 +904,10 @@ void main(void) {
 #endif
     lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
+    if (NdotL < 0.000000000011)
+    {
+        notShadowLevel = 1.;
+    }
     shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
@@ -916,13 +921,13 @@ void main(void) {
     vec3 vLightSpecular1 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT1
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1]);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1], NdotL);
 #endif
 #ifdef HEMILIGHT1
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, roughness, NdotV, vLightRadiuses[1]);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, roughness, NdotV, vLightRadiuses[1], NdotL);
 #endif
 #if defined(POINTLIGHT1) || defined(DIRLIGHT1)
-    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1]);
+    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1], NdotL);
 #endif
 #ifdef SHADOW1
 #ifdef SHADOWVSM1
@@ -948,6 +953,10 @@ void main(void) {
 
     lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
+    if (NdotL < 0.000000000011)
+    {
+        notShadowLevel = 1.;
+    }
     shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
@@ -961,13 +970,13 @@ void main(void) {
     vec3 vLightSpecular2 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT2
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2]);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2], NdotL);
 #endif
 #ifdef HEMILIGHT2
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, roughness, NdotV, vLightRadiuses[2]);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, roughness, NdotV, vLightRadiuses[2], NdotL);
 #endif
 #if defined(POINTLIGHT2) || defined(DIRLIGHT2)
-    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2]);
+    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2], NdotL);
 #endif
 #ifdef SHADOW2
 #ifdef SHADOWVSM2
@@ -993,6 +1002,10 @@ void main(void) {
 
     lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
+    if (NdotL < 0.000000000011)
+    {
+        notShadowLevel = 1.;
+    }
     shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
@@ -1006,13 +1019,13 @@ void main(void) {
     vec3 vLightSpecular3 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT3
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3]);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3], NdotL);
 #endif
 #ifdef HEMILIGHT3
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, roughness, NdotV, vLightRadiuses[3]);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, roughness, NdotV, vLightRadiuses[3], NdotL);
 #endif
 #if defined(POINTLIGHT3) || defined(DIRLIGHT3)
-    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3]);
+    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3], NdotL);
 #endif
 #ifdef SHADOW3
 #ifdef SHADOWVSM3
@@ -1038,6 +1051,10 @@ void main(void) {
 
     lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
+    if (NdotL < 0.000000000011)
+    {
+        notShadowLevel = 1.;
+    }
     shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
