@@ -1,10 +1,27 @@
 module BABYLON.Internals {
+    /**
+     * Header information of HDR texture files.
+     */
     export interface HDRInfo {
+        /**
+         * The height of the texture in pixels.
+         */
         height: number;
+        
+        /**
+         * The width of the texture in pixels.
+         */
         width: number;
+        
+        /**
+         * The index of the beginning of the data in the binary file.
+         */
         dataPosition: number;
     };
 
+    /**
+     * This groups tools to convert HDR texture to native colors array.
+     */
     export class HDRTools {
 
         private static Ldexp(mantissa: number, exponent: number): number {
@@ -54,7 +71,14 @@ module BABYLON.Internals {
             return line;
         }
 
-        /* minimal header reading.  modify if you want to parse more information */
+        /**
+         * Reads header information from an RGBE texture stored in a native array. 
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         * 
+         * @param uint8array The binary file stored in  native array.
+         * @return The header information.
+         */
         public static RGBE_ReadHeader(uint8array: Uint8Array) : HDRInfo {
             var height: number = 0;
             var width: number = 0;
@@ -110,6 +134,17 @@ module BABYLON.Internals {
             };
         }
 
+        /**
+         * Returns the cubemap information (each faces texture data) extracted from an RGBE texture.
+         * This RGBE texture needs to store the information as a panorama.
+         *  
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         * 
+         * @param buffer The binary file stored in an array buffer.
+         * @param size The expected size of the extracted cubemap.
+         * @return The Cube Map information.
+         */
         public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number) : CubeMapInfo {
             var uint8array = new Uint8Array(buffer);
             var hdrInfo = this.RGBE_ReadHeader(uint8array);
@@ -120,11 +155,22 @@ module BABYLON.Internals {
             return cubeMapData;
         }
 
+        /**
+         * Returns the pixels data extracted from an RGBE texture. 
+         * This pixels will be stored left to right up to down in the R G B order in one array.
+         *  
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         * 
+         * @param uint8array The binary file stored in an array buffer.
+         * @param hdrInfo The header information of the file.
+         * @return The pixels data in RGB right to left up to down order.
+         */
         public static RGBE_ReadPixels(uint8array:Uint8Array, hdrInfo:HDRInfo): Float32Array {
             // Keep for multi format supports.
             return this.RGBE_ReadPixels_RLE(uint8array, hdrInfo);
         }
-
+        
         private static RGBE_ReadPixels_RLE(uint8array:Uint8Array, hdrInfo:HDRInfo): Float32Array {
             var num_scanlines = hdrInfo.height;
             var scanline_width = hdrInfo.width;

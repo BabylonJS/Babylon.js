@@ -3,6 +3,9 @@ var BABYLON;
     var Internals;
     (function (Internals) {
         ;
+        /**
+         * This groups tools to convert HDR texture to native colors array.
+         */
         var HDRTools = (function () {
             function HDRTools() {
             }
@@ -40,7 +43,14 @@ var BABYLON;
                 }
                 return line;
             };
-            /* minimal header reading.  modify if you want to parse more information */
+            /**
+             * Reads header information from an RGBE texture stored in a native array.
+             * More information on this format are available here:
+             * https://en.wikipedia.org/wiki/RGBE_image_format
+             *
+             * @param uint8array The binary file stored in  native array.
+             * @return The header information.
+             */
             HDRTools.RGBE_ReadHeader = function (uint8array) {
                 var height = 0;
                 var width = 0;
@@ -84,6 +94,17 @@ var BABYLON;
                     dataPosition: lineIndex
                 };
             };
+            /**
+             * Returns the cubemap information (each faces texture data) extracted from an RGBE texture.
+             * This RGBE texture needs to store the information as a panorama.
+             *
+             * More information on this format are available here:
+             * https://en.wikipedia.org/wiki/RGBE_image_format
+             *
+             * @param buffer The binary file stored in an array buffer.
+             * @param size The expected size of the extracted cubemap.
+             * @return The Cube Map information.
+             */
             HDRTools.GetCubeMapTextureData = function (buffer, size) {
                 var uint8array = new Uint8Array(buffer);
                 var hdrInfo = this.RGBE_ReadHeader(uint8array);
@@ -91,6 +112,17 @@ var BABYLON;
                 var cubeMapData = Internals.PanoramaToCubeMapTools.ConvertPanoramaToCubemap(data, hdrInfo.width, hdrInfo.height, size);
                 return cubeMapData;
             };
+            /**
+             * Returns the pixels data extracted from an RGBE texture.
+             * This pixels will be stored left to right up to down in the R G B order in one array.
+             *
+             * More information on this format are available here:
+             * https://en.wikipedia.org/wiki/RGBE_image_format
+             *
+             * @param uint8array The binary file stored in an array buffer.
+             * @param hdrInfo The header information of the file.
+             * @return The pixels data in RGB right to left up to down order.
+             */
             HDRTools.RGBE_ReadPixels = function (uint8array, hdrInfo) {
                 // Keep for multi format supports.
                 return this.RGBE_ReadPixels_RLE(uint8array, hdrInfo);
