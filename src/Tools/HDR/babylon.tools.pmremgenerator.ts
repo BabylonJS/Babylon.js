@@ -6,6 +6,10 @@
 //_______________________________________________________________
 
 namespace BABYLON.Internals {
+    
+    /**
+     * The bounding box information used during the conversion process.
+     */
     class CMGBoundinBox {
         private static MAX = Number.MAX_VALUE;
         private static MIN = Number.MIN_VALUE;
@@ -63,6 +67,15 @@ namespace BABYLON.Internals {
         }
     }
 
+    /**
+     * Helper class to PreProcess a cubemap in order to generate mipmap according to the level of blur
+     * required by the glossinees of a material.
+     * 
+     * This only supports the cosine drop power as well as Warp fixup generation method.
+     * 
+     * This is using the process from CubeMapGen described here:
+     * https://seblagarde.wordpress.com/2012/06/10/amd-cubemapgen-for-physically-based-rendering/
+     */
     export class PMREMGenerator {
         private static CP_MAX_MIPLEVELS = 16;
 
@@ -232,6 +245,20 @@ namespace BABYLON.Internals {
         private _filterLUT: ArrayBufferView[];
         private _numMipLevels: number = 0;
 
+        /**
+         * Constructor of the generator.
+         * 
+         * @param input The different faces data from the original cubemap in the order X+ X- Y+ Y- Z+ Z-
+         * @param inputSize The size of the cubemap faces
+         * @param outputSize The size of the output cubemap faces
+         * @param maxNumMipLevels The max number of mip map to generate (0 means all)
+         * @param numChannels The number of channels stored in the cubemap (3 for RBGE for instance)
+         * @param isFloat Specifies if the input texture is in float or int (hdr is usually in float)
+         * @param specularPower The max specular level of the desired cubemap
+         * @param cosinePowerDropPerMip The amount of drop the specular power will follow on each mip
+         * @param excludeBase Specifies wether to process the level 0 (original level) or not
+         * @param fixup Specifies wether to apply the edge fixup algorythm or not
+         */
         constructor(public input: ArrayBufferView[],
             public inputSize: number,
             public outputSize: number,
@@ -245,6 +272,11 @@ namespace BABYLON.Internals {
 
         }
 
+        /**
+         * Launches the filter process and return the result.
+         * 
+         * @return the filter cubemap in the form mip0 [faces1..6] .. mipN [faces1..6]
+         */
         public filterCubeMap(): ArrayBufferView[][] {
             // Init cubemap processor
             this.init();
