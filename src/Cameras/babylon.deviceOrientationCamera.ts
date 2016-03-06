@@ -24,11 +24,12 @@ module BABYLON {
             }, false);
         }
 
-        public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
+        public attachControl(canvas: HTMLCanvasElement, noPreventDefault?: boolean): void {
             if (this._attachedCanvas) {
                 return;
             }
             this._attachedCanvas = canvas;
+            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
             if (!this._orientationChanged) {
                 this._orientationChanged = (evt) => {

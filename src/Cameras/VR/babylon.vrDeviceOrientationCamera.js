@@ -35,6 +35,7 @@ var BABYLON;
         };
         VRDeviceOrientationFreeCamera.prototype.attachControl = function (element, noPreventDefault) {
             _super.prototype.attachControl.call(this, element, noPreventDefault);
+            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             window.addEventListener("deviceorientation", this._deviceOrientationHandler);
         };
         VRDeviceOrientationFreeCamera.prototype.detachControl = function (element) {

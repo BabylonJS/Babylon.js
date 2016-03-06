@@ -61,6 +61,7 @@ var BABYLON;
                 return;
             }
             this._attachedElement = element;
+            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             if (this._onMouseDown === undefined) {
                 this._onMouseDown = function (evt) {
                     previousPosition = {

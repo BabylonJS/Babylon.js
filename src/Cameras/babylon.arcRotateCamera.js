@@ -160,6 +160,7 @@ var BABYLON;
                 return;
             }
             this._attachedElement = element;
+            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             var engine = this.getEngine();
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = function (evt) {

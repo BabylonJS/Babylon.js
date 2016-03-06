@@ -142,7 +142,7 @@ var BABYLON;
             if (directDecendantsOnly === void 0) { directDecendantsOnly = false; }
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) && (predicate == null || predicate(item))) {
+                if (((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) && (predicate === null || predicate(item))) {
                     results.push(item);
                 }
             }
@@ -260,6 +260,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Node.prototype, "state", void 0);
         return Node;
-    }());
+    })();
     BABYLON.Node = Node;
 })(BABYLON || (BABYLON = {}));

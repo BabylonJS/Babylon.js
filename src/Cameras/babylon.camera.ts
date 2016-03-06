@@ -53,6 +53,8 @@
         public static get RIG_MODE_VR(): number {
             return Camera._RIG_MODE_VR;
         }
+
+        public static ForceAttachControlToAlwaysPreventDefault = false;
         
         // Members
         @serializeAsVector3()

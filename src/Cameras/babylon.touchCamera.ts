@@ -32,6 +32,7 @@ module BABYLON {
             if (this._attachedCanvas) {
                 return;
             }
+            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
             if (this._onPointerDown === undefined) {
 
