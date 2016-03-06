@@ -131,49 +131,39 @@ var BABYLON;
             }
             return false;
         };
-        /**
-         * Evaluate a list of nodes and determine if they should be considered as descendants considering the given criterias
-         * @param {BABYLON.Node[]} list the input array of nodes to evaluate
-         * @param {BABYLON.Node[]} results the result array containing the nodes matching the given criterias
-         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
-         */
-        Node.prototype._getDescendants = function (list, results, directDecendantsOnly, predicate) {
+        Node.prototype._getDescendants = function (list, results, directDecendantsOnly) {
             if (directDecendantsOnly === void 0) { directDecendantsOnly = false; }
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) && (predicate == null || predicate(item))) {
+                if ((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) {
                     results.push(item);
                 }
             }
         };
         /**
          * Will return all nodes that have this node as parent.
-         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        Node.prototype.getDescendants = function (directDecendantsOnly, predicate) {
+        Node.prototype.getDescendants = function (directDecendantsOnly) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, directDecendantsOnly, predicate);
-            this._getDescendants(this._scene.lights, results, directDecendantsOnly, predicate);
-            this._getDescendants(this._scene.cameras, results, directDecendantsOnly, predicate);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
+            this._getDescendants(this._scene.lights, results, directDecendantsOnly);
+            this._getDescendants(this._scene.cameras, results, directDecendantsOnly);
             return results;
         };
         /**
-         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @Deprecated, legacy support.
          * use getDecendants instead.
          */
-        Node.prototype.getChildren = function (predicate) {
-            return this.getDescendants(true, predicate);
+        Node.prototype.getChildren = function () {
+            return this.getDescendants(true);
         };
         /**
          * Get all child-meshes of this node.
          */
-        Node.prototype.getChildMeshes = function (directDecendantsOnly, predicate) {
+        Node.prototype.getChildMeshes = function (directDecendantsOnly) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, directDecendantsOnly, predicate);
+            this._getDescendants(this._scene.meshes, results, directDecendantsOnly);
             return results;
         };
         Node.prototype._setReady = function (state) {
@@ -263,4 +253,3 @@ var BABYLON;
     })();
     BABYLON.Node = Node;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.node.js.map
