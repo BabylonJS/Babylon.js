@@ -81,61 +81,6 @@ const float kPi = 3.1415926535897932384626433832795;
 const float kRougnhessToAlphaScale = 0.1;
 const float kRougnhessToAlphaOffset = 0.29248125;
 
-#ifdef PoissonSamplingEnvironment
-    const int poissonSphereSamplersCount = 32;
-    vec3 poissonSphereSamplers[poissonSphereSamplersCount];
-
-    void initSamplers()
-    {
-        poissonSphereSamplers[0] = vec3( -0.552198926093, 0.801049753814, -0.0322487480415 );
-        poissonSphereSamplers[1] = vec3( 0.344874796559, -0.650989584719, 0.283038477033 ); 
-        poissonSphereSamplers[2] = vec3( -0.0710183703467, 0.163770497767, -0.95022416734 ); 
-        poissonSphereSamplers[3] = vec3( 0.422221832073, 0.576613638193, 0.519157625948 ); 
-        poissonSphereSamplers[4] = vec3( -0.561872200916, -0.665581249881, -0.131630473211 ); 
-        poissonSphereSamplers[5] = vec3( -0.409905973809, 0.0250731510778, 0.674676954809 ); 
-        poissonSphereSamplers[6] = vec3( 0.206829570551, -0.190199352704, 0.919073906156 ); 
-        poissonSphereSamplers[7] = vec3( -0.857514664463, 0.0274425010091, -0.475068738967 ); 
-        poissonSphereSamplers[8] = vec3( -0.816275009951, -0.0432916479141, 0.40394579291 ); 
-        poissonSphereSamplers[9] = vec3( 0.397976181928, -0.633227519667, -0.617794410447 ); 
-        poissonSphereSamplers[10] = vec3( -0.181484199014, 0.0155418272003, -0.34675720703 ); 
-        poissonSphereSamplers[11] = vec3( 0.591734926919, 0.489930882201, -0.51675303188 ); 
-        poissonSphereSamplers[12] = vec3( -0.264514973057, 0.834248662136, 0.464624235985 ); 
-        poissonSphereSamplers[13] = vec3( -0.125845223505, 0.812029586099, -0.46213797731 ); 
-        poissonSphereSamplers[14] = vec3( 0.0345715424639, 0.349983742938, 0.855109899027 ); 
-        poissonSphereSamplers[15] = vec3( 0.694340492749, -0.281052190209, -0.379600605543 ); 
-        poissonSphereSamplers[16] = vec3( -0.241055518078, -0.580199280578, 0.435381168431 );
-        poissonSphereSamplers[17] = vec3( 0.126313722289, 0.715113642744, 0.124385788055 ); 
-        poissonSphereSamplers[18] = vec3( 0.752862552387, 0.277075021888, 0.275059597549 );
-        poissonSphereSamplers[19] = vec3( -0.400896300918, -0.309374534321, -0.74285782627 ); 
-        poissonSphereSamplers[20] = vec3( 0.121843331941, -0.00381197918195, 0.322441835258 ); 
-        poissonSphereSamplers[21] = vec3( 0.741656771351, -0.472083016745, 0.14589173819 ); 
-        poissonSphereSamplers[22] = vec3( -0.120347565985, -0.397252703556, -0.00153836114051 ); 
-        poissonSphereSamplers[23] = vec3( -0.846258835203, -0.433763808754, 0.168732209784 ); 
-        poissonSphereSamplers[24] = vec3( 0.257765618362, -0.546470581239, -0.242234375624 ); 
-        poissonSphereSamplers[25] = vec3( -0.640343473361, 0.51920903395, 0.549310644325 ); 
-        poissonSphereSamplers[26] = vec3( -0.894309984621, 0.297394061018, 0.0884583225292 ); 
-        poissonSphereSamplers[27] = vec3( -0.126241933628, -0.535151016335, -0.440093659672 ); 
-        poissonSphereSamplers[28] = vec3( -0.158176440297, -0.393125021578, 0.890727226039 ); 
-        poissonSphereSamplers[29] = vec3( 0.896024272938, 0.203068725821, -0.11198597748 ); 
-        poissonSphereSamplers[30] = vec3( 0.568671758933, -0.314144243629, 0.509070768816 ); 
-        poissonSphereSamplers[31] = vec3( 0.289665332178, 0.104356977462, -0.348379247171 );
-    }
-
-    vec3 environmentSampler(samplerCube cubeMapSampler, vec3 centralDirection, float microsurfaceAverageSlope)
-    {
-        vec3 result = vec3(0., 0., 0.);
-        for(int i = 0; i < poissonSphereSamplersCount; i++)
-        {
-            vec3 offset = poissonSphereSamplers[i];
-            vec3 direction = centralDirection + microsurfaceAverageSlope * offset;
-            result += textureCube(cubeMapSampler, direction, 0.).rgb;
-        }
-
-        result /= 32.0;
-        return result;
-    }
-
-#endif
 
 // PBR HELPER METHODS
 float Square(float value)
@@ -753,10 +698,6 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 void main(void) {
 #include<clipPlaneFragment>
 
-    #ifdef PoissonSamplingEnvironment
-        initSamplers();
-    #endif
-
     vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
     // Albedo
@@ -816,7 +757,7 @@ void main(void) {
         #endif
     #endif
 
-    // Specular map
+    // Reflectivity map
     float microSurface = vReflectivityColor.a;
     vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
     
@@ -830,7 +771,7 @@ void main(void) {
         surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
 
         #ifdef OVERLOADEDVALUES
-                surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
+            surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
         #endif
 
         #ifdef MICROSURFACEFROMREFLECTIVITYMAP
@@ -1191,10 +1132,6 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
             environmentRadiance = textureCubeLodEXT(reflectionCubeSampler, vReflectionUVW, lodReflection).rgb * vReflectionInfos.x;
         #else
             environmentRadiance = textureCube(reflectionCubeSampler, vReflectionUVW, biasReflection).rgb * vReflectionInfos.x;
-        #endif
-        
-        #ifdef PoissonSamplingEnvironment
-            environmentRadiance = environmentSampler(reflectionCubeSampler, vReflectionUVW, alphaG) * vReflectionInfos.x;
         #endif
 
         #ifdef USESPHERICALFROMREFLECTIONMAP
