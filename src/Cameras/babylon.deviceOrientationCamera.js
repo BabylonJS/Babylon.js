@@ -35,6 +35,7 @@ var BABYLON;
                 return;
             }
             this._attachedCanvas = canvas;
+            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             if (!this._orientationChanged) {
                 this._orientationChanged = function (evt) {
                     if (!_this._initialOrientationGamma) {

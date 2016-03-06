@@ -56,6 +56,7 @@ var BABYLON;
         };
         WebVRFreeCamera.prototype.attachControl = function (element, noPreventDefault) {
             _super.prototype.attachControl.call(this, element, noPreventDefault);
+            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             if (navigator.getVRDevices) {
                 navigator.getVRDevices().then(this._getWebVRDevices);
             }

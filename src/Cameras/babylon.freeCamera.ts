@@ -60,6 +60,7 @@
                 return;
             }
             this._attachedElement = element;
+            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
             if (this._onMouseDown === undefined) {
                 this._onMouseDown = evt => {

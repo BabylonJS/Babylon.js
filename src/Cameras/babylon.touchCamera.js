@@ -34,6 +34,7 @@ var BABYLON;
             if (this._attachedCanvas) {
                 return;
             }
+            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             if (this._onPointerDown === undefined) {
                 this._onPointerDown = function (evt) {
                     if (evt.pointerType === "mouse") {

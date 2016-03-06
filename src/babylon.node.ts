@@ -186,7 +186,7 @@
         public _getDescendants(list: Node[], results: Node[], directDecendantsOnly: boolean = false, predicate?: (node: Node) => boolean): void {
             for (var index = 0; index < list.length; index++) {
                 var item = list[index];
-                if (((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) && (predicate==null || predicate(item))) {
+                if (((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) && (predicate === null || predicate(item))) {
                     results.push(item);
                 }
             }

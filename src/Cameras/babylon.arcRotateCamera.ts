@@ -204,6 +204,8 @@
             }
             this._attachedElement = element;
 
+            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
+
             var engine = this.getEngine();
 
             if (this._onPointerDown === undefined) {
