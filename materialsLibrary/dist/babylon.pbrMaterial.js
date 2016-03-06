@@ -110,59 +110,212 @@ var BABYLON;
         }
         return PBRMaterialDefines;
     })(BABYLON.MaterialDefines);
+    /**
+     * The Physically based material of BJS.
+     *
+     * This offers the main features of a standard PBR material.
+     * For more information, please refer to the documentation :
+     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+     */
     var PBRMaterial = (function (_super) {
         __extends(PBRMaterial, _super);
+        /**
+         * Instantiates a new PBRMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
         function PBRMaterial(name, scene) {
             var _this = this;
             _super.call(this, name, scene);
+            /**
+             * Intensity of the direct lights e.g. the four lights available in your scene.
+             * This impacts both the direct diffuse and specular highlights.
+             */
             this.directIntensity = 1.0;
+            /**
+             * Intensity of the emissive part of the material.
+             * This helps controlling the emissive effect without modifying the emissive color.
+             */
             this.emissiveIntensity = 1.0;
+            /**
+             * Intensity of the environment e.g. how much the environment will light the object
+             * either through harmonics for rough material or through the refelction for shiny ones.
+             */
             this.environmentIntensity = 1.0;
+            /**
+             * This is a special control allowing the reduction of the specular highlights coming from the
+             * four lights of the scene. Those highlights may not be needed in full environment lighting.
+             */
             this.specularIntensity = 1.0;
             this._lightingInfos = new BABYLON.Vector4(this.directIntensity, this.emissiveIntensity, this.environmentIntensity, this.specularIntensity);
+            /**
+             * Debug Control allowing disabling the bump map on this material.
+             */
+            this.disableBumpMap = false;
+            /**
+             * Debug Control helping enforcing or dropping the darkness of shadows.
+             * 1.0 means the shadows have their normal darkness, 0.0 means the shadows are not visible.
+             */
             this.overloadedShadowIntensity = 1.0;
+            /**
+             * Debug Control helping dropping the shading effect coming from the diffuse lighting.
+             * 1.0 means the shade have their normal impact, 0.0 means no shading at all.
+             */
             this.overloadedShadeIntensity = 1.0;
             this._overloadedShadowInfos = new BABYLON.Vector4(this.overloadedShadowIntensity, this.overloadedShadeIntensity, 0.0, 0.0);
+            /**
+             * The camera exposure used on this material.
+             * This property is here and not in the camera to allow controlling exposure without full screen post process.
+             * This corresponds to a photographic exposure.
+             */
             this.cameraExposure = 1.0;
+            /**
+             * The camera contrast used on this material.
+             * This property is here and not in the camera to allow controlling contrast without full screen post process.
+             */
             this.cameraContrast = 1.0;
             this._cameraInfos = new BABYLON.Vector4(1.0, 1.0, 0.0, 0.0);
             this._microsurfaceTextureLods = new BABYLON.Vector2(0.0, 0.0);
+            /**
+             * Debug Control allowing to overload the ambient color.
+             * This as to be use with the overloadedAmbientIntensity parameter.
+             */
+            this.overloadedAmbient = BABYLON.Color3.White();
+            /**
+             * Debug Control indicating how much the overloaded ambient color is used against the default one.
+             */
             this.overloadedAmbientIntensity = 0.0;
+            /**
+             * Debug Control allowing to overload the albedo color.
+             * This as to be use with the overloadedAlbedoIntensity parameter.
+             */
+            this.overloadedAlbedo = BABYLON.Color3.White();
+            /**
+             * Debug Control indicating how much the overloaded albedo color is used against the default one.
+             */
             this.overloadedAlbedoIntensity = 0.0;
+            /**
+             * Debug Control allowing to overload the reflectivity color.
+             * This as to be use with the overloadedReflectivityIntensity parameter.
+             */
+            this.overloadedReflectivity = BABYLON.Color3.White();
+            /**
+             * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
+             */
             this.overloadedReflectivityIntensity = 0.0;
+            /**
+             * Debug Control allowing to overload the emissive color.
+             * This as to be use with the overloadedEmissiveIntensity parameter.
+             */
+            this.overloadedEmissive = BABYLON.Color3.White();
+            /**
+             * Debug Control indicating how much the overloaded emissive color is used against the default one.
+             */
             this.overloadedEmissiveIntensity = 0.0;
             this._overloadedIntensity = new BABYLON.Vector4(this.overloadedAmbientIntensity, this.overloadedAlbedoIntensity, this.overloadedReflectivityIntensity, this.overloadedEmissiveIntensity);
-            this.overloadedAmbient = BABYLON.Color3.White();
-            this.overloadedAlbedo = BABYLON.Color3.White();
-            this.overloadedReflectivity = BABYLON.Color3.White();
-            this.overloadedEmissive = BABYLON.Color3.White();
+            /**
+             * Debug Control allowing to overload the reflection color.
+             * This as to be use with the overloadedReflectionIntensity parameter.
+             */
             this.overloadedReflection = BABYLON.Color3.White();
-            this.overloadedMicroSurface = 0.0;
-            this.overloadedMicroSurfaceIntensity = 0.0;
+            /**
+             * Debug Control indicating how much the overloaded reflection color is used against the default one.
+             */
             this.overloadedReflectionIntensity = 0.0;
+            /**
+             * Debug Control allowing to overload the microsurface.
+             * This as to be use with the overloadedMicroSurfaceIntensity parameter.
+             */
+            this.overloadedMicroSurface = 0.0;
+            /**
+             * Debug Control indicating how much the overloaded microsurface is used against the default one.
+             */
+            this.overloadedMicroSurfaceIntensity = 0.0;
             this._overloadedMicroSurface = new BABYLON.Vector3(this.overloadedMicroSurface, this.overloadedMicroSurfaceIntensity, this.overloadedReflectionIntensity);
-            this.disableBumpMap = false;
             this.ambientColor = new BABYLON.Color3(0, 0, 0);
+            /**
+             * AKA Diffuse Color in other nomenclature.
+             */
             this.albedoColor = new BABYLON.Color3(1, 1, 1);
+            /**
+             * AKA Specular Color in other nomenclature.
+             */
             this.reflectivityColor = new BABYLON.Color3(1, 1, 1);
             this.reflectionColor = new BABYLON.Color3(0.5, 0.5, 0.5);
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
-            this.microSurface = 0.5;
+            /**
+             * AKA Glossiness in other nomenclature.
+             */
+            this.microSurface = 0.9;
+            /**
+             * source material index of refraction (IOR)' / 'destination material IOR.
+             */
             this.indexOfRefraction = 0.66;
+            /**
+             * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
+             */
             this.invertRefractionY = false;
+            /**
+             * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+             * Materials half opaque for instance using refraction could benefit from this control.
+             */
             this.linkRefractionWithTransparency = false;
+            /**
+             * The emissive and albedo are linked to never be more than one (Energy conservation).
+             */
             this.linkEmissiveWithAlbedo = false;
             this.useLightmapAsShadowmap = false;
+            /**
+             * In this mode, the emissive informtaion will always be added to the lighting once.
+             * A light for instance can be thought as emissive.
+             */
             this.useEmissiveAsIllumination = false;
+            /**
+             * Secifies that the alpha is coming form the albedo channel alpha channel.
+             */
             this.useAlphaFromAlbedoTexture = false;
+            /**
+             * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
+             * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+             */
             this.useSpecularOverAlpha = true;
+            /**
+             * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+             */
             this.useMicroSurfaceFromReflectivityMapAlpha = false;
+            /**
+             * In case the reflectivity map does not contain the microsurface information in its alpha channel,
+             * The material will try to infer what glossiness each pixel should be.
+             */
             this.useAutoMicroSurfaceFromReflectivityMap = false;
+            /**
+             * Allows to work with scalar in linear mode. This is definitely a matter of preferences and tools used during
+             * the creation of the material.
+             */
             this.useScalarInLinearSpace = false;
+            /**
+             * BJS is using an harcoded light falloff based on a manually sets up range.
+             * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+             * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
+             */
             this.usePhysicalLightFalloff = true;
+            /**
+             * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
+             * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+             */
             this.useRadianceOverAlpha = true;
+            /**
+             * Allows using the bump map in parallax mode.
+             */
             this.useParallax = false;
+            /**
+             * Allows using the bump map in parallax occlusion mode.
+             */
             this.useParallaxOcclusion = false;
+            /**
+             * Controls the scale bias of the parallax mode.
+             */
             this.parallaxScaleBias = 0.05;
             this.disableLighting = false;
             this._renderTargets = new BABYLON.SmartArray(16);
@@ -911,6 +1064,9 @@ var BABYLON;
         ], PBRMaterial.prototype, "specularIntensity");
         __decorate([
             BABYLON.serialize()
+        ], PBRMaterial.prototype, "disableBumpMap");
+        __decorate([
+            BABYLON.serialize()
         ], PBRMaterial.prototype, "overloadedShadowIntensity");
         __decorate([
             BABYLON.serialize()
@@ -922,44 +1078,41 @@ var BABYLON;
             BABYLON.serialize()
         ], PBRMaterial.prototype, "cameraContrast");
         __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedAmbient");
+        __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "overloadedAmbientIntensity");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedAlbedo");
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "overloadedAlbedoIntensity");
         __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedReflectivity");
+        __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "overloadedReflectivityIntensity");
+        __decorate([
+            BABYLON.serializeAsColor3()
+        ], PBRMaterial.prototype, "overloadedEmissive");
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "overloadedEmissiveIntensity");
         __decorate([
             BABYLON.serializeAsColor3()
-        ], PBRMaterial.prototype, "overloadedAmbient");
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], PBRMaterial.prototype, "overloadedAlbedo");
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], PBRMaterial.prototype, "overloadedReflectivity");
-        __decorate([
-            BABYLON.serializeAsColor3()
-        ], PBRMaterial.prototype, "overloadedEmissive");
-        __decorate([
-            BABYLON.serializeAsColor3()
         ], PBRMaterial.prototype, "overloadedReflection");
+        __decorate([
+            BABYLON.serialize()
+        ], PBRMaterial.prototype, "overloadedReflectionIntensity");
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "overloadedMicroSurface");
         __decorate([
             BABYLON.serialize()
         ], PBRMaterial.prototype, "overloadedMicroSurfaceIntensity");
-        __decorate([
-            BABYLON.serialize()
-        ], PBRMaterial.prototype, "overloadedReflectionIntensity");
-        __decorate([
-            BABYLON.serialize()
-        ], PBRMaterial.prototype, "disableBumpMap");
         __decorate([
             BABYLON.serializeAsTexture()
         ], PBRMaterial.prototype, "albedoTexture");
