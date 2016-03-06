@@ -127,6 +127,6 @@ var BABYLON;
             return running;
         };
         return Animatable;
-    })();
+    }());
     BABYLON.Animatable = Animatable;
 })(BABYLON || (BABYLON = {}));

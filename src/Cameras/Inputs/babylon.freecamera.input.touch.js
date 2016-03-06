@@ -6,8 +6,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var ComposableCameraTouchInput = (function () {
-        function ComposableCameraTouchInput() {
+    var FreeCameraTouchInput = (function () {
+        function FreeCameraTouchInput() {
             this._offsetX = null;
             this._offsetY = null;
             this._pointerCount = 0;
@@ -15,10 +15,10 @@ var BABYLON;
             this.touchAngularSensibility = 200000.0;
             this.touchMoveSensibility = 250.0;
         }
-        ComposableCameraTouchInput.prototype.attachCamera = function (camera) {
+        FreeCameraTouchInput.prototype.attachCamera = function (camera) {
             this.camera = camera;
         };
-        ComposableCameraTouchInput.prototype.attachElement = function (element, noPreventDefault) {
+        FreeCameraTouchInput.prototype.attachElement = function (element, noPreventDefault) {
             var _this = this;
             var previousPosition;
             if (this._attachedElement) {
@@ -26,6 +26,10 @@ var BABYLON;
             }
             this._attachedElement = element;
             if (this._onPointerDown === undefined) {
+                this._onLostFocus = function (evt) {
+                    _this._offsetX = null;
+                    _this._offsetY = null;
+                };
                 this._onPointerDown = function (evt) {
                     if (evt.pointerType === "mouse") {
                         return;
@@ -79,22 +83,24 @@ var BABYLON;
                     _this._offsetY = -(evt.clientY - previousPosition.y);
                 };
             }
+            element.addEventListener("blur", this._onLostFocus);
             element.addEventListener("pointerdown", this._onPointerDown);
             element.addEventListener("pointerup", this._onPointerUp);
             element.addEventListener("pointerout", this._onPointerUp);
             element.addEventListener("pointermove", this._onPointerMove);
         };
-        ComposableCameraTouchInput.prototype.detachElement = function (element) {
+        FreeCameraTouchInput.prototype.detachElement = function (element) {
             if (this._attachedElement !== element) {
                 return;
             }
+            element.removeEventListener("blur", this._onLostFocus);
             element.removeEventListener("pointerdown", this._onPointerDown);
             element.removeEventListener("pointerup", this._onPointerUp);
             element.removeEventListener("pointerout", this._onPointerUp);
             element.removeEventListener("pointermove", this._onPointerMove);
             this._attachedElement = null;
         };
-        ComposableCameraTouchInput.prototype.checkInputs = function () {
+        FreeCameraTouchInput.prototype.checkInputs = function () {
             if (this._offsetX) {
                 var camera = this.camera;
                 camera.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
@@ -109,21 +115,21 @@ var BABYLON;
                 }
             }
         };
-        ComposableCameraTouchInput.prototype.detach = function () {
+        FreeCameraTouchInput.prototype.detach = function () {
             if (this._attachedElement) {
                 this.detachElement(this._attachedElement);
             }
         };
-        ComposableCameraTouchInput.prototype.getTypeName = function () {
+        FreeCameraTouchInput.prototype.getTypeName = function () {
             return "touch";
         };
         __decorate([
             BABYLON.serialize()
-        ], ComposableCameraTouchInput.prototype, "touchAngularSensibility", void 0);
+        ], FreeCameraTouchInput.prototype, "touchAngularSensibility", void 0);
         __decorate([
             BABYLON.serialize()
-        ], ComposableCameraTouchInput.prototype, "touchMoveSensibility", void 0);
-        return ComposableCameraTouchInput;
+        ], FreeCameraTouchInput.prototype, "touchMoveSensibility", void 0);
+        return FreeCameraTouchInput;
     }());
-    BABYLON.ComposableCameraTouchInput = ComposableCameraTouchInput;
+    BABYLON.FreeCameraTouchInput = FreeCameraTouchInput;
 })(BABYLON || (BABYLON = {}));

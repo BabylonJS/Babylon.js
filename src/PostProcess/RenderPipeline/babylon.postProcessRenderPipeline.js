@@ -124,6 +124,6 @@ var BABYLON;
         PostProcessRenderPipeline.PASS_EFFECT_NAME = "passEffect";
         PostProcessRenderPipeline.PASS_SAMPLER_NAME = "passSampler";
         return PostProcessRenderPipeline;
-    })();
+    }());
     BABYLON.PostProcessRenderPipeline = PostProcessRenderPipeline;
 })(BABYLON || (BABYLON = {}));

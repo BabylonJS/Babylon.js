@@ -17,14 +17,8 @@ var BABYLON;
             var _this = this;
             _super.call(this, name, position, scene);
             this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
-            this.keysUp = [38];
-            this.keysDown = [40];
-            this.keysLeft = [37];
-            this.keysRight = [39];
             this.checkCollisions = false;
             this.applyGravity = false;
-            this.angularSensibility = 2000.0;
-            this._keys = [];
             this._collider = new BABYLON.Collider();
             this._needMoveForGravity = false;
             this._oldPosition = BABYLON.Vector3.Zero();
@@ -48,128 +42,26 @@ var BABYLON;
                 };
                 updatePosition(newPosition);
             };
+            this.inputs = new FreeCameraInputsManager(this);
+            this.inputs.addKeyboard().addMouse();
         }
-        FreeCamera.prototype._onLostFocus = function (e) {
-            this._keys = [];
-        };
         // Controls
         FreeCamera.prototype.attachControl = function (element, noPreventDefault) {
-            var _this = this;
-            var previousPosition;
-            var engine = this.getEngine();
             if (this._attachedElement) {
                 return;
             }
+            this._noPreventDefault = noPreventDefault;
             this._attachedElement = element;
-            if (this._onMouseDown === undefined) {
-                this._onMouseDown = function (evt) {
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseUp = function (evt) {
-                    previousPosition = null;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseOut = function (evt) {
-                    previousPosition = null;
-                    _this._keys = [];
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseMove = function (evt) {
-                    if (!previousPosition && !engine.isPointerLock) {
-                        return;
-                    }
-                    var offsetX;
-                    var offsetY;
-                    if (!engine.isPointerLock) {
-                        offsetX = evt.clientX - previousPosition.x;
-                        offsetY = evt.clientY - previousPosition.y;
-                    }
-                    else {
-                        offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                        offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    }
-                    _this.cameraRotation.y += offsetX / _this.angularSensibility;
-                    _this.cameraRotation.x += offsetY / _this.angularSensibility;
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onKeyDown = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = _this._keys.indexOf(evt.keyCode);
-                        if (index === -1) {
-                            _this._keys.push(evt.keyCode);
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                };
-                this._onKeyUp = function (evt) {
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = _this._keys.indexOf(evt.keyCode);
-                        if (index >= 0) {
-                            _this._keys.splice(index, 1);
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                };
-                this._reset = function () {
-                    _this._keys = [];
-                    previousPosition = null;
-                    _this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
-                    _this.cameraRotation = new BABYLON.Vector2(0, 0);
-                };
-            }
-            element.addEventListener("mousedown", this._onMouseDown, false);
-            element.addEventListener("mouseup", this._onMouseUp, false);
-            element.addEventListener("mouseout", this._onMouseOut, false);
-            element.addEventListener("mousemove", this._onMouseMove, false);
-            BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            this.inputs.attachElement(element, noPreventDefault);
         };
         FreeCamera.prototype.detachControl = function (element) {
             if (this._attachedElement !== element) {
                 return;
             }
-            element.removeEventListener("mousedown", this._onMouseDown);
-            element.removeEventListener("mouseup", this._onMouseUp);
-            element.removeEventListener("mouseout", this._onMouseOut);
-            element.removeEventListener("mousemove", this._onMouseMove);
-            BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            this.inputs.detachElement(this._attachedElement);
             this._attachedElement = null;
-            if (this._reset) {
-                this._reset();
-            }
+            this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
+            this.cameraRotation = new BABYLON.Vector2(0, 0);
         };
         FreeCamera.prototype._collideWithWorld = function (velocity) {
             var globalPosition;
@@ -195,26 +87,7 @@ var BABYLON;
                 this._localDirection = BABYLON.Vector3.Zero();
                 this._transformedDirection = BABYLON.Vector3.Zero();
             }
-            // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                var speed = this._computeLocalCameraSpeed();
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(-speed, 0, 0);
-                }
-                else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(0, 0, speed);
-                }
-                else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(speed, 0, 0);
-                }
-                else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    this._localDirection.copyFromFloats(0, 0, -speed);
-                }
-                this.getViewMatrix().invertToRef(this._cameraTransformMatrix);
-                BABYLON.Vector3.TransformNormalToRef(this._localDirection, this._cameraTransformMatrix, this._transformedDirection);
-                this.cameraDirection.addInPlace(this._transformedDirection);
-            }
+            this.inputs.checkInputs();
             _super.prototype._checkInputs.call(this);
         };
         FreeCamera.prototype._decideIfNeedsToMove = function () {
@@ -228,6 +101,10 @@ var BABYLON;
                 this.position.addInPlace(this.cameraDirection);
             }
         };
+        FreeCamera.prototype.dispose = function () {
+            this.inputs.clear();
+            _super.prototype.dispose.call(this);
+        };
         FreeCamera.prototype.getTypeName = function () {
             return "FreeCamera";
         };
@@ -236,26 +113,45 @@ var BABYLON;
         ], FreeCamera.prototype, "ellipsoid", void 0);
         __decorate([
             BABYLON.serialize()
-        ], FreeCamera.prototype, "keysUp", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FreeCamera.prototype, "keysDown", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FreeCamera.prototype, "keysLeft", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FreeCamera.prototype, "keysRight", void 0);
-        __decorate([
-            BABYLON.serialize()
         ], FreeCamera.prototype, "checkCollisions", void 0);
         __decorate([
             BABYLON.serialize()
         ], FreeCamera.prototype, "applyGravity", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], FreeCamera.prototype, "angularSensibility", void 0);
         return FreeCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.FreeCamera = FreeCamera;
+    var FreeCameraInputsManager = (function (_super) {
+        __extends(FreeCameraInputsManager, _super);
+        function FreeCameraInputsManager(camera) {
+            _super.call(this, camera);
+        }
+        FreeCameraInputsManager.prototype.add = function (input) {
+            _super.prototype.add.call(this, input);
+            if (this.camera._attachedElement && input.attachElement) {
+                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
+            }
+        };
+        FreeCameraInputsManager.prototype.addKeyboard = function () {
+            this.add(new BABYLON.FreeCameraKeyboardMoveInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addMouse = function () {
+            this.add(new BABYLON.FreeCameraMouseInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addGamepad = function () {
+            this.add(new BABYLON.FreeCameraGamepadInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addDeviceOrientation = function () {
+            this.add(new BABYLON.FreeCameraDeviceOrientationInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addTouch = function () {
+            this.add(new BABYLON.FreeCameraTouchInput());
+            return this;
+        };
+        return FreeCameraInputsManager;
+    }(BABYLON.CameraInputsManager));
+    BABYLON.FreeCameraInputsManager = FreeCameraInputsManager;
 })(BABYLON || (BABYLON = {}));

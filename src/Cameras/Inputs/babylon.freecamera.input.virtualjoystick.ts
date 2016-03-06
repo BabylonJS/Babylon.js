@@ -1,6 +1,6 @@
 module BABYLON {
-    export class ComposableCameraVirtualJoystickInput implements IComposableCameraInput {
-        camera: ComposableCamera;
+    export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
 
         private _leftjoystick: VirtualJoystick;
         private _rightjoystick: VirtualJoystick;
@@ -29,7 +29,7 @@ module BABYLON {
             }
         }
         
-        attachCamera(camera: ComposableCamera) {
+        attachCamera(camera: FreeCamera) {
             this.camera = camera;
             
             this._leftjoystick = new VirtualJoystick(true);

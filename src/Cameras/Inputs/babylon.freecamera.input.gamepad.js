@@ -6,19 +6,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var ComposableCameraGamepadInput = (function () {
-        function ComposableCameraGamepadInput() {
+    var FreeCameraGamepadInput = (function () {
+        function FreeCameraGamepadInput() {
             var _this = this;
             this.gamepadAngularSensibility = 200;
             this.gamepadMoveSensibility = 40;
             this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         }
-        ComposableCameraGamepadInput.prototype.attachCamera = function (camera) {
+        FreeCameraGamepadInput.prototype.attachCamera = function (camera) {
             this.camera = camera;
         };
-        ComposableCameraGamepadInput.prototype.detach = function () {
+        FreeCameraGamepadInput.prototype.detach = function () {
         };
-        ComposableCameraGamepadInput.prototype.checkInputs = function () {
+        FreeCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {
                 var camera = this.camera;
                 var LSValues = this.gamepad.leftStick;
@@ -38,22 +38,22 @@ var BABYLON;
                 camera.cameraRotation = camera.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
             }
         };
-        ComposableCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
+        FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
             // Only the first gamepad can control the camera
             if (gamepad.index === 0) {
                 this.gamepad = gamepad;
             }
         };
-        ComposableCameraGamepadInput.prototype.getTypeName = function () {
+        FreeCameraGamepadInput.prototype.getTypeName = function () {
             return "gamepad";
         };
         __decorate([
             BABYLON.serialize()
-        ], ComposableCameraGamepadInput.prototype, "gamepadAngularSensibility", void 0);
+        ], FreeCameraGamepadInput.prototype, "gamepadAngularSensibility", void 0);
         __decorate([
             BABYLON.serialize()
-        ], ComposableCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
-        return ComposableCameraGamepadInput;
+        ], FreeCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
+        return FreeCameraGamepadInput;
     }());
-    BABYLON.ComposableCameraGamepadInput = ComposableCameraGamepadInput;
+    BABYLON.FreeCameraGamepadInput = FreeCameraGamepadInput;
 })(BABYLON || (BABYLON = {}));

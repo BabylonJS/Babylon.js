@@ -31,6 +31,6 @@ var BABYLON;
             _super.prototype.dispose.call(this, camera);
         };
         return RefractionPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.RefractionPostProcess = RefractionPostProcess;
 })(BABYLON || (BABYLON = {}));

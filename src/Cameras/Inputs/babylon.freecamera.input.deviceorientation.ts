@@ -1,6 +1,6 @@
 module BABYLON {
-    export class ComposableCameraDeviceOrientationInput implements IComposableCameraInput {
-        camera: ComposableCamera;
+    export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
 
         private _offsetX: number = null;
         private _offsetY: number = null;
@@ -22,7 +22,7 @@ module BABYLON {
             this._orientationChanged = this.orientationChanged.bind(this);
         }
 
-        attachCamera(camera: ComposableCamera) {
+        attachCamera(camera: FreeCamera) {
             this.camera = camera;
 
             window.addEventListener("resize", this._resetOrientationGamma, false);

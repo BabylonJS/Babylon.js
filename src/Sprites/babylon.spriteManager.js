@@ -195,6 +195,6 @@ var BABYLON;
             }
         };
         return SpriteManager;
-    })();
+    }());
     BABYLON.SpriteManager = SpriteManager;
 })(BABYLON || (BABYLON = {}));
