@@ -603,7 +603,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 // Legacy browser patch
                 var shaderName = "pbr";
-                if (scene.getEngine().getCaps().standardDerivatives) {
+                if (!scene.getEngine().getCaps().standardDerivatives) {
                     shaderName = "legacypbr";
                 }
                 var join = this._defines.toString();
