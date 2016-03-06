@@ -5,18 +5,45 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * This represents a texture coming from an HDR input.
+     *
+     * The only supported format is currently panorama picture stored in RGBE format.
+     * Example of such files can be found on HDRLib: http://hdrlib.com/
+     */
     var HDRCubeTexture = (function (_super) {
         __extends(HDRCubeTexture, _super);
+        /**
+         * Instantiates an HDRTexture from the following parameters.
+         *
+         * @param url The location of the HDR raw data (Panorama stored in RGBE format)
+         * @param scene The scene the texture will be used in
+         * @param size The cubemap desired size (the more it increases the longer the generation will be)
+         * @param noMipmap Forces to not generate the mipmap if true
+         * @param generateHarmonics Specifies wether you want to extract the polynomial harmonics during the generation process
+         * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
+         * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
+         */
         function HDRCubeTexture(url, scene, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
             if (noMipmap === void 0) { noMipmap = false; }
             if (generateHarmonics === void 0) { generateHarmonics = true; }
             if (useInGammaSpace === void 0) { useInGammaSpace = false; }
             if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
             _super.call(this, scene);
-            this.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
             this._useInGammaSpace = false;
             this._generateHarmonics = true;
+            /**
+             * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
+             */
+            this.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+            /**
+             * The spherical polynomial data extracted from the texture.
+             */
             this.sphericalPolynomial = null;
+            /**
+             * Specifies wether the texture has been generated through the PMREMGenerator tool.
+             * This is usefull at run time to apply the good shader.
+             */
             this.isPMREM = false;
             this.name = url;
             this.url = url;
@@ -91,6 +118,7 @@ var BABYLON;
             var mipmapGenerator = null;
             if (!this._noMipmap && this._usePMREMGenerator) {
                 mipmapGenerator = function (data) {
+                    // Custom setup of the generator matching with the PBR shader values.
                     var generator = new BABYLON.Internals.PMREMGenerator(data, _this._size, _this._size, 0, 3, _this.getScene().getEngine().getCaps().textureFloat, 2048, 0.25, false, true);
                     return generator.filterCubeMap();
                 };

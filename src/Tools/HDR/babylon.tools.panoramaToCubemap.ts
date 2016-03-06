@@ -1,14 +1,55 @@
 module BABYLON.Internals {
+    /**
+     * CubeMap information grouping all the data for each faces as well as the cubemap size.
+     */
     export interface CubeMapInfo {
+        /**
+         * The pixel array for the front face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         front: Float32Array;
+        
+        /**
+         * The pixel array for the back face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         back: Float32Array;
+        
+        /**
+         * The pixel array for the left face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         left: Float32Array;
+        
+        /**
+         * The pixel array for the right face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         right: Float32Array;
+        
+        /**
+         * The pixel array for the up face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         up: Float32Array;
+        
+        /**
+         * The pixel array for the down face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         down: Float32Array;
+        
+        /**
+         * The size of the cubemap stored.
+         * 
+         * Each faces will be size * size pixels.
+         */
         size: number;
     }
 
+    /**
+     * Helper class usefull to convert panorama picture to their cubemap representation in 6 faces.
+     */
     export class PanoramaToCubeMapTools {
 
         private static FACE_FRONT = [
@@ -48,6 +89,15 @@ module BABYLON.Internals {
             new Vector3(1.0, -1.0, -1.0)
         ];
 
+        /**
+         * Converts a panorma stored in RGB right to left up to down format into a cubemap (6 faces).
+         * 
+         * @param float32Array The source data.
+         * @param inputWidth The width of the input panorama.
+         * @param inputhHeight The height of the input panorama.
+         * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
+         * @return The cubemap data 
+         */
         public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo {
             if (!float32Array) {
                 throw "ConvertPanoramaToCubemap: input cannot be null";
