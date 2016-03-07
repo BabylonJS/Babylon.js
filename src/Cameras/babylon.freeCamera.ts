@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    export class FreeCamera extends TargetCamera {
+    export class FreeCamera extends TargetCamera {        
         @serializeAsVector3()
         public ellipsoid = new Vector3(0.5, 1, 0.5);
 
@@ -146,27 +146,27 @@
         }
         
         addKeyboard(){
-            this.add(new FreeCameraKeyboardMoveInput());
+            this.add(new CameraInputs.FreeCameraKeyboardMoveInput());
             return this;
         }
         
         addMouse(){
-            this.add(new FreeCameraMouseInput());
+            this.add(new CameraInputs.FreeCameraMouseInput());
             return this;
         }
         
         addGamepad(){
-            this.add(new FreeCameraGamepadInput());
+            this.add(new CameraInputs.FreeCameraGamepadInput());
             return this;
         }
         
         addDeviceOrientation(){
-            this.add(new FreeCameraDeviceOrientationInput());
+            this.add(new CameraInputs.FreeCameraDeviceOrientationInput());
             return this;
         }
         
         addTouch(){
-            this.add(new FreeCameraTouchInput());
+            this.add(new CameraInputs.FreeCameraTouchInput());
             return this;
         }
     }

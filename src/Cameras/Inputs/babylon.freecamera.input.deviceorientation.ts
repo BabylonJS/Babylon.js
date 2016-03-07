@@ -1,4 +1,4 @@
-module BABYLON {
+module BABYLON.CameraInputs {
     export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
 
@@ -72,7 +72,9 @@ module BABYLON {
         }
 
         getTypeName(): string {
-            return "deviceorientation";
+            return "freecamera.deviceorientation";
         }
     }
+    
+    InputTypes["freecamera.deviceorientation"] = FreeCameraDeviceOrientationInput;
 }

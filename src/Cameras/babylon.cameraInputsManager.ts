@@ -1,4 +1,8 @@
 module BABYLON {
+    export module CameraInputs{
+        export var InputTypes = {};
+    }
+    
     export interface ICameraInput<TCamera extends BABYLON.Camera> {
         camera: TCamera;
         attachCamera(camera: TCamera);
@@ -88,5 +92,34 @@ module BABYLON {
             this.inputs = {};
             this.checkInputs = () => { };
         }
+        
+        public serialize(){
+            var inputs = {};
+            for (var cam in this.inputs) {
+                var input = this.inputs[cam];
+                var res = SerializationHelper.Serialize(input);
+                inputs[input.getTypeName()] = res;
+            }
+            
+            return inputs;
+        }
+        
+        public parse(parsedInputs){
+            if (parsedInputs){
+                this.clear();
+                
+                for (var n in parsedInputs) {
+                    var construct = CameraInputs.InputTypes[n];
+                    if (construct){
+                        var parsedinput = parsedInputs[n];
+                        var input = SerializationHelper.Parse(() => { return new construct() }, parsedinput, null);
+                        this.add(input as any);
+                    }
+                }
+            }
+        }
+        
     }
+    
+    
 } 

@@ -460,6 +460,9 @@ var BABYLON;
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
+            if (this.inputs) {
+                serializationObject.inputs = this.inputs.serialize();
+            }
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
@@ -522,6 +525,10 @@ var BABYLON;
             // Parent
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
+            }
+            //Input manager
+            if (parsedCamera.inputs) {
+                camera.inputs.parse(parsedCamera.inputs);
             }
             // Target
             if (parsedCamera.target) {
