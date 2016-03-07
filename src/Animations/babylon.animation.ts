@@ -169,6 +169,29 @@
             this.dataType = dataType;
             this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         }
+        
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = "Name: " + this.name + ", property: " + this.targetProperty;
+            ret += ", datatype: " + (["Float", "Vector3", "Quaternion", "Matrix", "Color3", "Vector2"])[this.dataType];
+            ret += ", nKeys: " + (this._keys ? this._keys.length : "none");
+            ret += ", nRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
+            if (fullDetails){
+                ret += ", Ranges: {" 
+                var first = true;
+                for (var name in this._ranges) {
+                    if (!first){
+                        ret + ", ";
+                        first = false; 
+                    }
+                    ret += name; 
+                }
+                ret += "}";
+            }
+            return ret;
+        } 
 
         // Methods
         /**

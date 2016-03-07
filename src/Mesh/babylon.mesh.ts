@@ -133,6 +133,17 @@
 
         }
 
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = super.toString(fullDetails);
+            ret += ", n vertices: " + this.getTotalVertices();
+            if (fullDetails){
+            }
+            return ret;
+        } 
+        
         // Methods
         public get hasLODLevels(): boolean {
             return this._LODLevels.length > 0;

@@ -157,6 +157,19 @@
         }
 
         /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = "Name: " + this.name + ", isInstance: " + (this instanceof InstancedMesh ? "TRUE" : "FALSE");
+            ret += ", # of submeshes: " + this.subMeshes.length;
+            if (this._skeleton) {
+                ret += ", skeleton: " + this._skeleton.name;
+            }
+            if (fullDetails){
+            }
+            return ret;
+        } 
+        /**
          * Getting the rotation object. 
          * If rotation quaternion is set, this vector will (almost always) be the Zero vector!
          */

@@ -12,6 +12,7 @@
             super(name, scene);
 
             this.direction = direction;
+            this._type = 3;
         }
 
         public setDirectionToTarget(target: Vector3): Vector3 {

@@ -24,6 +24,7 @@
             this.direction = direction;
             this.angle = angle;
             this.exponent = exponent;
+            this._type = 2;
         }
 
         public getAbsolutePosition(): Vector3 {

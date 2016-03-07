@@ -39,6 +39,7 @@
         public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
         public excludeWithLayerMask = 0;
+        public _type : number;
 
         // PBR Properties.
         @serialize()
@@ -55,6 +56,17 @@
             scene.addLight(this);
         }
 
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + (["Point", "Directional", "Spot", "Hemispheric"])[this._type];
+            if (fullDetails){
+            }
+            return ret;
+        } 
+        
         public getShadowGenerator(): ShadowGenerator {
             return this._shadowGenerator;
         }

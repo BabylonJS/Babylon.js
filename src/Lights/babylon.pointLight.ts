@@ -10,6 +10,7 @@
             super(name, scene);
 
             this.position = position;
+            this._type = 0;
         }
 
         public getAbsolutePosition(): Vector3 {
