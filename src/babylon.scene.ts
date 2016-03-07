@@ -2315,7 +2315,7 @@
             }
 
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
@@ -2335,7 +2335,7 @@
             }
 
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine. getRenderWidth(), engine.getRenderHeight());
             var identity = Matrix.Identity();
 
             // Moving coordinates to local viewport world

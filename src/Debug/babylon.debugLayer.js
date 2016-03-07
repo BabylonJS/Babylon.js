@@ -94,7 +94,7 @@ var BABYLON;
                     _this._drawingContext.clearRect(0, 0, _this._drawingCanvas.width, _this._drawingCanvas.height);
                     var engine = _this._scene.getEngine();
                     var viewport = _this._camera.viewport;
-                    var globalViewport = viewport.toGlobal(engine);
+                    var globalViewport = viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
                     // Meshes
                     var meshes = _this._camera.getActiveMeshes();
                     var index;
