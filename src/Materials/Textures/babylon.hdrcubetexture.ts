@@ -16,7 +16,7 @@ module BABYLON {
             "down",
             "back"
         ];
-        
+
         private _useInGammaSpace = false;
         private _generateHarmonics = true;
         private _noMipmap: boolean;
@@ -230,3 +230,4 @@ module BABYLON {
         }
     }
 } 
+
