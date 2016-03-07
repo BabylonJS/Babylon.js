@@ -166,6 +166,16 @@
             }
         }
 
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * subclasses should override adding information pertainent to themselves
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = "Name: " + this.name;
+            if (fullDetails){
+            }
+            return ret;
+        } 
         public get isFrozen(): boolean {
             return this.checkReadyOnlyOnce;
         }
@@ -319,7 +329,7 @@
             }
 
             var materialType = Tools.Instantiate(parsedMaterial.customType);
-            return materialType.Parse(parsedMaterial, scene, rootUrl);;
+            return materialType.Parse(parsedMaterial, scene, rootUrl);
         }
     }
 } 

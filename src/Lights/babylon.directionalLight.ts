@@ -27,6 +27,7 @@
 
             this.position = direction.scale(-1);
             this.direction = direction;
+            this._type = 1;
         }
 
         public getAbsolutePosition(): Vector3 {

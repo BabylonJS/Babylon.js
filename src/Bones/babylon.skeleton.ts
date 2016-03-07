@@ -25,6 +25,27 @@
             this._isDirty = true;
         }
 
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = "Name: " + this.name + ", nBones: " + this.bones.length;
+            ret += ", nAnimationRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
+            if (fullDetails){
+                ret += ", Ranges: {" 
+                var first = true;
+                for (var name in this._ranges) {
+                    if (!first){
+                        ret + ", ";
+                        first = false; 
+                    }
+                    ret += name; 
+                }
+                ret += "}";
+            }
+            return ret;
+        } 
+        
         // Members
         public getTransformMatrices(mesh: AbstractMesh): Float32Array {
             if (this.needInitialSkinMatrix && mesh._bonesTransformMatrices) {
@@ -72,7 +93,7 @@
             }
             var ret = true;
             var frameOffset = this._getHighestAnimationFrame() + 1;
-            
+                        
             // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
             var boneDict = {};
             var sourceBones = source.bones;
@@ -80,6 +101,11 @@
                 boneDict[sourceBones[i].name] = sourceBones[i];
             }
 
+            if (this.bones.length !== sourceBones.length){
+                BABYLON.Tools.Warn("copyAnimationRange: this rig has " + this.bones.length + " bones, while source as " + sourceBones.length);
+                ret = false;
+            }
+            
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
                 var boneName = this.bones[i].name;
                 var sourceBone = boneDict[boneName];
