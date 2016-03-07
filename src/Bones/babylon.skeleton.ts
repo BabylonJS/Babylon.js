@@ -218,6 +218,8 @@
         public clone(name: string, id: string): Skeleton {
             var result = new Skeleton(name, id || name, this._scene);
 
+            result.needInitialSkinMatrix = this.needInitialSkinMatrix;
+
             for (var index = 0; index < this.bones.length; index++) {
                 var source = this.bones[index];
                 var parentBone = null;
@@ -230,6 +232,15 @@
                 var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
                 Tools.DeepCopy(source.animations, bone.animations);
             }
+
+            if (this._ranges) {
+                result._ranges = {};
+                for (var rangeName in this._ranges) {
+                    result._ranges[rangeName] = this._ranges[rangeName].clone();
+                }
+            }
+
+            result.prepare();
 
             return result;
         }
