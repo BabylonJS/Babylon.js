@@ -1,5 +1,7 @@
 ﻿module BABYLON {
     export class Camera extends Node {
+        public inputs : CameraInputsManager<Camera>;
+        
         // Statics
         private static _PERSPECTIVE_CAMERA = 0;
         private static _ORTHOGRAPHIC_CAMERA = 1;
@@ -567,6 +569,10 @@
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
+            
+            if (this.inputs){
+                serializationObject.inputs = this.inputs.serialize();
+            }
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
@@ -634,6 +640,11 @@
             // Parent
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
+            }
+            
+            //Input manager
+            if (parsedCamera.inputs){
+                camera.inputs.parse(parsedCamera.inputs);
             }
 
             // Target

@@ -1,4 +1,4 @@
-module BABYLON {
+module BABYLON.CameraInputs {
     export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
         private _keys = [];
@@ -94,11 +94,13 @@ module BABYLON {
         }
 
         getTypeName(): string {
-            return "keyboardmove";
+            return "freecamera.keyboardmove";
         }
 
         public _onLostFocus(e: FocusEvent): void {
             this._keys = [];
         }
     }
+    
+    InputTypes["freecamera.keyboardmove"] = FreeCameraKeyboardMoveInput;
 }

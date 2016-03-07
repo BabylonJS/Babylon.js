@@ -1,5 +1,9 @@
 var BABYLON;
 (function (BABYLON) {
+    var CameraInputs;
+    (function (CameraInputs) {
+        CameraInputs.InputTypes = {};
+    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
     var CameraInputsManager = (function () {
         function CameraInputsManager(camera) {
             this.inputs = {};
@@ -56,6 +60,28 @@ var BABYLON;
             }
             this.inputs = {};
             this.checkInputs = function () { };
+        };
+        CameraInputsManager.prototype.serialize = function () {
+            var inputs = {};
+            for (var cam in this.inputs) {
+                var input = this.inputs[cam];
+                var res = BABYLON.SerializationHelper.Serialize(input);
+                inputs[input.getTypeName()] = res;
+            }
+            return inputs;
+        };
+        CameraInputsManager.prototype.parse = function (parsedInputs) {
+            if (parsedInputs) {
+                this.clear();
+                for (var n in parsedInputs) {
+                    var construct = CameraInputs.InputTypes[n];
+                    if (construct) {
+                        var parsedinput = parsedInputs[n];
+                        var input = BABYLON.SerializationHelper.Parse(function () { return new construct(); }, parsedinput, null);
+                        this.add(input);
+                    }
+                }
+            }
         };
         return CameraInputsManager;
     }());

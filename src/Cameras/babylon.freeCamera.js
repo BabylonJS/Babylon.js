@@ -132,23 +132,23 @@ var BABYLON;
             }
         };
         FreeCameraInputsManager.prototype.addKeyboard = function () {
-            this.add(new BABYLON.FreeCameraKeyboardMoveInput());
+            this.add(new BABYLON.CameraInputs.FreeCameraKeyboardMoveInput());
             return this;
         };
         FreeCameraInputsManager.prototype.addMouse = function () {
-            this.add(new BABYLON.FreeCameraMouseInput());
+            this.add(new BABYLON.CameraInputs.FreeCameraMouseInput());
             return this;
         };
         FreeCameraInputsManager.prototype.addGamepad = function () {
-            this.add(new BABYLON.FreeCameraGamepadInput());
+            this.add(new BABYLON.CameraInputs.FreeCameraGamepadInput());
             return this;
         };
         FreeCameraInputsManager.prototype.addDeviceOrientation = function () {
-            this.add(new BABYLON.FreeCameraDeviceOrientationInput());
+            this.add(new BABYLON.CameraInputs.FreeCameraDeviceOrientationInput());
             return this;
         };
         FreeCameraInputsManager.prototype.addTouch = function () {
-            this.add(new BABYLON.FreeCameraTouchInput());
+            this.add(new BABYLON.CameraInputs.FreeCameraTouchInput());
             return this;
         };
         return FreeCameraInputsManager;

@@ -1,4 +1,4 @@
-module BABYLON {       
+module BABYLON.CameraInputs {       
     export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         camera : FreeCamera;
         attachedElement : HTMLElement;
@@ -105,7 +105,9 @@ module BABYLON {
         }
         
         getTypeName(): string{
-            return "mouse";
+            return "freecamera.mouse";
         }
     }
+    
+    InputTypes["freecamera.mouse"] = FreeCameraMouseInput;
 }
