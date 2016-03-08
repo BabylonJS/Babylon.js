@@ -148,7 +148,7 @@ var BABYLON;
          */
         AbstractMesh.prototype.toString = function (fullDetails) {
             var ret = "Name: " + this.name + ", isInstance: " + (this instanceof BABYLON.InstancedMesh ? "YES" : "NO");
-            ret += ", # of submeshes: " + this.subMeshes.length;
+            ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
             if (this._skeleton) {
                 ret += ", skeleton: " + this._skeleton.name;
             }
