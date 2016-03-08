@@ -184,7 +184,9 @@ module BABYLON {
         }
 
         public serialize(): any {
-            return SerializationHelper.Serialize(this);
+            var serializationObject = SerializationHelper.Serialize(this); 
+            serializationObject.customType = "BABYLON.GridMaterial"; 
+            return serializationObject;
         }
 
         public static Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
