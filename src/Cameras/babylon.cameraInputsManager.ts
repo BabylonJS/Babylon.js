@@ -1,7 +1,5 @@
 module BABYLON {
-    export module CameraInputs{
-        export var InputTypes = {};
-    }
+    export var CameraInputTypes = {};
     
     export interface ICameraInput<TCamera extends BABYLON.Camera> {
         camera: TCamera;
@@ -109,7 +107,7 @@ module BABYLON {
                 this.clear();
                 
                 for (var n in parsedInputs) {
-                    var construct = CameraInputs.InputTypes[n];
+                    var construct = CameraInputTypes[n];
                     if (construct){
                         var parsedinput = parsedInputs[n];
                         var input = SerializationHelper.Parse(() => { return new construct() }, parsedinput, null);

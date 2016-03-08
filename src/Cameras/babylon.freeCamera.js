@@ -42,7 +42,7 @@ var BABYLON;
                 };
                 updatePosition(newPosition);
             };
-            this.inputs = new FreeCameraInputsManager(this);
+            this.inputs = new BABYLON.FreeCameraInputsManager(this);
             this.inputs.addKeyboard().addMouse();
         }
         // Controls
@@ -120,38 +120,4 @@ var BABYLON;
         return FreeCamera;
     }(BABYLON.TargetCamera));
     BABYLON.FreeCamera = FreeCamera;
-    var FreeCameraInputsManager = (function (_super) {
-        __extends(FreeCameraInputsManager, _super);
-        function FreeCameraInputsManager(camera) {
-            _super.call(this, camera);
-        }
-        FreeCameraInputsManager.prototype.add = function (input) {
-            _super.prototype.add.call(this, input);
-            if (this.camera._attachedElement && input.attachElement) {
-                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
-            }
-        };
-        FreeCameraInputsManager.prototype.addKeyboard = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraKeyboardMoveInput());
-            return this;
-        };
-        FreeCameraInputsManager.prototype.addMouse = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraMouseInput());
-            return this;
-        };
-        FreeCameraInputsManager.prototype.addGamepad = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraGamepadInput());
-            return this;
-        };
-        FreeCameraInputsManager.prototype.addDeviceOrientation = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraDeviceOrientationInput());
-            return this;
-        };
-        FreeCameraInputsManager.prototype.addTouch = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraTouchInput());
-            return this;
-        };
-        return FreeCameraInputsManager;
-    }(BABYLON.CameraInputsManager));
-    BABYLON.FreeCameraInputsManager = FreeCameraInputsManager;
 })(BABYLON || (BABYLON = {}));

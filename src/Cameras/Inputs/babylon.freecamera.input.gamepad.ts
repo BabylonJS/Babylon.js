@@ -1,4 +1,4 @@
-module BABYLON.CameraInputs {       
+module BABYLON {       
     export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
         camera : FreeCamera;
         
@@ -59,5 +59,5 @@ module BABYLON.CameraInputs {
         }
     }
     
-    InputTypes["freecamera.gamepad"] = FreeCameraGamepadInput;
+    CameraInputTypes["freecamera.gamepad"] = FreeCameraGamepadInput;
 }

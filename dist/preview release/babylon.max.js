@@ -11041,10 +11041,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        CameraInputs.InputTypes = {};
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
+    BABYLON.CameraInputTypes = {};
     var CameraInputsManager = (function () {
         function CameraInputsManager(camera) {
             this.inputs = {};
@@ -11115,7 +11112,7 @@ var BABYLON;
             if (parsedInputs) {
                 this.clear();
                 for (var n in parsedInputs) {
-                    var construct = CameraInputs.InputTypes[n];
+                    var construct = BABYLON.CameraInputTypes[n];
                     if (construct) {
                         var parsedinput = parsedInputs[n];
                         var input = BABYLON.SerializationHelper.Parse(function () { return new construct(); }, parsedinput, null);
@@ -11137,99 +11134,96 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        var FreeCameraMouseInput = (function () {
-            function FreeCameraMouseInput() {
-                this.angularSensibility = 2000.0;
+    var FreeCameraMouseInput = (function () {
+        function FreeCameraMouseInput() {
+            this.angularSensibility = 2000.0;
+        }
+        FreeCameraMouseInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        FreeCameraMouseInput.prototype.attachElement = function (element, noPreventDefault) {
+            var _this = this;
+            var previousPosition;
+            this.attachedElement = element;
+            if (this._onMouseDown === undefined) {
+                var camera = this.camera;
+                var engine = this.camera.getEngine();
+                this._onMouseDown = function (evt) {
+                    previousPosition = {
+                        x: evt.clientX,
+                        y: evt.clientY
+                    };
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onMouseUp = function (evt) {
+                    previousPosition = null;
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onMouseOut = function (evt) {
+                    previousPosition = null;
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onMouseMove = function (evt) {
+                    if (!previousPosition && !engine.isPointerLock) {
+                        return;
+                    }
+                    var offsetX;
+                    var offsetY;
+                    if (!engine.isPointerLock) {
+                        offsetX = evt.clientX - previousPosition.x;
+                        offsetY = evt.clientY - previousPosition.y;
+                    }
+                    else {
+                        offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                        offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                    }
+                    camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                    camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                    previousPosition = {
+                        x: evt.clientX,
+                        y: evt.clientY
+                    };
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
             }
-            FreeCameraMouseInput.prototype.attachCamera = function (camera) {
-                this.camera = camera;
-            };
-            FreeCameraMouseInput.prototype.attachElement = function (element, noPreventDefault) {
-                var _this = this;
-                var previousPosition;
-                this.attachedElement = element;
-                if (this._onMouseDown === undefined) {
-                    var camera = this.camera;
-                    var engine = this.camera.getEngine();
-                    this._onMouseDown = function (evt) {
-                        previousPosition = {
-                            x: evt.clientX,
-                            y: evt.clientY
-                        };
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    };
-                    this._onMouseUp = function (evt) {
-                        previousPosition = null;
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    };
-                    this._onMouseOut = function (evt) {
-                        previousPosition = null;
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    };
-                    this._onMouseMove = function (evt) {
-                        if (!previousPosition && !engine.isPointerLock) {
-                            return;
-                        }
-                        var offsetX;
-                        var offsetY;
-                        if (!engine.isPointerLock) {
-                            offsetX = evt.clientX - previousPosition.x;
-                            offsetY = evt.clientY - previousPosition.y;
-                        }
-                        else {
-                            offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                            offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                        }
-                        camera.cameraRotation.y += offsetX / _this.angularSensibility;
-                        camera.cameraRotation.x += offsetY / _this.angularSensibility;
-                        previousPosition = {
-                            x: evt.clientX,
-                            y: evt.clientY
-                        };
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    };
-                }
-                element.addEventListener("mousedown", this._onMouseDown, false);
-                element.addEventListener("mouseup", this._onMouseUp, false);
-                element.addEventListener("mouseout", this._onMouseOut, false);
-                element.addEventListener("mousemove", this._onMouseMove, false);
-            };
-            FreeCameraMouseInput.prototype.detachElement = function (element) {
-                if (this.attachedElement !== element) {
-                    return;
-                }
-                element.removeEventListener("mousedown", this._onMouseDown);
-                element.removeEventListener("mouseup", this._onMouseUp);
-                element.removeEventListener("mouseout", this._onMouseOut);
-                element.removeEventListener("mousemove", this._onMouseMove);
-                this.attachedElement = null;
-            };
-            FreeCameraMouseInput.prototype.detach = function () {
-                if (this.attachedElement) {
-                    this.detachElement(this.attachedElement);
-                }
-            };
-            FreeCameraMouseInput.prototype.getTypeName = function () {
-                return "freecamera.mouse";
-            };
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraMouseInput.prototype, "angularSensibility", void 0);
-            return FreeCameraMouseInput;
-        }());
-        CameraInputs.FreeCameraMouseInput = FreeCameraMouseInput;
-        CameraInputs.InputTypes["freecamera.mouse"] = FreeCameraMouseInput;
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
+            element.addEventListener("mousedown", this._onMouseDown, false);
+            element.addEventListener("mouseup", this._onMouseUp, false);
+            element.addEventListener("mouseout", this._onMouseOut, false);
+            element.addEventListener("mousemove", this._onMouseMove, false);
+        };
+        FreeCameraMouseInput.prototype.detachElement = function (element) {
+            if (this.attachedElement !== element) {
+                return;
+            }
+            element.removeEventListener("mousedown", this._onMouseDown);
+            element.removeEventListener("mouseup", this._onMouseUp);
+            element.removeEventListener("mouseout", this._onMouseOut);
+            element.removeEventListener("mousemove", this._onMouseMove);
+            this.attachedElement = null;
+        };
+        FreeCameraMouseInput.prototype.detach = function () {
+            if (this.attachedElement) {
+                this.detachElement(this.attachedElement);
+            }
+        };
+        FreeCameraMouseInput.prototype.getTypeName = function () {
+            return "freecamera.mouse";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraMouseInput.prototype, "angularSensibility", void 0);
+        return FreeCameraMouseInput;
+    }());
+    BABYLON.FreeCameraMouseInput = FreeCameraMouseInput;
+    BABYLON.CameraInputTypes["freecamera.mouse"] = FreeCameraMouseInput;
 })(BABYLON || (BABYLON = {}));
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -11240,324 +11234,105 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        var FreeCameraKeyboardMoveInput = (function () {
-            function FreeCameraKeyboardMoveInput() {
-                this._keys = [];
-                this.keysUp = [38];
-                this.keysDown = [40];
-                this.keysLeft = [37];
-                this.keysRight = [39];
-            }
-            FreeCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
-                var _this = this;
-                this.camera = camera;
-                if (this._onKeyDown === undefined) {
-                    this._onKeyDown = function (evt) {
-                        if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                            _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                            _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                            _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                            var index = _this._keys.indexOf(evt.keyCode);
-                            if (index === -1) {
-                                _this._keys.push(evt.keyCode);
-                            }
-                            if (!camera._noPreventDefault) {
-                                evt.preventDefault();
-                            }
+    var FreeCameraKeyboardMoveInput = (function () {
+        function FreeCameraKeyboardMoveInput() {
+            this._keys = [];
+            this.keysUp = [38];
+            this.keysDown = [40];
+            this.keysLeft = [37];
+            this.keysRight = [39];
+        }
+        FreeCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
+            var _this = this;
+            this.camera = camera;
+            if (this._onKeyDown === undefined) {
+                this._onKeyDown = function (evt) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                        var index = _this._keys.indexOf(evt.keyCode);
+                        if (index === -1) {
+                            _this._keys.push(evt.keyCode);
                         }
-                    };
-                    this._onKeyUp = function (evt) {
-                        if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                            _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                            _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                            _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                            var index = _this._keys.indexOf(evt.keyCode);
-                            if (index >= 0) {
-                                _this._keys.splice(index, 1);
-                            }
-                            if (!camera._noPreventDefault) {
-                                evt.preventDefault();
-                            }
+                        if (!camera._noPreventDefault) {
+                            evt.preventDefault();
                         }
-                    };
-                    BABYLON.Tools.RegisterTopRootEvents([
-                        { name: "keydown", handler: this._onKeyDown },
-                        { name: "keyup", handler: this._onKeyUp },
-                        { name: "blur", handler: this._onLostFocus }
-                    ]);
-                }
-            };
-            FreeCameraKeyboardMoveInput.prototype.detach = function () {
-                BABYLON.Tools.UnregisterTopRootEvents([
+                    }
+                };
+                this._onKeyUp = function (evt) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                        var index = _this._keys.indexOf(evt.keyCode);
+                        if (index >= 0) {
+                            _this._keys.splice(index, 1);
+                        }
+                        if (!camera._noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                    }
+                };
+                BABYLON.Tools.RegisterTopRootEvents([
                     { name: "keydown", handler: this._onKeyDown },
                     { name: "keyup", handler: this._onKeyUp },
                     { name: "blur", handler: this._onLostFocus }
                 ]);
-            };
-            FreeCameraKeyboardMoveInput.prototype.checkInputs = function () {
-                var camera = this.camera;
-                // Keyboard
-                for (var index = 0; index < this._keys.length; index++) {
-                    var keyCode = this._keys[index];
-                    var speed = camera._computeLocalCameraSpeed();
-                    if (this.keysLeft.indexOf(keyCode) !== -1) {
-                        camera._localDirection.copyFromFloats(-speed, 0, 0);
-                    }
-                    else if (this.keysUp.indexOf(keyCode) !== -1) {
-                        camera._localDirection.copyFromFloats(0, 0, speed);
-                    }
-                    else if (this.keysRight.indexOf(keyCode) !== -1) {
-                        camera._localDirection.copyFromFloats(speed, 0, 0);
-                    }
-                    else if (this.keysDown.indexOf(keyCode) !== -1) {
-                        camera._localDirection.copyFromFloats(0, 0, -speed);
-                    }
-                    camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
-                    BABYLON.Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
-                    camera.cameraDirection.addInPlace(camera._transformedDirection);
-                }
-            };
-            FreeCameraKeyboardMoveInput.prototype.getTypeName = function () {
-                return "freecamera.keyboardmove";
-            };
-            FreeCameraKeyboardMoveInput.prototype._onLostFocus = function (e) {
-                this._keys = [];
-            };
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraKeyboardMoveInput.prototype, "keysUp", void 0);
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraKeyboardMoveInput.prototype, "keysDown", void 0);
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraKeyboardMoveInput.prototype, "keysLeft", void 0);
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraKeyboardMoveInput.prototype, "keysRight", void 0);
-            return FreeCameraKeyboardMoveInput;
-        }());
-        CameraInputs.FreeCameraKeyboardMoveInput = FreeCameraKeyboardMoveInput;
-        CameraInputs.InputTypes["freecamera.keyboardmove"] = FreeCameraKeyboardMoveInput;
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
-})(BABYLON || (BABYLON = {}));
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var BABYLON;
-(function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        var FreeCameraTouchInput = (function () {
-            function FreeCameraTouchInput() {
-                this._offsetX = null;
-                this._offsetY = null;
-                this._pointerCount = 0;
-                this._pointerPressed = [];
-                this.touchAngularSensibility = 200000.0;
-                this.touchMoveSensibility = 250.0;
             }
-            FreeCameraTouchInput.prototype.attachCamera = function (camera) {
-                this.camera = camera;
-            };
-            FreeCameraTouchInput.prototype.attachElement = function (element, noPreventDefault) {
-                var _this = this;
-                var previousPosition;
-                if (this._attachedElement) {
-                    return;
-                }
-                this._attachedElement = element;
-                if (this._onPointerDown === undefined) {
-                    this._onLostFocus = function (evt) {
-                        _this._offsetX = null;
-                        _this._offsetY = null;
-                    };
-                    this._onPointerDown = function (evt) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                        _this._pointerPressed.push(evt.pointerId);
-                        if (_this._pointerPressed.length !== 1) {
-                            return;
-                        }
-                        previousPosition = {
-                            x: evt.clientX,
-                            y: evt.clientY
-                        };
-                    };
-                    this._onPointerUp = function (evt) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                        var index = _this._pointerPressed.indexOf(evt.pointerId);
-                        if (index === -1) {
-                            return;
-                        }
-                        _this._pointerPressed.splice(index, 1);
-                        if (index != 0) {
-                            return;
-                        }
-                        previousPosition = null;
-                        _this._offsetX = null;
-                        _this._offsetY = null;
-                    };
-                    this._onPointerMove = function (evt) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                        if (!previousPosition) {
-                            return;
-                        }
-                        var index = _this._pointerPressed.indexOf(evt.pointerId);
-                        if (index != 0) {
-                            return;
-                        }
-                        _this._offsetX = evt.clientX - previousPosition.x;
-                        _this._offsetY = -(evt.clientY - previousPosition.y);
-                    };
-                }
-                element.addEventListener("blur", this._onLostFocus);
-                element.addEventListener("pointerdown", this._onPointerDown);
-                element.addEventListener("pointerup", this._onPointerUp);
-                element.addEventListener("pointerout", this._onPointerUp);
-                element.addEventListener("pointermove", this._onPointerMove);
-            };
-            FreeCameraTouchInput.prototype.detachElement = function (element) {
-                if (this._attachedElement !== element) {
-                    return;
-                }
-                element.removeEventListener("blur", this._onLostFocus);
-                element.removeEventListener("pointerdown", this._onPointerDown);
-                element.removeEventListener("pointerup", this._onPointerUp);
-                element.removeEventListener("pointerout", this._onPointerUp);
-                element.removeEventListener("pointermove", this._onPointerMove);
-                this._attachedElement = null;
-            };
-            FreeCameraTouchInput.prototype.checkInputs = function () {
-                if (this._offsetX) {
-                    var camera = this.camera;
-                    camera.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
-                    if (this._pointerPressed.length > 1) {
-                        camera.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
-                    }
-                    else {
-                        var speed = camera._computeLocalCameraSpeed();
-                        var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
-                        BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-                        camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
-                    }
-                }
-            };
-            FreeCameraTouchInput.prototype.detach = function () {
-                if (this._attachedElement) {
-                    this.detachElement(this._attachedElement);
-                }
-            };
-            FreeCameraTouchInput.prototype.getTypeName = function () {
-                return "freecamera.touch";
-            };
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraTouchInput.prototype, "touchAngularSensibility", void 0);
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraTouchInput.prototype, "touchMoveSensibility", void 0);
-            return FreeCameraTouchInput;
-        }());
-        CameraInputs.FreeCameraTouchInput = FreeCameraTouchInput;
-        CameraInputs.InputTypes["freecamera.touch"] = FreeCameraTouchInput;
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
-})(BABYLON || (BABYLON = {}));
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var BABYLON;
-(function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        var FreeCameraDeviceOrientationInput = (function () {
-            function FreeCameraDeviceOrientationInput() {
-                this._offsetX = null;
-                this._offsetY = null;
-                this._orientationGamma = 0;
-                this._orientationBeta = 0;
-                this._initialOrientationGamma = 0;
-                this._initialOrientationBeta = 0;
-                this.angularSensibility = 10000.0;
-                this.moveSensibility = 50.0;
-                this._resetOrientationGamma = this.resetOrientationGamma.bind(this);
-                this._orientationChanged = this.orientationChanged.bind(this);
-            }
-            FreeCameraDeviceOrientationInput.prototype.attachCamera = function (camera) {
-                this.camera = camera;
-                window.addEventListener("resize", this._resetOrientationGamma, false);
-                window.addEventListener("deviceorientation", this._orientationChanged);
-            };
-            FreeCameraDeviceOrientationInput.prototype.resetOrientationGamma = function () {
-                this._initialOrientationGamma = null;
-            };
-            FreeCameraDeviceOrientationInput.prototype.orientationChanged = function (evt) {
-                if (!this._initialOrientationGamma) {
-                    this._initialOrientationGamma = evt.gamma;
-                    this._initialOrientationBeta = evt.beta;
-                }
-                this._orientationGamma = evt.gamma;
-                this._orientationBeta = evt.beta;
-                this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
-                this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
-            };
-            FreeCameraDeviceOrientationInput.prototype.detach = function () {
-                window.removeEventListener("resize", this._resetOrientationGamma);
-                window.removeEventListener("deviceorientation", this._orientationChanged);
-                this._orientationGamma = 0;
-                this._orientationBeta = 0;
-                this._initialOrientationGamma = 0;
-                this._initialOrientationBeta = 0;
-            };
-            FreeCameraDeviceOrientationInput.prototype.checkInputs = function () {
-                if (!this._offsetX) {
-                    return;
-                }
-                var camera = this.camera;
-                camera.cameraRotation.y -= this._offsetX / this.angularSensibility;
+        };
+        FreeCameraKeyboardMoveInput.prototype.detach = function () {
+            BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
+                { name: "blur", handler: this._onLostFocus }
+            ]);
+        };
+        FreeCameraKeyboardMoveInput.prototype.checkInputs = function () {
+            var camera = this.camera;
+            // Keyboard
+            for (var index = 0; index < this._keys.length; index++) {
+                var keyCode = this._keys[index];
                 var speed = camera._computeLocalCameraSpeed();
-                var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
-                BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-                camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
-            };
-            FreeCameraDeviceOrientationInput.prototype.getTypeName = function () {
-                return "freecamera.deviceorientation";
-            };
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraDeviceOrientationInput.prototype, "angularSensibility", void 0);
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraDeviceOrientationInput.prototype, "moveSensibility", void 0);
-            return FreeCameraDeviceOrientationInput;
-        }());
-        CameraInputs.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
-        CameraInputs.InputTypes["freecamera.deviceorientation"] = FreeCameraDeviceOrientationInput;
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
+                if (this.keysLeft.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(-speed, 0, 0);
+                }
+                else if (this.keysUp.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, speed);
+                }
+                else if (this.keysRight.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(speed, 0, 0);
+                }
+                else if (this.keysDown.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, -speed);
+                }
+                camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
+                BABYLON.Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
+                camera.cameraDirection.addInPlace(camera._transformedDirection);
+            }
+        };
+        FreeCameraKeyboardMoveInput.prototype.getTypeName = function () {
+            return "freecamera.keyboardmove";
+        };
+        FreeCameraKeyboardMoveInput.prototype._onLostFocus = function (e) {
+            this._keys = [];
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraKeyboardMoveInput.prototype, "keysUp", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraKeyboardMoveInput.prototype, "keysDown", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraKeyboardMoveInput.prototype, "keysLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraKeyboardMoveInput.prototype, "keysRight", void 0);
+        return FreeCameraKeyboardMoveInput;
+    }());
+    BABYLON.FreeCameraKeyboardMoveInput = FreeCameraKeyboardMoveInput;
+    BABYLON.CameraInputTypes["freecamera.keyboardmove"] = FreeCameraKeyboardMoveInput;
 })(BABYLON || (BABYLON = {}));
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -11568,113 +11343,667 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        var FreeCameraGamepadInput = (function () {
-            function FreeCameraGamepadInput() {
-                var _this = this;
-                this.gamepadAngularSensibility = 200;
-                this.gamepadMoveSensibility = 40;
-                this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+    var FreeCameraTouchInput = (function () {
+        function FreeCameraTouchInput() {
+            this._offsetX = null;
+            this._offsetY = null;
+            this._pointerCount = 0;
+            this._pointerPressed = [];
+            this.touchAngularSensibility = 200000.0;
+            this.touchMoveSensibility = 250.0;
+        }
+        FreeCameraTouchInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        FreeCameraTouchInput.prototype.attachElement = function (element, noPreventDefault) {
+            var _this = this;
+            var previousPosition;
+            if (this._attachedElement) {
+                return;
             }
-            FreeCameraGamepadInput.prototype.attachCamera = function (camera) {
-                this.camera = camera;
-            };
-            FreeCameraGamepadInput.prototype.detach = function () {
-            };
-            FreeCameraGamepadInput.prototype.checkInputs = function () {
-                if (this.gamepad) {
-                    var camera = this.camera;
-                    var LSValues = this.gamepad.leftStick;
-                    var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
-                    var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
-                    LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
-                    LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
-                    var RSValues = this.gamepad.rightStick;
-                    var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-                    var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
-                    RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                    RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
-                    var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-                    var speed = camera._computeLocalCameraSpeed() * 50.0;
-                    var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
-                    camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-                    camera.cameraRotation = camera.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
+            this._attachedElement = element;
+            if (this._onPointerDown === undefined) {
+                this._onLostFocus = function (evt) {
+                    _this._offsetX = null;
+                    _this._offsetY = null;
+                };
+                this._onPointerDown = function (evt) {
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                    _this._pointerPressed.push(evt.pointerId);
+                    if (_this._pointerPressed.length !== 1) {
+                        return;
+                    }
+                    previousPosition = {
+                        x: evt.clientX,
+                        y: evt.clientY
+                    };
+                };
+                this._onPointerUp = function (evt) {
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                    var index = _this._pointerPressed.indexOf(evt.pointerId);
+                    if (index === -1) {
+                        return;
+                    }
+                    _this._pointerPressed.splice(index, 1);
+                    if (index != 0) {
+                        return;
+                    }
+                    previousPosition = null;
+                    _this._offsetX = null;
+                    _this._offsetY = null;
+                };
+                this._onPointerMove = function (evt) {
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                    if (!previousPosition) {
+                        return;
+                    }
+                    var index = _this._pointerPressed.indexOf(evt.pointerId);
+                    if (index != 0) {
+                        return;
+                    }
+                    _this._offsetX = evt.clientX - previousPosition.x;
+                    _this._offsetY = -(evt.clientY - previousPosition.y);
+                };
+            }
+            element.addEventListener("blur", this._onLostFocus);
+            element.addEventListener("pointerdown", this._onPointerDown);
+            element.addEventListener("pointerup", this._onPointerUp);
+            element.addEventListener("pointerout", this._onPointerUp);
+            element.addEventListener("pointermove", this._onPointerMove);
+        };
+        FreeCameraTouchInput.prototype.detachElement = function (element) {
+            if (this._attachedElement !== element) {
+                return;
+            }
+            element.removeEventListener("blur", this._onLostFocus);
+            element.removeEventListener("pointerdown", this._onPointerDown);
+            element.removeEventListener("pointerup", this._onPointerUp);
+            element.removeEventListener("pointerout", this._onPointerUp);
+            element.removeEventListener("pointermove", this._onPointerMove);
+            this._attachedElement = null;
+        };
+        FreeCameraTouchInput.prototype.checkInputs = function () {
+            if (this._offsetX) {
+                var camera = this.camera;
+                camera.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
+                if (this._pointerPressed.length > 1) {
+                    camera.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
                 }
-            };
-            FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
-                // Only the first gamepad can control the camera
-                if (gamepad.index === 0) {
-                    this.gamepad = gamepad;
+                else {
+                    var speed = camera._computeLocalCameraSpeed();
+                    var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
+                    BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
+                    camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
                 }
-            };
-            FreeCameraGamepadInput.prototype.getTypeName = function () {
-                return "freecamera.gamepad";
-            };
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraGamepadInput.prototype, "gamepadAngularSensibility", void 0);
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
-            return FreeCameraGamepadInput;
-        }());
-        CameraInputs.FreeCameraGamepadInput = FreeCameraGamepadInput;
-        CameraInputs.InputTypes["freecamera.gamepad"] = FreeCameraGamepadInput;
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
+            }
+        };
+        FreeCameraTouchInput.prototype.detach = function () {
+            if (this._attachedElement) {
+                this.detachElement(this._attachedElement);
+            }
+        };
+        FreeCameraTouchInput.prototype.getTypeName = function () {
+            return "freecamera.touch";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraTouchInput.prototype, "touchAngularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraTouchInput.prototype, "touchMoveSensibility", void 0);
+        return FreeCameraTouchInput;
+    }());
+    BABYLON.FreeCameraTouchInput = FreeCameraTouchInput;
+    BABYLON.CameraInputTypes["freecamera.touch"] = FreeCameraTouchInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var FreeCameraDeviceOrientationInput = (function () {
+        function FreeCameraDeviceOrientationInput() {
+            this._offsetX = null;
+            this._offsetY = null;
+            this._orientationGamma = 0;
+            this._orientationBeta = 0;
+            this._initialOrientationGamma = 0;
+            this._initialOrientationBeta = 0;
+            this.angularSensibility = 10000.0;
+            this.moveSensibility = 50.0;
+            this._resetOrientationGamma = this.resetOrientationGamma.bind(this);
+            this._orientationChanged = this.orientationChanged.bind(this);
+        }
+        FreeCameraDeviceOrientationInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+            window.addEventListener("resize", this._resetOrientationGamma, false);
+            window.addEventListener("deviceorientation", this._orientationChanged);
+        };
+        FreeCameraDeviceOrientationInput.prototype.resetOrientationGamma = function () {
+            this._initialOrientationGamma = null;
+        };
+        FreeCameraDeviceOrientationInput.prototype.orientationChanged = function (evt) {
+            if (!this._initialOrientationGamma) {
+                this._initialOrientationGamma = evt.gamma;
+                this._initialOrientationBeta = evt.beta;
+            }
+            this._orientationGamma = evt.gamma;
+            this._orientationBeta = evt.beta;
+            this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
+            this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
+        };
+        FreeCameraDeviceOrientationInput.prototype.detach = function () {
+            window.removeEventListener("resize", this._resetOrientationGamma);
+            window.removeEventListener("deviceorientation", this._orientationChanged);
+            this._orientationGamma = 0;
+            this._orientationBeta = 0;
+            this._initialOrientationGamma = 0;
+            this._initialOrientationBeta = 0;
+        };
+        FreeCameraDeviceOrientationInput.prototype.checkInputs = function () {
+            if (!this._offsetX) {
+                return;
+            }
+            var camera = this.camera;
+            camera.cameraRotation.y -= this._offsetX / this.angularSensibility;
+            var speed = camera._computeLocalCameraSpeed();
+            var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+            BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
+            camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
+        };
+        FreeCameraDeviceOrientationInput.prototype.getTypeName = function () {
+            return "freecamera.deviceorientation";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraDeviceOrientationInput.prototype, "angularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraDeviceOrientationInput.prototype, "moveSensibility", void 0);
+        return FreeCameraDeviceOrientationInput;
+    }());
+    BABYLON.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
+    BABYLON.CameraInputTypes["freecamera.deviceorientation"] = FreeCameraDeviceOrientationInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var FreeCameraGamepadInput = (function () {
+        function FreeCameraGamepadInput() {
+            var _this = this;
+            this.gamepadAngularSensibility = 200;
+            this.gamepadMoveSensibility = 40;
+            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+        }
+        FreeCameraGamepadInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        FreeCameraGamepadInput.prototype.detach = function () {
+        };
+        FreeCameraGamepadInput.prototype.checkInputs = function () {
+            if (this.gamepad) {
+                var camera = this.camera;
+                var LSValues = this.gamepad.leftStick;
+                var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
+                var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
+                LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
+                LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
+                var RSValues = this.gamepad.rightStick;
+                var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
+                var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
+                RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
+                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
+                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+                var speed = camera._computeLocalCameraSpeed() * 50.0;
+                var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
+                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
+                camera.cameraRotation = camera.cameraRotation.add(new BABYLON.Vector2(RSValues.y, RSValues.x));
+            }
+        };
+        FreeCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
+            // Only the first gamepad can control the camera
+            if (gamepad.index === 0) {
+                this.gamepad = gamepad;
+            }
+        };
+        FreeCameraGamepadInput.prototype.getTypeName = function () {
+            return "freecamera.gamepad";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraGamepadInput.prototype, "gamepadAngularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
+        return FreeCameraGamepadInput;
+    }());
+    BABYLON.FreeCameraGamepadInput = FreeCameraGamepadInput;
+    BABYLON.CameraInputTypes["freecamera.gamepad"] = FreeCameraGamepadInput;
 })(BABYLON || (BABYLON = {}));
 
 var BABYLON;
 (function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        var FreeCameraVirtualJoystickInput = (function () {
-            function FreeCameraVirtualJoystickInput() {
+    var FreeCameraVirtualJoystickInput = (function () {
+        function FreeCameraVirtualJoystickInput() {
+        }
+        FreeCameraVirtualJoystickInput.prototype.getLeftJoystick = function () {
+            return this._leftjoystick;
+        };
+        FreeCameraVirtualJoystickInput.prototype.getRightJoystick = function () {
+            return this._rightjoystick;
+        };
+        FreeCameraVirtualJoystickInput.prototype.checkInputs = function () {
+            var camera = this.camera;
+            var speed = camera._computeLocalCameraSpeed() * 50;
+            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
+            camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
+            camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
+            if (!this._leftjoystick.pressed) {
+                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
             }
-            FreeCameraVirtualJoystickInput.prototype.getLeftJoystick = function () {
-                return this._leftjoystick;
-            };
-            FreeCameraVirtualJoystickInput.prototype.getRightJoystick = function () {
-                return this._rightjoystick;
-            };
-            FreeCameraVirtualJoystickInput.prototype.checkInputs = function () {
-                var camera = this.camera;
-                var speed = camera._computeLocalCameraSpeed() * 50;
-                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-                var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
-                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-                camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
-                if (!this._leftjoystick.pressed) {
-                    this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
+            if (!this._rightjoystick.pressed) {
+                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+            }
+        };
+        FreeCameraVirtualJoystickInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+            this._leftjoystick = new BABYLON.VirtualJoystick(true);
+            this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
+            this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
+            this._leftjoystick.setJoystickSensibility(0.15);
+            this._rightjoystick = new BABYLON.VirtualJoystick(false);
+            this._rightjoystick.setAxisForUpDown(BABYLON.JoystickAxis.X);
+            this._rightjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.Y);
+            this._rightjoystick.reverseUpDown = true;
+            this._rightjoystick.setJoystickSensibility(0.05);
+            this._rightjoystick.setJoystickColor("yellow");
+        };
+        FreeCameraVirtualJoystickInput.prototype.detach = function () {
+            this._leftjoystick.releaseCanvas();
+        };
+        FreeCameraVirtualJoystickInput.prototype.getTypeName = function () {
+            return "freecamera.virtualjoystick";
+        };
+        return FreeCameraVirtualJoystickInput;
+    }());
+    BABYLON.FreeCameraVirtualJoystickInput = FreeCameraVirtualJoystickInput;
+    BABYLON.CameraInputTypes["freecamera.virtualjoystick"] = FreeCameraVirtualJoystickInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var ArcRotateCameraKeyboardMoveInput = (function () {
+        function ArcRotateCameraKeyboardMoveInput() {
+            this._keys = [];
+            this.keysUp = [38];
+            this.keysDown = [40];
+            this.keysLeft = [37];
+            this.keysRight = [39];
+        }
+        ArcRotateCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
+            var _this = this;
+            this.camera = camera;
+            this._onKeyDown = function (evt) {
+                if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    var index = _this._keys.indexOf(evt.keyCode);
+                    if (index === -1) {
+                        _this._keys.push(evt.keyCode);
+                    }
+                    if (evt.preventDefault) {
+                        if (!camera._noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                    }
                 }
-                if (!this._rightjoystick.pressed) {
-                    this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+            };
+            this._onKeyUp = function (evt) {
+                if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                    _this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    var index = _this._keys.indexOf(evt.keyCode);
+                    if (index >= 0) {
+                        _this._keys.splice(index, 1);
+                    }
+                    if (evt.preventDefault) {
+                        if (!camera._noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                    }
                 }
             };
-            FreeCameraVirtualJoystickInput.prototype.attachCamera = function (camera) {
-                this.camera = camera;
-                this._leftjoystick = new BABYLON.VirtualJoystick(true);
-                this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
-                this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
-                this._leftjoystick.setJoystickSensibility(0.15);
-                this._rightjoystick = new BABYLON.VirtualJoystick(false);
-                this._rightjoystick.setAxisForUpDown(BABYLON.JoystickAxis.X);
-                this._rightjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.Y);
-                this._rightjoystick.reverseUpDown = true;
-                this._rightjoystick.setJoystickSensibility(0.05);
-                this._rightjoystick.setJoystickColor("yellow");
+            this._onLostFocus = function () {
+                _this._keys = [];
             };
-            FreeCameraVirtualJoystickInput.prototype.detach = function () {
-                this._leftjoystick.releaseCanvas();
+            BABYLON.Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
+                { name: "blur", handler: this._onLostFocus }
+            ]);
+        };
+        ArcRotateCameraKeyboardMoveInput.prototype.detach = function () {
+            BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
+                { name: "blur", handler: this._onLostFocus }
+            ]);
+        };
+        ArcRotateCameraKeyboardMoveInput.prototype.checkInputs = function () {
+            var camera = this.camera;
+            for (var index = 0; index < this._keys.length; index++) {
+                var keyCode = this._keys[index];
+                if (this.keysLeft.indexOf(keyCode) !== -1) {
+                    camera.inertialAlphaOffset -= 0.01;
+                }
+                else if (this.keysUp.indexOf(keyCode) !== -1) {
+                    camera.inertialBetaOffset -= 0.01;
+                }
+                else if (this.keysRight.indexOf(keyCode) !== -1) {
+                    camera.inertialAlphaOffset += 0.01;
+                }
+                else if (this.keysDown.indexOf(keyCode) !== -1) {
+                    camera.inertialBetaOffset += 0.01;
+                }
+            }
+        };
+        ArcRotateCameraKeyboardMoveInput.prototype.getTypeName = function () {
+            return "arcrotate.keyboard";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraKeyboardMoveInput.prototype, "keysUp", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraKeyboardMoveInput.prototype, "keysDown", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraKeyboardMoveInput.prototype, "keysLeft", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraKeyboardMoveInput.prototype, "keysRight", void 0);
+        return ArcRotateCameraKeyboardMoveInput;
+    }());
+    BABYLON.ArcRotateCameraKeyboardMoveInput = ArcRotateCameraKeyboardMoveInput;
+    BABYLON.CameraInputTypes["arcrotate.keyboard"] = ArcRotateCameraKeyboardMoveInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var ArcRotateCameraMouseWheelInput = (function () {
+        function ArcRotateCameraMouseWheelInput() {
+            this.wheelPrecision = 3.0;
+        }
+        ArcRotateCameraMouseWheelInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        ArcRotateCameraMouseWheelInput.prototype.attachElement = function (element) {
+            var _this = this;
+            this.attachedElement = element;
+            this._wheel = function (event) {
+                var delta = 0;
+                if (event.wheelDelta) {
+                    delta = event.wheelDelta / (_this.wheelPrecision * 40);
+                }
+                else if (event.detail) {
+                    delta = -event.detail / _this.wheelPrecision;
+                }
+                if (delta)
+                    _this.camera.inertialRadiusOffset += delta;
+                if (event.preventDefault) {
+                    if (!_this.camera._noPreventDefault) {
+                        event.preventDefault();
+                    }
+                }
             };
-            FreeCameraVirtualJoystickInput.prototype.getTypeName = function () {
-                return "freecamera.virtualjoystick";
-            };
-            return FreeCameraVirtualJoystickInput;
-        }());
-        CameraInputs.FreeCameraVirtualJoystickInput = FreeCameraVirtualJoystickInput;
-        CameraInputs.InputTypes["freecamera.virtualjoystick"] = FreeCameraVirtualJoystickInput;
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
+            element.addEventListener('mousewheel', this._wheel, false);
+            element.addEventListener('DOMMouseScroll', this._wheel, false);
+        };
+        ArcRotateCameraMouseWheelInput.prototype.detach = function () {
+            this.attachedElement.removeEventListener('mousewheel', this._wheel);
+            this.attachedElement.removeEventListener('DOMMouseScroll', this._wheel);
+        };
+        ArcRotateCameraMouseWheelInput.prototype.getTypeName = function () {
+            return "arcrotate.mousewheel";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecision", void 0);
+        return ArcRotateCameraMouseWheelInput;
+    }());
+    BABYLON.ArcRotateCameraMouseWheelInput = ArcRotateCameraMouseWheelInput;
+    BABYLON.CameraInputTypes["arcrotate.mousewheel"] = ArcRotateCameraMouseWheelInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+    var ArcRotateCameraPointersInput = (function () {
+        function ArcRotateCameraPointersInput() {
+            this._isRightClick = false;
+            this._isCtrlPushed = false;
+            this.pinchInwards = true;
+            this.angularSensibilityX = 1000.0;
+            this.angularSensibilityY = 1000.0;
+            this.pinchPrecision = 6.0;
+            this.panningSensibility = 50.0;
+        }
+        ArcRotateCameraPointersInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        ArcRotateCameraPointersInput.prototype.attachElement = function (element, noPreventDefault) {
+            var _this = this;
+            this.attachedElement = element;
+            var engine = this.camera.getEngine();
+            var cacheSoloPointer; // cache pointer object for better perf on camera rotation
+            var pointers = new BABYLON.SmartCollection();
+            var previousPinchDistance = 0;
+            if (this._onPointerDown === undefined) {
+                if (!this.camera._useCtrlForPanning) {
+                    element.addEventListener("contextmenu", this._onContextMenu, false);
+                }
+                this._onLostFocus = function () {
+                    //this._keys = [];
+                    pointers.empty();
+                    previousPinchDistance = 0;
+                    cacheSoloPointer = null;
+                };
+                this._onKeyDown = function (evt) {
+                    _this._isCtrlPushed = evt.ctrlKey;
+                };
+                this._onKeyUp = function (evt) {
+                    _this._isCtrlPushed = evt.ctrlKey;
+                };
+                this._onPointerDown = function (evt) {
+                    // Manage panning with right click
+                    _this._isRightClick = evt.button === 2;
+                    // manage pointers
+                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
+                    cacheSoloPointer = pointers.item(evt.pointerId);
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onPointerUp = function (evt) {
+                    cacheSoloPointer = null;
+                    previousPinchDistance = 0;
+                    //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
+                    //but emptying completly pointers collection is required to fix a bug on iPhone : 
+                    //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
+                    //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
+                    pointers.empty();
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onContextMenu = function (evt) {
+                    evt.preventDefault();
+                };
+                this._onPointerMove = function (evt) {
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                    switch (pointers.count) {
+                        case 1:
+                            if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) || (!_this.camera._useCtrlForPanning && _this._isRightClick))) {
+                                _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
+                                _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
+                            }
+                            else {
+                                var offsetX = evt.clientX - cacheSoloPointer.x;
+                                var offsetY = evt.clientY - cacheSoloPointer.y;
+                                _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                                _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
+                            }
+                            cacheSoloPointer.x = evt.clientX;
+                            cacheSoloPointer.y = evt.clientY;
+                            break;
+                        case 2:
+                            //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                            pointers.item(evt.pointerId).x = evt.clientX;
+                            pointers.item(evt.pointerId).y = evt.clientY;
+                            var direction = _this.pinchInwards ? 1 : -1;
+                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
+                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
+                            var pinchSquaredDistance = (distX * distX) + (distY * distY);
+                            if (previousPinchDistance === 0) {
+                                previousPinchDistance = pinchSquaredDistance;
+                                return;
+                            }
+                            if (pinchSquaredDistance !== previousPinchDistance) {
+                                _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
+                                previousPinchDistance = pinchSquaredDistance;
+                            }
+                            break;
+                        default:
+                            if (pointers.item(evt.pointerId)) {
+                                pointers.item(evt.pointerId).x = evt.clientX;
+                                pointers.item(evt.pointerId).y = evt.clientY;
+                            }
+                    }
+                };
+                this._onMouseMove = function (evt) {
+                    if (!engine.isPointerLock) {
+                        return;
+                    }
+                    var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                    var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                    _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                    _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                };
+                this._onGestureStart = function (e) {
+                    if (window.MSGesture === undefined) {
+                        return;
+                    }
+                    if (!_this._MSGestureHandler) {
+                        _this._MSGestureHandler = new MSGesture();
+                        _this._MSGestureHandler.target = element;
+                    }
+                    _this._MSGestureHandler.addPointer(e.pointerId);
+                };
+                this._onGesture = function (e) {
+                    _this.camera.radius *= e.scale;
+                    if (e.preventDefault) {
+                        if (!noPreventDefault) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }
+                };
+            }
+            this.attachedElement.addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            this.attachedElement.addEventListener(eventPrefix + "up", this._onPointerUp, false);
+            this.attachedElement.addEventListener(eventPrefix + "out", this._onPointerUp, false);
+            this.attachedElement.addEventListener(eventPrefix + "move", this._onPointerMove, false);
+            this.attachedElement.addEventListener("mousemove", this._onMouseMove, false);
+            this.attachedElement.addEventListener("MSPointerDown", this._onGestureStart, false);
+            this.attachedElement.addEventListener("MSGestureChange", this._onGesture, false);
+            BABYLON.Tools.RegisterTopRootEvents([
+                { name: "blur", handler: this._onLostFocus }
+            ]);
+        };
+        ArcRotateCameraPointersInput.prototype.detach = function () {
+            this._MSGestureHandler = null;
+            this.attachedElement.removeEventListener("contextmenu", this._onContextMenu);
+            this.attachedElement.removeEventListener(eventPrefix + "down", this._onPointerDown);
+            this.attachedElement.removeEventListener(eventPrefix + "up", this._onPointerUp);
+            this.attachedElement.removeEventListener(eventPrefix + "out", this._onPointerUp);
+            this.attachedElement.removeEventListener(eventPrefix + "move", this._onPointerMove);
+            this.attachedElement.removeEventListener("mousemove", this._onMouseMove);
+            this.attachedElement.removeEventListener("MSPointerDown", this._onGestureStart);
+            this.attachedElement.removeEventListener("MSGestureChange", this._onGesture);
+            BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "blur", handler: this._onLostFocus }
+            ]);
+        };
+        ArcRotateCameraPointersInput.prototype.getTypeName = function () {
+            return "arcrotate.pointers";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "angularSensibilityX", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "angularSensibilityY", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "pinchPrecision", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraPointersInput.prototype, "panningSensibility", void 0);
+        return ArcRotateCameraPointersInput;
+    }());
+    BABYLON.ArcRotateCameraPointersInput = ArcRotateCameraPointersInput;
+    BABYLON.CameraInputTypes["arcrotate.pointers"] = ArcRotateCameraPointersInput;
 })(BABYLON || (BABYLON = {}));
 
 
@@ -11978,7 +12307,7 @@ var BABYLON;
                 };
                 updatePosition(newPosition);
             };
-            this.inputs = new FreeCameraInputsManager(this);
+            this.inputs = new BABYLON.FreeCameraInputsManager(this);
             this.inputs.addKeyboard().addMouse();
         }
         // Controls
@@ -12056,6 +12385,11 @@ var BABYLON;
         return FreeCamera;
     }(BABYLON.TargetCamera));
     BABYLON.FreeCamera = FreeCamera;
+})(BABYLON || (BABYLON = {}));
+
+
+var BABYLON;
+(function (BABYLON) {
     var FreeCameraInputsManager = (function (_super) {
         __extends(FreeCameraInputsManager, _super);
         function FreeCameraInputsManager(camera) {
@@ -12068,23 +12402,27 @@ var BABYLON;
             }
         };
         FreeCameraInputsManager.prototype.addKeyboard = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraKeyboardMoveInput());
+            this.add(new BABYLON.FreeCameraKeyboardMoveInput());
             return this;
         };
         FreeCameraInputsManager.prototype.addMouse = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraMouseInput());
+            this.add(new BABYLON.FreeCameraMouseInput());
             return this;
         };
         FreeCameraInputsManager.prototype.addGamepad = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraGamepadInput());
+            this.add(new BABYLON.FreeCameraGamepadInput());
             return this;
         };
         FreeCameraInputsManager.prototype.addDeviceOrientation = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraDeviceOrientationInput());
+            this.add(new BABYLON.FreeCameraDeviceOrientationInput());
             return this;
         };
         FreeCameraInputsManager.prototype.addTouch = function () {
-            this.add(new BABYLON.CameraInputs.FreeCameraTouchInput());
+            this.add(new BABYLON.FreeCameraTouchInput());
+            return this;
+        };
+        FreeCameraInputsManager.prototype.addVirtualJoystick = function () {
+            this.add(new BABYLON.FreeCameraVirtualJoystickInput());
             return this;
         };
         return FreeCameraInputsManager;
@@ -12212,151 +12550,10 @@ var BABYLON;
     // We're mainly based on the logic defined into the FreeCamera code
     var TouchCamera = (function (_super) {
         __extends(TouchCamera, _super);
-        //         private _offsetX: number = null;
-        //         private _offsetY: number = null;
-        //         private _pointerCount:number = 0;
-        //         private _pointerPressed = [];
-        //         private _attachedCanvas: HTMLCanvasElement;
-        //         private _onPointerDown: (e: PointerEvent) => any;
-        //         private _onPointerUp: (e: PointerEvent) => any;
-        //         private _onPointerMove: (e: PointerEvent) => any;
-        // 
-        //         @serialize()
-        //         public touchAngularSensibility: number = 200000.0;
-        // 
-        //         @serialize()
-        //         public touchMoveSensibility: number = 250.0;
         function TouchCamera(name, position, scene) {
             _super.call(this, name, position, scene);
             this.inputs.addTouch();
         }
-        // public _onLostFocus(e: FocusEvent): void {
-        //     this._offsetX = null;
-        //     this._offsetY = null;
-        //     super._onLostFocus(e);
-        // }
-        //         public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
-        //             var previousPosition;
-        // 
-        //             if (this._attachedCanvas) {
-        //                 return;
-        //             }
-        // 
-        //             if (this._onPointerDown === undefined) {
-        // 
-        //                 this._onPointerDown = (evt) => {
-        // 
-        //                     if (evt.pointerType === "mouse") {
-        //                         return;
-        //                     }
-        // 
-        //                     if (!noPreventDefault) {
-        //                         evt.preventDefault();
-        //                     }
-        // 
-        //                     this._pointerPressed.push(evt.pointerId);
-        // 
-        //                     if (this._pointerPressed.length !== 1) {
-        //                         return;
-        //                     }
-        // 
-        //                     previousPosition = {
-        //                         x: evt.clientX,
-        //                         y: evt.clientY
-        //                     };
-        //                 };
-        // 
-        //                 this._onPointerUp = (evt) => {
-        // 
-        //                     if (evt.pointerType === "mouse") {
-        //                         return;
-        //                     }
-        // 
-        //                     if (!noPreventDefault) {
-        //                         evt.preventDefault();
-        //                     }
-        // 
-        //                     var index: number = this._pointerPressed.indexOf(evt.pointerId);
-        // 
-        //                     if (index === -1) {
-        //                         return;
-        //                     }
-        //                     this._pointerPressed.splice(index, 1);
-        // 
-        //                     if (index != 0) {
-        //                         return;
-        //                     }
-        //                     previousPosition = null;
-        //                     this._offsetX = null;
-        //                     this._offsetY = null;
-        //                 };
-        // 
-        //                 this._onPointerMove = (evt) => {
-        // 
-        //                     if (evt.pointerType === "mouse") {
-        //                         return;
-        //                     }
-        // 
-        //                     if (!noPreventDefault) {
-        //                         evt.preventDefault();
-        //                     }
-        // 
-        //                     if (!previousPosition) {
-        //                         return;
-        //                     }
-        // 
-        //                     var index: number = this._pointerPressed.indexOf(evt.pointerId);
-        // 
-        //                     if (index != 0) {
-        //                         return;
-        //                     }
-        // 
-        //                     this._offsetX = evt.clientX - previousPosition.x;
-        //                     this._offsetY = -(evt.clientY - previousPosition.y);
-        //                 };
-        // 
-        //                 
-        //             }
-        // 
-        //             canvas.addEventListener("pointerdown", this._onPointerDown);
-        //             canvas.addEventListener("pointerup", this._onPointerUp);
-        //             canvas.addEventListener("pointerout", this._onPointerUp);
-        //             canvas.addEventListener("pointermove", this._onPointerMove);
-        // 
-        //             super.attachControl(canvas);
-        //         }
-        // 
-        //         public detachControl(canvas: HTMLCanvasElement): void {
-        //             if (this._attachedCanvas !== canvas) {
-        //                 return;
-        //             }
-        // 
-        //             canvas.removeEventListener("pointerdown", this._onPointerDown);
-        //             canvas.removeEventListener("pointerup", this._onPointerUp);
-        //             canvas.removeEventListener("pointerout", this._onPointerUp);
-        //             canvas.removeEventListener("pointermove", this._onPointerMove);
-        //             
-        //             super.detachControl(canvas);
-        //         }
-        // 
-        //         public _checkInputs(): void {
-        //             if (this._offsetX) {
-        // 
-        //                 this.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
-        // 
-        //                 if (this._pointerPressed.length > 1) {
-        //                     this.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
-        //                 } else {
-        //                     var speed = this._computeLocalCameraSpeed();
-        //                     var direction = new Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
-        // 
-        //                     Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
-        //                     this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
-        //                 }
-        //             }
-        // 
-        //             super._checkInputs();
-        //         }
         TouchCamera.prototype.getTypeName = function () {
             return "TouchCamera";
         };
@@ -12374,9 +12571,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var eventPrefix = BABYLON.Tools.GetPointerPrefix();
+    // var eventPrefix = Tools.GetPointerPrefix();
     var ArcRotateCamera = (function (_super) {
         __extends(ArcRotateCamera, _super);
+        //deprecated angularSensibility support
+        // public get angularSensibility() {
+        //     Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+        //     return Math.max(this.angularSensibilityX, this.angularSensibilityY);
+        // }
+        // //deprecated angularSensibility support
+        // public set angularSensibility(value) {
+        //     Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
+        //     this.angularSensibilityX = value;
+        //     this.angularSensibilityY = value;
+        // }
         function ArcRotateCamera(name, alpha, beta, radius, target, scene) {
             var _this = this;
             _super.call(this, name, BABYLON.Vector3.Zero(), scene);
@@ -12389,27 +12597,34 @@ var BABYLON;
             this.upperBetaLimit = Math.PI;
             this.lowerRadiusLimit = null;
             this.upperRadiusLimit = null;
-            this.angularSensibilityX = 1000.0;
-            this.angularSensibilityY = 1000.0;
-            this.wheelPrecision = 3.0;
-            this.pinchPrecision = 2.0;
-            this.panningSensibility = 50.0;
+            // @serialize()
+            // public angularSensibilityX = 1000.0;
+            // @serialize()
+            // public angularSensibilityY = 1000.0;
+            // @serialize()
+            // public wheelPrecision = 3.0;
+            // @serialize()
+            // public pinchPrecision = 2.0;
+            // @serialize()
+            // public panningSensibility: number = 50.0;
             this.inertialPanningX = 0;
             this.inertialPanningY = 0;
-            this.keysUp = [38];
-            this.keysDown = [40];
-            this.keysLeft = [37];
-            this.keysRight = [39];
+            // @serialize()
+            // public keysUp = [38];
+            // @serialize()
+            // public keysDown = [40];
+            // @serialize()
+            // public keysLeft = [37];
+            // @serialize()
+            // public keysRight = [39];
             this.zoomOnFactor = 1;
             this.targetScreenOffset = BABYLON.Vector2.Zero();
-            this.pinchInwards = true;
+            // public pinchInwards = true;
             this.allowUpsideDown = true;
-            this._keys = [];
+            // private _keys = [];
             this._viewMatrix = new BABYLON.Matrix();
             // Panning
             this.panningAxis = new BABYLON.Vector3(1, 1, 0);
-            this._isRightClick = false;
-            this._isCtrlPushed = false;
             this.checkCollisions = false;
             this.collisionRadius = new BABYLON.Vector3(0.5, 0.5, 0.5);
             this._collider = new BABYLON.Collider();
@@ -12461,22 +12676,9 @@ var BABYLON;
             this.beta = beta;
             this.radius = radius;
             this.getViewMatrix();
+            this.inputs = new BABYLON.ArcRotateCameraInputsManager(this);
+            this.inputs.addKeyboard().addMouseWheel().addPointers();
         }
-        Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
-            //deprecated angularSensibility support
-            get: function () {
-                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
-                return Math.max(this.angularSensibilityX, this.angularSensibilityY);
-            },
-            //deprecated angularSensibility support
-            set: function (value) {
-                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
-                this.angularSensibilityX = value;
-                this.angularSensibilityY = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         // Cache
         ArcRotateCamera.prototype._initCache = function () {
             _super.prototype._initCache.call(this);
@@ -12514,220 +12716,222 @@ var BABYLON;
         };
         // Methods
         ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault, useCtrlForPanning) {
+            // var cacheSoloPointer; // cache pointer object for better perf on camera rotation
+            // var previousPinchDistance = 0;
+            // // var pointers = new SmartCollection();
             var _this = this;
             if (useCtrlForPanning === void 0) { useCtrlForPanning = true; }
-            var cacheSoloPointer; // cache pointer object for better perf on camera rotation
-            var previousPinchDistance = 0;
-            var pointers = new BABYLON.SmartCollection();
             if (this._attachedElement) {
                 return;
             }
             this._attachedElement = element;
-            var engine = this.getEngine();
-            if (this._onPointerDown === undefined) {
-                this._onPointerDown = function (evt) {
-                    // Manage panning with right click
-                    _this._isRightClick = evt.button === 2;
-                    // manage pointers
-                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
-                    cacheSoloPointer = pointers.item(evt.pointerId);
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onPointerUp = function (evt) {
-                    cacheSoloPointer = null;
-                    previousPinchDistance = 0;
-                    //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
-                    //but emptying completly pointers collection is required to fix a bug on iPhone : 
-                    //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
-                    //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    pointers.empty();
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onContextMenu = function (evt) {
-                    evt.preventDefault();
-                };
-                this._onPointerMove = function (evt) {
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    switch (pointers.count) {
-                        case 1:
-                            if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && _this._isRightClick))) {
-                                _this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
-                                _this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
-                            }
-                            else {
-                                var offsetX = evt.clientX - cacheSoloPointer.x;
-                                var offsetY = evt.clientY - cacheSoloPointer.y;
-                                _this.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
-                                _this.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
-                            }
-                            cacheSoloPointer.x = evt.clientX;
-                            cacheSoloPointer.y = evt.clientY;
-                            break;
-                        case 2:
-                            //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
-                            pointers.item(evt.pointerId).x = evt.clientX;
-                            pointers.item(evt.pointerId).y = evt.clientY;
-                            var direction = _this.pinchInwards ? 1 : -1;
-                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
-                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
-                            var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                            if (previousPinchDistance === 0) {
-                                previousPinchDistance = pinchSquaredDistance;
-                                return;
-                            }
-                            if (pinchSquaredDistance !== previousPinchDistance) {
-                                _this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * _this.wheelPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
-                                previousPinchDistance = pinchSquaredDistance;
-                            }
-                            break;
-                        default:
-                            if (pointers.item(evt.pointerId)) {
-                                pointers.item(evt.pointerId).x = evt.clientX;
-                                pointers.item(evt.pointerId).y = evt.clientY;
-                            }
-                    }
-                };
-                this._onMouseMove = function (evt) {
-                    if (!engine.isPointerLock) {
-                        return;
-                    }
-                    var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                    var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    _this.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
-                    _this.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._wheel = function (event) {
-                    var delta = 0;
-                    if (event.wheelDelta) {
-                        delta = event.wheelDelta / (_this.wheelPrecision * 40);
-                    }
-                    else if (event.detail) {
-                        delta = -event.detail / _this.wheelPrecision;
-                    }
-                    if (delta)
-                        _this.inertialRadiusOffset += delta;
-                    if (event.preventDefault) {
-                        if (!noPreventDefault) {
-                            event.preventDefault();
-                        }
-                    }
-                };
-                this._onKeyDown = function (evt) {
-                    _this._isCtrlPushed = evt.ctrlKey;
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = _this._keys.indexOf(evt.keyCode);
-                        if (index === -1) {
-                            _this._keys.push(evt.keyCode);
-                        }
-                        if (evt.preventDefault) {
-                            if (!noPreventDefault) {
-                                evt.preventDefault();
-                            }
-                        }
-                    }
-                };
-                this._onKeyUp = function (evt) {
-                    _this._isCtrlPushed = evt.ctrlKey;
-                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        _this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = _this._keys.indexOf(evt.keyCode);
-                        if (index >= 0) {
-                            _this._keys.splice(index, 1);
-                        }
-                        if (evt.preventDefault) {
-                            if (!noPreventDefault) {
-                                evt.preventDefault();
-                            }
-                        }
-                    }
-                };
-                this._onLostFocus = function () {
-                    _this._keys = [];
-                    pointers.empty();
-                    previousPinchDistance = 0;
-                    cacheSoloPointer = null;
-                };
-                this._onGestureStart = function (e) {
-                    if (window.MSGesture === undefined) {
-                        return;
-                    }
-                    if (!_this._MSGestureHandler) {
-                        _this._MSGestureHandler = new MSGesture();
-                        _this._MSGestureHandler.target = element;
-                    }
-                    _this._MSGestureHandler.addPointer(e.pointerId);
-                };
-                this._onGesture = function (e) {
-                    _this.radius *= e.scale;
-                    if (e.preventDefault) {
-                        if (!noPreventDefault) {
-                            e.stopPropagation();
-                            e.preventDefault();
-                        }
-                    }
-                };
-                this._reset = function () {
-                    _this._keys = [];
-                    _this.inertialAlphaOffset = 0;
-                    _this.inertialBetaOffset = 0;
-                    _this.inertialRadiusOffset = 0;
-                    pointers.empty();
-                    previousPinchDistance = 0;
-                    cacheSoloPointer = null;
-                };
-            }
-            if (!useCtrlForPanning) {
-                element.addEventListener("contextmenu", this._onContextMenu, false);
-            }
-            element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
-            element.addEventListener(eventPrefix + "up", this._onPointerUp, false);
-            element.addEventListener(eventPrefix + "out", this._onPointerUp, false);
-            element.addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            element.addEventListener("mousemove", this._onMouseMove, false);
-            element.addEventListener("MSPointerDown", this._onGestureStart, false);
-            element.addEventListener("MSGestureChange", this._onGesture, false);
-            element.addEventListener('mousewheel', this._wheel, false);
-            element.addEventListener('DOMMouseScroll', this._wheel, false);
-            BABYLON.Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            this._noPreventDefault = noPreventDefault;
+            this._useCtrlForPanning = useCtrlForPanning;
+            this.inputs.attachElement(element, noPreventDefault);
+            // var engine = this.getEngine();
+            // if (this._wheel === undefined) {
+            //     this._onPointerDown = evt => {
+            //         // Manage panning with right click
+            //         this._isRightClick = evt.button === 2;
+            //         // manage pointers
+            //         pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
+            //         cacheSoloPointer = pointers.item(evt.pointerId);
+            //         if (!noPreventDefault) {
+            //             evt.preventDefault();
+            //         }
+            //     };
+            //     this._onPointerUp = evt => {
+            //         cacheSoloPointer = null;
+            //         previousPinchDistance = 0;
+            //         //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
+            //         //but emptying completly pointers collection is required to fix a bug on iPhone : 
+            //         //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
+            //         //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
+            //         pointers.empty();
+            //         if (!noPreventDefault) {
+            //             evt.preventDefault();
+            //         }
+            //     };
+            //     this._onContextMenu = evt => {
+            //         evt.preventDefault();
+            //     };
+            //     this._onPointerMove = evt => {
+            //         if (!noPreventDefault) {
+            //             evt.preventDefault();
+            //         }
+            //         switch (pointers.count) {
+            //             case 1: //normal camera rotation
+            //                 if (this.panningSensibility !== 0 && ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick))) {
+            //                     this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
+            //                     this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
+            //                 } else {
+            //                     var offsetX = evt.clientX - cacheSoloPointer.x;
+            //                     var offsetY = evt.clientY - cacheSoloPointer.y;
+            //                     this.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
+            //                     this.inertialBetaOffset -= offsetY / this.angularSensibilityY;
+            //                 }
+            //                 cacheSoloPointer.x = evt.clientX;
+            //                 cacheSoloPointer.y = evt.clientY;
+            //                 break;
+            //             case 2: //pinch
+            //                 //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+            //                 pointers.item(evt.pointerId).x = evt.clientX;
+            //                 pointers.item(evt.pointerId).y = evt.clientY;
+            //                 var direction = this.pinchInwards ? 1 : -1;
+            //                 var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
+            //                 var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
+            //                 var pinchSquaredDistance = (distX * distX) + (distY * distY);
+            //                 if (previousPinchDistance === 0) {
+            //                     previousPinchDistance = pinchSquaredDistance;
+            //                     return;
+            //                 }
+            //                 if (pinchSquaredDistance !== previousPinchDistance) {
+            //                     this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * ((this.angularSensibilityX + this.angularSensibilityY) / 2) * direction);
+            //                     previousPinchDistance = pinchSquaredDistance;
+            //                 }
+            //                 break;
+            //             default:
+            //                 if (pointers.item(evt.pointerId)) {
+            //                     pointers.item(evt.pointerId).x = evt.clientX;
+            //                     pointers.item(evt.pointerId).y = evt.clientY;
+            //                 }
+            //         }
+            //     };
+            //     this._onMouseMove = evt => {
+            //         if (!engine.isPointerLock) {
+            //             return;
+            //         }
+            //         var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+            //         var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+            //         this.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
+            //         this.inertialBetaOffset -= offsetY / this.angularSensibilityY;
+            //         if (!noPreventDefault) {
+            //             evt.preventDefault();
+            //         }
+            //     };
+            // this._wheel = event => {
+            //     var delta = 0;
+            //     if (event.wheelDelta) {
+            //         delta = event.wheelDelta / (this.wheelPrecision * 40);
+            //     } else if (event.detail) {
+            //         delta = -event.detail / this.wheelPrecision;
+            //     }
+            //     if (delta)
+            //         this.inertialRadiusOffset += delta;
+            //     if (event.preventDefault) {
+            //         if (!noPreventDefault) {
+            //             event.preventDefault();
+            //         }
+            //     }
+            // };
+            // this._onKeyDown = evt => {
+            //     this._isCtrlPushed = evt.ctrlKey;
+            //     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
+            //         this.keysDown.indexOf(evt.keyCode) !== -1 ||
+            //         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+            //         this.keysRight.indexOf(evt.keyCode) !== -1) {
+            //         var index = this._keys.indexOf(evt.keyCode);
+            //         if (index === -1) {
+            //             this._keys.push(evt.keyCode);
+            //         }
+            //         if (evt.preventDefault) {
+            //             if (!noPreventDefault) {
+            //                 evt.preventDefault();
+            //             }
+            //         }
+            //     }
+            // };
+            // this._onKeyUp = evt => {
+            //     this._isCtrlPushed = evt.ctrlKey;
+            //     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
+            //         this.keysDown.indexOf(evt.keyCode) !== -1 ||
+            //         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+            //         this.keysRight.indexOf(evt.keyCode) !== -1) {
+            //         var index = this._keys.indexOf(evt.keyCode);
+            //         if (index >= 0) {
+            //             this._keys.splice(index, 1);
+            //         }
+            //         if (evt.preventDefault) {
+            //             if (!noPreventDefault) {
+            //                 evt.preventDefault();
+            //             }
+            //         }
+            //     }
+            // };
+            // this._onLostFocus = () => {
+            //     //this._keys = [];
+            //     pointers.empty();
+            //     previousPinchDistance = 0;
+            //     cacheSoloPointer = null;
+            // };
+            // this._onGestureStart = e => {
+            //     if (window.MSGesture === undefined) {
+            //         return;
+            //     }
+            //     if (!this._MSGestureHandler) {
+            //         this._MSGestureHandler = new MSGesture();
+            //         this._MSGestureHandler.target = element;
+            //     }
+            //     this._MSGestureHandler.addPointer(e.pointerId);
+            // };
+            // this._onGesture = e => {
+            //     this.radius *= e.scale;
+            //     if (e.preventDefault) {
+            //         if (!noPreventDefault) {
+            //             e.stopPropagation();
+            //             e.preventDefault();
+            //         }
+            //     }
+            // };
+            this._reset = function () {
+                // this._keys = [];
+                _this.inertialAlphaOffset = 0;
+                _this.inertialBetaOffset = 0;
+                _this.inertialRadiusOffset = 0;
+                // pointers.empty();
+                // previousPinchDistance = 0;
+                // cacheSoloPointer = null;
+            };
+            // }
+            // if (!useCtrlForPanning) {
+            //     element.addEventListener("contextmenu", this._onContextMenu, false);
+            // }
+            //element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            // element.addEventListener(eventPrefix + "up", this._onPointerUp, false);
+            // element.addEventListener(eventPrefix + "out", this._onPointerUp, false);
+            // element.addEventListener(eventPrefix + "move", this._onPointerMove, false);
+            // element.addEventListener("mousemove", this._onMouseMove, false);
+            // element.addEventListener("MSPointerDown", this._onGestureStart, false);
+            // element.addEventListener("MSGestureChange", this._onGesture, false);
+            // element.addEventListener('mousewheel', this._wheel, false);
+            // element.addEventListener('DOMMouseScroll', this._wheel, false);
+            // Tools.RegisterTopRootEvents([
+            //     // { name: "keydown", handler: this._onKeyDown },
+            //     // { name: "keyup", handler: this._onKeyUp },
+            //     { name: "blur", handler: this._onLostFocus }
+            // ]);
         };
         ArcRotateCamera.prototype.detachControl = function (element) {
             if (this._attachedElement !== element) {
                 return;
             }
-            element.removeEventListener("contextmenu", this._onContextMenu);
-            element.removeEventListener(eventPrefix + "down", this._onPointerDown);
-            element.removeEventListener(eventPrefix + "up", this._onPointerUp);
-            element.removeEventListener(eventPrefix + "out", this._onPointerUp);
-            element.removeEventListener(eventPrefix + "move", this._onPointerMove);
-            element.removeEventListener("mousemove", this._onMouseMove);
-            element.removeEventListener("MSPointerDown", this._onGestureStart);
-            element.removeEventListener("MSGestureChange", this._onGesture);
-            element.removeEventListener('mousewheel', this._wheel);
-            element.removeEventListener('DOMMouseScroll', this._wheel);
-            BABYLON.Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
-            this._MSGestureHandler = null;
+            this.inputs.detachElement(this._attachedElement);
+            // element.removeEventListener("contextmenu", this._onContextMenu);
+            // element.removeEventListener(eventPrefix + "down", this._onPointerDown);
+            // element.removeEventListener(eventPrefix + "up", this._onPointerUp);
+            // element.removeEventListener(eventPrefix + "out", this._onPointerUp);
+            // element.removeEventListener(eventPrefix + "move", this._onPointerMove);
+            // element.removeEventListener("mousemove", this._onMouseMove);
+            // element.removeEventListener("MSPointerDown", this._onGestureStart);
+            // element.removeEventListener("MSGestureChange", this._onGesture);
+            // element.removeEventListener('mousewheel', this._wheel);
+            // element.removeEventListener('DOMMouseScroll', this._wheel);
+            // Tools.UnregisterTopRootEvents([
+            //     // { name: "keydown", handler: this._onKeyDown },
+            //     // { name: "keyup", handler: this._onKeyUp },
+            //     { name: "blur", handler: this._onLostFocus }
+            // ]);
+            // this._MSGestureHandler = null;
             this._attachedElement = null;
             if (this._reset) {
                 this._reset();
@@ -12738,22 +12942,20 @@ var BABYLON;
             if (this._collisionTriggered) {
                 return;
             }
+            this.inputs.checkInputs();
             // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    this.inertialAlphaOffset -= 0.01;
-                }
-                else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    this.inertialBetaOffset -= 0.01;
-                }
-                else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    this.inertialAlphaOffset += 0.01;
-                }
-                else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    this.inertialBetaOffset += 0.01;
-                }
-            }
+            // for (var index = 0; index < this._keys.length; index++) {
+            //     var keyCode = this._keys[index];
+            //     if (this.keysLeft.indexOf(keyCode) !== -1) {
+            //         this.inertialAlphaOffset -= 0.01;
+            //     } else if (this.keysUp.indexOf(keyCode) !== -1) {
+            //         this.inertialBetaOffset -= 0.01;
+            //     } else if (this.keysRight.indexOf(keyCode) !== -1) {
+            //         this.inertialAlphaOffset += 0.01;
+            //     } else if (this.keysDown.indexOf(keyCode) !== -1) {
+            //         this.inertialBetaOffset += 0.01;
+            //     }
+            // }			
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
                 this.alpha += this.beta <= 0 ? -this.inertialAlphaOffset : this.inertialAlphaOffset;
@@ -12992,37 +13194,10 @@ var BABYLON;
         ], ArcRotateCamera.prototype, "upperRadiusLimit", void 0);
         __decorate([
             BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "angularSensibilityX", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "angularSensibilityY", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "wheelPrecision", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "pinchPrecision", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "panningSensibility", void 0);
-        __decorate([
-            BABYLON.serialize()
         ], ArcRotateCamera.prototype, "inertialPanningX", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "inertialPanningY", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "keysUp", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "keysDown", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "keysLeft", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], ArcRotateCamera.prototype, "keysRight", void 0);
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "zoomOnFactor", void 0);
@@ -13032,6 +13207,31 @@ var BABYLON;
         return ArcRotateCamera;
     }(BABYLON.TargetCamera));
     BABYLON.ArcRotateCamera = ArcRotateCamera;
+})(BABYLON || (BABYLON = {}));
+
+
+var BABYLON;
+(function (BABYLON) {
+    var ArcRotateCameraInputsManager = (function (_super) {
+        __extends(ArcRotateCameraInputsManager, _super);
+        function ArcRotateCameraInputsManager(camera) {
+            _super.call(this, camera);
+        }
+        ArcRotateCameraInputsManager.prototype.addMouseWheel = function () {
+            this.add(new BABYLON.ArcRotateCameraMouseWheelInput());
+            return this;
+        };
+        ArcRotateCameraInputsManager.prototype.addPointers = function () {
+            this.add(new BABYLON.ArcRotateCameraPointersInput());
+            return this;
+        };
+        ArcRotateCameraInputsManager.prototype.addKeyboard = function () {
+            this.add(new BABYLON.ArcRotateCameraKeyboardMoveInput());
+            return this;
+        };
+        return ArcRotateCameraInputsManager;
+    }(BABYLON.CameraInputsManager));
+    BABYLON.ArcRotateCameraInputsManager = ArcRotateCameraInputsManager;
 })(BABYLON || (BABYLON = {}));
 
 var BABYLON;
@@ -34843,46 +35043,22 @@ var BABYLON;
     // We're mainly based on the logic defined into the FreeCamera code
     var VirtualJoysticksCamera = (function (_super) {
         __extends(VirtualJoysticksCamera, _super);
+        // private _leftjoystick: VirtualJoystick;
+        // private _rightjoystick: VirtualJoystick;
         function VirtualJoysticksCamera(name, position, scene) {
             _super.call(this, name, position, scene);
-            this._leftjoystick = new BABYLON.VirtualJoystick(true);
-            this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
-            this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
-            this._leftjoystick.setJoystickSensibility(0.15);
-            this._rightjoystick = new BABYLON.VirtualJoystick(false);
-            this._rightjoystick.setAxisForUpDown(BABYLON.JoystickAxis.X);
-            this._rightjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.Y);
-            this._rightjoystick.reverseUpDown = true;
-            this._rightjoystick.setJoystickSensibility(0.05);
-            this._rightjoystick.setJoystickColor("yellow");
+            this.inputs.addVirtualJoystick();
+            // this._leftjoystick = new VirtualJoystick(true);
+            // this._leftjoystick.setAxisForUpDown(JoystickAxis.Z);
+            // this._leftjoystick.setAxisForLeftRight(JoystickAxis.X);
+            // this._leftjoystick.setJoystickSensibility(0.15);
+            // this._rightjoystick = new VirtualJoystick(false);
+            // this._rightjoystick.setAxisForUpDown(JoystickAxis.X);
+            // this._rightjoystick.setAxisForLeftRight(JoystickAxis.Y);
+            // this._rightjoystick.reverseUpDown = true;
+            // this._rightjoystick.setJoystickSensibility(0.05);
+            // this._rightjoystick.setJoystickColor("yellow");
         }
-        VirtualJoysticksCamera.prototype.getLeftJoystick = function () {
-            return this._leftjoystick;
-        };
-        VirtualJoysticksCamera.prototype.getRightJoystick = function () {
-            return this._rightjoystick;
-        };
-        VirtualJoysticksCamera.prototype._checkInputs = function () {
-            var speed = this._computeLocalCameraSpeed() * 50;
-            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
-            this.cameraDirection = this.cameraDirection.add(deltaTransform);
-            this.cameraRotation = this.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
-            if (!this._leftjoystick.pressed) {
-                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
-            }
-            if (!this._rightjoystick.pressed) {
-                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
-            }
-            _super.prototype._checkInputs.call(this);
-        };
-        VirtualJoysticksCamera.prototype.dispose = function () {
-            this._leftjoystick.releaseCanvas();
-            _super.prototype.dispose.call(this);
-        };
-        VirtualJoysticksCamera.prototype.getTypeName = function () {
-            return "VirtualJoysticksCamera";
-        };
         return VirtualJoysticksCamera;
     }(BABYLON.FreeCamera));
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
@@ -35289,37 +35465,11 @@ var BABYLON;
         function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
             _super.call(this, name, position, scene);
-            this._alpha = 0;
-            this._beta = 0;
-            this._gamma = 0;
+            this.inputs.addDeviceOrientation();
             var metrics = BABYLON.VRCameraMetrics.GetDefault();
             metrics.compensateDistortion = compensateDistortion;
             this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
-            this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }
-        VRDeviceOrientationFreeCamera.prototype._onOrientationEvent = function (evt) {
-            this._alpha = +evt.alpha | 0;
-            this._beta = +evt.beta | 0;
-            this._gamma = +evt.gamma | 0;
-            if (this._gamma < 0) {
-                this._gamma = 90 + this._gamma;
-            }
-            else {
-                // Incline it in the correct angle.
-                this._gamma = 270 - this._gamma;
-            }
-            this.rotation.x = this._gamma / 180.0 * Math.PI;
-            this.rotation.y = -this._alpha / 180.0 * Math.PI;
-            this.rotation.z = this._beta / 180.0 * Math.PI;
-        };
-        VRDeviceOrientationFreeCamera.prototype.attachControl = function (element, noPreventDefault) {
-            _super.prototype.attachControl.call(this, element, noPreventDefault);
-            window.addEventListener("deviceorientation", this._deviceOrientationHandler);
-        };
-        VRDeviceOrientationFreeCamera.prototype.detachControl = function (element) {
-            _super.prototype.detachControl.call(this, element);
-            window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
-        };
         VRDeviceOrientationFreeCamera.prototype.getTypeName = function () {
             return "VRDeviceOrientationFreeCamera";
         };
@@ -36650,80 +36800,10 @@ var BABYLON;
     // We're mainly based on the logic defined into the FreeCamera code
     var DeviceOrientationCamera = (function (_super) {
         __extends(DeviceOrientationCamera, _super);
-        //         private _offsetX: number = null;
-        //         private _offsetY: number = null;
-        //         private _orientationGamma: number = 0;
-        //         private _orientationBeta: number = 0;
-        //         private _initialOrientationGamma: number = 0;
-        //         private _initialOrientationBeta: number = 0;
-        //         private _attachedCanvas: HTMLCanvasElement;
-        //         private _orientationChanged: (e: DeviceOrientationEvent) => any;
-        // 
-        //         @serialize()
-        //         public angularSensibility: number = 10000.0;
-        // 
-        //         @serialize()
-        //         public moveSensibility: number = 50.0;
         function DeviceOrientationCamera(name, position, scene) {
             _super.call(this, name, position, scene);
             this.inputs.addDeviceOrientation();
-            // window.addEventListener("resize", () => {
-            //     this._initialOrientationGamma = null;
-            // }, false);
         }
-        //         public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
-        //             if (this._attachedCanvas) {
-        //                 return;
-        //             }
-        //             this._attachedCanvas = canvas;
-        // 
-        //             if (!this._orientationChanged) {
-        //                 this._orientationChanged = (evt) => {
-        // 
-        //                     if (!this._initialOrientationGamma) {
-        //                             this._initialOrientationGamma = evt.gamma;
-        //                             this._initialOrientationBeta = evt.beta;
-        //                     }
-        // 
-        //                     this._orientationGamma = evt.gamma;
-        //                     this._orientationBeta = evt.beta;
-        //  
-        //                     this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
-        //                     this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
-        //                 };
-        //             }
-        // 
-        //             window.addEventListener("deviceorientation", this._orientationChanged);
-        //         }
-        // 
-        //         public detachControl(canvas: HTMLCanvasElement): void {
-        //             if (this._attachedCanvas !== canvas) {
-        //                 return;
-        //             }
-        // 
-        //             window.removeEventListener("deviceorientation", this._orientationChanged);
-        // 
-        //             this._attachedCanvas = null;
-        //             this._orientationGamma = 0;
-        //             this._orientationBeta = 0;
-        //             this._initialOrientationGamma = 0;
-        //             this._initialOrientationBeta = 0;
-        //         }
-        // 
-        //         public _checkInputs(): void {
-        //             if (!this._offsetX) {
-        //                 return;
-        //             }
-        //             this.cameraRotation.y -= this._offsetX / this.angularSensibility;
-        // 
-        //             var speed = this._computeLocalCameraSpeed();
-        //             var direction = new Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
-        // 
-        //             Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
-        //             this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
-        // 
-        //             super._checkInputs();
-        //         }
         DeviceOrientationCamera.prototype.getTypeName = function () {
             return "DeviceOrientationCamera";
         };
@@ -36738,62 +36818,10 @@ var BABYLON;
     // We're mainly based on the logic defined into the FreeCamera code
     var UniversalCamera = (function (_super) {
         __extends(UniversalCamera, _super);
-        //         public gamepad: Gamepad;
-        //         private _gamepads: Gamepads;
-        // 
-        //         @serialize()
-        //         public gamepadAngularSensibility = 200;
-        // 
-        //         @serialize()
-        //         public gamepadMoveSensibility = 40;
         function UniversalCamera(name, position, scene) {
             _super.call(this, name, position, scene);
             this.inputs.addGamepad();
-            // this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
         }
-        //         private _onNewGameConnected(gamepad: Gamepad) {
-        //             // Only the first gamepad can control the camera
-        //             if (gamepad.index === 0) {
-        //                 this.gamepad = gamepad;
-        //             }
-        //         }
-        // 
-        //         public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
-        //             super.attachControl(canvas, false);
-        //         }
-        // 
-        //         public detachControl(canvas: HTMLCanvasElement): void {
-        //             super.detachControl(canvas);
-        //         }
-        // 
-        //         public _checkInputs(): void {
-        //             if (this.gamepad) {
-        //                 var LSValues = this.gamepad.leftStick;
-        //                 var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
-        //                 var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
-        //                 LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
-        //                 LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
-        // 
-        //                 var RSValues = this.gamepad.rightStick;
-        //                 var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-        //                 var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
-        //                 RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-        //                 RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
-        // 
-        //                 var cameraTransform = Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-        // 
-        //                 var speed = this._computeLocalCameraSpeed() * 50.0;
-        //                 var deltaTransform = Vector3.TransformCoordinates(new Vector3(LSValues.x * speed, 0, -LSValues.y * speed), cameraTransform);
-        //                 this.cameraDirection = this.cameraDirection.add(deltaTransform);
-        //                 this.cameraRotation = this.cameraRotation.add(new Vector2(RSValues.y, RSValues.x));
-        //             }
-        //             super._checkInputs();
-        //         }
-        // 
-        //         public dispose(): void {
-        //             this._gamepads.dispose();
-        //             super.dispose();
-        //         }
         UniversalCamera.prototype.getTypeName = function () {
             return "UniversalCamera";
         };

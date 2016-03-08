@@ -1,4 +1,4 @@
-module BABYLON.CameraInputs {
+module BABYLON {
     export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
 
@@ -52,5 +52,6 @@ module BABYLON.CameraInputs {
             return "freecamera.virtualjoystick";
         }
     }
-    InputTypes["freecamera.virtualjoystick"] = FreeCameraVirtualJoystickInput;
+    
+    CameraInputTypes["freecamera.virtualjoystick"] = FreeCameraVirtualJoystickInput;
 }
