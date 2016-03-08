@@ -87,7 +87,7 @@ var BABYLON;
             this.radius = radius;
             this.getViewMatrix();
             this.inputs = new BABYLON.ArcRotateCameraInputsManager(this);
-            this.inputs.addKeyboard().addMouseWheel().addPointers();
+            this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
         }
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
             //-- 2016-03-08 properties for backward compatibility for inputs

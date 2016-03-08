@@ -25,5 +25,10 @@ module BABYLON {
             this.add(new ArcRotateCameraKeyboardMoveInput());
             return this;
         }
+        
+        public addGamepad(){
+            this.add(new ArcRotateCameraGamepadInput());
+            return this;
+        }
     }
 }

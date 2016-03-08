@@ -28,6 +28,10 @@ var BABYLON;
             this.add(new BABYLON.ArcRotateCameraKeyboardMoveInput());
             return this;
         };
+        ArcRotateCameraInputsManager.prototype.addGamepad = function () {
+            this.add(new BABYLON.ArcRotateCameraGamepadInput());
+            return this;
+        };
         return ArcRotateCameraInputsManager;
     }(BABYLON.CameraInputsManager));
     BABYLON.ArcRotateCameraInputsManager = ArcRotateCameraInputsManager;

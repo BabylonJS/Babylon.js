@@ -266,7 +266,7 @@
 
             this.getViewMatrix();
             this.inputs = new ArcRotateCameraInputsManager(this);
-            this.inputs.addKeyboard().addMouseWheel().addPointers();
+            this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
         }
 
         // Cache

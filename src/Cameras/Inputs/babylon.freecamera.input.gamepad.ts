@@ -20,7 +20,7 @@ module BABYLON {
         }
         
         detach(){
-            
+            this._gamepads.dispose();
         }
         
         checkInputs(){
