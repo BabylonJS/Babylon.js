@@ -573,7 +573,7 @@
             }
             
             if (this.inputs){
-                serializationObject.inputs = this.inputs.serialize();
+                this.inputs.serialize(serializationObject);
             }
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
@@ -646,7 +646,7 @@
             
             //Input manager
             if (parsedCamera.inputs){
-                camera.inputs.parse(parsedCamera.inputs);
+                camera.inputs.parse(parsedCamera);
             }
 
             // Target

@@ -169,7 +169,10 @@ var BABYLON;
             ]);
         };
         ArcRotateCameraPointersInput.prototype.getTypeName = function () {
-            return "arcrotate.pointers";
+            return "ArcRotateCameraPointersInput";
+        };
+        ArcRotateCameraPointersInput.prototype.getSimpleName = function () {
+            return "pointers";
         };
         __decorate([
             BABYLON.serialize()
@@ -186,5 +189,5 @@ var BABYLON;
         return ArcRotateCameraPointersInput;
     }());
     BABYLON.ArcRotateCameraPointersInput = ArcRotateCameraPointersInput;
-    BABYLON.CameraInputTypes["arcrotate.pointers"] = ArcRotateCameraPointersInput;
+    BABYLON.CameraInputTypes["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
 })(BABYLON || (BABYLON = {}));

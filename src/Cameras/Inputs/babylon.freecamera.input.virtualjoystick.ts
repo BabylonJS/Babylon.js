@@ -49,9 +49,13 @@ module BABYLON {
         }
 
         getTypeName(): string {
-            return "freecamera.virtualjoystick";
+            return "FreeCameraVirtualJoystickInput";
+        }
+        
+        getSimpleName(){
+            return "virtualJoystick";
         }
     }
     
-    CameraInputTypes["freecamera.virtualjoystick"] = FreeCameraVirtualJoystickInput;
+    CameraInputTypes["FreeCameraVirtualJoystickInput"] = FreeCameraVirtualJoystickInput;
 }

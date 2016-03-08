@@ -94,13 +94,17 @@ module BABYLON {
         }
 
         getTypeName(): string {
-            return "freecamera.keyboardmove";
+            return "FreeCameraKeyboardMoveInput";
         }
 
         public _onLostFocus(e: FocusEvent): void {
             this._keys = [];
         }
+        
+        getSimpleName(){
+            return "keyboard";
+        }
     }
     
-    CameraInputTypes["freecamera.keyboardmove"] = FreeCameraKeyboardMoveInput;
+    CameraInputTypes["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;
 }

@@ -87,7 +87,10 @@ var BABYLON;
             }
         };
         FreeCameraMouseInput.prototype.getTypeName = function () {
-            return "freecamera.mouse";
+            return "FreeCameraMouseInput";
+        };
+        FreeCameraMouseInput.prototype.getSimpleName = function () {
+            return "mouse";
         };
         __decorate([
             BABYLON.serialize()
@@ -95,5 +98,5 @@ var BABYLON;
         return FreeCameraMouseInput;
     }());
     BABYLON.FreeCameraMouseInput = FreeCameraMouseInput;
-    BABYLON.CameraInputTypes["freecamera.mouse"] = FreeCameraMouseInput;
+    BABYLON.CameraInputTypes["FreeCameraMouseInput"] = FreeCameraMouseInput;
 })(BABYLON || (BABYLON = {}));

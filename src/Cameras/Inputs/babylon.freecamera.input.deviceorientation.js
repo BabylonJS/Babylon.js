@@ -57,7 +57,10 @@ var BABYLON;
             camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
         };
         FreeCameraDeviceOrientationInput.prototype.getTypeName = function () {
-            return "freecamera.deviceorientation";
+            return "FreeCameraDeviceOrientationInput";
+        };
+        FreeCameraDeviceOrientationInput.prototype.getSimpleName = function () {
+            return "deviceOrientation";
         };
         __decorate([
             BABYLON.serialize()
@@ -68,5 +71,5 @@ var BABYLON;
         return FreeCameraDeviceOrientationInput;
     }());
     BABYLON.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
-    BABYLON.CameraInputTypes["freecamera.deviceorientation"] = FreeCameraDeviceOrientationInput;
+    BABYLON.CameraInputTypes["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
 })(BABYLON || (BABYLON = {}));

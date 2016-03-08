@@ -40,10 +40,13 @@ var BABYLON;
             this._leftjoystick.releaseCanvas();
         };
         FreeCameraVirtualJoystickInput.prototype.getTypeName = function () {
-            return "freecamera.virtualjoystick";
+            return "FreeCameraVirtualJoystickInput";
+        };
+        FreeCameraVirtualJoystickInput.prototype.getSimpleName = function () {
+            return "virtualJoystick";
         };
         return FreeCameraVirtualJoystickInput;
     }());
     BABYLON.FreeCameraVirtualJoystickInput = FreeCameraVirtualJoystickInput;
-    BABYLON.CameraInputTypes["freecamera.virtualjoystick"] = FreeCameraVirtualJoystickInput;
+    BABYLON.CameraInputTypes["FreeCameraVirtualJoystickInput"] = FreeCameraVirtualJoystickInput;
 })(BABYLON || (BABYLON = {}));

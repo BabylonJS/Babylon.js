@@ -8,9 +8,92 @@
 
         @serialize()
         public applyGravity = false;
-        
+                
         public inputs : FreeCameraInputsManager;
-
+        
+        //-- 2016-03-08 properties for backward compatibility for inputs
+        //deprecated
+        public get angularSensibility() {
+            Tools.Warn("Warning: angularSensibility is deprecated on FreeCamera, use camera.inputs.attached.mouse.angularSensibility instead.");
+            var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
+            if (mouse)
+                return mouse.angularSensibility;
+        }
+        
+        //deprecated
+        public set angularSensibility(value) {
+            Tools.Warn("Warning: angularSensibility is deprecated on FreeCamera, use camera.inputs.attached.mouse.angularSensibility instead.");
+            var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
+            if (mouse)
+                mouse.angularSensibility = value;
+        }
+        
+        //deprecated
+        public get keysUp() {
+            Tools.Warn("Warning: keysUp is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysUp instead.");
+            var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                return keyboard.keysUp;
+        }
+        
+        //deprecated
+        public set keysUp(value) {
+            Tools.Warn("Warning: keysUp is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysUp instead.");
+            var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                keyboard.keysUp = value;
+        }
+        
+        //deprecated
+        public get keysDown() {
+            Tools.Warn("Warning: keysDown is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysDown instead.");
+            var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                return keyboard.keysDown;
+        }
+        
+        //deprecated
+        public set keysDown(value) {
+            Tools.Warn("Warning: keysDown is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysDown instead.");
+            var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                keyboard.keysDown = value;
+        }
+        
+        //deprecated
+        public get keysLeft() {
+            Tools.Warn("Warning: keysLeft is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
+            var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                return keyboard.keysLeft;
+        }
+        
+        //deprecated
+        public set keysLeft(value) {
+            Tools.Warn("Warning: keysLeft is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
+            var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                keyboard.keysLeft = value;
+        }
+        
+        //deprecated
+        public get keysRight() {
+            Tools.Warn("Warning: keysRight is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysRight instead.");
+            var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                return keyboard.keysRight;
+        }
+        
+        //deprecated
+        public set keysRight(value) {
+            Tools.Warn("Warning: keysRight is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysRight instead.");
+            var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                keyboard.keysRight = value;
+        }
+        
+        //-- end properties for backward compatibility for inputs
+        
         public onCollide: (collidedMesh: AbstractMesh) => void;
         
         private _collider = new Collider();

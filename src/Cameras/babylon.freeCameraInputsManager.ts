@@ -31,6 +31,11 @@ module BABYLON {
             return this;
         }
         
+        addVRDeviceOrientation(){
+            this.add(new FreeCameraVRDeviceOrientationInput());
+            return this;
+        }
+        
         addTouch(){
             this.add(new FreeCameraTouchInput());
             return this;

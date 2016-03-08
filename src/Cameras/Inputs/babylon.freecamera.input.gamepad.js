@@ -45,7 +45,10 @@ var BABYLON;
             }
         };
         FreeCameraGamepadInput.prototype.getTypeName = function () {
-            return "freecamera.gamepad";
+            return "FreeCameraGamepadInput";
+        };
+        FreeCameraGamepadInput.prototype.getSimpleName = function () {
+            return "gamepad";
         };
         __decorate([
             BABYLON.serialize()
@@ -56,5 +59,5 @@ var BABYLON;
         return FreeCameraGamepadInput;
     }());
     BABYLON.FreeCameraGamepadInput = FreeCameraGamepadInput;
-    BABYLON.CameraInputTypes["freecamera.gamepad"] = FreeCameraGamepadInput;
+    BABYLON.CameraInputTypes["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
 })(BABYLON || (BABYLON = {}));

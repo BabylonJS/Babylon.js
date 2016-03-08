@@ -96,9 +96,13 @@ module BABYLON {
         }
 
         getTypeName(): string {
-            return "arcrotate.keyboard";
+            return "ArcRotateCameraKeyboardMoveInput";
+        }
+        
+        getSimpleName(){
+            return "keyboard";
         }
     }
     
-    CameraInputTypes["arcrotate.keyboard"] = ArcRotateCameraKeyboardMoveInput;
+    CameraInputTypes["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;
 }

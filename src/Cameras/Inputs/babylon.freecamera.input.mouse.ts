@@ -105,9 +105,13 @@ module BABYLON {
         }
         
         getTypeName(): string{
-            return "freecamera.mouse";
+            return "FreeCameraMouseInput";
+        }
+        
+        getSimpleName(){
+            return "mouse";
         }
     }
     
-    CameraInputTypes["freecamera.mouse"] = FreeCameraMouseInput;
+    CameraInputTypes["FreeCameraMouseInput"] = FreeCameraMouseInput;
 }

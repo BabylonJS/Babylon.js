@@ -48,6 +48,7 @@
       "../../src/cameras/inputs/babylon.freecamera.input.keyboard.js",
       "../../src/cameras/inputs/babylon.freecamera.input.touch.js",
       "../../src/cameras/inputs/babylon.freecamera.input.deviceorientation.js",
+      "../../src/cameras/inputs/babylon.freecamera.input.vrdeviceorientation.js",
       "../../src/cameras/inputs/babylon.freecamera.input.gamepad.js",
       "../../src/cameras/inputs/babylon.freecamera.input.virtualjoystick.js",
       "../../src/cameras/inputs/babylon.arcrotatecamera.input.keyboard.js",
