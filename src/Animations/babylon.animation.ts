@@ -2,6 +2,10 @@
     export class AnimationRange {
         constructor(public name: string, public from: number, public to: number) {
         }
+
+        public clone(): AnimationRange {
+            return new AnimationRange(this.name, this.from, this.to);
+        }
     }
 
     /**
@@ -279,6 +283,13 @@
 
             if (this._keys) {
                 clone.setKeys(this._keys);
+            }
+
+            if (this._ranges) {
+                clone._ranges = {};
+                for (var name in this._ranges) {
+                    clone._ranges[name] = this._ranges[name].clone();
+                }
             }
 
             return clone;

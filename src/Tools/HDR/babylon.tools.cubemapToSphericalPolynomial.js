@@ -12,9 +12,20 @@ var BABYLON;
             return FileFaceOrientation;
         }());
         ;
+        /**
+         * Helper class dealing with the extraction of spherical polynomial dataArray
+         * from a cube map.
+         */
         var CubeMapToSphericalPolynomialTools = (function () {
             function CubeMapToSphericalPolynomialTools() {
             }
+            /**
+             * Converts a cubemap to the according Spherical Polynomial data.
+             * This extracts the first 3 orders only as they are the only one used in the lighting.
+             *
+             * @param cubeInfo The Cube map to extract the information from.
+             * @return The Spherical Polynomial data.
+             */
             CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial = function (cubeInfo) {
                 var sphericalHarmonics = new BABYLON.SphericalHarmonics();
                 var totalSolidAngle = 0.0;

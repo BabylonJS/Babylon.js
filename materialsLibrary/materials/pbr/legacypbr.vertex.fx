@@ -12,7 +12,6 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
-
 #include<bonesDeclaration>
 
 // Uniforms
@@ -64,9 +63,6 @@ void main(void) {
     mat4 finalWorld = world;
 
 #include<bonesVertex>
-
-    finalWorld = finalWorld * influence;
-#endif
 
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 

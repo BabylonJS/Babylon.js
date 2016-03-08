@@ -565,6 +565,7 @@ var BABYLON;
         Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
         Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
         Camera._RIG_MODE_VR = 20;
+        Camera.ForceAttachControlToAlwaysPreventDefault = false;
         __decorate([
             BABYLON.serializeAsVector3()
         ], Camera.prototype, "position", void 0);

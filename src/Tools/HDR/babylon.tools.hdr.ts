@@ -1,10 +1,27 @@
 module BABYLON.Internals {
+    /**
+     * Header information of HDR texture files.
+     */
     export interface HDRInfo {
+        /**
+         * The height of the texture in pixels.
+         */
         height: number;
+        
+        /**
+         * The width of the texture in pixels.
+         */
         width: number;
+        
+        /**
+         * The index of the beginning of the data in the binary file.
+         */
         dataPosition: number;
     };
 
+    /**
+     * This groups tools to convert HDR texture to native colors array.
+     */
     export class HDRTools {
 
         private static Ldexp(mantissa: number, exponent: number): number {
@@ -19,10 +36,9 @@ module BABYLON.Internals {
             return mantissa * Math.pow(2, exponent);
         }
 
-        private static Rgbe2float(float32array: Float32Array, 
+        private static Rgbe2float(float32array: Float32Array,
             red: number, green: number, blue: number, exponent: number,
-            index: number)
-        {
+            index: number) {
             if (exponent > 0) {   /*nonzero pixel*/
                 exponent = this.Ldexp(1.0, exponent - (128 + 8));
 
@@ -41,7 +57,7 @@ module BABYLON.Internals {
             var line = "";
             var character = "";
 
-            for(var i = startIndex; i < uint8array.length - startIndex; i++) {
+            for (var i = startIndex; i < uint8array.length - startIndex; i++) {
                 character = String.fromCharCode(uint8array[i]);
 
                 if (character == "\n") {
@@ -54,11 +70,18 @@ module BABYLON.Internals {
             return line;
         }
 
-        /* minimal header reading.  modify if you want to parse more information */
-        public static RGBE_ReadHeader(uint8array: Uint8Array) : HDRInfo {
+        /**
+         * Reads header information from an RGBE texture stored in a native array. 
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         * 
+         * @param uint8array The binary file stored in  native array.
+         * @return The header information.
+         */
+        public static RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
             var height: number = 0;
             var width: number = 0;
-            
+
             var line = this.readStringLine(uint8array, 0);
             if (line[0] != '#' || line[1] != '?') {
                 throw "Bad HDR Format.";
@@ -66,7 +89,7 @@ module BABYLON.Internals {
 
             var endOfHeader = false;
             var findFormat = false;
-            var lineIndex:number = 0;
+            var lineIndex: number = 0;
 
             do {
                 lineIndex += (line.length + 1);
@@ -81,24 +104,24 @@ module BABYLON.Internals {
             } while (!endOfHeader);
 
             if (!findFormat) {
-                throw "HDR Bad header format, unsupported FORMAT"; 
+                throw "HDR Bad header format, unsupported FORMAT";
             }
 
             lineIndex += (line.length + 1);
             line = this.readStringLine(uint8array, lineIndex);
-            
+
             var sizeRegexp = /^\-Y (.*) \+X (.*)$/g;
             var match = sizeRegexp.exec(line);
 
             // TODO. Support +Y and -X if needed.
             if (match.length < 3) {
-                throw "HDR Bad header format, no size"; 
+                throw "HDR Bad header format, no size";
             }
             width = parseInt(match[2]);
             height = parseInt(match[1]);
 
             if (width < 8 || width > 0x7fff) {
-                throw "HDR Bad header format, unsupported size"; 
+                throw "HDR Bad header format, unsupported size";
             }
 
             lineIndex += (line.length + 1);
@@ -110,7 +133,18 @@ module BABYLON.Internals {
             };
         }
 
-        public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number) : CubeMapInfo {
+        /**
+         * Returns the cubemap information (each faces texture data) extracted from an RGBE texture.
+         * This RGBE texture needs to store the information as a panorama.
+         *  
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         * 
+         * @param buffer The binary file stored in an array buffer.
+         * @param size The expected size of the extracted cubemap.
+         * @return The Cube Map information.
+         */
+        public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number): CubeMapInfo {
             var uint8array = new Uint8Array(buffer);
             var hdrInfo = this.RGBE_ReadHeader(uint8array);
             var data = this.RGBE_ReadPixels_RLE(uint8array, hdrInfo);
@@ -120,12 +154,23 @@ module BABYLON.Internals {
             return cubeMapData;
         }
 
-        public static RGBE_ReadPixels(uint8array:Uint8Array, hdrInfo:HDRInfo): Float32Array {
+        /**
+         * Returns the pixels data extracted from an RGBE texture. 
+         * This pixels will be stored left to right up to down in the R G B order in one array.
+         *  
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         * 
+         * @param uint8array The binary file stored in an array buffer.
+         * @param hdrInfo The header information of the file.
+         * @return The pixels data in RGB right to left up to down order.
+         */
+        public static RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
             // Keep for multi format supports.
             return this.RGBE_ReadPixels_RLE(uint8array, hdrInfo);
         }
 
-        private static RGBE_ReadPixels_RLE(uint8array:Uint8Array, hdrInfo:HDRInfo): Float32Array {
+        private static RGBE_ReadPixels_RLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
             var num_scanlines = hdrInfo.height;
             var scanline_width = hdrInfo.width;
 
@@ -137,32 +182,32 @@ module BABYLON.Internals {
             var scanLineArray = new Uint8Array(scanLineArrayBuffer);
 
             // 3 channels of 4 bytes per pixel in float.
-            var resultBuffer = new ArrayBuffer(hdrInfo.width * hdrInfo.height * 4 * 3); 
+            var resultBuffer = new ArrayBuffer(hdrInfo.width * hdrInfo.height * 4 * 3);
             var resultArray = new Float32Array(resultBuffer);
 
             // read in each successive scanline
-            while(num_scanlines > 0) {
+            while (num_scanlines > 0) {
                 a = uint8array[dataIndex++];
                 b = uint8array[dataIndex++];
                 c = uint8array[dataIndex++];
                 d = uint8array[dataIndex++];
 
                 if (a != 2 || b != 2 || (c & 0x80)) {
-                  // this file is not run length encoded
-                  throw "HDR Bad header format, not RLE"; 
+                    // this file is not run length encoded
+                    throw "HDR Bad header format, not RLE";
                 }
 
-                if (((c<<8) | d) != scanline_width) {
-                  throw "HDR Bad header format, wrong scan line width"; 
+                if (((c << 8) | d) != scanline_width) {
+                    throw "HDR Bad header format, wrong scan line width";
                 }
 
                 index = 0;
 
                 // read each of the four channels for the scanline into the buffer
-                for(i = 0; i < 4; i++) {
+                for (i = 0; i < 4; i++) {
                     endIndex = (i + 1) * scanline_width;
 
-                    while(index < endIndex) {
+                    while (index < endIndex) {
                         a = uint8array[dataIndex++];
                         b = uint8array[dataIndex++];
 
@@ -173,7 +218,7 @@ module BABYLON.Internals {
                                 throw "HDR Bad Format, bad scanline data (run)";
                             }
 
-                            while(count-- > 0) {
+                            while (count-- > 0) {
                                 scanLineArray[index++] = b;
                             }
                         }
@@ -195,7 +240,7 @@ module BABYLON.Internals {
                 }
 
                 // now convert data from buffer into floats
-                for(i = 0; i < scanline_width; i++) {
+                for (i = 0; i < scanline_width; i++) {
                     a = scanLineArray[i];
                     b = scanLineArray[i + scanline_width];
                     c = scanLineArray[i + 2 * scanline_width];

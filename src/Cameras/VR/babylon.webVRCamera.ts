@@ -65,6 +65,8 @@ module BABYLON {
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             super.attachControl(element, noPreventDefault);
 
+            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
+
             if (navigator.getVRDevices) {
                 navigator.getVRDevices().then(this._getWebVRDevices);
             }

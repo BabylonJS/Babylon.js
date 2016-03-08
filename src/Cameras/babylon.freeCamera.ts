@@ -37,6 +37,7 @@
             }
             this._noPreventDefault = noPreventDefault;
             this._attachedElement = element;
+            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
             this.inputs.attachElement(element, noPreventDefault);
         }        

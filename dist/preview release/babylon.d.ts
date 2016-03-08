@@ -441,21 +441,31 @@ declare module BABYLON {
          * @see parent
          */
         isDescendantOf(ancestor: Node): boolean;
-        _getDescendants(list: Node[], results: Node[], directDecendantsOnly?: boolean): void;
+        /**
+         * Evaluate a list of nodes and determine if they should be considered as descendants considering the given criterias
+         * @param {BABYLON.Node[]} list the input array of nodes to evaluate
+         * @param {BABYLON.Node[]} results the result array containing the nodes matching the given criterias
+         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
+         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
+         */
+        _getDescendants(list: Node[], results: Node[], directDecendantsOnly?: boolean, predicate?: (node: Node) => boolean): void;
         /**
          * Will return all nodes that have this node as parent.
+         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
+         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        getDescendants(directDecendantsOnly?: boolean): Node[];
+        getDescendants(directDecendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[];
         /**
+         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @Deprecated, legacy support.
          * use getDecendants instead.
          */
-        getChildren(): Node[];
+        getChildren(predicate?: (node: Node) => boolean): Node[];
         /**
          * Get all child-meshes of this node.
          */
-        getChildMeshes(directDecendantsOnly?: boolean): AbstractMesh[];
+        getChildMeshes(directDecendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[];
         _setReady(state: boolean): void;
         getAnimationByName(name: string): Animation;
         createAnimationRange(name: string, from: number, to: number): void;
@@ -1284,6 +1294,7 @@ declare module BABYLON {
         from: number;
         to: number;
         constructor(name: string, from: number, to: number);
+        clone(): AnimationRange;
     }
     /**
      * Composed of a frame, and an action function
@@ -1707,6 +1718,97 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class BoundingBox {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        extendSize: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingInfo {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: any): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -1821,6 +1923,7 @@ declare module BABYLON {
         static RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
         static RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
         static RIG_MODE_VR: number;
+        static ForceAttachControlToAlwaysPreventDefault: boolean;
         position: Vector3;
         upVector: Vector3;
         orthoLeft: any;
@@ -1890,36 +1993,21 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface ICameraInput<TCamera extends BABYLON.Camera> {
-        camera: TCamera;
-        attachCamera(camera: TCamera): any;
-        detach(): any;
-        getTypeName(): string;
-        attachElement?: (element: HTMLElement, noPreventDefault?: boolean) => void;
-        detachElement?: (element: HTMLElement) => void;
-        checkInputs?: () => void;
-    }
-    interface CameraInputsMap<TCamera extends BABYLON.Camera> {
-        [name: string]: ICameraInput<TCamera>;
-        [idx: number]: ICameraInput<TCamera>;
-    }
-    class CameraInputsManager<TCamera extends BABYLON.Camera> {
-        inputs: CameraInputsMap<TCamera>;
-        camera: TCamera;
-        checkInputs: () => void;
-        constructor(camera: TCamera);
-        add(input: ICameraInput<TCamera>): void;
-        private _addCheckInputs(fn);
-        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachElement(element: HTMLElement): void;
-        rebuildInputCheck(element: HTMLElement): void;
-        clear(): void;
-    }
-}
-
-declare module BABYLON {
     class DeviceOrientationCamera extends FreeCamera {
+        private _offsetX;
+        private _offsetY;
+        private _orientationGamma;
+        private _orientationBeta;
+        private _initialOrientationGamma;
+        private _initialOrientationBeta;
+        private _attachedCanvas;
+        private _orientationChanged;
+        angularSensibility: number;
+        moveSensibility: number;
         constructor(name: string, position: Vector3, scene: Scene);
+        attachControl(canvas: HTMLCanvasElement, noPreventDefault?: boolean): void;
+        detachControl(canvas: HTMLCanvasElement): void;
+        _checkInputs(): void;
         getTypeName(): string;
     }
 }
@@ -1954,20 +2042,31 @@ declare module BABYLON {
 declare module BABYLON {
     class FreeCamera extends TargetCamera {
         ellipsoid: Vector3;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
         checkCollisions: boolean;
         applyGravity: boolean;
-        inputs: FreeCameraInputsManager;
+        angularSensibility: number;
         onCollide: (collidedMesh: AbstractMesh) => void;
+        private _keys;
         private _collider;
         private _needMoveForGravity;
         private _oldPosition;
         private _diffPosition;
         private _newPosition;
-        _attachedElement: HTMLElement;
-        _noPreventDefault: boolean;
-        _localDirection: Vector3;
-        _transformedDirection: Vector3;
+        private _attachedElement;
+        private _localDirection;
+        private _transformedDirection;
+        private _onMouseDown;
+        private _onMouseUp;
+        private _onMouseOut;
+        private _onMouseMove;
+        private _onKeyDown;
+        private _onKeyUp;
         constructor(name: string, position: Vector3, scene: Scene);
+        _onLostFocus(e: FocusEvent): void;
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         detachControl(element: HTMLElement): void;
         _collideWithWorld(velocity: Vector3): void;
@@ -1975,17 +2074,7 @@ declare module BABYLON {
         _checkInputs(): void;
         _decideIfNeedsToMove(): boolean;
         _updatePosition(): void;
-        dispose(): void;
         getTypeName(): string;
-    }
-    class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
-        constructor(camera: FreeCamera);
-        add(input: ICameraInput<FreeCamera>): void;
-        addKeyboard(): this;
-        addMouse(): this;
-        addGamepad(): this;
-        addDeviceOrientation(): this;
-        addTouch(): this;
     }
 }
 
@@ -2081,14 +2170,37 @@ declare module BABYLON {
 
 declare module BABYLON {
     class TouchCamera extends FreeCamera {
+        private _offsetX;
+        private _offsetY;
+        private _pointerCount;
+        private _pointerPressed;
+        private _attachedCanvas;
+        private _onPointerDown;
+        private _onPointerUp;
+        private _onPointerMove;
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
         constructor(name: string, position: Vector3, scene: Scene);
+        _onLostFocus(e: FocusEvent): void;
+        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
+        detachControl(canvas: HTMLCanvasElement): void;
+        _checkInputs(): void;
         getTypeName(): string;
     }
 }
 
 declare module BABYLON {
     class UniversalCamera extends TouchCamera {
+        gamepad: Gamepad;
+        private _gamepads;
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
         constructor(name: string, position: Vector3, scene: Scene);
+        private _onNewGameConnected(gamepad);
+        attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void;
+        detachControl(canvas: HTMLCanvasElement): void;
+        _checkInputs(): void;
+        dispose(): void;
         getTypeName(): string;
     }
 }
@@ -2103,6 +2215,50 @@ declare module BABYLON {
         _checkInputs(): void;
         dispose(): void;
         getTypeName(): string;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Texture;
+        private _system;
+        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
+        dispose: () => void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        layerMask: number;
+        private _scene;
+        private _emitter;
+        private _vertexDeclaration;
+        private _vertexStrideSize;
+        private _vertexBuffer;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
     }
 }
 
@@ -2348,97 +2504,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class BoundingBox {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        extendSize: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingInfo {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: any): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-    }
-}
-
-declare module BABYLON {
     class DebugLayer {
         private _scene;
         private _camera;
@@ -2546,50 +2611,6 @@ declare module BABYLON {
         constructor(name: string, imgUrl: string, scene: Scene, isBackground?: boolean, color?: Color4);
         render(): void;
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Texture;
-        private _system;
-        constructor(size: number, position: number, color: any, imgUrl: string, system: LensFlareSystem);
-        dispose: () => void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        meshesSelectionPredicate: (mesh: Mesh) => boolean;
-        layerMask: number;
-        private _scene;
-        private _emitter;
-        private _vertexDeclaration;
-        private _vertexStrideSize;
-        private _vertexBuffer;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
     }
 }
 
@@ -4978,6 +4999,258 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
+    }
+    class PhysicsEngine {
+        private _physicsPlugin;
+        gravity: Vector3;
+        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
+        setGravity(gravity: Vector3): void;
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         */
+        setTimeStep(newTimeStep?: number): void;
+        dispose(): void;
+        getPhysicsPluginName(): string;
+        /**
+         * @Deprecated
+         *
+         */
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CapsuleImpostor: number;
+        static ConeImpostor: number;
+        static CylinderImpostor: number;
+        static ConvexHullImpostor: number;
+        static HeightmapImpostor: number;
+        static Epsilon: number;
+        private _impostors;
+        private _joints;
+        addImpostor(impostor: PhysicsImpostor): void;
+        removeImpostor(impostor: PhysicsImpostor): void;
+        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Called by the scene. no need to call it.
+         */
+        _step(delta: number): void;
+        getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
+    }
+    interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3): any;
+        setTimeStep(timeStep: number): any;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
+        generatePhysicsBody(impostor: PhysicsImpostor): any;
+        removePhysicsBody(impostor: PhysicsImpostor): any;
+        generateJoint(joint: PhysicsImpostorJoint): any;
+        removeJoint(joint: PhysicsImpostorJoint): any;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
+        sleepBody(impostor: PhysicsImpostor): any;
+        wakeUpBody(impostor: PhysicsImpostor): any;
+        dispose(): any;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorParameters {
+        mass: number;
+        friction?: number;
+        restitution?: number;
+        nativeOptions?: any;
+    }
+    class PhysicsImpostor {
+        private _mesh;
+        type: number;
+        private _options;
+        private _physicsEngine;
+        private _physicsBody;
+        private _bodyUpdateRequired;
+        private _onBeforePhysicsStepCallbacks;
+        private _onAfterPhysicsStepCallbacks;
+        private _onPhysicsCollideCallbacks;
+        private _deltaPosition;
+        private _deltaRotation;
+        private _deltaRotationConjugated;
+        private _parent;
+        private _joints;
+        constructor(_mesh: AbstractMesh, type: number, _options?: PhysicsImpostorParameters);
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
+        _init(): void;
+        private _getPhysicsParent();
+        /**
+         * Should a new body be generated.
+         */
+        isBodyInitRequired(): boolean;
+        setScalingUpdated(updated: boolean): void;
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
+        forceUpdate(): void;
+        mesh: AbstractMesh;
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
+        /**
+         * Set the physics body. Used mainly by the physics engine/plugin
+         */
+        physicsBody: any;
+        parent: PhysicsImpostor;
+        resetUpdateFlags(): void;
+        /**
+         * Get a specific parametes from the options parameter.
+         */
+        getParam(paramName: string): any;
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
+        setParam(paramName: string, value: number): void;
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        setMass(mass: number): void;
+        /**
+         * Set the body's linear velocity.
+         */
+        setLinearVelocity(velocity: Vector3): void;
+        /**
+         * Set the body's linear velocity.
+         */
+        setAngularVelocity(velocity: Vector3): void;
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
+        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
+        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * Register a function that will be executed after the physics step
+         */
+        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        private _tmpPositionWithDelta;
+        private _tmpRotationWithDelta;
+        /**
+         * this function is executed by the physics engine.
+         */
+        beforeStep: () => void;
+        /**
+         * this function is executed by the physics engine.
+         */
+        afterStep: () => void;
+        onCollide: (e: {
+            body: any;
+        }) => void;
+        /**
+         * Apply a force
+         */
+        applyForce(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * Apply an impulse
+         */
+        applyImpulse(force: Vector3, contactPoint: Vector3): void;
+        /**
+         * A help function to create a joint.
+         */
+        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
+        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        sleep(): void;
+        /**
+         * Wake the body up.
+         */
+        wakeUp(): void;
+        dispose(disposeChildren?: boolean): void;
+        setDeltaPosition(position: Vector3): void;
+        setDeltaRotation(rotation: Quaternion): void;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CapsuleImpostor: number;
+        static ConeImpostor: number;
+        static CylinderImpostor: number;
+        static ConvexHullImpostor: number;
+        static HeightmapImpostor: number;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsJointData {
+        mainPivot?: Vector3;
+        connectedPivot?: Vector3;
+        mainAxis?: Vector3;
+        connectedAxis?: Vector3;
+        collision?: boolean;
+        nativeParams?: any;
+    }
+    class PhysicsJoint {
+        type: number;
+        jointData: PhysicsJointData;
+        private _physicsJoint;
+        constructor(type: number, jointData: PhysicsJointData);
+        physicsJoint: any;
+        static DistanceJoint: number;
+        static HingeJoint: number;
+        static BallAndSocketJoint: number;
+        static WheelJoint: number;
+        static SliderJoint: number;
+        static PrismaticJoint: number;
+        static UniversalJoint: number;
+        static Hinge2Joint: number;
+        static PointToPointJoint: number;
+        static SpringJoint: number;
+    }
+    interface DistanceJointData extends PhysicsJointData {
+        maxDistance: number;
+    }
+    interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
+    }
+}
+
+declare module BABYLON {
     class Particle {
         position: Vector3;
         direction: Vector3;
@@ -5373,254 +5646,23 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface PhysicsImpostorJoint {
-        mainImpostor: PhysicsImpostor;
-        connectedImpostor: PhysicsImpostor;
-        joint: PhysicsJoint;
-    }
-    class PhysicsEngine {
-        private _physicsPlugin;
-        gravity: Vector3;
-        constructor(gravity?: Vector3, _physicsPlugin?: IPhysicsEnginePlugin);
-        setGravity(gravity: Vector3): void;
-        /**
-         * Set the time step of the physics engine.
-         * default is 1/60.
-         * To slow it down, enter 1/600 for example.
-         * To speed it up, 1/30
-         */
-        setTimeStep(newTimeStep?: number): void;
-        dispose(): void;
-        getPhysicsPluginName(): string;
-        /**
-         * @Deprecated
-         *
-         */
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CapsuleImpostor: number;
-        static ConeImpostor: number;
-        static CylinderImpostor: number;
-        static ConvexHullImpostor: number;
-        static HeightmapImpostor: number;
-        static Epsilon: number;
-        private _impostors;
-        private _joints;
-        addImpostor(impostor: PhysicsImpostor): void;
-        removeImpostor(impostor: PhysicsImpostor): void;
-        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Called by the scene. no need to call it.
-         */
-        _step(delta: number): void;
-        getPhysicsPlugin(): IPhysicsEnginePlugin;
-        getImpostorWithPhysicsBody(body: any): PhysicsImpostor;
-    }
-    interface IPhysicsEnginePlugin {
-        world: any;
+    class ReflectionProbe {
         name: string;
-        setGravity(gravity: Vector3): any;
-        setTimeStep(timeStep: number): any;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): any;
-        generatePhysicsBody(impostor: PhysicsImpostor): any;
-        removePhysicsBody(impostor: PhysicsImpostor): any;
-        generateJoint(joint: PhysicsImpostorJoint): any;
-        removeJoint(joint: PhysicsImpostorJoint): any;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): any;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): any;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): any;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): any;
-        sleepBody(impostor: PhysicsImpostor): any;
-        wakeUpBody(impostor: PhysicsImpostor): any;
-        dispose(): any;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorParameters {
-        mass: number;
-        friction?: number;
-        restitution?: number;
-        nativeOptions?: any;
-    }
-    class PhysicsImpostor {
-        private _mesh;
-        type: number;
-        private _options;
-        private _physicsEngine;
-        private _physicsBody;
-        private _bodyUpdateRequired;
-        private _onBeforePhysicsStepCallbacks;
-        private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
-        private _deltaPosition;
-        private _deltaRotation;
-        private _deltaRotationConjugated;
-        private _parent;
-        private _joints;
-        constructor(_mesh: AbstractMesh, type: number, _options?: PhysicsImpostorParameters);
-        /**
-         * This function will completly initialize this impostor.
-         * It will create a new body - but only if this mesh has no parent.
-         * If it has, this impostor will not be used other than to define the impostor
-         * of the child mesh.
-         */
-        _init(): void;
-        private _getPhysicsParent();
-        /**
-         * Should a new body be generated.
-         */
-        isBodyInitRequired(): boolean;
-        setScalingUpdated(updated: boolean): void;
-        /**
-         * Force a regeneration of this or the parent's impostor's body.
-         * Use under cautious - This will remove all joints already implemented.
-         */
-        forceUpdate(): void;
-        mesh: AbstractMesh;
-        /**
-         * Gets the body that holds this impostor. Either its own, or its parent.
-         */
-        /**
-         * Set the physics body. Used mainly by the physics engine/plugin
-         */
-        physicsBody: any;
-        parent: PhysicsImpostor;
-        resetUpdateFlags(): void;
-        /**
-         * Get a specific parametes from the options parameter.
-         */
-        getParam(paramName: string): any;
-        /**
-         * Sets a specific parameter in the options given to the physics plugin
-         */
-        setParam(paramName: string, value: number): void;
-        /**
-         * Specifically change the body's mass option. Won't recreate the physics body object
-         */
-        setMass(mass: number): void;
-        /**
-         * Set the body's linear velocity.
-         */
-        setLinearVelocity(velocity: Vector3): void;
-        /**
-         * Set the body's linear velocity.
-         */
-        setAngularVelocity(velocity: Vector3): void;
-        /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
-         */
-        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
-        /**
-         * Register a function that will be executed before the physics world is stepping forward.
-         */
-        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * Register a function that will be executed after the physics step
-         */
-        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * register a function that will be executed when this impostor collides against a different body.
-         */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
-        private _tmpPositionWithDelta;
-        private _tmpRotationWithDelta;
-        /**
-         * this function is executed by the physics engine.
-         */
-        beforeStep: () => void;
-        /**
-         * this function is executed by the physics engine.
-         */
-        afterStep: () => void;
-        onCollide: (e: {
-            body: any;
-        }) => void;
-        /**
-         * Apply a force
-         */
-        applyForce(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * Apply an impulse
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): void;
-        /**
-         * A help function to create a joint.
-         */
-        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): void;
-        /**
-         * Add a joint to this impostor with a different impostor.
-         */
-        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Will keep this body still, in a sleep mode.
-         */
-        sleep(): void;
-        /**
-         * Wake the body up.
-         */
-        wakeUp(): void;
-        dispose(disposeChildren?: boolean): void;
-        setDeltaPosition(position: Vector3): void;
-        setDeltaRotation(rotation: Quaternion): void;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CapsuleImpostor: number;
-        static ConeImpostor: number;
-        static CylinderImpostor: number;
-        static ConvexHullImpostor: number;
-        static HeightmapImpostor: number;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsJointData {
-        mainPivot?: Vector3;
-        connectedPivot?: Vector3;
-        mainAxis?: Vector3;
-        connectedAxis?: Vector3;
-        collision?: boolean;
-        nativeParams?: any;
-    }
-    class PhysicsJoint {
-        type: number;
-        jointData: PhysicsJointData;
-        private _physicsJoint;
-        constructor(type: number, jointData: PhysicsJointData);
-        physicsJoint: any;
-        static DistanceJoint: number;
-        static HingeJoint: number;
-        static BallAndSocketJoint: number;
-        static WheelJoint: number;
-        static SliderJoint: number;
-        static PrismaticJoint: number;
-        static UniversalJoint: number;
-        static Hinge2Joint: number;
-        static PointToPointJoint: number;
-        static SpringJoint: number;
-    }
-    interface DistanceJointData extends PhysicsJointData {
-        maxDistance: number;
-    }
-    interface SpringJointData extends PhysicsJointData {
-        length: number;
-        stiffness: number;
-        damping: number;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        refreshRate: number;
+        getScene(): Scene;
+        cubeTexture: RenderTargetTexture;
+        renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        dispose(): void;
     }
 }
 
@@ -6190,27 +6232,6 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        refreshRate: number;
-        getScene(): Scene;
-        cubeTexture: RenderTargetTexture;
-        renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        dispose(): void;
     }
 }
 
@@ -7102,113 +7123,49 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _offsetX;
-        private _offsetY;
-        private _orientationGamma;
-        private _orientationBeta;
-        private _initialOrientationGamma;
-        private _initialOrientationBeta;
-        private _orientationChanged;
-        private _resetOrientationGamma;
-        angularSensibility: number;
-        moveSensibility: number;
-        constructor();
-        attachCamera(camera: FreeCamera): void;
-        resetOrientationGamma(): void;
-        orientationChanged(evt: any): void;
-        detach(): void;
-        checkInputs(): void;
-        getTypeName(): string;
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
     }
 }
 
 declare module BABYLON {
-    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        gamepad: Gamepad;
-        private _gamepads;
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        constructor();
-        attachCamera(camera: FreeCamera): void;
-        detach(): void;
-        checkInputs(): void;
-        private _onNewGameConnected(gamepad);
-        getTypeName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _keys;
-        private _onKeyDown;
-        private _onKeyUp;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        attachCamera(camera: FreeCamera): void;
-        detach(): void;
-        checkInputs(): void;
-        getTypeName(): string;
-        _onLostFocus(e: FocusEvent): void;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        attachedElement: HTMLElement;
-        angularSensibility: number;
-        private _onMouseDown;
-        private _onMouseUp;
-        private _onMouseOut;
-        private _onMouseMove;
-        attachCamera(camera: FreeCamera): void;
-        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachElement(element: HTMLElement): void;
-        detach(): void;
-        getTypeName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _offsetX;
-        private _offsetY;
-        private _pointerCount;
-        private _pointerPressed;
-        private _attachedElement;
-        private _onPointerDown;
-        private _onPointerUp;
-        private _onPointerMove;
-        private _onLostFocus;
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
-        attachCamera(camera: FreeCamera): void;
-        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachElement(element: HTMLElement): void;
-        checkInputs(): void;
-        detach(): void;
-        getTypeName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        getLeftJoystick(): VirtualJoystick;
-        getRightJoystick(): VirtualJoystick;
-        checkInputs(): void;
-        attachCamera(camera: FreeCamera): void;
-        detach(): void;
-        getTypeName(): string;
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        capacity: number;
+        minPoint: Vector3;
+        maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArray<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArray<T>): void;
+        createInnerBlocks(): void;
     }
 }
 
@@ -7268,53 +7225,6 @@ declare module BABYLON {
         attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         detachControl(element: HTMLElement): void;
         getTypeName(): string;
-    }
-}
-
-declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        capacity: number;
-        minPoint: Vector3;
-        maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArray<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArray<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArray<T>): void;
-        createInnerBlocks(): void;
     }
 }
 
@@ -7453,9 +7363,14 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * This represents a texture coming from an HDR input.
+     *
+     * The only supported format is currently panorama picture stored in RGBE format.
+     * Example of such files can be found on HDRLib: http://hdrlib.com/
+     */
     class HDRCubeTexture extends BaseTexture {
-        url: string;
-        coordinatesMode: number;
+        private static _facesMapping;
         private _useInGammaSpace;
         private _generateHarmonics;
         private _noMipmap;
@@ -7463,9 +7378,34 @@ declare module BABYLON {
         private _textureMatrix;
         private _size;
         private _usePMREMGenerator;
-        private static _facesMapping;
+        /**
+         * The texture URL.
+         */
+        url: string;
+        /**
+         * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
+         */
+        coordinatesMode: number;
+        /**
+         * The spherical polynomial data extracted from the texture.
+         */
         sphericalPolynomial: SphericalPolynomial;
+        /**
+         * Specifies wether the texture has been generated through the PMREMGenerator tool.
+         * This is usefull at run time to apply the good shader.
+         */
         isPMREM: boolean;
+        /**
+         * Instantiates an HDRTexture from the following parameters.
+         *
+         * @param url The location of the HDR raw data (Panorama stored in RGBE format)
+         * @param scene The scene the texture will be used in
+         * @param size The cubemap desired size (the more it increases the longer the generation will be)
+         * @param noMipmap Forces to not generate the mipmap if true
+         * @param generateHarmonics Specifies wether you want to extract the polynomial harmonics during the generation process
+         * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
+         * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
+         */
         constructor(url: string, scene: Scene, size: number, noMipmap?: boolean, generateHarmonics?: boolean, useInGammaSpace?: boolean, usePMREMGenerator?: boolean);
         private loadTexture();
         clone(): HDRCubeTexture;
@@ -7804,39 +7744,130 @@ declare module BABYLON {
 }
 
 declare module BABYLON.Internals {
+    /**
+     * Helper class dealing with the extraction of spherical polynomial dataArray
+     * from a cube map.
+     */
     class CubeMapToSphericalPolynomialTools {
         private static FileFaces;
+        /**
+         * Converts a cubemap to the according Spherical Polynomial data.
+         * This extracts the first 3 orders only as they are the only one used in the lighting.
+         *
+         * @param cubeInfo The Cube map to extract the information from.
+         * @return The Spherical Polynomial data.
+         */
         static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial;
     }
 }
 
 declare module BABYLON.Internals {
+    /**
+     * Header information of HDR texture files.
+     */
     interface HDRInfo {
+        /**
+         * The height of the texture in pixels.
+         */
         height: number;
+        /**
+         * The width of the texture in pixels.
+         */
         width: number;
+        /**
+         * The index of the beginning of the data in the binary file.
+         */
         dataPosition: number;
     }
+    /**
+     * This groups tools to convert HDR texture to native colors array.
+     */
     class HDRTools {
         private static Ldexp(mantissa, exponent);
         private static Rgbe2float(float32array, red, green, blue, exponent, index);
         private static readStringLine(uint8array, startIndex);
+        /**
+         * Reads header information from an RGBE texture stored in a native array.
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         *
+         * @param uint8array The binary file stored in  native array.
+         * @return The header information.
+         */
         static RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo;
+        /**
+         * Returns the cubemap information (each faces texture data) extracted from an RGBE texture.
+         * This RGBE texture needs to store the information as a panorama.
+         *
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         *
+         * @param buffer The binary file stored in an array buffer.
+         * @param size The expected size of the extracted cubemap.
+         * @return The Cube Map information.
+         */
         static GetCubeMapTextureData(buffer: ArrayBuffer, size: number): CubeMapInfo;
+        /**
+         * Returns the pixels data extracted from an RGBE texture.
+         * This pixels will be stored left to right up to down in the R G B order in one array.
+         *
+         * More information on this format are available here:
+         * https://en.wikipedia.org/wiki/RGBE_image_format
+         *
+         * @param uint8array The binary file stored in an array buffer.
+         * @param hdrInfo The header information of the file.
+         * @return The pixels data in RGB right to left up to down order.
+         */
         static RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array;
         private static RGBE_ReadPixels_RLE(uint8array, hdrInfo);
     }
 }
 
 declare module BABYLON.Internals {
+    /**
+     * CubeMap information grouping all the data for each faces as well as the cubemap size.
+     */
     interface CubeMapInfo {
+        /**
+         * The pixel array for the front face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         front: Float32Array;
+        /**
+         * The pixel array for the back face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         back: Float32Array;
+        /**
+         * The pixel array for the left face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         left: Float32Array;
+        /**
+         * The pixel array for the right face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         right: Float32Array;
+        /**
+         * The pixel array for the up face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         up: Float32Array;
+        /**
+         * The pixel array for the down face.
+         * This is stored in RGB, left to right, up to down format.
+         */
         down: Float32Array;
+        /**
+         * The size of the cubemap stored.
+         *
+         * Each faces will be size * size pixels.
+         */
         size: number;
     }
+    /**
+     * Helper class usefull to convert panorama picture to their cubemap representation in 6 faces.
+     */
     class PanoramaToCubeMapTools {
         private static FACE_FRONT;
         private static FACE_BACK;
@@ -7844,6 +7875,15 @@ declare module BABYLON.Internals {
         private static FACE_LEFT;
         private static FACE_DOWN;
         private static FACE_UP;
+        /**
+         * Converts a panorma stored in RGB right to left up to down format into a cubemap (6 faces).
+         *
+         * @param float32Array The source data.
+         * @param inputWidth The width of the input panorama.
+         * @param inputhHeight The height of the input panorama.
+         * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
+         * @return The cubemap data
+         */
         static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo;
         private static CreateCubemapTexture(texSize, faceData, float32Array, inputWidth, inputHeight);
         private static CalcProjectionSpherical(vDir, float32Array, inputWidth, inputHeight);
@@ -7851,6 +7891,15 @@ declare module BABYLON.Internals {
 }
 
 declare namespace BABYLON.Internals {
+    /**
+     * Helper class to PreProcess a cubemap in order to generate mipmap according to the level of blur
+     * required by the glossinees of a material.
+     *
+     * This only supports the cosine drop power as well as Warp fixup generation method.
+     *
+     * This is using the process from CubeMapGen described here:
+     * https://seblagarde.wordpress.com/2012/06/10/amd-cubemapgen-for-physically-based-rendering/
+     */
     class PMREMGenerator {
         input: ArrayBufferView[];
         inputSize: number;
@@ -7893,7 +7942,26 @@ declare namespace BABYLON.Internals {
         private _normCubeMap;
         private _filterLUT;
         private _numMipLevels;
+        /**
+         * Constructor of the generator.
+         *
+         * @param input The different faces data from the original cubemap in the order X+ X- Y+ Y- Z+ Z-
+         * @param inputSize The size of the cubemap faces
+         * @param outputSize The size of the output cubemap faces
+         * @param maxNumMipLevels The max number of mip map to generate (0 means all)
+         * @param numChannels The number of channels stored in the cubemap (3 for RBGE for instance)
+         * @param isFloat Specifies if the input texture is in float or int (hdr is usually in float)
+         * @param specularPower The max specular level of the desired cubemap
+         * @param cosinePowerDropPerMip The amount of drop the specular power will follow on each mip
+         * @param excludeBase Specifies wether to process the level 0 (original level) or not
+         * @param fixup Specifies wether to apply the edge fixup algorythm or not
+         */
         constructor(input: ArrayBufferView[], inputSize: number, outputSize: number, maxNumMipLevels: number, numChannels: number, isFloat: boolean, specularPower: number, cosinePowerDropPerMip: number, excludeBase: boolean, fixup: boolean);
+        /**
+         * Launches the filter process and return the result.
+         *
+         * @return the filter cubemap in the form mip0 [faces1..6] .. mipN [faces1..6]
+         */
         filterCubeMap(): ArrayBufferView[][];
         private init();
         private filterCubeMapMipChain();

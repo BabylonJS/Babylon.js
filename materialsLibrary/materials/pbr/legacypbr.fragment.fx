@@ -8,6 +8,7 @@ uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec4 vAlbedoColor;
 uniform vec3 vReflectionColor;
+uniform vec4 vLightRadiuses;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
@@ -29,24 +30,33 @@ uniform vec4 vOverloadedShadowIntensity;
 
 // PBR CUSTOM CONSTANTS
 const float kPi = 3.1415926535897932384626433832795;
+const float kRougnhessToAlphaScale = 0.1;
+const float kRougnhessToAlphaOffset = 0.29248125;
 
-// PBR HELPER METHODS
-float Square(float value)
+#include<helperFunctions>
+
+// Based on Beckamm roughness to Blinn exponent + http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html 
+float getMipMapIndexFromAverageSlope(float maxMipLevel, float alpha)
 {
-    return value * value;
+    // do not take in account lower mips hence -1... and wait from proper preprocess.
+    // formula comes from approximation of the mathematical solution.
+    //float mip = maxMipLevel + kRougnhessToAlphaOffset + 0.5 * log2(alpha);
+    
+    // In the mean time 
+    // Always [0..1] goes from max mip to min mip in a log2 way.  
+    // Change 5 to nummip below.
+    // http://www.wolframalpha.com/input/?i=x+in+0..1+plot+(+5+%2B+0.3+%2B+0.1+*+5+*+log2(+(1+-+x)+*+(1+-+x)+%2B+0.0005))
+    float mip = kRougnhessToAlphaOffset + maxMipLevel + (maxMipLevel * kRougnhessToAlphaScale * log2(alpha));
+    
+    return clamp(mip, 0., maxMipLevel);
 }
 
-float getLuminance(vec3 color)
+float getMipMapIndexFromAverageSlopeWithPMREM(float maxMipLevel, float alphaG)
 {
-    return clamp(dot(color, vec3(0.2126, 0.7152, 0.0722)), 0., 1.);
-}
-
-float convertRoughnessToAverageSlope(float roughness)
-{
-    // Calculate AlphaG as square of roughness; add epsilon to avoid numerical issues
-    const float kMinimumVariance = 0.0005;
-    float alphaG = Square(roughness) + kMinimumVariance;
-    return alphaG;
+    float specularPower = clamp(2. / alphaG - 2., 0.000001, 2048.);
+    
+    // Based on CubeMapGen for cosine power with 2048 spec default and 0.25 dropoff 
+    return clamp(- 0.5 * log2(specularPower) + 5.5, 0., maxMipLevel);
 }
 
 // From Microfacet Models for Refraction through Rough Surfaces, Walter et al. 2007
@@ -96,7 +106,7 @@ vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, flo
     vec3 fresnel = fresnelSchlickGGX(VdotH, specularColor, vec3(1., 1., 1.));
 
     float specTerm = max(0., visibility * distribution) * NdotL;
-    return fresnel * specTerm;
+    return fresnel * specTerm * kPi; // TODO: audit pi constants
 }
 
 float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
@@ -110,19 +120,29 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNL) *
         (1.0 + (diffuseFresnel90 - 1.0) * diffuseFresnelNV);
 
+
     return diffuseFresnelTerm * NdotL;
+    // PI Test
+    // diffuseFresnelTerm /= kPi;
+}
+
+float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
+{
+    // At small angle this approximation works. 
+    float lightRoughness = lightRadius / lightDistance;
+    // Distribution can sum.
+    float totalRoughness = clamp(lightRoughness + roughness, 0., 1.);
+    return totalRoughness;
 }
 
 float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
 {
-    if (microSurface == 0.)
-    {
-        float kReflectivityNoAlphaWorkflow_SmoothnessMax = 0.95;
+    float kReflectivityNoAlphaWorkflow_SmoothnessMax = 0.95;
 
-        float reflectivityLuminance = getLuminance(reflectivityColor);
-        float reflectivityLuma = sqrt(reflectivityLuminance);
-        microSurface = reflectivityLuma * kReflectivityNoAlphaWorkflow_SmoothnessMax;
-    }
+    float reflectivityLuminance = getLuminance(reflectivityColor);
+    float reflectivityLuma = sqrt(reflectivityLuminance);
+    microSurface = reflectivityLuma * kReflectivityNoAlphaWorkflow_SmoothnessMax;
+
     return microSurface;
 }
 
@@ -136,6 +156,17 @@ vec3 toGammaSpace(vec3 color)
     return vec3(pow(color.r, 1.0 / 2.2), pow(color.g, 1.0 / 2.2), pow(color.b, 1.0 / 2.2));
 }
 
+float computeLightFalloff(vec3 lightOffset, float lightDistanceSquared, float range)
+{
+    #ifdef USEPHYSICALLIGHTFALLOFF
+        float lightDistanceFalloff = 1.0 / ((lightDistanceSquared + 0.0001));
+        return lightDistanceFalloff;
+    #else
+        float lightFalloff = max(0., 1.0 - length(lightOffset) / range);
+        return lightFalloff;
+    #endif
+}
+
 #ifdef CAMERATONEMAP
     vec3 toneMaps(vec3 color)
     {
@@ -145,6 +176,8 @@ vec3 toGammaSpace(vec3 color)
         color.rgb = color.rgb * vCameraInfos.x;
 
         float tuning = 1.5; // TODO: sync up so e.g. 18% greys are matched to exposure appropriately
+        // PI Test
+        // tuning *=  kPi;
         vec3 tonemapped = 1.0 - exp2(-color.rgb * tuning); // simple local photographic tonemapper
         color.rgb = mix(color.rgb, tonemapped, 1.0);
         return color;
@@ -242,26 +275,36 @@ struct lightingInfo
 #endif
 };
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius, out float NdotL) {
     lightingInfo result;
 
-    vec3 lightVectorW;
+    vec3 lightDirection;
     float attenuation = 1.0;
+    float lightDistance;
+    
+    // Point
     if (lightData.w == 0.)
     {
-        vec3 direction = lightData.xyz - vPositionW;
-
-        attenuation = max(0., 1.0 - length(direction) / range);
-        lightVectorW = normalize(direction);
+        vec3 lightOffset = lightData.xyz - vPositionW;
+        float lightDistanceSquared = dot(lightOffset, lightOffset);
+        attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, range);
+        
+        lightDistance = sqrt(lightDistanceSquared);
+        lightDirection = normalize(lightOffset);
     }
+    // Directional
     else
     {
-        lightVectorW = normalize(-lightData.xyz);
+        lightDistance = length(-lightData.xyz);
+        lightDirection = normalize(-lightData.xyz);
     }
-
+    
+    // Roughness
+    roughness = adjustRoughnessFromLightProperties(roughness, lightRadius, lightDistance);
+    
     // diffuse
-    vec3 H = normalize(viewDirectionW + lightVectorW);
-    float NdotL = max(0.00000000001, dot(vNormal, lightVectorW));
+    vec3 H = normalize(viewDirectionW + lightDirection);
+    NdotL = max(0.00000000001, dot(vNormal, lightDirection));
     float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
 
     float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
@@ -272,42 +315,50 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     float NdotH = max(0.00000000001, dot(vNormal, H));
 
     vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
-    result.specular = specTerm * specularColor * attenuation;
+    result.specular = specTerm * attenuation;
 #endif
 
     return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius, out float NdotL) {
     lightingInfo result;
 
-    vec3 direction = lightData.xyz - vPositionW;
-    vec3 lightVectorW = normalize(direction);
-    float attenuation = max(0., 1.0 - length(direction) / range);
+    vec3 lightOffset = lightData.xyz - vPositionW;
+    vec3 lightVectorW = normalize(lightOffset);
 
     // diffuse
-    float cosAngle = max(0.0000001, dot(-lightDirection.xyz, lightVectorW));
-    float spotAtten = 0.0;
-
+    float cosAngle = max(0.000000000000001, dot(-lightDirection.xyz, lightVectorW));
+    
     if (cosAngle >= lightDirection.w)
     {
         cosAngle = max(0., pow(cosAngle, lightData.w));
-        spotAtten = clamp((cosAngle - lightDirection.w) / (1. - cosAngle), 0.0, 1.0);
-
+        
+        // Inverse squared falloff.
+        float lightDistanceSquared = dot(lightOffset, lightOffset);
+        float attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, range);
+        
+        // Directional falloff.
+        attenuation *= cosAngle;
+        
+        // Roughness.
+        float lightDistance = sqrt(lightDistanceSquared);
+        roughness = adjustRoughnessFromLightProperties(roughness, lightRadius, lightDistance);
+        
         // Diffuse
         vec3 H = normalize(viewDirectionW - lightDirection.xyz);
-        float NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
+        NdotL = max(0.00000000001, dot(vNormal, -lightDirection.xyz));
         float VdotH = clamp(dot(viewDirectionW, H), 0.00000000001, 1.0);
 
         float diffuseTerm = computeDiffuseTerm(NdotL, NdotV, VdotH, roughness);
-        result.diffuse = diffuseTerm * diffuseColor * attenuation * spotAtten;
+        result.diffuse = diffuseTerm * diffuseColor * attenuation;
 
 #ifdef SPECULARTERM
         // Specular
         float NdotH = max(0.00000000001, dot(vNormal, H));
 
         vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
-        result.specular = specTerm * specularColor * attenuation * spotAtten;
+        result.specular = specTerm  * attenuation;
 #endif
 
         return result;
@@ -321,24 +372,26 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, float lightRadius, out float NdotL) {
     lightingInfo result;
 
-    vec3 lightVectorW = normalize(lightData.xyz);
+    // Roughness
+    // Do not touch roughness on hemispheric.
 
     // Diffuse
-    float ndl = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
-    result.diffuse = mix(groundColor, diffuseColor, ndl);
+    NdotL = dot(vNormal, lightData.xyz) * 0.5 + 0.5;
+    result.diffuse = mix(groundColor, diffuseColor, NdotL);
 
 #ifdef SPECULARTERM
     // Specular
+    vec3 lightVectorW = normalize(lightData.xyz);
     vec3 H = normalize(viewDirectionW + lightVectorW);
     float NdotH = max(0.00000000001, dot(vNormal, H));
-    float NdotL = max(0.00000000001, ndl);
+    NdotL = max(0.00000000001, NdotL);
     float VdotH = clamp(0.00000000001, 1.0, dot(viewDirectionW, H));
 
     vec3 specTerm = computeSpecularTerm(NdotH, NdotL, NdotV, VdotH, roughness, specularColor);
-    result.specular = specTerm * specularColor;
+    result.specular = specTerm;
 #endif
 
     return result;
@@ -350,74 +403,81 @@ void main(void) {
     vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
     // Base color
-    vec4 baseColor = vec4(1., 1., 1., 1.);
-    vec3 diffuseColor = vAlbedoColor.rgb;
+    vec4 surfaceAlbedo = vec4(1., 1., 1., 1.);
+    vec3 surfaceAlbedoContribution = vAlbedoColor.rgb;
     
     // Alpha
     float alpha = vAlbedoColor.a;
 
-#ifdef ALBEDO
-    baseColor = texture2D(diffuseSampler, vAlbedoUV);
-    baseColor = vec4(toLinearSpace(baseColor.rgb), baseColor.a);
+    #ifdef ALBEDO
+        surfaceAlbedo = texture2D(albedoSampler, vAlbedoUV);
+        surfaceAlbedo = vec4(toLinearSpace(surfaceAlbedo.rgb), surfaceAlbedo.a);
 
-#ifdef ALPHATEST
-    if (baseColor.a < 0.4)
-        discard;
-#endif
+        #ifdef ALPHATEST
+            if (baseColor.a < 0.4)
+                discard;
+        #endif
 
-#ifdef ALPHAFROMALBEDO
-    alpha *= baseColor.a;
-#endif
+        #ifdef ALPHAFROMALBEDO
+            alpha *= surfaceAlbedo.a;
+        #endif
 
-    baseColor.rgb *= vAlbedoInfos.y;
-#endif
+        surfaceAlbedo.rgb *= vAlbedoInfos.y;
+    #else
+        // No Albedo texture.
+        surfaceAlbedo.rgb = surfaceAlbedoContribution;
+        surfaceAlbedoContribution = vec3(1., 1., 1.);
+    #endif
 
-#ifdef VERTEXCOLOR
-    baseColor.rgb *= vColor.rgb;
-#endif
+    #ifdef VERTEXCOLOR
+        baseColor.rgb *= vColor.rgb;
+    #endif
 
-#ifdef OVERLOADEDVALUES
-    baseColor.rgb = mix(baseColor.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
-    albedoColor.rgb = mix(albedoColor.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
-#endif
+    #ifdef OVERLOADEDVALUES
+        surfaceAlbedo.rgb = mix(surfaceAlbedo.rgb, vOverloadedAlbedo, vOverloadedIntensity.y);
+    #endif
 
     // Bump
-#ifdef NORMAL
-    vec3 normalW = normalize(vNormalW);
-#else
-    vec3 normalW = vec3(1.0, 1.0, 1.0);
-#endif
+    #ifdef NORMAL
+        vec3 normalW = normalize(vNormalW);
+    #else
+        vec3 normalW = vec3(1.0, 1.0, 1.0);
+    #endif
 
     // Ambient color
-    vec3 baseAmbientColor = vec3(1., 1., 1.);
+    vec3 ambientColor = vec3(1., 1., 1.);
 
-#ifdef AMBIENT
-    baseAmbientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;
-    #ifdef OVERLOADEDVALUES
-        baseAmbientColor.rgb = mix(baseAmbientColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
+    #ifdef AMBIENT
+        ambientColor = texture2D(ambientSampler, vAmbientUV).rgb * vAmbientInfos.y;
+        
+        #ifdef OVERLOADEDVALUES
+            ambientColor.rgb = mix(ambientColor.rgb, vOverloadedAmbient, vOverloadedIntensity.x);
+        #endif
     #endif
-#endif
 
     // Reflectivity map
     float microSurface = vReflectivityColor.a;
-    vec3 reflectivityColor = vReflectivityColor.rgb;
-
+    vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
+    
     #ifdef OVERLOADEDVALUES
-        reflectivityColor.rgb = mix(reflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
+        surfaceReflectivityColor.rgb = mix(surfaceReflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
     #endif
 
     #ifdef REFLECTIVITY
-            vec4 reflectivityMapColor = texture2D(reflectivitySampler, vReflectivityUV);
-            reflectivityColor = toLinearSpace(reflectivityMapColor.rgb);
+        vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV);
+        surfaceReflectivityColor = surfaceReflectivityColorMap.rgb;
+        surfaceReflectivityColor = toLinearSpace(surfaceReflectivityColor);
 
         #ifdef OVERLOADEDVALUES
-                reflectivityColor.rgb = mix(reflectivityColor.rgb, vOverloadedReflectivity, vOverloadedIntensity.z);
+            surfaceReflectivityColor = mix(surfaceReflectivityColor, vOverloadedReflectivity, vOverloadedIntensity.z);
         #endif
 
         #ifdef MICROSURFACEFROMREFLECTIVITYMAP
-            microSurface = reflectivityMapColor.a;
+            microSurface = surfaceReflectivityColorMap.a;
         #else
-            microSurface = computeDefaultMicroSurface(microSurface, reflectivityColor);
+            #ifdef MICROSURFACEAUTOMATIC
+                microSurface = computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
+            #endif
         #endif
     #endif
 
@@ -425,53 +485,52 @@ void main(void) {
         microSurface = mix(microSurface, vOverloadedMicroSurface.x, vOverloadedMicroSurface.y);
     #endif
 
-    // Apply Energy Conservation taking in account the environment level only if the environment is present.
-    float reflectance = max(max(reflectivityColor.r, reflectivityColor.g), reflectivityColor.b);
-    baseColor.rgb = (1. - reflectance) * baseColor.rgb;
-
-    // Compute Specular Fresnel + Reflectance.
+    // Compute N dot V.
     float NdotV = max(0.00000000001, dot(normalW, viewDirectionW));
 
     // Adapt microSurface.
     microSurface = clamp(microSurface, 0., 1.) * 0.98;
 
-    // Call rough to not conflict with previous one.
-    float rough = clamp(1. - microSurface, 0.000001, 1.0);
-
+    // Compute roughness.
+    float roughness = clamp(1. - microSurface, 0.000001, 1.0);
+    
     // Lighting
-    vec3 diffuseBase = vec3(0., 0., 0.);
+    vec3 lightDiffuseContribution = vec3(0., 0., 0.);
 
 #ifdef OVERLOADEDSHADOWVALUES
-    vec3 shadowedOnlyDiffuseBase = vec3(1., 1., 1.);
+    vec3 shadowedOnlyLightDiffuseContribution = vec3(1., 1., 1.);
 #endif
 
 #ifdef SPECULARTERM
-    vec3 specularBase = vec3(0., 0., 0.);
+    vec3 lightSpecularContribution= vec3(0., 0., 0.);
 #endif
-    float shadow = 1.;
+    float notShadowLevel = 1.; // 1 - shadowLevel
+    float NdotL = -1.;
 
 #ifdef LIGHT0
 #ifndef SPECULARTERM
     vec3 vLightSpecular0 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT0
-    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, rough, NdotV);
+    lightingInfo info = computeSpotLighting(viewDirectionW, normalW, vLightData0, vLightDirection0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0], NdotL);
 #endif
 #ifdef HEMILIGHT0
-    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, rough, NdotV);
+    lightingInfo info = computeHemisphericLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightGround0, roughness, NdotV, vLightRadiuses[0], NdotL);
 #endif
 #if defined(POINTLIGHT0) || defined(DIRLIGHT0)
-    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, rough, NdotV);
+    lightingInfo info = computeLighting(viewDirectionW, normalW, vLightData0, vLightDiffuse0.rgb, vLightSpecular0, vLightDiffuse0.a, roughness, NdotV, vLightRadiuses[0], NdotL);
 #endif
-
-    shadow = 1.;
-    diffuseBase += info.diffuse * shadow;
+    notShadowLevel = 1.;
+    lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
-    shadowedOnlyDiffuseBase *= shadow;
+    if (NdotL < 0.000000000011)
+    {
+        notShadowLevel = 1.;
+    }
+    shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
-
 #ifdef SPECULARTERM
-    specularBase += info.specular * shadow;
+    lightSpecularContribution += info.specular * notShadowLevel;
 #endif
 #endif
 
@@ -480,23 +539,26 @@ void main(void) {
     vec3 vLightSpecular1 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT1
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData1, vLightDirection1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1], NdotL);
 #endif
 #ifdef HEMILIGHT1
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightGround1, roughness, NdotV, vLightRadiuses[1], NdotL);
 #endif
 #if defined(POINTLIGHT1) || defined(DIRLIGHT1)
-    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData1, vLightDiffuse1.rgb, vLightSpecular1, vLightDiffuse1.a, roughness, NdotV, vLightRadiuses[1], NdotL);
 #endif
-
-    shadow = 1.;
-    diffuseBase += info.diffuse * shadow;
+    notShadowLevel = 1.;
+    lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
-    shadowedOnlyDiffuseBase *= shadow;
+    if (NdotL < 0.000000000011)
+    {
+        notShadowLevel = 1.;
+    }
+    shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
 #ifdef SPECULARTERM
-    specularBase += info.specular * shadow;
+    lightSpecularContribution += info.specular * notShadowLevel;
 #endif
 #endif
 
@@ -505,23 +567,26 @@ void main(void) {
     vec3 vLightSpecular2 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT2
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData2, vLightDirection2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2], NdotL);
 #endif
 #ifdef HEMILIGHT2
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightGround2, roughness, NdotV, vLightRadiuses[2], NdotL);
 #endif
 #if defined(POINTLIGHT2) || defined(DIRLIGHT2)
-    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData2, vLightDiffuse2.rgb, vLightSpecular2, vLightDiffuse2.a, roughness, NdotV, vLightRadiuses[2], NdotL);
 #endif
-
-    shadow = 1.;
-    diffuseBase += info.diffuse * shadow;
+    notShadowLevel = 1.;
+    lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
-    shadowedOnlyDiffuseBase *= shadow;
+    if (NdotL < 0.000000000011)
+    {
+        notShadowLevel = 1.;
+    }
+    shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
 #ifdef SPECULARTERM
-    specularBase += info.specular * shadow;
+    lightSpecularContribution += info.specular * notShadowLevel;
 #endif
 #endif
 
@@ -530,53 +595,43 @@ void main(void) {
     vec3 vLightSpecular3 = vec3(0.0);
 #endif
 #ifdef SPOTLIGHT3
-    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, rough, NdotV);
+    info = computeSpotLighting(viewDirectionW, normalW, vLightData3, vLightDirection3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3], NdotL);
 #endif
 #ifdef HEMILIGHT3
-    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, rough, NdotV);
+    info = computeHemisphericLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightGround3, roughness, NdotV, vLightRadiuses[3], NdotL);
 #endif
 #if defined(POINTLIGHT3) || defined(DIRLIGHT3)
-    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, rough, NdotV);
+    info = computeLighting(viewDirectionW, normalW, vLightData3, vLightDiffuse3.rgb, vLightSpecular3, vLightDiffuse3.a, roughness, NdotV, vLightRadiuses[3], NdotL);
 #endif
 
-    shadow = 1.;
-    diffuseBase += info.diffuse * shadow;
+    notShadowLevel = 1.;
+    lightDiffuseContribution += info.diffuse * notShadowLevel;
 #ifdef OVERLOADEDSHADOWVALUES
-    shadowedOnlyDiffuseBase *= shadow;
+    if (NdotL < 0.000000000011)
+    {
+        notShadowLevel = 1.;
+    }
+    shadowedOnlyLightDiffuseContribution *= notShadowLevel;
 #endif
 
 #ifdef SPECULARTERM
-    specularBase += info.specular * shadow;
+    lightSpecularContribution += info.specular * notShadowLevel;
 #endif
 #endif
 
-// Reflection
-vec3 reflectionColor = vReflectionColor.rgb;
-vec3 ambientReflectionColor = vReflectionColor.rgb;
-
-reflectionColor *= vLightingIntensity.z;
-ambientReflectionColor *= vLightingIntensity.z;
-
-// Compute reflection reflectivity fresnel
-vec3 reflectivityEnvironmentR0 = reflectivityColor.rgb;
-vec3 reflectivityEnvironmentR90 = vec3(1.0, 1.0, 1.0);
-vec3 reflectivityEnvironmentReflectanceViewer = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), reflectivityEnvironmentR0, reflectivityEnvironmentR90, sqrt(microSurface));
-reflectionColor *= reflectivityEnvironmentReflectanceViewer;
-
-#ifdef OVERLOADEDVALUES
-    ambientReflectionColor = mix(ambientReflectionColor, vOverloadedReflection, vOverloadedMicroSurface.z);
-    reflectionColor = mix(reflectionColor, vOverloadedReflection, vOverloadedMicroSurface.z);
+#ifdef SPECULARTERM
+    lightSpecularContribution *= vLightingIntensity.w;
 #endif
 
 #ifdef OPACITY
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV);
 
-#ifdef OPACITYRGB
-    opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
-    alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
-#else
-    alpha *= opacityMap.a * vOpacityInfos.y;
-#endif
+    #ifdef OPACITYRGB
+        opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
+        alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
+    #else
+        alpha *= opacityMap.a * vOpacityInfos.y;
+    #endif
 
 #endif
 
@@ -584,75 +639,99 @@ reflectionColor *= reflectivityEnvironmentReflectanceViewer;
     alpha *= vColor.a;
 #endif
 
-    // Emissive
-    vec3 emissiveColor = vEmissiveColor;
+// Reflection
+vec3 environmentRadiance = vReflectionColor.rgb;
+vec3 environmentIrradiance = vReflectionColor.rgb;
+
+#ifdef OVERLOADEDVALUES
+    environmentIrradiance = mix(environmentIrradiance, vOverloadedReflection, vOverloadedMicroSurface.z);
+    environmentRadiance = mix(environmentRadiance, vOverloadedReflection, vOverloadedMicroSurface.z);
+#endif
+
+environmentRadiance *= vLightingIntensity.z;
+environmentIrradiance *= vLightingIntensity.z;
+
+// Compute reflection reflectivity fresnel
+vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
+vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0);
+vec3 specularEnvironmentReflectance = FresnelSchlickEnvironmentGGX(clamp(NdotV, 0., 1.), specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
+
+// Apply Energy Conservation taking in account the environment level only if the environment is present.
+float reflectance = max(max(surfaceReflectivityColor.r, surfaceReflectivityColor.g), surfaceReflectivityColor.b);
+surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+environmentRadiance *= specularEnvironmentReflectance;
+
+// Emissive
+vec3 surfaceEmissiveColor = vEmissiveColor;
 #ifdef EMISSIVE
     vec3 emissiveColorTex = texture2D(emissiveSampler, vEmissiveUV).rgb;
-    emissiveColor = toLinearSpace(emissiveColorTex.rgb) * emissiveColor * vEmissiveInfos.y;
+    surfaceEmissiveColor = toLinearSpace(emissiveColorTex.rgb) * surfaceEmissiveColor * vEmissiveInfos.y;
 #endif
 
 #ifdef OVERLOADEDVALUES
-    emissiveColor = mix(emissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
+    surfaceEmissiveColor = mix(surfaceEmissiveColor, vOverloadedEmissive, vOverloadedIntensity.w);
 #endif
 
-    // Composition
+// Composition
 #ifdef EMISSIVEASILLUMINATION
-    vec3 finalDiffuse = max(diffuseBase * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
-
+    vec3 finalDiffuse = max(lightDiffuseContribution * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
+    
     #ifdef OVERLOADEDSHADOWVALUES
-        shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
+        shadowedOnlyLightDiffuseContribution = max(shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
     #endif
 #else
     #ifdef LINKEMISSIVEWITHALBEDO
-        vec3 finalDiffuse = max((diffuseBase + emissiveColor) * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
+        vec3 finalDiffuse = max((lightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
+
         #ifdef OVERLOADEDSHADOWVALUES
-                shadowedOnlyDiffuseBase = max((shadowedOnlyDiffuseBase + emissiveColor) * albedoColor + vAmbientColor, 0.0) * baseColor.rgb;
+            shadowedOnlyLightDiffuseContribution = max((shadowedOnlyLightDiffuseContribution + surfaceEmissiveColor) * surfaceAlbedoContribution + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
         #endif
     #else
-        vec3 finalDiffuse = max(diffuseBase * albedoColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+        vec3 finalDiffuse = max(lightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
+
         #ifdef OVERLOADEDSHADOWVALUES
-            shadowedOnlyDiffuseBase = max(shadowedOnlyDiffuseBase * albedoColor + emissiveColor + vAmbientColor, 0.0) * baseColor.rgb;
+            shadowedOnlyLightDiffuseContribution = max(shadowedOnlyLightDiffuseContribution * surfaceAlbedoContribution + surfaceEmissiveColor + vAmbientColor, 0.0) * surfaceAlbedo.rgb;
         #endif
     #endif
 #endif
 
 #ifdef OVERLOADEDSHADOWVALUES
-      finalDiffuse = mix(finalDiffuse, shadowedOnlyDiffuseBase, (1.0 - vOverloadedShadowIntensity.y));
+    finalDiffuse = mix(finalDiffuse, shadowedOnlyLightDiffuseContribution, (1.0 - vOverloadedShadowIntensity.y));
 #endif
 
-// diffuse lighting from environment 0.2 replaces Harmonic...
-// Ambient Reflection already includes the environment intensity.
-finalDiffuse += baseColor.rgb * ambientReflectionColor * 0.2;
-
 #ifdef SPECULARTERM
-    vec3 finalSpecular = specularBase * reflectivityColor * vLightingIntensity.w;
+    vec3 finalSpecular = lightSpecularContribution * surfaceReflectivityColor;
 #else
     vec3 finalSpecular = vec3(0.0);
 #endif
 
 #ifdef SPECULAROVERALPHA
-    alpha = clamp(alpha + dot(finalSpecular, vec3(0.3, 0.59, 0.11)), 0., 1.);
+    alpha = clamp(alpha + getLuminance(finalSpecular), 0., 1.);
+#endif
+
+#ifdef RADIANCEOVERALPHA
+    alpha = clamp(alpha + getLuminance(environmentRadiance), 0., 1.);
 #endif
 
 // Composition
 // Reflection already includes the environment intensity.
 #ifdef EMISSIVEASILLUMINATION
-    vec4 color = vec4(finalDiffuse * baseAmbientColor * vLightingIntensity.x + finalSpecular * vLightingIntensity.x + reflectionColor + emissiveColor * vLightingIntensity.y, alpha);
+    vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance + surfaceEmissiveColor * vLightingIntensity.y, alpha);
 #else
-    vec4 color = vec4(finalDiffuse * baseAmbientColor * vLightingIntensity.x + finalSpecular * vLightingIntensity.x + reflectionColor, alpha);
+    vec4 finalColor = vec4(finalDiffuse * ambientColor * vLightingIntensity.x + surfaceAlbedo.rgb * environmentIrradiance + finalSpecular * vLightingIntensity.x + environmentRadiance, alpha);
 #endif
 
-    color = max(color, 0.0);
+    finalColor = max(finalColor, 0.0);
 
 #ifdef CAMERATONEMAP
-    color.rgb = toneMaps(color.rgb);
+    finalColor.rgb = toneMaps(finalColor.rgb);
 #endif
 
-    color.rgb = toGammaSpace(color.rgb);
+    finalColor.rgb = toGammaSpace(finalColor.rgb);
 
 #ifdef CAMERACONTRAST
-    color = contrasts(color);
+    finalColor = contrasts(finalColor);
 #endif
 
-    gl_FragColor = color;
+    gl_FragColor = finalColor;
 }
