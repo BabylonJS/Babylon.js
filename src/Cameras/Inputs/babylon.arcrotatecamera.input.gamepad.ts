@@ -37,7 +37,7 @@ module BABYLON {
                     if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
                         camera.inertialBetaOffset += normalizedLY;
                     }
-                }
+                }                               
             }
         }
         

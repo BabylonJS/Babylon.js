@@ -976,6 +976,6 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
         return AbstractMesh;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
