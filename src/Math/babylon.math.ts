@@ -3153,7 +3153,7 @@
         }
 
         /**
-         * Returns an array populated with tangent vectors on each Path3D curve points.
+         * Returns an array populated with tangent vectors on each Path3D curve point.
          */
         public getTangents(): Vector3[] {
             return this._tangents;
@@ -3161,7 +3161,7 @@
 
 
         /**
-         * Returns an array populated with normal vectors on each Path3D curve points.
+         * Returns an array populated with normal vectors on each Path3D curve point.
          */
         public getNormals(): Vector3[] {
             return this._normals;
@@ -3169,7 +3169,7 @@
 
 
         /**
-         * Returns an array populated with binormal vectors on each Path3D curve points.
+         * Returns an array populated with binormal vectors on each Path3D curve point.
          */
         public getBinormals(): Vector3[] {
             return this._binormals;
