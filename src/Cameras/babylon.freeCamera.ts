@@ -131,43 +131,5 @@
         public getTypeName(): string {
             return "FreeCamera";
         }
-    }
-    
-    export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
-        constructor(camera : FreeCamera){
-            super(camera);    
-        }
-        
-        add(input: ICameraInput<FreeCamera>){
-            super.add(input);
-            if (this.camera._attachedElement && input.attachElement) {
-                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
-            }
-        }
-        
-        addKeyboard(){
-            this.add(new CameraInputs.FreeCameraKeyboardMoveInput());
-            return this;
-        }
-        
-        addMouse(){
-            this.add(new CameraInputs.FreeCameraMouseInput());
-            return this;
-        }
-        
-        addGamepad(){
-            this.add(new CameraInputs.FreeCameraGamepadInput());
-            return this;
-        }
-        
-        addDeviceOrientation(){
-            this.add(new CameraInputs.FreeCameraDeviceOrientationInput());
-            return this;
-        }
-        
-        addTouch(){
-            this.add(new CameraInputs.FreeCameraTouchInput());
-            return this;
-        }
-    }
+    }    
 } 

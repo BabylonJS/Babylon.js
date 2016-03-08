@@ -6,70 +6,67 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        var FreeCameraDeviceOrientationInput = (function () {
-            function FreeCameraDeviceOrientationInput() {
-                this._offsetX = null;
-                this._offsetY = null;
-                this._orientationGamma = 0;
-                this._orientationBeta = 0;
-                this._initialOrientationGamma = 0;
-                this._initialOrientationBeta = 0;
-                this.angularSensibility = 10000.0;
-                this.moveSensibility = 50.0;
-                this._resetOrientationGamma = this.resetOrientationGamma.bind(this);
-                this._orientationChanged = this.orientationChanged.bind(this);
+    var FreeCameraDeviceOrientationInput = (function () {
+        function FreeCameraDeviceOrientationInput() {
+            this._offsetX = null;
+            this._offsetY = null;
+            this._orientationGamma = 0;
+            this._orientationBeta = 0;
+            this._initialOrientationGamma = 0;
+            this._initialOrientationBeta = 0;
+            this.angularSensibility = 10000.0;
+            this.moveSensibility = 50.0;
+            this._resetOrientationGamma = this.resetOrientationGamma.bind(this);
+            this._orientationChanged = this.orientationChanged.bind(this);
+        }
+        FreeCameraDeviceOrientationInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+            window.addEventListener("resize", this._resetOrientationGamma, false);
+            window.addEventListener("deviceorientation", this._orientationChanged);
+        };
+        FreeCameraDeviceOrientationInput.prototype.resetOrientationGamma = function () {
+            this._initialOrientationGamma = null;
+        };
+        FreeCameraDeviceOrientationInput.prototype.orientationChanged = function (evt) {
+            if (!this._initialOrientationGamma) {
+                this._initialOrientationGamma = evt.gamma;
+                this._initialOrientationBeta = evt.beta;
             }
-            FreeCameraDeviceOrientationInput.prototype.attachCamera = function (camera) {
-                this.camera = camera;
-                window.addEventListener("resize", this._resetOrientationGamma, false);
-                window.addEventListener("deviceorientation", this._orientationChanged);
-            };
-            FreeCameraDeviceOrientationInput.prototype.resetOrientationGamma = function () {
-                this._initialOrientationGamma = null;
-            };
-            FreeCameraDeviceOrientationInput.prototype.orientationChanged = function (evt) {
-                if (!this._initialOrientationGamma) {
-                    this._initialOrientationGamma = evt.gamma;
-                    this._initialOrientationBeta = evt.beta;
-                }
-                this._orientationGamma = evt.gamma;
-                this._orientationBeta = evt.beta;
-                this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
-                this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
-            };
-            FreeCameraDeviceOrientationInput.prototype.detach = function () {
-                window.removeEventListener("resize", this._resetOrientationGamma);
-                window.removeEventListener("deviceorientation", this._orientationChanged);
-                this._orientationGamma = 0;
-                this._orientationBeta = 0;
-                this._initialOrientationGamma = 0;
-                this._initialOrientationBeta = 0;
-            };
-            FreeCameraDeviceOrientationInput.prototype.checkInputs = function () {
-                if (!this._offsetX) {
-                    return;
-                }
-                var camera = this.camera;
-                camera.cameraRotation.y -= this._offsetX / this.angularSensibility;
-                var speed = camera._computeLocalCameraSpeed();
-                var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
-                BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-                camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
-            };
-            FreeCameraDeviceOrientationInput.prototype.getTypeName = function () {
-                return "freecamera.deviceorientation";
-            };
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraDeviceOrientationInput.prototype, "angularSensibility", void 0);
-            __decorate([
-                BABYLON.serialize()
-            ], FreeCameraDeviceOrientationInput.prototype, "moveSensibility", void 0);
-            return FreeCameraDeviceOrientationInput;
-        }());
-        CameraInputs.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
-        CameraInputs.InputTypes["freecamera.deviceorientation"] = FreeCameraDeviceOrientationInput;
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
+            this._orientationGamma = evt.gamma;
+            this._orientationBeta = evt.beta;
+            this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
+            this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
+        };
+        FreeCameraDeviceOrientationInput.prototype.detach = function () {
+            window.removeEventListener("resize", this._resetOrientationGamma);
+            window.removeEventListener("deviceorientation", this._orientationChanged);
+            this._orientationGamma = 0;
+            this._orientationBeta = 0;
+            this._initialOrientationGamma = 0;
+            this._initialOrientationBeta = 0;
+        };
+        FreeCameraDeviceOrientationInput.prototype.checkInputs = function () {
+            if (!this._offsetX) {
+                return;
+            }
+            var camera = this.camera;
+            camera.cameraRotation.y -= this._offsetX / this.angularSensibility;
+            var speed = camera._computeLocalCameraSpeed();
+            var direction = new BABYLON.Vector3(0, 0, speed * this._offsetY / this.moveSensibility);
+            BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
+            camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
+        };
+        FreeCameraDeviceOrientationInput.prototype.getTypeName = function () {
+            return "freecamera.deviceorientation";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraDeviceOrientationInput.prototype, "angularSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FreeCameraDeviceOrientationInput.prototype, "moveSensibility", void 0);
+        return FreeCameraDeviceOrientationInput;
+    }());
+    BABYLON.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
+    BABYLON.CameraInputTypes["freecamera.deviceorientation"] = FreeCameraDeviceOrientationInput;
 })(BABYLON || (BABYLON = {}));

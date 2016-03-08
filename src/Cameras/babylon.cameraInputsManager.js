@@ -1,9 +1,6 @@
 var BABYLON;
 (function (BABYLON) {
-    var CameraInputs;
-    (function (CameraInputs) {
-        CameraInputs.InputTypes = {};
-    })(CameraInputs = BABYLON.CameraInputs || (BABYLON.CameraInputs = {}));
+    BABYLON.CameraInputTypes = {};
     var CameraInputsManager = (function () {
         function CameraInputsManager(camera) {
             this.inputs = {};
@@ -74,7 +71,7 @@ var BABYLON;
             if (parsedInputs) {
                 this.clear();
                 for (var n in parsedInputs) {
-                    var construct = CameraInputs.InputTypes[n];
+                    var construct = BABYLON.CameraInputTypes[n];
                     if (construct) {
                         var parsedinput = parsedInputs[n];
                         var input = BABYLON.SerializationHelper.Parse(function () { return new construct(); }, parsedinput, null);

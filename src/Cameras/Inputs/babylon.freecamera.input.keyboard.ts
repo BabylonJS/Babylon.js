@@ -1,4 +1,4 @@
-module BABYLON.CameraInputs {
+module BABYLON {
     export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
         camera: FreeCamera;
         private _keys = [];
@@ -102,5 +102,5 @@ module BABYLON.CameraInputs {
         }
     }
     
-    InputTypes["freecamera.keyboardmove"] = FreeCameraKeyboardMoveInput;
+    CameraInputTypes["freecamera.keyboardmove"] = FreeCameraKeyboardMoveInput;
 }

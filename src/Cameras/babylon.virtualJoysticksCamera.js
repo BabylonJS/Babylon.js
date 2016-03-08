@@ -8,46 +8,22 @@ var BABYLON;
     // We're mainly based on the logic defined into the FreeCamera code
     var VirtualJoysticksCamera = (function (_super) {
         __extends(VirtualJoysticksCamera, _super);
+        // private _leftjoystick: VirtualJoystick;
+        // private _rightjoystick: VirtualJoystick;
         function VirtualJoysticksCamera(name, position, scene) {
             _super.call(this, name, position, scene);
-            this._leftjoystick = new BABYLON.VirtualJoystick(true);
-            this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
-            this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
-            this._leftjoystick.setJoystickSensibility(0.15);
-            this._rightjoystick = new BABYLON.VirtualJoystick(false);
-            this._rightjoystick.setAxisForUpDown(BABYLON.JoystickAxis.X);
-            this._rightjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.Y);
-            this._rightjoystick.reverseUpDown = true;
-            this._rightjoystick.setJoystickSensibility(0.05);
-            this._rightjoystick.setJoystickColor("yellow");
+            this.inputs.addVirtualJoystick();
+            // this._leftjoystick = new VirtualJoystick(true);
+            // this._leftjoystick.setAxisForUpDown(JoystickAxis.Z);
+            // this._leftjoystick.setAxisForLeftRight(JoystickAxis.X);
+            // this._leftjoystick.setJoystickSensibility(0.15);
+            // this._rightjoystick = new VirtualJoystick(false);
+            // this._rightjoystick.setAxisForUpDown(JoystickAxis.X);
+            // this._rightjoystick.setAxisForLeftRight(JoystickAxis.Y);
+            // this._rightjoystick.reverseUpDown = true;
+            // this._rightjoystick.setJoystickSensibility(0.05);
+            // this._rightjoystick.setJoystickColor("yellow");
         }
-        VirtualJoysticksCamera.prototype.getLeftJoystick = function () {
-            return this._leftjoystick;
-        };
-        VirtualJoysticksCamera.prototype.getRightJoystick = function () {
-            return this._rightjoystick;
-        };
-        VirtualJoysticksCamera.prototype._checkInputs = function () {
-            var speed = this._computeLocalCameraSpeed() * 50;
-            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(this.rotation.y, this.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
-            this.cameraDirection = this.cameraDirection.add(deltaTransform);
-            this.cameraRotation = this.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
-            if (!this._leftjoystick.pressed) {
-                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
-            }
-            if (!this._rightjoystick.pressed) {
-                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
-            }
-            _super.prototype._checkInputs.call(this);
-        };
-        VirtualJoysticksCamera.prototype.dispose = function () {
-            this._leftjoystick.releaseCanvas();
-            _super.prototype.dispose.call(this);
-        };
-        VirtualJoysticksCamera.prototype.getTypeName = function () {
-            return "VirtualJoysticksCamera";
-        };
         return VirtualJoysticksCamera;
     }(BABYLON.FreeCamera));
     BABYLON.VirtualJoysticksCamera = VirtualJoysticksCamera;
