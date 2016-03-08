@@ -144,7 +144,9 @@ var BABYLON;
             return BABYLON.SerializationHelper.Clone(function () { return new GridMaterial(name, _this.getScene()); }, this);
         };
         GridMaterial.prototype.serialize = function () {
-            return BABYLON.SerializationHelper.Serialize(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.GridMaterial";
+            return serializationObject;
         };
         GridMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new GridMaterial(source.name, scene); }, source, scene, rootUrl);
