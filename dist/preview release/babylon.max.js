@@ -11642,6 +11642,7 @@ var BABYLON;
             this.camera = camera;
         };
         FreeCameraGamepadInput.prototype.detach = function () {
+            this._gamepads.dispose();
         };
         FreeCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {
@@ -12097,6 +12098,65 @@ var BABYLON;
     }());
     BABYLON.ArcRotateCameraPointersInput = ArcRotateCameraPointersInput;
     BABYLON.CameraInputTypes["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
+})(BABYLON || (BABYLON = {}));
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var ArcRotateCameraGamepadInput = (function () {
+        function ArcRotateCameraGamepadInput() {
+            var _this = this;
+            this.gamepadRotationSensibility = 80;
+            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+        }
+        ArcRotateCameraGamepadInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
+        };
+        ArcRotateCameraGamepadInput.prototype.detach = function () {
+            this._gamepads.dispose();
+        };
+        ArcRotateCameraGamepadInput.prototype.checkInputs = function () {
+            if (this.gamepad) {
+                var camera = this.camera;
+                var LSValues = this.gamepad.leftStick;
+                if (LSValues.x != 0) {
+                    var normalizedLX = LSValues.x / this.gamepadRotationSensibility;
+                    if (normalizedLX != 0 && Math.abs(normalizedLX) > 0.005) {
+                        camera.inertialAlphaOffset += normalizedLX;
+                    }
+                }
+                if (LSValues.y != 0) {
+                    var normalizedLY = LSValues.y / this.gamepadRotationSensibility;
+                    if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
+                        camera.inertialBetaOffset += normalizedLY;
+                    }
+                }
+            }
+        };
+        ArcRotateCameraGamepadInput.prototype._onNewGameConnected = function (gamepad) {
+            // Only the first gamepad can control the camera
+            if (gamepad.index === 0) {
+                this.gamepad = gamepad;
+            }
+        };
+        ArcRotateCameraGamepadInput.prototype.getTypeName = function () {
+            return "ArcRotateCameraGamepadInput";
+        };
+        ArcRotateCameraGamepadInput.prototype.getSimpleName = function () {
+            return "gamepad";
+        };
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraGamepadInput.prototype, "gamepadRotationSensibility", void 0);
+        return ArcRotateCameraGamepadInput;
+    }());
+    BABYLON.ArcRotateCameraGamepadInput = ArcRotateCameraGamepadInput;
+    BABYLON.CameraInputTypes["ArcRotateCameraGamepadInput"] = ArcRotateCameraGamepadInput;
 })(BABYLON || (BABYLON = {}));
 
 
@@ -12874,7 +12934,7 @@ var BABYLON;
             this.radius = radius;
             this.getViewMatrix();
             this.inputs = new BABYLON.ArcRotateCameraInputsManager(this);
-            this.inputs.addKeyboard().addMouseWheel().addPointers();
+            this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
         }
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
             //-- 2016-03-08 properties for backward compatibility for inputs
@@ -13412,6 +13472,10 @@ var BABYLON;
         };
         ArcRotateCameraInputsManager.prototype.addKeyboard = function () {
             this.add(new BABYLON.ArcRotateCameraKeyboardMoveInput());
+            return this;
+        };
+        ArcRotateCameraInputsManager.prototype.addGamepad = function () {
+            this.add(new BABYLON.ArcRotateCameraGamepadInput());
             return this;
         };
         return ArcRotateCameraInputsManager;
@@ -37113,12 +37177,14 @@ var BABYLON;
             if (this.gamepadSupportAvailable) {
                 // Checking if the gamepad connected event is supported (like in Firefox)
                 if (this.gamepadEventSupported) {
-                    window.addEventListener('gamepadconnected', function (evt) {
+                    this._onGamepadConnectedEvent = function (evt) {
                         _this._onGamepadConnected(evt);
-                    }, false);
-                    window.addEventListener('gamepaddisconnected', function (evt) {
+                    };
+                    this._onGamepadDisonnectedEvent = function (evt) {
                         _this._onGamepadDisconnected(evt);
-                    }, false);
+                    };
+                    window.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                    window.addEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
                 }
                 else {
                     this._startMonitoringGamepads();
@@ -37128,6 +37194,12 @@ var BABYLON;
         Gamepads.prototype.dispose = function () {
             if (Gamepads.gamepadDOMInfo) {
                 document.body.removeChild(Gamepads.gamepadDOMInfo);
+            }
+            if (this._onGamepadConnectedEvent) {
+                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
+                this._onGamepadConnectedEvent = null;
+                this._onGamepadDisonnectedEvent = null;
             }
         };
         Gamepads.prototype._onGamepadConnected = function (evt) {

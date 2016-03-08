@@ -18,12 +18,14 @@ var BABYLON;
             if (this.gamepadSupportAvailable) {
                 // Checking if the gamepad connected event is supported (like in Firefox)
                 if (this.gamepadEventSupported) {
-                    window.addEventListener('gamepadconnected', function (evt) {
+                    this._onGamepadConnectedEvent = function (evt) {
                         _this._onGamepadConnected(evt);
-                    }, false);
-                    window.addEventListener('gamepaddisconnected', function (evt) {
+                    };
+                    this._onGamepadDisonnectedEvent = function (evt) {
                         _this._onGamepadDisconnected(evt);
-                    }, false);
+                    };
+                    window.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                    window.addEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
                 }
                 else {
                     this._startMonitoringGamepads();
@@ -33,6 +35,12 @@ var BABYLON;
         Gamepads.prototype.dispose = function () {
             if (Gamepads.gamepadDOMInfo) {
                 document.body.removeChild(Gamepads.gamepadDOMInfo);
+            }
+            if (this._onGamepadConnectedEvent) {
+                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
+                this._onGamepadConnectedEvent = null;
+                this._onGamepadDisonnectedEvent = null;
             }
         };
         Gamepads.prototype._onGamepadConnected = function (evt) {

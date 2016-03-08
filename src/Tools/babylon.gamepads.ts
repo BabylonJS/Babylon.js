@@ -10,20 +10,26 @@
 
         private _callbackGamepadConnected: (gamepad: Gamepad) => void;
 
+        private _onGamepadConnectedEvent: (evt: Event) => void;
+        private _onGamepadDisonnectedEvent: (evt: Event) => void;
+
         private static gamepadDOMInfo: HTMLElement;
+
 
         constructor(ongamedpadconnected: (gamepad: Gamepad) => void) {
             this._callbackGamepadConnected = ongamedpadconnected;
             if (this.gamepadSupportAvailable) {
+
                 // Checking if the gamepad connected event is supported (like in Firefox)
                 if (this.gamepadEventSupported) {
-                    window.addEventListener('gamepadconnected', (evt) => {
+                    this._onGamepadConnectedEvent = (evt) => {
                         this._onGamepadConnected(evt);
-                    }, false);
-                    window.addEventListener('gamepaddisconnected',
-                        (evt) => {
-                            this._onGamepadDisconnected(evt);
-                        }, false);
+                    };
+                    this._onGamepadDisonnectedEvent = (evt) => {
+                        this._onGamepadDisconnected(evt);
+                    };
+                    window.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                    window.addEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
                 }
                 else {
                     this._startMonitoringGamepads();
@@ -34,6 +40,13 @@
         public dispose() {
             if (Gamepads.gamepadDOMInfo) {
                 document.body.removeChild(Gamepads.gamepadDOMInfo);
+            }
+            
+            if (this._onGamepadConnectedEvent){
+                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                window.removeEventListener('gamepaddisconnected', this._onGamepadDisonnectedEvent, false);
+                this._onGamepadConnectedEvent = null;
+                this._onGamepadDisonnectedEvent = null;
             }
         }
 

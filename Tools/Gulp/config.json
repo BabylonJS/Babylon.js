@@ -54,6 +54,7 @@
       "../../src/cameras/inputs/babylon.arcrotatecamera.input.keyboard.js",
       "../../src/cameras/inputs/babylon.arcrotatecamera.input.mousewheel.js",
       "../../src/cameras/inputs/babylon.arcrotatecamera.input.pointers.js",
+      "../../src/cameras/inputs/babylon.arcrotatecamera.input.gamepad.js",
       "../../src/Cameras/babylon.targetCamera.js",
       "../../src/Cameras/babylon.freeCamera.js",
       "../../src/Cameras/babylon.freeCameraInputsManager.js",
