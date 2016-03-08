@@ -59,8 +59,6 @@ var BABYLON;
             this._gridControl = new BABYLON.Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
             this._defines = new GRIDMaterialDefines();
             this._cachedDefines = new GRIDMaterialDefines();
-            // Forces cache to be different on first creation.
-            this._cachedDefines.TRANSPARENT = true;
         }
         /**
          * Returns wehter or not the grid requires alpha blending.
@@ -98,7 +96,7 @@ var BABYLON;
                 this._defines.TRANSPARENT = true;
             }
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
+            if (!this._effect || !this._defines.isEqual(this._cachedDefines)) {
                 this._defines.cloneTo(this._cachedDefines);
                 scene.resetCachedMaterial();
                 // Attributes
