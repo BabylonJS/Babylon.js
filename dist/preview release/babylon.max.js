@@ -8208,7 +8208,7 @@ var BABYLON;
          */
         AbstractMesh.prototype.toString = function (fullDetails) {
             var ret = "Name: " + this.name + ", isInstance: " + (this instanceof BABYLON.InstancedMesh ? "YES" : "NO");
-            ret += ", # of submeshes: " + this.subMeshes.length;
+            ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
             if (this._skeleton) {
                 ret += ", skeleton: " + this._skeleton.name;
             }
@@ -24044,7 +24044,6 @@ var BABYLON;
             this.bones = [];
             this._scene = scene;
             scene.skeletons.push(this);
-            this.prepare();
             //make sure it will recalculate the matrix next time prepare is called.
             this._isDirty = true;
         }
@@ -24253,7 +24252,7 @@ var BABYLON;
                     result._ranges[rangeName] = this._ranges[rangeName].clone();
                 }
             }
-            result.prepare();
+            this._isDirty = true;
             return result;
         };
         Skeleton.prototype.dispose = function () {

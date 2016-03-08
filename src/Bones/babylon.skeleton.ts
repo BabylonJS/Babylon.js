@@ -20,7 +20,6 @@
 
             scene.skeletons.push(this);
 
-            this.prepare();
             //make sure it will recalculate the matrix next time prepare is called.
             this._isDirty = true;
         }
@@ -266,7 +265,7 @@
                 }
             }
 
-            result.prepare();
+            this._isDirty = true;
 
             return result;
         }
