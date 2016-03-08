@@ -12,7 +12,11 @@
     {
       "file": "materials/pbr/babylon.pbrMaterial.ts",
       "referenceFiles": [
-        "materials/pbr/includes/helperFunctions.fx"  
+        "materials/pbr/includes/pbrFunctions.fx",
+        "materials/pbr/includes/harmonicsFunctions.fx",
+        "materials/pbr/includes/pbrLightFunctions.fx",
+        "materials/pbr/includes/pbrLightFunctionsCall.fx",
+        "materials/pbr/includes/pbrShadowFunctions.fx"  
       ],
       "shaderFiles": [
         "materials/pbr/pbr.vertex.fx",
