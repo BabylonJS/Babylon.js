@@ -3,6 +3,34 @@ var BABYLON;
     var SceneLoader = (function () {
         function SceneLoader() {
         }
+        Object.defineProperty(SceneLoader, "NO_LOGGING", {
+            get: function () {
+                return 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneLoader, "MINIMAL_LOGGING", {
+            get: function () {
+                return 1;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneLoader, "SUMMARY_LOGGING", {
+            get: function () {
+                return 2;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneLoader, "DETAILED_LOGGING", {
+            get: function () {
+                return 3;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(SceneLoader, "ForceFullSceneLoadingForIncremental", {
             get: function () {
                 return SceneLoader._ForceFullSceneLoadingForIncremental;
@@ -19,6 +47,16 @@ var BABYLON;
             },
             set: function (value) {
                 SceneLoader._ShowLoadingScreen = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneLoader, "loggingLevel", {
+            get: function () {
+                return SceneLoader._loggingLevel;
+            },
+            set: function (value) {
+                SceneLoader._loggingLevel = value;
             },
             enumerable: true,
             configurable: true
@@ -113,6 +151,10 @@ var BABYLON;
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
         SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
+            if (!SceneLoader._warned) {
+                BABYLON.Tools.Warn("SceneLoader.Load deprecated since 2.4.  Use SceneLoader.Append.");
+                SceneLoader._warned = true;
+            }
             SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
         };
         /**
@@ -177,10 +219,11 @@ var BABYLON;
         // Flags
         SceneLoader._ForceFullSceneLoadingForIncremental = false;
         SceneLoader._ShowLoadingScreen = true;
+        SceneLoader._loggingLevel = SceneLoader.NO_LOGGING;
         // Members
         SceneLoader._registeredPlugins = new Array();
         return SceneLoader;
-    }());
+    })();
     BABYLON.SceneLoader = SceneLoader;
     ;
 })(BABYLON || (BABYLON = {}));

@@ -12,7 +12,7 @@ var BABYLON;
             this.renderSelf = new Array();
         }
         return _InstancesBatch;
-    }());
+    })();
     BABYLON._InstancesBatch = _InstancesBatch;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
@@ -134,8 +134,25 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        // Methods
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Mesh.prototype.toString = function (fullDetails) {
+            var ret = _super.prototype.toString.call(this, fullDetails);
+            ret += ", n vertices: " + this.getTotalVertices();
+            ret += ", parent: " + (this._waitingParentId ? this._waitingParentId : (this.parent ? this.parent.name : "NONE"));
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+                ret += ", flat shading: " + (this._geometry ? (this.getVerticesData(BABYLON.VertexBuffer.PositionKind).length / 3 === this.getIndices().length ? "YES" : "NO") : "UNKNOWN");
+            }
+            return ret;
+        };
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
-            // Methods
             get: function () {
                 return this._LODLevels.length > 0;
             },
@@ -1702,6 +1719,6 @@ var BABYLON;
         Mesh._CAP_END = 2;
         Mesh._CAP_ALL = 3;
         return Mesh;
-    }(BABYLON.AbstractMesh));
+    })(BABYLON.AbstractMesh);
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));

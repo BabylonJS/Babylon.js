@@ -10,6 +10,24 @@
         private static _ForceFullSceneLoadingForIncremental = false;
         private static _ShowLoadingScreen = true;
 
+        public static get NO_LOGGING(): number {
+            return 0;
+        }
+
+        public static get MINIMAL_LOGGING(): number {
+            return 1;
+        }
+
+        public static get SUMMARY_LOGGING(): number {
+            return 2;
+        }
+
+        public static get DETAILED_LOGGING(): number {
+            return 3;
+        }
+
+        private static _loggingLevel = SceneLoader.NO_LOGGING;
+
         public static get ForceFullSceneLoadingForIncremental() {
             return SceneLoader._ForceFullSceneLoadingForIncremental;
         }
@@ -24,6 +42,14 @@
 
         public static set ShowLoadingScreen(value: boolean) {
             SceneLoader._ShowLoadingScreen = value;
+        }
+
+        public static get loggingLevel() {
+            return SceneLoader._loggingLevel;
+        }
+
+        public static set loggingLevel(value: number) {
+            SceneLoader._loggingLevel = value;
         }
 
         // Members
@@ -133,6 +159,7 @@
             }
         }
 
+        private static _warned : boolean;
         /**
         * Load a scene
         * @param rootUrl a string that defines the root url for scene and resources
@@ -140,6 +167,10 @@
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
         public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
+            if (!SceneLoader._warned) {
+                Tools.Warn("SceneLoader.Load deprecated since 2.4.  Use SceneLoader.Append.");
+                SceneLoader._warned = true;
+            }
             SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onsuccess, progressCallBack, onerror);
         }
 
