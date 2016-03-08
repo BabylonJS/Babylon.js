@@ -660,6 +660,6 @@ var BABYLON;
             }
         };
         return DebugLayer;
-    })();
+    }());
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));

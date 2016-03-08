@@ -12,7 +12,7 @@ var BABYLON;
             this.renderSelf = new Array();
         }
         return _InstancesBatch;
-    })();
+    }());
     BABYLON._InstancesBatch = _InstancesBatch;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
@@ -1719,6 +1719,6 @@ var BABYLON;
         Mesh._CAP_END = 2;
         Mesh._CAP_ALL = 3;
         return Mesh;
-    })(BABYLON.AbstractMesh);
+    }(BABYLON.AbstractMesh));
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));

@@ -1,153 +1,43 @@
 module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
     export class TouchCamera extends FreeCamera {
-        private _offsetX: number = null;
-        private _offsetY: number = null;
-        private _pointerCount:number = 0;
-        private _pointerPressed = [];
-        private _attachedCanvas: HTMLCanvasElement;
-        private _onPointerDown: (e: PointerEvent) => any;
-        private _onPointerUp: (e: PointerEvent) => any;
-        private _onPointerMove: (e: PointerEvent) => any;
-
-        @serialize()
-        public touchAngularSensibility: number = 200000.0;
-
-        @serialize()
-        public touchMoveSensibility: number = 250.0;
-
+        //-- 2016-03-08 properties for backward compatibility for inputs
+        //deprecated
+        public get touchAngularSensibility() {
+            Tools.Warn("Warning: touchAngularSensibility is deprecated on TouchCamera, use camera.inputs.attached.touch.touchAngularSensibility instead.");
+            var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+            if (touch)
+                return touch.touchAngularSensibility;
+        }
+        
+        //deprecated
+        public set touchAngularSensibility(value) {
+            Tools.Warn("Warning: touchAngularSensibility is deprecated on TouchCamera, use camera.inputs.attached.touch.touchAngularSensibility instead.");
+            var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+            if (touch)
+                touch.touchAngularSensibility = value;
+        }
+        
+        //deprecated
+        public get touchMoveSensibility() {
+            Tools.Warn("Warning: touchMoveSensibility is deprecated on TouchCamera, use camera.inputs.attached.touch.touchMoveSensibility instead.");
+            var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+            if (touch)
+                return touch.touchMoveSensibility;
+        }
+        
+        //deprecated
+        public set touchMoveSensibility(value) {
+            Tools.Warn("Warning: touchMoveSensibility is deprecated on TouchCamera, use camera.inputs.attached.touch.touchMoveSensibility instead.");
+            var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+            if (touch)
+                touch.touchMoveSensibility = value;
+        }
+        //-- end properties for backward compatibility for inputs
+        
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
-        }
-
-        public _onLostFocus(e: FocusEvent): void {
-            this._offsetX = null;
-            this._offsetY = null;
-            super._onLostFocus(e);
-        }
-
-        public attachControl(canvas: HTMLCanvasElement, noPreventDefault: boolean): void {
-            var previousPosition;
-
-            if (this._attachedCanvas) {
-                return;
-            }
-            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
-
-            if (this._onPointerDown === undefined) {
-
-                this._onPointerDown = (evt) => {
-
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-
-                    this._pointerPressed.push(evt.pointerId);
-
-                    if (this._pointerPressed.length !== 1) {
-                        return;
-                    }
-
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                };
-
-                this._onPointerUp = (evt) => {
-
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-
-                    var index: number = this._pointerPressed.indexOf(evt.pointerId);
-
-                    if (index === -1) {
-                        return;
-                    }
-                    this._pointerPressed.splice(index, 1);
-
-                    if (index != 0) {
-                        return;
-                    }
-                    previousPosition = null;
-                    this._offsetX = null;
-                    this._offsetY = null;
-                };
-
-                this._onPointerMove = (evt) => {
-
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-
-                    if (!previousPosition) {
-                        return;
-                    }
-
-                    var index: number = this._pointerPressed.indexOf(evt.pointerId);
-
-                    if (index != 0) {
-                        return;
-                    }
-
-                    this._offsetX = evt.clientX - previousPosition.x;
-                    this._offsetY = -(evt.clientY - previousPosition.y);
-                };
-
-                
-            }
-
-            canvas.addEventListener("pointerdown", this._onPointerDown);
-            canvas.addEventListener("pointerup", this._onPointerUp);
-            canvas.addEventListener("pointerout", this._onPointerUp);
-            canvas.addEventListener("pointermove", this._onPointerMove);
-
-            super.attachControl(canvas);
-        }
-
-        public detachControl(canvas: HTMLCanvasElement): void {
-            if (this._attachedCanvas !== canvas) {
-                return;
-            }
-
-            canvas.removeEventListener("pointerdown", this._onPointerDown);
-            canvas.removeEventListener("pointerup", this._onPointerUp);
-            canvas.removeEventListener("pointerout", this._onPointerUp);
-            canvas.removeEventListener("pointermove", this._onPointerMove);
-            
-            super.detachControl(canvas);
-        }
-
-        public _checkInputs(): void {
-            if (this._offsetX) {
-
-                this.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
-
-                if (this._pointerPressed.length > 1) {
-                    this.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
-                } else {
-                    var speed = this._computeLocalCameraSpeed();
-                    var direction = new Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
-
-                    Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, 0, this._cameraRotationMatrix);
-                    this.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, this._cameraRotationMatrix));
-                }
-            }
-
-            super._checkInputs();
+            this.inputs.addTouch();
         }
 
         public getTypeName(): string {

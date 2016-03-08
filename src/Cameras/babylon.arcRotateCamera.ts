@@ -1,5 +1,5 @@
 ﻿module BABYLON {
-    var eventPrefix = Tools.GetPointerPrefix();
+    // var eventPrefix = Tools.GetPointerPrefix();
 
     export class ArcRotateCamera extends TargetCamera {
         @serialize()
@@ -40,73 +40,202 @@
 
         @serialize()
         public upperRadiusLimit = null;
-
-        @serialize()
-        public angularSensibilityX = 1000.0;
-
-        @serialize()
-        public angularSensibilityY = 1000.0;
-
-        @serialize()
-        public wheelPrecision = 3.0;
-
-        @serialize()
-        public pinchPrecision = 2.0;
-
-        @serialize()
-        public panningSensibility: number = 50.0;
-
+        
         @serialize()
         public inertialPanningX: number = 0;
 
         @serialize()
         public inertialPanningY: number = 0;
 
-        @serialize()
-        public keysUp = [38];
-
-        @serialize()
-        public keysDown = [40];
-
-        @serialize()
-        public keysLeft = [37];
-
-        @serialize()
-        public keysRight = [39];
+        //-- 2016-03-08 properties for backward compatibility for inputs
+        //deprecated angularSensibility support
+        public get angularSensibility() {
+            Tools.Warn("Warning: angularSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX and camera.inputs.attached.pointers.angularSensibilityY instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return Math.max(pointers.angularSensibilityX, pointers.angularSensibilityY);
+        }
+        
+        //deprecated angularSensibility support
+        public set angularSensibility(value) {
+            Tools.Warn("Warning: angularSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX and camera.inputs.attached.pointers.angularSensibilityY instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers){
+                pointers.angularSensibilityX = value;
+                pointers.angularSensibilityY = value;
+            }
+        }
+        
+        //deprecated angularSensibilityX support
+        public get angularSensibilityX() {
+            Tools.Warn("Warning: angularSensibilityX is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.angularSensibilityX;
+        }
+        
+        //deprecated angularSensibilityX support
+        public set angularSensibilityX(value) {
+            Tools.Warn("Warning: angularSensibilityX is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers){
+                pointers.angularSensibilityX = value;
+            }
+        }
+        
+        //deprecated angularSensibilityY support
+        public get angularSensibilityY() {
+            Tools.Warn("Warning: angularSensibilityY is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityY instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.angularSensibilityY;
+        }
+        
+        //deprecated angularSensibilityY support
+        public set angularSensibilityY(value) {
+            Tools.Warn("Warning: angularSensibilityY is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityY instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers){
+                pointers.angularSensibilityY = value;
+            }
+        }
+        
+        //deprecated pinchPrecision support
+        public get pinchPrecision() {
+            Tools.Warn("Warning: pinchPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.pinchPrecision instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.pinchPrecision;
+        }
+        
+        //deprecated pinchPrecision support
+        public set pinchPrecision(value) {
+            Tools.Warn("Warning: pinchPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.pinchPrecision instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers){
+                pointers.pinchPrecision = value;
+            }
+        }
+        
+        //deprecated panningSensibility support
+        public get panningSensibility() {
+            Tools.Warn("Warning: panningSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.panningSensibility instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.panningSensibility;
+        }
+        
+        //deprecated pinchPrecision support
+        public set panningSensibility(value) {
+            Tools.Warn("Warning: panningSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.panningSensibility instead.");
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers){
+                pointers.panningSensibility = value;
+            }
+        }
+        
+        //deprecated
+        public get keysUp() {
+            Tools.Warn("Warning: keysUp is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysUp instead.");
+            var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                return keyboard.keysUp;
+        }
+        
+        //deprecated
+        public set keysUp(value) {
+            Tools.Warn("Warning: keysUp is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysUp instead.");
+            var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                keyboard.keysUp = value;
+        }
+        
+        //deprecated
+        public get keysDown() {
+            Tools.Warn("Warning: keysDown is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysDown instead.");
+            var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                return keyboard.keysDown;
+        }
+        
+        //deprecated
+        public set keysDown(value) {
+            Tools.Warn("Warning: keysDown is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysDown instead.");
+            var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                keyboard.keysDown = value;
+        }
+        
+        //deprecated
+        public get keysLeft() {
+            Tools.Warn("Warning: keysLeft is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
+            var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                return keyboard.keysLeft;
+        }
+        
+        //deprecated
+        public set keysLeft(value) {
+            Tools.Warn("Warning: keysLeft is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
+            var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                keyboard.keysLeft = value;
+        }
+        
+        //deprecated
+        public get keysRight() {
+            Tools.Warn("Warning: keysRight is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysRight instead.");
+            var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                return keyboard.keysRight;
+        }
+        
+        //deprecated
+        public set keysRight(value) {
+            Tools.Warn("Warning: keysRight is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysRight instead.");
+            var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+            if (keyboard)
+                keyboard.keysRight = value;
+        }
+        
+        //deprecated
+        public get wheelPrecision() {
+            Tools.Warn("Warning: wheelPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.mousewheel.wheelPrecision instead.");
+            var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+            if (mousewheel)
+                return mousewheel.wheelPrecision;
+        }
+        
+        //deprecated
+        public set wheelPrecision(value) {
+            Tools.Warn("Warning: wheelPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.mousewheel.wheelPrecision instead.");
+            var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+            if (mousewheel)
+                mousewheel.wheelPrecision = value;
+        }
+        
+        //-- end properties for backward compatibility for inputs        
 
         @serialize()
         public zoomOnFactor = 1;
 
         public targetScreenOffset = Vector2.Zero();
-        public pinchInwards = true;
-
+        
         @serialize()
         public allowUpsideDown = true;
 
-        private _keys = [];
         public _viewMatrix = new Matrix();
-        private _attachedElement: HTMLElement;
-
-        private _onContextMenu: (e: PointerEvent) => void;
-        private _onPointerDown: (e: PointerEvent) => void;
-        private _onPointerUp: (e: PointerEvent) => void;
-        private _onPointerMove: (e: PointerEvent) => void;
-        private _wheel: (e: MouseWheelEvent) => void;
-        private _onMouseMove: (e: MouseEvent) => any;
-        private _onKeyDown: (e: KeyboardEvent) => any;
-        private _onKeyUp: (e: KeyboardEvent) => any;
-        private _onLostFocus: (e: FocusEvent) => any;
+        public _attachedElement: HTMLElement;
+        public _noPreventDefault : boolean;
+        public _useCtrlForPanning : boolean;
+        public inputs : ArcRotateCameraInputsManager;
+        
         public _reset: () => void;
-        private _onGestureStart: (e: PointerEvent) => void;
-        private _onGesture: (e: MSGestureEvent) => void;
-        private _MSGestureHandler: MSGesture;
-
+        
         // Panning
         public panningAxis: Vector3 = new Vector3(1, 1, 0);
         private _localDirection: Vector3;
         private _transformedDirection: Vector3;
-        private _isRightClick: boolean = false;
-        private _isCtrlPushed: boolean = false;
 
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
@@ -122,19 +251,6 @@
         //due to async collision inspection
         private _collisionTriggered: boolean;
         
-        //deprecated angularSensibility support
-        public get angularSensibility() {
-            Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
-            return Math.max(this.angularSensibilityX, this.angularSensibilityY);
-        }
-        
-        //deprecated angularSensibility support
-        public set angularSensibility(value) {
-            Tools.Warn("Warning: angularSensibility is deprecated, use angularSensibilityX and angularSensibilityY instead.");
-            this.angularSensibilityX = value;
-            this.angularSensibilityY = value;
-        }
-
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
@@ -149,6 +265,8 @@
             this.radius = radius;
 
             this.getViewMatrix();
+            this.inputs = new ArcRotateCameraInputsManager(this);
+            this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
         }
 
         // Cache
@@ -195,236 +313,21 @@
 
         // Methods
         public attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning: boolean = true): void {
-            var cacheSoloPointer; // cache pointer object for better perf on camera rotation
-            var previousPinchDistance = 0;
-            var pointers = new SmartCollection();
-
             if (this._attachedElement) {
                 return;
             }
             this._attachedElement = element;
+            this._noPreventDefault = noPreventDefault;
+            this._useCtrlForPanning = useCtrlForPanning;
 
-            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
-
-            var engine = this.getEngine();
-
-            if (this._onPointerDown === undefined) {
-                this._onPointerDown = evt => {
-                    // Manage panning with right click
-                    this._isRightClick = evt.button === 2;
-
-                    // manage pointers
-                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
-                    cacheSoloPointer = pointers.item(evt.pointerId);
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-
-                this._onPointerUp = evt => {
-                    cacheSoloPointer = null;
-                    previousPinchDistance = 0;
-                    
-                    //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
-                    //but emptying completly pointers collection is required to fix a bug on iPhone : 
-                    //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
-                    //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    pointers.empty();
-
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-
-                this._onContextMenu = evt => {
-                    evt.preventDefault();
-                };
-
-                this._onPointerMove = evt => {
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-
-                    switch (pointers.count) {
-
-                        case 1: //normal camera rotation
-                            if (this.panningSensibility !== 0 && ((this._isCtrlPushed && useCtrlForPanning) || (!useCtrlForPanning && this._isRightClick))) {
-                                this.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
-                                this.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
-                            } else {
-                                var offsetX = evt.clientX - cacheSoloPointer.x;
-                                var offsetY = evt.clientY - cacheSoloPointer.y;
-                                this.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
-                                this.inertialBetaOffset -= offsetY / this.angularSensibilityY;
-                            }
-                            cacheSoloPointer.x = evt.clientX;
-                            cacheSoloPointer.y = evt.clientY;
-                            break;
-
-                        case 2: //pinch
-                            //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
-                            pointers.item(evt.pointerId).x = evt.clientX;
-                            pointers.item(evt.pointerId).y = evt.clientY;
-                            var direction = this.pinchInwards ? 1 : -1;
-                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
-                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
-                            var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                            if (previousPinchDistance === 0) {
-                                previousPinchDistance = pinchSquaredDistance;
-                                return;
-                            }
-
-                            if (pinchSquaredDistance !== previousPinchDistance) {
-                                this.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (this.pinchPrecision * this.wheelPrecision * ((this.angularSensibilityX + this.angularSensibilityY) / 2) * direction);
-                                previousPinchDistance = pinchSquaredDistance;
-                            }
-                            break;
-
-                        default:
-                            if (pointers.item(evt.pointerId)) {
-                                pointers.item(evt.pointerId).x = evt.clientX;
-                                pointers.item(evt.pointerId).y = evt.clientY;
-                            }
-                    }
-                };
-
-                this._onMouseMove = evt => {
-                    if (!engine.isPointerLock) {
-                        return;
-                    }
-
-                    var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                    var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-
-                    this.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
-                    this.inertialBetaOffset -= offsetY / this.angularSensibilityY;
-
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-
-                this._wheel = event => {
-                    var delta = 0;
-                    if (event.wheelDelta) {
-                        delta = event.wheelDelta / (this.wheelPrecision * 40);
-                    } else if (event.detail) {
-                        delta = -event.detail / this.wheelPrecision;
-                    }
-
-                    if (delta)
-                        this.inertialRadiusOffset += delta;
-
-                    if (event.preventDefault) {
-                        if (!noPreventDefault) {
-                            event.preventDefault();
-                        }
-                    }
-                };
-
-                this._onKeyDown = evt => {
-                    this._isCtrlPushed = evt.ctrlKey;
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = this._keys.indexOf(evt.keyCode);
-
-                        if (index === -1) {
-                            this._keys.push(evt.keyCode);
-                        }
-
-                        if (evt.preventDefault) {
-                            if (!noPreventDefault) {
-                                evt.preventDefault();
-                            }
-                        }
-                    }
-                };
-
-                this._onKeyUp = evt => {
-                    this._isCtrlPushed = evt.ctrlKey;
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1) {
-                        var index = this._keys.indexOf(evt.keyCode);
-
-                        if (index >= 0) {
-                            this._keys.splice(index, 1);
-                        }
-
-                        if (evt.preventDefault) {
-                            if (!noPreventDefault) {
-                                evt.preventDefault();
-                            }
-                        }
-                    }
-                };
-
-                this._onLostFocus = () => {
-                    this._keys = [];
-                    pointers.empty();
-                    previousPinchDistance = 0;
-                    cacheSoloPointer = null;
-                };
-
-                this._onGestureStart = e => {
-                    if (window.MSGesture === undefined) {
-                        return;
-                    }
-
-                    if (!this._MSGestureHandler) {
-                        this._MSGestureHandler = new MSGesture();
-                        this._MSGestureHandler.target = element;
-                    }
-
-                    this._MSGestureHandler.addPointer(e.pointerId);
-                };
-
-                this._onGesture = e => {
-                    this.radius *= e.scale;
-
-
-                    if (e.preventDefault) {
-                        if (!noPreventDefault) {
-                            e.stopPropagation();
-                            e.preventDefault();
-                        }
-                    }
-                };
+            this.inputs.attachElement(element, noPreventDefault);
+            
 
                 this._reset = () => {
-                    this._keys = [];
                     this.inertialAlphaOffset = 0;
                     this.inertialBetaOffset = 0;
                     this.inertialRadiusOffset = 0;
-                    pointers.empty();
-                    previousPinchDistance = 0;
-                    cacheSoloPointer = null;
                 };
-
-
-            }
-
-            if (!useCtrlForPanning) {
-                element.addEventListener("contextmenu", this._onContextMenu, false);
-            }
-            element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
-            element.addEventListener(eventPrefix + "up", this._onPointerUp, false);
-            element.addEventListener(eventPrefix + "out", this._onPointerUp, false);
-            element.addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            element.addEventListener("mousemove", this._onMouseMove, false);
-            element.addEventListener("MSPointerDown", this._onGestureStart, false);
-            element.addEventListener("MSGestureChange", this._onGesture, false);
-            element.addEventListener('mousewheel', this._wheel, false);
-            element.addEventListener('DOMMouseScroll', this._wheel, false);
-
-            Tools.RegisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
         }
 
         public detachControl(element: HTMLElement): void {
@@ -432,24 +335,7 @@
                 return;
             }
 
-            element.removeEventListener("contextmenu", this._onContextMenu);
-            element.removeEventListener(eventPrefix + "down", this._onPointerDown);
-            element.removeEventListener(eventPrefix + "up", this._onPointerUp);
-            element.removeEventListener(eventPrefix + "out", this._onPointerUp);
-            element.removeEventListener(eventPrefix + "move", this._onPointerMove);
-            element.removeEventListener("mousemove", this._onMouseMove);
-            element.removeEventListener("MSPointerDown", this._onGestureStart);
-            element.removeEventListener("MSGestureChange", this._onGesture);
-            element.removeEventListener('mousewheel', this._wheel);
-            element.removeEventListener('DOMMouseScroll', this._wheel);
-
-            Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
-
-            this._MSGestureHandler = null;
+            this.inputs.detachElement(this._attachedElement);
             this._attachedElement = null;
 
             if (this._reset) {
@@ -462,19 +348,8 @@
             if (this._collisionTriggered) {
                 return;
             }
-            // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    this.inertialAlphaOffset -= 0.01;
-                } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    this.inertialBetaOffset -= 0.01;
-                } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    this.inertialAlphaOffset += 0.01;
-                } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    this.inertialBetaOffset += 0.01;
-                }
-            }			
+            
+            this.inputs.checkInputs();            
 			
             // Inertia
             if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
@@ -742,6 +617,11 @@
             super._updateRigCameras();
         }
 
+        public dispose(): void {
+            this.inputs.clear();
+            super.dispose();
+        }
+        
         public getTypeName(): string {
             return "ArcRotateCamera";
         }

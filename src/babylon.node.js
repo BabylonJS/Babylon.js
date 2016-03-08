@@ -260,6 +260,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Node.prototype, "state", void 0);
         return Node;
-    })();
+    }());
     BABYLON.Node = Node;
 })(BABYLON || (BABYLON = {}));
