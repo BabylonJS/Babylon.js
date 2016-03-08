@@ -136,6 +136,22 @@
             this.position = position;
         }
 
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getTypeName();
+            if (this.animations){
+                for (var i = 0; i < this.animations.length; i++){
+                   ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails){
+            }
+            return ret;
+        } 
+        
         public get globalPosition(): Vector3 {
             return this._globalPosition;
         }
