@@ -11,6 +11,9 @@
     },
     {
       "file": "materials/pbr/babylon.pbrMaterial.ts",
+      "referenceFiles": [
+        "materials/pbr/includes/helperFunctions.fx"  
+      ],
       "shaderFiles": [
         "materials/pbr/pbr.vertex.fx",
         "materials/pbr/pbr.fragment.fx",

@@ -52,6 +52,7 @@ var BABYLON;
             }
             this._noPreventDefault = noPreventDefault;
             this._attachedElement = element;
+            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this.inputs.attachElement(element, noPreventDefault);
         };
         FreeCamera.prototype.detachControl = function (element) {

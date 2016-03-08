@@ -8,6 +8,9 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
+        /**
+         * The bounding box information used during the conversion process.
+         */
         var CMGBoundinBox = (function () {
             function CMGBoundinBox() {
                 this.min = new BABYLON.Vector3(0, 0, 0);
@@ -54,7 +57,30 @@ var BABYLON;
             CMGBoundinBox.MIN = Number.MIN_VALUE;
             return CMGBoundinBox;
         }());
+        /**
+         * Helper class to PreProcess a cubemap in order to generate mipmap according to the level of blur
+         * required by the glossinees of a material.
+         *
+         * This only supports the cosine drop power as well as Warp fixup generation method.
+         *
+         * This is using the process from CubeMapGen described here:
+         * https://seblagarde.wordpress.com/2012/06/10/amd-cubemapgen-for-physically-based-rendering/
+         */
         var PMREMGenerator = (function () {
+            /**
+             * Constructor of the generator.
+             *
+             * @param input The different faces data from the original cubemap in the order X+ X- Y+ Y- Z+ Z-
+             * @param inputSize The size of the cubemap faces
+             * @param outputSize The size of the output cubemap faces
+             * @param maxNumMipLevels The max number of mip map to generate (0 means all)
+             * @param numChannels The number of channels stored in the cubemap (3 for RBGE for instance)
+             * @param isFloat Specifies if the input texture is in float or int (hdr is usually in float)
+             * @param specularPower The max specular level of the desired cubemap
+             * @param cosinePowerDropPerMip The amount of drop the specular power will follow on each mip
+             * @param excludeBase Specifies wether to process the level 0 (original level) or not
+             * @param fixup Specifies wether to apply the edge fixup algorythm or not
+             */
             function PMREMGenerator(input, inputSize, outputSize, maxNumMipLevels, numChannels, isFloat, specularPower, cosinePowerDropPerMip, excludeBase, fixup) {
                 this.input = input;
                 this.inputSize = inputSize;
@@ -69,6 +95,11 @@ var BABYLON;
                 this._outputSurface = [];
                 this._numMipLevels = 0;
             }
+            /**
+             * Launches the filter process and return the result.
+             *
+             * @return the filter cubemap in the form mip0 [faces1..6] .. mipN [faces1..6]
+             */
             PMREMGenerator.prototype.filterCubeMap = function () {
                 // Init cubemap processor
                 this.init();

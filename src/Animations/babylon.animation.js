@@ -6,6 +6,9 @@ var BABYLON;
             this.from = from;
             this.to = to;
         }
+        AnimationRange.prototype.clone = function () {
+            return new AnimationRange(this.name, this.from, this.to);
+        };
         return AnimationRange;
     }());
     BABYLON.AnimationRange = AnimationRange;
@@ -233,6 +236,12 @@ var BABYLON;
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
             if (this._keys) {
                 clone.setKeys(this._keys);
+            }
+            if (this._ranges) {
+                clone._ranges = {};
+                for (var name in this._ranges) {
+                    clone._ranges[name] = this._ranges[name].clone();
+                }
             }
             return clone;
         };
