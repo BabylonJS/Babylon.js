@@ -20,6 +20,10 @@ function shadersName(filename) {
       .replace('.fx', 'Shader');
 }
 
+function includeShadersName(filename) {
+    return filename.replace('.fx', '');
+}
+
 gulp.task('copyReference', function () {
     return gulp.src("../dist/preview release/babylon.max.js").pipe(gulp.dest("test/refs"));
 });
@@ -57,7 +61,15 @@ gulp.task('default', ["copyReference"], function () {
                 .pipe(uncommentShader())
                 .pipe(srcToVariable("BABYLON.Effect.ShadersStore", true, shadersName));
 
-        return merge2(js, shader)
+        if (!material.referenceFiles) {
+            material.referenceFiles = [];
+        }
+        
+        var includeShader = gulp.src(material.referenceFiles)
+            .pipe(uncommentShader())
+            .pipe(srcToVariable("BABYLON.Effect.IncludesShadersStore", true, includeShadersName));
+        
+        return merge2(js, shader, includeShader)
             .pipe(cleants())
             .pipe(replace(extendsSearchRegex, ""))
             .pipe(concat(material.output))
