@@ -76,6 +76,6 @@ var BABYLON;
             this._scene.getEngine()._releaseBuffer(this._ib);
         };
         return BoundingBoxRenderer;
-    }());
+    })();
     BABYLON.BoundingBoxRenderer = BoundingBoxRenderer;
 })(BABYLON || (BABYLON = {}));
