@@ -56,7 +56,7 @@ module BABYLON {
         
         private _renderId: number;
         private _defines = new GRIDMaterialDefines();
-        private _cachedDefines: GRIDMaterialDefines = new GRIDMaterialDefines();
+        private _cachedDefines = new GRIDMaterialDefines();
         
         /**
          * constructor
@@ -65,9 +65,6 @@ module BABYLON {
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
-            
-            // Forces cache to be different on first creation.
-            this._cachedDefines.TRANSPARENT = true;
         }
         
         /**
@@ -116,9 +113,8 @@ module BABYLON {
             }
 
             // Get correct effect      
-            if (!this._defines.isEqual(this._cachedDefines)) {
+            if (!this._effect || !this._defines.isEqual(this._cachedDefines)) {
                 this._defines.cloneTo(this._cachedDefines);
-
                 scene.resetCachedMaterial();
 
                 // Attributes
