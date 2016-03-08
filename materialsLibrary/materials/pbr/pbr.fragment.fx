@@ -81,25 +81,7 @@ const float kPi = 3.1415926535897932384626433832795;
 const float kRougnhessToAlphaScale = 0.1;
 const float kRougnhessToAlphaOffset = 0.29248125;
 
-
-// PBR HELPER METHODS
-float Square(float value)
-{
-    return value * value;
-}
-
-float getLuminance(vec3 color)
-{
-    return clamp(dot(color, vec3(0.2126, 0.7152, 0.0722)), 0., 1.);
-}
-
-float convertRoughnessToAverageSlope(float roughness)
-{
-    // Calculate AlphaG as square of roughness; add epsilon to avoid numerical issues
-    const float kMinimumVariance = 0.0005;
-    float alphaG = Square(roughness) + kMinimumVariance;
-    return alphaG;
-}
+#include<helperFunctions>
 
 // Based on Beckamm roughness to Blinn exponent + http://casual-effects.blogspot.ca/2011/08/plausible-environment-lighting-in-two.html 
 float getMipMapIndexFromAverageSlope(float maxMipLevel, float alpha)
