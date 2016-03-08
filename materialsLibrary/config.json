@@ -12,7 +12,11 @@
     {
       "file": "materials/pbr/babylon.pbrMaterial.ts",
       "referenceFiles": [
-        "materials/pbr/includes/helperFunctions.fx"  
+        "materials/pbr/includes/pbrFunctions.fx",
+        "materials/pbr/includes/harmonicsFunctions.fx",
+        "materials/pbr/includes/pbrLightFunctions.fx",
+        "materials/pbr/includes/pbrLightFunctionsCall.fx",
+        "materials/pbr/includes/pbrShadowFunctions.fx"  
       ],
       "shaderFiles": [
         "materials/pbr/pbr.vertex.fx",
@@ -94,6 +98,17 @@
         "materials/sky/sky.fragment.fx"
       ],
       "output": "babylon.skyMaterial.js"
+    },
+    {
+      "file": "materials/grid/babylon.gridMaterial.ts",
+      "shaderFiles": [
+        "materials/grid/grid.vertex.fx",
+        "materials/grid/grid.fragment.fx",
+        "materials/grid/legacygrid.vertex.fx",
+        "materials/grid/legacygrid.fragment.fx"
+      ],
+      "output": "babylon.gridMaterial.js",
+      "declarationFilename": "babylon.gridMaterial.d.ts"
     }
   ],
   "build": {
