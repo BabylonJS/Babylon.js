@@ -24,9 +24,9 @@
         }
         return false;
     };
-     
+
     var logOperation = (operation, producer) => {
-       return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown" );
+        return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
     }
 
     SceneLoader.RegisterPlugin({
@@ -37,11 +37,11 @@
             // Everything stored in var log instead of writing separate lines to support only writing in exception,
             // and avoid problems with multiple concurrent .babylon loads.
             var log = "importMesh has failed JSON parse";
-            try{
+            try {
                 var parsedData = JSON.parse(data);
                 log = "";
                 var fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
-                
+
                 var loadedSkeletonsIds = [];
                 var loadedMaterialsIds = [];
                 var hierarchyIds = [];
@@ -49,7 +49,7 @@
                 var cache: number;
                 for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                     var parsedMesh = parsedData.meshes[index];
-    
+
                     if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
                         if (meshesNames instanceof Array) {
                             // Remove found mesh name from list.
@@ -97,7 +97,7 @@
                                                 found = true;
                                             }
                                         });
-    
+
                                     }
                                 });
                                 if (!found) {
@@ -127,14 +127,14 @@
                                     }
                                 }
                             }
-    
+
                             if (!materialFound) {
                                 loadedMaterialsIds.push(parsedMesh.materialId);
                                 var mat = parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
                                 if (!mat) {
                                     Tools.Warn("Material not found for mesh " + parsedMesh.id);
-                                }else{
-                                   log += "\n\tMaterial " + mat.toString(fullDetails); 
+                                } else {
+                                    log += "\n\tMaterial " + mat.toString(fullDetails);
                                 }
                             }
                         }
@@ -154,7 +154,7 @@
                                 }
                             }
                         }
-    
+
                         var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
                         meshes.push(mesh);
                         log += "\n\tMesh " + mesh.toString(fullDetails);
@@ -192,16 +192,16 @@
                     }
                 }
                 return true;
-                
-            }catch(err){
-                Tools.Log(logOperation("importMesh", parsedData.producer) + log);   
-                log = null; 
-                throw err; 
-                
-            }finally{
-                if(log !== null) {
-                    Tools.Log(logOperation("importMesh", parsedData.producer) + (SceneLoader.loggingLevel !== SceneLoader.MINIMUM_LOGGING ? log : ""));
-                }   
+
+            } catch (err) {
+                Tools.Log(logOperation("importMesh", parsedData.producer) + log);
+                log = null;
+                throw err;
+
+            } finally {
+                if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
+                    Tools.Log(logOperation("importMesh", parsedData.producer) + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                }
             }
         },
         load: (scene: Scene, data: string, rootUrl: string): boolean => {
@@ -210,7 +210,7 @@
             // Everything stored in var log instead of writing separate lines to support only writing in exception,
             // and avoid problems with multiple concurrent .babylon loads.
             var log = "importScene has failed JSON parse";
-            try{
+            try {
                 var parsedData = JSON.parse(data);
                 log = "";
                 var fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
@@ -232,7 +232,7 @@
                     scene.fogEnd = parsedData.fogEnd;
                     scene.fogDensity = parsedData.fogDensity;
                     log += "\tFog mode for scene:  ";
-                    switch (scene.fogMode){
+                    switch (scene.fogMode) {
                         // getters not compiling, so using hardcoded
                         case 1: log += "exp\n"; break;
                         case 2: log += "exp2\n"; break;
@@ -259,7 +259,7 @@
                     scene.collisionsEnabled = parsedData.collisionsEnabled;
                 }
                 scene.workerCollisions = !!parsedData.workerCollisions;
-    
+
                 var index: number;
                 var cache: number;
                 // Lights
@@ -290,7 +290,7 @@
                         log += "\n\t\t" + mat.toString(fullDetails);
                     }
                 }
-    
+
                 if (parsedData.multiMaterials) {
                     for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
                         var parsedMultiMaterial = parsedData.multiMaterials[index];
@@ -389,7 +389,7 @@
                 // Meshes
                 for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                     var parsedMesh = parsedData.meshes[index];
-                    var mesh = <AbstractMesh> Mesh.Parse(parsedMesh, scene, rootUrl);
+                    var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
                     log += (index === 0 ? "\n\tMeshes:" : "");
                     log += "\n\t\t" + mesh.toString(fullDetails);
                 }
@@ -413,7 +413,7 @@
                         camera._waitingParentId = undefined;
                     }
                 }
-    
+
                 for (index = 0, cache = scene.lights.length; index < cache; index++) {
                     var light = scene.lights[index];
                     if (light._waitingParentId) {
@@ -441,10 +441,10 @@
                             var emptySound = new Sound(parsedSound.name, null, scene);
                         }
                     }
-                        log += (index === 0 ? "\n\tSounds:" : "");
-                        log += "\n\t\t" + mat.toString(fullDetails);
+                    log += (index === 0 ? "\n\tSounds:" : "");
+                    log += "\n\t\t" + mat.toString(fullDetails);
                 }
-    
+
                 loadedSounds = [];
     
                 // Connect parents & children and parse actions
@@ -502,16 +502,16 @@
     
                 // Finish
                 return true;
-                
-            }catch(err){
-                Tools.Log(logOperation("importScene", parsedData.producer) + log);   
-                log = null; 
-                throw err; 
-                
-            }finally{
-                if(log !== null) {
-                    Tools.Log(logOperation("importScene", parsedData.producer) + (SceneLoader.loggingLevel !== SceneLoader.MINIMUM_LOGGING ? log : ""));
-                }   
+
+            } catch (err) {
+                Tools.Log(logOperation("importScene", parsedData.producer) + log);
+                log = null;
+                throw err;
+
+            } finally {
+                if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
+                    Tools.Log(logOperation("importScene", parsedData.producer) + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+                }
             }
         }
     });

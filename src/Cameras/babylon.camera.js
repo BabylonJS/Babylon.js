@@ -115,6 +115,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Camera.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getTypeName();
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Object.defineProperty(Camera.prototype, "globalPosition", {
             get: function () {
                 return this._globalPosition;
