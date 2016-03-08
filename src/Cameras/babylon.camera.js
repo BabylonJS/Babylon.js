@@ -461,7 +461,7 @@ var BABYLON;
                 serializationObject.parentId = this.parent.id;
             }
             if (this.inputs) {
-                serializationObject.inputs = this.inputs.serialize();
+                this.inputs.serialize(serializationObject);
             }
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
@@ -528,7 +528,7 @@ var BABYLON;
             }
             //Input manager
             if (parsedCamera.inputs) {
-                camera.inputs.parse(parsedCamera.inputs);
+                camera.inputs.parse(parsedCamera);
             }
             // Target
             if (parsedCamera.target) {

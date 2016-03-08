@@ -154,9 +154,13 @@ module BABYLON {
         }
 
         getTypeName(): string {
-            return "freecamera.touch";
+            return "FreeCameraTouchInput";
+        }
+        
+        getSimpleName(){
+            return "touch";
         }
     }
     
-    CameraInputTypes["freecamera.touch"] = FreeCameraTouchInput;
+    CameraInputTypes["FreeCameraTouchInput"] = FreeCameraTouchInput;
 }

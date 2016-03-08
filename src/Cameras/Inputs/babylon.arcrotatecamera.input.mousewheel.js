@@ -40,7 +40,10 @@ var BABYLON;
             this.attachedElement.removeEventListener('DOMMouseScroll', this._wheel);
         };
         ArcRotateCameraMouseWheelInput.prototype.getTypeName = function () {
-            return "arcrotate.mousewheel";
+            return "ArcRotateCameraMouseWheelInput";
+        };
+        ArcRotateCameraMouseWheelInput.prototype.getSimpleName = function () {
+            return "mousewheel";
         };
         __decorate([
             BABYLON.serialize()
@@ -48,5 +51,5 @@ var BABYLON;
         return ArcRotateCameraMouseWheelInput;
     }());
     BABYLON.ArcRotateCameraMouseWheelInput = ArcRotateCameraMouseWheelInput;
-    BABYLON.CameraInputTypes["arcrotate.mousewheel"] = ArcRotateCameraMouseWheelInput;
+    BABYLON.CameraInputTypes["ArcRotateCameraMouseWheelInput"] = ArcRotateCameraMouseWheelInput;
 })(BABYLON || (BABYLON = {}));

@@ -72,9 +72,13 @@ module BABYLON {
         }
 
         getTypeName(): string {
-            return "freecamera.deviceorientation";
+            return "FreeCameraDeviceOrientationInput";
+        }
+        
+        getSimpleName(){
+            return "deviceOrientation";
         }
     }
     
-    CameraInputTypes["freecamera.deviceorientation"] = FreeCameraDeviceOrientationInput;
+    CameraInputTypes["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
 }

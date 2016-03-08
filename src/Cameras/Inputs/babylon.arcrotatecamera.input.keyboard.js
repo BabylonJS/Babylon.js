@@ -84,7 +84,10 @@ var BABYLON;
             }
         };
         ArcRotateCameraKeyboardMoveInput.prototype.getTypeName = function () {
-            return "arcrotate.keyboard";
+            return "ArcRotateCameraKeyboardMoveInput";
+        };
+        ArcRotateCameraKeyboardMoveInput.prototype.getSimpleName = function () {
+            return "keyboard";
         };
         __decorate([
             BABYLON.serialize()
@@ -101,5 +104,5 @@ var BABYLON;
         return ArcRotateCameraKeyboardMoveInput;
     }());
     BABYLON.ArcRotateCameraKeyboardMoveInput = ArcRotateCameraKeyboardMoveInput;
-    BABYLON.CameraInputTypes["arcrotate.keyboard"] = ArcRotateCameraKeyboardMoveInput;
+    BABYLON.CameraInputTypes["ArcRotateCameraKeyboardMoveInput"] = ArcRotateCameraKeyboardMoveInput;
 })(BABYLON || (BABYLON = {}));

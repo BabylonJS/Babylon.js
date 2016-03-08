@@ -55,9 +55,13 @@ module BABYLON {
         }
         
         getTypeName(): string{
-            return "freecamera.gamepad";
+            return "FreeCameraGamepadInput";
+        }
+        
+        getSimpleName(){
+            return "gamepad";
         }
     }
     
-    CameraInputTypes["freecamera.gamepad"] = FreeCameraGamepadInput;
+    CameraInputTypes["FreeCameraGamepadInput"] = FreeCameraGamepadInput;
 }

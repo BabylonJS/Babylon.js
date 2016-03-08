@@ -121,7 +121,10 @@ var BABYLON;
             }
         };
         FreeCameraTouchInput.prototype.getTypeName = function () {
-            return "freecamera.touch";
+            return "FreeCameraTouchInput";
+        };
+        FreeCameraTouchInput.prototype.getSimpleName = function () {
+            return "touch";
         };
         __decorate([
             BABYLON.serialize()
@@ -132,5 +135,5 @@ var BABYLON;
         return FreeCameraTouchInput;
     }());
     BABYLON.FreeCameraTouchInput = FreeCameraTouchInput;
-    BABYLON.CameraInputTypes["freecamera.touch"] = FreeCameraTouchInput;
+    BABYLON.CameraInputTypes["FreeCameraTouchInput"] = FreeCameraTouchInput;
 })(BABYLON || (BABYLON = {}));

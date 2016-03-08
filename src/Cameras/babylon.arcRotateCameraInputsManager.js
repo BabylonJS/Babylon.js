@@ -10,6 +10,12 @@ var BABYLON;
         function ArcRotateCameraInputsManager(camera) {
             _super.call(this, camera);
         }
+        ArcRotateCameraInputsManager.prototype.add = function (input) {
+            _super.prototype.add.call(this, input);
+            if (this.camera._attachedElement && input.attachElement) {
+                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
+            }
+        };
         ArcRotateCameraInputsManager.prototype.addMouseWheel = function () {
             this.add(new BABYLON.ArcRotateCameraMouseWheelInput());
             return this;

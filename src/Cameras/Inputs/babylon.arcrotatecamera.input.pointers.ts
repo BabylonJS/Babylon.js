@@ -217,9 +217,13 @@ module BABYLON {
         }        
 
         getTypeName(): string {
-            return "arcrotate.pointers";
+            return "ArcRotateCameraPointersInput";
+        }
+                
+        getSimpleName(){
+            return "pointers";
         }
     }
     
-    CameraInputTypes["arcrotate.pointers"] = ArcRotateCameraPointersInput;
+    CameraInputTypes["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
 }

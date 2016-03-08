@@ -84,10 +84,13 @@ var BABYLON;
             }
         };
         FreeCameraKeyboardMoveInput.prototype.getTypeName = function () {
-            return "freecamera.keyboardmove";
+            return "FreeCameraKeyboardMoveInput";
         };
         FreeCameraKeyboardMoveInput.prototype._onLostFocus = function (e) {
             this._keys = [];
+        };
+        FreeCameraKeyboardMoveInput.prototype.getSimpleName = function () {
+            return "keyboard";
         };
         __decorate([
             BABYLON.serialize()
@@ -104,5 +107,5 @@ var BABYLON;
         return FreeCameraKeyboardMoveInput;
     }());
     BABYLON.FreeCameraKeyboardMoveInput = FreeCameraKeyboardMoveInput;
-    BABYLON.CameraInputTypes["freecamera.keyboardmove"] = FreeCameraKeyboardMoveInput;
+    BABYLON.CameraInputTypes["FreeCameraKeyboardMoveInput"] = FreeCameraKeyboardMoveInput;
 })(BABYLON || (BABYLON = {}));
