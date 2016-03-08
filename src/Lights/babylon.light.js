@@ -29,6 +29,21 @@ var BABYLON;
             this._includedOnlyMeshesIds = new Array();
             scene.addLight(this);
         }
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Light.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + (["Point", "Directional", "Spot", "Hemispheric"])[this.getTypeID()];
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Light.prototype.getShadowGenerator = function () {
             return this._shadowGenerator;
         };
@@ -157,6 +172,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Light.prototype, "radius", void 0);
         return Light;
-    }(BABYLON.Node));
+    })(BABYLON.Node);
     BABYLON.Light = Light;
 })(BABYLON || (BABYLON = {}));

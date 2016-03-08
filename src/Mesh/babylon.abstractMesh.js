@@ -143,6 +143,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        AbstractMesh.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name + ", isInstance: " + (this instanceof BABYLON.InstancedMesh ? "YES" : "NO");
+            ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
+            if (this._skeleton) {
+                ret += ", skeleton: " + this._skeleton.name;
+            }
+            if (fullDetails) {
+                ret += ", billboard mode: " + (["NONE", "X", "Y", null, "Z", null, null, "ALL"])[this.billboardMode];
+                ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
+            }
+            return ret;
+        };
         Object.defineProperty(AbstractMesh.prototype, "rotation", {
             /**
              * Getting the rotation object.
@@ -961,6 +976,6 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
         return AbstractMesh;
-    }(BABYLON.Node));
+    })(BABYLON.Node);
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));

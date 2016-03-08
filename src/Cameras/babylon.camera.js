@@ -115,6 +115,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Camera.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getTypeName();
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Object.defineProperty(Camera.prototype, "globalPosition", {
             get: function () {
                 return this._globalPosition;
@@ -460,9 +475,6 @@ var BABYLON;
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
-            if (this.inputs) {
-                this.inputs.serialize(serializationObject);
-            }
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
@@ -525,10 +537,6 @@ var BABYLON;
             // Parent
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
-            }
-            //Input manager
-            if (parsedCamera.inputs) {
-                camera.inputs.parse(parsedCamera);
             }
             // Target
             if (parsedCamera.target) {
@@ -615,6 +623,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Camera.prototype, "isStereoscopicSideBySide", void 0);
         return Camera;
-    }(BABYLON.Node));
+    })(BABYLON.Node);
     BABYLON.Camera = Camera;
 })(BABYLON || (BABYLON = {}));

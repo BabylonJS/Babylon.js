@@ -49,7 +49,7 @@ var BABYLON;
             return result;
         };
         return MaterialDefines;
-    }());
+    })();
     BABYLON.MaterialDefines = MaterialDefines;
     var Material = (function () {
         function Material(name, scene, doNotAdd) {
@@ -138,6 +138,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * subclasses should override adding information pertainent to themselves
+         */
+        Material.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Object.defineProperty(Material.prototype, "isFrozen", {
             get: function () {
                 return this.checkReadyOnlyOnce;
@@ -313,6 +323,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Material.prototype, "fillMode", null);
         return Material;
-    }());
+    })();
     BABYLON.Material = Material;
 })(BABYLON || (BABYLON = {}));

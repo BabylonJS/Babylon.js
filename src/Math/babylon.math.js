@@ -32,7 +32,7 @@ var BABYLON;
             return Math.min(max, Math.max(min, value));
         };
         return MathTools;
-    }());
+    })();
     BABYLON.MathTools = MathTools;
     var Color3 = (function () {
         function Color3(r, g, b) {
@@ -187,7 +187,7 @@ var BABYLON;
         Color3.Yellow = function () { return new Color3(1, 1, 0); };
         Color3.Gray = function () { return new Color3(0.5, 0.5, 0.5); };
         return Color3;
-    }());
+    })();
     BABYLON.Color3 = Color3;
     var Color4 = (function () {
         function Color4(r, g, b, a) {
@@ -308,7 +308,7 @@ var BABYLON;
             return colors;
         };
         return Color4;
-    }());
+    })();
     BABYLON.Color4 = Color4;
     var Vector2 = (function () {
         function Vector2(x, y) {
@@ -496,7 +496,7 @@ var BABYLON;
             return (x * x) + (y * y);
         };
         return Vector2;
-    }());
+    })();
     BABYLON.Vector2 = Vector2;
     var Vector3 = (function () {
         function Vector3(x, y, z) {
@@ -995,7 +995,7 @@ var BABYLON;
             ref.z = roll;
         };
         return Vector3;
-    }());
+    })();
     BABYLON.Vector3 = Vector3;
     //Vector4 class created for EulerAngle class conversion to Quaternion
     var Vector4 = (function () {
@@ -1252,7 +1252,7 @@ var BABYLON;
             return center;
         };
         return Vector4;
-    }());
+    })();
     BABYLON.Vector4 = Vector4;
     var Quaternion = (function () {
         function Quaternion(x, y, z, w) {
@@ -1538,7 +1538,7 @@ var BABYLON;
             return new Quaternion((num3 * left.x) + (num2 * right.x), (num3 * left.y) + (num2 * right.y), (num3 * left.z) + (num2 * right.z), (num3 * left.w) + (num2 * right.w));
         };
         return Quaternion;
-    }());
+    })();
     BABYLON.Quaternion = Quaternion;
     var Matrix = (function () {
         function Matrix() {
@@ -2172,7 +2172,7 @@ var BABYLON;
         Matrix._yAxis = Vector3.Zero();
         Matrix._zAxis = Vector3.Zero();
         return Matrix;
-    }());
+    })();
     BABYLON.Matrix = Matrix;
     var Plane = (function () {
         function Plane(a, b, c, d) {
@@ -2265,7 +2265,7 @@ var BABYLON;
             return Vector3.Dot(point, normal) + d;
         };
         return Plane;
-    }());
+    })();
     BABYLON.Plane = Plane;
     var Viewport = (function () {
         function Viewport(x, y, width, height) {
@@ -2278,7 +2278,7 @@ var BABYLON;
             return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         };
         return Viewport;
-    }());
+    })();
     BABYLON.Viewport = Viewport;
     var Frustum = (function () {
         function Frustum() {
@@ -2330,7 +2330,7 @@ var BABYLON;
             frustumPlanes[5].normalize();
         };
         return Frustum;
-    }());
+    })();
     BABYLON.Frustum = Frustum;
     (function (Space) {
         Space[Space["LOCAL"] = 0] = "LOCAL";
@@ -2344,7 +2344,7 @@ var BABYLON;
         Axis.Y = new Vector3(0, 1, 0);
         Axis.Z = new Vector3(0, 0, 1);
         return Axis;
-    }());
+    })();
     BABYLON.Axis = Axis;
     ;
     var BezierCurve = (function () {
@@ -2370,7 +2370,7 @@ var BABYLON;
                 Math.pow(refinedT, 3);
         };
         return BezierCurve;
-    }());
+    })();
     BABYLON.BezierCurve = BezierCurve;
     (function (Orientation) {
         Orientation[Orientation["CW"] = 0] = "CW";
@@ -2398,7 +2398,7 @@ var BABYLON;
             return new Angle(degrees * Math.PI / 180);
         };
         return Angle;
-    }());
+    })();
     BABYLON.Angle = Angle;
     var Arc2 = (function () {
         function Arc2(startPoint, midPoint, endPoint) {
@@ -2428,7 +2428,7 @@ var BABYLON;
             this.angle = Angle.FromDegrees(this.orientation === Orientation.CW ? a1 - a3 : a3 - a1);
         }
         return Arc2;
-    }());
+    })();
     BABYLON.Arc2 = Arc2;
     var Path2 = (function () {
         function Path2(x, y) {
@@ -2513,11 +2513,13 @@ var BABYLON;
             return new Path2(x, y);
         };
         return Path2;
-    }());
+    })();
     BABYLON.Path2 = Path2;
     var Path3D = (function () {
         /**
         * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
         * path : an array of Vector3, the curve axis of the Path3D
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
@@ -2535,21 +2537,40 @@ var BABYLON;
             this._raw = raw || false;
             this._compute(firstNormal);
         }
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         */
         Path3D.prototype.getCurve = function () {
             return this._curve;
         };
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         */
         Path3D.prototype.getTangents = function () {
             return this._tangents;
         };
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         */
         Path3D.prototype.getNormals = function () {
             return this._normals;
         };
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         */
         Path3D.prototype.getBinormals = function () {
             return this._binormals;
         };
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
         Path3D.prototype.getDistances = function () {
             return this._distances;
         };
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * Returns the same object updated.
+         */
         Path3D.prototype.update = function (path, firstNormal) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
@@ -2660,15 +2681,26 @@ var BABYLON;
             return normal0;
         };
         return Path3D;
-    }());
+    })();
     BABYLON.Path3D = Path3D;
     var Curve3 = (function () {
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
         function Curve3(points) {
             this._length = 0;
             this._points = points;
             this._length = this._computeLength(points);
         }
-        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateQuadraticBezier = function (v0, v1, v2, nbPoints) {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array();
@@ -2681,7 +2713,14 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateCubicBezier = function (v0, v1, v2, v3, nbPoints) {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array();
@@ -2694,7 +2733,14 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateHermiteSpline = function (p1, t1, p2, t2, nbPoints) {
             var hermite = new Array();
             var step = 1 / nbPoints;
@@ -2703,12 +2749,23 @@ var BABYLON;
             }
             return new Curve3(hermite);
         };
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
         Curve3.prototype.getPoints = function () {
             return this._points;
         };
+        /**
+         * Returns the computed length (float) of the curve.
+         */
         Curve3.prototype.length = function () {
             return this._length;
         };
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         */
         Curve3.prototype.continue = function (curve) {
             var lastPoint = this._points[this._points.length - 1];
             var continuedPoints = this._points.slice();
@@ -2727,7 +2784,7 @@ var BABYLON;
             return l;
         };
         return Curve3;
-    }());
+    })();
     BABYLON.Curve3 = Curve3;
     // SphericalHarmonics
     var SphericalHarmonics = (function () {
@@ -2767,7 +2824,7 @@ var BABYLON;
             this.L22 = this.L22.scale(scale);
         };
         return SphericalHarmonics;
-    }());
+    })();
     BABYLON.SphericalHarmonics = SphericalHarmonics;
     // SphericalPolynomial
     var SphericalPolynomial = (function () {
@@ -2802,7 +2859,7 @@ var BABYLON;
             return result;
         };
         return SphericalPolynomial;
-    }());
+    })();
     BABYLON.SphericalPolynomial = SphericalPolynomial;
     // Vertex formats
     var PositionNormalVertex = (function () {
@@ -2816,7 +2873,7 @@ var BABYLON;
             return new PositionNormalVertex(this.position.clone(), this.normal.clone());
         };
         return PositionNormalVertex;
-    }());
+    })();
     BABYLON.PositionNormalVertex = PositionNormalVertex;
     var PositionNormalTextureVertex = (function () {
         function PositionNormalTextureVertex(position, normal, uv) {
@@ -2831,7 +2888,7 @@ var BABYLON;
             return new PositionNormalTextureVertex(this.position.clone(), this.normal.clone(), this.uv.clone());
         };
         return PositionNormalTextureVertex;
-    }());
+    })();
     BABYLON.PositionNormalTextureVertex = PositionNormalTextureVertex;
     // Temporary pre-allocated objects for engine internal use
     // usage in any internal function :
@@ -2851,6 +2908,6 @@ var BABYLON;
             Matrix.Zero(), Matrix.Zero(),
             Matrix.Zero(), Matrix.Zero()]; // 6 temp Matrices at once should be enough
         return Tmp;
-    }());
+    })();
     BABYLON.Tmp = Tmp;
 })(BABYLON || (BABYLON = {}));
