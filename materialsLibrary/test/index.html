@@ -15,6 +15,7 @@
 	<script src="../dist/babylon.triPlanarMaterial.js"></script>
 	<script src="../dist/babylon.gradientMaterial.js"></script>
 	<script src="../dist/babylon.skyMaterial.js"></script>
+	<script src="../dist/babylon.gridMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -59,6 +60,7 @@
 	<script src="add/addtriplanar.js"></script>
 	<script src="add/addgradient.js"></script>
 	<script src="add/addsky.js"></script>
+	<script src="add/addgrid.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -204,13 +206,15 @@
 				var triPlanar = prepareTriPlanar();
 				
 				var sky = prepareSky();
+                
+                var grid = prepareGrid();
 				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
@@ -254,6 +258,9 @@
 							skybox.setEnabled(true);
 							skybox.material = sky;
 							break;
+                        case "grid":
+                            currentMaterial = grid;
+                            break;
 						default:
 							currentMaterial = std;
 							break;
