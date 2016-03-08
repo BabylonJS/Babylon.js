@@ -3289,7 +3289,13 @@
         private _points: Vector3[];
         private _length: number = 0;
 
-        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve  
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array<Vector3>();
@@ -3302,8 +3308,15 @@
             }
             return new Curve3(bez);
         }
-
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
+        
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve  
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array<Vector3>();
@@ -3317,7 +3330,14 @@
             return new Curve3(bez);
         }
 
-        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline  
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         public static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3 {
             var hermite = new Array<Vector3>();
             var step = 1 / nbPoints;
@@ -3327,19 +3347,35 @@
             return new Curve3(hermite);
         }
 
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.  
+         * A Curve3 is designed from a series of successive Vector3.  
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
         constructor(points: Vector3[]) {
             this._points = points;
             this._length = this._computeLength(points);
         }
 
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
         public getPoints() {
             return this._points;
         }
 
+        /**
+         * Returns the computed length (float) of the curve.
+         */
         public length() {
             return this._length;
         }
 
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);  
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.  
+         * curveA and curveB keep unchanged.  
+         */
         public continue(curve: Curve3): Curve3 {
             var lastPoint = this._points[this._points.length - 1];
             var continuedPoints = this._points.slice();
