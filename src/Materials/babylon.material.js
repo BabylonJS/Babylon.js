@@ -138,6 +138,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * subclasses should override adding information pertainent to themselves
+         */
+        Material.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Object.defineProperty(Material.prototype, "isFrozen", {
             get: function () {
                 return this.checkReadyOnlyOnce;

@@ -2524,6 +2524,8 @@ var BABYLON;
     var Path3D = (function () {
         /**
         * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
         * path : an array of Vector3, the curve axis of the Path3D
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
@@ -2541,21 +2543,40 @@ var BABYLON;
             this._raw = raw || false;
             this._compute(firstNormal);
         }
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         */
         Path3D.prototype.getCurve = function () {
             return this._curve;
         };
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         */
         Path3D.prototype.getTangents = function () {
             return this._tangents;
         };
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         */
         Path3D.prototype.getNormals = function () {
             return this._normals;
         };
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         */
         Path3D.prototype.getBinormals = function () {
             return this._binormals;
         };
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
         Path3D.prototype.getDistances = function () {
             return this._distances;
         };
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * Returns the same object updated.
+         */
         Path3D.prototype.update = function (path, firstNormal) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
@@ -2669,12 +2690,23 @@ var BABYLON;
     })();
     BABYLON.Path3D = Path3D;
     var Curve3 = (function () {
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
         function Curve3(points) {
             this._length = 0;
             this._points = points;
             this._length = this._computeLength(points);
         }
-        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateQuadraticBezier = function (v0, v1, v2, nbPoints) {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array();
@@ -2687,7 +2719,14 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateCubicBezier = function (v0, v1, v2, v3, nbPoints) {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array();
@@ -2700,7 +2739,14 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateHermiteSpline = function (p1, t1, p2, t2, nbPoints) {
             var hermite = new Array();
             var step = 1 / nbPoints;
@@ -2709,12 +2755,23 @@ var BABYLON;
             }
             return new Curve3(hermite);
         };
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
         Curve3.prototype.getPoints = function () {
             return this._points;
         };
+        /**
+         * Returns the computed length (float) of the curve.
+         */
         Curve3.prototype.length = function () {
             return this._length;
         };
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         */
         Curve3.prototype.continue = function (curve) {
             var lastPoint = this._points[this._points.length - 1];
             var continuedPoints = this._points.slice();
@@ -8146,6 +8203,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        AbstractMesh.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name + ", isInstance: " + (this instanceof BABYLON.InstancedMesh ? "YES" : "NO");
+            ret += ", # of submeshes: " + this.subMeshes.length;
+            if (this._skeleton) {
+                ret += ", skeleton: " + this._skeleton.name;
+            }
+            if (fullDetails) {
+                ret += ", billboard mode: " + (["NONE", "X", "Y", null, "Z", null, null, "ALL"])[this.billboardMode];
+                ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
+            }
+            return ret;
+        };
         Object.defineProperty(AbstractMesh.prototype, "rotation", {
             /**
              * Getting the rotation object.
@@ -8994,6 +9066,21 @@ var BABYLON;
             this._includedOnlyMeshesIds = new Array();
             scene.addLight(this);
         }
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Light.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + (["Point", "Directional", "Spot", "Hemispheric"])[this.getTypeID()];
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Light.prototype.getShadowGenerator = function () {
             return this._shadowGenerator;
         };
@@ -10540,6 +10627,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Camera.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getTypeName();
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Object.defineProperty(Camera.prototype, "globalPosition", {
             get: function () {
                 return this._globalPosition;
@@ -15292,8 +15394,25 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        // Methods
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Mesh.prototype.toString = function (fullDetails) {
+            var ret = _super.prototype.toString.call(this, fullDetails);
+            ret += ", n vertices: " + this.getTotalVertices();
+            ret += ", parent: " + (this._waitingParentId ? this._waitingParentId : (this.parent ? this.parent.name : "NONE"));
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+                ret += ", flat shading: " + (this._geometry ? (this.getVerticesData(BABYLON.VertexBuffer.PositionKind).length / 3 === this.getIndices().length ? "YES" : "NO") : "UNKNOWN");
+            }
+            return ret;
+        };
         Object.defineProperty(Mesh.prototype, "hasLODLevels", {
-            // Methods
             get: function () {
                 return this._LODLevels.length > 0;
             },
@@ -20016,6 +20135,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * subclasses should override adding information pertainent to themselves
+         */
+        Material.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Object.defineProperty(Material.prototype, "isFrozen", {
             get: function () {
                 return this.checkReadyOnlyOnce;
@@ -21122,6 +21251,34 @@ var BABYLON;
     var SceneLoader = (function () {
         function SceneLoader() {
         }
+        Object.defineProperty(SceneLoader, "NO_LOGGING", {
+            get: function () {
+                return 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneLoader, "MINIMAL_LOGGING", {
+            get: function () {
+                return 1;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneLoader, "SUMMARY_LOGGING", {
+            get: function () {
+                return 2;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneLoader, "DETAILED_LOGGING", {
+            get: function () {
+                return 3;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(SceneLoader, "ForceFullSceneLoadingForIncremental", {
             get: function () {
                 return SceneLoader._ForceFullSceneLoadingForIncremental;
@@ -21138,6 +21295,16 @@ var BABYLON;
             },
             set: function (value) {
                 SceneLoader._ShowLoadingScreen = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneLoader, "loggingLevel", {
+            get: function () {
+                return SceneLoader._loggingLevel;
+            },
+            set: function (value) {
+                SceneLoader._loggingLevel = value;
             },
             enumerable: true,
             configurable: true
@@ -21232,6 +21399,10 @@ var BABYLON;
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
         SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
+            if (!SceneLoader._warned) {
+                BABYLON.Tools.Warn("SceneLoader.Load deprecated since 2.4.  Use SceneLoader.Append.");
+                SceneLoader._warned = true;
+            }
             SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
         };
         /**
@@ -21296,6 +21467,7 @@ var BABYLON;
         // Flags
         SceneLoader._ForceFullSceneLoadingForIncremental = false;
         SceneLoader._ShowLoadingScreen = true;
+        SceneLoader._loggingLevel = SceneLoader.NO_LOGGING;
         // Members
         SceneLoader._registeredPlugins = new Array();
         return SceneLoader;
@@ -21331,387 +21503,465 @@ var BABYLON;
             }
             return false;
         };
+        var logOperation = function (operation, producer) {
+            return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
+        };
         BABYLON.SceneLoader.RegisterPlugin({
             extensions: ".babylon",
             importMesh: function (meshesNames, scene, data, rootUrl, meshes, particleSystems, skeletons) {
-                var parsedData = JSON.parse(data);
-                var loadedSkeletonsIds = [];
-                var loadedMaterialsIds = [];
-                var hierarchyIds = [];
-                var index;
-                var cache;
-                for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
-                    var parsedMesh = parsedData.meshes[index];
-                    if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
-                        if (meshesNames instanceof Array) {
-                            // Remove found mesh name from list.
-                            delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
-                        }
-                        //Geometry?
-                        if (parsedMesh.geometryId) {
-                            //does the file contain geometries?
-                            if (parsedData.geometries) {
-                                //find the correct geometry and add it to the scene
-                                var found = false;
-                                ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach(function (geometryType) {
-                                    if (found || !parsedData.geometries[geometryType] || !(parsedData.geometries[geometryType] instanceof Array)) {
-                                        return;
+                // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
+                // when SceneLoader.debugLogging = true (default), or exception encountered.
+                // Everything stored in var log instead of writing separate lines to support only writing in exception,
+                // and avoid problems with multiple concurrent .babylon loads.
+                var log = "importMesh has failed JSON parse";
+                try {
+                    var parsedData = JSON.parse(data);
+                    log = "";
+                    var fullDetails = BABYLON.SceneLoader.loggingLevel === BABYLON.SceneLoader.DETAILED_LOGGING;
+                    var loadedSkeletonsIds = [];
+                    var loadedMaterialsIds = [];
+                    var hierarchyIds = [];
+                    var index;
+                    var cache;
+                    for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
+                        var parsedMesh = parsedData.meshes[index];
+                        if (!meshesNames || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
+                            if (meshesNames instanceof Array) {
+                                // Remove found mesh name from list.
+                                delete meshesNames[meshesNames.indexOf(parsedMesh.name)];
+                            }
+                            //Geometry?
+                            if (parsedMesh.geometryId) {
+                                //does the file contain geometries?
+                                if (parsedData.geometries) {
+                                    //find the correct geometry and add it to the scene
+                                    var found = false;
+                                    ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach(function (geometryType) {
+                                        if (found || !parsedData.geometries[geometryType] || !(parsedData.geometries[geometryType] instanceof Array)) {
+                                            return;
+                                        }
+                                        else {
+                                            parsedData.geometries[geometryType].forEach(function (parsedGeometryData) {
+                                                if (parsedGeometryData.id === parsedMesh.geometryId) {
+                                                    switch (geometryType) {
+                                                        case "boxes":
+                                                            BABYLON.Geometry.Primitives.Box.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "spheres":
+                                                            BABYLON.Geometry.Primitives.Sphere.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "cylinders":
+                                                            BABYLON.Geometry.Primitives.Cylinder.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "toruses":
+                                                            BABYLON.Geometry.Primitives.Torus.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "grounds":
+                                                            BABYLON.Geometry.Primitives.Ground.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "planes":
+                                                            BABYLON.Geometry.Primitives.Plane.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "torusKnots":
+                                                            BABYLON.Geometry.Primitives.TorusKnot.Parse(parsedGeometryData, scene);
+                                                            break;
+                                                        case "vertexData":
+                                                            BABYLON.Geometry.Parse(parsedGeometryData, scene, rootUrl);
+                                                            break;
+                                                    }
+                                                    found = true;
+                                                }
+                                            });
+                                        }
+                                    });
+                                    if (!found) {
+                                        BABYLON.Tools.Warn("Geometry not found for mesh " + parsedMesh.id);
+                                    }
+                                }
+                            }
+                            // Material ?
+                            if (parsedMesh.materialId) {
+                                var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
+                                if (!materialFound && parsedData.multiMaterials) {
+                                    for (var multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
+                                        var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
+                                        if (parsedMultiMaterial.id === parsedMesh.materialId) {
+                                            for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
+                                                var subMatId = parsedMultiMaterial.materials[matIndex];
+                                                loadedMaterialsIds.push(subMatId);
+                                                var mat = parseMaterialById(subMatId, parsedData, scene, rootUrl);
+                                                log += "\n\tMaterial " + mat.toString(fullDetails);
+                                            }
+                                            loadedMaterialsIds.push(parsedMultiMaterial.id);
+                                            var mmat = BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
+                                            materialFound = true;
+                                            log += "\n\tMulti-Material " + mmat.toString(fullDetails);
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!materialFound) {
+                                    loadedMaterialsIds.push(parsedMesh.materialId);
+                                    var mat = parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
+                                    if (!mat) {
+                                        BABYLON.Tools.Warn("Material not found for mesh " + parsedMesh.id);
                                     }
                                     else {
-                                        parsedData.geometries[geometryType].forEach(function (parsedGeometryData) {
-                                            if (parsedGeometryData.id === parsedMesh.geometryId) {
-                                                switch (geometryType) {
-                                                    case "boxes":
-                                                        BABYLON.Geometry.Primitives.Box.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "spheres":
-                                                        BABYLON.Geometry.Primitives.Sphere.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "cylinders":
-                                                        BABYLON.Geometry.Primitives.Cylinder.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "toruses":
-                                                        BABYLON.Geometry.Primitives.Torus.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "grounds":
-                                                        BABYLON.Geometry.Primitives.Ground.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "planes":
-                                                        BABYLON.Geometry.Primitives.Plane.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "torusKnots":
-                                                        BABYLON.Geometry.Primitives.TorusKnot.Parse(parsedGeometryData, scene);
-                                                        break;
-                                                    case "vertexData":
-                                                        BABYLON.Geometry.Parse(parsedGeometryData, scene, rootUrl);
-                                                        break;
-                                                }
-                                                found = true;
-                                            }
-                                        });
+                                        log += "\n\tMaterial " + mat.toString(fullDetails);
                                     }
-                                });
-                                if (!found) {
-                                    BABYLON.Tools.Warn("Geometry not found for mesh " + parsedMesh.id);
                                 }
                             }
-                        }
-                        // Material ?
-                        if (parsedMesh.materialId) {
-                            var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
-                            if (!materialFound && parsedData.multiMaterials) {
-                                for (var multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
-                                    var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
-                                    if (parsedMultiMaterial.id === parsedMesh.materialId) {
-                                        for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
-                                            var subMatId = parsedMultiMaterial.materials[matIndex];
-                                            loadedMaterialsIds.push(subMatId);
-                                            parseMaterialById(subMatId, parsedData, scene, rootUrl);
+                            // Skeleton ?
+                            if (parsedMesh.skeletonId > -1 && scene.skeletons) {
+                                var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
+                                if (!skeletonAlreadyLoaded) {
+                                    for (var skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
+                                        var parsedSkeleton = parsedData.skeletons[skeletonIndex];
+                                        if (parsedSkeleton.id === parsedMesh.skeletonId) {
+                                            var skeleton = BABYLON.Skeleton.Parse(parsedSkeleton, scene);
+                                            skeletons.push(skeleton);
+                                            loadedSkeletonsIds.push(parsedSkeleton.id);
+                                            log += "\n\tSkeleton " + skeleton.toString(fullDetails);
                                         }
-                                        loadedMaterialsIds.push(parsedMultiMaterial.id);
-                                        BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
-                                        materialFound = true;
-                                        break;
                                     }
                                 }
                             }
-                            if (!materialFound) {
-                                loadedMaterialsIds.push(parsedMesh.materialId);
-                                if (!parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl)) {
-                                    BABYLON.Tools.Warn("Material not found for mesh " + parsedMesh.id);
-                                }
-                            }
-                        }
-                        // Skeleton ?
-                        if (parsedMesh.skeletonId > -1 && scene.skeletons) {
-                            var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
-                            if (!skeletonAlreadyLoaded) {
-                                for (var skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
-                                    var parsedSkeleton = parsedData.skeletons[skeletonIndex];
-                                    if (parsedSkeleton.id === parsedMesh.skeletonId) {
-                                        skeletons.push(BABYLON.Skeleton.Parse(parsedSkeleton, scene));
-                                        loadedSkeletonsIds.push(parsedSkeleton.id);
-                                    }
-                                }
-                            }
-                        }
-                        var mesh = BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
-                        meshes.push(mesh);
-                    }
-                }
-                // Connecting parents
-                var currentMesh;
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-                    currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingParentId) {
-                        currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
-                        currentMesh._waitingParentId = undefined;
-                    }
-                }
-                // freeze and compute world matrix application
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-                    currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingFreezeWorldMatrix) {
-                        currentMesh.freezeWorldMatrix();
-                        currentMesh._waitingFreezeWorldMatrix = undefined;
-                    }
-                    else {
-                        currentMesh.computeWorldMatrix(true);
-                    }
-                }
-                // Particles
-                if (parsedData.particleSystems) {
-                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                        var parsedParticleSystem = parsedData.particleSystems[index];
-                        if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
-                            particleSystems.push(BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl));
+                            var mesh = BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
+                            meshes.push(mesh);
+                            log += "\n\tMesh " + mesh.toString(fullDetails);
                         }
                     }
-                }
-                return true;
-            },
-            load: function (scene, data, rootUrl) {
-                var parsedData = JSON.parse(data);
-                // Scene
-                scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
-                scene.autoClear = parsedData.autoClear;
-                scene.clearColor = BABYLON.Color3.FromArray(parsedData.clearColor);
-                scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
-                if (parsedData.gravity) {
-                    scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
-                }
-                // Fog
-                if (parsedData.fogMode && parsedData.fogMode !== 0) {
-                    scene.fogMode = parsedData.fogMode;
-                    scene.fogColor = BABYLON.Color3.FromArray(parsedData.fogColor);
-                    scene.fogStart = parsedData.fogStart;
-                    scene.fogEnd = parsedData.fogEnd;
-                    scene.fogDensity = parsedData.fogDensity;
-                }
-                //Physics
-                if (parsedData.physicsEnabled) {
-                    var physicsPlugin;
-                    if (parsedData.physicsEngine === "cannon") {
-                        physicsPlugin = new BABYLON.CannonJSPlugin();
-                    }
-                    else if (parsedData.physicsEngine === "oimo") {
-                        physicsPlugin = new BABYLON.OimoJSPlugin();
-                    }
-                    //else - default engine, which is currently oimo
-                    var physicsGravity = parsedData.physicsGravity ? BABYLON.Vector3.FromArray(parsedData.physicsGravity) : null;
-                    scene.enablePhysics(physicsGravity, physicsPlugin);
-                }
-                //collisions, if defined. otherwise, default is true
-                if (parsedData.collisionsEnabled != undefined) {
-                    scene.collisionsEnabled = parsedData.collisionsEnabled;
-                }
-                scene.workerCollisions = !!parsedData.workerCollisions;
-                var index;
-                var cache;
-                // Lights
-                for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
-                    var parsedLight = parsedData.lights[index];
-                    BABYLON.Light.Parse(parsedLight, scene);
-                }
-                // Animations
-                if (parsedData.animations) {
-                    for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
-                        var parsedAnimation = parsedData.animations[index];
-                        scene.animations.push(BABYLON.Animation.Parse(parsedAnimation));
-                    }
-                }
-                if (parsedData.autoAnimate) {
-                    scene.beginAnimation(scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
-                }
-                // Materials
-                if (parsedData.materials) {
-                    for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
-                        var parsedMaterial = parsedData.materials[index];
-                        BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
-                    }
-                }
-                if (parsedData.multiMaterials) {
-                    for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
-                        var parsedMultiMaterial = parsedData.multiMaterials[index];
-                        BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
-                    }
-                }
-                // Skeletons
-                if (parsedData.skeletons) {
-                    for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
-                        var parsedSkeleton = parsedData.skeletons[index];
-                        BABYLON.Skeleton.Parse(parsedSkeleton, scene);
-                    }
-                }
-                // Geometries
-                var geometries = parsedData.geometries;
-                if (geometries) {
-                    // Boxes
-                    var boxes = geometries.boxes;
-                    if (boxes) {
-                        for (index = 0, cache = boxes.length; index < cache; index++) {
-                            var parsedBox = boxes[index];
-                            BABYLON.Geometry.Primitives.Box.Parse(parsedBox, scene);
+                    // Connecting parents
+                    var currentMesh;
+                    for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                        currentMesh = scene.meshes[index];
+                        if (currentMesh._waitingParentId) {
+                            currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
+                            currentMesh._waitingParentId = undefined;
                         }
                     }
-                    // Spheres
-                    var spheres = geometries.spheres;
-                    if (spheres) {
-                        for (index = 0, cache = spheres.length; index < cache; index++) {
-                            var parsedSphere = spheres[index];
-                            BABYLON.Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
-                        }
-                    }
-                    // Cylinders
-                    var cylinders = geometries.cylinders;
-                    if (cylinders) {
-                        for (index = 0, cache = cylinders.length; index < cache; index++) {
-                            var parsedCylinder = cylinders[index];
-                            BABYLON.Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
-                        }
-                    }
-                    // Toruses
-                    var toruses = geometries.toruses;
-                    if (toruses) {
-                        for (index = 0, cache = toruses.length; index < cache; index++) {
-                            var parsedTorus = toruses[index];
-                            BABYLON.Geometry.Primitives.Torus.Parse(parsedTorus, scene);
-                        }
-                    }
-                    // Grounds
-                    var grounds = geometries.grounds;
-                    if (grounds) {
-                        for (index = 0, cache = grounds.length; index < cache; index++) {
-                            var parsedGround = grounds[index];
-                            BABYLON.Geometry.Primitives.Ground.Parse(parsedGround, scene);
-                        }
-                    }
-                    // Planes
-                    var planes = geometries.planes;
-                    if (planes) {
-                        for (index = 0, cache = planes.length; index < cache; index++) {
-                            var parsedPlane = planes[index];
-                            BABYLON.Geometry.Primitives.Plane.Parse(parsedPlane, scene);
-                        }
-                    }
-                    // TorusKnots
-                    var torusKnots = geometries.torusKnots;
-                    if (torusKnots) {
-                        for (index = 0, cache = torusKnots.length; index < cache; index++) {
-                            var parsedTorusKnot = torusKnots[index];
-                            BABYLON.Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
-                        }
-                    }
-                    // VertexData
-                    var vertexData = geometries.vertexData;
-                    if (vertexData) {
-                        for (index = 0, cache = vertexData.length; index < cache; index++) {
-                            var parsedVertexData = vertexData[index];
-                            BABYLON.Geometry.Parse(parsedVertexData, scene, rootUrl);
-                        }
-                    }
-                }
-                // Meshes
-                for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
-                    var parsedMesh = parsedData.meshes[index];
-                    BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
-                }
-                // Cameras
-                for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
-                    var parsedCamera = parsedData.cameras[index];
-                    BABYLON.Camera.Parse(parsedCamera, scene);
-                }
-                if (parsedData.activeCameraID) {
-                    scene.setActiveCameraByID(parsedData.activeCameraID);
-                }
-                // Browsing all the graph to connect the dots
-                for (index = 0, cache = scene.cameras.length; index < cache; index++) {
-                    var camera = scene.cameras[index];
-                    if (camera._waitingParentId) {
-                        camera.parent = scene.getLastEntryByID(camera._waitingParentId);
-                        camera._waitingParentId = undefined;
-                    }
-                }
-                for (index = 0, cache = scene.lights.length; index < cache; index++) {
-                    var light = scene.lights[index];
-                    if (light._waitingParentId) {
-                        light.parent = scene.getLastEntryByID(light._waitingParentId);
-                        light._waitingParentId = undefined;
-                    }
-                }
-                // Sounds
-                var loadedSounds = [];
-                var loadedSound;
-                if (BABYLON.AudioEngine && parsedData.sounds) {
-                    for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
-                        var parsedSound = parsedData.sounds[index];
-                        if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            if (!parsedSound.url)
-                                parsedSound.url = parsedSound.name;
-                            if (!loadedSounds[parsedSound.url]) {
-                                loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
-                                loadedSounds[parsedSound.url] = loadedSound;
-                            }
-                            else {
-                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
-                            }
+                    // freeze and compute world matrix application
+                    for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                        currentMesh = scene.meshes[index];
+                        if (currentMesh._waitingFreezeWorldMatrix) {
+                            currentMesh.freezeWorldMatrix();
+                            currentMesh._waitingFreezeWorldMatrix = undefined;
                         }
                         else {
-                            var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
+                            currentMesh.computeWorldMatrix(true);
                         }
                     }
+                    // Particles
+                    if (parsedData.particleSystems) {
+                        for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
+                            var parsedParticleSystem = parsedData.particleSystems[index];
+                            if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
+                                particleSystems.push(BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl));
+                            }
+                        }
+                    }
+                    return true;
                 }
-                loadedSounds = [];
-                // Connect parents & children and parse actions
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-                    var mesh = scene.meshes[index];
-                    if (mesh._waitingParentId) {
-                        mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
-                        mesh._waitingParentId = undefined;
-                    }
-                    if (mesh._waitingActions) {
-                        BABYLON.ActionManager.Parse(mesh._waitingActions, mesh, scene);
-                        mesh._waitingActions = undefined;
-                    }
+                catch (err) {
+                    BABYLON.Tools.Log(logOperation("importMesh", parsedData.producer) + log);
+                    log = null;
+                    throw err;
                 }
-                // freeze world matrix application
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-                    var currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingFreezeWorldMatrix) {
-                        currentMesh.freezeWorldMatrix();
-                        currentMesh._waitingFreezeWorldMatrix = undefined;
-                    }
-                    else {
-                        currentMesh.computeWorldMatrix(true);
+                finally {
+                    if (log !== null && BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.NO_LOGGING) {
+                        BABYLON.Tools.Log(logOperation("importMesh", parsedData.producer) + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
                     }
                 }
-                // Particles Systems
-                if (parsedData.particleSystems) {
-                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                        var parsedParticleSystem = parsedData.particleSystems[index];
-                        BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
+            },
+            load: function (scene, data, rootUrl) {
+                // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
+                // when SceneLoader.debugLogging = true (default), or exception encountered.
+                // Everything stored in var log instead of writing separate lines to support only writing in exception,
+                // and avoid problems with multiple concurrent .babylon loads.
+                var log = "importScene has failed JSON parse";
+                try {
+                    var parsedData = JSON.parse(data);
+                    log = "";
+                    var fullDetails = BABYLON.SceneLoader.loggingLevel === BABYLON.SceneLoader.DETAILED_LOGGING;
+                    // Scene
+                    scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
+                    scene.autoClear = parsedData.autoClear;
+                    scene.clearColor = BABYLON.Color3.FromArray(parsedData.clearColor);
+                    scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
+                    if (parsedData.gravity) {
+                        scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
+                    }
+                    // Fog
+                    if (parsedData.fogMode && parsedData.fogMode !== 0) {
+                        scene.fogMode = parsedData.fogMode;
+                        scene.fogColor = BABYLON.Color3.FromArray(parsedData.fogColor);
+                        scene.fogStart = parsedData.fogStart;
+                        scene.fogEnd = parsedData.fogEnd;
+                        scene.fogDensity = parsedData.fogDensity;
+                        log += "\tFog mode for scene:  ";
+                        switch (scene.fogMode) {
+                            // getters not compiling, so using hardcoded
+                            case 1:
+                                log += "exp\n";
+                                break;
+                            case 2:
+                                log += "exp2\n";
+                                break;
+                            case 3:
+                                log += "linear\n";
+                                break;
+                        }
+                    }
+                    //Physics
+                    if (parsedData.physicsEnabled) {
+                        var physicsPlugin;
+                        if (parsedData.physicsEngine === "cannon") {
+                            physicsPlugin = new BABYLON.CannonJSPlugin();
+                        }
+                        else if (parsedData.physicsEngine === "oimo") {
+                            physicsPlugin = new BABYLON.OimoJSPlugin();
+                        }
+                        log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
+                        //else - default engine, which is currently oimo
+                        var physicsGravity = parsedData.physicsGravity ? BABYLON.Vector3.FromArray(parsedData.physicsGravity) : null;
+                        scene.enablePhysics(physicsGravity, physicsPlugin);
+                    }
+                    //collisions, if defined. otherwise, default is true
+                    if (parsedData.collisionsEnabled != undefined) {
+                        scene.collisionsEnabled = parsedData.collisionsEnabled;
+                    }
+                    scene.workerCollisions = !!parsedData.workerCollisions;
+                    var index;
+                    var cache;
+                    // Lights
+                    for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
+                        var parsedLight = parsedData.lights[index];
+                        var light = BABYLON.Light.Parse(parsedLight, scene);
+                        log += (index === 0 ? "\n\tLights:" : "");
+                        log += "\n\t\t" + light.toString(fullDetails);
+                    }
+                    // Animations
+                    if (parsedData.animations) {
+                        for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
+                            var parsedAnimation = parsedData.animations[index];
+                            var animation = BABYLON.Animation.Parse(parsedAnimation);
+                            scene.animations.push(animation);
+                            log += (index === 0 ? "\n\tAnimations:" : "");
+                            log += "\n\t\t" + animation.toString(fullDetails);
+                        }
+                    }
+                    // Materials
+                    if (parsedData.materials) {
+                        for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
+                            var parsedMaterial = parsedData.materials[index];
+                            var mat = BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
+                            log += (index === 0 ? "\n\tMaterials:" : "");
+                            log += "\n\t\t" + mat.toString(fullDetails);
+                        }
+                    }
+                    if (parsedData.multiMaterials) {
+                        for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
+                            var parsedMultiMaterial = parsedData.multiMaterials[index];
+                            var mmat = BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
+                            log += (index === 0 ? "\n\tMultiMaterials:" : "");
+                            log += "\n\t\t" + mmat.toString(fullDetails);
+                        }
+                    }
+                    // Skeletons
+                    if (parsedData.skeletons) {
+                        for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
+                            var parsedSkeleton = parsedData.skeletons[index];
+                            var skeleton = BABYLON.Skeleton.Parse(parsedSkeleton, scene);
+                            log += (index === 0 ? "\n\tSkeletons:" : "");
+                            log += "\n\t\t" + skeleton.toString(fullDetails);
+                        }
+                    }
+                    // Geometries
+                    var geometries = parsedData.geometries;
+                    if (geometries) {
+                        // Boxes
+                        var boxes = geometries.boxes;
+                        if (boxes) {
+                            for (index = 0, cache = boxes.length; index < cache; index++) {
+                                var parsedBox = boxes[index];
+                                BABYLON.Geometry.Primitives.Box.Parse(parsedBox, scene);
+                            }
+                        }
+                        // Spheres
+                        var spheres = geometries.spheres;
+                        if (spheres) {
+                            for (index = 0, cache = spheres.length; index < cache; index++) {
+                                var parsedSphere = spheres[index];
+                                BABYLON.Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
+                            }
+                        }
+                        // Cylinders
+                        var cylinders = geometries.cylinders;
+                        if (cylinders) {
+                            for (index = 0, cache = cylinders.length; index < cache; index++) {
+                                var parsedCylinder = cylinders[index];
+                                BABYLON.Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
+                            }
+                        }
+                        // Toruses
+                        var toruses = geometries.toruses;
+                        if (toruses) {
+                            for (index = 0, cache = toruses.length; index < cache; index++) {
+                                var parsedTorus = toruses[index];
+                                BABYLON.Geometry.Primitives.Torus.Parse(parsedTorus, scene);
+                            }
+                        }
+                        // Grounds
+                        var grounds = geometries.grounds;
+                        if (grounds) {
+                            for (index = 0, cache = grounds.length; index < cache; index++) {
+                                var parsedGround = grounds[index];
+                                BABYLON.Geometry.Primitives.Ground.Parse(parsedGround, scene);
+                            }
+                        }
+                        // Planes
+                        var planes = geometries.planes;
+                        if (planes) {
+                            for (index = 0, cache = planes.length; index < cache; index++) {
+                                var parsedPlane = planes[index];
+                                BABYLON.Geometry.Primitives.Plane.Parse(parsedPlane, scene);
+                            }
+                        }
+                        // TorusKnots
+                        var torusKnots = geometries.torusKnots;
+                        if (torusKnots) {
+                            for (index = 0, cache = torusKnots.length; index < cache; index++) {
+                                var parsedTorusKnot = torusKnots[index];
+                                BABYLON.Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
+                            }
+                        }
+                        // VertexData
+                        var vertexData = geometries.vertexData;
+                        if (vertexData) {
+                            for (index = 0, cache = vertexData.length; index < cache; index++) {
+                                var parsedVertexData = vertexData[index];
+                                BABYLON.Geometry.Parse(parsedVertexData, scene, rootUrl);
+                            }
+                        }
+                    }
+                    // Meshes
+                    for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
+                        var parsedMesh = parsedData.meshes[index];
+                        var mesh = BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
+                        log += (index === 0 ? "\n\tMeshes:" : "");
+                        log += "\n\t\t" + mesh.toString(fullDetails);
+                    }
+                    // Cameras
+                    for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
+                        var parsedCamera = parsedData.cameras[index];
+                        var camera = BABYLON.Camera.Parse(parsedCamera, scene);
+                        log += (index === 0 ? "\n\tCameras:" : "");
+                        log += "\n\t\t" + camera.toString(fullDetails);
+                    }
+                    if (parsedData.activeCameraID) {
+                        scene.setActiveCameraByID(parsedData.activeCameraID);
+                    }
+                    // Browsing all the graph to connect the dots
+                    for (index = 0, cache = scene.cameras.length; index < cache; index++) {
+                        var camera = scene.cameras[index];
+                        if (camera._waitingParentId) {
+                            camera.parent = scene.getLastEntryByID(camera._waitingParentId);
+                            camera._waitingParentId = undefined;
+                        }
+                    }
+                    for (index = 0, cache = scene.lights.length; index < cache; index++) {
+                        var light = scene.lights[index];
+                        if (light._waitingParentId) {
+                            light.parent = scene.getLastEntryByID(light._waitingParentId);
+                            light._waitingParentId = undefined;
+                        }
+                    }
+                    // Sounds
+                    var loadedSounds = [];
+                    var loadedSound;
+                    if (BABYLON.AudioEngine && parsedData.sounds) {
+                        for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
+                            var parsedSound = parsedData.sounds[index];
+                            if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                                if (!parsedSound.url)
+                                    parsedSound.url = parsedSound.name;
+                                if (!loadedSounds[parsedSound.url]) {
+                                    loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
+                                    loadedSounds[parsedSound.url] = loadedSound;
+                                }
+                                else {
+                                    BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
+                                }
+                            }
+                            else {
+                                var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
+                            }
+                        }
+                        log += (index === 0 ? "\n\tSounds:" : "");
+                        log += "\n\t\t" + mat.toString(fullDetails);
+                    }
+                    loadedSounds = [];
+                    // Connect parents & children and parse actions
+                    for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                        var mesh = scene.meshes[index];
+                        if (mesh._waitingParentId) {
+                            mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
+                            mesh._waitingParentId = undefined;
+                        }
+                        if (mesh._waitingActions) {
+                            BABYLON.ActionManager.Parse(mesh._waitingActions, mesh, scene);
+                            mesh._waitingActions = undefined;
+                        }
+                    }
+                    // freeze world matrix application
+                    for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                        var currentMesh = scene.meshes[index];
+                        if (currentMesh._waitingFreezeWorldMatrix) {
+                            currentMesh.freezeWorldMatrix();
+                            currentMesh._waitingFreezeWorldMatrix = undefined;
+                        }
+                        else {
+                            currentMesh.computeWorldMatrix(true);
+                        }
+                    }
+                    // Particles Systems
+                    if (parsedData.particleSystems) {
+                        for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
+                            var parsedParticleSystem = parsedData.particleSystems[index];
+                            BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
+                        }
+                    }
+                    // Lens flares
+                    if (parsedData.lensFlareSystems) {
+                        for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
+                            var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
+                            BABYLON.LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
+                        }
+                    }
+                    // Shadows
+                    if (parsedData.shadowGenerators) {
+                        for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
+                            var parsedShadowGenerator = parsedData.shadowGenerators[index];
+                            BABYLON.ShadowGenerator.Parse(parsedShadowGenerator, scene);
+                        }
+                    }
+                    // Actions (scene)
+                    if (parsedData.actions) {
+                        BABYLON.ActionManager.Parse(parsedData.actions, null, scene);
+                    }
+                    // Finish
+                    return true;
+                }
+                catch (err) {
+                    BABYLON.Tools.Log(logOperation("importScene", parsedData.producer) + log);
+                    log = null;
+                    throw err;
+                }
+                finally {
+                    if (log !== null && BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.NO_LOGGING) {
+                        BABYLON.Tools.Log(logOperation("importScene", parsedData.producer) + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
                     }
                 }
-                // Lens flares
-                if (parsedData.lensFlareSystems) {
-                    for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
-                        var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-                        BABYLON.LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
-                    }
-                }
-                // Shadows
-                if (parsedData.shadowGenerators) {
-                    for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
-                        var parsedShadowGenerator = parsedData.shadowGenerators[index];
-                        BABYLON.ShadowGenerator.Parse(parsedShadowGenerator, scene);
-                    }
-                }
-                // Actions (scene)
-                if (parsedData.actions) {
-                    BABYLON.ActionManager.Parse(parsedData.actions, null, scene);
-                }
-                // Finish
-                return true;
             }
         });
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
@@ -22706,6 +22956,28 @@ var BABYLON;
             return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
         // Methods
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Animation.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name + ", property: " + this.targetProperty;
+            ret += ", datatype: " + (["Float", "Vector3", "Quaternion", "Matrix", "Color3", "Vector2"])[this.dataType];
+            ret += ", nKeys: " + (this._keys ? this._keys.length : "none");
+            ret += ", nRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
+            if (fullDetails) {
+                ret += ", Ranges: {";
+                var first = true;
+                for (var name in this._ranges) {
+                    if (!first) {
+                        ret + ", ";
+                        first = false;
+                    }
+                    ret += name;
+                }
+                ret += "}";
+            }
+            return ret;
+        };
         /**
          * Add an event to this animation.
          */
@@ -23714,7 +23986,7 @@ var BABYLON;
             // all animation may be coming from a library skeleton, so may need to create animation
             if (this.animations.length === 0) {
                 this.animations.push(new BABYLON.Animation(this.name, "_matrix", source.animations[0].framePerSecond, BABYLON.Animation.ANIMATIONTYPE_MATRIX, 0));
-                this.animations[0].setKeys([{}]);
+                this.animations[0].setKeys([]);
             }
             // get animation info / verify there is such a range from the source bone
             var sourceRange = source.animations[0].getRange(rangeName);
@@ -23787,6 +24059,26 @@ var BABYLON;
             return this._scene;
         };
         // Methods
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Skeleton.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name + ", nBones: " + this.bones.length;
+            ret += ", nAnimationRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
+            if (fullDetails) {
+                ret += ", Ranges: {";
+                var first = true;
+                for (var name in this._ranges) {
+                    if (!first) {
+                        ret + ", ";
+                        first = false;
+                    }
+                    ret += name;
+                }
+                ret += "}";
+            }
+            return ret;
+        };
         Skeleton.prototype.createAnimationRange = function (name, from, to) {
             // check name not already in use
             if (!this._ranges[name]) {
@@ -23825,6 +24117,10 @@ var BABYLON;
             var sourceBones = source.bones;
             for (var i = 0, nBones = sourceBones.length; i < nBones; i++) {
                 boneDict[sourceBones[i].name] = sourceBones[i];
+            }
+            if (this.bones.length !== sourceBones.length) {
+                BABYLON.Tools.Warn("copyAnimationRange: this rig has " + this.bones.length + " bones, while source as " + sourceBones.length);
+                ret = false;
             }
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
                 var boneName = this.bones[i].name;

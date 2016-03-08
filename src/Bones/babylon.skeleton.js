@@ -28,6 +28,26 @@ var BABYLON;
             return this._scene;
         };
         // Methods
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Skeleton.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name + ", nBones: " + this.bones.length;
+            ret += ", nAnimationRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
+            if (fullDetails) {
+                ret += ", Ranges: {";
+                var first = true;
+                for (var name in this._ranges) {
+                    if (!first) {
+                        ret + ", ";
+                        first = false;
+                    }
+                    ret += name;
+                }
+                ret += "}";
+            }
+            return ret;
+        };
         Skeleton.prototype.createAnimationRange = function (name, from, to) {
             // check name not already in use
             if (!this._ranges[name]) {
@@ -66,6 +86,10 @@ var BABYLON;
             var sourceBones = source.bones;
             for (var i = 0, nBones = sourceBones.length; i < nBones; i++) {
                 boneDict[sourceBones[i].name] = sourceBones[i];
+            }
+            if (this.bones.length !== sourceBones.length) {
+                BABYLON.Tools.Warn("copyAnimationRange: this rig has " + this.bones.length + " bones, while source as " + sourceBones.length);
+                ret = false;
             }
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
                 var boneName = this.bones[i].name;

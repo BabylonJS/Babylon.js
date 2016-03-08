@@ -9,10 +9,24 @@
         // Flags
         private static _ForceFullSceneLoadingForIncremental = false;
         private static _ShowLoadingScreen = true;
-        public static MINIMUM_LOGGING = 0;
-        public static SUMMARY_LOGGING = 1;
-        public static DETAILED_LOGGING = 2;
-        private static _loggingLevel = SceneLoader.SUMMARY_LOGGING;
+
+        public static get NO_LOGGING(): number {
+            return 0;
+        }
+
+        public static get MINIMAL_LOGGING(): number {
+            return 1;
+        }
+
+        public static get SUMMARY_LOGGING(): number {
+            return 2;
+        }
+
+        public static get DETAILED_LOGGING(): number {
+            return 3;
+        }
+
+        private static _loggingLevel = SceneLoader.NO_LOGGING;
 
         public static get ForceFullSceneLoadingForIncremental() {
             return SceneLoader._ForceFullSceneLoadingForIncremental;
