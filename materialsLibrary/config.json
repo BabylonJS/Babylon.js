@@ -91,6 +91,17 @@
         "materials/sky/sky.fragment.fx"
       ],
       "output": "babylon.skyMaterial.js"
+    },
+    {
+      "file": "materials/grid/babylon.gridMaterial.ts",
+      "shaderFiles": [
+        "materials/grid/grid.vertex.fx",
+        "materials/grid/grid.fragment.fx",
+        "materials/grid/legacygrid.vertex.fx",
+        "materials/grid/legacygrid.fragment.fx"
+      ],
+      "output": "babylon.gridMaterial.js",
+      "declarationFilename": "babylon.gridMaterial.d.ts"
     }
   ],
   "build": {
