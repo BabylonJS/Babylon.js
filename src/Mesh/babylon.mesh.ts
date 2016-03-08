@@ -134,6 +134,26 @@
         }
 
         // Methods
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = super.toString(fullDetails);
+            ret += ", n vertices: " + this.getTotalVertices();
+            ret += ", parent: " + (this._waitingParentId ? this._waitingParentId : (this.parent ? this.parent.name : "NONE"));
+
+            if (this.animations){
+                for (var i = 0; i < this.animations.length; i++){
+                   ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            
+            if (fullDetails){
+                ret += ", flat shading: " + (this._geometry ? (this.getVerticesData(VertexBuffer.PositionKind).length / 3 === this.getIndices().length ? "YES" : "NO") : "UNKNOWN");
+            }
+            return ret;
+        } 
+        
         public get hasLODLevels(): boolean {
             return this._LODLevels.length > 0;
         }

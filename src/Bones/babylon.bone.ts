@@ -102,7 +102,7 @@
             // all animation may be coming from a library skeleton, so may need to create animation
             if (this.animations.length === 0) {
                 this.animations.push(new Animation(this.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0));
-                this.animations[0].setKeys([{}]);
+                this.animations[0].setKeys([]);
             }
 
             // get animation info / verify there is such a range from the source bone
