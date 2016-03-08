@@ -133,6 +133,6 @@ var BABYLON;
             return serializationObject;
         };
         return BaseTexture;
-    }());
+    })();
     BABYLON.BaseTexture = BaseTexture;
 })(BABYLON || (BABYLON = {}));

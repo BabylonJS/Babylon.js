@@ -269,6 +269,6 @@ var BABYLON;
         Texture.WRAP_ADDRESSMODE = 1;
         Texture.MIRROR_ADDRESSMODE = 2;
         return Texture;
-    }(BABYLON.BaseTexture));
+    })(BABYLON.BaseTexture);
     BABYLON.Texture = Texture;
 })(BABYLON || (BABYLON = {}));

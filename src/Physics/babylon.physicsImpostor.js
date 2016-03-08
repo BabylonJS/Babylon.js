@@ -311,6 +311,6 @@ var BABYLON;
         PhysicsImpostor.ConvexHullImpostor = 8;
         PhysicsImpostor.HeightmapImpostor = 9;
         return PhysicsImpostor;
-    }());
+    })();
     BABYLON.PhysicsImpostor = PhysicsImpostor;
 })(BABYLON || (BABYLON = {}));

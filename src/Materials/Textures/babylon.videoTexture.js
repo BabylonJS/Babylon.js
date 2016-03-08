@@ -53,6 +53,6 @@ var BABYLON;
             return true;
         };
         return VideoTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.VideoTexture = VideoTexture;
 })(BABYLON || (BABYLON = {}));

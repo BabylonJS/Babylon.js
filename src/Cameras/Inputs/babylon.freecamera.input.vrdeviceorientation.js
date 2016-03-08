@@ -37,7 +37,7 @@ var BABYLON;
             return "VRDeviceOrientation";
         };
         return FreeCameraVRDeviceOrientationInput;
-    }());
+    })();
     BABYLON.FreeCameraVRDeviceOrientationInput = FreeCameraVRDeviceOrientationInput;
     BABYLON.CameraInputTypes["FreeCameraVRDeviceOrientationInput"] = FreeCameraVRDeviceOrientationInput;
 })(BABYLON || (BABYLON = {}));

@@ -11,6 +11,6 @@ var BABYLON;
             _super.call(this, name, "anaglyph", null, ["leftSampler"], ratio, camera, samplingMode, engine, reusable);
         }
         return AnaglyphPostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.AnaglyphPostProcess = AnaglyphPostProcess;
 })(BABYLON || (BABYLON = {}));

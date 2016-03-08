@@ -19,6 +19,6 @@ var BABYLON;
             return "VRDeviceOrientationFreeCamera";
         };
         return VRDeviceOrientationFreeCamera;
-    }(BABYLON.FreeCamera));
+    })(BABYLON.FreeCamera);
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;
 })(BABYLON || (BABYLON = {}));
