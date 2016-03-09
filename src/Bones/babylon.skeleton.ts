@@ -84,7 +84,7 @@
         }
         
         /**
-         *  Returns as an Array, all AnimationRanges defined for this skeleton
+         *  Returns as an Array, all AnimationRanges defined on this skeleton
          */
         public getAnimationRanges(): AnimationRange[] {
             var animationRanges :  AnimationRange[] = [];
