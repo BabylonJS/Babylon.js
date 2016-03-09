@@ -10,6 +10,7 @@ var BABYLON;
         function ArcRotateCameraGamepadInput() {
             var _this = this;
             this.gamepadRotationSensibility = 80;
+            this.gamepadMoveSensibility = 40;
             this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         }
         ArcRotateCameraGamepadInput.prototype.attachCamera = function (camera) {
@@ -21,17 +22,24 @@ var BABYLON;
         ArcRotateCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {
                 var camera = this.camera;
-                var LSValues = this.gamepad.leftStick;
-                if (LSValues.x != 0) {
-                    var normalizedLX = LSValues.x / this.gamepadRotationSensibility;
-                    if (normalizedLX != 0 && Math.abs(normalizedLX) > 0.005) {
-                        camera.inertialAlphaOffset += normalizedLX;
+                var RSValues = this.gamepad.rightStick;
+                if (RSValues.x != 0) {
+                    var normalizedRX = RSValues.x / this.gamepadRotationSensibility;
+                    if (normalizedRX != 0 && Math.abs(normalizedRX) > 0.005) {
+                        camera.inertialAlphaOffset += normalizedRX;
                     }
                 }
+                if (RSValues.y != 0) {
+                    var normalizedRY = RSValues.y / this.gamepadRotationSensibility;
+                    if (normalizedRY != 0 && Math.abs(normalizedRY) > 0.005) {
+                        camera.inertialBetaOffset += normalizedRY;
+                    }
+                }
+                var LSValues = this.gamepad.leftStick;
                 if (LSValues.y != 0) {
-                    var normalizedLY = LSValues.y / this.gamepadRotationSensibility;
+                    var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
                     if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
-                        camera.inertialBetaOffset += normalizedLY;
+                        this.camera.inertialRadiusOffset -= normalizedLY;
                     }
                 }
             }
@@ -51,6 +59,9 @@ var BABYLON;
         __decorate([
             BABYLON.serialize()
         ], ArcRotateCameraGamepadInput.prototype, "gamepadRotationSensibility", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], ArcRotateCameraGamepadInput.prototype, "gamepadMoveSensibility", void 0);
         return ArcRotateCameraGamepadInput;
     })();
     BABYLON.ArcRotateCameraGamepadInput = ArcRotateCameraGamepadInput;

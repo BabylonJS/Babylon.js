@@ -660,9 +660,11 @@
                 camera._waitingParentId = parsedCamera.parentId;
             }
             
-            //Input manager
-            camera.inputs.parse(parsedCamera);
-
+            //If camera has an input manager, let it parse inputs settings
+            if (camera.inputs){
+                camera.inputs.parse(parsedCamera);
+            }
+            
             // Target
             if (parsedCamera.target) {
                 if ((<any>camera).setTarget) {

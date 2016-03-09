@@ -46,6 +46,26 @@ module BABYLON {
             }
         }
         
+        public remove(inputToRemove: ICameraInput<TCamera>) {
+            for (var cam in this.attached) {
+                var input = this.attached[cam];
+                if (input == inputToRemove){
+                    input.detach();
+                    delete this.attached[cam];
+                }                    
+            }
+        }
+        
+        public removeByType(inputType: string) {
+            for (var cam in this.attached) {
+                var input = this.attached[cam];
+                if (input.getTypeName() == inputType){
+                    input.detach();
+                    delete this.attached[cam];
+                }                    
+            }
+        }
+        
         private _addCheckInputs(fn){
             var current = this.checkInputs;
             return () => {

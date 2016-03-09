@@ -77,6 +77,7 @@
     - Added panning axis to the ArcRotateCamera [PR](https://github.com/BabylonJS/Babylon.js/pull/913) ([mstdokumaci](https://github.com/mstdokumaci), [RaananW](https://github.com/RaananW))
     - Added `Tmp` class for internal use in order to improvement the memory management, [jerome](https://github.com/jbousquie))
     - Added `Scene.swithActiveCamera(newCamera, attachControl)` to go from one camera active to another. ([dad72](https://github.com/dad72)) [PR](https://github.com/BabylonJS/Babylon.js/pull/928)
+    - Added Camera Inputs Manager to manage camera inputs (mouse, touch, keyboard, gamepad, ...) in a composable way, without relying on class inheritance, [gleborgne](https://github.com/gleborgne)
   - **Bug fixes**
     - Fixed IDB for offline support ([davrous](https://github.com/davrous))
     - Fixed a bug with spherical mapping ([deltakosh](https://github.com/deltakosh)) 
