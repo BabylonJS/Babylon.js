@@ -30,6 +30,7 @@
          * default is 1/60. 
          * To slow it down, enter 1/600 for example.
          * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
          */
         public setTimeStep(newTimeStep: number = 1 / 60) {
             this._physicsPlugin.setTimeStep(newTimeStep);
@@ -69,6 +70,11 @@
         private _impostors: Array<PhysicsImpostor> = [];
         private _joints: Array<PhysicsImpostorJoint> = [];
 
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
         public addImpostor(impostor: PhysicsImpostor) {
             this._impostors.push(impostor);
             //if no parent, generate the body
@@ -77,6 +83,11 @@
             }
         }
 
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
         public removeImpostor(impostor: PhysicsImpostor) {
             var index = this._impostors.indexOf(impostor);
             if (index > -1) {
@@ -88,7 +99,13 @@
                 }
             }
         }
-
+        
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
         public addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
             var impostorJoint = {
                 mainImpostor: mainImpostor,

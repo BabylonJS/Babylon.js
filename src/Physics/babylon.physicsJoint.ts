@@ -11,6 +11,10 @@ module BABYLON {
         nativeParams?: any;
     }
 
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
     export class PhysicsJoint {
 
         private _physicsJoint;
@@ -37,8 +41,13 @@ module BABYLON {
             this._physicsPlugin = physicsPlugin;
         }
         
-        public executeNativeFunction(func : (physicsJoint:any) => void) {
-            func(this._physicsJoint)
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed. 
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        public executeNativeFunction(func : (world: any, physicsJoint:any) => void) {
+            func(this._physicsPlugin.world, this._physicsJoint)
         }
 
 
@@ -63,41 +72,77 @@ module BABYLON {
         public static SpringJoint = 9;
     }
 
+    /**
+     * A class representing a physics distance joint.
+     */
     export class DistanceJoint extends PhysicsJoint {
         constructor(jointData: DistanceJointData) {
             super(PhysicsJoint.DistanceJoint, jointData);
         }
 
+        /**
+         * Update the predefined distance.
+         */
         public updateDistance(maxDistance: number, minDistance?: number) {
             this._physicsPlugin.updateDistanceJoint(this, maxDistance, minDistance);
         }
     }
 
+    /**
+     * This class represents a single hinge physics joint
+     */
     export class HingeJoint extends PhysicsJoint implements IMotorEnabledJoint {
         
         constructor(jointData:PhysicsJointData) {
             super(PhysicsJoint.HingeJoint, jointData);
         }
         
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
         public setMotor(force?: number, maxForce?: number) {
             this._physicsPlugin.setMotor(this, force, maxForce);
         }
         
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
         public setLimit(upperLimit: number, lowerLimit?: number) {
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
         }
     }
     
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
     export class Hinge2Joint extends PhysicsJoint implements IMotorEnabledJoint {
         
         constructor(jointData:PhysicsJointData) {
             super(PhysicsJoint.Hinge2Joint, jointData);
         }
         
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
         public setMotor(force?: number, maxForce?: number, motorIndex: number = 0) {
             this._physicsPlugin.setMotor(this, force, maxForce, motorIndex);
         }
         
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
         public setLimit(upperLimit: number, lowerLimit?: number, motorIndex: number = 0) {
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit, motorIndex);
         }
