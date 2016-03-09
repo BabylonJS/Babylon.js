@@ -82,6 +82,20 @@
         public getAnimationRange(name: string): AnimationRange {
             return this._ranges[name];
         }
+        
+        /**
+         *  Returns as an Array, all AnimationRanges defined for this skeleton
+         */
+        public getAnimationRanges(): AnimationRange[] {
+            var animationRanges :  AnimationRange[] = [];
+            var name : string;
+            var i: number = 0;
+            for (name in this._ranges){
+                animationRanges[i] = this._ranges[name];
+                i++;
+            }
+            return animationRanges;
+        }
 
         /** 
          *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
