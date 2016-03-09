@@ -25,7 +25,7 @@ module BABYLON {
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
 
-            impostors.forEach(function (impostor) {
+            impostors.forEach(function(impostor) {
                 impostor.beforeStep();
             });
 
@@ -36,7 +36,7 @@ module BABYLON {
                 //update the ordered impostors array
                 this._tmpImpostorsArray[impostor.mesh.uniqueId] = impostor;
             });
-            
+
             //check for collisions
             var contact = this.world.contacts;
 
@@ -103,7 +103,7 @@ module BABYLON {
 
                 var impostors = [impostor];
                 function addToArray(parent: AbstractMesh) {
-                    parent.getChildMeshes().forEach(function (m) {
+                    parent.getChildMeshes().forEach(function(m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
                             m.physicsImpostor._init();
@@ -117,7 +117,7 @@ module BABYLON {
                 }
 
                 impostors.forEach((i) => {
-                    
+
                     //get the correct bounding box
                     var oldQuaternion = i.mesh.rotationQuaternion;
                     var rot = new OIMO.Euler().setFromQuaternion({ x: impostor.mesh.rotationQuaternion.x, y: impostor.mesh.rotationQuaternion.y, z: impostor.mesh.rotationQuaternion.z, s: impostor.mesh.rotationQuaternion.w });
@@ -135,7 +135,7 @@ module BABYLON {
                         bodyConfig.pos.push(bbox.center.x);
                         bodyConfig.pos.push(bbox.center.y);
                         bodyConfig.pos.push(bbox.center.z);
-                        
+
                         //tmp solution
                         bodyConfig.rot.push(rot.x / (OIMO.degtorad || OIMO.TO_RAD));
                         bodyConfig.rot.push(rot.y / (OIMO.degtorad || OIMO.TO_RAD));
@@ -144,13 +144,13 @@ module BABYLON {
                         bodyConfig.pos.push(i.mesh.position.x);
                         bodyConfig.pos.push(i.mesh.position.y);
                         bodyConfig.pos.push(i.mesh.position.z);
-                        
+
                         //tmp solution until https://github.com/lo-th/Oimo.js/pull/37 is merged
                         bodyConfig.rot.push(0);
                         bodyConfig.rot.push(0);
                         bodyConfig.rot.push(0);
                     }
-                    
+
                     // register mesh
                     switch (i.type) {
                         case PhysicsEngine.SphereImpostor:
@@ -189,7 +189,7 @@ module BABYLON {
                             bodyConfig.size.push(sizeZ);
                             break;
                     }
-                    
+
                     //actually not needed, but hey...
                     i.mesh.rotationQuaternion = oldQuaternion;
                 });
@@ -237,7 +237,7 @@ module BABYLON {
                 max: options.max,
                 collision: options.collision || jointData.collision,
                 spring: options.spring,
-                
+
                 //supporting older version of Oimo
                 world: this.world
 
@@ -339,6 +339,27 @@ module BABYLON {
 
         public wakeUpBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.awake();
+        }
+
+        public updateDistanceJoint(joint: IMotorEnabledJoint, maxDistance: number, minDistance?: number) {
+            joint.physicsJoint.limitMotoe.upperLimit = maxDistance;
+            if (minDistance !== void 0) {
+                joint.physicsJoint.limitMotoe.lowerLimit = minDistance;
+            }
+        }
+
+        public setMotor(joint: IMotorEnabledJoint, force?: number, maxForce?: number, motorIndex?: number) {
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor2 || joint.physicsJoint.limitMotor;
+            if (motor) {
+                motor.setMotor(force, maxForce);
+            }
+        }
+
+        public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number) {
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor2 || joint.physicsJoint.limitMotor;
+            if (motor) {
+                motor.setLimit(upperLimit, lowerLimit || -upperLimit);
+            }
         }
 
         public dispose() {

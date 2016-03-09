@@ -95,6 +95,7 @@
                 connectedImpostor: connectedImpostor,
                 joint: joint
             }
+            joint.physicsPlugin = this._physicsPlugin;
             this._joints.push(impostorJoint);
             this._physicsPlugin.generateJoint(impostorJoint);
         }
@@ -166,6 +167,10 @@
         setBodyMass(impostor: PhysicsImpostor, mass: number);
         sleepBody(impostor: PhysicsImpostor);
         wakeUpBody(impostor: PhysicsImpostor);
+        //Joint Update
+        updateDistanceJoint(joint: DistanceJoint, maxDistance:number, minDistance?: number);
+        setMotor(joint: IMotorEnabledJoint, force?: number, maxForce?: number, motorIndex?: number);
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number);
         dispose();
     }
 }
