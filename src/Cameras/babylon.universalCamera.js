@@ -14,17 +14,13 @@ var BABYLON;
             this.inputs.addGamepad();
         }
         Object.defineProperty(UniversalCamera.prototype, "gamepadAngularSensibility", {
-            //-- 2016-03-08 properties for backward compatibility for inputs
-            //deprecated
+            //-- Begin properties for backward compatibility for inputs
             get: function () {
-                BABYLON.Tools.Warn("Warning: gamepadAngularSensibility is deprecated, use camera.inputs.attached.gamepad.gamepadAngularSensibility instead.");
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadAngularSensibility;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: gamepadAngularSensibility is deprecated, use camera.inputs.attached.gamepad.gamepadAngularSensibility instead.");
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     gamepad.gamepadAngularSensibility = value;
@@ -33,16 +29,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(UniversalCamera.prototype, "gamepadMoveSensibility", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: gamepadMoveSensibility is deprecated, use camera.inputs.attached.gamepad.gamepadMoveSensibility instead.");
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     return gamepad.gamepadMoveSensibility;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: gamepadMoveSensibility is deprecated, use camera.inputs.attached.gamepad.gamepadMoveSensibility instead.");
                 var gamepad = this.inputs.attached["gamepad"];
                 if (gamepad)
                     gamepad.gamepadMoveSensibility = value;

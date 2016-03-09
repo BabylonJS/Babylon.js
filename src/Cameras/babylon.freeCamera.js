@@ -46,17 +46,13 @@ var BABYLON;
             this.inputs.addKeyboard().addMouse();
         }
         Object.defineProperty(FreeCamera.prototype, "angularSensibility", {
-            //-- 2016-03-08 properties for backward compatibility for inputs
-            //deprecated
+            //-- begin properties for backward compatibility for inputs
             get: function () {
-                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated on FreeCamera, use camera.inputs.attached.mouse.angularSensibility instead.");
                 var mouse = this.inputs.attached["mouse"];
                 if (mouse)
                     return mouse.angularSensibility;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated on FreeCamera, use camera.inputs.attached.mouse.angularSensibility instead.");
                 var mouse = this.inputs.attached["mouse"];
                 if (mouse)
                     mouse.angularSensibility = value;
@@ -65,16 +61,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(FreeCamera.prototype, "keysUp", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: keysUp is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysUp instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysUp;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: keysUp is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysUp instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     keyboard.keysUp = value;
@@ -83,16 +75,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(FreeCamera.prototype, "keysDown", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: keysDown is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysDown instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysDown;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: keysDown is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysDown instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     keyboard.keysDown = value;
@@ -101,16 +89,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(FreeCamera.prototype, "keysLeft", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: keysLeft is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysLeft;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: keysLeft is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     keyboard.keysLeft = value;
@@ -119,16 +103,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(FreeCamera.prototype, "keysRight", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: keysRight is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysRight instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysRight;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: keysRight is deprecated on FreeCamera, use camera.inputs.attached.keyboard.keysRight instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     keyboard.keysRight = value;
