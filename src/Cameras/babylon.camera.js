@@ -542,7 +542,9 @@ var BABYLON;
                 camera._waitingParentId = parsedCamera.parentId;
             }
             //Input manager
-            camera.inputs.parse(parsedCamera);
+            if (camera.inputs) {
+                camera.inputs.parse(parsedCamera);
+            }
             // Target
             if (parsedCamera.target) {
                 if (camera.setTarget) {

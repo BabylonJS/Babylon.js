@@ -21,6 +21,24 @@ var BABYLON;
                 this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
             }
         };
+        CameraInputsManager.prototype.remove = function (inputToRemove) {
+            for (var cam in this.attached) {
+                var input = this.attached[cam];
+                if (input == inputToRemove) {
+                    input.detach();
+                    delete this.attached[cam];
+                }
+            }
+        };
+        CameraInputsManager.prototype.removeByType = function (inputType) {
+            for (var cam in this.attached) {
+                var input = this.attached[cam];
+                if (input.getTypeName() == inputType) {
+                    input.detach();
+                    delete this.attached[cam];
+                }
+            }
+        };
         CameraInputsManager.prototype._addCheckInputs = function (fn) {
             var current = this.checkInputs;
             return function () {
