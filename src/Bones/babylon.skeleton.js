@@ -71,6 +71,19 @@ var BABYLON;
             return this._ranges[name];
         };
         /**
+         *  Returns as an Array, all AnimationRanges defined on this skeleton
+         */
+        Skeleton.prototype.getAnimationRanges = function () {
+            var animationRanges = [];
+            var name;
+            var i = 0;
+            for (name in this._ranges) {
+                animationRanges[i] = this._ranges[name];
+                i++;
+            }
+            return animationRanges;
+        };
+        /**
          *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
          */
         Skeleton.prototype.copyAnimationRange = function (source, name, rescaleAsRequired) {

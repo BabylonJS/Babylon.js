@@ -14,17 +14,13 @@ var BABYLON;
             this.inputs.addDeviceOrientation();
         }
         Object.defineProperty(DeviceOrientationCamera.prototype, "angularSensibility", {
-            //-- 2016-03-08 properties for backward compatibility for inputs
-            //deprecated
+            //-- Begin properties for backward compatibility for inputs
             get: function () {
-                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated on DeviceOrientationCamera, use camera.inputs.attached.deviceOrientation.angularSensibility instead.");
                 var gamepad = this.inputs.attached["deviceOrientation"];
                 if (gamepad)
                     return gamepad.angularSensibility;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated on DeviceOrientationCamera, use camera.inputs.attached.deviceOrientation.angularSensibility instead.");
                 var gamepad = this.inputs.attached["deviceOrientation"];
                 if (gamepad)
                     gamepad.angularSensibility = value;
@@ -33,16 +29,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(DeviceOrientationCamera.prototype, "moveSensibility", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: moveSensibility is deprecated on DeviceOrientationCamera, use camera.inputs.attached.deviceOrientation.moveSensibility instead.");
                 var gamepad = this.inputs.attached["deviceOrientation"];
                 if (gamepad)
                     return gamepad.moveSensibility;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: moveSensibility is deprecated on DeviceOrientationCamera, use camera.inputs.attached.deviceOrientation.moveSensibility instead.");
                 var gamepad = this.inputs.attached["deviceOrientation"];
                 if (gamepad)
                     gamepad.moveSensibility = value;

@@ -1,6 +1,4 @@
 ﻿module BABYLON {
-    // var eventPrefix = Tools.GetPointerPrefix();
-
     export class ArcRotateCamera extends TargetCamera {
         @serialize()
         public alpha: number;
@@ -47,168 +45,114 @@
         @serialize()
         public inertialPanningY: number = 0;
 
-        //-- 2016-03-08 properties for backward compatibility for inputs
-        //deprecated angularSensibility support
-        public get angularSensibility() {
-            Tools.Warn("Warning: angularSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX and camera.inputs.attached.pointers.angularSensibilityY instead.");
-            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers)
-                return Math.max(pointers.angularSensibilityX, pointers.angularSensibilityY);
-        }
-        
-        //deprecated angularSensibility support
-        public set angularSensibility(value) {
-            Tools.Warn("Warning: angularSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX and camera.inputs.attached.pointers.angularSensibilityY instead.");
-            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers){
-                pointers.angularSensibilityX = value;
-                pointers.angularSensibilityY = value;
-            }
-        }
-        
-        //deprecated angularSensibilityX support
+        //-- begin properties for backward compatibility for inputs       
         public get angularSensibilityX() {
-            Tools.Warn("Warning: angularSensibilityX is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX instead.");
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityX;
         }
         
-        //deprecated angularSensibilityX support
         public set angularSensibilityX(value) {
-            Tools.Warn("Warning: angularSensibilityX is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX instead.");
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers){
                 pointers.angularSensibilityX = value;
             }
         }
         
-        //deprecated angularSensibilityY support
         public get angularSensibilityY() {
-            Tools.Warn("Warning: angularSensibilityY is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityY instead.");
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityY;
         }
         
-        //deprecated angularSensibilityY support
         public set angularSensibilityY(value) {
-            Tools.Warn("Warning: angularSensibilityY is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityY instead.");
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers){
                 pointers.angularSensibilityY = value;
             }
         }
         
-        //deprecated pinchPrecision support
         public get pinchPrecision() {
-            Tools.Warn("Warning: pinchPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.pinchPrecision instead.");
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.pinchPrecision;
         }
         
-        //deprecated pinchPrecision support
         public set pinchPrecision(value) {
-            Tools.Warn("Warning: pinchPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.pinchPrecision instead.");
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers){
                 pointers.pinchPrecision = value;
             }
         }
         
-        //deprecated panningSensibility support
         public get panningSensibility() {
-            Tools.Warn("Warning: panningSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.panningSensibility instead.");
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.panningSensibility;
         }
         
-        //deprecated pinchPrecision support
         public set panningSensibility(value) {
-            Tools.Warn("Warning: panningSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.panningSensibility instead.");
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers){
                 pointers.panningSensibility = value;
             }
         }
         
-        //deprecated
         public get keysUp() {
-            Tools.Warn("Warning: keysUp is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysUp instead.");
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysUp;
         }
         
-        //deprecated
         public set keysUp(value) {
-            Tools.Warn("Warning: keysUp is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysUp instead.");
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysUp = value;
         }
         
-        //deprecated
         public get keysDown() {
-            Tools.Warn("Warning: keysDown is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysDown instead.");
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysDown;
         }
         
-        //deprecated
         public set keysDown(value) {
-            Tools.Warn("Warning: keysDown is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysDown instead.");
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysDown = value;
         }
         
-        //deprecated
         public get keysLeft() {
-            Tools.Warn("Warning: keysLeft is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysLeft;
         }
         
-        //deprecated
         public set keysLeft(value) {
-            Tools.Warn("Warning: keysLeft is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysLeft = value;
         }
         
-        //deprecated
         public get keysRight() {
-            Tools.Warn("Warning: keysRight is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysRight instead.");
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysRight;
         }
         
-        //deprecated
         public set keysRight(value) {
-            Tools.Warn("Warning: keysRight is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysRight instead.");
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysRight = value;
         }
         
-        //deprecated
         public get wheelPrecision() {
-            Tools.Warn("Warning: wheelPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.mousewheel.wheelPrecision instead.");
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 return mousewheel.wheelPrecision;
         }
         
-        //deprecated
         public set wheelPrecision(value) {
-            Tools.Warn("Warning: wheelPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.mousewheel.wheelPrecision instead.");
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 mousewheel.wheelPrecision = value;

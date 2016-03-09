@@ -41,7 +41,6 @@
       "../../src/Lights/Shadows/babylon.shadowGenerator.js",
       "../../src/Collisions/babylon.collider.js",
       "../../src/Collisions/babylon.collisionCoordinator.js",
-
       "../../src/Cameras/babylon.camera.js",
       "../../src/cameras/babylon.camerainputsmanager.js",
       "../../src/cameras/inputs/babylon.freecamera.input.mouse.js",

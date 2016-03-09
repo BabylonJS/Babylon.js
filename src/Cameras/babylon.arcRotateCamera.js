@@ -11,7 +11,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
-    // var eventPrefix = Tools.GetPointerPrefix();
     var ArcRotateCamera = (function (_super) {
         __extends(ArcRotateCamera, _super);
         function ArcRotateCamera(name, alpha, beta, radius, target, scene) {
@@ -89,38 +88,14 @@ var BABYLON;
             this.inputs = new BABYLON.ArcRotateCameraInputsManager(this);
             this.inputs.addKeyboard().addMouseWheel().addPointers().addGamepad();
         }
-        Object.defineProperty(ArcRotateCamera.prototype, "angularSensibility", {
-            //-- 2016-03-08 properties for backward compatibility for inputs
-            //deprecated angularSensibility support
-            get: function () {
-                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX and camera.inputs.attached.pointers.angularSensibilityY instead.");
-                var pointers = this.inputs.attached["pointers"];
-                if (pointers)
-                    return Math.max(pointers.angularSensibilityX, pointers.angularSensibilityY);
-            },
-            //deprecated angularSensibility support
-            set: function (value) {
-                BABYLON.Tools.Warn("Warning: angularSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX and camera.inputs.attached.pointers.angularSensibilityY instead.");
-                var pointers = this.inputs.attached["pointers"];
-                if (pointers) {
-                    pointers.angularSensibilityX = value;
-                    pointers.angularSensibilityY = value;
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibilityX", {
-            //deprecated angularSensibilityX support
+            //-- begin properties for backward compatibility for inputs       
             get: function () {
-                BABYLON.Tools.Warn("Warning: angularSensibilityX is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX instead.");
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.angularSensibilityX;
             },
-            //deprecated angularSensibilityX support
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: angularSensibilityX is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityX instead.");
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers) {
                     pointers.angularSensibilityX = value;
@@ -130,16 +105,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "angularSensibilityY", {
-            //deprecated angularSensibilityY support
             get: function () {
-                BABYLON.Tools.Warn("Warning: angularSensibilityY is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityY instead.");
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.angularSensibilityY;
             },
-            //deprecated angularSensibilityY support
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: angularSensibilityY is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.angularSensibilityY instead.");
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers) {
                     pointers.angularSensibilityY = value;
@@ -149,16 +120,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "pinchPrecision", {
-            //deprecated pinchPrecision support
             get: function () {
-                BABYLON.Tools.Warn("Warning: pinchPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.pinchPrecision instead.");
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.pinchPrecision;
             },
-            //deprecated pinchPrecision support
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: pinchPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.pinchPrecision instead.");
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers) {
                     pointers.pinchPrecision = value;
@@ -168,16 +135,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "panningSensibility", {
-            //deprecated panningSensibility support
             get: function () {
-                BABYLON.Tools.Warn("Warning: panningSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.panningSensibility instead.");
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers)
                     return pointers.panningSensibility;
             },
-            //deprecated pinchPrecision support
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: panningSensibility is deprecated on ArcRotateCamera, use camera.inputs.attached.pointers.panningSensibility instead.");
                 var pointers = this.inputs.attached["pointers"];
                 if (pointers) {
                     pointers.panningSensibility = value;
@@ -187,16 +150,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "keysUp", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: keysUp is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysUp instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysUp;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: keysUp is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysUp instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     keyboard.keysUp = value;
@@ -205,16 +164,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "keysDown", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: keysDown is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysDown instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysDown;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: keysDown is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysDown instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     keyboard.keysDown = value;
@@ -223,16 +178,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "keysLeft", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: keysLeft is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysLeft;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: keysLeft is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysLeft instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     keyboard.keysLeft = value;
@@ -241,16 +192,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "keysRight", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: keysRight is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysRight instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     return keyboard.keysRight;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: keysRight is deprecated on ArcRotateCamera, use camera.inputs.attached.keyboard.keysRight instead.");
                 var keyboard = this.inputs.attached["keyboard"];
                 if (keyboard)
                     keyboard.keysRight = value;
@@ -259,16 +206,12 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ArcRotateCamera.prototype, "wheelPrecision", {
-            //deprecated
             get: function () {
-                BABYLON.Tools.Warn("Warning: wheelPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.mousewheel.wheelPrecision instead.");
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     return mousewheel.wheelPrecision;
             },
-            //deprecated
             set: function (value) {
-                BABYLON.Tools.Warn("Warning: wheelPrecision is deprecated on ArcRotateCamera, use camera.inputs.attached.mousewheel.wheelPrecision instead.");
                 var mousewheel = this.inputs.attached["mousewheel"];
                 if (mousewheel)
                     mousewheel.wheelPrecision = value;
