@@ -173,6 +173,7 @@
             }*/
             switch (impostorJoint.joint.type) {
                 case PhysicsJoint.HingeJoint:
+                case PhysicsJoint.Hinge2Joint:
                     constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
                     break;
                 case PhysicsJoint.DistanceJoint:
@@ -447,7 +448,47 @@
         public wakeUpBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.wakeUp();
         }
+        
+        public updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number) {
+            joint.physicsJoint.distance = maxDistance;
+        }
+        
+        private enableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
+            if(!motorIndex) {
+                joint.physicsJoint.enableMotor();
+            }
+        }
+        
+        private disableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
+            if(!motorIndex) {
+                joint.physicsJoint.disableMotor();
+            }
+        }
+        
+        public setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number) {
+            if(!motorIndex) {
+                joint.physicsJoint.enableMotor();
+                joint.physicsJoint.setMotorSpeed(speed);
+                if(maxForce) {
+                    this.setLimit(joint, maxForce);
+                }
+                //a hack for force application
+                /*var torque = new CANNON.Vec3();
+                var axis = joint.physicsJoint.axisB;
+                var body = joint.physicsJoint.bodyB;
+                var bodyTorque = body.torque;
 
+                axis.scale(force, torque);
+                body.vectorToWorldFrame(torque, torque);
+                bodyTorque.vadd(torque, bodyTorque);*/
+            }
+        }
+        
+        public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number) {
+            joint.physicsJoint.motorEquation.maxForce = upperLimit;
+            joint.physicsJoint.motorEquation.minForce = lowerLimit || -upperLimit;
+        }        
+        
         public dispose() {
             //nothing to do, actually.
         }
