@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 4, 1),
+    'version': (4, 4, 2),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -399,6 +399,7 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         # Open file
         file_handler = io.open(self.filepathMinusExtension + '.babylon', 'w', encoding='utf8')
         file_handler.write('{')
+        file_handler.write('"producer":{"name":"Blender","version":"' + bpy.app.version_string + '","exporter_version":"' + format_version() + '","file":"' + Main.nameSpace + '.babylon"},\n')
         self.world.to_scene_file(file_handler)
 
         # Materials

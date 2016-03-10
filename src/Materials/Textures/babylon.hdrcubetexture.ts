@@ -1,15 +1,12 @@
 module BABYLON {
+    
+    /**
+     * This represents a texture coming from an HDR input.
+     * 
+     * The only supported format is currently panorama picture stored in RGBE format.
+     * Example of such files can be found on HDRLib: http://hdrlib.com/
+     */
     export class HDRCubeTexture extends BaseTexture {
-        public url: string;
-        public coordinatesMode = Texture.CUBIC_MODE;
-
-        private _useInGammaSpace = false;
-        private _generateHarmonics = true;
-        private _noMipmap: boolean;
-        private _extensions: string[];
-        private _textureMatrix: Matrix;
-        private _size: number;
-        private _usePMREMGenerator: boolean;
 
         private static _facesMapping = [
             "right",
@@ -20,10 +17,46 @@ module BABYLON {
             "back"
         ];
 
+        private _useInGammaSpace = false;
+        private _generateHarmonics = true;
+        private _noMipmap: boolean;
+        private _extensions: string[];
+        private _textureMatrix: Matrix;
+        private _size: number;
+        private _usePMREMGenerator: boolean;
+        
+        /**
+         * The texture URL.
+         */
+        public url: string;
+        
+        /**
+         * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
+         */
+        public coordinatesMode = Texture.CUBIC_MODE;
+
+        /**
+         * The spherical polynomial data extracted from the texture.
+         */
         public sphericalPolynomial: SphericalPolynomial = null;
 
+        /**
+         * Specifies wether the texture has been generated through the PMREMGenerator tool.
+         * This is usefull at run time to apply the good shader.
+         */
         public isPMREM = false;
 
+        /**
+         * Instantiates an HDRTexture from the following parameters.
+         * 
+         * @param url The location of the HDR raw data (Panorama stored in RGBE format)
+         * @param scene The scene the texture will be used in
+         * @param size The cubemap desired size (the more it increases the longer the generation will be)
+         * @param noMipmap Forces to not generate the mipmap if true
+         * @param generateHarmonics Specifies wether you want to extract the polynomial harmonics during the generation process
+         * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
+         * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
+         */
         constructor(url: string, scene: Scene, size: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false) {
             super(scene);
 
@@ -113,6 +146,7 @@ module BABYLON {
             var mipmapGenerator = null;
             if (!this._noMipmap && this._usePMREMGenerator) {
                 mipmapGenerator = (data: ArrayBufferView[]) => {
+                    // Custom setup of the generator matching with the PBR shader values.
                     var generator = new BABYLON.Internals.PMREMGenerator(data,
                         this._size,
                         this._size,
@@ -196,3 +230,4 @@ module BABYLON {
         }
     }
 } 
+

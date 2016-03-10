@@ -20,6 +20,7 @@ var shadersStream;
 var workersStream;
 
 var extendsSearchRegex = /var\s__extends[\s\S]+?\};/g;
+var decorateSearchRegex = /var\s__decorate[\s\S]+?\};/g;
 
 //function to convert the shaders' filenames to variable names.
 function shadersName(filename) {
@@ -120,6 +121,7 @@ gulp.task("buildCore", ["shaders"], function () {
         .pipe(concat(config.build.minCoreFilename))
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))
+        .pipe(replace(decorateSearchRegex, ""))
         .pipe(addModuleExports("BABYLON"))
         .pipe(uglify())
         .pipe(gulp.dest(config.build.outputDirectory));
@@ -135,6 +137,7 @@ gulp.task("buildNoWorker", ["shaders"], function () {
         .pipe(concat(config.build.minNoWorkerFilename))
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))
+        .pipe(replace(decorateSearchRegex, ""))
         .pipe(addModuleExports("BABYLON"))
         .pipe(uglify())
         .pipe(gulp.dest(config.build.outputDirectory));
@@ -151,6 +154,7 @@ gulp.task("build", ["workers", "shaders"], function () {
         .pipe(concat(config.build.filename))
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))
+        .pipe(replace(decorateSearchRegex, ""))
         .pipe(addModuleExports("BABYLON"))
         .pipe(gulp.dest(config.build.outputDirectory))
         .pipe(rename(config.build.minFilename))

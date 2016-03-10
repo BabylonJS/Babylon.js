@@ -115,6 +115,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Camera.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getTypeName();
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+            }
+            return ret;
+        };
         Object.defineProperty(Camera.prototype, "globalPosition", {
             get: function () {
                 return this._globalPosition;
@@ -460,6 +475,9 @@ var BABYLON;
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
+            if (this.inputs) {
+                this.inputs.serialize(serializationObject);
+            }
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
@@ -523,6 +541,10 @@ var BABYLON;
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
             }
+            //If camera has an input manager, let it parse inputs settings
+            if (camera.inputs) {
+                camera.inputs.parse(parsedCamera);
+            }
             // Target
             if (parsedCamera.target) {
                 if (camera.setTarget) {
@@ -558,6 +580,7 @@ var BABYLON;
         Camera._RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
         Camera._RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
         Camera._RIG_MODE_VR = 20;
+        Camera.ForceAttachControlToAlwaysPreventDefault = false;
         __decorate([
             BABYLON.serializeAsVector3()
         ], Camera.prototype, "position", void 0);
