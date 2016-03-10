@@ -31,15 +31,19 @@ module BABYLON {
         }>;
 
         constructor(private _mesh: AbstractMesh, public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }) {
-            //default options params
-            this._options.mass = (_options.mass === void 0) ? 0 : _options.mass
-            this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction
-            this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
-            this._joints = [];
-            //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
-            if (!this._mesh.parent) {
-                this._init();
+            if (!this._physicsEngine) {
+                Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.")
+            } else {
+                //default options params
+                this._options.mass = (_options.mass === void 0) ? 0 : _options.mass
+                this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction
+                this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution
+                this._joints = [];
+                //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
+                if (!this._mesh.parent) {
+                    this._init();
+                }
             }
         }
 
@@ -321,7 +325,7 @@ module BABYLON {
             if (this.parent) {
                 this.parent.forceUpdate();
             } else {
-                this.mesh.getChildMeshes().forEach(function (mesh) {
+                this.mesh.getChildMeshes().forEach(function(mesh) {
                     if (mesh.physicsImpostor) {
                         if (disposeChildren) {
                             mesh.physicsImpostor.dispose();
