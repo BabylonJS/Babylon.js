@@ -435,6 +435,17 @@
         public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.angularVelocity.copy(velocity);
         }
+        
+        public getLinearVelocity(impostor: PhysicsImpostor): Vector3 {
+            var v = impostor.physicsBody.velocity;
+            if (!v) return null;
+            return new Vector3(v.x, v.y, v.z)
+        }
+        public getAngularVelocity(impostor: PhysicsImpostor): Vector3 {
+            var v = impostor.physicsBody.angularVelocity;
+            if (!v) return null;
+            return new Vector3(v.x, v.y, v.z)
+        }
 
         public setBodyMass(impostor: PhysicsImpostor, mass: number) {
             impostor.physicsBody.mass = mass;
