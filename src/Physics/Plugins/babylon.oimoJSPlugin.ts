@@ -324,6 +324,16 @@ module BABYLON {
             impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
         }
 
+        public getLinearVelocity(impostor: PhysicsImpostor): Vector3 {
+            var v = impostor.physicsBody.linearVelocity;
+            if (!v) return null;
+            return new Vector3(v.x, v.y, v.z)
+        }
+        public getAngularVelocity(impostor: PhysicsImpostor): Vector3 {
+            var v = impostor.physicsBody.angularVelocity;
+            if (!v) return null;
+            return new Vector3(v.x, v.y, v.z)
+        }
 
         public setBodyMass(impostor: PhysicsImpostor, mass: number) {
             var staticBody: boolean = mass === 0;
@@ -349,14 +359,14 @@ module BABYLON {
         }
 
         public setMotor(joint: IMotorEnabledJoint, force?: number, maxForce?: number, motorIndex?: number) {
-            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor2 || joint.physicsJoint.limitMotor;
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
             if (motor) {
                 motor.setMotor(force, maxForce);
             }
         }
 
         public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number) {
-            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor2 || joint.physicsJoint.limitMotor;
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
             if (motor) {
                 motor.setLimit(upperLimit, lowerLimit || -upperLimit);
             }

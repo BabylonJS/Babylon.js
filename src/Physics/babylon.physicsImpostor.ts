@@ -146,12 +146,20 @@ module BABYLON {
             }
             this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
         }
+        
+        public getLinearVelocity() : Vector3 {
+            return this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this);    
+        }
 
         /**
          * Set the body's linear velocity.
          */
         public setLinearVelocity(velocity: Vector3) {
             this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        }
+        
+        public getAngularVelocity() : Vector3 {
+             return this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this);    
         }
         
         /**
