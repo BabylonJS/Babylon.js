@@ -181,6 +181,8 @@
         setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion);
         setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3);
         setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3);
+        getLinearVelocity(impostor: PhysicsImpostor) : Vector3;
+        getAngularVelocity(impostor: PhysicsImpostor) : Vector3;
         setBodyMass(impostor: PhysicsImpostor, mass: number);
         sleepBody(impostor: PhysicsImpostor);
         wakeUpBody(impostor: PhysicsImpostor);
