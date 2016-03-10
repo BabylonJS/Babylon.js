@@ -1,5 +1,7 @@
 ﻿module BABYLON {
     export class Camera extends Node {
+        public inputs: CameraInputsManager<Camera>;
+        
         // Statics
         private static _PERSPECTIVE_CAMERA = 0;
         private static _ORTHOGRAPHIC_CAMERA = 1;
@@ -53,6 +55,8 @@
         public static get RIG_MODE_VR(): number {
             return Camera._RIG_MODE_VR;
         }
+
+        public static ForceAttachControlToAlwaysPreventDefault = false;
         
         // Members
         @serializeAsVector3()
@@ -132,6 +136,22 @@
             }
 
             this.position = position;
+        }
+
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails?: boolean): string {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + this.getTypeName();
+            if (this.animations) {
+                for (var i = 0; i < this.animations.length; i++) {
+                    ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails) {
+            }
+            return ret;
         }
 
         public get globalPosition(): Vector3 {
@@ -567,6 +587,10 @@
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
             }
+
+            if (this.inputs) {
+                this.inputs.serialize(serializationObject);
+            }
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
             serializationObject.ranges = this.serializeAnimationRanges();
@@ -591,7 +615,7 @@
                 case "FollowCamera":
                     return () => new FollowCamera(name, Vector3.Zero(), scene);
                 case "ArcFollowCamera":
-                    return () => new ArcFollowCamera(name, 0, 0, 1.0, null, scene);                    
+                    return () => new ArcFollowCamera(name, 0, 0, 1.0, null, scene);
                 case "GamepadCamera":
                     return () => new GamepadCamera(name, Vector3.Zero(), scene);
                 case "TouchCamera":
@@ -628,14 +652,19 @@
         public static Parse(parsedCamera: any, scene: Scene): Camera {
             var type = parsedCamera.type;
             var construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);
-           
+
             var camera = SerializationHelper.Parse(construct, parsedCamera, scene);
 
             // Parent
             if (parsedCamera.parentId) {
                 camera._waitingParentId = parsedCamera.parentId;
             }
-
+            
+            //If camera has an input manager, let it parse inputs settings
+            if (camera.inputs) {
+                camera.inputs.parse(parsedCamera);
+            }
+            
             // Target
             if (parsedCamera.target) {
                 if ((<any>camera).setTarget) {
@@ -667,5 +696,6 @@
         }
     }
 }
+
 
 

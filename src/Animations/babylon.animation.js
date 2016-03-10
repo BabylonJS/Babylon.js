@@ -6,6 +6,9 @@ var BABYLON;
             this.from = from;
             this.to = to;
         }
+        AnimationRange.prototype.clone = function () {
+            return new AnimationRange(this.name, this.from, this.to);
+        };
         return AnimationRange;
     })();
     BABYLON.AnimationRange = AnimationRange;
@@ -141,6 +144,28 @@ var BABYLON;
         };
         // Methods
         /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Animation.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name + ", property: " + this.targetProperty;
+            ret += ", datatype: " + (["Float", "Vector3", "Quaternion", "Matrix", "Color3", "Vector2"])[this.dataType];
+            ret += ", nKeys: " + (this._keys ? this._keys.length : "none");
+            ret += ", nRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
+            if (fullDetails) {
+                ret += ", Ranges: {";
+                var first = true;
+                for (var name in this._ranges) {
+                    if (!first) {
+                        ret + ", ";
+                        first = false;
+                    }
+                    ret += name;
+                }
+                ret += "}";
+            }
+            return ret;
+        };
+        /**
          * Add an event to this animation.
          */
         Animation.prototype.addEvent = function (event) {
@@ -233,6 +258,12 @@ var BABYLON;
             var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
             if (this._keys) {
                 clone.setKeys(this._keys);
+            }
+            if (this._ranges) {
+                clone._ranges = {};
+                for (var name in this._ranges) {
+                    clone._ranges[name] = this._ranges[name].clone();
+                }
             }
             return clone;
         };

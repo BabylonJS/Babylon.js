@@ -42,11 +42,25 @@
       "../../src/Collisions/babylon.collider.js",
       "../../src/Collisions/babylon.collisionCoordinator.js",
       "../../src/Cameras/babylon.camera.js",
+      "../../src/cameras/babylon.camerainputsmanager.js",
+      "../../src/cameras/inputs/babylon.freecamera.input.mouse.js",
+      "../../src/cameras/inputs/babylon.freecamera.input.keyboard.js",
+      "../../src/cameras/inputs/babylon.freecamera.input.touch.js",
+      "../../src/cameras/inputs/babylon.freecamera.input.deviceorientation.js",
+      "../../src/cameras/inputs/babylon.freecamera.input.vrdeviceorientation.js",
+      "../../src/cameras/inputs/babylon.freecamera.input.gamepad.js",
+      "../../src/cameras/inputs/babylon.freecamera.input.virtualjoystick.js",
+      "../../src/cameras/inputs/babylon.arcrotatecamera.input.keyboard.js",
+      "../../src/cameras/inputs/babylon.arcrotatecamera.input.mousewheel.js",
+      "../../src/cameras/inputs/babylon.arcrotatecamera.input.pointers.js",
+      "../../src/cameras/inputs/babylon.arcrotatecamera.input.gamepad.js",
       "../../src/Cameras/babylon.targetCamera.js",
       "../../src/Cameras/babylon.freeCamera.js",
+      "../../src/Cameras/babylon.freeCameraInputsManager.js",
       "../../src/Cameras/babylon.followCamera.js",
       "../../src/Cameras/babylon.touchCamera.js",
       "../../src/Cameras/babylon.arcRotateCamera.js",
+      "../../src/Cameras/babylon.arcRotateCameraInputsManager.js",
       "../../src/Rendering/babylon.renderingManager.js",
       "../../src/Rendering/babylon.renderingGroup.js",
       "../../src/babylon.scene.js",
@@ -193,7 +207,7 @@
       "../../src/tools/hdr/babylon.tools.hdr.js",
       "../../src/tools/hdr/babylon.tools.pmremGenerator.js",
       "../../src/materials/textures/babylon.hdrcubetexture.js",
-      "../../src/debug/babylon.skeletonViewer.js"
+      "../../src/debug/babylon.skeletonViewer.js"      
     ]
   }
 }

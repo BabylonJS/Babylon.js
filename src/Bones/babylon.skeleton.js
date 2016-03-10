@@ -13,7 +13,6 @@ var BABYLON;
             this.bones = [];
             this._scene = scene;
             scene.skeletons.push(this);
-            this.prepare();
             //make sure it will recalculate the matrix next time prepare is called.
             this._isDirty = true;
         }
@@ -28,6 +27,26 @@ var BABYLON;
             return this._scene;
         };
         // Methods
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        Skeleton.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name + ", nBones: " + this.bones.length;
+            ret += ", nAnimationRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
+            if (fullDetails) {
+                ret += ", Ranges: {";
+                var first = true;
+                for (var name in this._ranges) {
+                    if (!first) {
+                        ret + ", ";
+                        first = false;
+                    }
+                    ret += name;
+                }
+                ret += "}";
+            }
+            return ret;
+        };
         Skeleton.prototype.createAnimationRange = function (name, from, to) {
             // check name not already in use
             if (!this._ranges[name]) {
@@ -52,6 +71,19 @@ var BABYLON;
             return this._ranges[name];
         };
         /**
+         *  Returns as an Array, all AnimationRanges defined on this skeleton
+         */
+        Skeleton.prototype.getAnimationRanges = function () {
+            var animationRanges = [];
+            var name;
+            var i = 0;
+            for (name in this._ranges) {
+                animationRanges[i] = this._ranges[name];
+                i++;
+            }
+            return animationRanges;
+        };
+        /**
          *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
          */
         Skeleton.prototype.copyAnimationRange = function (source, name, rescaleAsRequired) {
@@ -66,6 +98,10 @@ var BABYLON;
             var sourceBones = source.bones;
             for (var i = 0, nBones = sourceBones.length; i < nBones; i++) {
                 boneDict[sourceBones[i].name] = sourceBones[i];
+            }
+            if (this.bones.length !== sourceBones.length) {
+                BABYLON.Tools.Warn("copyAnimationRange: this rig has " + this.bones.length + " bones, while source as " + sourceBones.length);
+                ret = false;
             }
             for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
                 var boneName = this.bones[i].name;
@@ -181,6 +217,7 @@ var BABYLON;
         };
         Skeleton.prototype.clone = function (name, id) {
             var result = new Skeleton(name, id || name, this._scene);
+            result.needInitialSkinMatrix = this.needInitialSkinMatrix;
             for (var index = 0; index < this.bones.length; index++) {
                 var source = this.bones[index];
                 var parentBone = null;
@@ -191,6 +228,13 @@ var BABYLON;
                 var bone = new BABYLON.Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
                 BABYLON.Tools.DeepCopy(source.animations, bone.animations);
             }
+            if (this._ranges) {
+                result._ranges = {};
+                for (var rangeName in this._ranges) {
+                    result._ranges[rangeName] = this._ranges[rangeName].clone();
+                }
+            }
+            this._isDirty = true;
             return result;
         };
         Skeleton.prototype.dispose = function () {

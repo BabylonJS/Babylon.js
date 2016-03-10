@@ -2518,6 +2518,8 @@ var BABYLON;
     var Path3D = (function () {
         /**
         * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D
         * path : an array of Vector3, the curve axis of the Path3D
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
@@ -2535,21 +2537,40 @@ var BABYLON;
             this._raw = raw || false;
             this._compute(firstNormal);
         }
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         */
         Path3D.prototype.getCurve = function () {
             return this._curve;
         };
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         */
         Path3D.prototype.getTangents = function () {
             return this._tangents;
         };
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         */
         Path3D.prototype.getNormals = function () {
             return this._normals;
         };
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         */
         Path3D.prototype.getBinormals = function () {
             return this._binormals;
         };
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
         Path3D.prototype.getDistances = function () {
             return this._distances;
         };
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * Returns the same object updated.
+         */
         Path3D.prototype.update = function (path, firstNormal) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
@@ -2663,12 +2684,23 @@ var BABYLON;
     })();
     BABYLON.Path3D = Path3D;
     var Curve3 = (function () {
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
         function Curve3(points) {
             this._length = 0;
             this._points = points;
             this._length = this._computeLength(points);
         }
-        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateQuadraticBezier = function (v0, v1, v2, nbPoints) {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array();
@@ -2681,7 +2713,14 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateCubicBezier = function (v0, v1, v2, v3, nbPoints) {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array();
@@ -2694,7 +2733,14 @@ var BABYLON;
             }
             return new Curve3(bez);
         };
-        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         Curve3.CreateHermiteSpline = function (p1, t1, p2, t2, nbPoints) {
             var hermite = new Array();
             var step = 1 / nbPoints;
@@ -2703,12 +2749,23 @@ var BABYLON;
             }
             return new Curve3(hermite);
         };
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
         Curve3.prototype.getPoints = function () {
             return this._points;
         };
+        /**
+         * Returns the computed length (float) of the curve.
+         */
         Curve3.prototype.length = function () {
             return this._length;
         };
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         */
         Curve3.prototype.continue = function (curve) {
             var lastPoint = this._points[this._points.length - 1];
             var continuedPoints = this._points.slice();

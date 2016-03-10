@@ -2,9 +2,21 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
+        /**
+         * Helper class usefull to convert panorama picture to their cubemap representation in 6 faces.
+         */
         var PanoramaToCubeMapTools = (function () {
             function PanoramaToCubeMapTools() {
             }
+            /**
+             * Converts a panorma stored in RGB right to left up to down format into a cubemap (6 faces).
+             *
+             * @param float32Array The source data.
+             * @param inputWidth The width of the input panorama.
+             * @param inputhHeight The height of the input panorama.
+             * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
+             * @return The cubemap data
+             */
             PanoramaToCubeMapTools.ConvertPanoramaToCubemap = function (float32Array, inputWidth, inputHeight, size) {
                 if (!float32Array) {
                     throw "ConvertPanoramaToCubemap: input cannot be null";

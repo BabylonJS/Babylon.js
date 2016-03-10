@@ -55,6 +55,22 @@
             scene.addLight(this);
         }
 
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        public toString(fullDetails? : boolean) : string {
+            var ret = "Name: " + this.name;
+            ret += ", type: " + (["Point", "Directional", "Spot", "Hemispheric"])[this.getTypeID()];
+            if (this.animations){
+                for (var i = 0; i < this.animations.length; i++){
+                   ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
+                }
+            }
+            if (fullDetails){
+            }
+            return ret;
+        } 
+        
         public getShadowGenerator(): ShadowGenerator {
             return this._shadowGenerator;
         }
