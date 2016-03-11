@@ -24,7 +24,6 @@ var BABYLON;
          * default is 1/60.
          * To slow it down, enter 1/600 for example.
          * To speed it up, 1/30
-         * @param {number} newTimeStep the new timestep to apply to this world.
          */
         PhysicsEngine.prototype.setTimeStep = function (newTimeStep) {
             if (newTimeStep === void 0) { newTimeStep = 1 / 60; }
@@ -39,11 +38,6 @@ var BABYLON;
         PhysicsEngine.prototype.getPhysicsPluginName = function () {
             return this._physicsPlugin.name;
         };
-        /**
-         * Adding a new impostor for the impostor tracking.
-         * This will be done by the impostor itself.
-         * @param {PhysicsImpostor} impostor the impostor to add
-         */
         PhysicsEngine.prototype.addImpostor = function (impostor) {
             this._impostors.push(impostor);
             //if no parent, generate the body
@@ -51,11 +45,6 @@ var BABYLON;
                 this._physicsPlugin.generatePhysicsBody(impostor);
             }
         };
-        /**
-         * Remove an impostor from the engine.
-         * This impostor and its mesh will not longer be updated by the physics engine.
-         * @param {PhysicsImpostor} impostor the impostor to remove
-         */
         PhysicsEngine.prototype.removeImpostor = function (impostor) {
             var index = this._impostors.indexOf(impostor);
             if (index > -1) {
@@ -67,19 +56,12 @@ var BABYLON;
                 }
             }
         };
-        /**
-         * Add a joint to the physics engine
-         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
-         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
-         * @param {PhysicsJoint} the joint that will connect both impostors.
-         */
         PhysicsEngine.prototype.addJoint = function (mainImpostor, connectedImpostor, joint) {
             var impostorJoint = {
                 mainImpostor: mainImpostor,
                 connectedImpostor: connectedImpostor,
                 joint: joint
             };
-            joint.physicsPlugin = this._physicsPlugin;
             this._joints.push(impostorJoint);
             this._physicsPlugin.generateJoint(impostorJoint);
         };
