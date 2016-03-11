@@ -2,14 +2,11 @@ module BABYLON {
     export var CameraInputTypes = {};
 
     export interface ICameraInput<TCamera extends BABYLON.Camera> {
-        camera: TCamera;
-        attachCamera(camera: TCamera);
-        detach();
+        camera: TCamera;        
         getTypeName(): string;
         getSimpleName(): string;
-
-        attachElement?: (element: HTMLElement, noPreventDefault?: boolean) => void;
-        detachElement?: (element: HTMLElement) => void;
+        attachControl: (element: HTMLElement, noPreventDefault?: boolean) => void;
+        detachControl: (element: HTMLElement) => void;        
         checkInputs?: () => void;
     }
 
@@ -20,6 +17,7 @@ module BABYLON {
 
     export class CameraInputsManager<TCamera extends BABYLON.Camera> {
         attached: CameraInputsMap<TCamera>;
+        attachedElement: HTMLElement;
         camera: TCamera;
         checkInputs: () => void;
 
@@ -37,12 +35,17 @@ module BABYLON {
             }
 
             this.attached[type] = input;
-            input.attachCamera(this.camera);
+            
+            input.camera = this.camera;
             
             //for checkInputs, we are dynamically creating a function
             //the goal is to avoid the performance penalty of looping for inputs in the render loop
             if (input.checkInputs) {
                 this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
+            }
+            
+            if (this.attachedElement){
+                input.attachControl(this.attachedElement);
             }
         }
 
@@ -50,7 +53,7 @@ module BABYLON {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 if (input == inputToRemove) {
-                    input.detach();
+                    input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                 }
             }
@@ -60,7 +63,7 @@ module BABYLON {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 if (input.getTypeName() == inputType) {
-                    input.detach();
+                    input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                 }
             }
@@ -75,18 +78,17 @@ module BABYLON {
         }
 
         public attachElement(element: HTMLElement, noPreventDefault?: boolean) {
+            this.attachedElement = element;
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.attachElement)
-                    this.attached[cam].attachElement(element, noPreventDefault);
+                this.attached[cam].attachControl(element, noPreventDefault);
             }
         }
 
         public detachElement(element: HTMLElement) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.detachElement)
-                    this.attached[cam].detachElement(element);
+                this.attached[cam].detachControl(element);
             }
         }
 
@@ -102,11 +104,9 @@ module BABYLON {
         }
 
         public clear() {
-            for (var cam in this.attached) {
-                this.attached[cam].detach();
-            }
-
+            this.detachElement(this.attachedElement);
             this.attached = {};
+            this.attachedElement = null;
             this.checkInputs = () => { };
         }
 
