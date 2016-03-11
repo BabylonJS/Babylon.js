@@ -11,15 +11,11 @@ module BABYLON {
         @serialize()
         public gamepadMoveSensibility = 40;
 
-        constructor() {
+        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
             this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
         }
-
-        attachCamera(camera: ArcRotateCamera) {
-            this.camera = camera;
-        }
-
-        detach() {
+        
+        detachControl(element : HTMLElement) {
             this._gamepads.dispose();
         }
 

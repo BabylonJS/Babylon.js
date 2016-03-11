@@ -14,24 +14,24 @@ module BABYLON {
         }
 
         public checkInputs() {
-            var camera = this.camera;
-            var speed = camera._computeLocalCameraSpeed() * 50;
-            var cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-            var deltaTransform = Vector3.TransformCoordinates(new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
-            camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-            camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
-            
-            if (!this._leftjoystick.pressed) {
-                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
-            }
-            if (!this._rightjoystick.pressed) {
-                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+            if (this._leftjoystick){
+                var camera = this.camera;
+                var speed = camera._computeLocalCameraSpeed() * 50;
+                var cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+                var deltaTransform = Vector3.TransformCoordinates(new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
+                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
+                camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
+                
+                if (!this._leftjoystick.pressed) {
+                    this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
+                }
+                if (!this._rightjoystick.pressed) {
+                    this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+                }
             }
         }
         
-        attachCamera(camera: FreeCamera) {
-            this.camera = camera;
-            
+        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
             this._leftjoystick = new VirtualJoystick(true);
             this._leftjoystick.setAxisForUpDown(JoystickAxis.Z);
             this._leftjoystick.setAxisForLeftRight(JoystickAxis.X);
@@ -44,8 +44,9 @@ module BABYLON {
             this._rightjoystick.setJoystickColor("yellow");
         }
 
-        detach() {
+        detachControl(element : HTMLElement) {
             this._leftjoystick.releaseCanvas();
+            this._rightjoystick.releaseCanvas();
         }
 
         getTypeName(): string {

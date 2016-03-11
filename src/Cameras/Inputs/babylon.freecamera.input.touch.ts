@@ -6,7 +6,6 @@ module BABYLON {
         private _offsetY: number = null;
         private _pointerCount: number = 0;
         private _pointerPressed = [];
-        private _attachedElement: HTMLElement;
         private _onPointerDown: (e: PointerEvent) => any;
         private _onPointerUp: (e: PointerEvent) => any;
         private _onPointerMove: (e: PointerEvent) => any;
@@ -18,18 +17,8 @@ module BABYLON {
         @serialize()
         public touchMoveSensibility: number = 250.0;
 
-        attachCamera(camera: FreeCamera) {
-            this.camera = camera;
-        }
-        
-        attachElement(element: HTMLElement, noPreventDefault?: boolean) {
+        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             var previousPosition;
-
-            if (this._attachedElement) {
-                return;
-            }
-
-            this._attachedElement = element;
 
             if (this._onPointerDown === undefined) {
                 this._onLostFocus = (evt) => {
@@ -117,17 +106,12 @@ module BABYLON {
             element.addEventListener("pointermove", this._onPointerMove);
         }
 
-        detachElement(element: HTMLElement) {
-            if (this._attachedElement !== element) {
-                return;
-            }
-
+        detachControl(element: HTMLElement) {
             element.removeEventListener("blur", this._onLostFocus);
             element.removeEventListener("pointerdown", this._onPointerDown);
             element.removeEventListener("pointerup", this._onPointerUp);
             element.removeEventListener("pointerout", this._onPointerUp);
             element.removeEventListener("pointermove", this._onPointerMove);
-            this._attachedElement = null;
         }
 
         checkInputs() {
@@ -144,12 +128,6 @@ module BABYLON {
                     Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
                     camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
                 }
-            }
-        }
-
-        detach() {
-            if (this._attachedElement) {
-                this.detachElement(this._attachedElement);
             }
         }
 
