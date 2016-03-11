@@ -162,7 +162,6 @@ var BABYLON;
             }*/
             switch (impostorJoint.joint.type) {
                 case BABYLON.PhysicsJoint.HingeJoint:
-                case BABYLON.PhysicsJoint.Hinge2Joint:
                     constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
                     break;
                 case BABYLON.PhysicsJoint.DistanceJoint:
@@ -372,18 +371,6 @@ var BABYLON;
         CannonJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
             impostor.physicsBody.angularVelocity.copy(velocity);
         };
-        CannonJSPlugin.prototype.getLinearVelocity = function (impostor) {
-            var v = impostor.physicsBody.velocity;
-            if (!v)
-                return null;
-            return new BABYLON.Vector3(v.x, v.y, v.z);
-        };
-        CannonJSPlugin.prototype.getAngularVelocity = function (impostor) {
-            var v = impostor.physicsBody.angularVelocity;
-            if (!v)
-                return null;
-            return new BABYLON.Vector3(v.x, v.y, v.z);
-        };
         CannonJSPlugin.prototype.setBodyMass = function (impostor, mass) {
             impostor.physicsBody.mass = mass;
             impostor.physicsBody.updateMassProperties();
@@ -393,32 +380,6 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.wakeUpBody = function (impostor) {
             impostor.physicsBody.wakeUp();
-        };
-        CannonJSPlugin.prototype.updateDistanceJoint = function (joint, maxDistance, minDistance) {
-            joint.physicsJoint.distance = maxDistance;
-        };
-        CannonJSPlugin.prototype.enableMotor = function (joint, motorIndex) {
-            if (!motorIndex) {
-                joint.physicsJoint.enableMotor();
-            }
-        };
-        CannonJSPlugin.prototype.disableMotor = function (joint, motorIndex) {
-            if (!motorIndex) {
-                joint.physicsJoint.disableMotor();
-            }
-        };
-        CannonJSPlugin.prototype.setMotor = function (joint, speed, maxForce, motorIndex) {
-            if (!motorIndex) {
-                joint.physicsJoint.enableMotor();
-                joint.physicsJoint.setMotorSpeed(speed);
-                if (maxForce) {
-                    this.setLimit(joint, maxForce);
-                }
-            }
-        };
-        CannonJSPlugin.prototype.setLimit = function (joint, upperLimit, lowerLimit) {
-            joint.physicsJoint.motorEquation.maxForce = upperLimit;
-            joint.physicsJoint.motorEquation.minForce = lowerLimit || -upperLimit;
         };
         CannonJSPlugin.prototype.dispose = function () {
             //nothing to do, actually.
