@@ -8,16 +8,16 @@ var BABYLON;
 (function (BABYLON) {
     var FreeCameraGamepadInput = (function () {
         function FreeCameraGamepadInput() {
+            var _this = this;
             this.gamepadAngularSensibility = 200;
             this.gamepadMoveSensibility = 40;
-        }
-        FreeCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
-            var _this = this;
             this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
+        }
+        FreeCameraGamepadInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
         };
-        FreeCameraGamepadInput.prototype.detachControl = function (element) {
+        FreeCameraGamepadInput.prototype.detach = function () {
             this._gamepads.dispose();
-            this.gamepad = null;
         };
         FreeCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {
