@@ -10,12 +10,8 @@ var BABYLON;
         function ArcRotateCameraMouseWheelInput() {
             this.wheelPrecision = 3.0;
         }
-        ArcRotateCameraMouseWheelInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        ArcRotateCameraMouseWheelInput.prototype.attachElement = function (element) {
+        ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this.attachedElement = element;
             this._wheel = function (event) {
                 var delta = 0;
                 if (event.wheelDelta) {
@@ -35,9 +31,11 @@ var BABYLON;
             element.addEventListener('mousewheel', this._wheel, false);
             element.addEventListener('DOMMouseScroll', this._wheel, false);
         };
-        ArcRotateCameraMouseWheelInput.prototype.detach = function () {
-            this.attachedElement.removeEventListener('mousewheel', this._wheel);
-            this.attachedElement.removeEventListener('DOMMouseScroll', this._wheel);
+        ArcRotateCameraMouseWheelInput.prototype.detachControl = function (element) {
+            if (this._wheel && element) {
+                element.removeEventListener('mousewheel', this._wheel);
+                element.removeEventListener('DOMMouseScroll', this._wheel);
+            }
         };
         ArcRotateCameraMouseWheelInput.prototype.getTypeName = function () {
             return "ArcRotateCameraMouseWheelInput";

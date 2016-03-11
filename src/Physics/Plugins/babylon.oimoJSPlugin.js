@@ -264,6 +264,18 @@ var BABYLON;
         OimoJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
             impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
         };
+        OimoJSPlugin.prototype.getLinearVelocity = function (impostor) {
+            var v = impostor.physicsBody.linearVelocity;
+            if (!v)
+                return null;
+            return new BABYLON.Vector3(v.x, v.y, v.z);
+        };
+        OimoJSPlugin.prototype.getAngularVelocity = function (impostor) {
+            var v = impostor.physicsBody.angularVelocity;
+            if (!v)
+                return null;
+            return new BABYLON.Vector3(v.x, v.y, v.z);
+        };
         OimoJSPlugin.prototype.setBodyMass = function (impostor, mass) {
             var staticBody = mass === 0;
             //this will actually set the body's density and not its mass.
@@ -276,6 +288,24 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.wakeUpBody = function (impostor) {
             impostor.physicsBody.awake();
+        };
+        OimoJSPlugin.prototype.updateDistanceJoint = function (joint, maxDistance, minDistance) {
+            joint.physicsJoint.limitMotoe.upperLimit = maxDistance;
+            if (minDistance !== void 0) {
+                joint.physicsJoint.limitMotoe.lowerLimit = minDistance;
+            }
+        };
+        OimoJSPlugin.prototype.setMotor = function (joint, force, maxForce, motorIndex) {
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
+            if (motor) {
+                motor.setMotor(force, maxForce);
+            }
+        };
+        OimoJSPlugin.prototype.setLimit = function (joint, upperLimit, lowerLimit, motorIndex) {
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
+            if (motor) {
+                motor.setLimit(upperLimit, lowerLimit || -upperLimit);
+            }
         };
         OimoJSPlugin.prototype.dispose = function () {
             this.world.clear();
