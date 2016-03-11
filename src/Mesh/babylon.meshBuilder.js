@@ -80,7 +80,7 @@ var BABYLON;
          * The parameter "pathArray" is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
          * The parameter "closeArray" (boolean, default false) creates a seam between the first and the last paths of the path array.
          * The parameter "closePath" (boolean, default false) creates a seam between the first and the last points of each path of the path array.
-         * The parameter "instance" is an instance of an existing Ribbon object to be updated with the passed "pathArray" parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#ribbon
+         * The optional parameter "instance" is an instance of an existing Ribbon object to be updated with the passed "pathArray" parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#ribbon
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
          * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
@@ -227,6 +227,18 @@ var BABYLON;
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
         };
+        /**
+         * Creates a line system mesh.
+         * A line system is a pool of many lines gathered in a single mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#linesystem
+         * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function.
+         * The parameter "lines" is an array of lines, each line being an array of successive Vector3.
+         * The optional parameter "instance" is an instance of an existing LineSystem object to be updated with the passed "lines" parameter. The way to update it is the same than for
+         * updating a simple Line mesh, you just need to update every line in the "lines" array : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.
+         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateLineSystem = function (name, options, scene) {
             var instance = options.instance;
             var lines = options.lines;
@@ -252,10 +264,33 @@ var BABYLON;
             vertexData.applyToMesh(lineSystem, options.updatable);
             return lineSystem;
         };
+        /**
+         * Creates a line mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#lines
+         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
+         * The parameter "points" is an array successive Vector3.
+         * The optional parameter "instance" is an instance of an existing LineMesh object to be updated with the passed "points" parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only point positions can change, not the number of points.
+         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateLines = function (name, options, scene) {
             var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
             return lines;
         };
+        /**
+         * Creates a dashed line mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#dashed-lines
+         * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
+         * The parameter "points" is an array successive Vector3.
+         * The parameter "dashNb" is the intended total number of dashes (positive integer, default 200).
+         * The parameter "dashSize" is the size of the dashes relatively the dash number (positive float, default 3).
+         * The parameter "gapSize" is the size of the gap between two successive dashes relatively the dash number (positive float, default 1).
+         * The optional parameter "instance" is an instance of an existing LineMesh object to be updated with the passed "points" parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only point positions can change, not the number of points.
+         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateDashedLines = function (name, options, scene) {
             var points = options.points;
             var instance = options.instance;
@@ -315,6 +350,24 @@ var BABYLON;
             dashedLines.gapSize = gapSize;
             return dashedLines;
         };
+        /**
+         * Creates an extruded shape mesh.
+         * The extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#extruded-shapes
+         *
+         * Please read this full tutorial to understand how to design an extruded shape : http://doc.babylonjs.com/tutorials/Parametric_Shapes#extrusion
+         * The parameter "shape" is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be
+         * extruded along the Z axis.
+         * The parameter "path" is a required array of successive Vector3. This is the axis curve the shape is extruded along.
+         * The parameter "rotation" (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
+         * The parameter "scale" (float, default 1) is the value to scale the shape.
+         * The parameter "cap" sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * The optional parameter "instance" is an instance of an existing ExtrudedShape object to be updated with the passed "shape", "path", "scale" or "rotation" parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape
+         * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.ExtrudeShape = function (name, options, scene) {
             var path = options.path;
             var shape = options.shape;
@@ -326,6 +379,30 @@ var BABYLON;
             var instance = options.instance;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance);
         };
+        /**
+         * Creates an custom extruded shape mesh.
+         * The custom extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
+         * tuto :http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#custom-extruded-shapes
+         *
+         * Please read this full tutorial to understand how to design a custom extruded shape : http://doc.babylonjs.com/tutorials/Parametric_Shapes#extrusion
+         * The parameter "shape" is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be
+         * extruded along the Z axis.
+         * The parameter "path" is a required array of successive Vector3. This is the axis curve the shape is extruded along.
+         * The parameter "rotationFunction" (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path
+         * and the distance of this point from the begining of the path : rotationFunction = function(i, distance) {}.
+         * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
+         * The parameter "scaleFunction" (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path
+         * and the distance of this point from the begining of the path : scaleFunction = function(i, distance) {}.
+         * It must returns a float value that will be the scale value applied to the shape on each path point.
+         * The parameter "ribbonClosePath" (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its pathArray.
+         * The parameter "ribbonCloseArray" (boolean, default false) forces the extrusion underlying ribbon to close its pathArray.
+         * The parameter "cap" sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * The optional parameter "instance" is an instance of an existing ExtrudedShape object to be updated with the passed "shape", "path", "scale" or "rotation" parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape
+         * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.ExtrudeShapeCustom = function (name, options, scene) {
             var path = options.path;
             var shape = options.shape;
@@ -339,6 +416,22 @@ var BABYLON;
             var instance = options.instance;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance);
         };
+        /**
+         * Creates lathe mesh.
+         * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#lathe
+         *
+         * The parameter "shape" is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be
+         * rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero.
+         * The parameter "radius" (positive float, default 1) is the radius value of the lathe.
+         * The parameter "tessellation" (positive integer, default 64) is the side number of the lathe.
+         * The parameter "arc" (positive float, default 1) is the ratio of the lathe. 0.5 builds for instance half a lathe, so an opened shape.
+         * The parameter "closed" (boolean, default true) opens/closes the lathe circumference. This should be set to false when used with the parameter "arc".
+         * The parameter "cap" sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateLathe = function (name, options, scene) {
             var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var closed = (options.closed === undefined) ? true : options.closed;

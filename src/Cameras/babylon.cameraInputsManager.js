@@ -14,18 +14,21 @@ var BABYLON;
                 return;
             }
             this.attached[type] = input;
-            input.attachCamera(this.camera);
+            input.camera = this.camera;
             //for checkInputs, we are dynamically creating a function
             //the goal is to avoid the performance penalty of looping for inputs in the render loop
             if (input.checkInputs) {
                 this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
+            }
+            if (this.attachedElement) {
+                input.attachControl(this.attachedElement);
             }
         };
         CameraInputsManager.prototype.remove = function (inputToRemove) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 if (input == inputToRemove) {
-                    input.detach();
+                    input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                 }
             }
@@ -34,7 +37,7 @@ var BABYLON;
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 if (input.getTypeName() == inputType) {
-                    input.detach();
+                    input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                 }
             }
@@ -47,17 +50,16 @@ var BABYLON;
             };
         };
         CameraInputsManager.prototype.attachElement = function (element, noPreventDefault) {
+            this.attachedElement = element;
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.attachElement)
-                    this.attached[cam].attachElement(element, noPreventDefault);
+                this.attached[cam].attachControl(element, noPreventDefault);
             }
         };
         CameraInputsManager.prototype.detachElement = function (element) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.detachElement)
-                    this.attached[cam].detachElement(element);
+                this.attached[cam].detachControl(element);
             }
         };
         CameraInputsManager.prototype.rebuildInputCheck = function (element) {
@@ -70,10 +72,9 @@ var BABYLON;
             }
         };
         CameraInputsManager.prototype.clear = function () {
-            for (var cam in this.attached) {
-                this.attached[cam].detach();
-            }
+            this.detachElement(this.attachedElement);
             this.attached = {};
+            this.attachedElement = null;
             this.checkInputs = function () { };
         };
         CameraInputsManager.prototype.serialize = function (serializedCamera) {
