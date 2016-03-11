@@ -22,9 +22,7 @@ module BABYLON {
             this._orientationChanged = this.orientationChanged.bind(this);
         }
 
-        attachCamera(camera: FreeCamera) {
-            this.camera = camera;
-
+        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
             window.addEventListener("resize", this._resetOrientationGamma, false);
             window.addEventListener("deviceorientation", this._orientationChanged);
         }
@@ -46,7 +44,7 @@ module BABYLON {
             this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
         }
 
-        detach() {
+        detachControl(element : HTMLElement) {
             window.removeEventListener("resize", this._resetOrientationGamma);
             window.removeEventListener("deviceorientation", this._orientationChanged);
             

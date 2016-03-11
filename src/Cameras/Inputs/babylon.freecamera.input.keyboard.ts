@@ -17,9 +17,7 @@ module BABYLON {
         @serialize()
         public keysRight = [39];
 
-        attachCamera(camera: FreeCamera) {
-            this.camera = camera;
-            
+        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
             if (this._onKeyDown === undefined) {
 
                 this._onKeyDown = evt => {
@@ -32,7 +30,7 @@ module BABYLON {
                         if (index === -1) {
                             this._keys.push(evt.keyCode);
                         }
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -48,7 +46,7 @@ module BABYLON {
                         if (index >= 0) {
                             this._keys.splice(index, 1);
                         }
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -62,7 +60,7 @@ module BABYLON {
             }
         }
 
-        detach() {
+        detachControl(element : HTMLElement) {
             Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },

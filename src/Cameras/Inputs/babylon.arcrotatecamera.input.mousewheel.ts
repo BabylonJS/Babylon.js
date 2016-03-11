@@ -1,19 +1,13 @@
 module BABYLON {
     export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
-        attachedElement: HTMLElement;
-
+        
         private _wheel: (e: MouseWheelEvent) => void;
 
         @serialize()
         public wheelPrecision = 3.0;
 
-        public attachCamera(camera: ArcRotateCamera) {
-            this.camera = camera;
-        }
-
-        public attachElement(element: HTMLElement) {
-            this.attachedElement = element;
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             this._wheel = event => {
                 var delta = 0;
                 if (event.wheelDelta) {
@@ -35,9 +29,11 @@ module BABYLON {
             element.addEventListener('DOMMouseScroll', this._wheel, false);
         }
 
-        public detach() {
-            this.attachedElement.removeEventListener('mousewheel', this._wheel);
-            this.attachedElement.removeEventListener('DOMMouseScroll', this._wheel);
+        public detachControl(element: HTMLElement) {
+            if (this._wheel && element){
+                element.removeEventListener('mousewheel', this._wheel);
+                element.removeEventListener('DOMMouseScroll', this._wheel);
+            }
         }
 
         getTypeName(): string {

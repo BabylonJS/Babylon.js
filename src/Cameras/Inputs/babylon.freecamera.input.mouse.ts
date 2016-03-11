@@ -1,7 +1,6 @@
 module BABYLON {       
     export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         camera : FreeCamera;
-        attachedElement : HTMLElement;
         
         @serialize()
         public angularSensibility = 2000.0;
@@ -11,13 +10,8 @@ module BABYLON {
         private _onMouseOut: (e: MouseEvent) => any;
         private _onMouseMove: (e: MouseEvent) => any;
         
-        attachCamera(camera : FreeCamera){
-            this.camera = camera;
-        }
-        
-        attachElement(element: HTMLElement, noPreventDefault?: boolean){     
+        attachControl(element: HTMLElement, noPreventDefault?: boolean){     
             var previousPosition;
-            this.attachedElement = element;
                 
             if (this._onMouseDown === undefined) {
                 var camera = this.camera;
@@ -86,22 +80,13 @@ module BABYLON {
    
         }
         
-        detachElement(element : HTMLElement){   
-            if (this.attachedElement !== element) {
-                return;
-            }
-
-            element.removeEventListener("mousedown", this._onMouseDown);
-            element.removeEventListener("mouseup", this._onMouseUp);
-            element.removeEventListener("mouseout", this._onMouseOut);
-            element.removeEventListener("mousemove", this._onMouseMove); 
-            this.attachedElement = null;        
-        }
-        
-        detach(){          
-            if (this.attachedElement){
-                this.detachElement(this.attachedElement);
-            }  
+        detachControl(element : HTMLElement){   
+            if (this._onMouseDown && element){
+                element.removeEventListener("mousedown", this._onMouseDown);
+                element.removeEventListener("mouseup", this._onMouseUp);
+                element.removeEventListener("mouseout", this._onMouseOut);
+                element.removeEventListener("mousemove", this._onMouseMove);
+            }        
         }
         
         getTypeName(): string{
