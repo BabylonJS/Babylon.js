@@ -19,7 +19,8 @@ var BABYLON;
             this._resetOrientationGamma = this.resetOrientationGamma.bind(this);
             this._orientationChanged = this.orientationChanged.bind(this);
         }
-        FreeCameraDeviceOrientationInput.prototype.attachControl = function (element, noPreventDefault) {
+        FreeCameraDeviceOrientationInput.prototype.attachCamera = function (camera) {
+            this.camera = camera;
             window.addEventListener("resize", this._resetOrientationGamma, false);
             window.addEventListener("deviceorientation", this._orientationChanged);
         };
@@ -36,7 +37,7 @@ var BABYLON;
             this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
             this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
         };
-        FreeCameraDeviceOrientationInput.prototype.detachControl = function (element) {
+        FreeCameraDeviceOrientationInput.prototype.detach = function () {
             window.removeEventListener("resize", this._resetOrientationGamma);
             window.removeEventListener("deviceorientation", this._orientationChanged);
             this._orientationGamma = 0;

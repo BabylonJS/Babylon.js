@@ -14,8 +14,9 @@ var BABYLON;
             this.keysLeft = [37];
             this.keysRight = [39];
         }
-        ArcRotateCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
+        ArcRotateCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
             var _this = this;
+            this.camera = camera;
             this._onKeyDown = function (evt) {
                 if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     _this.keysDown.indexOf(evt.keyCode) !== -1 ||
@@ -26,7 +27,7 @@ var BABYLON;
                         _this._keys.push(evt.keyCode);
                     }
                     if (evt.preventDefault) {
-                        if (!noPreventDefault) {
+                        if (!camera._noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -42,7 +43,7 @@ var BABYLON;
                         _this._keys.splice(index, 1);
                     }
                     if (evt.preventDefault) {
-                        if (!noPreventDefault) {
+                        if (!camera._noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -57,7 +58,7 @@ var BABYLON;
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
-        ArcRotateCameraKeyboardMoveInput.prototype.detachControl = function (element) {
+        ArcRotateCameraKeyboardMoveInput.prototype.detach = function () {
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },
