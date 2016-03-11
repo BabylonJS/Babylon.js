@@ -18,8 +18,7 @@ module BABYLON {
         @serialize()
         public keysRight = [39];
 
-        public attachCamera(camera: ArcRotateCamera) {
-            this.camera = camera;
+        public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
 
             this._onKeyDown = evt => {
                 if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
@@ -33,7 +32,7 @@ module BABYLON {
                     }
 
                     if (evt.preventDefault) {
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -52,7 +51,7 @@ module BABYLON {
                     }
 
                     if (evt.preventDefault) {
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -70,7 +69,7 @@ module BABYLON {
             ]);
         }
 
-        public detach() {
+        public detachControl(element: HTMLElement) {
             Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },

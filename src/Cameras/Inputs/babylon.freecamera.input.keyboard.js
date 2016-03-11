@@ -14,9 +14,8 @@ var BABYLON;
             this.keysLeft = [37];
             this.keysRight = [39];
         }
-        FreeCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
+        FreeCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this.camera = camera;
             if (this._onKeyDown === undefined) {
                 this._onKeyDown = function (evt) {
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
@@ -27,7 +26,7 @@ var BABYLON;
                         if (index === -1) {
                             _this._keys.push(evt.keyCode);
                         }
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -41,7 +40,7 @@ var BABYLON;
                         if (index >= 0) {
                             _this._keys.splice(index, 1);
                         }
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -53,7 +52,7 @@ var BABYLON;
                 ]);
             }
         };
-        FreeCameraKeyboardMoveInput.prototype.detach = function () {
+        FreeCameraKeyboardMoveInput.prototype.detachControl = function (element) {
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },

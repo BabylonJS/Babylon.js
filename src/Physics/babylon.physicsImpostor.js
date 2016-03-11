@@ -55,15 +55,20 @@ var BABYLON;
                     });
                 }
             };
-            //default options params
-            this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
-            this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
-            this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
-            this._joints = [];
-            //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
-            if (!this._mesh.parent) {
-                this._init();
+            if (!this._physicsEngine) {
+                BABYLON.Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
+            }
+            else {
+                //default options params
+                this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
+                this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
+                this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
+                this._joints = [];
+                //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
+                if (!this._mesh.parent) {
+                    this._init();
+                }
             }
         }
         /**
@@ -165,11 +170,17 @@ var BABYLON;
             }
             this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
         };
+        PhysicsImpostor.prototype.getLinearVelocity = function () {
+            return this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this);
+        };
         /**
          * Set the body's linear velocity.
          */
         PhysicsImpostor.prototype.setLinearVelocity = function (velocity) {
             this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        };
+        PhysicsImpostor.prototype.getAngularVelocity = function () {
+            return this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this);
         };
         /**
          * Set the body's linear velocity.
