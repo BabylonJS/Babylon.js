@@ -17,6 +17,7 @@ var BABYLON;
         };
         FreeCameraGamepadInput.prototype.detachControl = function (element) {
             this._gamepads.dispose();
+            this.gamepad = null;
         };
         FreeCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {
