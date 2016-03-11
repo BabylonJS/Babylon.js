@@ -17,6 +17,7 @@ var BABYLON;
         };
         ArcRotateCameraGamepadInput.prototype.detachControl = function (element) {
             this._gamepads.dispose();
+            this.gamepad = null;
         };
         ArcRotateCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {

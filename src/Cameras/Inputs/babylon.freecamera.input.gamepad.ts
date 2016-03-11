@@ -17,6 +17,7 @@ module BABYLON {
         
         detachControl(element : HTMLElement){
             this._gamepads.dispose();
+            this.gamepad = null;
         }
         
         checkInputs(){
