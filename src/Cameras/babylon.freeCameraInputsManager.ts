@@ -1,40 +1,40 @@
 module BABYLON {
     export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
-        constructor(camera : FreeCamera){
-            super(camera);    
-        }        
-        
-        addKeyboard(){
+        constructor(camera: FreeCamera) {
+            super(camera);
+        }
+
+        addKeyboard(): FreeCameraInputsManager {
             this.add(new FreeCameraKeyboardMoveInput());
             return this;
         }
-        
-        addMouse(){
+
+        addMouse(): FreeCameraInputsManager {
             this.add(new FreeCameraMouseInput());
             return this;
         }
-        
-        addGamepad(){
+
+        addGamepad(): FreeCameraInputsManager {
             this.add(new FreeCameraGamepadInput());
             return this;
         }
-        
-        addDeviceOrientation(){
+
+        addDeviceOrientation(): FreeCameraInputsManager {
             this.add(new FreeCameraDeviceOrientationInput());
             return this;
         }
-        
-        addVRDeviceOrientation(){
+
+        addVRDeviceOrientation(): FreeCameraInputsManager {
             this.add(new FreeCameraVRDeviceOrientationInput());
             return this;
         }
-        
-        addTouch(){
+
+        addTouch(): FreeCameraInputsManager {
             this.add(new FreeCameraTouchInput());
             return this;
         }
-        
-        addVirtualJoystick(){
+
+        addVirtualJoystick(): FreeCameraInputsManager {
             this.add(new FreeCameraVirtualJoystickInput());
             return this;
         }
