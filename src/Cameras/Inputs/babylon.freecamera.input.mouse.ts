@@ -9,16 +9,15 @@ module BABYLON {
         private _onMouseUp: (e: MouseEvent) => any;
         private _onMouseOut: (e: MouseEvent) => any;
         private _onMouseMove: (e: MouseEvent) => any;
-        
-        attachControl(element: HTMLElement, noPreventDefault?: boolean){     
-            var previousPosition;
-                
+        private previousPosition: { x: number, y: number };
+
+        attachControl(element: HTMLElement, noPreventDefault?: boolean){                     
             if (this._onMouseDown === undefined) {
                 var camera = this.camera;
                 var engine = this.camera.getEngine();
                 
                 this._onMouseDown = evt => {
-                    previousPosition = {
+                    this.previousPosition = {
                         x: evt.clientX,
                         y: evt.clientY
                     };
@@ -29,14 +28,14 @@ module BABYLON {
                 };
 
                 this._onMouseUp = evt => {
-                    previousPosition = null;
+                    this.previousPosition = null;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                 };
 
                 this._onMouseOut = evt => {
-                    previousPosition = null;
+                    this.previousPosition = null;
                     
                     if (!noPreventDefault) {
                         evt.preventDefault();
@@ -44,7 +43,7 @@ module BABYLON {
                 };
 
                 this._onMouseMove = evt => {
-                    if (!previousPosition && !engine.isPointerLock) {
+                    if (!this.previousPosition && !engine.isPointerLock) {
                         return;
                     }
 
@@ -52,8 +51,8 @@ module BABYLON {
                     var offsetY;
 
                     if (!engine.isPointerLock) {
-                        offsetX = evt.clientX - previousPosition.x;
-                        offsetY = evt.clientY - previousPosition.y;
+                        offsetX = evt.clientX - this.previousPosition.x;
+                        offsetY = evt.clientY - this.previousPosition.y;
                     } else {
                         offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
                         offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
@@ -62,7 +61,7 @@ module BABYLON {
                     camera.cameraRotation.y += offsetX / this.angularSensibility;
                     camera.cameraRotation.x += offsetY / this.angularSensibility;
 
-                    previousPosition = {
+                    this.previousPosition = {
                         x: evt.clientX,
                         y: evt.clientY
                     };
@@ -81,7 +80,8 @@ module BABYLON {
         }
         
         detachControl(element : HTMLElement){   
-            if (this._onMouseDown && element){
+            if (this._onMouseDown && element) {
+                this.previousPosition = null;
                 element.removeEventListener("mousedown", this._onMouseDown);
                 element.removeEventListener("mouseup", this._onMouseUp);
                 element.removeEventListener("mouseout", this._onMouseOut);
