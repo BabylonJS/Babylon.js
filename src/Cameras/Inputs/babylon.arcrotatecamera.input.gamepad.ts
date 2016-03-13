@@ -15,8 +15,10 @@ module BABYLON {
             this._gamepads = new Gamepads((gamepad: Gamepad) => { this._onNewGameConnected(gamepad); });
         }
         
-        detachControl(element : HTMLElement) {
-            this._gamepads.dispose();
+        detachControl(element: HTMLElement) {
+            if (this._gamepads) {
+                this._gamepads.dispose();
+            }
             this.gamepad = null;
         }
 
