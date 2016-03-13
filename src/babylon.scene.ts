@@ -1146,35 +1146,36 @@
                     return this.cameras[index];
                 }
             }
-
             return null;
         }
 
         /**
          * get a bone using its id
          * @param {string} the bone's id
-         * @param {Skeleton} the skeleton
          * @return {BABYLON.Bone|null} the bone or null if not found
          */
-        public getBoneByID(id: string, skeleton: Skeleton): Bone {
-        	for (var boneIndex = 0, cache = skeleton.bones.length; boneIndex < cache; boneIndex++) {
+        public getBoneByID(id: string): Bone {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
                     if (skeleton.bones[boneIndex].id === id) {
                         return skeleton.bones[boneIndex];
                     }
                 }
-                return null;
+            }
+            return null;
         }
 
         /**
         * get a bone using its id
         * @param {string} the bone's name
         * @param {Skeleton} the skeleton 
-        * @return {BABYLON.Bone|null} the bone or null if not found
+        * @return {number} the indice of bone on
         */
-        public getBoneByName(name: string, skeleton: Skeleton): Bone {
+        public searchIndexOnSkeletonByName(skeleton: Skeleton, name: string): number {
                 for (var boneIndex = 0, cache = skeleton.bones.length; boneIndex < cache; boneIndex++) {
                     if (skeleton.bones[boneIndex].name === name) {
-                        return skeleton.bones[boneIndex];
+                        return boneIndex;
                     }
                 }
                 return null;
@@ -1397,11 +1398,7 @@
                 return camera;
             }
 
-            var bone = null;
-            for (var skeletonIndex = 0, cache = this.skeletons.length; skeletonIndex < cache; skeletonIndex++) {
-                var skeleton = this.skeletons[skeletonIndex];
-		bone = this.getBoneByID(id, skeleton);
-	     }
+            var bone = this.getBoneByID(id);
 
              return bone;
         }
@@ -1424,11 +1421,7 @@
             if (camera) {
                 return camera;
             }
-            var bone = null;
-            for (var skeletonIndex = 0, cache = this.skeletons.length; skeletonIndex < cache; skeletonIndex++) {
-                var skeleton = this.skeletons[skeletonIndex];
-		bone = this.getBoneByName(name, skeleton);
-	     }
+            var bone = this.getBoneByName(name);
 	     
              return bone;
         }
