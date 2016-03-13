@@ -104,7 +104,9 @@ module BABYLON {
         }
 
         public clear() {
-            this.detachElement(this.attachedElement);
+            if (this.attachedElement) {
+                this.detachElement(this.attachedElement);
+            }
             this.attached = {};
             this.attachedElement = null;
             this.checkInputs = () => { };

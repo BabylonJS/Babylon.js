@@ -72,7 +72,9 @@ var BABYLON;
             }
         };
         CameraInputsManager.prototype.clear = function () {
-            this.detachElement(this.attachedElement);
+            if (this.attachedElement) {
+                this.detachElement(this.attachedElement);
+            }
             this.attached = {};
             this.attachedElement = null;
             this.checkInputs = function () { };
