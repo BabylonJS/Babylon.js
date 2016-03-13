@@ -261,7 +261,7 @@
                 return;
             }
             this._attachedElement = element;
-            this._noPreventDefault = noPreventDefault;
+            this._noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this._useCtrlForPanning = useCtrlForPanning;
 
             this.inputs.attachElement(element, noPreventDefault);
