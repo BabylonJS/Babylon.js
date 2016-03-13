@@ -1149,7 +1149,7 @@
             return null;
         }
 
-        /**
+       /**
          * get a bone using its id
          * @param {string} the bone's id
          * @return {BABYLON.Bone|null} the bone or null if not found
@@ -1163,6 +1163,25 @@
                     }
                 }
             }
+
+            return null;
+        }
+
+        /**
+        * get a bone using its id
+        * @param {string} the bone's name
+        * @return {BABYLON.Bone|null} the bone or null if not found
+        */
+        public getBoneByName(name: string): Bone {
+            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (skeleton.bones[boneIndex].name === name) {
+                        return skeleton.bones[boneIndex];
+                    }
+                }
+            }
+
             return null;
         }
 
