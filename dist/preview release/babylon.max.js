@@ -11221,7 +11221,9 @@ var BABYLON;
             }
         };
         CameraInputsManager.prototype.clear = function () {
-            this.detachElement(this.attachedElement);
+            if (this.attachedElement) {
+                this.detachElement(this.attachedElement);
+            }
             this.attached = {};
             this.attachedElement = null;
             this.checkInputs = function () { };
@@ -11713,7 +11715,9 @@ var BABYLON;
             this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         };
         FreeCameraGamepadInput.prototype.detachControl = function (element) {
-            this._gamepads.dispose();
+            if (this._gamepads) {
+                this._gamepads.dispose();
+            }
             this.gamepad = null;
         };
         FreeCameraGamepadInput.prototype.checkInputs = function () {
@@ -13141,7 +13145,7 @@ var BABYLON;
                 return;
             }
             this._attachedElement = element;
-            this._noPreventDefault = noPreventDefault;
+            this._noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this._useCtrlForPanning = useCtrlForPanning;
             this.inputs.attachElement(element, noPreventDefault);
             this._reset = function () {

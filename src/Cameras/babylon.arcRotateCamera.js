@@ -262,7 +262,7 @@ var BABYLON;
                 return;
             }
             this._attachedElement = element;
-            this._noPreventDefault = noPreventDefault;
+            this._noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this._useCtrlForPanning = useCtrlForPanning;
             this.inputs.attachElement(element, noPreventDefault);
             this._reset = function () {
