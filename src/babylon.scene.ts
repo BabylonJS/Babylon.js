@@ -1397,9 +1397,13 @@
                 return camera;
             }
 
-            var bone = this.getBoneByID(id);
+            var bone = null;
+            for (var skeletonIndex = 0, cache = this.skeletons.length; skeletonIndex < cache; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+		bone = this.getBoneByID(id, skeleton);
+	     }
 
-            return bone;
+             return bone;
         }
 
         public getNodeByName(name: string): Node {
@@ -1420,10 +1424,13 @@
             if (camera) {
                 return camera;
             }
-
-            var bone = this.getBoneByName(name);
-
-            return bone;
+            var bone = null;
+            for (var skeletonIndex = 0, cache = this.skeletons.length; skeletonIndex < cache; skeletonIndex++) {
+                var skeleton = this.skeletons[skeletonIndex];
+		bone = this.getBoneByName(name, skeleton);
+	     }
+	     
+             return bone;
         }
 
         public getMeshByName(name: string): AbstractMesh {
