@@ -1153,37 +1153,33 @@
         /**
          * get a bone using its id
          * @param {string} the bone's id
+         * @param {Skeleton} the skeleton
          * @return {BABYLON.Bone|null} the bone or null if not found
          */
-        public getBoneByID(id: string): Bone {
-            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
-                var skeleton = this.skeletons[skeletonIndex];
-                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+        public getBoneByID(id: string, skeleton: Skeleton): Bone {
+        	for (var boneIndex = 0, cache = skeleton.bones.length; boneIndex < cache; boneIndex++) {
                     if (skeleton.bones[boneIndex].id === id) {
                         return skeleton.bones[boneIndex];
+                        break;
                     }
                 }
-            }
-
-            return null;
+                return null;
         }
 
         /**
         * get a bone using its id
         * @param {string} the bone's name
+        * @param {Skeleton} the skeleton 
         * @return {BABYLON.Bone|null} the bone or null if not found
         */
-        public getBoneByName(name: string): Bone {
-            for (var skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
-                var skeleton = this.skeletons[skeletonIndex];
-                for (var boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+        public getBoneByName(name: string, skeleton: Skeleton): Bone {
+                for (var boneIndex = 0, cache = skeleton.bones.length; boneIndex < cache; boneIndex++) {
                     if (skeleton.bones[boneIndex].name === name) {
                         return skeleton.bones[boneIndex];
+                        break;
                     }
                 }
-            }
-
-            return null;
+                return null;
         }
 
         /**
