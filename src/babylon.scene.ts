@@ -1160,7 +1160,6 @@
         	for (var boneIndex = 0, cache = skeleton.bones.length; boneIndex < cache; boneIndex++) {
                     if (skeleton.bones[boneIndex].id === id) {
                         return skeleton.bones[boneIndex];
-                        break;
                     }
                 }
                 return null;
@@ -1176,7 +1175,6 @@
                 for (var boneIndex = 0, cache = skeleton.bones.length; boneIndex < cache; boneIndex++) {
                     if (skeleton.bones[boneIndex].name === name) {
                         return skeleton.bones[boneIndex];
-                        break;
                     }
                 }
                 return null;
