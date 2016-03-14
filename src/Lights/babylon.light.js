@@ -95,6 +95,7 @@ var BABYLON;
             this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeLight(this);
+            _super.prototype.dispose.call(this);
         };
         Light.prototype.getTypeID = function () {
             return 0;

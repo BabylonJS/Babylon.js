@@ -1128,6 +1128,8 @@
                 }
             }
 
+            super.dispose();
+
             this._onAfterWorldMatrixUpdate = [];
 
             this._isDisposed = true;
