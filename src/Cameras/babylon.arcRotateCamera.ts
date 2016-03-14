@@ -169,8 +169,6 @@
         public allowUpsideDown = true;
 
         public _viewMatrix = new Matrix();
-        public _attachedElement: HTMLElement;
-        public _noPreventDefault : boolean;
         public _useCtrlForPanning : boolean;
         public inputs : ArcRotateCameraInputsManager;
         
@@ -257,11 +255,6 @@
 
         // Methods
         public attachControl(element: HTMLElement, noPreventDefault?: boolean, useCtrlForPanning: boolean = true): void {
-            if (this._attachedElement) {
-                return;
-            }
-            this._attachedElement = element;
-            this._noPreventDefault = noPreventDefault;
             this._useCtrlForPanning = useCtrlForPanning;
 
             this.inputs.attachElement(element, noPreventDefault);
@@ -275,13 +268,8 @@
         }
 
         public detachControl(element: HTMLElement): void {
-            if (this._attachedElement !== element) {
-                return;
-            }
-
-            this.inputs.detachElement(this._attachedElement);
-            this._attachedElement = null;
-
+            this.inputs.detachElement(element);
+            
             if (this._reset) {
                 this._reset();
             }

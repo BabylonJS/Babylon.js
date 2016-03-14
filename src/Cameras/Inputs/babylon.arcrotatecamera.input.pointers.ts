@@ -3,10 +3,7 @@ module BABYLON {
 
     export class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
-        private _isRightClick: boolean = false;
-        private _isCtrlPushed: boolean = false;
-        public pinchInwards = true;
-
+        
         @serialize()
         public angularSensibilityX = 1000.0;
 
@@ -18,6 +15,10 @@ module BABYLON {
 
         @serialize()
         public panningSensibility: number = 50.0;
+
+        private _isRightClick: boolean = false;
+        private _isCtrlPushed: boolean = false;
+        public pinchInwards = true;
 
         private _onKeyDown: (e: KeyboardEvent) => any;
         private _onKeyUp: (e: KeyboardEvent) => any;
@@ -191,8 +192,6 @@ module BABYLON {
         }
 
         public detachControl(element: HTMLElement) {
-            this._MSGestureHandler = null;
-
             if (element && this._onPointerDown){
                 element.removeEventListener("contextmenu", this._onContextMenu);
                 element.removeEventListener(eventPrefix + "down", this._onPointerDown);
@@ -202,6 +201,23 @@ module BABYLON {
                 element.removeEventListener("mousemove", this._onMouseMove);
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
+                
+                this._isRightClick = false;
+                this._isCtrlPushed = false;
+                this.pinchInwards = true;
+
+                this._onKeyDown= null;
+                this._onKeyUp= null;
+                this._onPointerDown= null;
+                this._onPointerUp= null;
+                this._onPointerMove= null;
+                this._onMouseMove= null;
+                this._onGestureStart= null;
+                this._onGesture= null;
+                this._MSGestureHandler= null;
+                this._onLostFocus= null;
+                this._onContextMenu = null;
+
             }
             
             Tools.UnregisterTopRootEvents([
