@@ -1,25 +1,25 @@
 module BABYLON {
     export class ArcRotateCameraInputsManager extends CameraInputsManager<ArcRotateCamera> {
-        constructor(camera : ArcRotateCamera){
-            super(camera);    
+        constructor(camera: ArcRotateCamera) {
+            super(camera);
         }
-        
-        public addMouseWheel(){
+
+        public addMouseWheel(): ArcRotateCameraInputsManager {
             this.add(new ArcRotateCameraMouseWheelInput());
             return this;
         }
-        
-        public addPointers(){
+
+        public addPointers(): ArcRotateCameraInputsManager {
             this.add(new ArcRotateCameraPointersInput());
             return this;
         }
-        
-        public addKeyboard(){
+
+        public addKeyboard(): ArcRotateCameraInputsManager {
             this.add(new ArcRotateCameraKeyboardMoveInput());
             return this;
         }
-        
-        public addGamepad(){
+
+        public addGamepad(): ArcRotateCameraInputsManager {
             this.add(new ArcRotateCameraGamepadInput());
             return this;
         }

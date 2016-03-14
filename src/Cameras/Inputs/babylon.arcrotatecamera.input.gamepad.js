@@ -8,16 +8,18 @@ var BABYLON;
 (function (BABYLON) {
     var ArcRotateCameraGamepadInput = (function () {
         function ArcRotateCameraGamepadInput() {
-            var _this = this;
             this.gamepadRotationSensibility = 80;
             this.gamepadMoveSensibility = 40;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         }
-        ArcRotateCameraGamepadInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
+        ArcRotateCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
+            var _this = this;
+            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         };
-        ArcRotateCameraGamepadInput.prototype.detach = function () {
-            this._gamepads.dispose();
+        ArcRotateCameraGamepadInput.prototype.detachControl = function (element) {
+            if (this._gamepads) {
+                this._gamepads.dispose();
+            }
+            this.gamepad = null;
         };
         ArcRotateCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {

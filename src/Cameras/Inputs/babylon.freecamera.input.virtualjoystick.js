@@ -10,21 +10,22 @@ var BABYLON;
             return this._rightjoystick;
         };
         FreeCameraVirtualJoystickInput.prototype.checkInputs = function () {
-            var camera = this.camera;
-            var speed = camera._computeLocalCameraSpeed() * 50;
-            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
-            camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-            camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
-            if (!this._leftjoystick.pressed) {
-                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
-            }
-            if (!this._rightjoystick.pressed) {
-                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+            if (this._leftjoystick) {
+                var camera = this.camera;
+                var speed = camera._computeLocalCameraSpeed() * 50;
+                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+                var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
+                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
+                camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
+                if (!this._leftjoystick.pressed) {
+                    this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
+                }
+                if (!this._rightjoystick.pressed) {
+                    this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+                }
             }
         };
-        FreeCameraVirtualJoystickInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
+        FreeCameraVirtualJoystickInput.prototype.attachControl = function (element, noPreventDefault) {
             this._leftjoystick = new BABYLON.VirtualJoystick(true);
             this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
             this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
@@ -36,8 +37,9 @@ var BABYLON;
             this._rightjoystick.setJoystickSensibility(0.05);
             this._rightjoystick.setJoystickColor("yellow");
         };
-        FreeCameraVirtualJoystickInput.prototype.detach = function () {
+        FreeCameraVirtualJoystickInput.prototype.detachControl = function (element) {
             this._leftjoystick.releaseCanvas();
+            this._rightjoystick.releaseCanvas();
         };
         FreeCameraVirtualJoystickInput.prototype.getTypeName = function () {
             return "FreeCameraVirtualJoystickInput";

@@ -7,17 +7,33 @@ var BABYLON;
 (function (BABYLON) {
     var VideoTexture = (function (_super) {
         __extends(VideoTexture, _super);
-        function VideoTexture(name, urls, scene, generateMipMaps, invertY, samplingMode) {
+        /**
+        * Creates a video texture.
+        * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
+        * @param urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
+        * @param scene is obviously the current scene.
+        * @param generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
+        * @param invertY is false by default but can be used to invert video on Y axis
+        * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+        */
+        function VideoTexture(name, urlsOrVideo, scene, generateMipMaps, invertY, samplingMode) {
             var _this = this;
             if (generateMipMaps === void 0) { generateMipMaps = false; }
             if (invertY === void 0) { invertY = false; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, null, scene, !generateMipMaps, invertY);
             this._autoLaunch = true;
+            var urls;
             this.name = name;
-            this.video = document.createElement("video");
-            this.video.autoplay = false;
-            this.video.loop = true;
+            if (urlsOrVideo instanceof HTMLVideoElement) {
+                this.video = urlsOrVideo;
+            }
+            else {
+                urls = urlsOrVideo;
+                this.video = document.createElement("video");
+                this.video.autoplay = false;
+                this.video.loop = true;
+            }
             this.video.addEventListener("canplaythrough", function () {
                 if (BABYLON.Tools.IsExponentOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(_this.video.videoHeight)) {
                     _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
@@ -31,12 +47,13 @@ var BABYLON;
                 _this._texture = scene.getEngine().createDynamicTexture(_this.video.videoWidth, _this.video.videoHeight, generateMipMaps, samplingMode, false);
                 _this._texture.isReady = true;
             });
-            urls.forEach(function (url) {
-                //Backwards-compatibility for typescript 1. from 1.3 it should say "SOURCE". see here - https://github.com/Microsoft/TypeScript/issues/1850
-                var source = document.createElement("source");
-                source.src = url;
-                _this.video.appendChild(source);
-            });
+            if (urls) {
+                urls.forEach(function (url) {
+                    var source = document.createElement("source");
+                    source.src = url;
+                    _this.video.appendChild(source);
+                });
+            }
             this._lastUpdate = BABYLON.Tools.Now;
         }
         VideoTexture.prototype.update = function () {

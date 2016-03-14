@@ -10,12 +10,6 @@ var BABYLON;
         function FreeCameraInputsManager(camera) {
             _super.call(this, camera);
         }
-        FreeCameraInputsManager.prototype.add = function (input) {
-            _super.prototype.add.call(this, input);
-            if (this.camera._attachedElement && input.attachElement) {
-                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
-            }
-        };
         FreeCameraInputsManager.prototype.addKeyboard = function () {
             this.add(new BABYLON.FreeCameraKeyboardMoveInput());
             return this;

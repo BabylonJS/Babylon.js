@@ -455,6 +455,8 @@
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
             }
+
+            super.dispose();
         }
         
         // ---- Camera rigs section ----

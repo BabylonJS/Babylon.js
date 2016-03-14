@@ -10,18 +10,13 @@ var BABYLON;
         function FreeCameraMouseInput() {
             this.angularSensibility = 2000.0;
         }
-        FreeCameraMouseInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        FreeCameraMouseInput.prototype.attachElement = function (element, noPreventDefault) {
+        FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            var previousPosition;
-            this.attachedElement = element;
             if (this._onMouseDown === undefined) {
                 var camera = this.camera;
                 var engine = this.camera.getEngine();
                 this._onMouseDown = function (evt) {
-                    previousPosition = {
+                    _this.previousPosition = {
                         x: evt.clientX,
                         y: evt.clientY
                     };
@@ -30,26 +25,26 @@ var BABYLON;
                     }
                 };
                 this._onMouseUp = function (evt) {
-                    previousPosition = null;
+                    _this.previousPosition = null;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                 };
                 this._onMouseOut = function (evt) {
-                    previousPosition = null;
+                    _this.previousPosition = null;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                 };
                 this._onMouseMove = function (evt) {
-                    if (!previousPosition && !engine.isPointerLock) {
+                    if (!_this.previousPosition && !engine.isPointerLock) {
                         return;
                     }
                     var offsetX;
                     var offsetY;
                     if (!engine.isPointerLock) {
-                        offsetX = evt.clientX - previousPosition.x;
-                        offsetY = evt.clientY - previousPosition.y;
+                        offsetX = evt.clientX - _this.previousPosition.x;
+                        offsetY = evt.clientY - _this.previousPosition.y;
                     }
                     else {
                         offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
@@ -57,7 +52,7 @@ var BABYLON;
                     }
                     camera.cameraRotation.y += offsetX / _this.angularSensibility;
                     camera.cameraRotation.x += offsetY / _this.angularSensibility;
-                    previousPosition = {
+                    _this.previousPosition = {
                         x: evt.clientX,
                         y: evt.clientY
                     };
@@ -71,19 +66,13 @@ var BABYLON;
             element.addEventListener("mouseout", this._onMouseOut, false);
             element.addEventListener("mousemove", this._onMouseMove, false);
         };
-        FreeCameraMouseInput.prototype.detachElement = function (element) {
-            if (this.attachedElement !== element) {
-                return;
-            }
-            element.removeEventListener("mousedown", this._onMouseDown);
-            element.removeEventListener("mouseup", this._onMouseUp);
-            element.removeEventListener("mouseout", this._onMouseOut);
-            element.removeEventListener("mousemove", this._onMouseMove);
-            this.attachedElement = null;
-        };
-        FreeCameraMouseInput.prototype.detach = function () {
-            if (this.attachedElement) {
-                this.detachElement(this.attachedElement);
+        FreeCameraMouseInput.prototype.detachControl = function (element) {
+            if (this._onMouseDown && element) {
+                this.previousPosition = null;
+                element.removeEventListener("mousedown", this._onMouseDown);
+                element.removeEventListener("mouseup", this._onMouseUp);
+                element.removeEventListener("mouseout", this._onMouseOut);
+                element.removeEventListener("mousemove", this._onMouseMove);
             }
         };
         FreeCameraMouseInput.prototype.getTypeName = function () {
