@@ -30,7 +30,27 @@
                 this.video.loop = true;
             }
 
-            this.video.addEventListener("canplaythrough", () => {
+            if (urls) {
+                this.video.addEventListener("canplaythrough", () => {
+                    if (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight)) {
+                        this.wrapU = Texture.WRAP_ADDRESSMODE;
+                        this.wrapV = Texture.WRAP_ADDRESSMODE;
+                    } else {
+                        this.wrapU = Texture.CLAMP_ADDRESSMODE;
+                        this.wrapV = Texture.CLAMP_ADDRESSMODE;
+                        generateMipMaps = false;
+                    }
+
+                    this._texture = scene.getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, generateMipMaps, samplingMode, false);
+                    this._texture.isReady = true;
+                });
+                urls.forEach(url => {
+                    var source = document.createElement("source");
+                    source.src = url;
+                    this.video.appendChild(source);
+                });
+            }
+            else {
                 if (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight)) {
                     this.wrapU = Texture.WRAP_ADDRESSMODE;
                     this.wrapV = Texture.WRAP_ADDRESSMODE;
@@ -42,7 +62,7 @@
 
                 this._texture = scene.getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, generateMipMaps, samplingMode, false);
                 this._texture.isReady = true;
-            });
+            }
 
             if (urls) {
                 urls.forEach(url => {
