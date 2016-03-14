@@ -141,6 +141,8 @@
 
             // Remove from scene
             this.getScene().removeLight(this);
+
+            super.dispose();
         }
 
         public getTypeID(): number {

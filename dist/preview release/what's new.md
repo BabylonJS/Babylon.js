@@ -10,6 +10,7 @@
     - New debuger tool: SkeletonViewer. See [demo here](Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8) (Adam & [deltakosh](https://github.com/deltakosh))
     - Added Camera Inputs Manager to manage camera inputs (mouse, touch, keyboard, gamepad, ...) in a composable way, without relying on class inheritance [gleborgne](https://github.com/gleborgne)
   - **Updates**
+    - Added node._children to track children hierarchy ([deltakosh](https://github.com/deltakosh))
     - Added Camera.ForceAttachControlToAlwaysPreventDefault to help embedding Babylon.js in iFrames ([deltakosh](https://github.com/deltakosh))
     - Support for Layer.alphaTest ([deltakosh](https://github.com/deltakosh))
     - New scene.pointerDownPredicate, scene.pointerMovePredicate, scene.pointerUpPredicate to define your own predicates for meshes picking selection ([deltakosh](https://github.com/deltakosh))

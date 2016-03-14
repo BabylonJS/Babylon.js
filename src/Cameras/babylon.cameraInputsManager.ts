@@ -52,7 +52,7 @@ module BABYLON {
         public remove(inputToRemove: ICameraInput<TCamera>) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input == inputToRemove) {
+                if (input === inputToRemove) {
                     input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                 }
@@ -62,7 +62,7 @@ module BABYLON {
         public removeByType(inputType: string) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.getTypeName() == inputType) {
+                if (input.getTypeName() === inputType) {
                     input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                 }

@@ -962,6 +962,7 @@ var BABYLON;
                     }
                 }
             }
+            _super.prototype.dispose.call(this);
             this._onAfterWorldMatrixUpdate = [];
             this._isDisposed = true;
             // Callback
