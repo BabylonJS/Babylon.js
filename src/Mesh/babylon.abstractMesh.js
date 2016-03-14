@@ -946,20 +946,17 @@ var BABYLON;
                     }
                 }
                 // Children
-                var objects = this.getScene().meshes.slice(0);
+                var objects = this.getDescendants(true);
                 for (index = 0; index < objects.length; index++) {
-                    if (objects[index].parent === this) {
-                        objects[index].dispose();
-                    }
+                    objects[index].dispose();
                 }
             }
             else {
-                for (index = 0; index < this.getScene().meshes.length; index++) {
-                    var obj = this.getScene().meshes[index];
-                    if (obj.parent === this) {
-                        obj.parent = null;
-                        obj.computeWorldMatrix(true);
-                    }
+                var childMeshes = this.getChildMeshes(true);
+                for (index = 0; childMeshes.length; index++) {
+                    var child = childMeshes[index];
+                    child.parent = null;
+                    child.computeWorldMatrix(true);
                 }
             }
             _super.prototype.dispose.call(this);
