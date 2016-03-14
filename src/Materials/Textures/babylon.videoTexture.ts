@@ -5,14 +5,30 @@
         private _autoLaunch = true;
         private _lastUpdate: number;
 
-        constructor(name: string, urls: string[], scene: Scene, generateMipMaps = false, invertY = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        /**
+        * Creates a video texture.  
+        * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing  
+        * @param urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
+        * @param scene is obviously the current scene.   
+        * @param generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
+        * @param invertY is false by default but can be used to invert video on Y axis
+        * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+        */
+        constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, scene: Scene, generateMipMaps = false, invertY = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(null, scene, !generateMipMaps, invertY);
 
+            var urls: string[];
             this.name = name;
 
-            this.video = document.createElement("video");
-            this.video.autoplay = false;
-            this.video.loop = true;
+            if (urlsOrVideo instanceof HTMLVideoElement) {
+                this.video = <any>urlsOrVideo;
+            } else {
+                urls = <any>urlsOrVideo;
+
+                this.video = document.createElement("video");
+                this.video.autoplay = false;
+                this.video.loop = true;
+            }
 
             this.video.addEventListener("canplaythrough", () => {
                 if (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight)) {
@@ -30,8 +46,7 @@
 
             if (urls) {
                 urls.forEach(url => {
-                    //Backwards-compatibility for typescript 1. from 1.3 it should say "SOURCE". see here - https://github.com/Microsoft/TypeScript/issues/1850
-                    var source = <HTMLSourceElement>document.createElement("source");
+                    var source = document.createElement("source");
                     source.src = url;
                     this.video.appendChild(source);
                 });
