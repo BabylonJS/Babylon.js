@@ -29,6 +29,31 @@ var BABYLON;
             this._scene = scene;
             this._initCache();
         }
+        Object.defineProperty(Node.prototype, "parent", {
+            get: function () {
+                return this._parentNode;
+            },
+            set: function (parent) {
+                if (this._parentNode === parent) {
+                    return;
+                }
+                if (this._parentNode) {
+                    var index = this._parentNode._children.indexOf(this);
+                    if (index !== -1) {
+                        this._parentNode._children.splice(index, 1);
+                    }
+                }
+                this._parentNode = parent;
+                if (this._parentNode) {
+                    if (!this._parentNode._children) {
+                        this._parentNode._children = new Array();
+                    }
+                    this._parentNode._children.push(this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Node.prototype.getScene = function () {
             return this._scene;
         };
@@ -132,32 +157,35 @@ var BABYLON;
             return false;
         };
         /**
-         * Evaluate a list of nodes and determine if they should be considered as descendants considering the given criterias
-         * @param {BABYLON.Node[]} list the input array of nodes to evaluate
+         * Evaluate the list of children and determine if they should be considered as descendants considering the given criterias
          * @param {BABYLON.Node[]} results the result array containing the nodes matching the given criterias
-         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
+         * @param {boolean} directDescendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
          * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          */
-        Node.prototype._getDescendants = function (list, results, directDecendantsOnly, predicate) {
-            if (directDecendantsOnly === void 0) { directDecendantsOnly = false; }
-            for (var index = 0; index < list.length; index++) {
-                var item = list[index];
-                if (((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) && (!predicate || predicate(item))) {
+        Node.prototype._getDescendants = function (results, directDescendantsOnly, predicate) {
+            if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
+            if (!this._children) {
+                return;
+            }
+            for (var index = 0; index < this._children.length; index++) {
+                var item = this._children[index];
+                if (!predicate || predicate(item)) {
                     results.push(item);
+                }
+                if (!directDescendantsOnly) {
+                    item._getDescendants(results, false, predicate);
                 }
             }
         };
         /**
-         * Will return all nodes that have this node as parent.
-         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
+         * Will return all nodes that have this node as ascendant.
+         * @param {boolean} directDescendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
          * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        Node.prototype.getDescendants = function (directDecendantsOnly, predicate) {
+        Node.prototype.getDescendants = function (directDescendantsOnly, predicate) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, directDecendantsOnly, predicate);
-            this._getDescendants(this._scene.lights, results, directDecendantsOnly, predicate);
-            this._getDescendants(this._scene.cameras, results, directDecendantsOnly, predicate);
+            this._getDescendants(results, directDescendantsOnly, predicate);
             return results;
         };
         /**
@@ -173,7 +201,9 @@ var BABYLON;
          */
         Node.prototype.getChildMeshes = function (directDecendantsOnly, predicate) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, directDecendantsOnly, predicate);
+            this._getDescendants(results, directDecendantsOnly, function (node) {
+                return ((!predicate || predicate(node)) && (node instanceof BABYLON.AbstractMesh));
+            });
             return results;
         };
         Node.prototype._setReady = function (state) {
@@ -238,6 +268,9 @@ var BABYLON;
                 serializationRanges.push(range);
             }
             return serializationRanges;
+        };
+        Node.prototype.dispose = function () {
+            this.parent = null;
         };
         Node.ParseAnimationRanges = function (node, parsedNode, scene) {
             if (parsedNode.ranges) {

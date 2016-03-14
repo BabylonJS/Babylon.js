@@ -15,16 +15,9 @@ var BABYLON;
             this.touchAngularSensibility = 200000.0;
             this.touchMoveSensibility = 250.0;
         }
-        FreeCameraTouchInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        FreeCameraTouchInput.prototype.attachElement = function (element, noPreventDefault) {
+        FreeCameraTouchInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             var previousPosition;
-            if (this._attachedElement) {
-                return;
-            }
-            this._attachedElement = element;
             if (this._onPointerDown === undefined) {
                 this._onLostFocus = function (evt) {
                     _this._offsetX = null;
@@ -89,16 +82,12 @@ var BABYLON;
             element.addEventListener("pointerout", this._onPointerUp);
             element.addEventListener("pointermove", this._onPointerMove);
         };
-        FreeCameraTouchInput.prototype.detachElement = function (element) {
-            if (this._attachedElement !== element) {
-                return;
-            }
+        FreeCameraTouchInput.prototype.detachControl = function (element) {
             element.removeEventListener("blur", this._onLostFocus);
             element.removeEventListener("pointerdown", this._onPointerDown);
             element.removeEventListener("pointerup", this._onPointerUp);
             element.removeEventListener("pointerout", this._onPointerUp);
             element.removeEventListener("pointermove", this._onPointerMove);
-            this._attachedElement = null;
         };
         FreeCameraTouchInput.prototype.checkInputs = function () {
             if (this._offsetX) {
@@ -113,11 +102,6 @@ var BABYLON;
                     BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
                     camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
                 }
-            }
-        };
-        FreeCameraTouchInput.prototype.detach = function () {
-            if (this._attachedElement) {
-                this.detachElement(this._attachedElement);
             }
         };
         FreeCameraTouchInput.prototype.getTypeName = function () {

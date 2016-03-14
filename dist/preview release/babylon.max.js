@@ -7129,6 +7129,31 @@ var BABYLON;
             this._scene = scene;
             this._initCache();
         }
+        Object.defineProperty(Node.prototype, "parent", {
+            get: function () {
+                return this._parentNode;
+            },
+            set: function (parent) {
+                if (this._parentNode === parent) {
+                    return;
+                }
+                if (this._parentNode) {
+                    var index = this._parentNode._children.indexOf(this);
+                    if (index !== -1) {
+                        this._parentNode._children.splice(index, 1);
+                    }
+                }
+                this._parentNode = parent;
+                if (this._parentNode) {
+                    if (!this._parentNode._children) {
+                        this._parentNode._children = new Array();
+                    }
+                    this._parentNode._children.push(this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Node.prototype.getScene = function () {
             return this._scene;
         };
@@ -7232,32 +7257,35 @@ var BABYLON;
             return false;
         };
         /**
-         * Evaluate a list of nodes and determine if they should be considered as descendants considering the given criterias
-         * @param {BABYLON.Node[]} list the input array of nodes to evaluate
+         * Evaluate the list of children and determine if they should be considered as descendants considering the given criterias
          * @param {BABYLON.Node[]} results the result array containing the nodes matching the given criterias
-         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
+         * @param {boolean} directDescendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
          * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          */
-        Node.prototype._getDescendants = function (list, results, directDecendantsOnly, predicate) {
-            if (directDecendantsOnly === void 0) { directDecendantsOnly = false; }
-            for (var index = 0; index < list.length; index++) {
-                var item = list[index];
-                if (((directDecendantsOnly && item.parent === this) || (!directDecendantsOnly && item.isDescendantOf(this))) && (!predicate || predicate(item))) {
+        Node.prototype._getDescendants = function (results, directDescendantsOnly, predicate) {
+            if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
+            if (!this._children) {
+                return;
+            }
+            for (var index = 0; index < this._children.length; index++) {
+                var item = this._children[index];
+                if (!predicate || predicate(item)) {
                     results.push(item);
+                }
+                if (!directDescendantsOnly) {
+                    item._getDescendants(results, false, predicate);
                 }
             }
         };
         /**
-         * Will return all nodes that have this node as parent.
-         * @param {boolean} directDecendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
+         * Will return all nodes that have this node as ascendant.
+         * @param {boolean} directDescendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
          * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        Node.prototype.getDescendants = function (directDecendantsOnly, predicate) {
+        Node.prototype.getDescendants = function (directDescendantsOnly, predicate) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, directDecendantsOnly, predicate);
-            this._getDescendants(this._scene.lights, results, directDecendantsOnly, predicate);
-            this._getDescendants(this._scene.cameras, results, directDecendantsOnly, predicate);
+            this._getDescendants(results, directDescendantsOnly, predicate);
             return results;
         };
         /**
@@ -7273,7 +7301,9 @@ var BABYLON;
          */
         Node.prototype.getChildMeshes = function (directDecendantsOnly, predicate) {
             var results = [];
-            this._getDescendants(this._scene.meshes, results, directDecendantsOnly, predicate);
+            this._getDescendants(results, directDecendantsOnly, function (node) {
+                return ((!predicate || predicate(node)) && (node instanceof BABYLON.AbstractMesh));
+            });
             return results;
         };
         Node.prototype._setReady = function (state) {
@@ -7338,6 +7368,9 @@ var BABYLON;
                 serializationRanges.push(range);
             }
             return serializationRanges;
+        };
+        Node.prototype.dispose = function () {
+            this.parent = null;
         };
         Node.ParseAnimationRanges = function (node, parsedNode, scene) {
             if (parsedNode.ranges) {
@@ -9007,22 +9040,20 @@ var BABYLON;
                     }
                 }
                 // Children
-                var objects = this.getScene().meshes.slice(0);
+                var objects = this.getDescendants(true);
                 for (index = 0; index < objects.length; index++) {
-                    if (objects[index].parent === this) {
-                        objects[index].dispose();
-                    }
+                    objects[index].dispose();
                 }
             }
             else {
-                for (index = 0; index < this.getScene().meshes.length; index++) {
-                    var obj = this.getScene().meshes[index];
-                    if (obj.parent === this) {
-                        obj.parent = null;
-                        obj.computeWorldMatrix(true);
-                    }
+                var childMeshes = this.getChildMeshes(true);
+                for (index = 0; childMeshes.length; index++) {
+                    var child = childMeshes[index];
+                    child.parent = null;
+                    child.computeWorldMatrix(true);
                 }
             }
+            _super.prototype.dispose.call(this);
             this._onAfterWorldMatrixUpdate = [];
             this._isDisposed = true;
             // Callback
@@ -9133,6 +9164,7 @@ var BABYLON;
             this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeLight(this);
+            _super.prototype.dispose.call(this);
         };
         Light.prototype.getTypeID = function () {
             return 0;
@@ -10881,6 +10913,7 @@ var BABYLON;
             for (var i = 0; i < this._postProcessesTakenIndices.length; ++i) {
                 this._postProcesses[this._postProcessesTakenIndices[i]].dispose(this);
             }
+            _super.prototype.dispose.call(this);
         };
         // ---- Camera rigs section ----
         Camera.prototype.setCameraRigMode = function (mode, rigParams) {
@@ -11163,18 +11196,21 @@ var BABYLON;
                 return;
             }
             this.attached[type] = input;
-            input.attachCamera(this.camera);
+            input.camera = this.camera;
             //for checkInputs, we are dynamically creating a function
             //the goal is to avoid the performance penalty of looping for inputs in the render loop
             if (input.checkInputs) {
                 this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
             }
+            if (this.attachedElement) {
+                input.attachControl(this.attachedElement);
+            }
         };
         CameraInputsManager.prototype.remove = function (inputToRemove) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input == inputToRemove) {
-                    input.detach();
+                if (input === inputToRemove) {
+                    input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                 }
             }
@@ -11182,8 +11218,8 @@ var BABYLON;
         CameraInputsManager.prototype.removeByType = function (inputType) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.getTypeName() == inputType) {
-                    input.detach();
+                if (input.getTypeName() === inputType) {
+                    input.detachControl(this.attachedElement);
                     delete this.attached[cam];
                 }
             }
@@ -11196,17 +11232,16 @@ var BABYLON;
             };
         };
         CameraInputsManager.prototype.attachElement = function (element, noPreventDefault) {
+            this.attachedElement = element;
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.attachElement)
-                    this.attached[cam].attachElement(element, noPreventDefault);
+                this.attached[cam].attachControl(element, noPreventDefault);
             }
         };
         CameraInputsManager.prototype.detachElement = function (element) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                if (input.detachElement)
-                    this.attached[cam].detachElement(element);
+                this.attached[cam].detachControl(element);
             }
         };
         CameraInputsManager.prototype.rebuildInputCheck = function (element) {
@@ -11219,10 +11254,11 @@ var BABYLON;
             }
         };
         CameraInputsManager.prototype.clear = function () {
-            for (var cam in this.attached) {
-                this.attached[cam].detach();
+            if (this.attachedElement) {
+                this.detachElement(this.attachedElement);
             }
             this.attached = {};
+            this.attachedElement = null;
             this.checkInputs = function () { };
         };
         CameraInputsManager.prototype.serialize = function (serializedCamera) {
@@ -11270,18 +11306,13 @@ var BABYLON;
         function FreeCameraMouseInput() {
             this.angularSensibility = 2000.0;
         }
-        FreeCameraMouseInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        FreeCameraMouseInput.prototype.attachElement = function (element, noPreventDefault) {
+        FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            var previousPosition;
-            this.attachedElement = element;
             if (this._onMouseDown === undefined) {
                 var camera = this.camera;
                 var engine = this.camera.getEngine();
                 this._onMouseDown = function (evt) {
-                    previousPosition = {
+                    _this.previousPosition = {
                         x: evt.clientX,
                         y: evt.clientY
                     };
@@ -11290,26 +11321,26 @@ var BABYLON;
                     }
                 };
                 this._onMouseUp = function (evt) {
-                    previousPosition = null;
+                    _this.previousPosition = null;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                 };
                 this._onMouseOut = function (evt) {
-                    previousPosition = null;
+                    _this.previousPosition = null;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                 };
                 this._onMouseMove = function (evt) {
-                    if (!previousPosition && !engine.isPointerLock) {
+                    if (!_this.previousPosition && !engine.isPointerLock) {
                         return;
                     }
                     var offsetX;
                     var offsetY;
                     if (!engine.isPointerLock) {
-                        offsetX = evt.clientX - previousPosition.x;
-                        offsetY = evt.clientY - previousPosition.y;
+                        offsetX = evt.clientX - _this.previousPosition.x;
+                        offsetY = evt.clientY - _this.previousPosition.y;
                     }
                     else {
                         offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
@@ -11317,7 +11348,7 @@ var BABYLON;
                     }
                     camera.cameraRotation.y += offsetX / _this.angularSensibility;
                     camera.cameraRotation.x += offsetY / _this.angularSensibility;
-                    previousPosition = {
+                    _this.previousPosition = {
                         x: evt.clientX,
                         y: evt.clientY
                     };
@@ -11331,19 +11362,13 @@ var BABYLON;
             element.addEventListener("mouseout", this._onMouseOut, false);
             element.addEventListener("mousemove", this._onMouseMove, false);
         };
-        FreeCameraMouseInput.prototype.detachElement = function (element) {
-            if (this.attachedElement !== element) {
-                return;
-            }
-            element.removeEventListener("mousedown", this._onMouseDown);
-            element.removeEventListener("mouseup", this._onMouseUp);
-            element.removeEventListener("mouseout", this._onMouseOut);
-            element.removeEventListener("mousemove", this._onMouseMove);
-            this.attachedElement = null;
-        };
-        FreeCameraMouseInput.prototype.detach = function () {
-            if (this.attachedElement) {
-                this.detachElement(this.attachedElement);
+        FreeCameraMouseInput.prototype.detachControl = function (element) {
+            if (this._onMouseDown && element) {
+                this.previousPosition = null;
+                element.removeEventListener("mousedown", this._onMouseDown);
+                element.removeEventListener("mouseup", this._onMouseUp);
+                element.removeEventListener("mouseout", this._onMouseOut);
+                element.removeEventListener("mousemove", this._onMouseMove);
             }
         };
         FreeCameraMouseInput.prototype.getTypeName = function () {
@@ -11372,9 +11397,8 @@ var BABYLON;
             this.keysLeft = [37];
             this.keysRight = [39];
         }
-        FreeCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
+        FreeCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this.camera = camera;
             if (this._onKeyDown === undefined) {
                 this._onKeyDown = function (evt) {
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
@@ -11385,7 +11409,7 @@ var BABYLON;
                         if (index === -1) {
                             _this._keys.push(evt.keyCode);
                         }
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -11399,7 +11423,7 @@ var BABYLON;
                         if (index >= 0) {
                             _this._keys.splice(index, 1);
                         }
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -11411,7 +11435,7 @@ var BABYLON;
                 ]);
             }
         };
-        FreeCameraKeyboardMoveInput.prototype.detach = function () {
+        FreeCameraKeyboardMoveInput.prototype.detachControl = function (element) {
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },
@@ -11480,16 +11504,9 @@ var BABYLON;
             this.touchAngularSensibility = 200000.0;
             this.touchMoveSensibility = 250.0;
         }
-        FreeCameraTouchInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        FreeCameraTouchInput.prototype.attachElement = function (element, noPreventDefault) {
+        FreeCameraTouchInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             var previousPosition;
-            if (this._attachedElement) {
-                return;
-            }
-            this._attachedElement = element;
             if (this._onPointerDown === undefined) {
                 this._onLostFocus = function (evt) {
                     _this._offsetX = null;
@@ -11554,16 +11571,12 @@ var BABYLON;
             element.addEventListener("pointerout", this._onPointerUp);
             element.addEventListener("pointermove", this._onPointerMove);
         };
-        FreeCameraTouchInput.prototype.detachElement = function (element) {
-            if (this._attachedElement !== element) {
-                return;
-            }
+        FreeCameraTouchInput.prototype.detachControl = function (element) {
             element.removeEventListener("blur", this._onLostFocus);
             element.removeEventListener("pointerdown", this._onPointerDown);
             element.removeEventListener("pointerup", this._onPointerUp);
             element.removeEventListener("pointerout", this._onPointerUp);
             element.removeEventListener("pointermove", this._onPointerMove);
-            this._attachedElement = null;
         };
         FreeCameraTouchInput.prototype.checkInputs = function () {
             if (this._offsetX) {
@@ -11578,11 +11591,6 @@ var BABYLON;
                     BABYLON.Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
                     camera.cameraDirection.addInPlace(BABYLON.Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
                 }
-            }
-        };
-        FreeCameraTouchInput.prototype.detach = function () {
-            if (this._attachedElement) {
-                this.detachElement(this._attachedElement);
             }
         };
         FreeCameraTouchInput.prototype.getTypeName = function () {
@@ -11619,8 +11627,7 @@ var BABYLON;
             this._resetOrientationGamma = this.resetOrientationGamma.bind(this);
             this._orientationChanged = this.orientationChanged.bind(this);
         }
-        FreeCameraDeviceOrientationInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
+        FreeCameraDeviceOrientationInput.prototype.attachControl = function (element, noPreventDefault) {
             window.addEventListener("resize", this._resetOrientationGamma, false);
             window.addEventListener("deviceorientation", this._orientationChanged);
         };
@@ -11637,7 +11644,7 @@ var BABYLON;
             this._offsetY = (this._initialOrientationBeta - this._orientationBeta);
             this._offsetX = (this._initialOrientationGamma - this._orientationGamma);
         };
-        FreeCameraDeviceOrientationInput.prototype.detach = function () {
+        FreeCameraDeviceOrientationInput.prototype.detachControl = function (element) {
             window.removeEventListener("resize", this._resetOrientationGamma);
             window.removeEventListener("deviceorientation", this._orientationChanged);
             this._orientationGamma = 0;
@@ -11678,13 +11685,16 @@ var BABYLON;
 (function (BABYLON) {
     var FreeCameraVRDeviceOrientationInput = (function () {
         function FreeCameraVRDeviceOrientationInput() {
+            this.alphaCorrection = 1;
+            this.betaCorrection = 1;
+            this.gammaCorrection = 1;
             this._alpha = 0;
             this._beta = 0;
             this._gamma = 0;
+            this._dirty = false;
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }
-        FreeCameraVRDeviceOrientationInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
+        FreeCameraVRDeviceOrientationInput.prototype.attachControl = function (element, noPreventDefault) {
             window.addEventListener("deviceorientation", this._deviceOrientationHandler);
         };
         FreeCameraVRDeviceOrientationInput.prototype._onOrientationEvent = function (evt) {
@@ -11692,18 +11702,25 @@ var BABYLON;
             this._alpha = +evt.alpha | 0;
             this._beta = +evt.beta | 0;
             this._gamma = +evt.gamma | 0;
-            if (this._gamma < 0) {
-                this._gamma = 90 + this._gamma;
-            }
-            else {
-                // Incline it in the correct angle.
-                this._gamma = 270 - this._gamma;
-            }
-            camera.rotation.x = this._gamma / 180.0 * Math.PI;
-            camera.rotation.y = -this._alpha / 180.0 * Math.PI;
-            camera.rotation.z = this._beta / 180.0 * Math.PI;
+            this._dirty = true;
         };
-        FreeCameraVRDeviceOrientationInput.prototype.detach = function () {
+        FreeCameraVRDeviceOrientationInput.prototype.checkInputs = function () {
+            if (this._dirty) {
+                this._dirty = false;
+                var rotationX = this._gamma;
+                if (rotationX < 0) {
+                    rotationX = 90 + rotationX;
+                }
+                else {
+                    // Incline it in the correct angle.
+                    rotationX = 270 - rotationX;
+                }
+                this.camera.rotation.x = this.gammaCorrection * rotationX / 180.0 * Math.PI;
+                this.camera.rotation.y = this.alphaCorrection * -this._alpha / 180.0 * Math.PI;
+                this.camera.rotation.z = this.betaCorrection * this._beta / 180.0 * Math.PI;
+            }
+        };
+        FreeCameraVRDeviceOrientationInput.prototype.detachControl = function (element) {
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         };
         FreeCameraVRDeviceOrientationInput.prototype.getTypeName = function () {
@@ -11723,16 +11740,18 @@ var BABYLON;
 (function (BABYLON) {
     var FreeCameraGamepadInput = (function () {
         function FreeCameraGamepadInput() {
-            var _this = this;
             this.gamepadAngularSensibility = 200;
             this.gamepadMoveSensibility = 40;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         }
-        FreeCameraGamepadInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
+        FreeCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
+            var _this = this;
+            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         };
-        FreeCameraGamepadInput.prototype.detach = function () {
-            this._gamepads.dispose();
+        FreeCameraGamepadInput.prototype.detachControl = function (element) {
+            if (this._gamepads) {
+                this._gamepads.dispose();
+            }
+            this.gamepad = null;
         };
         FreeCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {
@@ -11790,21 +11809,22 @@ var BABYLON;
             return this._rightjoystick;
         };
         FreeCameraVirtualJoystickInput.prototype.checkInputs = function () {
-            var camera = this.camera;
-            var speed = camera._computeLocalCameraSpeed() * 50;
-            var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-            var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
-            camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-            camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
-            if (!this._leftjoystick.pressed) {
-                this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
-            }
-            if (!this._rightjoystick.pressed) {
-                this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+            if (this._leftjoystick) {
+                var camera = this.camera;
+                var speed = camera._computeLocalCameraSpeed() * 50;
+                var cameraTransform = BABYLON.Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+                var deltaTransform = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
+                camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
+                camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
+                if (!this._leftjoystick.pressed) {
+                    this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);
+                }
+                if (!this._rightjoystick.pressed) {
+                    this._rightjoystick.deltaPosition = this._rightjoystick.deltaPosition.scale(0.9);
+                }
             }
         };
-        FreeCameraVirtualJoystickInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
+        FreeCameraVirtualJoystickInput.prototype.attachControl = function (element, noPreventDefault) {
             this._leftjoystick = new BABYLON.VirtualJoystick(true);
             this._leftjoystick.setAxisForUpDown(BABYLON.JoystickAxis.Z);
             this._leftjoystick.setAxisForLeftRight(BABYLON.JoystickAxis.X);
@@ -11816,8 +11836,9 @@ var BABYLON;
             this._rightjoystick.setJoystickSensibility(0.05);
             this._rightjoystick.setJoystickColor("yellow");
         };
-        FreeCameraVirtualJoystickInput.prototype.detach = function () {
+        FreeCameraVirtualJoystickInput.prototype.detachControl = function (element) {
             this._leftjoystick.releaseCanvas();
+            this._rightjoystick.releaseCanvas();
         };
         FreeCameraVirtualJoystickInput.prototype.getTypeName = function () {
             return "FreeCameraVirtualJoystickInput";
@@ -11842,9 +11863,8 @@ var BABYLON;
             this.keysLeft = [37];
             this.keysRight = [39];
         }
-        ArcRotateCameraKeyboardMoveInput.prototype.attachCamera = function (camera) {
+        ArcRotateCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this.camera = camera;
             this._onKeyDown = function (evt) {
                 if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     _this.keysDown.indexOf(evt.keyCode) !== -1 ||
@@ -11855,7 +11875,7 @@ var BABYLON;
                         _this._keys.push(evt.keyCode);
                     }
                     if (evt.preventDefault) {
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -11871,7 +11891,7 @@ var BABYLON;
                         _this._keys.splice(index, 1);
                     }
                     if (evt.preventDefault) {
-                        if (!camera._noPreventDefault) {
+                        if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
@@ -11886,7 +11906,7 @@ var BABYLON;
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
-        ArcRotateCameraKeyboardMoveInput.prototype.detach = function () {
+        ArcRotateCameraKeyboardMoveInput.prototype.detachControl = function (element) {
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },
@@ -11942,12 +11962,8 @@ var BABYLON;
         function ArcRotateCameraMouseWheelInput() {
             this.wheelPrecision = 3.0;
         }
-        ArcRotateCameraMouseWheelInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        ArcRotateCameraMouseWheelInput.prototype.attachElement = function (element) {
+        ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this.attachedElement = element;
             this._wheel = function (event) {
                 var delta = 0;
                 if (event.wheelDelta) {
@@ -11967,9 +11983,11 @@ var BABYLON;
             element.addEventListener('mousewheel', this._wheel, false);
             element.addEventListener('DOMMouseScroll', this._wheel, false);
         };
-        ArcRotateCameraMouseWheelInput.prototype.detach = function () {
-            this.attachedElement.removeEventListener('mousewheel', this._wheel);
-            this.attachedElement.removeEventListener('DOMMouseScroll', this._wheel);
+        ArcRotateCameraMouseWheelInput.prototype.detachControl = function (element) {
+            if (this._wheel && element) {
+                element.removeEventListener('mousewheel', this._wheel);
+                element.removeEventListener('DOMMouseScroll', this._wheel);
+            }
         };
         ArcRotateCameraMouseWheelInput.prototype.getTypeName = function () {
             return "ArcRotateCameraMouseWheelInput";
@@ -12000,153 +12018,149 @@ var BABYLON;
             this.pinchPrecision = 6.0;
             this.panningSensibility = 50.0;
         }
-        ArcRotateCameraPointersInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
-        };
-        ArcRotateCameraPointersInput.prototype.attachElement = function (element, noPreventDefault) {
+        ArcRotateCameraPointersInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this.attachedElement = element;
             var engine = this.camera.getEngine();
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
             var pointers = new BABYLON.SmartCollection();
             var previousPinchDistance = 0;
-            if (this._onPointerDown === undefined) {
-                if (!this.camera._useCtrlForPanning) {
-                    element.addEventListener("contextmenu", this._onContextMenu, false);
-                }
-                this._onLostFocus = function () {
-                    //this._keys = [];
-                    pointers.empty();
-                    previousPinchDistance = 0;
-                    cacheSoloPointer = null;
-                };
-                this._onKeyDown = function (evt) {
-                    _this._isCtrlPushed = evt.ctrlKey;
-                };
-                this._onKeyUp = function (evt) {
-                    _this._isCtrlPushed = evt.ctrlKey;
-                };
-                this._onPointerDown = function (evt) {
-                    // Manage panning with right click
-                    _this._isRightClick = evt.button === 2;
-                    // manage pointers
-                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
-                    cacheSoloPointer = pointers.item(evt.pointerId);
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onPointerUp = function (evt) {
-                    cacheSoloPointer = null;
-                    previousPinchDistance = 0;
-                    //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
-                    //but emptying completly pointers collection is required to fix a bug on iPhone : 
-                    //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
-                    //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    pointers.empty();
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onContextMenu = function (evt) {
+            if (!this.camera._useCtrlForPanning) {
+                element.addEventListener("contextmenu", this._onContextMenu, false);
+            }
+            this._onLostFocus = function () {
+                //this._keys = [];
+                pointers.empty();
+                previousPinchDistance = 0;
+                cacheSoloPointer = null;
+            };
+            this._onKeyDown = function (evt) {
+                _this._isCtrlPushed = evt.ctrlKey;
+            };
+            this._onKeyUp = function (evt) {
+                _this._isCtrlPushed = evt.ctrlKey;
+            };
+            this._onPointerDown = function (evt) {
+                // Manage panning with right click
+                _this._isRightClick = evt.button === 2;
+                // manage pointers
+                pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
+                cacheSoloPointer = pointers.item(evt.pointerId);
+                if (!noPreventDefault) {
                     evt.preventDefault();
-                };
-                this._onPointerMove = function (evt) {
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    switch (pointers.count) {
-                        case 1:
-                            if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) || (!_this.camera._useCtrlForPanning && _this._isRightClick))) {
-                                _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
-                                _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
-                            }
-                            else {
-                                var offsetX = evt.clientX - cacheSoloPointer.x;
-                                var offsetY = evt.clientY - cacheSoloPointer.y;
-                                _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
-                                _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
-                            }
-                            cacheSoloPointer.x = evt.clientX;
-                            cacheSoloPointer.y = evt.clientY;
-                            break;
-                        case 2:
-                            //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                }
+            };
+            this._onPointerUp = function (evt) {
+                cacheSoloPointer = null;
+                previousPinchDistance = 0;
+                //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
+                //but emptying completly pointers collection is required to fix a bug on iPhone : 
+                //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
+                //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
+                pointers.empty();
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
+            };
+            this._onContextMenu = function (evt) {
+                evt.preventDefault();
+            };
+            this._onPointerMove = function (evt) {
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
+                switch (pointers.count) {
+                    case 1:
+                        if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) || (!_this.camera._useCtrlForPanning && _this._isRightClick))) {
+                            _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
+                            _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
+                        }
+                        else {
+                            var offsetX = evt.clientX - cacheSoloPointer.x;
+                            var offsetY = evt.clientY - cacheSoloPointer.y;
+                            _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                            _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
+                        }
+                        cacheSoloPointer.x = evt.clientX;
+                        cacheSoloPointer.y = evt.clientY;
+                        break;
+                    case 2:
+                        //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                        pointers.item(evt.pointerId).x = evt.clientX;
+                        pointers.item(evt.pointerId).y = evt.clientY;
+                        var direction = _this.pinchInwards ? 1 : -1;
+                        var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
+                        var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
+                        var pinchSquaredDistance = (distX * distX) + (distY * distY);
+                        if (previousPinchDistance === 0) {
+                            previousPinchDistance = pinchSquaredDistance;
+                            return;
+                        }
+                        if (pinchSquaredDistance !== previousPinchDistance) {
+                            _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
+                            previousPinchDistance = pinchSquaredDistance;
+                        }
+                        break;
+                    default:
+                        if (pointers.item(evt.pointerId)) {
                             pointers.item(evt.pointerId).x = evt.clientX;
                             pointers.item(evt.pointerId).y = evt.clientY;
-                            var direction = _this.pinchInwards ? 1 : -1;
-                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
-                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
-                            var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                            if (previousPinchDistance === 0) {
-                                previousPinchDistance = pinchSquaredDistance;
-                                return;
-                            }
-                            if (pinchSquaredDistance !== previousPinchDistance) {
-                                _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
-                                previousPinchDistance = pinchSquaredDistance;
-                            }
-                            break;
-                        default:
-                            if (pointers.item(evt.pointerId)) {
-                                pointers.item(evt.pointerId).x = evt.clientX;
-                                pointers.item(evt.pointerId).y = evt.clientY;
-                            }
-                    }
-                };
-                this._onMouseMove = function (evt) {
-                    if (!engine.isPointerLock) {
-                        return;
-                    }
-                    var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                    var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
-                    _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onGestureStart = function (e) {
-                    if (window.MSGesture === undefined) {
-                        return;
-                    }
-                    if (!_this._MSGestureHandler) {
-                        _this._MSGestureHandler = new MSGesture();
-                        _this._MSGestureHandler.target = element;
-                    }
-                    _this._MSGestureHandler.addPointer(e.pointerId);
-                };
-                this._onGesture = function (e) {
-                    _this.camera.radius *= e.scale;
-                    if (e.preventDefault) {
-                        if (!noPreventDefault) {
-                            e.stopPropagation();
-                            e.preventDefault();
                         }
+                }
+            };
+            this._onMouseMove = function (evt) {
+                if (!engine.isPointerLock) {
+                    return;
+                }
+                var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
+                if (!noPreventDefault) {
+                    evt.preventDefault();
+                }
+            };
+            this._onGestureStart = function (e) {
+                if (window.MSGesture === undefined) {
+                    return;
+                }
+                if (!_this._MSGestureHandler) {
+                    _this._MSGestureHandler = new MSGesture();
+                    _this._MSGestureHandler.target = element;
+                }
+                _this._MSGestureHandler.addPointer(e.pointerId);
+            };
+            this._onGesture = function (e) {
+                _this.camera.radius *= e.scale;
+                if (e.preventDefault) {
+                    if (!noPreventDefault) {
+                        e.stopPropagation();
+                        e.preventDefault();
                     }
-                };
-            }
-            this.attachedElement.addEventListener(eventPrefix + "down", this._onPointerDown, false);
-            this.attachedElement.addEventListener(eventPrefix + "up", this._onPointerUp, false);
-            this.attachedElement.addEventListener(eventPrefix + "out", this._onPointerUp, false);
-            this.attachedElement.addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            this.attachedElement.addEventListener("mousemove", this._onMouseMove, false);
-            this.attachedElement.addEventListener("MSPointerDown", this._onGestureStart, false);
-            this.attachedElement.addEventListener("MSGestureChange", this._onGesture, false);
+                }
+            };
+            element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            element.addEventListener(eventPrefix + "up", this._onPointerUp, false);
+            element.addEventListener(eventPrefix + "out", this._onPointerUp, false);
+            element.addEventListener(eventPrefix + "move", this._onPointerMove, false);
+            element.addEventListener("mousemove", this._onMouseMove, false);
+            element.addEventListener("MSPointerDown", this._onGestureStart, false);
+            element.addEventListener("MSGestureChange", this._onGesture, false);
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
-        ArcRotateCameraPointersInput.prototype.detach = function () {
+        ArcRotateCameraPointersInput.prototype.detachControl = function (element) {
             this._MSGestureHandler = null;
-            this.attachedElement.removeEventListener("contextmenu", this._onContextMenu);
-            this.attachedElement.removeEventListener(eventPrefix + "down", this._onPointerDown);
-            this.attachedElement.removeEventListener(eventPrefix + "up", this._onPointerUp);
-            this.attachedElement.removeEventListener(eventPrefix + "out", this._onPointerUp);
-            this.attachedElement.removeEventListener(eventPrefix + "move", this._onPointerMove);
-            this.attachedElement.removeEventListener("mousemove", this._onMouseMove);
-            this.attachedElement.removeEventListener("MSPointerDown", this._onGestureStart);
-            this.attachedElement.removeEventListener("MSGestureChange", this._onGesture);
+            if (element && this._onPointerDown) {
+                element.removeEventListener("contextmenu", this._onContextMenu);
+                element.removeEventListener(eventPrefix + "down", this._onPointerDown);
+                element.removeEventListener(eventPrefix + "up", this._onPointerUp);
+                element.removeEventListener(eventPrefix + "out", this._onPointerUp);
+                element.removeEventListener(eventPrefix + "move", this._onPointerMove);
+                element.removeEventListener("mousemove", this._onMouseMove);
+                element.removeEventListener("MSPointerDown", this._onGestureStart);
+                element.removeEventListener("MSGestureChange", this._onGesture);
+            }
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }
             ]);
@@ -12180,16 +12194,18 @@ var BABYLON;
 (function (BABYLON) {
     var ArcRotateCameraGamepadInput = (function () {
         function ArcRotateCameraGamepadInput() {
-            var _this = this;
             this.gamepadRotationSensibility = 80;
             this.gamepadMoveSensibility = 40;
-            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         }
-        ArcRotateCameraGamepadInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
+        ArcRotateCameraGamepadInput.prototype.attachControl = function (element, noPreventDefault) {
+            var _this = this;
+            this._gamepads = new BABYLON.Gamepads(function (gamepad) { _this._onNewGameConnected(gamepad); });
         };
-        ArcRotateCameraGamepadInput.prototype.detach = function () {
-            this._gamepads.dispose();
+        ArcRotateCameraGamepadInput.prototype.detachControl = function (element) {
+            if (this._gamepads) {
+                this._gamepads.dispose();
+            }
+            this.gamepad = null;
         };
         ArcRotateCameraGamepadInput.prototype.checkInputs = function () {
             if (this.gamepad) {
@@ -12704,12 +12720,6 @@ var BABYLON;
         function FreeCameraInputsManager(camera) {
             _super.call(this, camera);
         }
-        FreeCameraInputsManager.prototype.add = function (input) {
-            _super.prototype.add.call(this, input);
-            if (this.camera._attachedElement && input.attachElement) {
-                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
-            }
-        };
         FreeCameraInputsManager.prototype.addKeyboard = function () {
             this.add(new BABYLON.FreeCameraKeyboardMoveInput());
             return this;
@@ -13168,7 +13178,7 @@ var BABYLON;
                 return;
             }
             this._attachedElement = element;
-            this._noPreventDefault = noPreventDefault;
+            this._noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this._useCtrlForPanning = useCtrlForPanning;
             this.inputs.attachElement(element, noPreventDefault);
             this._reset = function () {
@@ -13463,12 +13473,6 @@ var BABYLON;
         function ArcRotateCameraInputsManager(camera) {
             _super.call(this, camera);
         }
-        ArcRotateCameraInputsManager.prototype.add = function (input) {
-            _super.prototype.add.call(this, input);
-            if (this.camera._attachedElement && input.attachElement) {
-                input.attachElement(this.camera._attachedElement, this.camera._noPreventDefault);
-            }
-        };
         ArcRotateCameraInputsManager.prototype.addMouseWheel = function () {
             this.add(new BABYLON.ArcRotateCameraMouseWheelInput());
             return this;
@@ -18075,13 +18079,13 @@ var BABYLON;
         /**
          * Creates a box mesh.
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#box
-         * The parameter "size" sets the size (float) of each box side (default 1).
-         * You can set some different box dimensions by using the parameters "width", "height" and "depth" (all by default have the same value than "size").
-         * You can set different colors and different images to each box side by using the parameters "faceColors" (an array of 6 Color3 elements) and "faceUV" (an array of 6 Vector4 elements).
+         * The parameter `size` sets the size (float) of each box side (default 1).
+         * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value than `size`).
+         * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 `Color3` elements) and `faceUV` (an array of 6 `Vector4` elements).
          * Please read this tutorial : http://doc.babylonjs.com/tutorials/CreateBox_Per_Face_Textures_And_Colors
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
-         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateBox = function (name, options, scene) {
             var box = new BABYLON.Mesh(name, scene);
@@ -18092,14 +18096,14 @@ var BABYLON;
         /**
          * Creates a sphere mesh.
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#sphere
-         * The parameter "diameter" sets the diameter size (float) of the sphere (default 1).
-         * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters "diameterX", "diameterY" and "diameterZ" (all by default have the same value than "diameter").
-         * The parameter "segments" sets the sphere number of horizontal stripes (positive integer, default 32).
-         * You can create an unclosed sphere with the parameter "arc" (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
-         * You can create an unclosed sphere on its height with the parameter "slice" (positive float, default1), valued between 0 and 1, what is the height ratio (longitude).
+         * The parameter `diameter` sets the diameter size (float) of the sphere (default 1).
+         * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value than `diameter`).
+         * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32).
+         * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
+         * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
-         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
@@ -18110,12 +18114,12 @@ var BABYLON;
         /**
          * Creates a plane polygonal mesh.  By default, this is a disc.
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#disc
-         * The parameter "radius" sets the radius size (float) of the polygon (default 0.5).
-         * The parameter "tessellation" sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc.
-         * You can create an unclosed polygon with the parameter "arc" (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio
+         * The parameter `radius` sets the radius size (float) of the polygon (default 0.5).
+         * The parameter `tessellation` sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc.
+         * You can create an unclosed polygon with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference : 2 x PI x ratio
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
-         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateDisc = function (name, options, scene) {
             var disc = new BABYLON.Mesh(name, scene);
@@ -18126,13 +18130,13 @@ var BABYLON;
         /**
          * Creates a sphere based upon an icosahedron with 20 triangular faces which can be subdivided.
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#icosphere
-         * The parameter "radius" sets the radius size (float) of the icosphere (default 1).
-         * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters "radiusX", "radiusY" and "radiusZ" (all by default have the same value than "radius").
-         * The parameter "subdivisions" sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size.
-         * The parameter "flat" (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface.
+         * The parameter `radius` sets the radius size (float) of the icosphere (default 1).
+         * You can set some different icosphere dimensions, for instance to build an ellipsoid, by using the parameters `radiusX`, `radiusY` and `radiusZ` (all by default have the same value than `radius`).
+         * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size.
+         * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface.
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
-         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateIcoSphere = function (name, options, scene) {
             var sphere = new BABYLON.Mesh(name, scene);
@@ -18146,13 +18150,13 @@ var BABYLON;
          * The ribbon is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
          *
          * Please read this full tutorial to understand how to design a ribbon : http://doc.babylonjs.com/tutorials/Ribbon_Tutorial
-         * The parameter "pathArray" is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
-         * The parameter "closeArray" (boolean, default false) creates a seam between the first and the last paths of the path array.
-         * The parameter "closePath" (boolean, default false) creates a seam between the first and the last points of each path of the path array.
-         * The parameter "instance" is an instance of an existing Ribbon object to be updated with the passed "pathArray" parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#ribbon
+         * The parameter `pathArray` is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
+         * The parameter `closeArray` (boolean, default false) creates a seam between the first and the last paths of the path array.
+         * The parameter `closePath` (boolean, default false) creates a seam between the first and the last points of each path of the path array.
+         * The optional parameter èinstance` is an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#ribbon
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
-         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateRibbon = function (name, options, scene) {
             var pathArray = options.pathArray;
@@ -18237,25 +18241,25 @@ var BABYLON;
         /**
          * Creates a cylinder or a cone mesh.
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#cylinder-or-cone
-         * The parameter "height" sets the height size (float) of the cylinder/cone (float, default 2).
-         * The parameter "diameter" sets the diameter of the top and bottom cap at once (float, default 1).
-         * The parameters "diameterTop" and "diameterBottom" overwrite the parameter "diameter" and set respectively the top cap and bottom cap diameter (floats, default 1). The parameter "diameterBottom" can't be zero.
-         * The parameter "tessellation" sets the number of cylinder sides (positive integer, default 24). Set it to 3 to get a prism for instance.
-         * The parameter "subdivisions" sets the number of rings along the cylinder height (positive integer, default 1).
-         * The parameter "hasRings" (boolean, default false) makes the subdivisions independent from each other, so they become different faces.
-         * The parameter "enclose"  (boolean, default false) adds two extra faces per subdivision to a sliced cylinder to close it around its height axis.
-         * The parameter "arc" (float, default 1) is the ratio (max 1) to apply to the circumference to slice the cylinder.
-         * You can set different colors and different images to each box side by using the parameters "faceColors" (an array of n Color3 elements) and "faceUV" (an array of n Vector4 elements).
+         * The parameter `height` sets the height size (float) of the cylinder/cone (float, default 2).
+         * The parameter `diameter` sets the diameter of the top and bottom cap at once (float, default 1).
+         * The parameters `diameterTop` and `diameterBottom` overwrite the parameter `diameter` and set respectively the top cap and bottom cap diameter (floats, default 1). The parameter "diameterBottom" can't be zero.
+         * The parameter `tessellation` sets the number of cylinder sides (positive integer, default 24). Set it to 3 to get a prism for instance.
+         * The parameter `subdivisions` sets the number of rings along the cylinder height (positive integer, default 1).
+         * The parameter `hasRings` (boolean, default false) makes the subdivisions independent from each other, so they become different faces.
+         * The parameter `enclose`  (boolean, default false) adds two extra faces per subdivision to a sliced cylinder to close it around its height axis.
+         * The parameter `arc` (float, default 1) is the ratio (max 1) to apply to the circumference to slice the cylinder.
+         * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of n `Color3` elements) and `faceUV` (an array of n `Vector4` elements).
          * The value of n is the number of cylinder faces. If the cylinder has only 1 subdivisions, n equals : top face + cylinder surface + bottom face = 3
          * Now, if the cylinder has 5 independent subdivisions (hasRings = true), n equals : top face + 5 stripe surfaces + bottom face = 2 + 5 = 7
          * Finally, if the cylinder has 5 independent subdivisions and is enclose, n equals : top face + 5 x (stripe surface + 2 closing faces) + bottom face = 2 + 5 * 3 = 17
          * Each array (color or UVs) is always ordered the same way : the first element is the bottom cap, the last element is the top cap. The other elements are each a ring surface.
-         * If enclose is false, a ring surface is one element.
-         * If enclose true, a ring surface is 3 successive elements in the array : the tubular surface, then the two closing faces.
+         * If `enclose` is false, a ring surface is one element.
+         * If `enclose` is true, a ring surface is 3 successive elements in the array : the tubular surface, then the two closing faces.
          * Example how to set colors and textures on a sliced cylinder : http://www.html5gamedevs.com/topic/17945-creating-a-closed-slice-of-a-cylinder/#comment-106379
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
-         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateCylinder = function (name, options, scene) {
             var cylinder = new BABYLON.Mesh(name, scene);
@@ -18266,12 +18270,12 @@ var BABYLON;
         /**
          * Creates a torus mesh.
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#torus
-         * The parameter "diameter" sets the diameter size (float) of the torus (default 1).
-         * The parameter "thickness" sets the diameter size of the tube of the torus (float, default 0.5).
-         * The parameter "tessellation" sets the number of torus sides (postive integer, default 16).
+         * The parameter `diameter` sets the diameter size (float) of the torus (default 1).
+         * The parameter `thickness` sets the diameter size of the tube of the torus (float, default 0.5).
+         * The parameter `tessellation` sets the number of torus sides (postive integer, default 16).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
-         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateTorus = function (name, options, scene) {
             var torus = new BABYLON.Mesh(name, scene);
@@ -18282,13 +18286,13 @@ var BABYLON;
         /**
          * Creates a torus knot mesh.
          * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#torus-knot
-         * The parameter "radius" sets the global radius size (float) of the torus knot (default 2).
-         * The parameter "radialSegments" sets the number of sides on each tube segments (positive integer, default 32).
-         * The parameter "tubularSegments" sets the number of tubes to decompose the knot into (positive integer, default 32).
-         * The parameters "p" and "q" are the number of windings on each axis (positive integers, default 2 and 3).
+         * The parameter `radius` sets the global radius size (float) of the torus knot (default 2).
+         * The parameter `radialSegments` sets the number of sides on each tube segments (positive integer, default 32).
+         * The parameter `tubularSegments` sets the number of tubes to decompose the knot into (positive integer, default 32).
+         * The parameters `p` and `q` are the number of windings on each axis (positive integers, default 2 and 3).
          * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
          * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
-         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
          */
         MeshBuilder.CreateTorusKnot = function (name, options, scene) {
             var torusKnot = new BABYLON.Mesh(name, scene);
@@ -18296,6 +18300,18 @@ var BABYLON;
             vertexData.applyToMesh(torusKnot, options.updatable);
             return torusKnot;
         };
+        /**
+         * Creates a line system mesh.
+         * A line system is a pool of many lines gathered in a single mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#linesystem
+         * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function.
+         * The parameter `lines` is an array of lines, each line being an array of successive Vector3.
+         * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter. The way to update it is the same than for
+         * updating a simple Line mesh, you just need to update every line in the `lines` array : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateLineSystem = function (name, options, scene) {
             var instance = options.instance;
             var lines = options.lines;
@@ -18321,10 +18337,33 @@ var BABYLON;
             vertexData.applyToMesh(lineSystem, options.updatable);
             return lineSystem;
         };
+        /**
+         * Creates a line mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#lines
+         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
+         * The parameter `points` is an array successive Vector3.
+         * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only point positions can change, not the number of points.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateLines = function (name, options, scene) {
             var lines = MeshBuilder.CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance }, scene);
             return lines;
         };
+        /**
+         * Creates a dashed line mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#dashed-lines
+         * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter.
+         * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function.
+         * The parameter `points` is an array successive Vector3.
+         * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200).
+         * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3).
+         * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1).
+         * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * When updating an instance, remember that only point positions can change, not the number of points.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateDashedLines = function (name, options, scene) {
             var points = options.points;
             var instance = options.instance;
@@ -18384,6 +18423,24 @@ var BABYLON;
             dashedLines.gapSize = gapSize;
             return dashedLines;
         };
+        /**
+         * Creates an extruded shape mesh.
+         * The extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#extruded-shapes
+         *
+         * Please read this full tutorial to understand how to design an extruded shape : http://doc.babylonjs.com/tutorials/Parametric_Shapes#extrusion
+         * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be
+         * extruded along the Z axis.
+         * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
+         * The parameter `rotation` (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
+         * The parameter `scale` (float, default 1) is the value to scale the shape.
+         * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape
+         * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.ExtrudeShape = function (name, options, scene) {
             var path = options.path;
             var shape = options.shape;
@@ -18395,6 +18452,36 @@ var BABYLON;
             var instance = options.instance;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, false, false, cap, false, scene, updatable, sideOrientation, instance);
         };
+        /**
+         * Creates an custom extruded shape mesh.
+         * The custom extrusion is a parametric shape :  http://doc.babylonjs.com/tutorials/Parametric_Shapes.  It has no predefined shape. Its final shape will depend on the input parameters.
+         * tuto :http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#custom-extruded-shapes
+         *
+         * Please read this full tutorial to understand how to design a custom extruded shape : http://doc.babylonjs.com/tutorials/Parametric_Shapes#extrusion
+         * The parameter `shape` is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be
+         * extruded along the Z axis.
+         * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
+         * The parameter `rotationFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path
+         * and the distance of this point from the begining of the path :
+         * ```rotationFunction = function(i, distance) {
+         *  // do things
+         *  return rotationValue; }```
+         * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
+         * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path
+         * and the distance of this point from the begining of the path :
+         * ````scaleFunction = function(i, distance) {
+         *   // do things
+         *  return scaleValue;}```
+         * It must returns a float value that will be the scale value applied to the shape on each path point.
+         * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray`.
+         * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray`.
+         * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#extruded-shape
+         * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.ExtrudeShapeCustom = function (name, options, scene) {
             var path = options.path;
             var shape = options.shape;
@@ -18408,6 +18495,22 @@ var BABYLON;
             var instance = options.instance;
             return MeshBuilder._ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable, sideOrientation, instance);
         };
+        /**
+         * Creates lathe mesh.
+         * The lathe is a shape with a symetry axis : a 2D model shape is rotated around this axis to design the lathe.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#lathe
+         *
+         * The parameter "shape" is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be
+         * rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero.
+         * The parameter "radius" (positive float, default 1) is the radius value of the lathe.
+         * The parameter "tessellation" (positive integer, default 64) is the side number of the lathe.
+         * The parameter "arc" (positive float, default 1) is the ratio of the lathe. 0.5 builds for instance half a lathe, so an opened shape.
+         * The parameter "closed" (boolean, default true) opens/closes the lathe circumference. This should be set to false when used with the parameter "arc".
+         * The parameter "cap" sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter "updatable" (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateLathe = function (name, options, scene) {
             var arc = (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
             var closed = (options.closed === undefined) ? true : options.closed;
@@ -18445,6 +18548,16 @@ var BABYLON;
             var lathe = MeshBuilder.CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable }, scene);
             return lathe;
         };
+        /**
+         * Creates a plane mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#plane
+         * The parameter `size` sets the size (float) of both sides of the plane at once (default 1).
+         * You can set some different plane dimensions by using the parameters `width` and `height` (both by default have the same value than `size`).
+         * The parameter `sourcePlane` is a `Plane` instance. It builds a mesh plane from a Math plane.
+         * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * Detail here : http://doc.babylonjs.com/tutorials/02._Discover_Basic_Elements#side-orientation
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreatePlane = function (name, options, scene) {
             var plane = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreatePlane(options);
@@ -18457,6 +18570,13 @@ var BABYLON;
             }
             return plane;
         };
+        /**
+         * Creates a ground mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#plane
+         * The parameters `width` and `height` (floats, default 1) set the width and height sizes of the ground.
+         * The parameter `subdivisions` (positive integer) sets the number of subdivisions per side.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateGround = function (name, options, scene) {
             var ground = new BABYLON.GroundMesh(name, scene);
             ground._setReady(false);
@@ -18472,12 +18592,37 @@ var BABYLON;
             ground._setReady(true);
             return ground;
         };
+        /**
+         * Creates a tiled ground mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#tiled-ground
+         * The parameters `xmin` and `xmax` (floats, default -1 and 1) set the ground minimum and maximum X coordinates.
+         * The parameters `zmin` and `zmax` (floats, default -1 and 1) set the ground minimum and maximum Z coordinates.
+         * The parameter `subdivisions` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the
+         * numbers of subdivisions on the ground width and height. Each subdivision is called a tile.
+         * The parameter `precision` is a javascript object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the
+         * numbers of subdivisions on the ground width and height of each tile.
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateTiledGround = function (name, options, scene) {
             var tiledGround = new BABYLON.Mesh(name, scene);
             var vertexData = BABYLON.VertexData.CreateTiledGround(options);
             vertexData.applyToMesh(tiledGround, options.updatable);
             return tiledGround;
         };
+        /**
+         * Creates a ground mesh from a height map.
+         * tuto : http://doc.babylonjs.com/tutorials/14._Height_Map
+         * tuto : http://doc.babylonjs.com/tutorials/Mesh_CreateXXX_Methods_With_Options_Parameter#ground-from-a-height-map
+         * The parameter `url` sets the URL of the height map image resource.
+         * The parameters `width` and `height` (positive floats, default 10) set the ground width and height sizes.
+         * The parameter `subdivisions` (positive integer, default 1) sets the number of subdivision per side.
+         * The parameter `minHeight` (float, default 0) is the minimum altitude on the ground.
+         * The parameter `maxHeight` (float, default 1) is the maximum altitude on the ground.
+         * The parameter `onReady` is a javascript callback function that will be called  once the mesh is just built (the height map download can last some time).
+         * This function is passed the newly built mesh : ```function(mesh) { // do things
+         * return; }```
+         * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+         */
         MeshBuilder.CreateGroundFromHeightMap = function (name, url, options, scene) {
             var width = options.width || 10;
             var height = options.height || 10;
@@ -20143,17 +20288,33 @@ var BABYLON;
 (function (BABYLON) {
     var VideoTexture = (function (_super) {
         __extends(VideoTexture, _super);
-        function VideoTexture(name, urls, scene, generateMipMaps, invertY, samplingMode) {
+        /**
+        * Creates a video texture.
+        * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
+        * @param urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
+        * @param scene is obviously the current scene.
+        * @param generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
+        * @param invertY is false by default but can be used to invert video on Y axis
+        * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+        */
+        function VideoTexture(name, urlsOrVideo, scene, generateMipMaps, invertY, samplingMode) {
             var _this = this;
             if (generateMipMaps === void 0) { generateMipMaps = false; }
             if (invertY === void 0) { invertY = false; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             _super.call(this, null, scene, !generateMipMaps, invertY);
             this._autoLaunch = true;
+            var urls;
             this.name = name;
-            this.video = document.createElement("video");
-            this.video.autoplay = false;
-            this.video.loop = true;
+            if (urlsOrVideo instanceof HTMLVideoElement) {
+                this.video = urlsOrVideo;
+            }
+            else {
+                urls = urlsOrVideo;
+                this.video = document.createElement("video");
+                this.video.autoplay = false;
+                this.video.loop = true;
+            }
             this.video.addEventListener("canplaythrough", function () {
                 if (BABYLON.Tools.IsExponentOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(_this.video.videoHeight)) {
                     _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
@@ -20167,12 +20328,13 @@ var BABYLON;
                 _this._texture = scene.getEngine().createDynamicTexture(_this.video.videoWidth, _this.video.videoHeight, generateMipMaps, samplingMode, false);
                 _this._texture.isReady = true;
             });
-            urls.forEach(function (url) {
-                //Backwards-compatibility for typescript 1. from 1.3 it should say "SOURCE". see here - https://github.com/Microsoft/TypeScript/issues/1850
-                var source = document.createElement("source");
-                source.src = url;
-                _this.video.appendChild(source);
-            });
+            if (urls) {
+                urls.forEach(function (url) {
+                    var source = document.createElement("source");
+                    source.src = url;
+                    _this.video.appendChild(source);
+                });
+            }
             this._lastUpdate = BABYLON.Tools.Now;
         }
         VideoTexture.prototype.update = function () {
@@ -25627,8 +25789,18 @@ var BABYLON;
     BABYLON.PassPostProcess = PassPostProcess;
 })(BABYLON || (BABYLON = {}));
 
+
+
+
+
+
+
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
     var PhysicsJoint = (function () {
         function PhysicsJoint(type, jointData) {
             this.type = type;
@@ -25647,6 +25819,21 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(PhysicsJoint.prototype, "physicsPlugin", {
+            set: function (physicsPlugin) {
+                this._physicsPlugin = physicsPlugin;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed.
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        PhysicsJoint.prototype.executeNativeFunction = function (func) {
+            func(this._physicsPlugin.world, this._physicsJoint);
+        };
         //TODO check if the native joints are the same
         //Joint Types
         PhysicsJoint.DistanceJoint = 0;
@@ -25658,7 +25845,7 @@ var BABYLON;
         PhysicsJoint.PrismaticJoint = 5;
         //ENERGY FTW! (compare with this - http://ode-wiki.org/wiki/index.php?title=Manual:_Joint_Types_and_Functions)
         PhysicsJoint.UniversalJoint = 6;
-        PhysicsJoint.Hinge2Joint = 7;
+        PhysicsJoint.Hinge2Joint = PhysicsJoint.WheelJoint;
         //Cannon
         //Similar to a Ball-Joint. Different in params
         //TODO check!!
@@ -25668,6 +25855,83 @@ var BABYLON;
         return PhysicsJoint;
     })();
     BABYLON.PhysicsJoint = PhysicsJoint;
+    /**
+     * A class representing a physics distance joint.
+     */
+    var DistanceJoint = (function (_super) {
+        __extends(DistanceJoint, _super);
+        function DistanceJoint(jointData) {
+            _super.call(this, PhysicsJoint.DistanceJoint, jointData);
+        }
+        /**
+         * Update the predefined distance.
+         */
+        DistanceJoint.prototype.updateDistance = function (maxDistance, minDistance) {
+            this._physicsPlugin.updateDistanceJoint(this, maxDistance, minDistance);
+        };
+        return DistanceJoint;
+    })(PhysicsJoint);
+    BABYLON.DistanceJoint = DistanceJoint;
+    /**
+     * This class represents a single hinge physics joint
+     */
+    var HingeJoint = (function (_super) {
+        __extends(HingeJoint, _super);
+        function HingeJoint(jointData) {
+            _super.call(this, PhysicsJoint.HingeJoint, jointData);
+        }
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        HingeJoint.prototype.setMotor = function (force, maxForce) {
+            this._physicsPlugin.setMotor(this, force, maxForce);
+        };
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        HingeJoint.prototype.setLimit = function (upperLimit, lowerLimit) {
+            this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
+        };
+        return HingeJoint;
+    })(PhysicsJoint);
+    BABYLON.HingeJoint = HingeJoint;
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
+    var Hinge2Joint = (function (_super) {
+        __extends(Hinge2Joint, _super);
+        function Hinge2Joint(jointData) {
+            _super.call(this, PhysicsJoint.Hinge2Joint, jointData);
+        }
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        Hinge2Joint.prototype.setMotor = function (force, maxForce, motorIndex) {
+            if (motorIndex === void 0) { motorIndex = 0; }
+            this._physicsPlugin.setMotor(this, force, maxForce, motorIndex);
+        };
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        Hinge2Joint.prototype.setLimit = function (upperLimit, lowerLimit, motorIndex) {
+            if (motorIndex === void 0) { motorIndex = 0; }
+            this._physicsPlugin.setLimit(this, upperLimit, lowerLimit, motorIndex);
+        };
+        return Hinge2Joint;
+    })(PhysicsJoint);
+    BABYLON.Hinge2Joint = Hinge2Joint;
 })(BABYLON || (BABYLON = {}));
 
 var BABYLON;
@@ -25727,15 +25991,20 @@ var BABYLON;
                     });
                 }
             };
-            //default options params
-            this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
-            this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
-            this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
             this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
-            this._joints = [];
-            //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
-            if (!this._mesh.parent) {
-                this._init();
+            if (!this._physicsEngine) {
+                BABYLON.Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
+            }
+            else {
+                //default options params
+                this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
+                this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
+                this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
+                this._joints = [];
+                //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
+                if (!this._mesh.parent) {
+                    this._init();
+                }
             }
         }
         /**
@@ -25837,11 +26106,17 @@ var BABYLON;
             }
             this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
         };
+        PhysicsImpostor.prototype.getLinearVelocity = function () {
+            return this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this);
+        };
         /**
          * Set the body's linear velocity.
          */
         PhysicsImpostor.prototype.setLinearVelocity = function (velocity) {
             this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        };
+        PhysicsImpostor.prototype.getAngularVelocity = function () {
+            return this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this);
         };
         /**
          * Set the body's linear velocity.
@@ -26013,6 +26288,7 @@ var BABYLON;
          * default is 1/60.
          * To slow it down, enter 1/600 for example.
          * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
          */
         PhysicsEngine.prototype.setTimeStep = function (newTimeStep) {
             if (newTimeStep === void 0) { newTimeStep = 1 / 60; }
@@ -26027,6 +26303,11 @@ var BABYLON;
         PhysicsEngine.prototype.getPhysicsPluginName = function () {
             return this._physicsPlugin.name;
         };
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
         PhysicsEngine.prototype.addImpostor = function (impostor) {
             this._impostors.push(impostor);
             //if no parent, generate the body
@@ -26034,6 +26315,11 @@ var BABYLON;
                 this._physicsPlugin.generatePhysicsBody(impostor);
             }
         };
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
         PhysicsEngine.prototype.removeImpostor = function (impostor) {
             var index = this._impostors.indexOf(impostor);
             if (index > -1) {
@@ -26045,12 +26331,19 @@ var BABYLON;
                 }
             }
         };
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
         PhysicsEngine.prototype.addJoint = function (mainImpostor, connectedImpostor, joint) {
             var impostorJoint = {
                 mainImpostor: mainImpostor,
                 connectedImpostor: connectedImpostor,
                 joint: joint
             };
+            joint.physicsPlugin = this._physicsPlugin;
             this._joints.push(impostorJoint);
             this._physicsPlugin.generateJoint(impostorJoint);
         };
@@ -33358,6 +33651,7 @@ var BABYLON;
             }*/
             switch (impostorJoint.joint.type) {
                 case BABYLON.PhysicsJoint.HingeJoint:
+                case BABYLON.PhysicsJoint.Hinge2Joint:
                     constraint = new CANNON.HingeConstraint(mainBody, connectedBody, constraintData);
                     break;
                 case BABYLON.PhysicsJoint.DistanceJoint:
@@ -33567,6 +33861,18 @@ var BABYLON;
         CannonJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
             impostor.physicsBody.angularVelocity.copy(velocity);
         };
+        CannonJSPlugin.prototype.getLinearVelocity = function (impostor) {
+            var v = impostor.physicsBody.velocity;
+            if (!v)
+                return null;
+            return new BABYLON.Vector3(v.x, v.y, v.z);
+        };
+        CannonJSPlugin.prototype.getAngularVelocity = function (impostor) {
+            var v = impostor.physicsBody.angularVelocity;
+            if (!v)
+                return null;
+            return new BABYLON.Vector3(v.x, v.y, v.z);
+        };
         CannonJSPlugin.prototype.setBodyMass = function (impostor, mass) {
             impostor.physicsBody.mass = mass;
             impostor.physicsBody.updateMassProperties();
@@ -33576,6 +33882,32 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.wakeUpBody = function (impostor) {
             impostor.physicsBody.wakeUp();
+        };
+        CannonJSPlugin.prototype.updateDistanceJoint = function (joint, maxDistance, minDistance) {
+            joint.physicsJoint.distance = maxDistance;
+        };
+        CannonJSPlugin.prototype.enableMotor = function (joint, motorIndex) {
+            if (!motorIndex) {
+                joint.physicsJoint.enableMotor();
+            }
+        };
+        CannonJSPlugin.prototype.disableMotor = function (joint, motorIndex) {
+            if (!motorIndex) {
+                joint.physicsJoint.disableMotor();
+            }
+        };
+        CannonJSPlugin.prototype.setMotor = function (joint, speed, maxForce, motorIndex) {
+            if (!motorIndex) {
+                joint.physicsJoint.enableMotor();
+                joint.physicsJoint.setMotorSpeed(speed);
+                if (maxForce) {
+                    this.setLimit(joint, maxForce);
+                }
+            }
+        };
+        CannonJSPlugin.prototype.setLimit = function (joint, upperLimit, lowerLimit) {
+            joint.physicsJoint.motorEquation.maxForce = upperLimit;
+            joint.physicsJoint.motorEquation.minForce = lowerLimit || -upperLimit;
         };
         CannonJSPlugin.prototype.dispose = function () {
             //nothing to do, actually.
@@ -33851,6 +34183,18 @@ var BABYLON;
         OimoJSPlugin.prototype.setAngularVelocity = function (impostor, velocity) {
             impostor.physicsBody.angularVelocity.init(velocity.x, velocity.y, velocity.z);
         };
+        OimoJSPlugin.prototype.getLinearVelocity = function (impostor) {
+            var v = impostor.physicsBody.linearVelocity;
+            if (!v)
+                return null;
+            return new BABYLON.Vector3(v.x, v.y, v.z);
+        };
+        OimoJSPlugin.prototype.getAngularVelocity = function (impostor) {
+            var v = impostor.physicsBody.angularVelocity;
+            if (!v)
+                return null;
+            return new BABYLON.Vector3(v.x, v.y, v.z);
+        };
         OimoJSPlugin.prototype.setBodyMass = function (impostor, mass) {
             var staticBody = mass === 0;
             //this will actually set the body's density and not its mass.
@@ -33863,6 +34207,24 @@ var BABYLON;
         };
         OimoJSPlugin.prototype.wakeUpBody = function (impostor) {
             impostor.physicsBody.awake();
+        };
+        OimoJSPlugin.prototype.updateDistanceJoint = function (joint, maxDistance, minDistance) {
+            joint.physicsJoint.limitMotoe.upperLimit = maxDistance;
+            if (minDistance !== void 0) {
+                joint.physicsJoint.limitMotoe.lowerLimit = minDistance;
+            }
+        };
+        OimoJSPlugin.prototype.setMotor = function (joint, force, maxForce, motorIndex) {
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
+            if (motor) {
+                motor.setMotor(force, maxForce);
+            }
+        };
+        OimoJSPlugin.prototype.setLimit = function (joint, upperLimit, lowerLimit, motorIndex) {
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
+            if (motor) {
+                motor.setLimit(upperLimit, lowerLimit || -upperLimit);
+            }
         };
         OimoJSPlugin.prototype.dispose = function () {
             this.world.clear();

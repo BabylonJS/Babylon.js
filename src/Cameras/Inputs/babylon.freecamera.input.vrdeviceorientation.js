@@ -2,13 +2,16 @@ var BABYLON;
 (function (BABYLON) {
     var FreeCameraVRDeviceOrientationInput = (function () {
         function FreeCameraVRDeviceOrientationInput() {
+            this.alphaCorrection = 1;
+            this.betaCorrection = 1;
+            this.gammaCorrection = 1;
             this._alpha = 0;
             this._beta = 0;
             this._gamma = 0;
+            this._dirty = false;
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }
-        FreeCameraVRDeviceOrientationInput.prototype.attachCamera = function (camera) {
-            this.camera = camera;
+        FreeCameraVRDeviceOrientationInput.prototype.attachControl = function (element, noPreventDefault) {
             window.addEventListener("deviceorientation", this._deviceOrientationHandler);
         };
         FreeCameraVRDeviceOrientationInput.prototype._onOrientationEvent = function (evt) {
@@ -16,18 +19,25 @@ var BABYLON;
             this._alpha = +evt.alpha | 0;
             this._beta = +evt.beta | 0;
             this._gamma = +evt.gamma | 0;
-            if (this._gamma < 0) {
-                this._gamma = 90 + this._gamma;
-            }
-            else {
-                // Incline it in the correct angle.
-                this._gamma = 270 - this._gamma;
-            }
-            camera.rotation.x = this._gamma / 180.0 * Math.PI;
-            camera.rotation.y = -this._alpha / 180.0 * Math.PI;
-            camera.rotation.z = this._beta / 180.0 * Math.PI;
+            this._dirty = true;
         };
-        FreeCameraVRDeviceOrientationInput.prototype.detach = function () {
+        FreeCameraVRDeviceOrientationInput.prototype.checkInputs = function () {
+            if (this._dirty) {
+                this._dirty = false;
+                var rotationX = this._gamma;
+                if (rotationX < 0) {
+                    rotationX = 90 + rotationX;
+                }
+                else {
+                    // Incline it in the correct angle.
+                    rotationX = 270 - rotationX;
+                }
+                this.camera.rotation.x = this.gammaCorrection * rotationX / 180.0 * Math.PI;
+                this.camera.rotation.y = this.alphaCorrection * -this._alpha / 180.0 * Math.PI;
+                this.camera.rotation.z = this.betaCorrection * this._beta / 180.0 * Math.PI;
+            }
+        };
+        FreeCameraVRDeviceOrientationInput.prototype.detachControl = function (element) {
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         };
         FreeCameraVRDeviceOrientationInput.prototype.getTypeName = function () {
