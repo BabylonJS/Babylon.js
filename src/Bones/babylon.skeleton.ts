@@ -98,9 +98,8 @@
         }
         
         /**
-        * get a bone using its id
+        * get a index on skeleton by name
         * @param {string} the bone's name
-        * @param {Skeleton} the skeleton 
         * @return {number} the indice of bone on
         */
         public getIndexOnSkeletonByName(name: string): number {
