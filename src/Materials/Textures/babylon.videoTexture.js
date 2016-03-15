@@ -34,25 +34,29 @@ var BABYLON;
                 this.video.autoplay = false;
                 this.video.loop = true;
             }
-            this.video.addEventListener("canplaythrough", function () {
-                if (BABYLON.Tools.IsExponentOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(_this.video.videoHeight)) {
-                    _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-                    _this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-                }
-                else {
-                    _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    generateMipMaps = false;
-                }
-                _this._texture = scene.getEngine().createDynamicTexture(_this.video.videoWidth, _this.video.videoHeight, generateMipMaps, samplingMode, false);
-                _this._texture.isReady = true;
-            });
+            if (BABYLON.Tools.IsExponentOfTwo(this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(this.video.videoHeight)) {
+                this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+                this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+            }
+            else {
+                this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                generateMipMaps = false;
+            }
             if (urls) {
+                this.video.addEventListener("canplaythrough", function () {
+                    _this._texture = scene.getEngine().createDynamicTexture(_this.video.videoWidth, _this.video.videoHeight, generateMipMaps, samplingMode, false);
+                    _this._texture.isReady = true;
+                });
                 urls.forEach(function (url) {
                     var source = document.createElement("source");
                     source.src = url;
                     _this.video.appendChild(source);
                 });
+            }
+            else {
+                this._texture = scene.getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, generateMipMaps, samplingMode, false);
+                this._texture.isReady = true;
             }
             this._lastUpdate = BABYLON.Tools.Now;
         }
