@@ -37,6 +37,7 @@
         }
 
         // Methods
+
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
@@ -57,6 +58,20 @@
             }
             return ret;
         } 
+
+        /**
+        * Get bone's index searching by name
+        * @param {string} name is bone's name to search for
+        * @return {number} Indice of the bone. Returns -1 if not found
+        */
+        public getBoneIndexByName(name: string): number {
+            for (var boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
+                if (this.bones[boneIndex].name === name) {
+                    return boneIndex;
+                }
+            }
+            return -1;
+        }
         
         public createAnimationRange(name: string, from: number, to: number): void {
             // check name not already in use
@@ -95,20 +110,6 @@
                 i++;
             }
             return animationRanges;
-        }
-        
-        /**
-        * get a index on skeleton by name
-        * @param {string} the bone's name
-        * @return {number} the indice of bone on
-        */
-        public getIndexOnSkeletonByName(name: string): number {
-                for (var boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
-                    if (this.bones[boneIndex].name === name) {
-                        return boneIndex;
-                    }
-                }
-                return null;
         }
 
         /** 

@@ -43,6 +43,8 @@ var BABYLON;
             this._orientationBeta = 0;
             this._initialOrientationGamma = 0;
             this._initialOrientationBeta = 0;
+            this._offsetX = null;
+            this._offsetY = null;
         };
         FreeCameraDeviceOrientationInput.prototype.checkInputs = function () {
             if (!this._offsetX) {

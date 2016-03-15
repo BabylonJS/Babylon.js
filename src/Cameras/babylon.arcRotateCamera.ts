@@ -38,7 +38,7 @@
 
         @serialize()
         public upperRadiusLimit = null;
-        
+
         @serialize()
         public inertialPanningX: number = 0;
 
@@ -51,107 +51,107 @@
             if (pointers)
                 return pointers.angularSensibilityX;
         }
-        
+
         public set angularSensibilityX(value) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers){
+            if (pointers) {
                 pointers.angularSensibilityX = value;
             }
         }
-        
+
         public get angularSensibilityY() {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityY;
         }
-        
+
         public set angularSensibilityY(value) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers){
+            if (pointers) {
                 pointers.angularSensibilityY = value;
             }
         }
-        
+
         public get pinchPrecision() {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.pinchPrecision;
         }
-        
+
         public set pinchPrecision(value) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers){
+            if (pointers) {
                 pointers.pinchPrecision = value;
             }
         }
-        
+
         public get panningSensibility() {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.panningSensibility;
         }
-        
+
         public set panningSensibility(value) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
-            if (pointers){
+            if (pointers) {
                 pointers.panningSensibility = value;
             }
         }
-        
+
         public get keysUp() {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysUp;
         }
-        
+
         public set keysUp(value) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysUp = value;
         }
-        
+
         public get keysDown() {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysDown;
         }
-        
+
         public set keysDown(value) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysDown = value;
         }
-        
+
         public get keysLeft() {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysLeft;
         }
-        
+
         public set keysLeft(value) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysLeft = value;
         }
-        
+
         public get keysRight() {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysRight;
         }
-        
+
         public set keysRight(value) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysRight = value;
         }
-        
+
         public get wheelPrecision() {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 return mousewheel.wheelPrecision;
         }
-        
+
         public set wheelPrecision(value) {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
@@ -164,14 +164,14 @@
         public zoomOnFactor = 1;
 
         public targetScreenOffset = Vector2.Zero();
-        
+
         @serialize()
         public allowUpsideDown = true;
 
         public _viewMatrix = new Matrix();
-        public _useCtrlForPanning : boolean;
-        public inputs : ArcRotateCameraInputsManager;
-        
+        public _useCtrlForPanning: boolean;
+        public inputs: ArcRotateCameraInputsManager;
+
         public _reset: () => void;
         
         // Panning
@@ -192,7 +192,7 @@
         private _previousRadius: number;
         //due to async collision inspection
         private _collisionTriggered: boolean;
-        
+
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
@@ -258,18 +258,17 @@
             this._useCtrlForPanning = useCtrlForPanning;
 
             this.inputs.attachElement(element, noPreventDefault);
-            
 
-                this._reset = () => {
-                    this.inertialAlphaOffset = 0;
-                    this.inertialBetaOffset = 0;
-                    this.inertialRadiusOffset = 0;
-                };
+            this._reset = () => {
+                this.inertialAlphaOffset = 0;
+                this.inertialBetaOffset = 0;
+                this.inertialRadiusOffset = 0;
+            };
         }
 
         public detachControl(element: HTMLElement): void {
             this.inputs.detachElement(element);
-            
+
             if (this._reset) {
                 this._reset();
             }
@@ -280,7 +279,7 @@
             if (this._collisionTriggered) {
                 return;
             }
-            
+
             this.inputs.checkInputs();            
 			
             // Inertia
@@ -553,7 +552,7 @@
             this.inputs.clear();
             super.dispose();
         }
-        
+
         public getTypeName(): string {
             return "ArcRotateCamera";
         }

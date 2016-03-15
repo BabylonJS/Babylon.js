@@ -81,8 +81,6 @@
         private _oldPosition = Vector3.Zero();
         private _diffPosition = Vector3.Zero();
         private _newPosition = Vector3.Zero();
-        //public _attachedElement: HTMLElement;
-        //public _noPreventDefault: boolean;
         
         public _localDirection: Vector3;
         public _transformedDirection: Vector3;        

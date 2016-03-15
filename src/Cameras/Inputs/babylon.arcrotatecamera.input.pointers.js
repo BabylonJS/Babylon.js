@@ -9,13 +9,13 @@ var BABYLON;
     var eventPrefix = BABYLON.Tools.GetPointerPrefix();
     var ArcRotateCameraPointersInput = (function () {
         function ArcRotateCameraPointersInput() {
-            this._isRightClick = false;
-            this._isCtrlPushed = false;
-            this.pinchInwards = true;
             this.angularSensibilityX = 1000.0;
             this.angularSensibilityY = 1000.0;
             this.pinchPrecision = 6.0;
             this.panningSensibility = 50.0;
+            this._isRightClick = false;
+            this._isCtrlPushed = false;
+            this.pinchInwards = true;
         }
         ArcRotateCameraPointersInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
@@ -149,7 +149,6 @@ var BABYLON;
             ]);
         };
         ArcRotateCameraPointersInput.prototype.detachControl = function (element) {
-            this._MSGestureHandler = null;
             if (element && this._onPointerDown) {
                 element.removeEventListener("contextmenu", this._onContextMenu);
                 element.removeEventListener(eventPrefix + "down", this._onPointerDown);
@@ -159,6 +158,20 @@ var BABYLON;
                 element.removeEventListener("mousemove", this._onMouseMove);
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
+                this._isRightClick = false;
+                this._isCtrlPushed = false;
+                this.pinchInwards = true;
+                this._onKeyDown = null;
+                this._onKeyUp = null;
+                this._onPointerDown = null;
+                this._onPointerUp = null;
+                this._onPointerMove = null;
+                this._onMouseMove = null;
+                this._onGestureStart = null;
+                this._onGesture = null;
+                this._MSGestureHandler = null;
+                this._onLostFocus = null;
+                this._onContextMenu = null;
             }
             BABYLON.Tools.UnregisterTopRootEvents([
                 { name: "blur", handler: this._onLostFocus }

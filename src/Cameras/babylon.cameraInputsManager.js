@@ -30,6 +30,7 @@ var BABYLON;
                 if (input === inputToRemove) {
                     input.detachControl(this.attachedElement);
                     delete this.attached[cam];
+                    this.rebuildInputCheck();
                 }
             }
         };
@@ -39,6 +40,7 @@ var BABYLON;
                 if (input.getTypeName() === inputType) {
                     input.detachControl(this.attachedElement);
                     delete this.attached[cam];
+                    this.rebuildInputCheck();
                 }
             }
         };
@@ -49,20 +51,32 @@ var BABYLON;
                 fn();
             };
         };
+        CameraInputsManager.prototype.attachInput = function (input) {
+            input.attachControl(this.attachedElement, this.noPreventDefault);
+        };
         CameraInputsManager.prototype.attachElement = function (element, noPreventDefault) {
+            if (this.attachedElement) {
+                return;
+            }
+            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this.attachedElement = element;
+            this.noPreventDefault = noPreventDefault;
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 this.attached[cam].attachControl(element, noPreventDefault);
             }
         };
         CameraInputsManager.prototype.detachElement = function (element) {
+            if (this.attachedElement !== element) {
+                return;
+            }
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 this.attached[cam].detachControl(element);
             }
+            this.attachedElement = null;
         };
-        CameraInputsManager.prototype.rebuildInputCheck = function (element) {
+        CameraInputsManager.prototype.rebuildInputCheck = function () {
             this.checkInputs = function () { };
             for (var cam in this.attached) {
                 var input = this.attached[cam];

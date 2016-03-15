@@ -118,20 +118,10 @@ var BABYLON;
         });
         // Controls
         FreeCamera.prototype.attachControl = function (element, noPreventDefault) {
-            if (this._attachedElement) {
-                return;
-            }
-            this._noPreventDefault = noPreventDefault;
-            this._attachedElement = element;
-            noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this.inputs.attachElement(element, noPreventDefault);
         };
         FreeCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement !== element) {
-                return;
-            }
-            this.inputs.detachElement(this._attachedElement);
-            this._attachedElement = null;
+            this.inputs.detachElement(element);
             this.cameraDirection = new BABYLON.Vector3(0, 0, 0);
             this.cameraRotation = new BABYLON.Vector2(0, 0);
         };

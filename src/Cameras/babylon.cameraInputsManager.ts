@@ -2,11 +2,11 @@ module BABYLON {
     export var CameraInputTypes = {};
 
     export interface ICameraInput<TCamera extends BABYLON.Camera> {
-        camera: TCamera;        
+        camera: TCamera;
         getTypeName(): string;
         getSimpleName(): string;
         attachControl: (element: HTMLElement, noPreventDefault?: boolean) => void;
-        detachControl: (element: HTMLElement) => void;        
+        detachControl: (element: HTMLElement) => void;
         checkInputs?: () => void;
     }
 
@@ -36,7 +36,7 @@ module BABYLON {
             }
 
             this.attached[type] = input;
-            
+
             input.camera = this.camera;
             
             //for checkInputs, we are dynamically creating a function
@@ -44,8 +44,8 @@ module BABYLON {
             if (input.checkInputs) {
                 this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
             }
-            
-            if (this.attachedElement){
+
+            if (this.attachedElement) {
                 input.attachControl(this.attachedElement);
             }
         }
@@ -80,18 +80,19 @@ module BABYLON {
             }
         }
 
-        public attachInput(input : ICameraInput<TCamera>){
+        public attachInput(input: ICameraInput<TCamera>) {
             input.attachControl(this.attachedElement, this.noPreventDefault);
         }
-        
+
         public attachElement(element: HTMLElement, noPreventDefault?: boolean) {
             if (this.attachedElement) {
                 return;
             }
+
             noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this.attachedElement = element;
             this.noPreventDefault = noPreventDefault;
-            
+
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 this.attached[cam].attachControl(element, noPreventDefault);
@@ -102,12 +103,12 @@ module BABYLON {
             if (this.attachedElement !== element) {
                 return;
             }
-            
+
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 this.attached[cam].detachControl(element);
             }
-            
+
             this.attachedElement = null;
         }
 

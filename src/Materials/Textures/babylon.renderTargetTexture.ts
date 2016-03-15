@@ -160,6 +160,8 @@
                         continue;
                     }
 
+                    mesh._preActivate();
+
                     if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
                         mesh._activate(scene.getRenderId());
 
