@@ -81,8 +81,8 @@
         private _oldPosition = Vector3.Zero();
         private _diffPosition = Vector3.Zero();
         private _newPosition = Vector3.Zero();
-        public _attachedElement: HTMLElement;
-        public _noPreventDefault: boolean;
+        //public _attachedElement: HTMLElement;
+        //public _noPreventDefault: boolean;
         
         public _localDirection: Vector3;
         public _transformedDirection: Vector3;        
@@ -95,23 +95,11 @@
 
         // Controls
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-            if (this._attachedElement) {
-                return;
-            }
-            this._noPreventDefault = noPreventDefault;
-            this._attachedElement = element;
-            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
-
             this.inputs.attachElement(element, noPreventDefault);
         }        
 
         public detachControl(element: HTMLElement): void {
-            if (this._attachedElement !== element) {
-                return;
-            }
-
-            this.inputs.detachElement(this._attachedElement);
-            this._attachedElement = null;
+            this.inputs.detachElement(element);
             
             this.cameraDirection = new Vector3(0, 0, 0);
             this.cameraRotation = new Vector2(0, 0);

@@ -86,6 +86,11 @@ module BABYLON {
                 element.removeEventListener("mouseup", this._onMouseUp);
                 element.removeEventListener("mouseout", this._onMouseOut);
                 element.removeEventListener("mousemove", this._onMouseMove);
+                
+                this._onMouseDown = null;
+                this._onMouseUp = null;
+                this._onMouseOut = null;
+                this._onMouseMove = null;
             }        
         }
         
