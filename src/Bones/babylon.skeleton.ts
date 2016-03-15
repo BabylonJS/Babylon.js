@@ -96,6 +96,20 @@
             }
             return animationRanges;
         }
+        
+        /**
+        * get a index on skeleton by name
+        * @param {string} the bone's name
+        * @return {number} the indice of bone on
+        */
+        public getIndexOnSkeletonByName(name: string): number {
+                for (var boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
+                    if (this.bones[boneIndex].name === name) {
+                        return boneIndex;
+                    }
+                }
+                return null;
+        }
 
         /** 
          *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
