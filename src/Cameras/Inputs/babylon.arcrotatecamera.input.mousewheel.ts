@@ -20,7 +20,7 @@ module BABYLON {
                     this.camera.inertialRadiusOffset += delta;
 
                 if (event.preventDefault) {
-                    if (!this.camera._noPreventDefault) {
+                    if (!noPreventDefault) {
                         event.preventDefault();
                     }
                 }
@@ -33,6 +33,7 @@ module BABYLON {
             if (this._wheel && element){
                 element.removeEventListener('mousewheel', this._wheel);
                 element.removeEventListener('DOMMouseScroll', this._wheel);
+                this._wheel = null;
             }
         }
 

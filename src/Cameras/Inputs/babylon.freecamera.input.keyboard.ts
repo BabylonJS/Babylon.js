@@ -61,33 +61,40 @@ module BABYLON {
         }
 
         detachControl(element : HTMLElement) {
-            Tools.UnregisterTopRootEvents([
-                { name: "keydown", handler: this._onKeyDown },
-                { name: "keyup", handler: this._onKeyUp },
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            if (this._onKeyDown){
+                Tools.UnregisterTopRootEvents([
+                    { name: "keydown", handler: this._onKeyDown },
+                    { name: "keyup", handler: this._onKeyUp },
+                    { name: "blur", handler: this._onLostFocus }
+                ]);
+                this._keys = [];
+                this._onKeyDown = null;
+                this._onKeyUp = null;
+            }
         }
         
         public checkInputs() {
-            var camera = this.camera;
-            // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                var speed = camera._computeLocalCameraSpeed();
+            if (this._onKeyDown){
+                var camera = this.camera;
+                // Keyboard
+                for (var index = 0; index < this._keys.length; index++) {
+                    var keyCode = this._keys[index];
+                    var speed = camera._computeLocalCameraSpeed();
 
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(-speed, 0, 0);
-                } else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, speed);
-                } else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(speed, 0, 0);
-                } else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    camera._localDirection.copyFromFloats(0, 0, -speed);
+                    if (this.keysLeft.indexOf(keyCode) !== -1) {
+                        camera._localDirection.copyFromFloats(-speed, 0, 0);
+                    } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                        camera._localDirection.copyFromFloats(0, 0, speed);
+                    } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                        camera._localDirection.copyFromFloats(speed, 0, 0);
+                    } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                        camera._localDirection.copyFromFloats(0, 0, -speed);
+                    }
+
+                    camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
+                    Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
+                    camera.cameraDirection.addInPlace(camera._transformedDirection);
                 }
-
-                camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
-                Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
-                camera.cameraDirection.addInPlace(camera._transformedDirection);
             }
         }
 

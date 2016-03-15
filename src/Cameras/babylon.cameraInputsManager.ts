@@ -17,7 +17,8 @@ module BABYLON {
 
     export class CameraInputsManager<TCamera extends BABYLON.Camera> {
         attached: CameraInputsMap<TCamera>;
-        attachedElement: HTMLElement;
+        public attachedElement: HTMLElement;
+        public noPreventDefault: boolean;
         camera: TCamera;
         checkInputs: () => void;
 
@@ -55,6 +56,7 @@ module BABYLON {
                 if (input === inputToRemove) {
                     input.detachControl(this.attachedElement);
                     delete this.attached[cam];
+                    this.rebuildInputCheck();
                 }
             }
         }
@@ -65,6 +67,7 @@ module BABYLON {
                 if (input.getTypeName() === inputType) {
                     input.detachControl(this.attachedElement);
                     delete this.attached[cam];
+                    this.rebuildInputCheck();
                 }
             }
         }
@@ -77,8 +80,18 @@ module BABYLON {
             }
         }
 
+        public attachInput(input : ICameraInput<TCamera>){
+            input.attachControl(this.attachedElement, this.noPreventDefault);
+        }
+        
         public attachElement(element: HTMLElement, noPreventDefault?: boolean) {
+            if (this.attachedElement) {
+                return;
+            }
+            noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this.attachedElement = element;
+            this.noPreventDefault = noPreventDefault;
+            
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 this.attached[cam].attachControl(element, noPreventDefault);
@@ -86,13 +99,19 @@ module BABYLON {
         }
 
         public detachElement(element: HTMLElement) {
+            if (this.attachedElement !== element) {
+                return;
+            }
+            
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 this.attached[cam].detachControl(element);
             }
+            
+            this.attachedElement = null;
         }
 
-        public rebuildInputCheck(element: HTMLElement) {
+        public rebuildInputCheck() {
             this.checkInputs = () => { };
 
             for (var cam in this.attached) {

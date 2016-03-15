@@ -107,11 +107,22 @@ module BABYLON {
         }
 
         detachControl(element: HTMLElement) {
-            element.removeEventListener("blur", this._onLostFocus);
-            element.removeEventListener("pointerdown", this._onPointerDown);
-            element.removeEventListener("pointerup", this._onPointerUp);
-            element.removeEventListener("pointerout", this._onPointerUp);
-            element.removeEventListener("pointermove", this._onPointerMove);
+            if (this._onPointerDown && element){
+                element.removeEventListener("blur", this._onLostFocus);
+                element.removeEventListener("pointerdown", this._onPointerDown);
+                element.removeEventListener("pointerup", this._onPointerUp);
+                element.removeEventListener("pointerout", this._onPointerUp);
+                element.removeEventListener("pointermove", this._onPointerMove);
+                
+                this._onPointerDown = null;
+                this._onPointerUp = null;
+                this._onPointerMove = null;
+                this._onLostFocus = null;
+                this._pointerPressed = [];
+                this._offsetX = null;
+                this._offsetY = null;
+                this._pointerCount = 0;
+            }
         }
 
         checkInputs() {
