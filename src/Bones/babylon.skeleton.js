@@ -47,6 +47,19 @@ var BABYLON;
             }
             return ret;
         };
+        /**
+        * Get bone's index searching by name
+        * @param {string} name is bone's name to search for
+        * @return {number} Indice of the bone. Returns -1 if not found
+        */
+        Skeleton.prototype.getBoneIndexByName = function (name) {
+            for (var boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
+                if (this.bones[boneIndex].name === name) {
+                    return boneIndex;
+                }
+            }
+            return -1;
+        };
         Skeleton.prototype.createAnimationRange = function (name, from, to) {
             // check name not already in use
             if (!this._ranges[name]) {

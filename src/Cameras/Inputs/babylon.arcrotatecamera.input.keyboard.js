@@ -63,22 +63,28 @@ var BABYLON;
                 { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
+            this._keys = [];
+            this._onKeyDown = null;
+            this._onKeyUp = null;
+            this._onLostFocus = null;
         };
         ArcRotateCameraKeyboardMoveInput.prototype.checkInputs = function () {
-            var camera = this.camera;
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                if (this.keysLeft.indexOf(keyCode) !== -1) {
-                    camera.inertialAlphaOffset -= 0.01;
-                }
-                else if (this.keysUp.indexOf(keyCode) !== -1) {
-                    camera.inertialBetaOffset -= 0.01;
-                }
-                else if (this.keysRight.indexOf(keyCode) !== -1) {
-                    camera.inertialAlphaOffset += 0.01;
-                }
-                else if (this.keysDown.indexOf(keyCode) !== -1) {
-                    camera.inertialBetaOffset += 0.01;
+            if (this._onKeyDown) {
+                var camera = this.camera;
+                for (var index = 0; index < this._keys.length; index++) {
+                    var keyCode = this._keys[index];
+                    if (this.keysLeft.indexOf(keyCode) !== -1) {
+                        camera.inertialAlphaOffset -= 0.01;
+                    }
+                    else if (this.keysUp.indexOf(keyCode) !== -1) {
+                        camera.inertialBetaOffset -= 0.01;
+                    }
+                    else if (this.keysRight.indexOf(keyCode) !== -1) {
+                        camera.inertialAlphaOffset += 0.01;
+                    }
+                    else if (this.keysDown.indexOf(keyCode) !== -1) {
+                        camera.inertialBetaOffset += 0.01;
+                    }
                 }
             }
         };

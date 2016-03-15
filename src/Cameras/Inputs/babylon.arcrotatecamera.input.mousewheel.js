@@ -23,7 +23,7 @@ var BABYLON;
                 if (delta)
                     _this.camera.inertialRadiusOffset += delta;
                 if (event.preventDefault) {
-                    if (!_this.camera._noPreventDefault) {
+                    if (!noPreventDefault) {
                         event.preventDefault();
                     }
                 }
@@ -35,6 +35,7 @@ var BABYLON;
             if (this._wheel && element) {
                 element.removeEventListener('mousewheel', this._wheel);
                 element.removeEventListener('DOMMouseScroll', this._wheel);
+                this._wheel = null;
             }
         };
         ArcRotateCameraMouseWheelInput.prototype.getTypeName = function () {

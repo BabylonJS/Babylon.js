@@ -258,11 +258,6 @@ var BABYLON;
         ArcRotateCamera.prototype.attachControl = function (element, noPreventDefault, useCtrlForPanning) {
             var _this = this;
             if (useCtrlForPanning === void 0) { useCtrlForPanning = true; }
-            if (this._attachedElement) {
-                return;
-            }
-            this._attachedElement = element;
-            this._noPreventDefault = BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
             this._useCtrlForPanning = useCtrlForPanning;
             this.inputs.attachElement(element, noPreventDefault);
             this._reset = function () {
@@ -272,11 +267,7 @@ var BABYLON;
             };
         };
         ArcRotateCamera.prototype.detachControl = function (element) {
-            if (this._attachedElement !== element) {
-                return;
-            }
-            this.inputs.detachElement(this._attachedElement);
-            this._attachedElement = null;
+            this.inputs.detachElement(element);
             if (this._reset) {
                 this._reset();
             }

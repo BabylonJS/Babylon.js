@@ -219,7 +219,7 @@ var BABYLON;
             if (!this._LODLevels || this._LODLevels.length === 0) {
                 return this;
             }
-            var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.position).length();
+            var distanceToCamera = (boundingSphere ? boundingSphere : this.getBoundingInfo().boundingSphere).centerWorld.subtract(camera.globalPosition).length();
             if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
                 if (this.onLODLevelSelection) {
                     this.onLODLevelSelection(distanceToCamera, this, this._LODLevels[this._LODLevels.length - 1].mesh);

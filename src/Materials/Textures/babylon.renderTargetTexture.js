@@ -145,6 +145,7 @@ var BABYLON;
                         this.resetRefreshCounter();
                         continue;
                     }
+                    mesh._preActivate();
                     if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
                         mesh._activate(scene.getRenderId());
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {

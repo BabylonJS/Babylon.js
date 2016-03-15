@@ -10,11 +10,11 @@ var BABYLON;
         /**
         * Creates a video texture.
         * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
-        * @param urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
-        * @param scene is obviously the current scene.
-        * @param generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
-        * @param invertY is false by default but can be used to invert video on Y axis
-        * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+        * @param {Array} urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
+        * @param {BABYLON.Scene} scene is obviously the current scene.
+        * @param {boolean} generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
+        * @param {boolean} invertY is false by default but can be used to invert video on Y axis
+        * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
         */
         function VideoTexture(name, urlsOrVideo, scene, generateMipMaps, invertY, samplingMode) {
             var _this = this;
