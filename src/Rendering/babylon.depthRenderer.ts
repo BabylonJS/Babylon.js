@@ -87,13 +87,17 @@
         }
 
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+            var material: any = subMesh.getMaterial();
+            if (material.disableDepthWrite) {
+                return false;
+            }
+
             var defines = [];
 
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
-            var material = subMesh.getMaterial();
 
             // Alpha test
             if (material && material.needAlphaTesting()) {
