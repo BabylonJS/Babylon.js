@@ -149,7 +149,7 @@
             this._renderingManager.reset();
 
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-
+            var sceneRenderId = scene.getRenderId();
             for (var meshIndex = 0; meshIndex < currentRenderList.length; meshIndex++) {
                 var mesh = currentRenderList[meshIndex];
 
@@ -160,10 +160,10 @@
                         continue;
                     }
 
-                    mesh._preActivate();
+                    mesh._preActivateForIntermediateRendering(sceneRenderId);
 
                     if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
-                        mesh._activate(scene.getRenderId());
+                        mesh._activate(sceneRenderId);
 
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];

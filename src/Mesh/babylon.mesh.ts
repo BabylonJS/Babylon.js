@@ -373,6 +373,12 @@
             this._visibleInstances = null;
         }
 
+        public _preActivateForIntermediateRendering(renderId: number): void {
+            if (this._visibleInstances) {
+                this._visibleInstances.intermediateDefaultRenderId = renderId;
+            }
+        }
+
         public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number) {
             if (!this._visibleInstances) {
                 this._visibleInstances = {};
@@ -618,12 +624,13 @@
 
             if (this._visibleInstances) {
                 var currentRenderId = scene.getRenderId();
+                var defaultRenderId = (scene._isInIntermediateRendering() ? this._visibleInstances.intermediateDefaultRenderId : this._visibleInstances.defaultRenderId);
                 this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[currentRenderId];
                 var selfRenderId = this._renderId;
 
-                if (!this._batchCache.visibleInstances[subMeshId] && this._visibleInstances.defaultRenderId) {
-                    this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[this._visibleInstances.defaultRenderId];
-                    currentRenderId = Math.max(this._visibleInstances.defaultRenderId, currentRenderId);
+                if (!this._batchCache.visibleInstances[subMeshId] && defaultRenderId) {
+                    this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[defaultRenderId];
+                    currentRenderId = Math.max(defaultRenderId, currentRenderId);
                     selfRenderId = Math.max(this._visibleInstances.selfDefaultRenderId, currentRenderId);
                 }
 

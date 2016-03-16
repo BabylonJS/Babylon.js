@@ -258,6 +258,8 @@ var BABYLON;
         });
         AbstractMesh.prototype._preActivate = function () {
         };
+        AbstractMesh.prototype._preActivateForIntermediateRendering = function (renderId) {
+        };
         AbstractMesh.prototype._activate = function (renderId) {
             this._renderId = renderId;
         };
