@@ -229,6 +229,8 @@
             newTexture.wrapV = this.wrapV;
             newTexture.coordinatesIndex = this.coordinatesIndex;
             newTexture.coordinatesMode = this.coordinatesMode;
+            newTexture.anisotropicFilteringLevel = this.anisotropicFilteringLevel;
+            newTexture.getAlphaFromRGB = this.getAlphaFromRGB;
 
             // Texture
             newTexture.uOffset = this.uOffset;
@@ -256,6 +258,8 @@
             serializationObject.uAng = this.uAng;
             serializationObject.vAng = this.vAng;
             serializationObject.wAng = this.wAng;
+            serializationObject.anisotropicFilteringLevel = this.anisotropicFilteringLevel;
+            serializationObject.getAlphaFromRGB = this.getAlphaFromRGB;
 
             return serializationObject;
         }
