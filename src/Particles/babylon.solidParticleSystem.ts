@@ -36,12 +36,12 @@ module BABYLON {
         */
         public vars: any = {};
         /**
-        * This array is populated when the SPS is set as 'pickable'.
-        * Each key of this array is a faceId value that you can get from a pickResult object.
-        * Each element of this array is an object {idx: int, faceId: int}.
-        * idx is the picked particle index in the SPS.particles array
-        * faceId is the picked face index counted within this particles
-        * Please read : http://doc.babylonjs.com/tutorials/Solid_Particle_System#pickable-particles
+        * This array is populated when the SPS is set as 'pickable'.  
+        * Each key of this array is a `faceId` value that you can get from a pickResult object.  
+        * Each element of this array is an object `{idx: int, faceId: int}`.  
+        * `idx` is the picked particle index in the `SPS.particles` array  
+        * `faceId` is the picked face index counted within this particle.  
+        * Please read : http://doc.babylonjs.com/tutorials/Solid_Particle_System#pickable-particles  
         */
         public pickedParticles: { idx: number; faceId: number }[];
 
@@ -106,9 +106,10 @@ module BABYLON {
 
         /**
         * Creates a SPS (Solid Particle System) object.
-        * @param name the SPS name, this will be the underlying mesh name
-        * @param scene the scene in which the SPS is added
-        * @param options "updatable" (default true) : if the SPS must be updatable or immutable, "isPickable" (default false) : if the solid particles must be pickable
+        * `name` (String) is the SPS name, this will be the underlying mesh name.  
+        * `scene` (Scene) is the scene in which the SPS is added.  
+        * `updatableè (default true) : if the SPS must be updatable or immutable.  
+        * `isPickable` (default false) : if the solid particles must be pickable.  
         */
         constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean }) {
             this.name = name;
@@ -127,7 +128,7 @@ module BABYLON {
 
         /**
         * Builds the SPS underlying mesh. Returns a standard Mesh.
-        * If no model shape was added to the SPS, the return mesh is only a single triangular plane.
+        * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
         */
         public buildMesh(): Mesh {
             if (this.nbParticles === 0) {
@@ -170,15 +171,15 @@ module BABYLON {
         }
 
         /**
-        * Digests the mesh and generates as many solid particles in the system as wanted.
+        * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.  
         * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
-        * Thus the particles generated from digest() have their property "positiion" yet set.
-        * @param mesh the mesh to be digested
-        * @param facetNb the number of mesh facets per particle (optional, default 1), this parameter is overriden by the parameter "number" if any
-        * @param delta the random extra number of facets per partical (optional, default 0), each particle will have between facetNb and facetNb + delta facets
-        * @param number the wanted number of particles : each particle is built with mesh_total_facets / number facets (optional)
+        * Thus the particles generated from `digest()` have their property `position` set yet.  
+        * `mesh` (`Mesh`) is the mesh to be digested  
+        * `facetNb` (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
+        * `delta` (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
+        * `number` (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
         */
-        public digest(mesh: Mesh, options?: { facetNb?: number; number?: number; delta?: number }): void {
+        public digest(mesh: Mesh, options?: { facetNb?: number; number?: number; delta?: number }): SolidParticleSystem {
             var size: number = (options && options.facetNb) || 1;
             var number: number = (options && options.number);
             var delta: number = (options && options.delta) || 0;
@@ -262,6 +263,7 @@ module BABYLON {
                 this._shapeCounter++;
                 f += size;
             }
+            return this;
         }
 
         //reset copy
@@ -382,11 +384,12 @@ module BABYLON {
         }
 
         /**
-        * Adds some particles to the SPS from the model shape.
+        * Adds some particles to the SPS from the model shape. Returns the shape id.   
         * Please read the doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#create-an-immutable-sps
-        * @param mesh any Mesh object that will be used as a model for the solid particles.
-        * @param nb the number of particles to be created from this model
-        * @param options positionFunction is an optional javascript function to called for each particle on SPS creation. vertexFunction an optional javascript function to called for each vertex of each particle on SPS creation
+        * `mesh` is any `Mesh` object that will be used as a model for the solid particles.
+        * `nb` (positive integer) the number of particles to be created from this model
+        * `positionFunction` is an optional javascript function to called for each particle on SPS creation. 
+        * `vertexFunction` is an optional javascript function to called for each vertex of each particle on SPS creation
         */
         public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any }): number {
             var meshPos = mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -482,7 +485,7 @@ module BABYLON {
 
         /**
         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
-        *  This method calls updateParticle() for each particles of the SPS.
+        *  This method calls `updateParticle()` for each particle of the SPS.
         *  For an animated SPS, it is usually called within the render loop.
         * @param start (default 0) the particle index in the particle array where to start to compute the particle property values
         * @param end (default nbParticle - 1)  the particle index in the particle array where to stop to compute the particle property values
@@ -734,7 +737,7 @@ module BABYLON {
         }
 
         /**
-        *  Visibilty helper : Recomputes the visible size according to the mesh bounding box
+        * Visibilty helper : Recomputes the visible size according to the mesh bounding box
         * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
         */
         public refreshVisibleSize(): void {
@@ -743,7 +746,8 @@ module BABYLON {
             }
         }
 
-        /** Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+        /** 
+        * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
         * @param size the size (float) of the visibility box
         * note : this doesn't lock the SPS mesh bounding box.
         * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#sps-visibility
@@ -755,9 +759,6 @@ module BABYLON {
 
 
         // getter and setter
-        /**
-        * True if the SPS is set as always visible
-        */
         public get isAlwaysVisible(): boolean {
             return this._alwaysVisible;
         }
@@ -780,40 +781,37 @@ module BABYLON {
             this.mesh.getBoundingInfo().isLocked = val;
         }
 
-        /**
-        * True if the SPS visibility box is locked. The underlying mesh bounding box is then not updatable any more.
-        */
         public get isVisibilityBoxLocked(): boolean {
             return this._isVisibilityBoxLocked;
         }
 
         // Optimizer setters
         /**
-        * Tells to setParticles() to compute the particle rotations or not.
+        * Tells to `setParticles()` to compute the particle rotations or not.
         * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle rotations aren't stored values, so setting computeParticleRotation to false will prevents the particle to rotate.
+        * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
         */
         public set computeParticleRotation(val: boolean) {
             this._computeParticleRotation = val;
         }
         /**
-        * Tells to setParticles() to compute the particle colors or not.
+        * Tells to `setParticles()` to compute the particle colors or not.
         * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle colors are stored values, so setting computeParticleColor to false will keep yet the last colors set.
+        * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
         */
         public set computeParticleColor(val: boolean) {
             this._computeParticleColor = val;
         }
         /**
-        * Tells to setParticles() to compute the particle textures or not.
+        * Tells to `setParticles()` to compute the particle textures or not.
         * Default value : true. The SPS is faster when it's set to false.
-        * Note : the particle textures are stored values, so setting computeParticleTexture to false will keep yet the last colors set.
+        * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
         */
         public set computeParticleTexture(val: boolean) {
             this._computeParticleTexture = val;
         }
         /**
-        * Tells to setParticles() to call the vertex function for each vertex of each particle, or not.
+        * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
         * Default value : false. The SPS is faster when it's set to false.
         * Note : the particle custom vertex positions aren't stored values.
         */
@@ -821,7 +819,7 @@ module BABYLON {
             this._computeParticleVertex = val;
         }
         /**
-        * Tells to setParticles() to compute or not the mesh bounding box when computing the particle positions.
+        * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
         */
         public set computeBoundingBox(val: boolean) {
             this._computeBoundingBox = val;
@@ -854,7 +852,7 @@ module BABYLON {
 
 
         /**
-        * This function does nothing. It may be overwritten to set all the particles first values.
+        * This function does nothing. It may be overwritten to set all the particle first values.
         * The SPS doesn't call this function, you may have to call it by your own.
         * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#particle-management
         */
@@ -872,7 +870,7 @@ module BABYLON {
 
         /**
         * Updates a particle : this function should  be overwritten by the user.
-        * It is called on each particle by setParticles(). This is the place to code each particle behavior.
+        * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
         * doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#particle-management
         * ex : just set a particle position or velocity and recycle conditions
         */
@@ -882,7 +880,7 @@ module BABYLON {
 
         /**
         * Updates a vertex of a particle : it can be overwritten by the user.
-        * This will be called on each vertex particle by setParticles() if computeParticleVertex is set to true only.
+        * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
         * @param particle the current particle
         * @param vertex the current index of the current particle
         * @param pt the index of the current vertex in the particle shape
@@ -894,7 +892,7 @@ module BABYLON {
         }
 
         /**
-        * This will be called before any other treatment by setParticles() and will be passed three parameters.
+        * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
         * This does nothing and may be overwritten by the user.
         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
@@ -903,7 +901,7 @@ module BABYLON {
         public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {
         }
         /**
-        * This will be called  by setParticles() after all the other treatments and just before the actual mesh update.
+        * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
         * This will be passed three parameters.
         * This does nothing and may be overwritten by the user.
         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
