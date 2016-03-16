@@ -1,4 +1,4 @@
-module BABYLON {
+﻿module BABYLON {
 
     /**
     * Full documentation here : http://doc.babylonjs.com/tutorials/Solid_Particle_System

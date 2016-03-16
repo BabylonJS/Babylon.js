@@ -352,6 +352,11 @@ var BABYLON;
             this._preActivateId = sceneRenderId;
             this._visibleInstances = null;
         };
+        Mesh.prototype._preActivateForIntermediateRendering = function (renderId) {
+            if (this._visibleInstances) {
+                this._visibleInstances.intermediateDefaultRenderId = renderId;
+            }
+        };
         Mesh.prototype._registerInstanceForRenderId = function (instance, renderId) {
             if (!this._visibleInstances) {
                 this._visibleInstances = {};
@@ -557,11 +562,12 @@ var BABYLON;
             this._batchCache.visibleInstances[subMeshId] = null;
             if (this._visibleInstances) {
                 var currentRenderId = scene.getRenderId();
+                var defaultRenderId = (scene._isInIntermediateRendering() ? this._visibleInstances.intermediateDefaultRenderId : this._visibleInstances.defaultRenderId);
                 this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[currentRenderId];
                 var selfRenderId = this._renderId;
-                if (!this._batchCache.visibleInstances[subMeshId] && this._visibleInstances.defaultRenderId) {
-                    this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[this._visibleInstances.defaultRenderId];
-                    currentRenderId = Math.max(this._visibleInstances.defaultRenderId, currentRenderId);
+                if (!this._batchCache.visibleInstances[subMeshId] && defaultRenderId) {
+                    this._batchCache.visibleInstances[subMeshId] = this._visibleInstances[defaultRenderId];
+                    currentRenderId = Math.max(defaultRenderId, currentRenderId);
                     selfRenderId = Math.max(this._visibleInstances.selfDefaultRenderId, currentRenderId);
                 }
                 if (this._batchCache.visibleInstances[subMeshId] && this._batchCache.visibleInstances[subMeshId].length) {

@@ -123,6 +123,7 @@ var BABYLON;
             this._animationRatio = 0;
             this._renderId = 0;
             this._executeWhenReadyTimeoutId = -1;
+            this._intermediateRendering = false;
             this._toBeDisposed = new BABYLON.SmartArray(256);
             this._onReadyCallbacks = new Array();
             this._pendingData = []; //ANY
@@ -1196,6 +1197,9 @@ var BABYLON;
                 }
             }
         };
+        Scene.prototype._isInIntermediateRendering = function () {
+            return this._intermediateRendering;
+        };
         Scene.prototype._evaluateActiveMeshes = function () {
             this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
@@ -1338,6 +1342,7 @@ var BABYLON;
             // Render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
+                this._intermediateRendering = true;
                 BABYLON.Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
@@ -1348,6 +1353,7 @@ var BABYLON;
                     }
                 }
                 BABYLON.Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
+                this._intermediateRendering = false;
                 this._renderId++;
                 engine.restoreDefaultFramebuffer(); // Restore back buffer
             }

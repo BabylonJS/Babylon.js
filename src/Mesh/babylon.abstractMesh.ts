@@ -270,6 +270,9 @@
         public _preActivate(): void {
         }
 
+        public _preActivateForIntermediateRendering(renderId: number): void {
+        }
+                
         public _activate(renderId: number): void {
             this._renderId = renderId;
         }

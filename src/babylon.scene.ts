@@ -243,6 +243,7 @@
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
+        private _intermediateRendering = false;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
 
@@ -1522,6 +1523,10 @@
             }
         }
 
+        public _isInIntermediateRendering(): boolean {
+            return this._intermediateRendering
+        }
+
         private _evaluateActiveMeshes(): void {
             this.activeCamera._activeMeshes.reset();
             this._activeMeshes.reset();
@@ -1701,6 +1706,7 @@
             // Render targets
             var beforeRenderTargetDate = Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
+                this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
@@ -1712,6 +1718,7 @@
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
+                this._intermediateRendering = false;
                 this._renderId++;
                 engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
