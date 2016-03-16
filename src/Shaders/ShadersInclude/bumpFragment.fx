@@ -17,13 +17,6 @@
 
 	diffuseUV += uvOffset;
 	bumpUV += uvOffset;
-
-	// Note from Loic: won't be nice with wrapping textures...
-	#ifdef PARALLAXOCCLUSION
-		if (diffuseUV.x > 1.0 || diffuseUV.y > 1.0 || diffuseUV.x < 0.0 || diffuseUV.y < 0.0) {
-			discard;
-		}
-	#endif
 #endif
 
 #ifdef BUMP

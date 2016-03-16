@@ -172,6 +172,8 @@ var BABYLON;
             newTexture.wrapV = this.wrapV;
             newTexture.coordinatesIndex = this.coordinatesIndex;
             newTexture.coordinatesMode = this.coordinatesMode;
+            newTexture.anisotropicFilteringLevel = this.anisotropicFilteringLevel;
+            newTexture.getAlphaFromRGB = this.getAlphaFromRGB;
             // Texture
             newTexture.uOffset = this.uOffset;
             newTexture.vOffset = this.vOffset;
@@ -194,6 +196,8 @@ var BABYLON;
             serializationObject.uAng = this.uAng;
             serializationObject.vAng = this.vAng;
             serializationObject.wAng = this.wAng;
+            serializationObject.anisotropicFilteringLevel = this.anisotropicFilteringLevel;
+            serializationObject.getAlphaFromRGB = this.getAlphaFromRGB;
             return serializationObject;
         };
         // Statics
