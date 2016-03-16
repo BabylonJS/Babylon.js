@@ -20,13 +20,28 @@
         public static MIRROR_ADDRESSMODE = 2;
 
         // Members
+        @serialize()
         public url: string;
+
+        @serialize()
         public uOffset = 0;
+
+        @serialize()
         public vOffset = 0;
+
+        @serialize()
         public uScale = 1.0;
+
+        @serialize()
         public vScale = 1.0;
+
+        @serialize()
         public uAng = 0;
+
+        @serialize()
         public vAng = 0;
+
+        @serialize()
         public wAng = 0;
 
         private _noMipmap: boolean;
@@ -219,49 +234,10 @@
             return this._cachedTextureMatrix;
         }
 
-        public clone(): Texture {
-            var newTexture = new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
-
-            // Base texture
-            newTexture.hasAlpha = this.hasAlpha;
-            newTexture.level = this.level;
-            newTexture.wrapU = this.wrapU;
-            newTexture.wrapV = this.wrapV;
-            newTexture.coordinatesIndex = this.coordinatesIndex;
-            newTexture.coordinatesMode = this.coordinatesMode;
-            newTexture.anisotropicFilteringLevel = this.anisotropicFilteringLevel;
-            newTexture.getAlphaFromRGB = this.getAlphaFromRGB;
-
-            // Texture
-            newTexture.uOffset = this.uOffset;
-            newTexture.vOffset = this.vOffset;
-            newTexture.uScale = this.uScale;
-            newTexture.vScale = this.vScale;
-            newTexture.uAng = this.uAng;
-            newTexture.vAng = this.vAng;
-            newTexture.wAng = this.wAng;
-
-            return newTexture;
-        }
-
-        public serialize(): any {
-            if (!this.name) {
-                return null;
-            }
-
-            var serializationObject = super.serialize();
-
-            serializationObject.uOffset = this.uOffset;
-            serializationObject.vOffset = this.vOffset;
-            serializationObject.uScale = this.uScale;
-            serializationObject.vScale = this.vScale;
-            serializationObject.uAng = this.uAng;
-            serializationObject.vAng = this.vAng;
-            serializationObject.wAng = this.wAng;
-            serializationObject.anisotropicFilteringLevel = this.anisotropicFilteringLevel;
-            serializationObject.getAlphaFromRGB = this.getAlphaFromRGB;
-
-            return serializationObject;
+        public clone(): Texture {        
+            return SerializationHelper.Clone(() => {
+                return new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
+            }, this);       
         }
 
         // Statics
@@ -278,40 +254,29 @@
                 return null;
             }
 
-            var texture;
+            var texture = SerializationHelper.Parse(() => {
+                if (parsedTexture.mirrorPlane) {
+                    var mirrorTexture = new MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                    mirrorTexture._waitingRenderList = parsedTexture.renderList;
+                    mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
 
-            if (parsedTexture.mirrorPlane) {
-                texture = new MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-                texture._waitingRenderList = parsedTexture.renderList;
-                texture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
-            } else if (parsedTexture.isRenderTarget) {
-                texture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-                texture._waitingRenderList = parsedTexture.renderList;
-            } else {
-                if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                    return mirrorTexture;
+                } else if (parsedTexture.isRenderTarget) {
+                    var renderTargetTexture = new RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                    renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+
+                    return renderTargetTexture;
                 } else {
-                    texture = new Texture(rootUrl + parsedTexture.name, scene);
+                    var texture: Texture;
+                    if (parsedTexture.base64String) {
+                        texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                    } else {
+                        texture = new Texture(rootUrl + parsedTexture.name, scene);
+                    }
+
+                    return texture;
                 }
-            }
-
-            texture.name = parsedTexture.name;
-            texture.hasAlpha = parsedTexture.hasAlpha;
-            texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
-            texture.level = parsedTexture.level;
-
-            texture.coordinatesIndex = parsedTexture.coordinatesIndex;
-            texture.coordinatesMode = parsedTexture.coordinatesMode;
-            texture.uOffset = parsedTexture.uOffset;
-            texture.vOffset = parsedTexture.vOffset;
-            texture.uScale = parsedTexture.uScale;
-            texture.vScale = parsedTexture.vScale;
-            texture.uAng = parsedTexture.uAng;
-            texture.vAng = parsedTexture.vAng;
-            texture.wAng = parsedTexture.wAng;
-
-            texture.wrapU = parsedTexture.wrapU;
-            texture.wrapV = parsedTexture.wrapV;
+            }, parsedTexture, scene);
 
             // Animations
             if (parsedTexture.animations) {

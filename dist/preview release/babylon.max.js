@@ -19129,22 +19129,23 @@ var BABYLON;
     BABYLON.MeshBuilder = MeshBuilder;
 })(BABYLON || (BABYLON = {}));
 
+
 var BABYLON;
 (function (BABYLON) {
     var BaseTexture = (function () {
         function BaseTexture(scene) {
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.hasAlpha = false;
             this.getAlphaFromRGB = false;
             this.level = 1;
-            this.isCube = false;
-            this.isRenderTarget = false;
-            this.animations = new Array();
             this.coordinatesIndex = 0;
             this.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
             this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.anisotropicFilteringLevel = 4;
+            this.isCube = false;
+            this.isRenderTarget = false;
+            this.animations = new Array();
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._scene = scene;
             this._scene.textures.push(this);
         }
@@ -19248,21 +19249,47 @@ var BABYLON;
             }
         };
         BaseTexture.prototype.serialize = function () {
-            var serializationObject = {};
             if (!this.name) {
                 return null;
             }
-            serializationObject.name = this.name;
-            serializationObject.hasAlpha = this.hasAlpha;
-            serializationObject.level = this.level;
-            serializationObject.coordinatesIndex = this.coordinatesIndex;
-            serializationObject.coordinatesMode = this.coordinatesMode;
-            serializationObject.wrapU = this.wrapU;
-            serializationObject.wrapV = this.wrapV;
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             return serializationObject;
         };
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "name", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "hasAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "getAlphaFromRGB", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "level", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "coordinatesIndex", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "coordinatesMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "wrapU", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "wrapV", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "anisotropicFilteringLevel", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "isCube", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "isRenderTarget", void 0);
         return BaseTexture;
     })();
     BABYLON.BaseTexture = BaseTexture;
@@ -19435,41 +19462,10 @@ var BABYLON;
             return this._cachedTextureMatrix;
         };
         Texture.prototype.clone = function () {
-            var newTexture = new Texture(this._texture.url, this.getScene(), this._noMipmap, this._invertY, this._samplingMode);
-            // Base texture
-            newTexture.hasAlpha = this.hasAlpha;
-            newTexture.level = this.level;
-            newTexture.wrapU = this.wrapU;
-            newTexture.wrapV = this.wrapV;
-            newTexture.coordinatesIndex = this.coordinatesIndex;
-            newTexture.coordinatesMode = this.coordinatesMode;
-            newTexture.anisotropicFilteringLevel = this.anisotropicFilteringLevel;
-            newTexture.getAlphaFromRGB = this.getAlphaFromRGB;
-            // Texture
-            newTexture.uOffset = this.uOffset;
-            newTexture.vOffset = this.vOffset;
-            newTexture.uScale = this.uScale;
-            newTexture.vScale = this.vScale;
-            newTexture.uAng = this.uAng;
-            newTexture.vAng = this.vAng;
-            newTexture.wAng = this.wAng;
-            return newTexture;
-        };
-        Texture.prototype.serialize = function () {
-            if (!this.name) {
-                return null;
-            }
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.uOffset = this.uOffset;
-            serializationObject.vOffset = this.vOffset;
-            serializationObject.uScale = this.uScale;
-            serializationObject.vScale = this.vScale;
-            serializationObject.uAng = this.uAng;
-            serializationObject.vAng = this.vAng;
-            serializationObject.wAng = this.wAng;
-            serializationObject.anisotropicFilteringLevel = this.anisotropicFilteringLevel;
-            serializationObject.getAlphaFromRGB = this.getAlphaFromRGB;
-            return serializationObject;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () {
+                return new Texture(_this._texture.url, _this.getScene(), _this._noMipmap, _this._invertY, _this._samplingMode);
+            }, this);
         };
         // Statics
         Texture.CreateFromBase64String = function (data, name, scene, noMipmap, invertY, samplingMode, onLoad, onError) {
@@ -19485,39 +19481,29 @@ var BABYLON;
             if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
                 return null;
             }
-            var texture;
-            if (parsedTexture.mirrorPlane) {
-                texture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-                texture._waitingRenderList = parsedTexture.renderList;
-                texture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
-            }
-            else if (parsedTexture.isRenderTarget) {
-                texture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
-                texture._waitingRenderList = parsedTexture.renderList;
-            }
-            else {
-                if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+            var texture = BABYLON.SerializationHelper.Parse(function () {
+                if (parsedTexture.mirrorPlane) {
+                    var mirrorTexture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                    mirrorTexture._waitingRenderList = parsedTexture.renderList;
+                    mirrorTexture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
+                    return mirrorTexture;
+                }
+                else if (parsedTexture.isRenderTarget) {
+                    var renderTargetTexture = new BABYLON.RenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
+                    renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    return renderTargetTexture;
                 }
                 else {
-                    texture = new Texture(rootUrl + parsedTexture.name, scene);
+                    var texture;
+                    if (parsedTexture.base64String) {
+                        texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene);
+                    }
+                    else {
+                        texture = new Texture(rootUrl + parsedTexture.name, scene);
+                    }
+                    return texture;
                 }
-            }
-            texture.name = parsedTexture.name;
-            texture.hasAlpha = parsedTexture.hasAlpha;
-            texture.getAlphaFromRGB = parsedTexture.getAlphaFromRGB;
-            texture.level = parsedTexture.level;
-            texture.coordinatesIndex = parsedTexture.coordinatesIndex;
-            texture.coordinatesMode = parsedTexture.coordinatesMode;
-            texture.uOffset = parsedTexture.uOffset;
-            texture.vOffset = parsedTexture.vOffset;
-            texture.uScale = parsedTexture.uScale;
-            texture.vScale = parsedTexture.vScale;
-            texture.uAng = parsedTexture.uAng;
-            texture.vAng = parsedTexture.vAng;
-            texture.wAng = parsedTexture.wAng;
-            texture.wrapU = parsedTexture.wrapU;
-            texture.wrapV = parsedTexture.wrapV;
+            }, parsedTexture, scene);
             // Animations
             if (parsedTexture.animations) {
                 for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
@@ -19543,6 +19529,30 @@ var BABYLON;
         Texture.CLAMP_ADDRESSMODE = 0;
         Texture.WRAP_ADDRESSMODE = 1;
         Texture.MIRROR_ADDRESSMODE = 2;
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "url", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "uOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "vOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "uScale", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "vScale", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "uAng", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "vAng", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], Texture.prototype, "wAng", void 0);
         return Texture;
     })(BABYLON.BaseTexture);
     BABYLON.Texture = Texture;
@@ -19594,16 +19604,6 @@ var BABYLON;
         CubeTexture.CreateFromImages = function (files, scene, noMipmap) {
             return new CubeTexture("", scene, null, noMipmap, files);
         };
-        CubeTexture.prototype.clone = function () {
-            var newTexture = new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap, this._files);
-            // Base texture
-            newTexture.level = this.level;
-            newTexture.wrapU = this.wrapU;
-            newTexture.wrapV = this.wrapV;
-            newTexture.coordinatesIndex = this.coordinatesIndex;
-            newTexture.coordinatesMode = this.coordinatesMode;
-            return newTexture;
-        };
         // Methods
         CubeTexture.prototype.delayLoad = function () {
             if (this.delayLoadState !== BABYLON.Engine.DELAYLOADSTATE_NOTLOADED) {
@@ -19619,27 +19619,23 @@ var BABYLON;
             return this._textureMatrix;
         };
         CubeTexture.Parse = function (parsedTexture, scene, rootUrl) {
-            var texture = null;
-            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
-                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
-                texture.name = parsedTexture.name;
-                texture.hasAlpha = parsedTexture.hasAlpha;
-                texture.level = parsedTexture.level;
-                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            var texture = BABYLON.SerializationHelper.Parse(function () {
+                return new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+            }, parsedTexture, scene);
+            // Animations
+            if (parsedTexture.animations) {
+                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedTexture.animations[animationIndex];
+                    texture.animations.push(BABYLON.Animation.Parse(parsedAnimation));
+                }
             }
             return texture;
         };
-        CubeTexture.prototype.serialize = function () {
-            if (!this.name) {
-                return null;
-            }
-            var serializationObject = {};
-            serializationObject.name = this.name;
-            serializationObject.hasAlpha = this.hasAlpha;
-            serializationObject.isCube = true;
-            serializationObject.level = this.level;
-            serializationObject.coordinatesMode = this.coordinatesMode;
-            return serializationObject;
+        CubeTexture.prototype.clone = function () {
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () {
+                return new CubeTexture(_this.url, _this.getScene(), _this._extensions, _this._noMipmap, _this._files);
+            }, this);
         };
         return CubeTexture;
     })(BABYLON.BaseTexture);
