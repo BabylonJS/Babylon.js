@@ -145,6 +145,8 @@ var BABYLON;
             element.addEventListener("MSPointerDown", this._onGestureStart, false);
             element.addEventListener("MSGestureChange", this._onGesture, false);
             BABYLON.Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
@@ -174,6 +176,8 @@ var BABYLON;
                 this._onContextMenu = null;
             }
             BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };

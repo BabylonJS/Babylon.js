@@ -1,9 +1,10 @@
-module BABYLON {
+﻿module BABYLON {
     export class VideoTexture extends Texture {
         public video: HTMLVideoElement;
 
         private _autoLaunch = true;
         private _lastUpdate: number;
+        private _generateMipMaps: boolean
 
         /**
          * Creates a video texture.
@@ -30,19 +31,21 @@ module BABYLON {
                 this.video.loop = true;
             }
 
+            this._generateMipMaps = generateMipMaps;
+            this._samplingMode = samplingMode;
+
             if (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight)) {
                 this.wrapU = Texture.WRAP_ADDRESSMODE;
                 this.wrapV = Texture.WRAP_ADDRESSMODE;
             } else {
                 this.wrapU = Texture.CLAMP_ADDRESSMODE;
                 this.wrapV = Texture.CLAMP_ADDRESSMODE;
-                generateMipMaps = false;
+                this._generateMipMaps = false;
             }
 
             if (urls) {
                 this.video.addEventListener("canplaythrough", () => {
-                    this._texture = scene.getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, generateMipMaps, samplingMode, false);
-                    this._texture.isReady = true;
+                    this._createTexture();
                 });
                 urls.forEach(url => {
                     var source = document.createElement("source");
@@ -50,13 +53,15 @@ module BABYLON {
                     this.video.appendChild(source);
                 });
             } else {
-
-                this._texture = scene.getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, generateMipMaps, samplingMode, false);
-                this._texture.isReady = true;
+                this._createTexture();
             }
 
             this._lastUpdate = Tools.Now;
+        }
 
+        private _createTexture(): void {
+            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode, false);
+            this._texture.isReady = true;
         }
 
         public update(): boolean {

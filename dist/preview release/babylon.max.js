@@ -12190,6 +12190,8 @@ var BABYLON;
             element.addEventListener("MSPointerDown", this._onGestureStart, false);
             element.addEventListener("MSGestureChange", this._onGesture, false);
             BABYLON.Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
@@ -12219,6 +12221,8 @@ var BABYLON;
                 this._onContextMenu = null;
             }
             BABYLON.Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         };
@@ -20328,14 +20332,14 @@ var BABYLON;
     var VideoTexture = (function (_super) {
         __extends(VideoTexture, _super);
         /**
-        * Creates a video texture.
-        * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
-        * @param {Array} urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
-        * @param {BABYLON.Scene} scene is obviously the current scene.
-        * @param {boolean} generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
-        * @param {boolean} invertY is false by default but can be used to invert video on Y axis
-        * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
-        */
+         * Creates a video texture.
+         * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
+         * @param {Array} urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
+         * @param {BABYLON.Scene} scene is obviously the current scene.
+         * @param {boolean} generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
+         * @param {boolean} invertY is false by default but can be used to invert video on Y axis
+         * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+         */
         function VideoTexture(name, urlsOrVideo, scene, generateMipMaps, invertY, samplingMode) {
             var _this = this;
             if (generateMipMaps === void 0) { generateMipMaps = false; }
@@ -20354,28 +20358,36 @@ var BABYLON;
                 this.video.autoplay = false;
                 this.video.loop = true;
             }
-            this.video.addEventListener("canplaythrough", function () {
-                if (BABYLON.Tools.IsExponentOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(_this.video.videoHeight)) {
-                    _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-                    _this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-                }
-                else {
-                    _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                    generateMipMaps = false;
-                }
-                _this._texture = scene.getEngine().createDynamicTexture(_this.video.videoWidth, _this.video.videoHeight, generateMipMaps, samplingMode, false);
-                _this._texture.isReady = true;
-            });
+            this._generateMipMaps = generateMipMaps;
+            this._samplingMode = samplingMode;
+            if (BABYLON.Tools.IsExponentOfTwo(this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(this.video.videoHeight)) {
+                this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+                this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+            }
+            else {
+                this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                this._generateMipMaps = false;
+            }
             if (urls) {
+                this.video.addEventListener("canplaythrough", function () {
+                    _this._createTexture();
+                });
                 urls.forEach(function (url) {
                     var source = document.createElement("source");
                     source.src = url;
                     _this.video.appendChild(source);
                 });
             }
+            else {
+                this._createTexture();
+            }
             this._lastUpdate = BABYLON.Tools.Now;
         }
+        VideoTexture.prototype._createTexture = function () {
+            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode, false);
+            this._texture.isReady = true;
+        };
         VideoTexture.prototype.update = function () {
             if (this._autoLaunch) {
                 this._autoLaunch = false;
@@ -38801,11 +38813,14 @@ var BABYLON;
             };
         }
         DepthRenderer.prototype.isReady = function (subMesh, useInstances) {
+            var material = subMesh.getMaterial();
+            if (material.disableDepthWrite) {
+                return false;
+            }
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
-            var material = subMesh.getMaterial();
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");

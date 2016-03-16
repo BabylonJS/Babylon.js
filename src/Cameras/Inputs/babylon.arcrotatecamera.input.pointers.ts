@@ -176,8 +176,7 @@ module BABYLON {
                     }
                 }
             };
-
-
+        
             element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
             element.addEventListener(eventPrefix + "up", this._onPointerUp, false);
             element.addEventListener(eventPrefix + "out", this._onPointerUp, false);
@@ -187,12 +186,14 @@ module BABYLON {
             element.addEventListener("MSGestureChange", this._onGesture, false);
 
             Tools.RegisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         }
 
         public detachControl(element: HTMLElement) {
-            if (element && this._onPointerDown){
+            if (element && this._onPointerDown) {
                 element.removeEventListener("contextmenu", this._onContextMenu);
                 element.removeEventListener(eventPrefix + "down", this._onPointerDown);
                 element.removeEventListener(eventPrefix + "up", this._onPointerUp);
@@ -221,6 +222,8 @@ module BABYLON {
             }
             
             Tools.UnregisterTopRootEvents([
+                { name: "keydown", handler: this._onKeyDown },
+                { name: "keyup", handler: this._onKeyUp },
                 { name: "blur", handler: this._onLostFocus }
             ]);
         }
