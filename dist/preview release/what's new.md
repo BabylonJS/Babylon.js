@@ -20,6 +20,9 @@
     - New SPS property `computeBoundingBox` ([jerome](https://github.com/jbousquie))  
     - Added a new OnPickOut trigger fired when you release the pointer button outside of a mesh or sprite. ([deltakosh](https://github.com/deltakosh))
     - Added support for OnPointerOver and OnPointerOut for sprites. ([deltakosh](https://github.com/deltakosh))
+  - ** API doc **
+    - class `SolidParticleSystem` documented
+    - class `MeshBuilder` documented
   - **Bug fixes**
     - Fixed bug with ArcRotateCamera.setTarget ([deltakosh](https://github.com/deltakosh))
   - **Breaking changes**
