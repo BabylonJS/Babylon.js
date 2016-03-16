@@ -56,19 +56,6 @@
             this._textureMatrix = Matrix.Identity();
         }
 
-        public clone(): CubeTexture {
-            var newTexture = new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap, this._files);
-
-            // Base texture
-            newTexture.level = this.level;
-            newTexture.wrapU = this.wrapU;
-            newTexture.wrapV = this.wrapV;
-            newTexture.coordinatesIndex = this.coordinatesIndex;
-            newTexture.coordinatesMode = this.coordinatesMode;
-
-            return newTexture;
-        }
-
         // Methods
         public delayLoad(): void {
             if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
@@ -86,32 +73,28 @@
         public getReflectionTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
-        
+
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
-            var texture = null;
-            if ((parsedTexture.name || parsedTexture.extensions) && !parsedTexture.isRenderTarget) {
-                texture = new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
-                texture.name = parsedTexture.name;
-                texture.hasAlpha = parsedTexture.hasAlpha;
-                texture.level = parsedTexture.level;
-                texture.coordinatesMode = parsedTexture.coordinatesMode;
+            var texture = SerializationHelper.Parse(() => {
+                return new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+            }, parsedTexture, scene);
+
+            // Animations
+            if (parsedTexture.animations) {
+                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedTexture.animations[animationIndex];
+
+                    texture.animations.push(Animation.Parse(parsedAnimation));
+                }
             }
+
             return texture;
-        }
+        }        
 
-        public serialize(): any {
-            if (!this.name) {
-                return null;
-            }
-
-            var serializationObject: any = {};
-            serializationObject.name = this.name;
-            serializationObject.hasAlpha = this.hasAlpha;
-            serializationObject.isCube = true;
-            serializationObject.level = this.level;
-            serializationObject.coordinatesMode = this.coordinatesMode;
-
-            return serializationObject;
+        public clone(): CubeTexture {
+            return SerializationHelper.Clone(() => {
+                return new CubeTexture(this.url, this.getScene(), this._extensions, this._noMipmap, this._files);
+            }, this);
         }
     }
 } 
