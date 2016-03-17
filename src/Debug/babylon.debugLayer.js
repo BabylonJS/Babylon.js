@@ -317,6 +317,7 @@ var BABYLON;
         };
         DebugLayer.prototype._generateTexBox = function (root, title, color) {
             var label = document.createElement("label");
+            label.style.display = "inline";
             label.innerHTML = title;
             label.style.color = color;
             root.appendChild(label);
@@ -325,9 +326,13 @@ var BABYLON;
         DebugLayer.prototype._generateAdvancedCheckBox = function (root, leftTitle, rightTitle, initialState, task, tag) {
             if (tag === void 0) { tag = null; }
             var label = document.createElement("label");
+            label.style.display = "inline";
             var boundingBoxesCheckbox = document.createElement("input");
             boundingBoxesCheckbox.type = "checkbox";
             boundingBoxesCheckbox.checked = initialState;
+            boundingBoxesCheckbox.style.display = "inline";
+            boundingBoxesCheckbox.style.margin = "0px 5px 0px 0px";
+            boundingBoxesCheckbox.style.verticalAlign = "sub";
             boundingBoxesCheckbox.addEventListener("change", function (evt) {
                 task(evt.target, tag);
             });
@@ -349,9 +354,13 @@ var BABYLON;
         DebugLayer.prototype._generateCheckBox = function (root, title, initialState, task, tag) {
             if (tag === void 0) { tag = null; }
             var label = document.createElement("label");
+            label.style.display = "inline";
             var checkBox = document.createElement("input");
             checkBox.type = "checkbox";
             checkBox.checked = initialState;
+            checkBox.style.display = "inline";
+            checkBox.style.margin = "0px 5px 0px 0px";
+            checkBox.style.verticalAlign = "sub";
             checkBox.addEventListener("change", function (evt) {
                 task(evt.target, tag);
             });
@@ -379,10 +388,14 @@ var BABYLON;
         DebugLayer.prototype._generateRadio = function (root, title, name, initialState, task, tag) {
             if (tag === void 0) { tag = null; }
             var label = document.createElement("label");
+            label.style.display = "inline";
             var boundingBoxesRadio = document.createElement("input");
             boundingBoxesRadio.type = "radio";
             boundingBoxesRadio.name = name;
             boundingBoxesRadio.checked = initialState;
+            boundingBoxesRadio.style.display = "inline";
+            boundingBoxesRadio.style.margin = "0px 5px 0px 0px";
+            boundingBoxesRadio.style.verticalAlign = "sub";
             boundingBoxesRadio.addEventListener("change", function (evt) {
                 task(evt.target, tag);
             });

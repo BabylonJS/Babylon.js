@@ -440,6 +440,7 @@
 
         private _generateTexBox(root: HTMLDivElement, title: string, color: string): void {
             var label = document.createElement("label");
+            label.style.display = "inline";
             label.innerHTML = title;
             label.style.color = color;
 
@@ -449,10 +450,14 @@
 
         private _generateAdvancedCheckBox(root: HTMLDivElement, leftTitle: string, rightTitle: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
+            label.style.display = "inline";
 
             var boundingBoxesCheckbox = document.createElement("input");
             boundingBoxesCheckbox.type = "checkbox";
             boundingBoxesCheckbox.checked = initialState;
+            boundingBoxesCheckbox.style.display = "inline";
+            boundingBoxesCheckbox.style.margin = "0px 5px 0px 0px";
+            boundingBoxesCheckbox.style.verticalAlign = "sub";
 
             boundingBoxesCheckbox.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
@@ -480,10 +485,14 @@
 
         private _generateCheckBox(root: HTMLDivElement, title: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
+            label.style.display = "inline";
 
             var checkBox = document.createElement("input");
             checkBox.type = "checkbox";
             checkBox.checked = initialState;
+            checkBox.style.display = "inline";
+            checkBox.style.margin = "0px 5px 0px 0px";
+            checkBox.style.verticalAlign = "sub";
 
             checkBox.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
@@ -516,10 +525,15 @@
         private _generateRadio(root: HTMLDivElement, title: string, name: string, initialState: boolean, task: (element, tag) => void, tag: any = null): void {
             var label = document.createElement("label");
 
+            label.style.display = "inline";
+
             var boundingBoxesRadio = document.createElement("input");
             boundingBoxesRadio.type = "radio";
             boundingBoxesRadio.name = name;
             boundingBoxesRadio.checked = initialState;
+            boundingBoxesRadio.style.display = "inline";
+            boundingBoxesRadio.style.margin = "0px 5px 0px 0px";
+            boundingBoxesRadio.style.verticalAlign = "sub";
 
             boundingBoxesRadio.addEventListener("change", (evt: Event) => {
                 task(evt.target, tag);
