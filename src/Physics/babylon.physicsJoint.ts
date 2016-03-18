@@ -66,7 +66,6 @@ module BABYLON {
         public static Hinge2Joint = PhysicsJoint.WheelJoint;
         //Cannon
         //Similar to a Ball-Joint. Different in params
-        //TODO check!!
         public static PointToPointJoint = 8;
         //Cannon only at the moment
         public static SpringJoint = 9;
