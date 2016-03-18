@@ -281,6 +281,9 @@
                 case PhysicsImpostor.HeightmapImpostor:
                     returnValue = this._createHeightmap(mesh);
                     break;
+                case PhysicsImpostor.ParticleImpostor:
+                    returnValue = new CANNON.Particle();
+                    break;
 
             }
 
