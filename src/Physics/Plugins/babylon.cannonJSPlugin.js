@@ -178,6 +178,8 @@ var BABYLON;
                         localAnchorB: constraintData.pivotB
                     });
                     break;
+                case BABYLON.PhysicsJoint.PointToPointJoint:
+                case BABYLON.PhysicsJoint.BallAndSocketJoint:
                 default:
                     constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
@@ -223,36 +225,42 @@ var BABYLON;
             mesh.rotationQuaternion = new BABYLON.Quaternion(0, 0, 0, 1);
             mesh.computeWorldMatrix(true);
             var returnValue;
+            var bbox = mesh.getBoundingInfo().boundingBox;
             switch (impostor.type) {
                 case BABYLON.PhysicsEngine.SphereImpostor:
-                    var bbox = mesh.getBoundingInfo().boundingBox;
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
                     returnValue = new CANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
                     break;
                 //TMP also for cylinder - TODO Cannon supports cylinder natively.
-                case BABYLON.PhysicsEngine.CylinderImpostor:
-                    BABYLON.Tools.Warn("CylinderImposter not yet implemented, using BoxImposter instead");
-                case BABYLON.PhysicsEngine.BoxImpostor:
-                    bbox = mesh.getBoundingInfo().boundingBox;
+                case BABYLON.PhysicsImpostor.CylinderImpostor:
+                    var min = bbox.minimumWorld;
+                    var max = bbox.maximumWorld;
+                    var box = max.subtract(min);
+                    returnValue = new CANNON.Cylinder(this._checkWithEpsilon(box.x) / 2, this._checkWithEpsilon(box.x) / 2, this._checkWithEpsilon(box.y), 16);
+                    break;
+                case BABYLON.PhysicsImpostor.BoxImpostor:
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min).scale(0.5);
                     returnValue = new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
                     break;
-                case BABYLON.PhysicsEngine.PlaneImpostor:
+                case BABYLON.PhysicsImpostor.PlaneImpostor:
                     BABYLON.Tools.Warn("Attention, PlaneImposter might not behave as you expect. Consider using BoxImposter instead");
                     returnValue = new CANNON.Plane();
                     break;
-                case BABYLON.PhysicsEngine.MeshImpostor:
+                case BABYLON.PhysicsImpostor.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
                     BABYLON.Tools.Warn("MeshImpostor only collides against spheres.");
                     returnValue = new CANNON.Trimesh(rawVerts, rawFaces);
                     break;
-                case BABYLON.PhysicsEngine.HeightmapImpostor:
+                case BABYLON.PhysicsImpostor.HeightmapImpostor:
                     returnValue = this._createHeightmap(mesh);
+                    break;
+                case BABYLON.PhysicsImpostor.ParticleImpostor:
+                    returnValue = new CANNON.Particle();
                     break;
             }
             mesh.rotationQuaternion = oldQuaternion;
@@ -315,7 +323,7 @@ var BABYLON;
             var quaternion = mesh.rotationQuaternion;
             this._tmpPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center);
             //is shape is a plane or a heightmap, it must be rotated 90 degs in the X axis.
-            if (impostor.type === BABYLON.PhysicsEngine.PlaneImpostor || impostor.type === BABYLON.PhysicsEngine.HeightmapImpostor) {
+            if (impostor.type === BABYLON.PhysicsImpostor.PlaneImpostor || impostor.type === BABYLON.PhysicsImpostor.HeightmapImpostor || impostor.type === BABYLON.PhysicsImpostor.CylinderImpostor) {
                 //-90 DEG in X, precalculated
                 quaternion = quaternion.multiply(this._minus90X);
                 //Invert! (Precalculated, 90 deg in X)
@@ -418,7 +426,7 @@ var BABYLON;
         };
         CannonJSPlugin.prototype.setLimit = function (joint, upperLimit, lowerLimit) {
             joint.physicsJoint.motorEquation.maxForce = upperLimit;
-            joint.physicsJoint.motorEquation.minForce = lowerLimit || -upperLimit;
+            joint.physicsJoint.motorEquation.minForce = lowerLimit === void 0 ? -upperLimit : lowerLimit;
         };
         CannonJSPlugin.prototype.dispose = function () {
             //nothing to do, actually.
