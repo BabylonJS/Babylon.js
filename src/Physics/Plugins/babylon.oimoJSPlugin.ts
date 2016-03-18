@@ -153,7 +153,9 @@ module BABYLON {
 
                     // register mesh
                     switch (i.type) {
-                        case PhysicsEngine.SphereImpostor:
+                        case PhysicsImpostor.ParticleImpostor:
+                            Tools.Warn("No Particle support in Oimo.js. using SphereImpostor instead");
+                        case PhysicsImpostor.SphereImpostor:
                             var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                             var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                             var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
@@ -170,7 +172,7 @@ module BABYLON {
                             bodyConfig.size.push(size);
                             break;
 
-                        case PhysicsEngine.CylinderImpostor:
+                        case PhysicsImpostor.CylinderImpostor:
                             var min = bbox.minimumWorld;
                             var max = bbox.maximumWorld;
                             var box = max.subtract(min);
@@ -183,10 +185,9 @@ module BABYLON {
                             bodyConfig.size.push(sizeY);
                             break;
 
-                        case PhysicsEngine.PlaneImpostor:
-                        case PhysicsEngine.BoxImpostor:
+                        case PhysicsImpostor.PlaneImpostor:
+                        case PhysicsImpostor.BoxImpostor:
                         default:
-
                             var min = bbox.minimumWorld;
                             var max = bbox.maximumWorld;
                             var box = max.subtract(min);
