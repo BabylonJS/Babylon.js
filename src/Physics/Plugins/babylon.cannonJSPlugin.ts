@@ -260,7 +260,7 @@
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min);
-                    returnValue = new CANNON.Cylinder(new CANNON.Vec3(this._checkWithEpsilon(box.x) / 2, this._checkWithEpsilon(box.x) / 2, this._checkWithEpsilon(box.y), 16));
+                    returnValue = new CANNON.Cylinder(this._checkWithEpsilon(box.x) / 2, this._checkWithEpsilon(box.x) / 2, this._checkWithEpsilon(box.y), 16);
                     break;
                 case PhysicsImpostor.BoxImpostor:
                     var min = bbox.minimumWorld;
@@ -284,7 +284,6 @@
                 case PhysicsImpostor.ParticleImpostor:
                     returnValue = new CANNON.Particle();
                     break;
-
             }
 
             mesh.rotationQuaternion = oldQuaternion;
@@ -371,7 +370,7 @@
             var quaternion = mesh.rotationQuaternion;
             this._tmpPosition.copyFrom(mesh.getBoundingInfo().boundingBox.center);
             //is shape is a plane or a heightmap, it must be rotated 90 degs in the X axis.
-            if (impostor.type === PhysicsEngine.PlaneImpostor || impostor.type === PhysicsEngine.HeightmapImpostor) {
+            if (impostor.type === PhysicsImpostor.PlaneImpostor || impostor.type === PhysicsImpostor.HeightmapImpostor || impostor.type === PhysicsImpostor.CylinderImpostor) {
                 //-90 DEG in X, precalculated
                 quaternion = quaternion.multiply(this._minus90X);
                 //Invert! (Precalculated, 90 deg in X)
