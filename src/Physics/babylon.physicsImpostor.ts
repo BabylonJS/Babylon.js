@@ -362,10 +362,8 @@ module BABYLON {
         public static BoxImpostor = 2;
         public static PlaneImpostor = 3;
         public static MeshImpostor = 4;
-        public static CapsuleImpostor = 5;
-        public static ConeImpostor = 6;
         public static CylinderImpostor = 7;
-        public static ConvexHullImpostor = 8;
+        public static ParticleImpostor = 8;
         public static HeightmapImpostor = 9;
     }
 
