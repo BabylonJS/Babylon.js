@@ -124,7 +124,9 @@ var BABYLON;
                     }
                     // register mesh
                     switch (i.type) {
-                        case BABYLON.PhysicsEngine.SphereImpostor:
+                        case BABYLON.PhysicsImpostor.ParticleImpostor:
+                            BABYLON.Tools.Warn("No Particle support in Oimo.js. using SphereImpostor instead");
+                        case BABYLON.PhysicsImpostor.SphereImpostor:
                             var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                             var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                             var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
@@ -135,10 +137,20 @@ var BABYLON;
                             bodyConfig.size.push(size);
                             bodyConfig.size.push(size);
                             break;
-                        case BABYLON.PhysicsEngine.PlaneImpostor:
-                        //TODO Oimo now supports cylinder!
-                        case BABYLON.PhysicsEngine.CylinderImpostor:
-                        case BABYLON.PhysicsEngine.BoxImpostor:
+                        case BABYLON.PhysicsImpostor.CylinderImpostor:
+                            var min = bbox.minimumWorld;
+                            var max = bbox.maximumWorld;
+                            var box = max.subtract(min);
+                            var sizeX = checkWithEpsilon(box.x) / 2;
+                            var sizeY = checkWithEpsilon(box.y);
+                            bodyConfig.type.push('cylinder');
+                            bodyConfig.size.push(sizeX);
+                            bodyConfig.size.push(sizeY);
+                            //due to the way oimo works with compounds, add one more value.
+                            bodyConfig.size.push(sizeY);
+                            break;
+                        case BABYLON.PhysicsImpostor.PlaneImpostor:
+                        case BABYLON.PhysicsImpostor.BoxImpostor:
                         default:
                             var min = bbox.minimumWorld;
                             var max = bbox.maximumWorld;
@@ -295,16 +307,16 @@ var BABYLON;
                 joint.physicsJoint.limitMotoe.lowerLimit = minDistance;
             }
         };
-        OimoJSPlugin.prototype.setMotor = function (joint, force, maxForce, motorIndex) {
+        OimoJSPlugin.prototype.setMotor = function (joint, speed, maxForce, motorIndex) {
             var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
             if (motor) {
-                motor.setMotor(force, maxForce);
+                motor.setMotor(speed, maxForce);
             }
         };
         OimoJSPlugin.prototype.setLimit = function (joint, upperLimit, lowerLimit, motorIndex) {
             var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
             if (motor) {
-                motor.setLimit(upperLimit, lowerLimit || -upperLimit);
+                motor.setLimit(upperLimit, lowerLimit === void 0 ? -upperLimit : lowerLimit);
             }
         };
         OimoJSPlugin.prototype.dispose = function () {
