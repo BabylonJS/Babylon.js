@@ -358,17 +358,17 @@ module BABYLON {
             }
         }
 
-        public setMotor(joint: IMotorEnabledJoint, force?: number, maxForce?: number, motorIndex?: number) {
+        public setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number) {
             var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
             if (motor) {
-                motor.setMotor(force, maxForce);
+                motor.setMotor(speed, maxForce);
             }
         }
 
         public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number) {
             var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
             if (motor) {
-                motor.setLimit(upperLimit, lowerLimit || -upperLimit);
+                motor.setLimit(upperLimit, lowerLimit === void 0 ? -upperLimit : lowerLimit);
             }
         }
 

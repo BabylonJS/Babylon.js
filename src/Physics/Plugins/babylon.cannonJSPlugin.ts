@@ -64,13 +64,13 @@
                 }
 
                 var shape = this._createShape(impostor);
-                
+
                 //unregister events, if body is being changed
                 var oldBody = impostor.physicsBody;
                 if (oldBody) {
                     this.removePhysicsBody(impostor);
                 }
-                
+
                 //create the body and material
                 var material = this._addMaterial("mat-" + impostor.mesh.uniqueId, impostor.getParam("friction"), impostor.getParam("restitution"));
 
@@ -91,11 +91,11 @@
                 this.world.addEventListener("postStep", impostor.afterStep);
                 impostor.physicsBody.addShape(shape);
                 this.world.add(impostor.physicsBody);
-                
+
                 //try to keep the body moving in the right direction by taking old properties.
                 //Should be tested!
                 if (oldBody) {
-                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function (param) {
+                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
                         impostor.physicsBody[param].copy(oldBody[param]);
                     });
                 }
@@ -189,6 +189,8 @@
                         localAnchorB: constraintData.pivotB
                     });
                     break;
+                case PhysicsJoint.PointToPointJoint:
+                case PhysicsJoint.BallAndSocketJoint:
                 default:
                     constraint = new CANNON.PointToPointConstraint(mainBody, constraintData.pivotA, connectedBody, constraintData.pivotA, constraintData.maxForce);
                     break;
@@ -200,7 +202,7 @@
             if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
                 this.world.addConstraint(constraint);
             } else {
-                impostorJoint.mainImpostor.registerAfterPhysicsStep(function () {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function() {
                     constraint.applyForce();
                 });
             }
@@ -236,7 +238,7 @@
 
         private _createShape(impostor: PhysicsImpostor) {
             var mesh = impostor.mesh;
-        
+
             //get the correct bounding box
             var oldQuaternion = mesh.rotationQuaternion;
             mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
@@ -288,7 +290,7 @@
         private _createHeightmap(mesh: AbstractMesh, pointDepth?: number) {
             var pos = mesh.getVerticesData(VertexBuffer.PositionKind);
             var matrix = [];
-    
+
             //For now pointDepth will not be used and will be automatically calculated.
             //Future reference - try and find the best place to add a reference to the pointDepth variable.
             var arraySize = pointDepth || ~~(Math.sqrt(pos.length / 3) - 1);
@@ -338,7 +340,7 @@
             var shape = new CANNON.Heightfield(matrix, {
                 elementSize: elementSize
             });
-            
+
             //For future reference, needed for body transformation
             shape.minY = minY;
 
@@ -371,28 +373,28 @@
                 //No need to clone. this will never change.
                 impostor.setDeltaRotation(this._plus90X);
             }
-            
+
             //If it is a heightfield, if should be centered.
             if (impostor.type === PhysicsEngine.HeightmapImpostor) {
-                
+
                 //calculate the correct body position:
                 var rotationQuaternion = mesh.rotationQuaternion;
                 mesh.rotationQuaternion = this._tmpUnityRotation;
                 mesh.computeWorldMatrix(true);
-                
+
                 //get original center with no rotation
                 var center = mesh.getBoundingInfo().boundingBox.center.clone();
 
                 var oldPivot = mesh.getPivotMatrix() || Matrix.Translation(0, 0, 0);
-                
+
                 //rotation is back
                 mesh.rotationQuaternion = rotationQuaternion;
-        
+
                 //calculate the new center using a pivot (since Cannon.js doesn't center height maps)
                 var p = Matrix.Translation(mesh.getBoundingInfo().boundingBox.extendSize.x, 0, -mesh.getBoundingInfo().boundingBox.extendSize.z);
                 mesh.setPivotMatrix(p);
                 mesh.computeWorldMatrix(true);
-        
+
                 //calculate the translation
                 var translation = mesh.getBoundingInfo().boundingBox.center.subtract(center).subtract(mesh.position).negate();
 
@@ -435,7 +437,7 @@
         public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.angularVelocity.copy(velocity);
         }
-        
+
         public getLinearVelocity(impostor: PhysicsImpostor): Vector3 {
             var v = impostor.physicsBody.velocity;
             if (!v) return null;
@@ -459,28 +461,28 @@
         public wakeUpBody(impostor: PhysicsImpostor) {
             impostor.physicsBody.wakeUp();
         }
-        
-        public updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number) {
+
+        public updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number) {
             joint.physicsJoint.distance = maxDistance;
         }
-        
+
         private enableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
-            if(!motorIndex) {
+            if (!motorIndex) {
                 joint.physicsJoint.enableMotor();
             }
         }
-        
+
         private disableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
-            if(!motorIndex) {
+            if (!motorIndex) {
                 joint.physicsJoint.disableMotor();
             }
         }
-        
+
         public setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number) {
-            if(!motorIndex) {
+            if (!motorIndex) {
                 joint.physicsJoint.enableMotor();
                 joint.physicsJoint.setMotorSpeed(speed);
-                if(maxForce) {
+                if (maxForce) {
                     this.setLimit(joint, maxForce);
                 }
                 //a hack for force application
@@ -494,12 +496,12 @@
                 bodyTorque.vadd(torque, bodyTorque);*/
             }
         }
-        
+
         public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number) {
             joint.physicsJoint.motorEquation.maxForce = upperLimit;
-            joint.physicsJoint.motorEquation.minForce = lowerLimit || -upperLimit;
-        }        
-        
+            joint.physicsJoint.motorEquation.minForce = lowerLimit === void 0 ? -upperLimit : lowerLimit;
+        }
+
         public dispose() {
             //nothing to do, actually.
         }
