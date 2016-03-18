@@ -245,10 +245,9 @@
             mesh.computeWorldMatrix(true);
 
             var returnValue;
-
+            var bbox = mesh.getBoundingInfo().boundingBox;
             switch (impostor.type) {
                 case PhysicsEngine.SphereImpostor:
-                    var bbox = mesh.getBoundingInfo().boundingBox;
                     var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
                     var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
                     var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
@@ -257,26 +256,29 @@
 
                     break;
                 //TMP also for cylinder - TODO Cannon supports cylinder natively.
-                case PhysicsEngine.CylinderImpostor:
-                    Tools.Warn("CylinderImposter not yet implemented, using BoxImposter instead");
-                case PhysicsEngine.BoxImpostor:
-                    bbox = mesh.getBoundingInfo().boundingBox;
+                case PhysicsImpostor.CylinderImpostor:
+                    var min = bbox.minimumWorld;
+                    var max = bbox.maximumWorld;
+                    var box = max.subtract(min);
+                    returnValue = new CANNON.Cylinder(new CANNON.Vec3(this._checkWithEpsilon(box.x) / 2, this._checkWithEpsilon(box.x) / 2, this._checkWithEpsilon(box.y), 16));
+                    break;
+                case PhysicsImpostor.BoxImpostor:
                     var min = bbox.minimumWorld;
                     var max = bbox.maximumWorld;
                     var box = max.subtract(min).scale(0.5);
                     returnValue = new CANNON.Box(new CANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
                     break;
-                case PhysicsEngine.PlaneImpostor:
+                case PhysicsImpostor.PlaneImpostor:
                     Tools.Warn("Attention, PlaneImposter might not behave as you expect. Consider using BoxImposter instead");
                     returnValue = new CANNON.Plane();
                     break;
-                case PhysicsEngine.MeshImpostor:
+                case PhysicsImpostor.MeshImpostor:
                     var rawVerts = mesh.getVerticesData(VertexBuffer.PositionKind);
                     var rawFaces = mesh.getIndices();
                     Tools.Warn("MeshImpostor only collides against spheres.");
                     returnValue = new CANNON.Trimesh(rawVerts, rawFaces);
                     break;
-                case PhysicsEngine.HeightmapImpostor:
+                case PhysicsImpostor.HeightmapImpostor:
                     returnValue = this._createHeightmap(mesh);
                     break;
 
