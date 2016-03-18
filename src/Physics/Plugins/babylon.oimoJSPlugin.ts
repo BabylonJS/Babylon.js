@@ -170,9 +170,20 @@ module BABYLON {
                             bodyConfig.size.push(size);
                             break;
 
-                        case PhysicsEngine.PlaneImpostor:
-                        //TODO Oimo now supports cylinder!
                         case PhysicsEngine.CylinderImpostor:
+                            var min = bbox.minimumWorld;
+                            var max = bbox.maximumWorld;
+                            var box = max.subtract(min);
+                            var sizeX = checkWithEpsilon(box.x) / 2;
+                            var sizeY = checkWithEpsilon(box.y);
+                            bodyConfig.type.push('cylinder');
+                            bodyConfig.size.push(sizeX);
+                            bodyConfig.size.push(sizeY);
+                            //due to the way oimo works with compounds, add one more value.
+                            bodyConfig.size.push(sizeY);
+                            break;
+
+                        case PhysicsEngine.PlaneImpostor:
                         case PhysicsEngine.BoxImpostor:
                         default:
 
