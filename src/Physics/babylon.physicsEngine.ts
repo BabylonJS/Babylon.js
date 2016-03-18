@@ -57,11 +57,11 @@
         public static BoxImpostor = PhysicsImpostor.BoxImpostor;
         public static PlaneImpostor = PhysicsImpostor.PlaneImpostor;
         public static MeshImpostor = PhysicsImpostor.MeshImpostor;
-        public static CapsuleImpostor = PhysicsImpostor.CapsuleImpostor;
-        public static ConeImpostor = PhysicsImpostor.ConeImpostor;
         public static CylinderImpostor = PhysicsImpostor.CylinderImpostor;
-        public static ConvexHullImpostor = PhysicsImpostor.ConvexHullImpostor;
         public static HeightmapImpostor = PhysicsImpostor.HeightmapImpostor;
+        public static CapsuleImpostor = -1;
+        public static ConeImpostor = -1;
+        public static ConvexHullImpostor = -1;
 
         public static Epsilon = 0.001;
         
