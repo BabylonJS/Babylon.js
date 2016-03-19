@@ -213,7 +213,7 @@ module BABYLON {
          * This as to be use with the overloadedReflectivityIntensity parameter.
          */
         @serializeAsColor3()
-        public overloadedReflectivity: Color3 = BABYLON.Color3.White();
+        public overloadedReflectivity: Color3 = new BABYLON.Color3(0.3, 0.3, 0.3);
         
         /**
          * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
