@@ -764,7 +764,7 @@
                 options = impostor;
                 impostor = impostor.impostor;
             }
-            this.physicsImpostor = new PhysicsImpostor(this, impostor, options);
+            this.physicsImpostor = new PhysicsImpostor(this, impostor, options, this.getScene());
             return this.physicsImpostor.physicsBody;
         }
 
@@ -1080,7 +1080,7 @@
 
             // Physics
             if (this.physicsImpostor) {
-                this.physicsImpostor.dispose(!doNotRecurse);
+                this.physicsImpostor.dispose(/*!doNotRecurse*/);
             }
 
             // Intersections in progress
