@@ -357,7 +357,7 @@
 
             if (url.indexOf("file:") !== -1) {
                 var fileName = url.substring(5);
-                Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
+                Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
             }
             else {
                 // Caching all files

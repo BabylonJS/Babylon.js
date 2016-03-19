@@ -1,4 +1,4 @@
-
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
 
@@ -95,14 +95,14 @@ module BABYLON {
                 } else if (key === "map_ka") {
                     // ambient texture map with a loaded image
                     //We must first get the folder of the image
-                    material.ambientTexture = new BABYLON.Texture(rootUrl + value, scene);
+                    material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 } else if (key === "map_kd") {
                     // Diffuse texture map with a loaded image
-                    material.diffuseTexture = new BABYLON.Texture(rootUrl + value, scene);
+                    material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 } else if (key === "map_ks") {
                     // Specular texture map with a loaded image
                     //We must first get the folder of the image
-                    material.specularTexture = new BABYLON.Texture(rootUrl + value, scene);
+                    material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 } else if (key === "map_ns") {
                     //Specular
                     //Specular highlight component
@@ -113,10 +113,10 @@ module BABYLON {
                     //    continue;
                 } else if (key === "map_bump") {
                     //The bump texture
-                    material.bumpTexture = new BABYLON.Texture(rootUrl + value, scene);
+                    material.bumpTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 } else if (key === "map_d") {
                     // The dissolve of the material
-                    material.opacityTexture = new BABYLON.Texture(rootUrl + value, scene);
+                    material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
 
 
                     //Options for illumination
@@ -152,6 +152,40 @@ module BABYLON {
             //At the end of the file, add the last material
             this.materials.push(material);
         }
+        
+        /**
+         * Gets the texture for the material.
+         * 
+         * If the material is imported from input file,
+         * We sanitize the url to ensure it takes the textre from aside the material.
+         * 
+         * @param rootUrl The root url to load from
+         * @param value The value stored in the mtl
+         * @return The Texture
+         */
+        private static _getTexture(rootUrl:string, value: string, scene: Scene): Texture {
+            var url = rootUrl;
+            // Load from input file.
+            if (rootUrl === "file:") {
+                var lastDelimiter = value.lastIndexOf("\\");
+                if (lastDelimiter === -1) {
+                    lastDelimiter = value.lastIndexOf("/");
+                }
+                
+                if (lastDelimiter > -1) {
+                    url += value.substr(lastDelimiter + 1); 
+                }
+                else {
+                    url += value;
+                }
+            }
+            // Not from input file.
+            else {
+                url += value;
+            }
+            
+            return new BABYLON.Texture(url, scene);
+        }
     }
 
     export class OBJFileLoader implements ISceneLoaderPlugin {
@@ -170,13 +204,13 @@ module BABYLON {
         // vt float float
         public uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // f vertex vertex vertex ...
-        public facePattern1 = /f\s(([\d]{1,}[\s]?){3,})+/;
+        public facePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;
         // f vertex/uvs vertex/uvs vertex/uvs ...
-        public facePattern2 = /f\s((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
+        public facePattern2 = /f\s+((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
         // f vertex/uvs/normal vertex/uvs/normal vertex/uvs/normal ...
-        public facePattern3 = /f\s((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
+        public facePattern3 = /f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
         // f vertex//normal vertex//normal vertex//normal ...
-        public facePattern4 = /f\s((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
+        public facePattern4 = /f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
 
 
         /**
@@ -191,26 +225,16 @@ module BABYLON {
          * @private
          */
         private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string) => any) {
-            //XMLHTTP object to load the file
-            var request = new XMLHttpRequest();
             //The complete path to the mtl file
             var pathOfFile = BABYLON.Tools.BaseUrl + rootUrl + url;
-            //Get the file synchronously
-            request.open('GET', pathOfFile, false);
-            //Check the server status
-            request.onreadystatechange = function () {
-                if (request.readyState === 4) {
-                    if (request.status === 200 || BABYLON.Tools.ValidateXHRData(request, 1)) {
-                        //Data are loaded
-                        onSuccess(request.responseText);
-                    }
-                    else {
-                        //File not found
-                        console.warn("Error status: " + request.status + " - Unable to load " + pathOfFile);
-                    }
-                }
-            };
-            request.send(null);
+            
+            // Loads through the babylon tools to allow fileInput search.
+            BABYLON.Tools.LoadFile(pathOfFile, 
+                onSuccess, 
+                null, 
+                null, 
+                false, 
+                () => { console.warn("Error - Unable to load " + pathOfFile); })
         }
 
         public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {

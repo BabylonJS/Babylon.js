@@ -199,7 +199,7 @@ var BABYLON;
              * Debug Control allowing to overload the reflectivity color.
              * This as to be use with the overloadedReflectivityIntensity parameter.
              */
-            this.overloadedReflectivity = BABYLON.Color3.White();
+            this.overloadedReflectivity = new BABYLON.Color3(0.3, 0.3, 0.3);
             /**
              * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
              */
