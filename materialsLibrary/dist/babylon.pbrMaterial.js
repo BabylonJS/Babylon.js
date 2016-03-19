@@ -199,7 +199,7 @@ var BABYLON;
              * Debug Control allowing to overload the reflectivity color.
              * This as to be use with the overloadedReflectivityIntensity parameter.
              */
-            this.overloadedReflectivity = BABYLON.Color3.White();
+            this.overloadedReflectivity = new BABYLON.Color3(0.3, 0.3, 0.3);
             /**
              * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
              */
@@ -1044,6 +1044,30 @@ var BABYLON;
         // Statics
         PBRMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new PBRMaterial(source.name, scene); }, source, scene, rootUrl);
+        };
+        PBRMaterial.Glass = function (name, scene) {
+            var pbr = new PBRMaterial(name, scene);
+            return pbr;
+        };
+        PBRMaterial.Metal = function (name, scene) {
+            var pbr = new PBRMaterial(name, scene);
+            return pbr;
+        };
+        PBRMaterial.Iron = function (name, scene) {
+            var pbr = new PBRMaterial(name, scene);
+            return pbr;
+        };
+        PBRMaterial.Copper = function (name, scene) {
+            var pbr = new PBRMaterial(name, scene);
+            return pbr;
+        };
+        PBRMaterial.Gold = function (name, scene) {
+            var pbr = new PBRMaterial(name, scene);
+            return pbr;
+        };
+        PBRMaterial.Plastic = function (name, scene) {
+            var pbr = new PBRMaterial(name, scene);
+            return pbr;
         };
         PBRMaterial._scaledAlbedo = new BABYLON.Color3();
         PBRMaterial._scaledReflectivity = new BABYLON.Color3();
