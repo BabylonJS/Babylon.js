@@ -1377,36 +1377,5 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
             return SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
         }
-        
-        public static Glass(name: string, scene: Scene): PBRMaterial {
-            var pbr = new PBRMaterial(name, scene);
-            
-            return pbr;
-        }
-        
-        public static Metal(name: string, scene: Scene): PBRMaterial {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        }
-        
-        public static Iron(name: string, scene: Scene): PBRMaterial {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        }
-        
-        public static Copper(name: string, scene: Scene): PBRMaterial {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        }
-        
-        public static Gold(name: string, scene: Scene): PBRMaterial {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        }
-        
-        public static Plastic(name: string, scene: Scene): PBRMaterial {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        }
     }
 }

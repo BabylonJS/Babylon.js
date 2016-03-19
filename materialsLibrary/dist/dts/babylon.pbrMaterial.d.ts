@@ -258,11 +258,5 @@ declare module BABYLON {
         clone(name: string): PBRMaterial;
         serialize(): any;
         static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial;
-        static Glass(name: string, scene: Scene): PBRMaterial;
-        static Metal(name: string, scene: Scene): PBRMaterial;
-        static Iron(name: string, scene: Scene): PBRMaterial;
-        static Copper(name: string, scene: Scene): PBRMaterial;
-        static Gold(name: string, scene: Scene): PBRMaterial;
-        static Plastic(name: string, scene: Scene): PBRMaterial;
     }
 }

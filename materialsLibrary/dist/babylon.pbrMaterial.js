@@ -1045,30 +1045,6 @@ var BABYLON;
         PBRMaterial.Parse = function (source, scene, rootUrl) {
             return BABYLON.SerializationHelper.Parse(function () { return new PBRMaterial(source.name, scene); }, source, scene, rootUrl);
         };
-        PBRMaterial.Glass = function (name, scene) {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        };
-        PBRMaterial.Metal = function (name, scene) {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        };
-        PBRMaterial.Iron = function (name, scene) {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        };
-        PBRMaterial.Copper = function (name, scene) {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        };
-        PBRMaterial.Gold = function (name, scene) {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        };
-        PBRMaterial.Plastic = function (name, scene) {
-            var pbr = new PBRMaterial(name, scene);
-            return pbr;
-        };
         PBRMaterial._scaledAlbedo = new BABYLON.Color3();
         PBRMaterial._scaledReflectivity = new BABYLON.Color3();
         PBRMaterial._scaledEmissive = new BABYLON.Color3();
