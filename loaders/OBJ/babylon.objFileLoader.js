@@ -187,13 +187,13 @@ var BABYLON;
             // vt float float
             this.uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
             // f vertex vertex vertex ...
-            this.facePattern1 = /f\s(([\d]{1,}[\s]?){3,})+/;
+            this.facePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;
             // f vertex/uvs vertex/uvs vertex/uvs ...
-            this.facePattern2 = /f\s((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
+            this.facePattern2 = /f\s+((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
             // f vertex/uvs/normal vertex/uvs/normal vertex/uvs/normal ...
-            this.facePattern3 = /f\s((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
+            this.facePattern3 = /f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
             // f vertex//normal vertex//normal vertex//normal ...
-            this.facePattern4 = /f\s((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
+            this.facePattern4 = /f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
         }
         /**
          * Calls synchronously the MTL file attached to this obj.
