@@ -100,9 +100,13 @@
                             FilesInput.FilesToLoad[this._filesToLoad[i].name] = this._filesToLoad[i];
                             break;
                         default:
-                            if ((
-                                this._filesToLoad[i].name.indexOf(".babylon") !== -1 || this._filesToLoad[i].name.indexOf(".stl") !== -1 ||
-                                this._filesToLoad[i].name.indexOf(".obj") !== -1 || this._filesToLoad[i].name.indexOf(".mtl") !== -1
+                            if (this._filesToLoad[i].name.indexOf(".mtl") !== -1) {
+                                FilesInput.FilesToLoad[this._filesToLoad[i].name] = this._filesToLoad[i];
+                            }
+                            else if ((
+                                this._filesToLoad[i].name.indexOf(".babylon") !== -1 || 
+                                this._filesToLoad[i].name.indexOf(".stl") !== -1 ||
+                                this._filesToLoad[i].name.indexOf(".obj") !== -1
                                 )   
                                 && this._filesToLoad[i].name.indexOf(".manifest") === -1
                                 && this._filesToLoad[i].name.indexOf(".incremental") === -1 && this._filesToLoad[i].name.indexOf(".babylonmeshdata") === -1
