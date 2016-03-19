@@ -34,7 +34,7 @@ module BABYLON {
             impostors.forEach((impostor) => {
                 impostor.afterStep();
                 //update the ordered impostors array
-                this._tmpImpostorsArray[impostor.mesh.uniqueId] = impostor;
+                this._tmpImpostorsArray[impostor.uniqueId] = impostor;
             });
 
             //check for collisions
@@ -80,16 +80,9 @@ module BABYLON {
                 return;
             }
 
-            impostor.mesh.computeWorldMatrix(true);
-
             if (impostor.isBodyInitRequired()) {
-                if (!impostor.mesh.rotationQuaternion) {
-                    impostor.mesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(impostor.mesh.rotation.y, impostor.mesh.rotation.x, impostor.mesh.rotation.z);
-                }
-
-
                 var bodyConfig: any = {
-                    name: impostor.mesh.uniqueId,
+                    name: impostor.uniqueId,
                     //Oimo must have mass, also for static objects.
                     config: [impostor.getParam("mass") || 1, impostor.getParam("friction"), impostor.getParam("restitution")],
                     size: [],
@@ -102,7 +95,8 @@ module BABYLON {
                 };
 
                 var impostors = [impostor];
-                function addToArray(parent: AbstractMesh) {
+                function addToArray(parent: IPhysicsEnabledObject) {
+                    if(!parent.getChildMeshes) return;
                     parent.getChildMeshes().forEach(function(m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
@@ -110,7 +104,7 @@ module BABYLON {
                         }
                     });
                 }
-                addToArray(impostor.mesh)
+                addToArray(impostor.object)
 
                 function checkWithEpsilon(value: number): number {
                     return Math.max(value, PhysicsEngine.Epsilon);
@@ -119,31 +113,34 @@ module BABYLON {
                 impostors.forEach((i) => {
 
                     //get the correct bounding box
-                    var oldQuaternion = i.mesh.rotationQuaternion;
-                    var rot = new OIMO.Euler().setFromQuaternion({ x: impostor.mesh.rotationQuaternion.x, y: impostor.mesh.rotationQuaternion.y, z: impostor.mesh.rotationQuaternion.z, s: impostor.mesh.rotationQuaternion.w });
+                    var oldQuaternion = i.object.rotationQuaternion;
+                    var rot = new OIMO.Euler().setFromQuaternion({ 
+                        x: impostor.object.rotationQuaternion.x, 
+                        y: impostor.object.rotationQuaternion.y, 
+                        z: impostor.object.rotationQuaternion.z, 
+                        s: impostor.object.rotationQuaternion.w });
 
-                    i.mesh.rotationQuaternion = new Quaternion(0, 0, 0, 1);
-                    i.mesh.computeWorldMatrix(true);
 
-                    var bbox = i.mesh.getBoundingInfo().boundingBox;
+                    var extendSize = i.getObjectExtendSize();
 
                     if (i === impostor) {
+                        var center = impostor.getObjectCenter();
 
-                        impostor.mesh.position.subtractToRef(impostor.mesh.getBoundingInfo().boundingBox.center, this._tmpPositionVector);
+                        impostor.object.position.subtractToRef(center, this._tmpPositionVector);
 
                         //Can also use Array.prototype.push.apply
-                        bodyConfig.pos.push(bbox.center.x);
-                        bodyConfig.pos.push(bbox.center.y);
-                        bodyConfig.pos.push(bbox.center.z);
+                        bodyConfig.pos.push(center.x);
+                        bodyConfig.pos.push(center.y);
+                        bodyConfig.pos.push(center.z);
 
                         //tmp solution
                         bodyConfig.rot.push(rot.x / (OIMO.degtorad || OIMO.TO_RAD));
                         bodyConfig.rot.push(rot.y / (OIMO.degtorad || OIMO.TO_RAD));
                         bodyConfig.rot.push(rot.z / (OIMO.degtorad || OIMO.TO_RAD));
                     } else {
-                        bodyConfig.pos.push(i.mesh.position.x);
-                        bodyConfig.pos.push(i.mesh.position.y);
-                        bodyConfig.pos.push(i.mesh.position.z);
+                        bodyConfig.pos.push(i.object.position.x);
+                        bodyConfig.pos.push(i.object.position.y);
+                        bodyConfig.pos.push(i.object.position.z);
 
                         //tmp solution until https://github.com/lo-th/Oimo.js/pull/37 is merged
                         bodyConfig.rot.push(0);
@@ -156,9 +153,9 @@ module BABYLON {
                         case PhysicsImpostor.ParticleImpostor:
                             Tools.Warn("No Particle support in Oimo.js. using SphereImpostor instead");
                         case PhysicsImpostor.SphereImpostor:
-                            var radiusX = bbox.maximumWorld.x - bbox.minimumWorld.x;
-                            var radiusY = bbox.maximumWorld.y - bbox.minimumWorld.y;
-                            var radiusZ = bbox.maximumWorld.z - bbox.minimumWorld.z;
+                            var radiusX = extendSize.x;
+                            var radiusY = extendSize.y;
+                            var radiusZ = extendSize.z;
 
                             var size = Math.max(
                                 checkWithEpsilon(radiusX),
@@ -173,11 +170,8 @@ module BABYLON {
                             break;
 
                         case PhysicsImpostor.CylinderImpostor:
-                            var min = bbox.minimumWorld;
-                            var max = bbox.maximumWorld;
-                            var box = max.subtract(min);
-                            var sizeX = checkWithEpsilon(box.x) / 2;
-                            var sizeY = checkWithEpsilon(box.y);
+                            var sizeX = checkWithEpsilon(extendSize.x) / 2;
+                            var sizeY = checkWithEpsilon(extendSize.y);
                             bodyConfig.type.push('cylinder');
                             bodyConfig.size.push(sizeX);
                             bodyConfig.size.push(sizeY);
@@ -188,12 +182,9 @@ module BABYLON {
                         case PhysicsImpostor.PlaneImpostor:
                         case PhysicsImpostor.BoxImpostor:
                         default:
-                            var min = bbox.minimumWorld;
-                            var max = bbox.maximumWorld;
-                            var box = max.subtract(min);
-                            var sizeX = checkWithEpsilon(box.x);
-                            var sizeY = checkWithEpsilon(box.y);
-                            var sizeZ = checkWithEpsilon(box.z);
+                            var sizeX = checkWithEpsilon(extendSize.x);
+                            var sizeY = checkWithEpsilon(extendSize.y);
+                            var sizeZ = checkWithEpsilon(extendSize.z);
 
                             bodyConfig.type.push('box');
                             bodyConfig.size.push(sizeX);
@@ -203,7 +194,7 @@ module BABYLON {
                     }
 
                     //actually not needed, but hey...
-                    i.mesh.rotationQuaternion = oldQuaternion;
+                    i.object.rotationQuaternion = oldQuaternion;
                 });
 
                 impostor.physicsBody = new OIMO.Body(bodyConfig).body//this.world.add(bodyConfig);
@@ -299,14 +290,14 @@ module BABYLON {
                 //TODO check that
                 if (impostor.physicsBody.shapes.next) {
                     var parentShape = this._getLastShape(impostor.physicsBody);
-                    impostor.mesh.position.x = parentShape.position.x * OIMO.WORLD_SCALE;
-                    impostor.mesh.position.y = parentShape.position.y * OIMO.WORLD_SCALE;
-                    impostor.mesh.position.z = parentShape.position.z * OIMO.WORLD_SCALE;
+                    impostor.object.position.x = parentShape.position.x * OIMO.WORLD_SCALE;
+                    impostor.object.position.y = parentShape.position.y * OIMO.WORLD_SCALE;
+                    impostor.object.position.z = parentShape.position.z * OIMO.WORLD_SCALE;
                 } else {
-                    impostor.mesh.position.copyFrom(impostor.physicsBody.getPosition());
+                    impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
 
                 }
-                impostor.mesh.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+                impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
             }
         }
 
