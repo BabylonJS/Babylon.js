@@ -5,8 +5,8 @@ module BABYLON {
         public color = new Color4(1, 1, 1, 1);  // color
         public position = Vector3.Zero();       // position
         public rotation = Vector3.Zero();       // rotation
-        public quaternion: Vector4;             // quaternion, will overwrite rotation
-        public scale = new Vector3(1, 1, 1);    // scale
+        public rotationQuaternion: Quaternion;    // quaternion, will overwrite rotation
+        public scaling = new Vector3(1, 1, 1);  // scaling
         public uvs = new Vector4(0, 0, 1, 1);   // uvs
         public velocity = Vector3.Zero();       // velocity
         public alive = true;                    // alive
@@ -21,6 +21,24 @@ module BABYLON {
             this._model = model;
             this.shapeId = shapeId;
             this.idxInShape = idxInShape;
+        }
+
+        //legacy support, changed scale to scaling
+        public get scale(): Vector3 {
+            return this.scaling;
+        }
+
+        public set scale(scale: Vector3) {
+            this.scaling = scale;
+        }
+
+        //legacy support, changed quaternion to rotationQuaternion
+        public get quaternion(): Quaternion {
+            return this.rotationQuaternion;
+        }
+
+        public set quaternion(q: Quaternion) {
+            this.rotationQuaternion = q;
         }
     }
 
