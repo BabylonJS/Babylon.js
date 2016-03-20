@@ -76,7 +76,7 @@
          * @param {PhysicsImpostor} impostor the impostor to add
          */
         public addImpostor(impostor: PhysicsImpostor) {
-            this._impostors.push(impostor);
+            impostor.uniqueId = this._impostors.push(impostor);
             //if no parent, generate the body
             if (!impostor.parent) {
                 this._physicsPlugin.generatePhysicsBody(impostor);
@@ -153,6 +153,14 @@
 
         public getPhysicsPlugin(): IPhysicsEnginePlugin {
             return this._physicsPlugin;
+        }
+        
+        public getImpostorForPhysicsObject(object: IPhysicsEnabledObject) {
+            for (var i = 0; i < this._impostors.length; ++i) {
+                if (this._impostors[i].object === object) {
+                    return this._impostors[i];
+                }
+            }
         }
 
         public getImpostorWithPhysicsBody(body: any): PhysicsImpostor {
