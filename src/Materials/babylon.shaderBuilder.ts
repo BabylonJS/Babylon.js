@@ -1,3 +1,9 @@
+/*
+Easy Shader Builder
+http://www.eash.space
+*/
+
+
 
 module BABYLON {
 
@@ -113,7 +119,7 @@ module BABYLON {
         direction: any;
     }
 
-    class ShaderMaterialHelperStatics {
+    export class ShaderMaterialHelperStatics {
 
         static Dark = false;
         static Light = true;
@@ -206,31 +212,7 @@ module BABYLON {
             return null;
         }
         SetUniforms(meshes: any, cameraPos: any, cameraTarget: any, mouse: any, screen: any, time: any) {
-            for (var ms in meshes) {
-                ms = meshes[ms];
-                if (ms.material && (ms.material.ShaderSetting != null || ms.material.ShaderSetting != undefined)) {
-
-                    if (ms.material.ShaderSetting.Camera)
-                        ms.material.setVector3(ShaderMaterialHelperStatics.Camera, cameraPos);
-                    if (ms.material.ShaderSetting.Center)
-                        ms.material.setVector3(ShaderMaterialHelperStatics.Center, { x: 0., y: 0., z: 0. });
-                    if (ms.material.ShaderSetting.Mouse)
-                        ms.material.setVector2(ShaderMaterialHelperStatics.Mouse, mouse);
-                    if (ms.material.ShaderSetting.Screen)
-                        ms.material.setVector2(ShaderMaterialHelperStatics.Screen, screen);
-                    if (ms.material.ShaderSetting.GlobalTime)
-                        ms.material.setVector4(ShaderMaterialHelperStatics.GlobalTime, { x: 0., y: 0., z: 0., w: 0. });
-                    if (ms.material.ShaderSetting.Look)
-                        ms.material.setVector3(ShaderMaterialHelperStatics.Look, cameraTarget);
-                    if (ms.material.ShaderSetting.Time)
-                        ms.material.setFloat(ShaderMaterialHelperStatics.Time, time);
-
-
-
-
-
-                }
-            }
+           
         }
     }
 
