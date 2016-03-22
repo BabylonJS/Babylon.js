@@ -329,7 +329,7 @@ module BABYLON {
         CustomIndexer: number;
         Fragment: string[];
         Vertex: string[];
-        static InitialieEngine() {
+        static InitializeEngine() {
             eval(BABYLON.Shader.Replace(BABYLON.Shader.Replace("BABYLON.ShaderMaterialHelper.prototype.MakeShaderMaterialForEngine=function(name,scene,shader,helpers){BABYLON.Effect.ShadersStore[name+#[QT]VertexShader#[QT]]=shader.Vertex;BABYLON.Effect.ShadersStore[name+#[QT]PixelShader#[QT]]=shader.Pixel;return new BABYLON.ShaderMaterial(name,scene,{vertex:name,fragment:name},helpers);}", "#[QT]", '"'), '#[T]', "'"));
             eval(BABYLON.Shader.Replace(BABYLON.Shader.Replace("BABYLON.ShaderMaterialHelper.prototype.DefineTexture = function (option, sc) { var tx = new BABYLON.Texture(option, sc); return tx; } ", "#[QT]", '"'), '#[T]', "'"));
 
