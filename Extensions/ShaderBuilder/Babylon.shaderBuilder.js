@@ -1,4 +1,3 @@
-
 var BABYLON;
 (function (BABYLON) {
     var ShaderMaterialHelperStatics = (function () {
@@ -168,7 +167,7 @@ var BABYLON;
             this.CustomIndexer = 1;
             Shader.Me = this;
         }
-        ShaderBuilder.InitialieEngine = function () {
+        ShaderBuilder.InitializeEngine = function () {
             eval(BABYLON.Shader.Replace(BABYLON.Shader.Replace("BABYLON.ShaderMaterialHelper.prototype.MakeShaderMaterialForEngine=function(name,scene,shader,helpers){BABYLON.Effect.ShadersStore[name+#[QT]VertexShader#[QT]]=shader.Vertex;BABYLON.Effect.ShadersStore[name+#[QT]PixelShader#[QT]]=shader.Pixel;return new BABYLON.ShaderMaterial(name,scene,{vertex:name,fragment:name},helpers);}", "#[QT]", '"'), '#[T]', "'"));
             eval(BABYLON.Shader.Replace(BABYLON.Shader.Replace("BABYLON.ShaderMaterialHelper.prototype.DefineTexture = function (option, sc) { var tx = new BABYLON.Texture(option, sc); return tx; } ", "#[QT]", '"'), '#[T]', "'"));
             eval(BABYLON.Shader.Replace(BABYLON.Shader.Replace("BABYLON.ShaderMaterialHelper.prototype.DefineCubeTexture = function (option, sc) { var tx = new BABYLON.CubeTexture(option, sc); tx.coordinatesMode = BABYLON.Texture.PLANAR_MODE; return tx; }  ", "#[QT]", '"'), '#[T]', "'"));
