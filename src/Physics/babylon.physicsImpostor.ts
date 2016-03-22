@@ -17,8 +17,8 @@ module BABYLON {
         computeWorldMatrix?(force: boolean): void;
         getChildMeshes?(): Array<AbstractMesh>;
         getVerticesData?(kind: string): Array<number> | Float32Array;
-        getIndices?(): Array<number>| Int32Array;
-        getScene?() : Scene;
+        getIndices?(): Array<number> | Int32Array;
+        getScene?(): Scene;
     }
 
     export class PhysicsImpostor {
@@ -51,10 +51,10 @@ module BABYLON {
 
         constructor(public object: IPhysicsEnabledObject, public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }, scene?: Scene) {
             //legacy support for old syntax.
-            if(!scene && object.getScene) {
+            if (!scene && object.getScene) {
                 scene = object.getScene()
             }
-            
+
             this._physicsEngine = scene.getPhysicsEngine();
             if (!this._physicsEngine) {
                 Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.")
@@ -163,7 +163,7 @@ module BABYLON {
                 return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
             }
         }
-        
+
         public getObjectCenter(): Vector3 {
             if (this.object.getBoundingInfo) {
                 return this.object.getBoundingInfo().boundingBox.center;

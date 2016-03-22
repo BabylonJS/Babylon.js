@@ -45,7 +45,7 @@ var BABYLON;
          * @param {PhysicsImpostor} impostor the impostor to add
          */
         PhysicsEngine.prototype.addImpostor = function (impostor) {
-            this._impostors.push(impostor);
+            impostor.uniqueId = this._impostors.push(impostor);
             //if no parent, generate the body
             if (!impostor.parent) {
                 this._physicsPlugin.generatePhysicsBody(impostor);
@@ -114,6 +114,13 @@ var BABYLON;
         };
         PhysicsEngine.prototype.getPhysicsPlugin = function () {
             return this._physicsPlugin;
+        };
+        PhysicsEngine.prototype.getImpostorForPhysicsObject = function (object) {
+            for (var i = 0; i < this._impostors.length; ++i) {
+                if (this._impostors[i].object === object) {
+                    return this._impostors[i];
+                }
+            }
         };
         PhysicsEngine.prototype.getImpostorWithPhysicsBody = function (body) {
             for (var i = 0; i < this._impostors.length; ++i) {

@@ -676,7 +676,7 @@ var BABYLON;
                 options = impostor;
                 impostor = impostor.impostor;
             }
-            this.physicsImpostor = new BABYLON.PhysicsImpostor(this, impostor, options);
+            this.physicsImpostor = new BABYLON.PhysicsImpostor(this, impostor, options, this.getScene());
             return this.physicsImpostor.physicsBody;
         };
         AbstractMesh.prototype.getPhysicsImpostor = function () {
@@ -921,7 +921,7 @@ var BABYLON;
             this.getScene().stopAnimation(this);
             // Physics
             if (this.physicsImpostor) {
-                this.physicsImpostor.dispose(!doNotRecurse);
+                this.physicsImpostor.dispose();
             }
             // Intersections in progress
             for (index = 0; index < this._intersectionsInProgress.length; index++) {

@@ -1,10 +1,10 @@
 var BABYLON;
 (function (BABYLON) {
     var PhysicsImpostor = (function () {
-        function PhysicsImpostor(_mesh, type, _options) {
+        function PhysicsImpostor(object, type, _options, scene) {
             var _this = this;
             if (_options === void 0) { _options = { mass: 0 }; }
-            this._mesh = _mesh;
+            this.object = object;
             this.type = type;
             this._options = _options;
             this._bodyUpdateRequired = false;
@@ -18,13 +18,13 @@ var BABYLON;
              * this function is executed by the physics engine.
              */
             this.beforeStep = function () {
-                _this.mesh.position.subtractToRef(_this._deltaPosition, _this._tmpPositionWithDelta);
+                _this.object.position.subtractToRef(_this._deltaPosition, _this._tmpPositionWithDelta);
                 //conjugate deltaRotation
                 if (_this._deltaRotationConjugated) {
-                    _this.mesh.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this._tmpRotationWithDelta);
+                    _this.object.rotationQuaternion.multiplyToRef(_this._deltaRotationConjugated, _this._tmpRotationWithDelta);
                 }
                 else {
-                    _this._tmpRotationWithDelta.copyFrom(_this.mesh.rotationQuaternion);
+                    _this._tmpRotationWithDelta.copyFrom(_this.object.rotationQuaternion);
                 }
                 _this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(_this, _this._tmpPositionWithDelta, _this._tmpRotationWithDelta);
                 _this._onBeforePhysicsStepCallbacks.forEach(function (func) {
@@ -39,9 +39,9 @@ var BABYLON;
                     func(_this);
                 });
                 _this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(_this);
-                _this.mesh.position.addInPlace(_this._deltaPosition);
+                _this.object.position.addInPlace(_this._deltaPosition);
                 if (_this._deltaRotation) {
-                    _this.mesh.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
+                    _this.object.rotationQuaternion.multiplyInPlace(_this._deltaRotation);
                 }
             };
             //event and body object due to cannon's event-based architecture.
@@ -55,18 +55,31 @@ var BABYLON;
                     });
                 }
             };
-            this._physicsEngine = this._mesh.getScene().getPhysicsEngine();
+            //legacy support for old syntax.
+            if (!scene && object.getScene) {
+                scene = object.getScene();
+            }
+            this._physicsEngine = scene.getPhysicsEngine();
             if (!this._physicsEngine) {
                 BABYLON.Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
             }
             else {
+                //set the object's quaternion, if not set
+                if (!this.object.rotationQuaternion) {
+                    if (this.object.rotation) {
+                        this.object.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(this.object.rotation.y, this.object.rotation.x, this.object.rotation.z);
+                    }
+                    else {
+                        this.object.rotationQuaternion = new BABYLON.Quaternion();
+                    }
+                }
                 //default options params
                 this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
                 this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
                 this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
                 this._joints = [];
                 //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
-                if (!this._mesh.parent) {
+                if (!this.object.parent) {
                     this._init();
                 }
             }
@@ -86,9 +99,9 @@ var BABYLON;
             }
         };
         PhysicsImpostor.prototype._getPhysicsParent = function () {
-            if (this.mesh.parent instanceof BABYLON.AbstractMesh) {
-                var parentMesh = this.mesh.parent;
-                return parentMesh.getPhysicsImpostor();
+            if (this.object.parent instanceof BABYLON.AbstractMesh) {
+                var parentMesh = this.object.parent;
+                return parentMesh.physicsImpostor;
             }
             return;
         };
@@ -111,14 +124,10 @@ var BABYLON;
                 this.parent.forceUpdate();
             }
         };
-        Object.defineProperty(PhysicsImpostor.prototype, "mesh", {
-            get: function () {
-                return this._mesh;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(PhysicsImpostor.prototype, "physicsBody", {
+            /*public get mesh(): AbstractMesh {
+                return this._mesh;
+            }*/
             /**
              * Gets the body that holds this impostor. Either its own, or its parent.
              */
@@ -147,6 +156,23 @@ var BABYLON;
         });
         PhysicsImpostor.prototype.resetUpdateFlags = function () {
             this._bodyUpdateRequired = false;
+        };
+        PhysicsImpostor.prototype.getObjectExtendSize = function () {
+            if (this.object.getBoundingInfo) {
+                this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
+                return this.object.getBoundingInfo().boundingBox.extendSize.scale(2).multiply(this.object.scaling);
+            }
+            else {
+                return PhysicsImpostor.DEFAULT_OBJECT_SIZE;
+            }
+        };
+        PhysicsImpostor.prototype.getObjectCenter = function () {
+            if (this.object.getBoundingInfo) {
+                return this.object.getBoundingInfo().boundingBox.center;
+            }
+            else {
+                return this.object.position;
+            }
         };
         /**
          * Get a specific parametes from the options parameter.
@@ -283,21 +309,12 @@ var BABYLON;
         PhysicsImpostor.prototype.wakeUp = function () {
             this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
         };
-        PhysicsImpostor.prototype.dispose = function (disposeChildren) {
-            if (disposeChildren === void 0) { disposeChildren = true; }
+        PhysicsImpostor.prototype.dispose = function () {
             this.physicsBody = null;
             if (this.parent) {
                 this.parent.forceUpdate();
             }
             else {
-                this.mesh.getChildMeshes().forEach(function (mesh) {
-                    if (mesh.physicsImpostor) {
-                        if (disposeChildren) {
-                            mesh.physicsImpostor.dispose();
-                            mesh.physicsImpostor = null;
-                        }
-                    }
-                });
             }
         };
         PhysicsImpostor.prototype.setDeltaPosition = function (position) {
@@ -310,6 +327,7 @@ var BABYLON;
             this._deltaRotation.copyFrom(rotation);
             this._deltaRotationConjugated = this._deltaRotation.conjugate();
         };
+        PhysicsImpostor.DEFAULT_OBJECT_SIZE = new BABYLON.Vector3(1, 1, 1);
         //Impostor types
         PhysicsImpostor.NoImpostor = 0;
         PhysicsImpostor.SphereImpostor = 1;

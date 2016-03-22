@@ -319,13 +319,13 @@
         }
 
         //ANY
-        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?, useArrayBuffer?: boolean, onError?: () => void, sync?:boolean): void {
+        public static LoadFile(url: string, callback: (data: any) => void, progressCallBack?: () => void, database?, useArrayBuffer?: boolean, onError?: () => void): void {
             url = Tools.CleanUrl(url);
 
             var noIndexedDB = () => {
                 var request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;
-                request.open('GET', loadUrl, !sync);
+                request.open('GET', loadUrl, true);
 
                 if (useArrayBuffer) {
                     request.responseType = "arraybuffer";
