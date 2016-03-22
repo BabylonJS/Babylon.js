@@ -5,7 +5,7 @@ var BABYLON;
             this.color = new BABYLON.Color4(1, 1, 1, 1); // color
             this.position = BABYLON.Vector3.Zero(); // position
             this.rotation = BABYLON.Vector3.Zero(); // rotation
-            this.scale = new BABYLON.Vector3(1, 1, 1); // scale
+            this.scaling = new BABYLON.Vector3(1, 1, 1); // scaling
             this.uvs = new BABYLON.Vector4(0, 0, 1, 1); // uvs
             this.velocity = BABYLON.Vector3.Zero(); // velocity
             this.alive = true; // alive
@@ -15,6 +15,28 @@ var BABYLON;
             this.shapeId = shapeId;
             this.idxInShape = idxInShape;
         }
+        Object.defineProperty(SolidParticle.prototype, "scale", {
+            //legacy support, changed scale to scaling
+            get: function () {
+                return this.scaling;
+            },
+            set: function (scale) {
+                this.scaling = scale;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SolidParticle.prototype, "quaternion", {
+            //legacy support, changed quaternion to rotationQuaternion
+            get: function () {
+                return this.rotationQuaternion;
+            },
+            set: function (q) {
+                this.rotationQuaternion = q;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return SolidParticle;
     })();
     BABYLON.SolidParticle = SolidParticle;

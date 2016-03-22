@@ -231,10 +231,10 @@ var BABYLON;
             this._copy.rotation.x = 0;
             this._copy.rotation.y = 0;
             this._copy.rotation.z = 0;
-            this._copy.quaternion = null;
-            this._copy.scale.x = 1;
-            this._copy.scale.y = 1;
-            this._copy.scale.z = 1;
+            this._copy.rotationQuaternion = null;
+            this._copy.scaling.x = 1;
+            this._copy.scaling.y = 1;
+            this._copy.scaling.z = 1;
             this._copy.uvs.x = 0;
             this._copy.uvs.y = 0;
             this._copy.uvs.z = 1;
@@ -250,11 +250,8 @@ var BABYLON;
             if (options && options.positionFunction) {
                 options.positionFunction(this._copy, idx, idxInShape);
             }
-            if (this._copy.quaternion) {
-                this._quaternion.x = this._copy.quaternion.x;
-                this._quaternion.y = this._copy.quaternion.y;
-                this._quaternion.z = this._copy.quaternion.z;
-                this._quaternion.w = this._copy.quaternion.w;
+            if (this._copy.rotationQuaternion) {
+                this._quaternion.copyFrom(this._copy.rotationQuaternion);
             }
             else {
                 this._yaw = this._copy.rotation.y;
@@ -270,9 +267,9 @@ var BABYLON;
                 if (options && options.vertexFunction) {
                     options.vertexFunction(this._copy, this._vertex, i);
                 }
-                this._vertex.x *= this._copy.scale.x;
-                this._vertex.y *= this._copy.scale.y;
-                this._vertex.z *= this._copy.scale.z;
+                this._vertex.x *= this._copy.scaling.x;
+                this._vertex.y *= this._copy.scaling.y;
+                this._vertex.z *= this._copy.scaling.z;
                 BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                 positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
                 if (meshUV) {
@@ -366,11 +363,8 @@ var BABYLON;
             if (particle._model._positionFunction) {
                 particle._model._positionFunction(this._copy, particle.idx, particle.idxInShape);
             }
-            if (this._copy.quaternion) {
-                this._quaternion.x = this._copy.quaternion.x;
-                this._quaternion.y = this._copy.quaternion.y;
-                this._quaternion.z = this._copy.quaternion.z;
-                this._quaternion.w = this._copy.quaternion.w;
+            if (this._copy.rotationQuaternion) {
+                this._quaternion.copyFrom(this._copy.rotationQuaternion);
             }
             else {
                 this._yaw = this._copy.rotation.y;
@@ -387,9 +381,9 @@ var BABYLON;
                 if (particle._model._vertexFunction) {
                     particle._model._vertexFunction(this._copy, this._vertex, pt); // recall to stored vertexFunction
                 }
-                this._vertex.x *= this._copy.scale.x;
-                this._vertex.y *= this._copy.scale.y;
-                this._vertex.z *= this._copy.scale.z;
+                this._vertex.x *= this._copy.scaling.x;
+                this._vertex.y *= this._copy.scaling.y;
+                this._vertex.z *= this._copy.scaling.z;
                 BABYLON.Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
                 this._positions32[particle._pos + pt * 3] = this._copy.position.x + this._rotated.x;
                 this._positions32[particle._pos + pt * 3 + 1] = this._copy.position.y + this._rotated.y;
@@ -401,10 +395,10 @@ var BABYLON;
             particle.rotation.x = 0;
             particle.rotation.y = 0;
             particle.rotation.z = 0;
-            particle.quaternion = null;
-            particle.scale.x = 1;
-            particle.scale.y = 1;
-            particle.scale.z = 1;
+            particle.rotationQuaternion = null;
+            particle.scaling.x = 1;
+            particle.scaling.y = 1;
+            particle.scaling.z = 1;
         };
         /**
         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
@@ -484,11 +478,8 @@ var BABYLON;
                     this._particle.rotation.y = 0.0;
                 }
                 if (this._computeParticleRotation) {
-                    if (this._particle.quaternion) {
-                        this._quaternion.x = this._particle.quaternion.x;
-                        this._quaternion.y = this._particle.quaternion.y;
-                        this._quaternion.z = this._particle.quaternion.z;
-                        this._quaternion.w = this._particle.quaternion.w;
+                    if (this._particle.rotationQuaternion) {
+                        this._quaternion.copyFrom(this._particle.rotationQuaternion);
                     }
                     else {
                         this._yaw = this._particle.rotation.y;
@@ -509,9 +500,9 @@ var BABYLON;
                         this.updateParticleVertex(this._particle, this._vertex, pt);
                     }
                     // positions
-                    this._vertex.x *= this._particle.scale.x;
-                    this._vertex.y *= this._particle.scale.y;
-                    this._vertex.z *= this._particle.scale.z;
+                    this._vertex.x *= this._particle.scaling.x;
+                    this._vertex.y *= this._particle.scaling.y;
+                    this._vertex.z *= this._particle.scaling.z;
                     this._w = (this._vertex.x * this._rotMatrix.m[3]) + (this._vertex.y * this._rotMatrix.m[7]) + (this._vertex.z * this._rotMatrix.m[11]) + this._rotMatrix.m[15];
                     this._rotated.x = ((this._vertex.x * this._rotMatrix.m[0]) + (this._vertex.y * this._rotMatrix.m[4]) + (this._vertex.z * this._rotMatrix.m[8]) + this._rotMatrix.m[12]) / this._w;
                     this._rotated.y = ((this._vertex.x * this._rotMatrix.m[1]) + (this._vertex.y * this._rotMatrix.m[5]) + (this._vertex.z * this._rotMatrix.m[9]) + this._rotMatrix.m[13]) / this._w;

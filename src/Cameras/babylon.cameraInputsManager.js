@@ -97,7 +97,7 @@ var BABYLON;
             var inputs = {};
             for (var cam in this.attached) {
                 var input = this.attached[cam];
-                var res = BABYLON.SerializationHelper.Serialize(input, serializedCamera);
+                var res = BABYLON.SerializationHelper.Serialize(input);
                 inputs[input.getTypeName()] = res;
             }
             serializedCamera.inputsmgr = inputs;

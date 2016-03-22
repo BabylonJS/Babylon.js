@@ -2042,20 +2042,20 @@ var BABYLON;
                 parts = parts.parts;
             }
             var mainMesh = parts[0].mesh;
-            mainMesh.physicsImpostor = new BABYLON.PhysicsImpostor(mainMesh, parts[0].impostor, options);
+            mainMesh.physicsImpostor = new BABYLON.PhysicsImpostor(mainMesh, parts[0].impostor, options, this);
             for (var index = 1; index < parts.length; index++) {
                 var mesh = parts[index].mesh;
                 if (mesh.parent !== mainMesh) {
                     mesh.position = mesh.position.subtract(mainMesh.position);
                     mesh.parent = mainMesh;
                 }
-                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parts[index].impostor, options);
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parts[index].impostor, options, this);
             }
             mainMesh.physicsImpostor.forceUpdate();
         };
         Scene.prototype.deleteCompoundImpostor = function (compound) {
             var mesh = compound.parts[0].mesh;
-            mesh.physicsImpostor.dispose(true);
+            mesh.physicsImpostor.dispose();
             mesh.physicsImpostor = null;
         };
         // Misc.
