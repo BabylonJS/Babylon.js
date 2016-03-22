@@ -7,25 +7,25 @@ http://www.eash.space
 
 module BABYLON {
 
-    interface ShaderStruct {
+    export interface ShaderStruct {
         Pixel: string,
         Vertex: string
     }
 
-    interface IColor {
+   export interface IColor {
         r: any;
         g: any;
         b: any;
         a: any;
     }
 
-    interface IVector3 {
+   export interface IVector3 {
         x: any;
         y: any;
         z: any;
     }
 
-    interface ILight {
+   export interface ILight {
         direction: string;
         rotation: IVector3;
         color: IColor;
@@ -48,20 +48,20 @@ module BABYLON {
         parallel: boolean
     }
 
-    interface ITexture {
+   export interface ITexture {
         key: string,
         inVertex: boolean,
         inFragment: boolean,
         indexedDB: number
     }
 
-    interface IEffect {
+   export interface IEffect {
         px: any,
         py: any,
         pz: any,
         pr: any,
     }
-    interface IMap {
+   export interface IMap {
         path: string,
         x: any,
         y: any,
@@ -85,7 +85,7 @@ module BABYLON {
 
     }
 
-    interface IReflectMap {
+   export interface IReflectMap {
         path: string, 
         x: any,
         y: any,
@@ -105,7 +105,7 @@ module BABYLON {
         refractMap: string,
     }
 
-    interface IReplaceColor {
+   export interface IReplaceColor {
         colorIndex: number,
         colorStep: number,
         indexToEnd: boolean,
@@ -113,7 +113,7 @@ module BABYLON {
         rangePower: any
     }
 
-    interface IRange {
+   export interface IRange {
         start: any;
         end: any;
         direction: any;
