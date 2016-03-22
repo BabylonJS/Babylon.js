@@ -23,6 +23,9 @@ var BABYLON;
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
             var pointers = new BABYLON.SmartCollection();
             var previousPinchDistance = 0;
+            this._onContextMenu = function (evt) {
+                evt.preventDefault();
+            };
             if (!this.camera._useCtrlForPanning) {
                 element.addEventListener("contextmenu", this._onContextMenu, false);
             }
@@ -59,9 +62,6 @@ var BABYLON;
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }
-            };
-            this._onContextMenu = function (evt) {
-                evt.preventDefault();
             };
             this._onPointerMove = function (evt) {
                 if (!noPreventDefault) {

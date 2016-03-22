@@ -11137,7 +11137,7 @@ var BABYLON;
             BABYLON.serializeAsVector3()
         ], Camera.prototype, "position", void 0);
         __decorate([
-            BABYLON.serialize()
+            BABYLON.serializeAsVector3()
         ], Camera.prototype, "upVector", void 0);
         __decorate([
             BABYLON.serialize()
@@ -11328,7 +11328,7 @@ var BABYLON;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            if (this._onMouseDown === undefined) {
+            if (!this._onMouseDown) {
                 var camera = this.camera;
                 var engine = this.camera.getEngine();
                 this._onMouseDown = function (evt) {
@@ -11423,7 +11423,7 @@ var BABYLON;
         }
         FreeCameraKeyboardMoveInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            if (this._onKeyDown === undefined) {
+            if (!this._onKeyDown) {
                 this._onKeyDown = function (evt) {
                     if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         _this.keysDown.indexOf(evt.keyCode) !== -1 ||
@@ -12074,6 +12074,9 @@ var BABYLON;
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
             var pointers = new BABYLON.SmartCollection();
             var previousPinchDistance = 0;
+            this._onContextMenu = function (evt) {
+                evt.preventDefault();
+            };
             if (!this.camera._useCtrlForPanning) {
                 element.addEventListener("contextmenu", this._onContextMenu, false);
             }
@@ -12110,9 +12113,6 @@ var BABYLON;
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }
-            };
-            this._onContextMenu = function (evt) {
-                evt.preventDefault();
             };
             this._onPointerMove = function (evt) {
                 if (!noPreventDefault) {

@@ -586,7 +586,7 @@ var BABYLON;
             BABYLON.serializeAsVector3()
         ], Camera.prototype, "position", void 0);
         __decorate([
-            BABYLON.serialize()
+            BABYLON.serializeAsVector3()
         ], Camera.prototype, "upVector", void 0);
         __decorate([
             BABYLON.serialize()
