@@ -18,7 +18,7 @@ module BABYLON {
         public keysRight = [39];
 
         attachControl(element : HTMLElement, noPreventDefault?: boolean) {
-            if (this._onKeyDown === undefined) {
+            if (!this._onKeyDown) {
 
                 this._onKeyDown = evt => {
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||

@@ -38,6 +38,10 @@ module BABYLON {
             var pointers = new SmartCollection();
             var previousPinchDistance = 0;
 
+            this._onContextMenu = evt => {
+                evt.preventDefault();
+            };
+
             if (!this.camera._useCtrlForPanning) {
                 element.addEventListener("contextmenu", this._onContextMenu, false);
             }
@@ -82,10 +86,6 @@ module BABYLON {
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }
-            };
-
-            this._onContextMenu = evt => {
-                evt.preventDefault();
             };
 
             this._onPointerMove = evt => {

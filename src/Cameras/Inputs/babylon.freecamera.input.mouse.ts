@@ -12,7 +12,7 @@ module BABYLON {
         private previousPosition: { x: number, y: number };
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean){                     
-            if (this._onMouseDown === undefined) {
+            if (!this._onMouseDown) {
                 var camera = this.camera;
                 var engine = this.camera.getEngine();
                 

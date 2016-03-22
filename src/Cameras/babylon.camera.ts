@@ -62,7 +62,7 @@
         @serializeAsVector3()
         public position: Vector3;
 
-        @serialize()
+        @serializeAsVector3()
         public upVector = Vector3.Up();
 
         @serialize()
