@@ -1357,4 +1357,5 @@ void main(void) { \n\
 
     }
 } 
- 
+
+eval("console.log('Enable ShaderBuilder ')");
