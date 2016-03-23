@@ -44,6 +44,34 @@
             return Mesh._CAP_ALL;
         }
 
+        // Events 
+
+        /**
+         * An event triggered before rendering the mesh
+         * @type {BABYLON.Observable}
+         */
+        public onBeforeRenderObservable = new Observable<Mesh>();
+
+        /**
+        * An event triggered after rendering the mesh
+        * @type {BABYLON.Observable}
+        */
+        public onAfterRenderObservable = new Observable<Mesh>();
+
+        /**
+        * An event triggered before drawing the mesh
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeDrawObservable = new Observable<Mesh>();
+
+        private _onBeforeDrawObserver: Observer<Mesh>;
+        public set onBeforeDraw(callback: () => void) {
+            if (this._onBeforeDrawObserver) {
+                this.onBeforeDrawObservable.remove(this._onBeforeDrawObserver);
+            }
+            this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
+        }
+
         // Members
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
         public instances = new Array<InstancedMesh>();
@@ -51,12 +79,9 @@
         public _binaryInfo: any;
         private _LODLevels = new Array<Internals.MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
-        public onBeforeDraw: () => void;
 
         // Private
         public _geometry: Geometry;
-        private _onBeforeRenderCallbacks = new Array<(mesh: AbstractMesh) => void>();
-        private _onAfterRenderCallbacks = new Array<(mesh: AbstractMesh) => void>();
         public _delayInfo; //ANY
         public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
         public _visibleInstances: any = {};
@@ -564,9 +589,7 @@
                 return;
             }
 
-            if (this.onBeforeDraw) {
-                this.onBeforeDraw();
-            }
+            this.onBeforeDrawObservable.notifyObservers(this);
 
             var engine = this.getScene().getEngine();
 
@@ -593,27 +616,19 @@
         }
 
         public registerBeforeRender(func: (mesh: AbstractMesh) => void): void {
-            this._onBeforeRenderCallbacks.push(func);
+            this.onBeforeRenderObservable.add(func);
         }
 
         public unregisterBeforeRender(func: (mesh: AbstractMesh) => void): void {
-            var index = this._onBeforeRenderCallbacks.indexOf(func);
-
-            if (index > -1) {
-                this._onBeforeRenderCallbacks.splice(index, 1);
-            }
+            this.onBeforeRenderObservable.removeCallback(func);
         }
 
         public registerAfterRender(func: (mesh: AbstractMesh) => void): void {
-            this._onAfterRenderCallbacks.push(func);
+            this.onAfterRenderObservable.add(func);
         }
 
         public unregisterAfterRender(func: (mesh: AbstractMesh) => void): void {
-            var index = this._onAfterRenderCallbacks.indexOf(func);
-
-            if (index > -1) {
-                this._onAfterRenderCallbacks.splice(index, 1);
-            }
+            this.onAfterRenderObservable.removeCallback(func);
         }
 
         public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
@@ -753,9 +768,7 @@
             }
 
             var callbackIndex: number;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex](this);
-            }
+            this.onBeforeRenderObservable.notifyObservers(this);
 
             var engine = scene.getEngine();
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
@@ -818,9 +831,7 @@
                 engine.setAlphaMode(currentMode);
             }
 
-            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
-                this._onAfterRenderCallbacks[callbackIndex](this);
-            }
+            this.onAfterRenderObservable.notifyObservers(this);
         }
 
         public getEmittedParticleSystems(): ParticleSystem[] {
