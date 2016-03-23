@@ -7,53 +7,83 @@
         private _viewPort: Viewport;
         private _screenCoordinates: Vector2 = Vector2.Zero();
         private _cachedDefines: string;
-        private _customMeshPosition: Vector3;
+
+        /**
+        * If not undefined, the mesh position is computed from the attached node position
+        * @type {{position: Vector3}}
+        */
+        public attachedNode: { position: Vector3 };
+
+        /**
+        * Custom position of the mesh. Used if "useCustomMeshPosition" is set to "true"
+        * @type {Vector3}
+        */
+        @serializeAsVector3()
+        public customMeshPosition: Vector3 = Vector3.Zero();
 
         /**
         * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
         * @type {boolean}
         */
+        @serialize()
         public useCustomMeshPosition: boolean = false;
+
         /**
         * If the post-process should inverse the light scattering direction
         * @type {boolean}
         */
+        @serialize()
         public invert: boolean = true;
+
         /**
         * The internal mesh used by the post-process
         * @type {boolean}
         */
+        @serializeAsMeshReference()
         public mesh: Mesh;
-        /**
-        * Set to true to use the diffuseColor instead of the diffuseTexture
-        * @type {boolean}
-        */
-        public useDiffuseColor: boolean = false;
+
+        
+        public get useDiffuseColor(): boolean {
+            Tools.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
+            return false;
+        }
+
+        public set useDiffuseColor(useDiffuseColor: boolean) {
+            Tools.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
+        }
 
         /**
         * Array containing the excluded meshes not rendered in the internal pass
         */
+        @serialize()
         public excludedMeshes = new Array<AbstractMesh>();
 
         /**
         * Controls the overall intensity of the post-process
         * @type {number}
         */
+        @serialize()
         public exposure = 0.3;
+
         /**
         * Dissipates each sample's contribution in range [0, 1]
         * @type {number}
         */
+        @serialize()
         public decay = 0.96815;
+
         /**
         * Controls the overall intensity of each sample
         * @type {number}
         */
+        @serialize()
         public weight = 0.58767;
+
         /**
         * Controls the density of each sample
         * @type {number}
         */
+        @serialize()
         public density = 0.926;
 
         /**
@@ -104,41 +134,20 @@
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var mesh = subMesh.getMesh();
 
+            // Render this.mesh as default
+            if (mesh === this.mesh) {
+                return mesh.material.isReady(mesh);
+            }
+
             var defines = [];
             var attribs = [VertexBuffer.PositionKind];
             var material: any = subMesh.getMaterial();
             var needUV: boolean = false;
 
-            // Render this.mesh as default
-            if (mesh === this.mesh) {
-                if (this.useDiffuseColor) {
-                    defines.push("#define DIFFUSE_COLOR_RENDER");
-                }
-                else if (material) {
-                    if (material.diffuseTexture !== undefined) {
-                        defines.push("#define BASIC_RENDER");
-                    } else {
-                        defines.push("#define DIFFUSE_COLOR_RENDER");
-                    }
-                }
-                defines.push("#define NEED_UV");
-                needUV = true;
-            }
-
             // Alpha test
             if (material) {
                 if (material.needAlphaTesting()) {
                     defines.push("#define ALPHATEST");
-                }
-
-                if (material.opacityTexture !== undefined) {
-                    defines.push("#define OPACITY");
-                    if (material.opacityTexture.getAlphaFromRGB) {
-                        defines.push("#define OPACITYRGB");
-                    }
-                    if (!needUV) {
-                        defines.push("#define NEED_UV");
-                    }
                 }
 
                 if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -178,8 +187,8 @@
                 this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect(
                     { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "opacityLevel", "color"],
-                    ["diffuseSampler", "opacitySampler"], join);
+                    ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                    ["diffuseSampler"], join);
             }
 
             return this._volumetricLightScatteringPass.isReady();
@@ -190,7 +199,7 @@
          * @param {BABYLON.Vector3} The new custom light position
          */
         public setCustomMeshPosition(position: Vector3): void {
-            this._customMeshPosition = position;
+            this.customMeshPosition = position;
         }
 
         /**
@@ -198,7 +207,7 @@
          * @return {BABYLON.Vector3} The custom light position
          */
         public getCustomMeshPosition(): Vector3 {
-            return this._customMeshPosition;
+            return this.customMeshPosition;
         }
 
         /**
@@ -262,42 +271,44 @@
                 }
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null);
-
+                
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
-                    engine.enableEffect(this._volumetricLightScatteringPass);
-                    mesh._bind(subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode);
-                    var material: any = subMesh.getMaterial();
+                    var effect: Effect = this._volumetricLightScatteringPass;
+                    if (mesh === this.mesh) {
+                        effect = subMesh.getMaterial().getEffect();
+                    }
 
-                    this._volumetricLightScatteringPass.setMatrix("viewProjection", scene.getTransformMatrix());
+                    engine.enableEffect(effect);
+                    mesh._bind(subMesh, effect, Material.TriangleFillMode);
 
-                    // Alpha test
-                    if (material && (mesh === this.mesh || material.needAlphaTesting() || material.opacityTexture !== undefined)) {
-                        var alphaTexture = material.getAlphaTestTexture();
+                    if (mesh === this.mesh) {
+                        subMesh.getMaterial().bind(mesh.getWorldMatrix(), mesh);
+                    }
+                    else {
+                        var material: any = subMesh.getMaterial();
 
-                        if ((this.useDiffuseColor || alphaTexture === undefined) && mesh === this.mesh) {
-                            this._volumetricLightScatteringPass.setColor3("color", material.diffuseColor);
-                        }
-                        if (material.needAlphaTesting() || (mesh === this.mesh && alphaTexture && !this.useDiffuseColor)) {
+                        this._volumetricLightScatteringPass.setMatrix("viewProjection", scene.getTransformMatrix());
+
+                        // Alpha test
+                        if (material && material.needAlphaTesting()) {
+                            var alphaTexture = material.getAlphaTestTexture();
+                            
                             this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
+
                             if (alphaTexture) {
                                 this._volumetricLightScatteringPass.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                             }
                         }
 
-                        if (material.opacityTexture !== undefined) {
-                            this._volumetricLightScatteringPass.setTexture("opacitySampler", material.opacityTexture);
-                            this._volumetricLightScatteringPass.setFloat("opacityLevel", material.opacityTexture.level);
+                        // Bones
+                        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                            this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                         }
-                    }
-
-                    // Bones
-                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                        this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
                     // Draw
                     mesh._processRendering(subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                        (isInstance, world) => this._volumetricLightScatteringPass.setMatrix("world", world));
+                        (isInstance, world) => effect.setMatrix("world", world));
                 }
             };
 
@@ -369,8 +380,19 @@
 
         private _updateMeshScreenCoordinates(scene: Scene): void {
             var transform = scene.getTransformMatrix();
-            var meshPosition = this.mesh.parent ? this.mesh.getAbsolutePosition() : this.mesh.position;
-            var pos = Vector3.Project(this.useCustomMeshPosition ? this._customMeshPosition : meshPosition, Matrix.Identity(), transform, this._viewPort);
+            var meshPosition: Vector3;
+
+            if (this.useCustomMeshPosition) {
+                meshPosition = this.customMeshPosition;
+            }
+            else if (this.attachedNode) {
+                meshPosition = this.attachedNode.position;
+            }
+            else {
+                meshPosition = this.mesh.parent ? this.mesh.getAbsolutePosition() : this.mesh.position;
+            }
+
+            var pos = Vector3.Project(meshPosition, Matrix.Identity(), transform, this._viewPort);
 
             this._screenCoordinates.x = pos.x / this._viewPort.width;
             this._screenCoordinates.y = pos.y / this._viewPort.height;
