@@ -172,6 +172,27 @@
             return new IntersectionInfo(bu, bv, distance);
         }
 
+        public intersectsPlane(plane: Plane): IntersectionInfo {
+            var distance: number;
+            var result1 = Vector3.Dot(plane.normal, this.direction);
+            if (Math.abs(result1) < 9.99999997475243E-07) {
+                return null;
+            }
+            else {
+                var result2 = Vector3.Dot(plane.normal, this.origin);
+                distance = (-plane.d - result2) / result1;
+                if (distance < 0.0) {
+                    if (distance < -9.99999997475243E-07) {
+                        return null;
+                    } else {
+                        distance = 0;
+                    }
+                }
+
+                return new IntersectionInfo(undefined, undefined, distance);
+            }
+        }
+        
         // Statics
         public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
             var start = Vector3.Unproject(new Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
