@@ -1093,6 +1093,23 @@
 
             this._intersectionsInProgress = [];
 
+            // Lights
+            var lights = this.getScene().lights;
+
+            lights.forEach((light: Light) => {
+                var meshIndex = light.includedOnlyMeshes.indexOf(this);
+
+                if (meshIndex !== -1) {
+                    light.includedOnlyMeshes.splice(meshIndex, 1);
+                }
+
+                meshIndex = light.excludedMeshes.indexOf(this);
+
+                if (meshIndex !== -1) {
+                    light.excludedMeshes.splice(meshIndex, 1);
+                }
+            });
+
             // Edges
             if (this._edgesRenderer) {
                 this._edgesRenderer.dispose();

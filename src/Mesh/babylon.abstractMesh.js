@@ -909,6 +909,7 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
+            var _this = this;
             var index;
             // Action manager
             if (this.actionManager) {
@@ -930,6 +931,18 @@ var BABYLON;
                 other._intersectionsInProgress.splice(pos, 1);
             }
             this._intersectionsInProgress = [];
+            // Lights
+            var lights = this.getScene().lights;
+            lights.forEach(function (light) {
+                var meshIndex = light.includedOnlyMeshes.indexOf(_this);
+                if (meshIndex !== -1) {
+                    light.includedOnlyMeshes.splice(meshIndex, 1);
+                }
+                meshIndex = light.excludedMeshes.indexOf(_this);
+                if (meshIndex !== -1) {
+                    light.excludedMeshes.splice(meshIndex, 1);
+                }
+            });
             // Edges
             if (this._edgesRenderer) {
                 this._edgesRenderer.dispose();
