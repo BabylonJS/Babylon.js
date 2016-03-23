@@ -240,7 +240,7 @@
             return this;
         }
         /**
-         * Returns the LOD level mesh at the passed distance or null is not found.  
+         * Returns the LOD level mesh at the passed distance or null if not found.  
          * It is related to the method `addLODLevel(distance, mesh)`.  
          */
         public getLODLevelAtDistance(distance: number): Mesh {
@@ -429,7 +429,7 @@
         }
 
         /**
-         * Boolean : true if the normals aren't to be recomputed on next update.
+         * Boolean : true if the normals aren't to be recomputed on next mesh `positions` array update.
          * This property is pertinent only for updatable parametric shapes.
          */
         public get areNormalsFrozen(): boolean {
@@ -439,7 +439,7 @@
         /**  
          * This function affects parametric shapes on update only : ribbons, tubes, etc. 
          * It has no effect at all on other shapes.
-         * It prevents the mesh normals from being recomputed on next position update.
+         * It prevents the mesh normals from being recomputed on next `positions` array update.
          */
         public freezeNormals(): void {
             this._areNormalsFrozen = true;
@@ -448,7 +448,7 @@
         /**  
          * This function affects parametric shapes on update only : ribbons, tubes, etc. 
          * It has no effect at all on other shapes.
-         * It reactivates the mesh normals computation if it was frozen.
+         * It reactivates the mesh normals computation if it was previously frozen.
          */
         public unfreezeNormals(): void {
             this._areNormalsFrozen = false;
@@ -590,10 +590,10 @@
         }
 
         /**
-         * This method updates the postions of a updatable mesh according to the `positionFunction` returned values.
+         * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
          * tuto : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions  
          * The parameter `positionFunction` is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything.
-         * The parameter `computeNormals` is a boolean (default true) to enable/disable the mesh normal recomputation after the mesh position update.     
+         * The parameter `computeNormals` is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update.     
          */
         public updateMeshPositions(positionFunction, computeNormals: boolean = true): void {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
