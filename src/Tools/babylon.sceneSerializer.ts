@@ -112,19 +112,12 @@
         }
 
         // Physics
-        if (mesh.getPhysicsImpostor().type !== PhysicsEngine.NoImpostor) {
+        //TODO implement correct serialization for physics impostors.
+        if (mesh.getPhysicsImpostor()) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
-
-            switch (mesh.getPhysicsImpostor().type) {
-                case PhysicsEngine.BoxImpostor:
-                    serializationObject.physicsImpostor = 1;
-                    break;
-                case PhysicsEngine.SphereImpostor:
-                    serializationObject.physicsImpostor = 2;
-                    break;
-            }
+            serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
 
         // Instances
