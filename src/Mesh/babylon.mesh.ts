@@ -1082,8 +1082,16 @@
         }
 
         // Clone
-        public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): Mesh {
-            return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+        public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
+            var mesh = new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+            //physics clone
+            if(clonePhysicsImpostor && this.getScene().getPhysicsEngine()) {
+                var impostor = this.getScene().getPhysicsEngine().getImpostorForPhysicsObject(this);
+                if(impostor) {
+                    mesh.physicsImpostor = impostor.clone(mesh);
+                }
+            }
+            return mesh;
         }
 
         // Dispose

@@ -49,13 +49,13 @@ module BABYLON {
             otherImpostor: PhysicsImpostor
         }>;
 
-        constructor(public object: IPhysicsEnabledObject, public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }, scene?: Scene) {
+        constructor(public object: IPhysicsEnabledObject, public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }, private _scene?: Scene) {
             //legacy support for old syntax.
-            if (!scene && object.getScene) {
-                scene = object.getScene()
+            if (!this._scene && object.getScene) {
+                this._scene = object.getScene()
             }
 
-            this._physicsEngine = scene.getPhysicsEngine();
+            this._physicsEngine = this._scene.getPhysicsEngine();
             if (!this._physicsEngine) {
                 Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.")
             } else {
@@ -376,6 +376,10 @@ module BABYLON {
          */
         public wakeUp() {
             this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
+        }
+        
+        public clone(newObject:IPhysicsEnabledObject) {
+            return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         }
 
         public dispose(/*disposeChildren: boolean = true*/) {
