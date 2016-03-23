@@ -27,6 +27,42 @@
             return AbstractMesh._BILLBOARDMODE_ALL;
         }
 
+        // Events
+
+        /**
+        * An event triggered when this mesh collides with another one
+        * @type {BABYLON.Observable}
+        */
+        public onCollideObservable = new Observable<AbstractMesh>();
+
+        private _onCollideObserver: Observer<AbstractMesh>;
+        public set onCollide(callback: () => void) {
+            if (this._onCollideObserver) {
+                this.onCollideObservable.remove(this._onCollideObserver);
+            }
+            this._onCollideObserver = this.onCollideObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when the collision's position changes
+        * @type {BABYLON.Observable}
+        */
+        public onCollisionPositionChangeObservable = new Observable<Vector3>();
+
+        private _onCollisionPositionChangeObserver: Observer<Vector3>;
+        public set onCollisionPositionChange(callback: () => void) {
+            if (this._onCollisionPositionChangeObserver) {
+                this.onCollisionPositionChangeObservable.remove(this._onCollisionPositionChangeObserver);
+            }
+            this._onCollisionPositionChangeObserver = this.onCollisionPositionChangeObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after the world matrix is updated
+        * @type {BABYLON.Observable}
+        */
+        public onAfterWorldMatrixUpdateObservable = new Observable<AbstractMesh>();
+
         // Properties
         public definedFacingForward = true; // orientation for POV movement & rotation
         public position = new Vector3(0, 0, 0);
@@ -81,8 +117,6 @@
         private _oldPositionForCollisions = new Vector3(0, 0, 0);
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
         private _newPositionForCollisions = new Vector3(0, 0, 0);
-        public onCollide: (collidedMesh: AbstractMesh) => void;
-        public onCollisionPositionChange: (newPosition: Vector3) => void;
 
         // Attach to bone
         private _meshToBoneReferal: AbstractMesh;
@@ -112,8 +146,6 @@
         public subMeshes: SubMesh[];
         public _submeshesOctree: Octree<SubMesh>;
         public _intersectionsInProgress = new Array<AbstractMesh>();
-
-        private _onAfterWorldMatrixUpdate = new Array<(mesh: AbstractMesh) => void>();
 
         private _isWorldMatrixFrozen = false;
 
@@ -159,13 +191,13 @@
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
-        public toString(fullDetails? : boolean) : string {
+        public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name + ", isInstance: " + (this instanceof InstancedMesh ? "YES" : "NO");
             ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
             if (this._skeleton) {
                 ret += ", skeleton: " + this._skeleton.name;
             }
-            if (fullDetails){
+            if (fullDetails) {
                 ret += ", billboard mode: " + (["NONE", "X", "Y", null, "Z", null, null, "ALL"])[this.billboardMode];
                 ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
             }
@@ -272,7 +304,7 @@
 
         public _preActivateForIntermediateRendering(renderId: number): void {
         }
-                
+
         public _activate(renderId: number): void {
             this._renderId = renderId;
         }
@@ -636,9 +668,7 @@
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
 
             // Callbacks
-            for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
-                this._onAfterWorldMatrixUpdate[callbackIndex](this);
-            }
+            this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
 
             if (!this._poseMatrix) {
                 this._poseMatrix = Matrix.Invert(this._worldMatrix);
@@ -652,15 +682,11 @@
         * @param func: callback function to add
         */
         public registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void {
-            this._onAfterWorldMatrixUpdate.push(func);
+            this.onAfterWorldMatrixUpdateObservable.add(func);
         }
 
         public unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): void {
-            var index = this._onAfterWorldMatrixUpdate.indexOf(func);
-
-            if (index > -1) {
-                this._onAfterWorldMatrixUpdate.splice(index, 1);
-            }
+            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
         }
 
         public setPositionWithLocalVector(vector3: Vector3): void {
@@ -881,13 +907,11 @@
                 this.position.addInPlace(this._diffPositionForCollisions);
             }
 
-            if (this.onCollide && collidedMesh) {
-                this.onCollide(collidedMesh);
+            if (collidedMesh) {
+                this.onCollideObservable.notifyObservers(collidedMesh);
             }
 
-            if (this.onCollisionPositionChange) {
-                this.onCollisionPositionChange(this.position);
-            }
+            this.onCollisionPositionChangeObservable.notifyObservers(this.position);
         }
 
         // Submeshes octree
@@ -1147,7 +1171,7 @@
 
             super.dispose();
 
-            this._onAfterWorldMatrixUpdate = [];
+            this.onAfterWorldMatrixUpdateObservable.clear();
 
             this._isDisposed = true;
 
