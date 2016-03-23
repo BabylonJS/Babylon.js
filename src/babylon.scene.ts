@@ -37,29 +37,140 @@
         public autoClear = true;
         public clearColor: any = new Color3(0.2, 0.2, 0.3);
         public ambientColor = new Color3(0, 0, 0);
-        /**
-        * A function to be executed before rendering this scene
-        * @type {Function}
-        */
-        public beforeRender: () => void;
-        /**
-        * A function to be executed after rendering this scene
-        * @type {Function}
-        */
-        public afterRender: () => void;
-        /**
-        * A function to be executed when this scene is disposed.
-        * @type {Function}
-        */
-        public onDispose: () => void;
-        public beforeCameraRender: (camera: Camera) => void;
-        public afterCameraRender: (camera: Camera) => void;
+
         public forceWireframe = false;
         public forcePointsCloud = false;
         public forceShowBoundingBoxes = false;
         public clipPlane: Plane;
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
+
+        // Events
+
+        /**
+        * An event triggered when the scene is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Scene>();
+
+        private _onDisposeObserver: Observer<Scene>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        /**
+        * An event triggered before rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeRenderObservable = new Observable<Scene>();
+
+        private _onBeforeRenderObserver: Observer<Scene>;
+        public set beforeRender(callback: () => void) {
+            if (this._onBeforeRenderObserver) {
+                this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            }
+            this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        public onAfterRenderObservable = new Observable<Scene>();
+
+        private _onAfterRenderObserver: Observer<Scene>;
+        public set afterRender(callback: () => void) {
+            if (this._onAfterRenderObserver) {
+                this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+            }
+            this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when the scene is ready
+        * @type {BABYLON.Observable}
+        */
+        public onReadyObservable = new Observable<Scene>();
+
+        /**
+        * An event triggered before rendering a camera
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeCameraRenderObservable = new Observable<Camera>();
+
+        private _onBeforeCameraRenderObserver: Observer<Camera>;
+        public set beforeCameraRender(callback: () => void) {
+            if (this._onBeforeCameraRenderObserver) {
+                this.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
+            }
+
+            this._onBeforeCameraRenderObserver = this.onBeforeCameraRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after rendering a camera
+        * @type {BABYLON.Observable}
+        */
+        public onAfterCameraRenderObservable = new Observable<Camera>();
+
+        private _onAfterCameraRenderObserver: Observer<Camera>;
+        public set afterCameraRender(callback: () => void) {
+            if (this._onAfterCameraRenderObserver) {
+                this.onAfterCameraRenderObservable.remove(this._onAfterCameraRenderObserver);
+            }
+            this._onAfterCameraRenderObserver = this.onAfterCameraRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when a camera is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewCameraAddedObservable = new Observable<Camera>();
+
+        /**
+        * An event triggered when a camera is removed
+        * @type {BABYLON.Observable}
+        */
+        public onCameraRemovedObservable = new Observable<Camera>();
+
+        /**
+        * An event triggered when a light is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewLightAddedObservable = new Observable<Light>();
+
+        /**
+        * An event triggered when a light is removed
+        * @type {BABYLON.Observable}
+        */
+        public onLightRemovedObservable = new Observable<Light>();
+
+        /**
+        * An event triggered when a geometry is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewGeometryAddedObservable = new Observable<Geometry>();
+
+        /**
+        * An event triggered when a geometry is removed
+        * @type {BABYLON.Observable}
+        */
+        public onGeometryRemovedObservable = new Observable<Geometry>();
+
+        /**
+        * An event triggered when a mesh is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewMeshAddedObservable = new Observable<AbstractMesh>();
+
+        /**
+        * An event triggered when a mesh is removed
+        * @type {BABYLON.Observable}
+        */
+        public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
         // Animations
         public animations: Animation[] = [];
@@ -118,8 +229,6 @@
         * @type {BABYLON.Light[]}
         */
         public lights = new Array<Light>();
-        public onNewLightAdded: (newLight?: Light, positionInArray?: number, scene?: Scene) => void;
-        public onLightRemoved: (removedLight?: Light) => void;
 
         // Cameras
         /**
@@ -128,8 +237,6 @@
         * @type {BABYLON.Camera[]}
         */
         public cameras = new Array<Camera>();
-        public onNewCameraAdded: (newCamera?: Camera, positionInArray?: number, scene?: Scene) => void;
-        public onCameraRemoved: (removedCamera?: Camera) => void;
         public activeCameras = new Array<Camera>();
         public activeCamera: Camera;
 
@@ -140,13 +247,9 @@
         * @type {BABYLON.AbstractMesh[]}
         */
         public meshes = new Array<AbstractMesh>();
-        public onNewMeshAdded: (newMesh?: AbstractMesh, positionInArray?: number, scene?: Scene) => void;
-        public onMeshRemoved: (removedMesh?: AbstractMesh) => void;
 
         // Geometries
         private _geometries = new Array<Geometry>();
-        public onGeometryAdded: (newGeometry?: Geometry) => void;
-        public onGeometryRemoved: (removedGeometry?: Geometry) => void;
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
@@ -246,12 +349,7 @@
         private _intermediateRendering = false;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
-
-        private _onReadyCallbacks = new Array<() => void>();
         private _pendingData = [];//ANY
-
-        private _onBeforeRenderCallbacks = new Array<() => void>();
-        private _onAfterRenderCallbacks = new Array<() => void>();
 
         private _activeMeshes = new SmartArray<Mesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
@@ -746,27 +844,19 @@
         }
 
         public registerBeforeRender(func: () => void): void {
-            this._onBeforeRenderCallbacks.push(func);
+            this.onBeforeRenderObservable.add(func);
         }
 
         public unregisterBeforeRender(func: () => void): void {
-            var index = this._onBeforeRenderCallbacks.indexOf(func);
-
-            if (index > -1) {
-                this._onBeforeRenderCallbacks.splice(index, 1);
-            }
+            this.onBeforeRenderObservable.removeCallback(func);
         }
 
         public registerAfterRender(func: () => void): void {
-            this._onAfterRenderCallbacks.push(func);
+            this.onAfterRenderObservable.add(func);
         }
 
         public unregisterAfterRender(func: () => void): void {
-            var index = this._onAfterRenderCallbacks.indexOf(func);
-
-            if (index > -1) {
-                this._onAfterRenderCallbacks.splice(index, 1);
-            }
+            this.onAfterRenderObservable.removeCallback(func);
         }
 
         public _addPendingData(data): void {
@@ -790,7 +880,7 @@
          * @param {Function} func - the function to be executed.
          */
         public executeWhenReady(func: () => void): void {
-            this._onReadyCallbacks.push(func);
+            this.onReadyObservable.add(func);
 
             if (this._executeWhenReadyTimeoutId !== -1) {
                 return;
@@ -803,11 +893,9 @@
 
         public _checkIsReady() {
             if (this.isReady()) {
-                this._onReadyCallbacks.forEach(func => {
-                    func();
-                });
+                this.onReadyObservable.notifyObservers(this);
 
-                this._onReadyCallbacks = [];
+                this.onReadyObservable.clear();
                 this._executeWhenReadyTimeoutId = -1;
                 return;
             }
@@ -944,9 +1032,7 @@
             //notify the collision coordinator
             this.collisionCoordinator.onMeshAdded(newMesh);
 
-            if (this.onNewMeshAdded) {
-                this.onNewMeshAdded(newMesh, position, this);
-            }
+            this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
 
         public removeMesh(toRemove: AbstractMesh): number {
@@ -958,9 +1044,8 @@
             //notify the collision coordinator
             this.collisionCoordinator.onMeshRemoved(toRemove);
 
-            if (this.onMeshRemoved) {
-                this.onMeshRemoved(toRemove);
-            }
+            this.onMeshRemovedObservable.notifyObservers(toRemove);
+
             return index;
         }
 
@@ -980,9 +1065,7 @@
                 // Remove from the scene if mesh found 
                 this.lights.splice(index, 1);
             }
-            if (this.onLightRemoved) {
-                this.onLightRemoved(toRemove);
-            }
+            this.onLightRemovedObservable.notifyObservers(toRemove);
             return index;
         }
 
@@ -1006,26 +1089,20 @@
                     this.activeCamera = null;
                 }
             }
-            if (this.onCameraRemoved) {
-                this.onCameraRemoved(toRemove);
-            }
+            this.onCameraRemovedObservable.notifyObservers(toRemove);
             return index;
         }
 
         public addLight(newLight: Light) {
             newLight.uniqueId = this._uniqueIdCounter++;
             var position = this.lights.push(newLight);
-            if (this.onNewLightAdded) {
-                this.onNewLightAdded(newLight, position, this);
-            }
+            this.onNewLightAddedObservable.notifyObservers(newLight);
         }
 
         public addCamera(newCamera: Camera) {
             newCamera.uniqueId = this._uniqueIdCounter++;
             var position = this.cameras.push(newCamera);
-            if (this.onNewCameraAdded) {
-                this.onNewCameraAdded(newCamera, position, this);
-            }
+            this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
         
         /**
@@ -1279,9 +1356,7 @@
             //notify the collision coordinator
             this.collisionCoordinator.onGeometryAdded(geometry);
 
-            if (this.onGeometryAdded) {
-                this.onGeometryAdded(geometry);
-            }
+            this.onNewGeometryAddedObservable.notifyObservers(geometry);
 
             return true;
         }
@@ -1300,9 +1375,7 @@
                 //notify the collision coordinator
                 this.collisionCoordinator.onGeometryDeleted(geometry);
 
-                if (this.onGeometryRemoved) {
-                    this.onGeometryRemoved(geometry);
-                }
+                this.onGeometryRemovedObservable.notifyObservers(geometry);
                 return true;
             }
             return false;
@@ -1678,10 +1751,8 @@
             this._renderId++;
             this.updateTransformMatrix();
 
-            if (this.beforeCameraRender) {
-                this.beforeCameraRender(this.activeCamera);
-            }
-
+            this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
+            
             // Meshes
             var beforeEvaluateActiveMeshesDate = Tools.Now;
             Tools.StartPerformanceCounter("Active meshes evaluation");
@@ -1791,9 +1862,7 @@
             // Reset some special arrays
             this._renderTargets.reset();
 
-            if (this.afterCameraRender) {
-                this.afterCameraRender(this.activeCamera);
-            }
+            this.onAfterCameraRenderObservable.notifyObservers(this.activeCamera);
 
             Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         }
@@ -1895,13 +1964,7 @@
             }
 
             // Before render
-            if (this.beforeRender) {
-                this.beforeRender();
-            }
-            var callbackIndex: number;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
-            }
+            this.onBeforeRenderObservable.notifyObservers(this);
 
             // Customs render targets
             var beforeRenderTargetDate = Tools.Now;
@@ -2006,9 +2069,7 @@
                 this.afterRender();
             }
 
-            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
-                this._onAfterRenderCallbacks[callbackIndex]();
-            }
+            this.onAfterRenderObservable.notifyObservers(this);
 
             // Cleaning
             for (var index = 0; index < this._toBeDisposed.length; index++) {
@@ -2192,8 +2253,8 @@
                 this.onDispose();
             }
 
-            this._onBeforeRenderCallbacks = [];
-            this._onAfterRenderCallbacks = [];
+            this.onBeforeRenderObservable.clear();
+            this.onAfterRenderObservable.clear();
 
             this.detachControl();
 

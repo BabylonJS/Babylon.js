@@ -29,12 +29,26 @@ var BABYLON;
         function Mesh(name, scene, parent, source, doNotCloneChildren) {
             if (parent === void 0) { parent = null; }
             _super.call(this, name, scene);
+            // Events 
+            /**
+             * An event triggered before rendering the mesh
+             * @type {BABYLON.Observable}
+             */
+            this.onBeforeRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after rendering the mesh
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered before drawing the mesh
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeDrawObservable = new BABYLON.Observable();
             // Members
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.instances = new Array();
             this._LODLevels = new Array();
-            this._onBeforeRenderCallbacks = new Array();
-            this._onAfterRenderCallbacks = new Array();
             this._visibleInstances = {};
             this._renderIdForInstances = new Array();
             this._batchCache = new _InstancesBatch();
@@ -130,6 +144,16 @@ var BABYLON;
         Object.defineProperty(Mesh, "CAP_ALL", {
             get: function () {
                 return Mesh._CAP_ALL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mesh.prototype, "onBeforeDraw", {
+            set: function (callback) {
+                if (this._onBeforeDrawObserver) {
+                    this.onBeforeDrawObservable.remove(this._onBeforeDrawObserver);
+                }
+                this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -511,9 +535,7 @@ var BABYLON;
             if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
                 return;
             }
-            if (this.onBeforeDraw) {
-                this.onBeforeDraw();
-            }
+            this.onBeforeDrawObservable.notifyObservers(this);
             var engine = this.getScene().getEngine();
             // Draw order
             switch (fillMode) {
@@ -538,22 +560,16 @@ var BABYLON;
             }
         };
         Mesh.prototype.registerBeforeRender = function (func) {
-            this._onBeforeRenderCallbacks.push(func);
+            this.onBeforeRenderObservable.add(func);
         };
         Mesh.prototype.unregisterBeforeRender = function (func) {
-            var index = this._onBeforeRenderCallbacks.indexOf(func);
-            if (index > -1) {
-                this._onBeforeRenderCallbacks.splice(index, 1);
-            }
+            this.onBeforeRenderObservable.removeCallback(func);
         };
         Mesh.prototype.registerAfterRender = function (func) {
-            this._onAfterRenderCallbacks.push(func);
+            this.onAfterRenderObservable.add(func);
         };
         Mesh.prototype.unregisterAfterRender = function (func) {
-            var index = this._onAfterRenderCallbacks.indexOf(func);
-            if (index > -1) {
-                this._onAfterRenderCallbacks.splice(index, 1);
-            }
+            this.onAfterRenderObservable.removeCallback(func);
         };
         Mesh.prototype._getInstancesRenderList = function (subMeshId) {
             var scene = this.getScene();
@@ -662,9 +678,7 @@ var BABYLON;
                 return;
             }
             var callbackIndex;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex](this);
-            }
+            this.onBeforeRenderObservable.notifyObservers(this);
             var engine = scene.getEngine();
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays !== null) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
             // Material
@@ -712,9 +726,7 @@ var BABYLON;
                 scene.getOutlineRenderer().render(subMesh, batch, true);
                 engine.setAlphaMode(currentMode);
             }
-            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
-                this._onAfterRenderCallbacks[callbackIndex](this);
-            }
+            this.onAfterRenderObservable.notifyObservers(this);
         };
         Mesh.prototype.getEmittedParticleSystems = function () {
             var results = new Array();

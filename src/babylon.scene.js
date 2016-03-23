@@ -19,6 +19,77 @@ var BABYLON;
             this.forceShowBoundingBoxes = false;
             this.animationsEnabled = true;
             this.constantlyUpdateMeshUnderPointer = false;
+            // Events
+            /**
+            * An event triggered when the scene is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
+            /**
+            * An event triggered before rendering the scene
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after rendering the scene
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the scene is ready
+            * @type {BABYLON.Observable}
+            */
+            this.onReadyObservable = new BABYLON.Observable();
+            /**
+            * An event triggered before rendering a camera
+            * @type {BABYLON.Observable}
+            */
+            this.onBeforeCameraRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after rendering a camera
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterCameraRenderObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a camera is created
+            * @type {BABYLON.Observable}
+            */
+            this.onNewCameraAddedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a camera is removed
+            * @type {BABYLON.Observable}
+            */
+            this.onCameraRemovedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a light is created
+            * @type {BABYLON.Observable}
+            */
+            this.onNewLightAddedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a light is removed
+            * @type {BABYLON.Observable}
+            */
+            this.onLightRemovedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a geometry is created
+            * @type {BABYLON.Observable}
+            */
+            this.onNewGeometryAddedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a geometry is removed
+            * @type {BABYLON.Observable}
+            */
+            this.onGeometryRemovedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a mesh is created
+            * @type {BABYLON.Observable}
+            */
+            this.onNewMeshAddedObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when a mesh is removed
+            * @type {BABYLON.Observable}
+            */
+            this.onMeshRemovedObservable = new BABYLON.Observable();
             // Animations
             this.animations = [];
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
@@ -125,10 +196,7 @@ var BABYLON;
             this._executeWhenReadyTimeoutId = -1;
             this._intermediateRendering = false;
             this._toBeDisposed = new BABYLON.SmartArray(256);
-            this._onReadyCallbacks = new Array();
             this._pendingData = []; //ANY
-            this._onBeforeRenderCallbacks = new Array();
-            this._onAfterRenderCallbacks = new Array();
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._processedMaterials = new BABYLON.SmartArray(256);
             this._renderTargets = new BABYLON.SmartArray(256);
@@ -185,6 +253,56 @@ var BABYLON;
         Object.defineProperty(Scene, "FOGMODE_LINEAR", {
             get: function () {
                 return Scene._FOGMODE_LINEAR;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "beforeRender", {
+            set: function (callback) {
+                if (this._onBeforeRenderObserver) {
+                    this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+                }
+                this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "afterRender", {
+            set: function (callback) {
+                if (this._onAfterRenderObserver) {
+                    this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+                }
+                this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "beforeCameraRender", {
+            set: function (callback) {
+                if (this._onBeforeCameraRenderObserver) {
+                    this.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
+                }
+                this._onBeforeCameraRenderObserver = this.onBeforeCameraRenderObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "afterCameraRender", {
+            set: function (callback) {
+                if (this._onAfterCameraRenderObserver) {
+                    this.onAfterCameraRenderObservable.remove(this._onAfterCameraRenderObserver);
+                }
+                this._onAfterCameraRenderObserver = this.onAfterCameraRenderObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -550,22 +668,16 @@ var BABYLON;
             this._cachedMaterial = null;
         };
         Scene.prototype.registerBeforeRender = function (func) {
-            this._onBeforeRenderCallbacks.push(func);
+            this.onBeforeRenderObservable.add(func);
         };
         Scene.prototype.unregisterBeforeRender = function (func) {
-            var index = this._onBeforeRenderCallbacks.indexOf(func);
-            if (index > -1) {
-                this._onBeforeRenderCallbacks.splice(index, 1);
-            }
+            this.onBeforeRenderObservable.removeCallback(func);
         };
         Scene.prototype.registerAfterRender = function (func) {
-            this._onAfterRenderCallbacks.push(func);
+            this.onAfterRenderObservable.add(func);
         };
         Scene.prototype.unregisterAfterRender = function (func) {
-            var index = this._onAfterRenderCallbacks.indexOf(func);
-            if (index > -1) {
-                this._onAfterRenderCallbacks.splice(index, 1);
-            }
+            this.onAfterRenderObservable.removeCallback(func);
         };
         Scene.prototype._addPendingData = function (data) {
             this._pendingData.push(data);
@@ -585,7 +697,7 @@ var BABYLON;
          */
         Scene.prototype.executeWhenReady = function (func) {
             var _this = this;
-            this._onReadyCallbacks.push(func);
+            this.onReadyObservable.add(func);
             if (this._executeWhenReadyTimeoutId !== -1) {
                 return;
             }
@@ -596,10 +708,8 @@ var BABYLON;
         Scene.prototype._checkIsReady = function () {
             var _this = this;
             if (this.isReady()) {
-                this._onReadyCallbacks.forEach(function (func) {
-                    func();
-                });
-                this._onReadyCallbacks = [];
+                this.onReadyObservable.notifyObservers(this);
+                this.onReadyObservable.clear();
                 this._executeWhenReadyTimeoutId = -1;
                 return;
             }
@@ -712,9 +822,7 @@ var BABYLON;
             var position = this.meshes.push(newMesh);
             //notify the collision coordinator
             this.collisionCoordinator.onMeshAdded(newMesh);
-            if (this.onNewMeshAdded) {
-                this.onNewMeshAdded(newMesh, position, this);
-            }
+            this.onNewMeshAddedObservable.notifyObservers(newMesh);
         };
         Scene.prototype.removeMesh = function (toRemove) {
             var index = this.meshes.indexOf(toRemove);
@@ -724,9 +832,7 @@ var BABYLON;
             }
             //notify the collision coordinator
             this.collisionCoordinator.onMeshRemoved(toRemove);
-            if (this.onMeshRemoved) {
-                this.onMeshRemoved(toRemove);
-            }
+            this.onMeshRemovedObservable.notifyObservers(toRemove);
             return index;
         };
         Scene.prototype.removeSkeleton = function (toRemove) {
@@ -743,9 +849,7 @@ var BABYLON;
                 // Remove from the scene if mesh found 
                 this.lights.splice(index, 1);
             }
-            if (this.onLightRemoved) {
-                this.onLightRemoved(toRemove);
-            }
+            this.onLightRemovedObservable.notifyObservers(toRemove);
             return index;
         };
         Scene.prototype.removeCamera = function (toRemove) {
@@ -769,24 +873,18 @@ var BABYLON;
                     this.activeCamera = null;
                 }
             }
-            if (this.onCameraRemoved) {
-                this.onCameraRemoved(toRemove);
-            }
+            this.onCameraRemovedObservable.notifyObservers(toRemove);
             return index;
         };
         Scene.prototype.addLight = function (newLight) {
             newLight.uniqueId = this._uniqueIdCounter++;
             var position = this.lights.push(newLight);
-            if (this.onNewLightAdded) {
-                this.onNewLightAdded(newLight, position, this);
-            }
+            this.onNewLightAddedObservable.notifyObservers(newLight);
         };
         Scene.prototype.addCamera = function (newCamera) {
             newCamera.uniqueId = this._uniqueIdCounter++;
             var position = this.cameras.push(newCamera);
-            if (this.onNewCameraAdded) {
-                this.onNewCameraAdded(newCamera, position, this);
-            }
+            this.onNewCameraAddedObservable.notifyObservers(newCamera);
         };
         /**
          * Switch active camera
@@ -1003,9 +1101,7 @@ var BABYLON;
             this._geometries.push(geometry);
             //notify the collision coordinator
             this.collisionCoordinator.onGeometryAdded(geometry);
-            if (this.onGeometryAdded) {
-                this.onGeometryAdded(geometry);
-            }
+            this.onNewGeometryAddedObservable.notifyObservers(geometry);
             return true;
         };
         /**
@@ -1019,9 +1115,7 @@ var BABYLON;
                 this._geometries.splice(index, 1);
                 //notify the collision coordinator
                 this.collisionCoordinator.onGeometryDeleted(geometry);
-                if (this.onGeometryRemoved) {
-                    this.onGeometryRemoved(geometry);
-                }
+                this.onGeometryRemovedObservable.notifyObservers(geometry);
                 return true;
             }
             return false;
@@ -1320,9 +1414,7 @@ var BABYLON;
             this.resetCachedMaterial();
             this._renderId++;
             this.updateTransformMatrix();
-            if (this.beforeCameraRender) {
-                this.beforeCameraRender(this.activeCamera);
-            }
+            this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
             // Meshes
             var beforeEvaluateActiveMeshesDate = BABYLON.Tools.Now;
             BABYLON.Tools.StartPerformanceCounter("Active meshes evaluation");
@@ -1413,9 +1505,7 @@ var BABYLON;
             this.activeCamera._updateFromScene();
             // Reset some special arrays
             this._renderTargets.reset();
-            if (this.afterCameraRender) {
-                this.afterCameraRender(this.activeCamera);
-            }
+            this.onAfterCameraRenderObservable.notifyObservers(this.activeCamera);
             BABYLON.Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         };
         Scene.prototype._processSubCameras = function (camera) {
@@ -1500,13 +1590,7 @@ var BABYLON;
                 BABYLON.Tools.EndPerformanceCounter("Physics");
             }
             // Before render
-            if (this.beforeRender) {
-                this.beforeRender();
-            }
-            var callbackIndex;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
-            }
+            this.onBeforeRenderObservable.notifyObservers(this);
             // Customs render targets
             var beforeRenderTargetDate = BABYLON.Tools.Now;
             var engine = this.getEngine();
@@ -1591,9 +1675,7 @@ var BABYLON;
             if (this.afterRender) {
                 this.afterRender();
             }
-            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
-                this._onAfterRenderCallbacks[callbackIndex]();
-            }
+            this.onAfterRenderObservable.notifyObservers(this);
             // Cleaning
             for (var index = 0; index < this._toBeDisposed.length; index++) {
                 this._toBeDisposed.data[index].dispose();
@@ -1754,8 +1836,8 @@ var BABYLON;
             if (this.onDispose) {
                 this.onDispose();
             }
-            this._onBeforeRenderCallbacks = [];
-            this._onAfterRenderCallbacks = [];
+            this.onBeforeRenderObservable.clear();
+            this.onAfterRenderObservable.clear();
             this.detachControl();
             // Release sounds & sounds tracks
             if (BABYLON.AudioEngine) {
