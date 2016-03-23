@@ -10,15 +10,15 @@ module BABYLON {
         private _beta = 0;
         private _gamma = 0;
         private _dirty = false;
-    
+
         private _offsetOrientation: { yaw: number; pitch: number; roll: number };
         private _deviceOrientationHandler;
-        
+
         constructor() {
             this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
         }
 
-        attachControl(element : HTMLElement, noPreventDefault?: boolean) {
+        attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             this.camera.attachControl(element, noPreventDefault);
             window.addEventListener("deviceorientation", this._deviceOrientationHandler);
         }
@@ -32,30 +32,30 @@ module BABYLON {
         }
 
         public checkInputs() {
-            if (this._dirty){
+            if (this._dirty) {
                 this._dirty = false;
-                
-                 if (this._gamma < 0) {
+
+                if (this._gamma < 0) {
                     this._gamma = 180 + this._gamma;
                 }
-                
-                this.camera.alpha = (-this._alpha / 180.0 * Math.PI) % Math.PI*2;
+
+                this.camera.alpha = (-this._alpha / 180.0 * Math.PI) % Math.PI * 2;
                 this.camera.beta = (this._gamma / 180.0 * Math.PI);
             }
-        }              
+        }
 
-        detachControl(element : HTMLElement) {
+        detachControl(element: HTMLElement) {
             window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
         }
 
         getTypeName(): string {
             return "ArcRotateCameraVRDeviceOrientationInput";
         }
-        
-        getSimpleName(){
+
+        getSimpleName() {
             return "VRDeviceOrientation";
         }
     }
-    
+
     CameraInputTypes["ArcRotateCameraVRDeviceOrientationInput"] = ArcRotateCameraVRDeviceOrientationInput;
 }

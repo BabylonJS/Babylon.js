@@ -21,4 +21,20 @@ var BABYLON;
         return VRDeviceOrientationFreeCamera;
     })(BABYLON.FreeCamera);
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;
+    var VRDeviceOrientationArcRotateCamera = (function (_super) {
+        __extends(VRDeviceOrientationArcRotateCamera, _super);
+        function VRDeviceOrientationArcRotateCamera(name, alpha, beta, radius, target, scene, compensateDistortion) {
+            if (compensateDistortion === void 0) { compensateDistortion = true; }
+            _super.call(this, name, alpha, beta, radius, target, scene);
+            var metrics = BABYLON.VRCameraMetrics.GetDefault();
+            metrics.compensateDistortion = compensateDistortion;
+            this.setCameraRigMode(BABYLON.Camera.RIG_MODE_VR, { vrCameraMetrics: metrics });
+            this.inputs.addVRDeviceOrientation();
+        }
+        VRDeviceOrientationArcRotateCamera.prototype.getTypeName = function () {
+            return "VRDeviceOrientationArcRotateCamera";
+        };
+        return VRDeviceOrientationArcRotateCamera;
+    })(BABYLON.ArcRotateCamera);
+    BABYLON.VRDeviceOrientationArcRotateCamera = VRDeviceOrientationArcRotateCamera;
 })(BABYLON || (BABYLON = {}));

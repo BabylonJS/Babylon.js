@@ -12,6 +12,10 @@
          * @param callback the callback that will be executed for that Observer
          */
         public add(callback: (eventData: T) => void): Observer<T> {
+            if (!callback) {
+                return null;
+            }
+
             var observer = new Observer(callback);
 
             this._observers.push(observer);
@@ -56,7 +60,7 @@
          * Notify all Observers by calling their respective callback with the given data
          * @param eventData
          */
-        public notifyObservers(eventData: T) {
+        public notifyObservers(eventData: T): void {
             this._observers.forEach((observer: Observer<T>) => {
                 observer.callback(eventData);
             });
@@ -65,8 +69,19 @@
         /**
         * Clear the list of observers
         */
-        public clear() {
+        public clear(): void {
             this._observers = new Array<Observer<T>>();
+        }
+
+        /**
+        * Clone the current observable
+        */
+        public clone(): Observable<T> {
+            var result = new Observable<T>();
+
+            result._observers = this._observers.slice(0);
+
+            return result;
         }
     }
 }

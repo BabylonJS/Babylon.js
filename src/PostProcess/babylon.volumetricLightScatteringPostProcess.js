@@ -332,7 +332,9 @@ var BABYLON;
         VolumetricLightScatteringPostProcess.CreateDefaultMesh = function (name, scene) {
             var mesh = BABYLON.Mesh.CreatePlane(name, 1, scene);
             mesh.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
-            mesh.material = new BABYLON.StandardMaterial(name + "Material", scene);
+            var material = new BABYLON.StandardMaterial(name + "Material", scene);
+            material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+            mesh.material = material;
             return mesh;
         };
         __decorate([
@@ -363,6 +365,6 @@ var BABYLON;
             BABYLON.serialize()
         ], VolumetricLightScatteringPostProcess.prototype, "density", void 0);
         return VolumetricLightScatteringPostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.VolumetricLightScatteringPostProcess = VolumetricLightScatteringPostProcess;
 })(BABYLON || (BABYLON = {}));

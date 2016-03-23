@@ -96,18 +96,12 @@ var BABYLON;
             serializationObject.skeletonId = mesh.skeleton.id;
         }
         // Physics
-        if (mesh.getPhysicsImpostor().type !== BABYLON.PhysicsEngine.NoImpostor) {
+        //TODO implement correct serialization for physics impostors.
+        if (mesh.getPhysicsImpostor()) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
-            switch (mesh.getPhysicsImpostor().type) {
-                case BABYLON.PhysicsEngine.BoxImpostor:
-                    serializationObject.physicsImpostor = 1;
-                    break;
-                case BABYLON.PhysicsEngine.SphereImpostor:
-                    serializationObject.physicsImpostor = 2;
-                    break;
-            }
+            serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
         // Instances
         serializationObject.instances = [];

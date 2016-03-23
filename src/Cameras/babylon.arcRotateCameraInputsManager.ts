@@ -22,7 +22,7 @@ module BABYLON {
         public addGamepad(): ArcRotateCameraInputsManager {
             this.add(new ArcRotateCameraGamepadInput());
             return this;
-        }        
+        }
 
         public addVRDeviceOrientation(): ArcRotateCameraInputsManager {
             this.add(new ArcRotateCameraVRDeviceOrientationInput());

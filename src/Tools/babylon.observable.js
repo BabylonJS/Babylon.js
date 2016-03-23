@@ -16,6 +16,9 @@ var BABYLON;
          * @param callback the callback that will be executed for that Observer
          */
         Observable.prototype.add = function (callback) {
+            if (!callback) {
+                return null;
+            }
             var observer = new Observer(callback);
             this._observers.push(observer);
             return observer;
@@ -59,6 +62,14 @@ var BABYLON;
         */
         Observable.prototype.clear = function () {
             this._observers = new Array();
+        };
+        /**
+        * Clone the current observable
+        */
+        Observable.prototype.clone = function () {
+            var result = new Observable();
+            result._observers = this._observers.slice(0);
+            return result;
         };
         return Observable;
     })();
