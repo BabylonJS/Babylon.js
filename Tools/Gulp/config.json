@@ -171,7 +171,6 @@
       "../../src/Tools/babylon.assetsManager.js",
       "../../src/cameras/vr/babylon.vrCameraMetrics.js",
       "../../src/Cameras/VR/babylon.vrDeviceOrientationCamera.js",
-      "../../src/Cameras/VR/babylon.vrDeviceOrientationArcRotateCamera.js",
       "../../src/Cameras/VR/babylon.webVRCamera.js",
       "../../src/Tools/babylon.sceneOptimizer.js",
       "../../src/Mesh/babylon.meshLODLevel.js",
