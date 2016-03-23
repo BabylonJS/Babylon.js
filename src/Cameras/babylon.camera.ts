@@ -511,7 +511,7 @@
                 case Camera.RIG_MODE_VR:
                     this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
                     this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
-                    
+
                     this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
                     this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
 
@@ -701,6 +701,7 @@
         }
     }
 }
+
 
 
 

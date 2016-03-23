@@ -1,5 +1,5 @@
 module BABYLON {
-    export class VRDeviceOrientationFreeCamera extends FreeCamera {        
+    export class VRDeviceOrientationFreeCamera extends FreeCamera {
 
         constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true) {
             super(name, position, scene);
@@ -16,8 +16,8 @@ module BABYLON {
             return "VRDeviceOrientationFreeCamera";
         }
     }
-    
-    export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {        
+
+    export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
 
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion = true) {
             super(name, alpha, beta, radius, target, scene);

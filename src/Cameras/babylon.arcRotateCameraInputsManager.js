@@ -26,6 +26,10 @@ var BABYLON;
             this.add(new BABYLON.ArcRotateCameraGamepadInput());
             return this;
         };
+        ArcRotateCameraInputsManager.prototype.addVRDeviceOrientation = function () {
+            this.add(new BABYLON.ArcRotateCameraVRDeviceOrientationInput());
+            return this;
+        };
         return ArcRotateCameraInputsManager;
     })(BABYLON.CameraInputsManager);
     BABYLON.ArcRotateCameraInputsManager = ArcRotateCameraInputsManager;

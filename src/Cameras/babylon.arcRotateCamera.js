@@ -447,7 +447,9 @@ var BABYLON;
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case BABYLON.Camera.RIG_MODE_VR:
                     var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
-                    return new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+                    var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+                    rigCam._cameraRigParams = {};
+                    return rigCam;
             }
             return null;
         };

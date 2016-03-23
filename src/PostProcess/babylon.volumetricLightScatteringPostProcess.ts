@@ -411,7 +411,12 @@
         public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
             var mesh = Mesh.CreatePlane(name, 1, scene);
             mesh.billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
-            mesh.material = new StandardMaterial(name + "Material", scene);
+
+            var material = new StandardMaterial(name + "Material", scene);
+            material.emissiveColor = new Color3(1, 1, 1);
+
+            mesh.material = material;
+
             return mesh;
         }
     }
