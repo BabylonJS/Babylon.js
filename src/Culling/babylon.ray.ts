@@ -172,7 +172,7 @@
             return new IntersectionInfo(bu, bv, distance);
         }
 
-        public intersectsPlane(plane: Plane): IntersectionInfo {
+        public intersectsPlane(plane: Plane): number {
             var distance: number;
             var result1 = Vector3.Dot(plane.normal, this.direction);
             if (Math.abs(result1) < 9.99999997475243E-07) {
@@ -185,11 +185,11 @@
                     if (distance < -9.99999997475243E-07) {
                         return null;
                     } else {
-                        distance = 0;
+                        return 0;
                     }
                 }
 
-                return new IntersectionInfo(undefined, undefined, distance);
+                return distance;
             }
         }
         

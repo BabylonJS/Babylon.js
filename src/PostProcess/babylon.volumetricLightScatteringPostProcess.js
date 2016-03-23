@@ -365,6 +365,6 @@ var BABYLON;
             BABYLON.serialize()
         ], VolumetricLightScatteringPostProcess.prototype, "density", void 0);
         return VolumetricLightScatteringPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.VolumetricLightScatteringPostProcess = VolumetricLightScatteringPostProcess;
 })(BABYLON || (BABYLON = {}));

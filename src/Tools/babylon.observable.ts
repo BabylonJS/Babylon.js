@@ -4,14 +4,12 @@
      * A class serves as a medium between the observable and its observers
      */
     export class EventState {
-        constructor() {
-            this.skipNextObervers = false;
-        }
 
         /**
-         * If the callback of a given Observer set this member to true the following observers will be ignored
-         */
-        skipNextObervers: boolean;
+        * If the callback of a given Observer set skipNextObervers to true the following observers will be ignored
+        */
+        constructor(public skipNextObervers = false) {
+        }
     }
 
     export class Observer<T> {

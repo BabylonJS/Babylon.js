@@ -259,7 +259,7 @@ var BABYLON;
             TGATools._ORIGIN_UL = 0x02;
             TGATools._ORIGIN_UR = 0x03;
             return TGATools;
-        })();
+        }());
         Internals.TGATools = TGATools;
     })(Internals = BABYLON.Internals || (BABYLON.Internals = {}));
 })(BABYLON || (BABYLON = {}));

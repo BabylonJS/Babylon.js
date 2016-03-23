@@ -66,6 +66,6 @@ var BABYLON;
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         };
         return LinesMesh;
-    })(BABYLON.Mesh);
+    }(BABYLON.Mesh));
     BABYLON.LinesMesh = LinesMesh;
 })(BABYLON || (BABYLON = {}));

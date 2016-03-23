@@ -138,6 +138,26 @@ var BABYLON;
             }
             return new BABYLON.IntersectionInfo(bu, bv, distance);
         };
+        Ray.prototype.intersectsPlane = function (plane) {
+            var distance;
+            var result1 = BABYLON.Vector3.Dot(plane.normal, this.direction);
+            if (Math.abs(result1) < 9.99999997475243E-07) {
+                return null;
+            }
+            else {
+                var result2 = BABYLON.Vector3.Dot(plane.normal, this.origin);
+                distance = (-plane.d - result2) / result1;
+                if (distance < 0.0) {
+                    if (distance < -9.99999997475243E-07) {
+                        return null;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+                return distance;
+            }
+        };
         // Statics
         Ray.CreateNew = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
             var start = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
@@ -166,6 +186,6 @@ var BABYLON;
             return new Ray(newOrigin, newDirection, ray.length);
         };
         return Ray;
-    })();
+    }());
     BABYLON.Ray = Ray;
 })(BABYLON || (BABYLON = {}));

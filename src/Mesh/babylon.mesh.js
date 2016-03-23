@@ -12,7 +12,7 @@ var BABYLON;
             this.renderSelf = new Array();
         }
         return _InstancesBatch;
-    })();
+    }());
     BABYLON._InstancesBatch = _InstancesBatch;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
@@ -26,8 +26,9 @@ var BABYLON;
          *                  When false, achieved by calling a clone(), also passing False.
          *                  This will make creation of children, recursive.
          */
-        function Mesh(name, scene, parent, source, doNotCloneChildren) {
+        function Mesh(name, scene, parent, source, doNotCloneChildren, clonePhysicsImpostor) {
             if (parent === void 0) { parent = null; }
+            if (clonePhysicsImpostor === void 0) { clonePhysicsImpostor = true; }
             _super.call(this, name, scene);
             // Events 
             /**
@@ -76,6 +77,13 @@ var BABYLON;
                             // doNotCloneChildren is always going to be False
                             var newChild = mesh.clone(name + "." + mesh.name, this, doNotCloneChildren);
                         }
+                    }
+                }
+                // Physics clone  
+                if (clonePhysicsImpostor && this.getScene().getPhysicsEngine()) {
+                    var impostor = this.getScene().getPhysicsEngine().getImpostorForPhysicsObject(this);
+                    if (impostor) {
+                        mesh.physicsImpostor = impostor.clone(mesh);
                     }
                 }
                 // Particles
@@ -238,7 +246,7 @@ var BABYLON;
             return this;
         };
         /**
-         * Returns the LOD level mesh at the passed distance or null is not found.
+         * Returns the LOD level mesh at the passed distance or null if not found.
          * It is related to the method `addLODLevel(distance, mesh)`.
          */
         Mesh.prototype.getLODLevelAtDistance = function (distance) {
@@ -416,7 +424,7 @@ var BABYLON;
         });
         Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
             /**
-             * Boolean : true if the normals aren't to be recomputed on next update.
+             * Boolean : true if the normals aren't to be recomputed on next mesh `positions` array update.
              * This property is pertinent only for updatable parametric shapes.
              */
             get: function () {
@@ -428,7 +436,7 @@ var BABYLON;
         /**
          * This function affects parametric shapes on update only : ribbons, tubes, etc.
          * It has no effect at all on other shapes.
-         * It prevents the mesh normals from being recomputed on next position update.
+         * It prevents the mesh normals from being recomputed on next `positions` array update.
          */
         Mesh.prototype.freezeNormals = function () {
             this._areNormalsFrozen = true;
@@ -436,7 +444,7 @@ var BABYLON;
         /**
          * This function affects parametric shapes on update only : ribbons, tubes, etc.
          * It has no effect at all on other shapes.
-         * It reactivates the mesh normals computation if it was frozen.
+         * It reactivates the mesh normals computation if it was previously frozen.
          */
         Mesh.prototype.unfreezeNormals = function () {
             this._areNormalsFrozen = false;
@@ -552,10 +560,10 @@ var BABYLON;
             }
         };
         /**
-         * This method updates the postions of a updatable mesh according to the `positionFunction` returned values.
+         * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
          * tuto : http://doc.babylonjs.com/tutorials/How_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
          * The parameter `positionFunction` is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything.
-         * The parameter `computeNormals` is a boolean (default true) to enable/disable the mesh normal recomputation after the mesh position update.
+         * The parameter `computeNormals` is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update.
          */
         Mesh.prototype.updateMeshPositions = function (positionFunction, computeNormals) {
             if (computeNormals === void 0) { computeNormals = true; }
@@ -950,8 +958,9 @@ var BABYLON;
             return true;
         };
         // Clone
-        Mesh.prototype.clone = function (name, newParent, doNotCloneChildren) {
-            return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
+        Mesh.prototype.clone = function (name, newParent, doNotCloneChildren, clonePhysicsImpostor) {
+            if (clonePhysicsImpostor === void 0) { clonePhysicsImpostor = true; }
+            return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
         };
         // Dispose
         Mesh.prototype.dispose = function (doNotRecurse) {
@@ -2081,6 +2090,6 @@ var BABYLON;
         Mesh._CAP_END = 2;
         Mesh._CAP_ALL = 3;
         return Mesh;
-    })(BABYLON.AbstractMesh);
+    }(BABYLON.AbstractMesh));
     BABYLON.Mesh = Mesh;
 })(BABYLON || (BABYLON = {}));
