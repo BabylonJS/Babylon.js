@@ -38,6 +38,8 @@
 
         public includedOnlyMeshes = new Array<AbstractMesh>();
         public excludedMeshes = new Array<AbstractMesh>();
+
+        @serialize()
         public excludeWithLayerMask = 0;
 
         // PBR Properties.
@@ -162,6 +164,21 @@
             // Parent
             if (this.parent) {
                 serializationObject.parentId = this.parent.id;
+            }
+
+            // Inclusion / exclusions
+            if (this.excludedMeshes.length > 0) {
+                serializationObject.excludedMeshesIds = [];
+                this.excludedMeshes.forEach((mesh: AbstractMesh) => {
+                    serializationObject.excludedMeshesIds.push(mesh.id);
+                });
+            }
+
+            if (this.includedOnlyMeshes.length > 0) {
+                serializationObject.includedOnlyMeshesIds = [];
+                this.includedOnlyMeshes.forEach((mesh: AbstractMesh) => {
+                    serializationObject.includedOnlyMeshesIds.push(mesh.id);
+                });
             }
 
             // Animations  
