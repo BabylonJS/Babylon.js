@@ -1,6 +1,21 @@
 ﻿module BABYLON {
+
+    /**
+     * A class serves as a medium between the observable and its observers
+     */
+    export class EventState {
+        constructor() {
+            this.skipNextObervers = false;
+        }
+
+        /**
+         * If the callback of a given Observer set this member to true the following observers will be ignored
+         */
+        skipNextObervers: boolean;
+    }
+
     export class Observer<T> {
-        constructor(public callback: (eventData: T) => void) {
+        constructor(public callback: (eventData: T, eventState: EventState) => void) {
         }
     }
 
@@ -10,15 +25,20 @@
         /**
          * Create a new Observer with the specified callback
          * @param callback the callback that will be executed for that Observer
+         * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
          */
-        public add(callback: (eventData: T) => void): Observer<T> {
+        public add(callback: (eventData: T, eventState: EventState) => void, insertFirst = false): Observer<T> {
             if (!callback) {
                 return null;
             }
 
             var observer = new Observer(callback);
 
-            this._observers.push(observer);
+            if (insertFirst) {
+                this._observers.unshift(observer);
+            } else {
+                this._observers.push(observer);
+            }
 
             return observer;
         }
@@ -44,7 +64,7 @@
          * Remove a callback from the Observable object
          * @param callback the callback to remove. If it doesn't belong to this Observable, false will be returned.
         */
-        public removeCallback(callback: (eventData: T) => void): boolean {
+        public removeCallback(callback: (eventData: T, eventState: EventState) => void): boolean {
 
             for (var index = 0; index < this._observers.length; index++) {
                 if (this._observers[index].callback === callback) {
@@ -61,9 +81,14 @@
          * @param eventData
          */
         public notifyObservers(eventData: T): void {
-            this._observers.forEach((observer: Observer<T>) => {
-                observer.callback(eventData);
-            });
+            var state = new EventState();
+
+            for (var obs of this._observers) {
+                obs.callback(eventData, state);
+                if (state.skipNextObervers) {
+                    break;
+                }
+            }
         }
 
         /**
