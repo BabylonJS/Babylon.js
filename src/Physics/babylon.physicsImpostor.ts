@@ -377,8 +377,8 @@ module BABYLON {
         public wakeUp() {
             this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
         }
-        
-        public clone(newObject:IPhysicsEnabledObject) {
+
+        public clone(newObject: IPhysicsEnabledObject) {
             return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         }
 
@@ -422,3 +422,4 @@ module BABYLON {
     }
 
 }
+

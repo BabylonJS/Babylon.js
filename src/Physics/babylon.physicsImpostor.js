@@ -1,12 +1,13 @@
 var BABYLON;
 (function (BABYLON) {
     var PhysicsImpostor = (function () {
-        function PhysicsImpostor(object, type, _options, scene) {
+        function PhysicsImpostor(object, type, _options, _scene) {
             var _this = this;
             if (_options === void 0) { _options = { mass: 0 }; }
             this.object = object;
             this.type = type;
             this._options = _options;
+            this._scene = _scene;
             this._bodyUpdateRequired = false;
             this._onBeforePhysicsStepCallbacks = new Array();
             this._onAfterPhysicsStepCallbacks = new Array();
@@ -56,10 +57,10 @@ var BABYLON;
                 }
             };
             //legacy support for old syntax.
-            if (!scene && object.getScene) {
-                scene = object.getScene();
+            if (!this._scene && object.getScene) {
+                this._scene = object.getScene();
             }
-            this._physicsEngine = scene.getPhysicsEngine();
+            this._physicsEngine = this._scene.getPhysicsEngine();
             if (!this._physicsEngine) {
                 BABYLON.Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
             }
@@ -309,6 +310,9 @@ var BABYLON;
         PhysicsImpostor.prototype.wakeUp = function () {
             this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
         };
+        PhysicsImpostor.prototype.clone = function (newObject) {
+            return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
+        };
         PhysicsImpostor.prototype.dispose = function () {
             this.physicsBody = null;
             if (this.parent) {
@@ -338,6 +342,6 @@ var BABYLON;
         PhysicsImpostor.ParticleImpostor = 8;
         PhysicsImpostor.HeightmapImpostor = 9;
         return PhysicsImpostor;
-    })();
+    }());
     BABYLON.PhysicsImpostor = PhysicsImpostor;
 })(BABYLON || (BABYLON = {}));

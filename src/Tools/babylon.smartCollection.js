@@ -95,6 +95,6 @@ var BABYLON;
             }
         };
         return SmartCollection;
-    })();
+    }());
     BABYLON.SmartCollection = SmartCollection;
 })(BABYLON || (BABYLON = {}));

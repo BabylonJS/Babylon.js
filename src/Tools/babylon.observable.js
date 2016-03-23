@@ -1,11 +1,25 @@
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * A class serves as a medium between the observable and its observers
+     */
+    var EventState = (function () {
+        /**
+        * If the callback of a given Observer set skipNextObervers to true the following observers will be ignored
+        */
+        function EventState(skipNextObervers) {
+            if (skipNextObervers === void 0) { skipNextObervers = false; }
+            this.skipNextObervers = skipNextObervers;
+        }
+        return EventState;
+    }());
+    BABYLON.EventState = EventState;
     var Observer = (function () {
         function Observer(callback) {
             this.callback = callback;
         }
         return Observer;
-    })();
+    }());
     BABYLON.Observer = Observer;
     var Observable = (function () {
         function Observable() {
@@ -14,13 +28,20 @@ var BABYLON;
         /**
          * Create a new Observer with the specified callback
          * @param callback the callback that will be executed for that Observer
+         * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
          */
-        Observable.prototype.add = function (callback) {
+        Observable.prototype.add = function (callback, insertFirst) {
+            if (insertFirst === void 0) { insertFirst = false; }
             if (!callback) {
                 return null;
             }
             var observer = new Observer(callback);
-            this._observers.push(observer);
+            if (insertFirst) {
+                this._observers.unshift(observer);
+            }
+            else {
+                this._observers.push(observer);
+            }
             return observer;
         };
         /**
@@ -53,9 +74,14 @@ var BABYLON;
          * @param eventData
          */
         Observable.prototype.notifyObservers = function (eventData) {
-            this._observers.forEach(function (observer) {
-                observer.callback(eventData);
-            });
+            var state = new EventState();
+            for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
+                var obs = _a[_i];
+                obs.callback(eventData, state);
+                if (state.skipNextObervers) {
+                    break;
+                }
+            }
         };
         /**
         * Clear the list of observers
@@ -72,6 +98,6 @@ var BABYLON;
             return result;
         };
         return Observable;
-    })();
+    }());
     BABYLON.Observable = Observable;
 })(BABYLON || (BABYLON = {}));

@@ -128,7 +128,7 @@
          *                  When false, achieved by calling a clone(), also passing False.
          *                  This will make creation of children, recursive.
          */
-        constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean) {
+        constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true) {
             super(name, scene);
 
             if (source) {
@@ -159,6 +159,14 @@
                         }
                     }
                 }
+
+                // Physics clone  
+                if (clonePhysicsImpostor && this.getScene().getPhysicsEngine()) {
+                    var impostor = this.getScene().getPhysicsEngine().getImpostorForPhysicsObject(this);
+                    if (impostor) {
+                        mesh.physicsImpostor = impostor.clone(mesh);
+                    }
+                }  
 
                 // Particles
                 for (index = 0; index < scene.particleSystems.length; index++) {
@@ -1083,15 +1091,7 @@
 
         // Clone
         public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
-            var mesh = new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren);
-            //physics clone
-            if(clonePhysicsImpostor && this.getScene().getPhysicsEngine()) {
-                var impostor = this.getScene().getPhysicsEngine().getImpostorForPhysicsObject(this);
-                if(impostor) {
-                    mesh.physicsImpostor = impostor.clone(mesh);
-                }
-            }
-            return mesh;
+            return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
         }
 
         // Dispose
