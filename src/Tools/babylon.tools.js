@@ -102,7 +102,8 @@ var BABYLON;
             }
             return "data:image/png;base64," + output;
         };
-        Tools.ExtractMinAndMaxIndexed = function (positions, indices, indexStart, indexCount) {
+        Tools.ExtractMinAndMaxIndexed = function (positions, indices, indexStart, indexCount, bias) {
+            if (bias === void 0) { bias = null; }
             var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = indexStart; index < indexStart + indexCount; index++) {
@@ -110,18 +111,35 @@ var BABYLON;
                 minimum = BABYLON.Vector3.Minimize(current, minimum);
                 maximum = BABYLON.Vector3.Maximize(current, maximum);
             }
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                minimum.z -= minimum.z * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+                maximum.z += maximum.z * bias.x + bias.y;
+            }
             return {
                 minimum: minimum,
                 maximum: maximum
             };
         };
-        Tools.ExtractMinAndMax = function (positions, start, count) {
+        Tools.ExtractMinAndMax = function (positions, start, count, bias) {
+            if (bias === void 0) { bias = null; }
             var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = start; index < start + count; index++) {
                 var current = new BABYLON.Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
                 minimum = BABYLON.Vector3.Minimize(current, minimum);
                 maximum = BABYLON.Vector3.Maximize(current, maximum);
+            }
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                minimum.z -= minimum.z * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+                maximum.z += maximum.z * bias.x + bias.y;
             }
             return {
                 minimum: minimum,
@@ -788,7 +806,7 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    }());
+    })();
     BABYLON.Tools = Tools;
     /**
      * An implementation of a loop for asynchronous functions.
@@ -872,6 +890,6 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    }());
+    })();
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));

@@ -68,7 +68,7 @@ var BABYLON;
                 extend = { minimum: this._renderingMesh.getBoundingInfo().minimum.clone(), maximum: this._renderingMesh.getBoundingInfo().maximum.clone() };
             }
             else {
-                extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount);
+                extend = BABYLON.Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount, this._renderingMesh.geometry.boundingBias);
             }
             this._boundingInfo = new BABYLON.BoundingInfo(extend.minimum, extend.maximum);
         };
@@ -103,21 +103,42 @@ var BABYLON;
         };
         SubMesh.prototype.intersects = function (ray, positions, indices, fastCheck) {
             var intersectInfo = null;
-            // Triangles test
-            for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
-                var p0 = positions[indices[index]];
-                var p1 = positions[indices[index + 1]];
-                var p2 = positions[indices[index + 2]];
-                var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
-                if (currentIntersectInfo) {
-                    if (currentIntersectInfo.distance < 0) {
+            // LineMesh first as it's also a Mesh...
+            if (this._mesh instanceof BABYLON.LinesMesh) {
+                var lineMesh = this._mesh;
+                // Line test
+                for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 2) {
+                    var p0 = positions[indices[index]];
+                    var p1 = positions[indices[index + 1]];
+                    var length = ray.intersectionSegment(p0, p1, lineMesh.intersectionThreshold);
+                    if (length < 0) {
                         continue;
                     }
-                    if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
-                        intersectInfo = currentIntersectInfo;
-                        intersectInfo.faceId = index / 3;
+                    if (fastCheck || !intersectInfo || length < intersectInfo.distance) {
+                        intersectInfo = new BABYLON.IntersectionInfo(null, null, length);
                         if (fastCheck) {
                             break;
+                        }
+                    }
+                }
+            }
+            else if (this._mesh instanceof BABYLON.Mesh) {
+                // Triangles test
+                for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
+                    var p0 = positions[indices[index]];
+                    var p1 = positions[indices[index + 1]];
+                    var p2 = positions[indices[index + 2]];
+                    var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
+                    if (currentIntersectInfo) {
+                        if (currentIntersectInfo.distance < 0) {
+                            continue;
+                        }
+                        if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
+                            intersectInfo = currentIntersectInfo;
+                            intersectInfo.faceId = index / 3;
+                            if (fastCheck) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -158,6 +179,6 @@ var BABYLON;
             return new SubMesh(materialIndex, minVertexIndex, maxVertexIndex - minVertexIndex + 1, startIndex, indexCount, mesh, renderingMesh);
         };
         return SubMesh;
-    }());
+    })();
     BABYLON.SubMesh = SubMesh;
 })(BABYLON || (BABYLON = {}));

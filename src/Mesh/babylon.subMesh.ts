@@ -144,7 +144,7 @@
                     var p1 = positions[indices[index + 1]];
 
                     var length = ray.intersectionSegment(p0, p1, lineMesh.intersectionThreshold);
-                    if (length<0) {
+                    if (length < 0) {
                         continue;
                     }
 
@@ -230,3 +230,4 @@
         }
     }
 }
+

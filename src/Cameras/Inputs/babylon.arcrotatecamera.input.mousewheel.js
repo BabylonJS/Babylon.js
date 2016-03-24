@@ -48,7 +48,7 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecision", void 0);
         return ArcRotateCameraMouseWheelInput;
-    }());
+    })();
     BABYLON.ArcRotateCameraMouseWheelInput = ArcRotateCameraMouseWheelInput;
     BABYLON.CameraInputTypes["ArcRotateCameraMouseWheelInput"] = ArcRotateCameraMouseWheelInput;
 })(BABYLON || (BABYLON = {}));

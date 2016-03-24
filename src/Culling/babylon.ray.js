@@ -158,6 +158,85 @@ var BABYLON;
                 return distance;
             }
         };
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        Ray.prototype.intersectionSegment = function (sega, segb, threshold) {
+            var rsegb = this.origin.add(this.direction.multiplyByFloats(Ray.rayl, Ray.rayl, Ray.rayl));
+            var u = segb.subtract(sega);
+            var v = rsegb.subtract(this.origin);
+            var w = sega.subtract(this.origin);
+            var a = BABYLON.Vector3.Dot(u, u); // always >= 0
+            var b = BABYLON.Vector3.Dot(u, v);
+            var c = BABYLON.Vector3.Dot(v, v); // always >= 0
+            var d = BABYLON.Vector3.Dot(u, w);
+            var e = BABYLON.Vector3.Dot(v, w);
+            var D = a * c - b * b; // always >= 0
+            var sc, sN, sD = D; // sc = sN / sD, default sD = D >= 0
+            var tc, tN, tD = D; // tc = tN / tD, default tD = D >= 0
+            // compute the line parameters of the two closest points
+            if (D < Ray.smallnum) {
+                sN = 0.0; // force using point P0 on segment S1
+                sD = 1.0; // to prevent possible division by 0.0 later
+                tN = e;
+                tD = c;
+            }
+            else {
+                sN = (b * e - c * d);
+                tN = (a * e - b * d);
+                if (sN < 0.0) {
+                    sN = 0.0;
+                    tN = e;
+                    tD = c;
+                }
+                else if (sN > sD) {
+                    sN = sD;
+                    tN = e + b;
+                    tD = c;
+                }
+            }
+            if (tN < 0.0) {
+                tN = 0.0;
+                // recompute sc for this edge
+                if (-d < 0.0) {
+                    sN = 0.0;
+                }
+                else if (-d > a)
+                    sN = sD;
+                else {
+                    sN = -d;
+                    sD = a;
+                }
+            }
+            else if (tN > tD) {
+                tN = tD;
+                // recompute sc for this edge
+                if ((-d + b) < 0.0) {
+                    sN = 0;
+                }
+                else if ((-d + b) > a) {
+                    sN = sD;
+                }
+                else {
+                    sN = (-d + b);
+                    sD = a;
+                }
+            }
+            // finally do the division to get sc and tc
+            sc = (Math.abs(sN) < Ray.smallnum ? 0.0 : sN / sD);
+            tc = (Math.abs(tN) < Ray.smallnum ? 0.0 : tN / tD);
+            // get the difference of the two closest points
+            var dP = w.add(u.multiplyByFloats(sc, sc, sc)).subtract(v.multiplyByFloats(tc, tc, tc)); // = S1(sc) - S2(tc)
+            var isIntersected = (tc > 0) && (tc <= this.length) && (dP.lengthSquared() < (threshold * threshold)); // return intersection result
+            if (isIntersected) {
+                return tc;
+            }
+            return -1;
+        };
         // Statics
         Ray.CreateNew = function (x, y, viewportWidth, viewportHeight, world, view, projection) {
             var start = BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
@@ -185,7 +264,9 @@ var BABYLON;
             var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
             return new Ray(newOrigin, newDirection, ray.length);
         };
+        Ray.smallnum = 0.00000001;
+        Ray.rayl = 10e8;
         return Ray;
-    }());
+    })();
     BABYLON.Ray = Ray;
 })(BABYLON || (BABYLON = {}));

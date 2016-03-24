@@ -198,6 +198,6 @@ var BABYLON;
             this._randomTexture.update(false);
         };
         return SSAORenderingPipeline;
-    }(BABYLON.PostProcessRenderPipeline));
+    })(BABYLON.PostProcessRenderPipeline);
     BABYLON.SSAORenderingPipeline = SSAORenderingPipeline;
 })(BABYLON || (BABYLON = {}));

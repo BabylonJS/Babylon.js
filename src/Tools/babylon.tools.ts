@@ -446,7 +446,7 @@
             if (v.z > max.z)
                 max.z = v.z;
         }
-        
+
         public static DeepCopy(source, destination, doNotCopyList?: string[], mustCopyList?: string[]): void {
             for (var prop in source) {
 

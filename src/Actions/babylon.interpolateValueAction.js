@@ -60,6 +60,6 @@ var BABYLON;
             scene.beginDirectAnimation(this._target, [animation], 0, 100, false, 1, this.onInterpolationDone);
         };
         return InterpolateValueAction;
-    }(BABYLON.Action));
+    })(BABYLON.Action);
     BABYLON.InterpolateValueAction = InterpolateValueAction;
 })(BABYLON || (BABYLON = {}));
