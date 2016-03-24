@@ -15,11 +15,29 @@
         private _vertexBuffers;
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
+        private _boundingBias: Vector2;
         public _delayInfo; //ANY
         private _indexBuffer;
         public _boundingInfo: BoundingInfo;
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
+
+        /**
+         *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y 
+         * @returns The Bias Vector 
+         */
+        public get boundingBias(): Vector2 {
+            return this._boundingBias;
+        }
+
+        public set boundingBias(value: Vector2) {
+            if (this._boundingBias && this._boundingBias.equals(value)) {
+                return;
+            }
+
+            this._boundingBias = value.clone();
+            this.updateExtend();
+        }
 
         constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
             this.id = id;
@@ -41,6 +59,11 @@
 
             // applyToMesh
             if (mesh) {
+                if (mesh instanceof LinesMesh) {
+                    this.boundingBias = new Vector2(0, mesh.intersectionThreshold);
+                    this.updateExtend();
+                }
+
                 this.applyToMesh(mesh);
                 mesh.computeWorldMatrix(true);
             }
@@ -79,7 +102,7 @@
 
                 this._totalVertices = data.length / stride;
 
-                this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                this.updateExtend(data);
 
                 var meshes = this._meshes;
                 var numOfMeshes = meshes.length;
@@ -121,7 +144,7 @@
                 this._totalVertices = data.length / stride;
 
                 if (updateExtends) {
-                    this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices);
+                    this.updateExtend(data);
                 }
 
                 var meshes = this._meshes;
@@ -316,6 +339,14 @@
             }
         }
 
+        private updateExtend(data=null) {
+            if (!data) {
+                data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
+            }
+
+            this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias);
+        }
+
         private _applyToMesh(mesh: Mesh): void {
             var numOfMeshes = this._meshes.length;
 
@@ -330,7 +361,7 @@
                     mesh._resetPointsArrayCache();
 
                     if (!this._extend) {
-                        this._extend = Tools.ExtractMinAndMax(this._vertexBuffers[kind].getData(), 0, this._totalVertices);
+                        this.updateExtend(this._vertexBuffers[kind].getData());
                     }
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
