@@ -226,6 +226,7 @@
 
         /**
          * Add a mesh as LOD level triggered at the given distance.
+         * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD
          * @param {number} distance - the distance from the center of the object to show this level
          * @param {Mesh} mesh - the mesh to be added as LOD level
          * @return {Mesh} this mesh (for chaining)
@@ -249,7 +250,8 @@
         }
         /**
          * Returns the LOD level mesh at the passed distance or null if not found.  
-         * It is related to the method `addLODLevel(distance, mesh)`.  
+         * It is related to the method `addLODLevel(distance, mesh)`. 
+         * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD   
          */
         public getLODLevelAtDistance(distance: number): Mesh {
             for (var index = 0; index < this._LODLevels.length; index++) {
@@ -264,6 +266,7 @@
 
         /**
          * Remove a mesh from the LOD array
+         * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD
          * @param {Mesh} mesh - the mesh to be removed.
          * @return {Mesh} this mesh (for chaining)
          */
@@ -282,6 +285,10 @@
             return this;
         }
 
+        /**
+         * Returns the registered LOD mesh distant from the parameter `camera` position if any, else returns the current mesh.
+         * tuto : http://doc.babylonjs.com/tutorials/How_to_use_LOD
+         */
         public getLOD(camera: Camera, boundingSphere?: BoundingSphere): AbstractMesh {
             if (!this._LODLevels || this._LODLevels.length === 0) {
                 return this;
@@ -338,6 +345,19 @@
          * Returns an array of integers or floats, or a Float32Array, depending on the requested `kind` (positions, indices, normals, etc).  
          * If `copywhenShared` is true (default false) and if the mesh has submeshes, the submesh data are duplicated in the returned array.
          * Returns null if the mesh has no geometry or no vertex buffer.    
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
         public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
             if (!this._geometry) {
@@ -349,6 +369,19 @@
         /**
          * Returns the mesh `VertexBuffer` object from the requested `kind` : positions, indices, normals, etc.
          * Returns `undefined` if the mesh has no geometry.   
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind 
          */
         public getVertexBuffer(kind): VertexBuffer {
             if (!this._geometry) {
@@ -359,6 +392,19 @@
 
         /**
          * Returns a boolean depending on the existence of the Vertex Data for the requested `kind`.
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          */
         public isVerticesDataPresent(kind: string): boolean {
             if (!this._geometry) {
@@ -371,6 +417,19 @@
         }
         /**
          * Returns a string : the list of existing `kinds` of Vertex Data for this mesh.  
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
          */
         public getVerticesDataKinds(): string[] {
             if (!this._geometry) {
@@ -412,6 +471,9 @@
             return this._masterMesh !== null && this._masterMesh !== undefined;
         }
 
+        /**
+         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         */
         public isReady(): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
@@ -420,6 +482,9 @@
             return super.isReady();
         }
 
+        /**
+         * Boolean : true if the mesh has been disposed.  
+         */
         public isDisposed(): boolean {
             return this._isDisposed;
         }
@@ -429,7 +494,7 @@
         }
 
         /**
-         * Sets the mesh side orientation : FRONTSIDE, BACKSIDE, DOUBLESIDE or DEFAULTSIDE
+         * Sets the mesh side orientation : BABYLON.Mesh.FRONTSIDE, BABYLON.Mesh.BACKSIDE, BABYLON.Mesh.DOUBLESIDE or BABYLON.Mesh.DEFAULTSIDE
          * tuto : http://doc.babylonjs.com/tutorials/Discover_Basic_Elements#side-orientation
          */
         public set sideOrientation(sideO: number) {
@@ -445,7 +510,7 @@
         }
 
         /**  
-         * This function affects parametric shapes on update only : ribbons, tubes, etc. 
+         * This function affects parametric shapes on vertex position update only : ribbons, tubes, etc. 
          * It has no effect at all on other shapes.
          * It prevents the mesh normals from being recomputed on next `positions` array update.
          */
@@ -454,7 +519,7 @@
         }
 
         /**  
-         * This function affects parametric shapes on update only : ribbons, tubes, etc. 
+         * This function affects parametric shapes on vertex position update only : ribbons, tubes, etc. 
          * It has no effect at all on other shapes.
          * It reactivates the mesh normals computation if it was previously frozen.
          */
@@ -555,6 +620,29 @@
             this.synchronizeInstances();
         }
 
+        /**
+         * Sets the vertex data of the mesh geometry for the requested `kind`.
+         * If the mesh has no geometry, a new `Geometry` object is set to the mesh and then passed this vertex data.  
+         * The `data` are either a numeric array either a Float32Array. 
+         * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).  
+         * Note that a new underlying `VertexBuffer` object is created each call. 
+         * If the `kind` is the `PositionKind`, the mesh `BoundingInfo` is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed. 
+         * The same for the mesh submeshes if any. 
+         *
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         */
         public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): void {
             if (!this._geometry) {
                 var vertexData = new VertexData();
@@ -569,6 +657,29 @@
             }
         }
 
+        /**
+         * Updates the existing vertex data of the mesh geometry for the requested `kind`.
+         * If the mesh has no geometry, it is simply returned as it is.  
+         * The `data` are either a numeric array either a Float32Array. 
+         * No new underlying `VertexBuffer` object is created. 
+         * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh `BoundingInfo` is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.  
+         * The same for the mesh submeshes if any.
+         * If the parameter `makeItUnique` is true, a new global geometry is created from this positions and is set to the mesh.
+         *
+         * Possible `kind` values :
+         * - BABYLON.VertexBuffer.PositionKind
+         * - BABYLON.VertexBuffer.UVKind
+         * - BABYLON.VertexBuffer.UV2Kind
+         * - BABYLON.VertexBuffer.UV3Kind
+         * - BABYLON.VertexBuffer.UV4Kind
+         * - BABYLON.VertexBuffer.UV5Kind
+         * - BABYLON.VertexBuffer.UV6Kind
+         * - BABYLON.VertexBuffer.ColorKind
+         * - BABYLON.VertexBuffer.MatricesIndicesKind
+         * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
+         * - BABYLON.VertexBuffer.MatricesWeightsKind
+         * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
+         */
         public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): void {
             if (!this._geometry) {
                 return;
@@ -582,6 +693,9 @@
             }
         }
 
+        /**
+         * Deprecated since BabylonJS v2.3
+         */
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset?: number, makeItUnique?: boolean): void {
             Tools.Warn("Mesh.updateVerticesDataDirectly deprecated since 2.3.");
 
@@ -624,6 +738,12 @@
             geometry.applyToMesh(this);
         }
 
+        /**
+         * Sets the mesh indices.  
+         * Expects an array populated with integers or a Int32Array.
+         * If the mesh has no geometry, a new `Geometry` object is created and set to the mesh. 
+         * This method creates a new index buffer each call.
+         */
         public setIndices(indices: number[] | Int32Array, totalVertices?: number): void {
             if (!this._geometry) {
                 var vertexData = new VertexData();
@@ -696,18 +816,34 @@
             }
         }
 
+        /**
+         * Registers a javascript function for this mesh that will be called just before the rendering process.
+         * This function is passed the current mesh and doesn't return anything.  
+         */
         public registerBeforeRender(func: (mesh: AbstractMesh) => void): void {
             this.onBeforeRenderObservable.add(func);
         }
 
+        /**
+         * Disposes a previously registered javascript function called before the rendering.
+         * This function is passed the current mesh and doesn't return anything.  
+         */
         public unregisterBeforeRender(func: (mesh: AbstractMesh) => void): void {
             this.onBeforeRenderObservable.removeCallback(func);
         }
 
+        /**
+         * Registers a javascript function for this mesh that will be called just after the rendering is complete.
+         * This function is passed the current mesh and doesn't return anything.  
+         */
         public registerAfterRender(func: (mesh: AbstractMesh) => void): void {
             this.onAfterRenderObservable.add(func);
         }
 
+        /**
+         * Disposes a previously registered javascript function called after the rendering.
+         * This function is passed the current mesh and doesn't return anything.  
+         */
         public unregisterAfterRender(func: (mesh: AbstractMesh) => void): void {
             this.onAfterRenderObservable.removeCallback(func);
         }
@@ -833,6 +969,10 @@
             }
         }
 
+        /**
+         * Triggers the draw call for the mesh.
+         * You don't need to call this method by your own usually because the mesh rendering is handled by the scene rendering manager.  
+         */
         public render(subMesh: SubMesh, enableAlphaMode: boolean): void {
             var scene = this.getScene();
 
@@ -915,6 +1055,9 @@
             this.onAfterRenderObservable.notifyObservers(this);
         }
 
+        /**
+         * Returns an array populated with `ParticleSystem` objects whose the mesh is the emitter. 
+         */
         public getEmittedParticleSystems(): ParticleSystem[] {
             var results = new Array<ParticleSystem>();
             for (var index = 0; index < this.getScene().particleSystems.length; index++) {
@@ -927,6 +1070,9 @@
             return results;
         }
 
+        /**
+         * Returns an array populated with `ParticleSystem` objects whose the mesh or its children are the emitter.
+         */
         public getHierarchyEmittedParticleSystems(): ParticleSystem[] {
             var results = new Array<ParticleSystem>();
             var descendants = this.getDescendants();
@@ -971,6 +1117,9 @@
             }
         }
 
+        /**
+         * Boolean, true is the mesh in the frustum defined by the `Plane` objects from the `frustumPlanes` array parameter.
+         */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
