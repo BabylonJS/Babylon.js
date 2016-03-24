@@ -50,6 +50,13 @@ module BABYLON {
         }>;
 
         constructor(public object: IPhysicsEnabledObject, public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }, private _scene?: Scene) {
+
+            //sanity check!
+            if (!this.object) {
+                Tools.Error("No object was provided. A physics object is obligatory");
+                return;
+            }
+
             //legacy support for old syntax.
             if (!this._scene && object.getScene) {
                 this._scene = object.getScene()
@@ -379,6 +386,7 @@ module BABYLON {
         }
 
         public clone(newObject: IPhysicsEnabledObject) {
+            if (!newObject) return null;
             return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         }
 
