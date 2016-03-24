@@ -161,10 +161,11 @@
                 }
 
                 // Physics clone  
-                if (clonePhysicsImpostor && this.getScene().getPhysicsEngine()) {
-                    var impostor = this.getScene().getPhysicsEngine().getImpostorForPhysicsObject(this);
+                var physicsEngine = this.getScene().getPhysicsEngine();
+                if (clonePhysicsImpostor && physicsEngine) {
+                    var impostor = physicsEngine.getImpostorForPhysicsObject(mesh);
                     if (impostor) {
-                        mesh.physicsImpostor = impostor.clone(mesh);
+                        this.physicsImpostor = impostor.clone(this);
                     }
                 }  
 
