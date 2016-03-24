@@ -192,6 +192,91 @@
                 return distance;
             }
         }
+
+        private static smallnum = 0.00000001;
+        private static rayl = 10e8;
+
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number) : number
+        {
+            var rsegb = this.origin.add(this.direction.multiplyByFloats(Ray.rayl, Ray.rayl, Ray.rayl));
+
+            var u = segb.subtract(sega);
+            var v = rsegb.subtract(this.origin);
+            var w = sega.subtract(this.origin);
+            var a = Vector3.Dot(u, u);                  // always >= 0
+            var b = Vector3.Dot(u, v);
+            var c = Vector3.Dot(v, v);                  // always >= 0
+            var d = Vector3.Dot(u, w);
+            var e = Vector3.Dot(v, w);
+            var D = a * c - b * b;                      // always >= 0
+            var sc: number, sN: number, sD = D;         // sc = sN / sD, default sD = D >= 0
+            var tc: number, tN: number, tD = D;         // tc = tN / tD, default tD = D >= 0
+
+            // compute the line parameters of the two closest points
+            if (D < Ray.smallnum) {                     // the lines are almost parallel
+                sN = 0.0;                               // force using point P0 on segment S1
+                sD = 1.0;                               // to prevent possible division by 0.0 later
+                tN = e;
+                tD = c;
+            }
+            else {                                      // get the closest points on the infinite lines
+                sN = (b * e - c * d);
+                tN = (a * e - b * d);
+                if (sN < 0.0) {                         // sc < 0 => the s=0 edge is visible
+                    sN = 0.0;
+                    tN = e;
+                    tD = c;
+                } else if (sN > sD) {                   // sc > 1 => the s=1 edge is visible
+                    sN = sD;
+                    tN = e + b;
+                    tD = c;
+                }
+            }
+
+            if (tN < 0.0) {                             // tc < 0 => the t=0 edge is visible
+                tN = 0.0;
+                // recompute sc for this edge
+                if (-d < 0.0) {
+                    sN = 0.0;
+                } else if (-d > a)
+                    sN = sD;
+                else {
+                    sN = -d;
+                    sD = a;
+                }
+            } else if (tN > tD) {                       // tc > 1 => the t=1 edge is visible
+                tN = tD;
+                // recompute sc for this edge
+                if ((-d + b) < 0.0) {
+                    sN = 0;
+                } else if ((-d + b) > a) {
+                    sN = sD;
+                } else {
+                    sN = (-d + b);
+                    sD = a;
+                }
+            }
+            // finally do the division to get sc and tc
+            sc = (Math.abs(sN) < Ray.smallnum ? 0.0 : sN / sD);
+            tc = (Math.abs(tN) < Ray.smallnum ? 0.0 : tN / tD);
+
+            // get the difference of the two closest points
+            var dP = w.add(u.multiplyByFloats(sc, sc, sc)).subtract(v.multiplyByFloats(tc, tc, tc));  // = S1(sc) - S2(tc)
+
+            var isIntersected = (tc > 0) && (tc <= this.length) && (dP.lengthSquared() < (threshold * threshold));   // return intersection result
+
+            if (isIntersected) {
+                return tc;
+            }
+            return -1;
+        }
         
         // Statics
         public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
