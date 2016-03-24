@@ -12,14 +12,14 @@ var BABYLON;
             this.skipNextObervers = skipNextObervers;
         }
         return EventState;
-    }());
+    })();
     BABYLON.EventState = EventState;
     var Observer = (function () {
         function Observer(callback) {
             this.callback = callback;
         }
         return Observer;
-    }());
+    })();
     BABYLON.Observer = Observer;
     var Observable = (function () {
         function Observable() {
@@ -98,6 +98,6 @@ var BABYLON;
             return result;
         };
         return Observable;
-    }());
+    })();
     BABYLON.Observable = Observable;
 })(BABYLON || (BABYLON = {}));

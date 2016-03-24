@@ -90,6 +90,6 @@ var BABYLON;
             }
         };
         return Layer;
-    }());
+    })();
     BABYLON.Layer = Layer;
 })(BABYLON || (BABYLON = {}));

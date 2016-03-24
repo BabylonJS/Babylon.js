@@ -127,6 +127,6 @@ var BABYLON;
             }
         };
         return CameraInputsManager;
-    }());
+    })();
     BABYLON.CameraInputsManager = CameraInputsManager;
 })(BABYLON || (BABYLON = {}));

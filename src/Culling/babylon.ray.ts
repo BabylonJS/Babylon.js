@@ -203,8 +203,7 @@
          * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
          * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
          */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number) : number
-        {
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number {
             var rsegb = this.origin.add(this.direction.multiplyByFloats(Ray.rayl, Ray.rayl, Ray.rayl));
 
             var u = segb.subtract(sega);

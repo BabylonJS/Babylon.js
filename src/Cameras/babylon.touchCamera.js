@@ -46,6 +46,6 @@ var BABYLON;
             return "TouchCamera";
         };
         return TouchCamera;
-    }(BABYLON.FreeCamera));
+    })(BABYLON.FreeCamera);
     BABYLON.TouchCamera = TouchCamera;
 })(BABYLON || (BABYLON = {}));

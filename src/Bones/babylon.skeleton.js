@@ -317,6 +317,6 @@ var BABYLON;
             return skeleton;
         };
         return Skeleton;
-    }());
+    })();
     BABYLON.Skeleton = Skeleton;
 })(BABYLON || (BABYLON = {}));

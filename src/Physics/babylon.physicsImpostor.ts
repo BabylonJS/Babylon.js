@@ -428,6 +428,4 @@ module BABYLON {
         public static ParticleImpostor = 8;
         public static HeightmapImpostor = 9;
     }
-
 }
-

@@ -339,7 +339,7 @@
             }
         }
 
-        private updateExtend(data=null) {
+        private updateExtend(data = null) {
             if (!data) {
                 data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
@@ -1226,5 +1226,6 @@
         }
     }
 }
+
 
 

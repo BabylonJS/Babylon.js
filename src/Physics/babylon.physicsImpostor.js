@@ -56,6 +56,11 @@ var BABYLON;
                     });
                 }
             };
+            //sanity check!
+            if (!this.object) {
+                BABYLON.Tools.Error("No object was provided. A physics object is obligatory");
+                return;
+            }
             //legacy support for old syntax.
             if (!this._scene && object.getScene) {
                 this._scene = object.getScene();
@@ -311,6 +316,8 @@ var BABYLON;
             this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
         };
         PhysicsImpostor.prototype.clone = function (newObject) {
+            if (!newObject)
+                return null;
             return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         };
         PhysicsImpostor.prototype.dispose = function () {
@@ -342,6 +349,6 @@ var BABYLON;
         PhysicsImpostor.ParticleImpostor = 8;
         PhysicsImpostor.HeightmapImpostor = 9;
         return PhysicsImpostor;
-    }());
+    })();
     BABYLON.PhysicsImpostor = PhysicsImpostor;
 })(BABYLON || (BABYLON = {}));
