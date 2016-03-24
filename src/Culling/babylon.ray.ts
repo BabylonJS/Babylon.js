@@ -201,7 +201,7 @@
          * @param sega the first point of the segment to test the intersection against
          * @param segb the second point of the segment to test the intersection against
          * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or undefined if there's no intersection
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
          */
         intersectionSegment(sega: Vector3, segb: Vector3, threshold: number) : number
         {
@@ -275,7 +275,7 @@
             if (isIntersected) {
                 return tc;
             }
-            return undefined;
+            return -1;
         }
         
         // Statics
