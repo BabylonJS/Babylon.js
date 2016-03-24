@@ -270,7 +270,7 @@
             // get the difference of the two closest points
             var dP = w.add(u.multiplyByFloats(sc, sc, sc)).subtract(v.multiplyByFloats(tc, tc, tc));  // = S1(sc) - S2(tc)
 
-            var isIntersected = dP.lengthSquared() < (threshold * threshold);   // return intersection result
+            var isIntersected = (tc > 0) && (tc <= this.length) && (dP.lengthSquared() < (threshold * threshold));   // return intersection result
 
             if (isIntersected) {
                 return tc;

@@ -3,11 +3,39 @@
         public color = new Color3(1, 1, 1);
         public alpha = 1;
 
+        /**
+         * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
+         * This margin is expressed in world space coordinates, so its value may vary.
+         * Default value is 0.1
+         * @returns the intersection Threshold value.
+         */
+        public get intersectionThreshold(): number {
+            return this._intersectionThreshold;
+        }
+
+        /**
+         * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
+         * This margin is expressed in world space coordinates, so its value may vary.
+         * @param value the new threshold to apply
+         */
+        public set intersectionThreshold(value: number) {
+            if (this._intersectionThreshold === value) {
+                return;
+            }
+
+            this._intersectionThreshold = value;
+            if (this.geometry) {
+                this.geometry.boundingBias = new Vector2(0, value);
+            }
+        }
+
+        private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
         constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean) {
             super(name, scene, parent, source, doNotCloneChildren);
 
+            this._intersectionThreshold = 0.1;
             this._colorShader = new ShaderMaterial("colorShader", scene, "color",
                 {
                     attributes: ["position"],
@@ -21,7 +49,7 @@
         }
 
         public get isPickable(): boolean {
-            return false;
+            return true;
         }
 
         public get checkCollisions(): boolean {
@@ -49,10 +77,6 @@
 
             // Draw order
             engine.draw(false, subMesh.indexStart, subMesh.indexCount);
-        }
-
-        public intersects(ray: Ray, fastCheck?: boolean) {
-            return null;
         }
 
         public dispose(doNotRecurse?: boolean): void {
