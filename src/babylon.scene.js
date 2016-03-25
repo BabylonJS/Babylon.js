@@ -438,8 +438,11 @@ var BABYLON;
             }
         };
         // Pointers handling
-        Scene.prototype.attachControl = function () {
+        Scene.prototype.attachControl = function (attachUp, attachDown, attachMove) {
             var _this = this;
+            if (attachUp === void 0) { attachUp = true; }
+            if (attachDown === void 0) { attachDown = true; }
+            if (attachMove === void 0) { attachMove = true; }
             var spritePredicate = function (sprite) {
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
@@ -614,12 +617,18 @@ var BABYLON;
                 }
             };
             var eventPrefix = BABYLON.Tools.GetPointerPrefix();
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
-            // Wheel
-            this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+            if (attachMove) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
+                // Wheel
+                this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
+                this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+            }
+            if (attachDown) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            }
+            if (attachUp) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
+            }
             BABYLON.Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp }
