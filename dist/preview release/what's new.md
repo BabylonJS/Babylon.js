@@ -22,6 +22,12 @@
     - New SPS property `computeBoundingBox` ([jerome](https://github.com/jbousquie))  
     - Added a new OnPickOut trigger fired when you release the pointer button outside of a mesh or sprite. ([deltakosh](https://github.com/deltakosh))
     - Added support for OnPointerOver and OnPointerOut for sprites. ([deltakosh](https://github.com/deltakosh))
+    - Added an optional predicate on Node.getDescendants, Node.getChildren to filter out Nodes based on a callback execution. ([nockawa](https://github.com/nockawa))
+    - Added Ray.intersectionPlane & intersectionSegment. ([nockawa](https://github.com/nockawa))
+    - LinesMesh class now supports Intersection. Added the intersectionThreshold property to set a tolerance margin during intersection with wire lines. ([nockawa](https://github.com/nockawa))
+    - Geometry.boundingBias property to enlarge the boundingInfo objects ([nockawa](https://github.com/nockawa))
+    - Tools.ExtractMinAndMax & ExtractMinAndMaxIndexed now supports an optional Bias for Extent computation.
+
   - **API doc**
     - class `SolidParticleSystem` documented
     - class `MeshBuilder` documented
