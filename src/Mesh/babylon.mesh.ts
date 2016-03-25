@@ -462,6 +462,7 @@
          * Returns an empty array if the mesh has no geometry.
          */
         public getIndices(copyWhenShared?: boolean): number[] | Int32Array {
+            
             if (!this._geometry) {
                 return [];
             }
