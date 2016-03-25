@@ -9317,7 +9317,7 @@ var BABYLON;
             }
             else {
                 var childMeshes = this.getChildMeshes(true);
-                for (index = 0; childMeshes.length; index++) {
+                for (index = 0; index < childMeshes.length; index++) {
                     var child = childMeshes[index];
                     child.parent = null;
                     child.computeWorldMatrix(true);
@@ -19026,7 +19026,7 @@ var BABYLON;
                     }
                 }
             }
-            else if (this._mesh instanceof BABYLON.Mesh) {
+            else {
                 // Triangles test
                 for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
                     var p0 = positions[indices[index]];

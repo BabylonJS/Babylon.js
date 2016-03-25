@@ -122,7 +122,7 @@ var BABYLON;
                     }
                 }
             }
-            else if (this._mesh instanceof BABYLON.Mesh) {
+            else {
                 // Triangles test
                 for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
                     var p0 = positions[indices[index]];
