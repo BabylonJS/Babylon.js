@@ -1162,7 +1162,7 @@
                 }
             } else {
                 var childMeshes = this.getChildMeshes(true);
-                for (index = 0; childMeshes.length; index++) {
+                for (index = 0; index < childMeshes.length; index++) {
                     var child = childMeshes[index];
                     child.parent = null;
                     child.computeWorldMatrix(true);
