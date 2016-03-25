@@ -163,7 +163,7 @@
                 // Physics clone  
                 var physicsEngine = this.getScene().getPhysicsEngine();
                 if (clonePhysicsImpostor && physicsEngine) {
-                    var impostor = physicsEngine.getImpostorForPhysicsObject(source);
+                    var impostor = physicsEngine.getImpostorForPhysicsObject(source); 
                     if (impostor) {
                         this.physicsImpostor = impostor.clone(this);
                     }

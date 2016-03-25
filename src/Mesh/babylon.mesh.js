@@ -82,7 +82,7 @@ var BABYLON;
                 // Physics clone  
                 var physicsEngine = this.getScene().getPhysicsEngine();
                 if (clonePhysicsImpostor && physicsEngine) {
-                    var impostor = physicsEngine.getImpostorForPhysicsObject(mesh);
+                    var impostor = physicsEngine.getImpostorForPhysicsObject(source);
                     if (impostor) {
                         this.physicsImpostor = impostor.clone(this);
                     }

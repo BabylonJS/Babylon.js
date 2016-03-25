@@ -121,6 +121,7 @@ var BABYLON;
                     var construct = BABYLON.CameraInputTypes[this.attached[n].getTypeName()];
                     if (construct) {
                         var input = BABYLON.SerializationHelper.Parse(function () { return new construct(); }, parsedCamera, null);
+                        this.remove(this.attached[n]);
                         this.add(input);
                     }
                 }
