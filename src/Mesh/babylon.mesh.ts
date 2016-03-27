@@ -163,7 +163,7 @@
                 // Physics clone  
                 var physicsEngine = this.getScene().getPhysicsEngine();
                 if (clonePhysicsImpostor && physicsEngine) {
-                    var impostor = physicsEngine.getImpostorForPhysicsObject(source); 
+                    var impostor = physicsEngine.getImpostorForPhysicsObject(source);
                     if (impostor) {
                         this.physicsImpostor = impostor.clone(this);
                     }
@@ -462,7 +462,7 @@
          * Returns an empty array if the mesh has no geometry.
          */
         public getIndices(copyWhenShared?: boolean): number[] | Int32Array {
-            
+
             if (!this._geometry) {
                 return [];
             }
@@ -1768,7 +1768,7 @@
             
              
             //(Deprecated) physics
-            if(parsedMesh.physicsImpostor) {
+            if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,
                     friction: parsedMesh.physicsFriction,
@@ -2529,6 +2529,7 @@
         }
     }
 }
+
 
 
 

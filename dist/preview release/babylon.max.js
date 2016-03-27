@@ -9554,7 +9554,7 @@ var BABYLON;
                 if (!this.transformedPosition) {
                     this.transformedPosition = BABYLON.Vector3.Zero();
                 }
-                BABYLON.Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), this.transformedPosition);
+                BABYLON.Vector3.TransformCoordinatesToRef(this.getAbsolutePosition(), this.parent.getWorldMatrix(), this.transformedPosition);
                 return true;
             }
             return false;
@@ -14526,6 +14526,12 @@ var BABYLON;
             }
         };
         // Pointers handling
+        /**
+        * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
+        * @param attachUp defines if you want to attach events to pointerup
+        * @param attachDown defines if you want to attach events to pointerdown
+        * @param attachMove defines if you want to attach events to pointermove
+        */
         Scene.prototype.attachControl = function (attachUp, attachDown, attachMove) {
             var _this = this;
             if (attachUp === void 0) { attachUp = true; }
@@ -18209,6 +18215,14 @@ var BABYLON;
             }
             else {
                 mesh.layerMask = 0x0FFFFFFF;
+            }
+            //(Deprecated) physics
+            if (parsedMesh.physicsImpostor) {
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
+                    mass: parsedMesh.physicsMass,
+                    friction: parsedMesh.physicsFriction,
+                    restitution: parsedMesh.physicsRestitution
+                }, scene);
             }
             // Instances
             if (parsedMesh.instances) {
