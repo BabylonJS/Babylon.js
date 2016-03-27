@@ -11,6 +11,8 @@
     - Added Camera Inputs Manager to manage camera inputs (mouse, touch, keyboard, gamepad, ...) in a composable way, without relying on class inheritance [gleborgne](https://github.com/gleborgne)
     - Introduced new observable system to handle events ([nockawa](https://github.com/nockawa), [deltakosh](https://github.com/deltakosh))
     - Added a new VR camera : VRDeviceOrientationArcRotateCamera [temechon](https://github.com/Temechon)
+    - Unity3D exporter: Added support for lightmaps ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
+    - Unity3D exporter: Added support for export and run (local webserver) ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
   - **Updates**
     - Added skeleton.getBoneIndexByName(boneName: string) [dad72](https://github.com/dad72)
     - Added node._children to track children hierarchy ([deltakosh](https://github.com/deltakosh))

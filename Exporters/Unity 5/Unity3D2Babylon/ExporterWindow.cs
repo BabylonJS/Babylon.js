@@ -40,7 +40,7 @@ namespace Unity3D2Babylon
 
         void Initialize()
         {
-            titleContent.text = "Babylon.js";
+            title = "Babylon.js";
         }
 
         void OnGUI()
@@ -60,17 +60,30 @@ namespace Unity3D2Babylon
             GUILayout.Label("Exportation options", EditorStyles.boldLabel);
             exportationOptions.ReflectionDefaultLevel = EditorGUILayout.Slider("Reflection default level", exportationOptions.ReflectionDefaultLevel, 0, 1.0f);
 
+            EditorGUILayout.Space();
             GUILayout.Label("Collisions options", EditorStyles.boldLabel);
             exportationOptions.ExportCollisions = EditorGUILayout.Toggle("Collisions", exportationOptions.ExportCollisions);
             exportationOptions.CameraEllipsoid = EditorGUILayout.Vector3Field("Camera's Ellipsoid:", exportationOptions.CameraEllipsoid);
             exportationOptions.Gravity = EditorGUILayout.Vector3Field("Gravity:", exportationOptions.Gravity);
 
             EditorGUILayout.Space();
+            GUILayout.Label("Physics options", EditorStyles.boldLabel);
+            exportationOptions.ExportPhysics = EditorGUILayout.Toggle("Physics", exportationOptions.ExportPhysics);
+
+            EditorGUILayout.Space();
             EditorGUILayout.Space();
 
             if (GUILayout.Button("Export"))
             {
-                Export();
+                Export(false);
+            }
+
+            if (WebServer.IsSupported)
+            {
+                if (GUILayout.Button("Export & Run"))
+                {
+                    Export(true);
+                }
             }
 
             EditorGUILayout.Space();
@@ -88,7 +101,7 @@ namespace Unity3D2Babylon
             Repaint();
         }
 
-        public void Export()
+        public void Export(bool run)
         {
             try
             {
@@ -117,7 +130,7 @@ namespace Unity3D2Babylon
                 sceneBuilder.ConvertFromUnity();
 
                 ReportProgress(1, "Generating output file");
-                sceneBuilder.WriteToBabylonFile();
+                var outputFile = sceneBuilder.WriteToBabylonFile();
 
                 watch.Stop();
                 ReportProgress(1, string.Format("Exportation done in {0:0.00}s", watch.Elapsed.TotalSeconds));
@@ -126,6 +139,14 @@ namespace Unity3D2Babylon
                 sceneBuilder.GenerateStatus(logs);
 
                 ShowMessage("Exportation done");
+
+                if (run)
+                {
+                    WebServer.SceneFolder = Path.GetDirectoryName(outputFile);
+                    WebServer.SceneFilename = Path.GetFileName(outputFile);
+
+                    Process.Start("http://localhost:" + WebServer.Port);
+                }
             }
             catch (Exception ex)
             {

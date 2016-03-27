@@ -23,14 +23,14 @@ namespace Unity3D2Babylon
             {
                 var meshFilter = gameObject.GetComponent<MeshFilter>();
                 var renderer = gameObject.GetComponent<Renderer>();
-                if (meshFilter != null && renderer.shadowCastingMode != ShadowCastingMode.Off)
+                if (meshFilter != null && renderer != null && renderer.shadowCastingMode != ShadowCastingMode.Off)
                 {
                     renderList.Add(GetID(gameObject));
                     continue;
                 }
 
                 var skinnedMesh = gameObject.GetComponent<SkinnedMeshRenderer>();
-                if (skinnedMesh != null && renderer.shadowCastingMode != ShadowCastingMode.Off)
+                if (skinnedMesh != null && renderer != null && renderer.shadowCastingMode != ShadowCastingMode.Off)
                 {
                     renderList.Add(GetID(gameObject));
                 }
