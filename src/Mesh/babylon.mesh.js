@@ -1543,6 +1543,14 @@ var BABYLON;
             else {
                 mesh.layerMask = 0x0FFFFFFF;
             }
+            //(Deprecated) physics
+            if (parsedMesh.physicsImpostor) {
+                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
+                    mass: parsedMesh.physicsMass,
+                    friction: parsedMesh.physicsFriction,
+                    restitution: parsedMesh.physicsRestitution
+                }, scene);
+            }
             // Instances
             if (parsedMesh.instances) {
                 for (var index = 0; index < parsedMesh.instances.length; index++) {
