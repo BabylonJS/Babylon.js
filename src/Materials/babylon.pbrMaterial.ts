@@ -1,6 +1,4 @@
-﻿/// <reference path="../../../dist/preview release/babylon.d.ts"/>
-
-module BABYLON {
+﻿module BABYLON {
     var maxSimultaneousLights = 4;
 
     class PBRMaterialDefines extends MaterialDefines {
@@ -160,7 +158,7 @@ module BABYLON {
          */
         @serialize()
         public overloadedShadeIntensity: number = 1.0;
-        
+
         private _overloadedShadowInfos: Vector4 = new Vector4(this.overloadedShadowIntensity, this.overloadedShadeIntensity, 0.0, 0.0);
 
         /**
@@ -177,7 +175,7 @@ module BABYLON {
          */
         @serialize()
         public cameraContrast: number = 1.0;
-        
+
         private _cameraInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
 
         private _microsurfaceTextureLods: Vector2 = new Vector2(0.0, 0.0);
@@ -233,7 +231,7 @@ module BABYLON {
          */
         @serialize()
         public overloadedEmissiveIntensity: number = 0.0;
-        
+
         private _overloadedIntensity: Vector4 = new Vector4(this.overloadedAmbientIntensity, this.overloadedAlbedoIntensity, this.overloadedReflectivityIntensity, this.overloadedEmissiveIntensity);
         
         /**
@@ -261,7 +259,7 @@ module BABYLON {
          */
         @serialize()
         public overloadedMicroSurfaceIntensity: number = 0.0;
-        
+
         private _overloadedMicroSurface: Vector3 = new Vector3(this.overloadedMicroSurface, this.overloadedMicroSurfaceIntensity, this.overloadedReflectionIntensity);
 
         /**
@@ -275,13 +273,13 @@ module BABYLON {
          */
         @serializeAsTexture()
         public ambientTexture: BaseTexture;
-        
+
         @serializeAsTexture()
         public opacityTexture: BaseTexture;
-        
+
         @serializeAsTexture()
         public reflectionTexture: BaseTexture;
-        
+
         @serializeAsTexture()
         public emissiveTexture: BaseTexture;
         
@@ -290,13 +288,13 @@ module BABYLON {
          */
         @serializeAsTexture()
         public reflectivityTexture: BaseTexture;
-        
+
         @serializeAsTexture()
         public bumpTexture: BaseTexture;
-        
+
         @serializeAsTexture()
         public lightmapTexture: BaseTexture;
-        
+
         @serializeAsTexture()
         public refractionTexture: BaseTexture;
 
@@ -314,10 +312,10 @@ module BABYLON {
          */
         @serializeAsColor3("reflectivity")
         public reflectivityColor = new Color3(1, 1, 1);
-        
+
         @serializeAsColor3("reflection")
         public reflectionColor = new Color3(0.5, 0.5, 0.5);
-        
+
         @serializeAsColor3("emissivie")
         public emissiveColor = new Color3(0, 0, 0);
         
@@ -338,10 +336,10 @@ module BABYLON {
          */
         @serialize()
         public invertRefractionY = false;
-        
+
         @serializeAsFresnelParameters()
         public opacityFresnelParameters: FresnelParameters;
-        
+
         @serializeAsFresnelParameters()
         public emissiveFresnelParameters: FresnelParameters;
 
@@ -357,7 +355,7 @@ module BABYLON {
          */
         @serialize()
         public linkEmissiveWithAlbedo = false;
-        
+
         @serialize()
         public useLightmapAsShadowmap = false;
         
@@ -433,10 +431,10 @@ module BABYLON {
          */
         @serialize()
         public parallaxScaleBias = 0.05;
-        
+
         @serialize()
         public disableLighting = false;
-        
+
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _globalAmbientColor = new Color3(0, 0, 0);
@@ -520,12 +518,12 @@ module BABYLON {
 
             return false;
         }
-      
-        private convertColorToLinearSpaceToRef (color: Color3, ref: Color3): void {
+
+        private convertColorToLinearSpaceToRef(color: Color3, ref: Color3): void {
             PBRMaterial.convertColorToLinearSpaceToRef(color, ref, this.useScalarInLinearSpace);
         }
-        
-        private static convertColorToLinearSpaceToRef (color: Color3, ref: Color3, useScalarInLinear: boolean): void {
+
+        private static convertColorToLinearSpaceToRef(color: Color3, ref: Color3, useScalarInLinear: boolean): void {
             if (!useScalarInLinear) {
                 color.toLinearSpaceToRef(ref);
             } else {
@@ -534,7 +532,7 @@ module BABYLON {
                 ref.b = color.b;
             }
         }
-        
+
         private static _scaledAlbedo = new Color3();
         private static _scaledReflectivity = new Color3();
         private static _scaledEmissive = new Color3();
@@ -554,20 +552,20 @@ module BABYLON {
                 if (!light.canAffectMesh(mesh)) {
                     continue;
                 }
-                
+
                 this._lightRadiuses[lightIndex] = light.radius;
 
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
-                
+
                 PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
                 effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, light.range);
-                
+
                 if (defines["SPECULARTERM"]) {
                     this.convertColorToLinearSpaceToRef(light.specular, PBRMaterial._scaledReflectivity, useScalarInLinearSpace);
-                    
+
                     PBRMaterial._scaledReflectivity.scaleToRef(light.intensity, PBRMaterial._scaledReflectivity);
                     effect.setColor3("vLightSpecular" + lightIndex, PBRMaterial._scaledReflectivity);
                 }
@@ -582,7 +580,7 @@ module BABYLON {
                 if (lightIndex === maxSimultaneousLights)
                     break;
             }
-            
+
             effect.setFloat4("vLightRadiuses", this._lightRadiuses[0],
                 this._lightRadiuses[1],
                 this._lightRadiuses[2],
@@ -692,7 +690,7 @@ module BABYLON {
                             if (this.reflectionTexture instanceof HDRCubeTexture && (<HDRCubeTexture>this.reflectionTexture)) {
                                 this._defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 needNormals = true;
-                                
+
                                 if ((<HDRCubeTexture>this.reflectionTexture).isPMREM) {
                                     this._defines.USEPMREMREFLECTION = true;
                                 }
@@ -737,7 +735,7 @@ module BABYLON {
                     } else {
                         needUVs = true;
                         this._defines.BUMP = true;
-                        
+
                         if (this.useParallax) {
                             this._defines.PARALLAX = true;
                             if (this.useParallaxOcclusion) {
@@ -760,7 +758,7 @@ module BABYLON {
                         }
                         if (this.refractionTexture instanceof HDRCubeTexture) {
                             this._defines.REFRACTIONMAPINLINEARSPACE = true;
-                            
+
                             if ((<HDRCubeTexture>this.refractionTexture).isPMREM) {
                                 this._defines.USEPMREMREFRACTION = true;
                             }
@@ -851,11 +849,11 @@ module BABYLON {
             if (this._defines.SPECULARTERM && this.useSpecularOverAlpha) {
                 this._defines.SPECULAROVERALPHA = true;
             }
-            
+
             if (this.usePhysicalLightFalloff) {
                 this._defines.USEPHYSICALLIGHTFALLOFF = true;
             }
-            
+
             if (this.useRadianceOverAlpha) {
                 this._defines.RADIANCEOVERALPHA = true;
             }
@@ -902,7 +900,7 @@ module BABYLON {
                 if (this._defines.REFLECTION) {
                     fallbacks.addFallback(0, "REFLECTION");
                 }
-                
+
                 if (this._defines.REFRACTION) {
                     fallbacks.addFallback(0, "REFRACTION");
                 }
@@ -914,7 +912,7 @@ module BABYLON {
                 if (this._defines.BUMP) {
                     fallbacks.addFallback(0, "BUMP");
                 }
-                
+
                 if (this._defines.PARALLAX) {
                     fallbacks.addFallback(1, "PARALLAX");
                 }
@@ -1100,7 +1098,7 @@ module BABYLON {
 
                     if (this.reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                         this._microsurfaceTextureLods.x = Math.round(Math.log(this.reflectionTexture.getSize().width) * Math.LOG2E);
-                        
+
                         if (this.reflectionTexture.isCube) {
                             this._effect.setTexture("reflectionCubeSampler", this.reflectionTexture);
                         } else {
@@ -1171,7 +1169,7 @@ module BABYLON {
 
                     if (this.refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                         this._microsurfaceTextureLods.y = Math.round(Math.log(this.refractionTexture.getSize().width) * Math.LOG2E);
-                        
+
                         var depth = 1.0;
                         if (this.refractionTexture.isCube) {
                             this._effect.setTexture("refractionCubeSampler", this.refractionTexture);
@@ -1185,7 +1183,7 @@ module BABYLON {
                         }
                         this._effect.setFloat4("vRefractionInfos", this.refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
-                    
+
                     if ((this.reflectionTexture || this.refractionTexture)) {
                         this._effect.setFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                     }
@@ -1210,7 +1208,7 @@ module BABYLON {
                 this._effect.setColor4("vReflectivityColor", PBRMaterial._scaledReflectivity, this.microSurface);
 
                 // GAMMA CORRECTION.
-                this.convertColorToLinearSpaceToRef(this.emissiveColor,PBRMaterial._scaledEmissive);
+                this.convertColorToLinearSpaceToRef(this.emissiveColor, PBRMaterial._scaledEmissive);
                 this._effect.setColor3("vEmissiveColor", PBRMaterial._scaledEmissive);
 
                 // GAMMA CORRECTION.
@@ -1257,7 +1255,7 @@ module BABYLON {
                 this._overloadedIntensity.w = this.overloadedEmissiveIntensity;
                 this._effect.setVector4("vOverloadedIntensity", this._overloadedIntensity);
 
-                this.convertColorToLinearSpaceToRef(this.overloadedAmbient,this._tempColor);
+                this.convertColorToLinearSpaceToRef(this.overloadedAmbient, this._tempColor);
                 this._effect.setColor3("vOverloadedAmbient", this._tempColor);
                 this.convertColorToLinearSpaceToRef(this.overloadedAlbedo, this._tempColor);
                 this._effect.setColor3("vOverloadedAlbedo", this._tempColor);
@@ -1362,14 +1360,14 @@ module BABYLON {
 
             super.dispose(forceDisposeEffect);
         }
-        
+
         public clone(name: string): PBRMaterial {
             return SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
         }
 
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
-            serializationObject.customType      = "BABYLON.PBRMaterial";
+            serializationObject.customType = "BABYLON.PBRMaterial";
             return serializationObject;
         }
 
