@@ -43,6 +43,11 @@ namespace Unity3D2Babylon
 
         private void ConvertUnityLightToBabylon(Light light, float progress)
         {
+            if (!light.isActiveAndEnabled || light.alreadyLightmapped)
+            {
+                return;
+            }
+
             ExporterWindow.ReportProgress(progress, "Exporting light: " + light.name);
 
             BabylonLight babylonLight = new BabylonLight

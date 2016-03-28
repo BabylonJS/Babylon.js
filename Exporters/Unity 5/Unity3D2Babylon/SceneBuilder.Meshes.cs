@@ -60,205 +60,185 @@ namespace Unity3D2Babylon
 
             babylonMesh.scaling = transform.localScale.ToFloat();
 
-            babylonMesh.positions = new float[mesh.vertexCount * 3];
-
-            for (int i = 0; i < mesh.vertices.Length; i++)
+            if (mesh != null)
             {
-                babylonMesh.positions[i * 3] = mesh.vertices[i].x;
-                babylonMesh.positions[(i * 3) + 1] = mesh.vertices[i].y;
-                babylonMesh.positions[(i * 3) + 2] = mesh.vertices[i].z;
+                babylonMesh.positions = new float[mesh.vertexCount * 3];
 
-                // Computing world extends
-                var worldPosition = transform.TransformPoint(mesh.vertices[i]);
-
-                if (worldPosition.x > babylonScene.MaxVector.X)
+                for (int i = 0; i < mesh.vertices.Length; i++)
                 {
-                    babylonScene.MaxVector.X = worldPosition.x;
+                    babylonMesh.positions[i * 3] = mesh.vertices[i].x;
+                    babylonMesh.positions[(i * 3) + 1] = mesh.vertices[i].y;
+                    babylonMesh.positions[(i * 3) + 2] = mesh.vertices[i].z;
+
+                    // Computing world extends
+                    var worldPosition = transform.TransformPoint(mesh.vertices[i]);
+
+                    if (worldPosition.x > babylonScene.MaxVector.X)
+                    {
+                        babylonScene.MaxVector.X = worldPosition.x;
+                    }
+                    if (worldPosition.y > babylonScene.MaxVector.Y)
+                    {
+                        babylonScene.MaxVector.Y = worldPosition.y;
+                    }
+                    if (worldPosition.z > babylonScene.MaxVector.Z)
+                    {
+                        babylonScene.MaxVector.Z = worldPosition.z;
+                    }
+
+                    if (worldPosition.x < babylonScene.MinVector.X)
+                    {
+                        babylonScene.MinVector.X = worldPosition.x;
+                    }
+                    if (worldPosition.y < babylonScene.MinVector.Y)
+                    {
+                        babylonScene.MinVector.Y = worldPosition.y;
+                    }
+                    if (worldPosition.z < babylonScene.MinVector.Z)
+                    {
+                        babylonScene.MinVector.Z = worldPosition.z;
+                    }
                 }
-                if (worldPosition.y > babylonScene.MaxVector.Y)
+
+                babylonMesh.normals = new float[mesh.vertexCount * 3];
+
+                for (int i = 0; i < mesh.normals.Length; i++)
                 {
-                    babylonScene.MaxVector.Y = worldPosition.y;
-                }
-                if (worldPosition.z > babylonScene.MaxVector.Z)
-                {
-                    babylonScene.MaxVector.Z = worldPosition.z;
+                    babylonMesh.normals[i * 3] = mesh.normals[i].x;
+                    babylonMesh.normals[(i * 3) + 1] = mesh.normals[i].y;
+                    babylonMesh.normals[(i * 3) + 2] = mesh.normals[i].z;
                 }
 
-                if (worldPosition.x < babylonScene.MinVector.X)
-                {
-                    babylonScene.MinVector.X = worldPosition.x;
-                }
-                if (worldPosition.y < babylonScene.MinVector.Y)
-                {
-                    babylonScene.MinVector.Y = worldPosition.y;
-                }
-                if (worldPosition.z < babylonScene.MinVector.Z)
-                {
-                    babylonScene.MinVector.Z = worldPosition.z;
-                }
-            }
+                babylonMesh.uvs = new float[mesh.vertexCount * 2];
 
-            babylonMesh.normals = new float[mesh.vertexCount * 3];
-
-            for (int i = 0; i < mesh.normals.Length; i++)
-            {
-                babylonMesh.normals[i * 3] = mesh.normals[i].x;
-                babylonMesh.normals[(i * 3) + 1] = mesh.normals[i].y;
-                babylonMesh.normals[(i * 3) + 2] = mesh.normals[i].z;
-            }
-
-            babylonMesh.uvs = new float[mesh.vertexCount * 2];
-
-            for (int i = 0; i < mesh.uv.Length; i++)
-            {
-                babylonMesh.uvs[i * 2] = mesh.uv[i].x;
-                babylonMesh.uvs[(i * 2) + 1] = mesh.uv[i].y;
-            }
-
-            babylonMesh.uvs2 = new float[mesh.vertexCount * 2];
-
-            if (mesh.uv2 != null && mesh.uv2.Length > 0)
-            {
-                for (int i = 0; i < mesh.uv2.Length; i++)
-                {
-                    babylonMesh.uvs2[i * 2] = mesh.uv2[i].x;
-                    babylonMesh.uvs2[(i * 2) + 1] = mesh.uv2[i].y;
-                }
-            }
-            else
-            {
                 for (int i = 0; i < mesh.uv.Length; i++)
                 {
-                    babylonMesh.uvs2[i * 2] = mesh.uv[i].x;
-                    babylonMesh.uvs2[(i * 2) + 1] = mesh.uv[i].y;
+                    babylonMesh.uvs[i * 2] = mesh.uv[i].x;
+                    babylonMesh.uvs[(i * 2) + 1] = mesh.uv[i].y;
                 }
-            }
 
-            babylonMesh.indices = new int[mesh.triangles.Length];
+                babylonMesh.uvs2 = new float[mesh.vertexCount * 2];
 
-            for (int i = 0; i < mesh.triangles.Length; i += 3)
-            {
-                babylonMesh.indices[i] = mesh.triangles[i + 2];
-                babylonMesh.indices[i + 1] = mesh.triangles[i + 1];
-                babylonMesh.indices[i + 2] = mesh.triangles[i];
-            }
-
-            if (renderer != null)
-            {
-                if (mesh.subMeshCount > 1) // Multimaterials
+                if (mesh.uv2 != null && mesh.uv2.Length > 0)
                 {
-                    BabylonMultiMaterial bMultiMat;
-                    if (!multiMatDictionary.ContainsKey(renderer.sharedMaterial.name))
+                    for (int i = 0; i < mesh.uv2.Length; i++)
                     {
-                        bMultiMat = new BabylonMultiMaterial
-                        {
-                            materials = new string[mesh.subMeshCount],
-                            id = Guid.NewGuid().ToString(),
-                            name = renderer.sharedMaterial.name
-                        };
-
-                        for (int i = 0; i < renderer.sharedMaterials.Length; i++)
-                        {
-                            var bMat = DumpMaterial(renderer.sharedMaterials[i], renderer);
-                            bMultiMat.materials[i] = bMat.id;
-                        }
-                        if (mesh.subMeshCount > 1)
-                        {
-                            multiMatDictionary.Add(bMultiMat.name, bMultiMat);
-                        }
-                    }
-                    else
-                    {
-                        bMultiMat = multiMatDictionary[renderer.sharedMaterial.name];
-                    }
-
-                    babylonMesh.materialId = bMultiMat.id;
-                    babylonMesh.subMeshes = new BabylonSubMesh[mesh.subMeshCount];
-
-                    var offset = 0;
-                    for (int materialIndex = 0; materialIndex < mesh.subMeshCount; materialIndex++)
-                    {
-                        var unityTriangles = mesh.GetTriangles(materialIndex);
-
-                        babylonMesh.subMeshes[materialIndex] = new BabylonSubMesh
-                        {
-                            verticesStart = 0,
-                            verticesCount = mesh.vertexCount,
-                            materialIndex = materialIndex,
-                            indexStart = offset,
-                            indexCount = unityTriangles.Length
-                        };
-
-                        offset += unityTriangles.Length;
+                        babylonMesh.uvs2[i * 2] = mesh.uv2[i].x;
+                        babylonMesh.uvs2[(i * 2) + 1] = mesh.uv2[i].y;
                     }
                 }
                 else
                 {
-                    babylonMesh.materialId = DumpMaterial(renderer.sharedMaterial, renderer).id;
+                    for (int i = 0; i < mesh.uv.Length; i++)
+                    {
+                        babylonMesh.uvs2[i * 2] = mesh.uv[i].x;
+                        babylonMesh.uvs2[(i * 2) + 1] = mesh.uv[i].y;
+                    }
                 }
-            }
 
-            babylonScene.MeshesList.Add(babylonMesh);
+                babylonMesh.indices = new int[mesh.triangles.Length];
 
-            // Animations
-            ExportAnimations(transform, babylonMesh);
-
-            if (IsRotationQuaternionAnimated(babylonMesh))
-            {
-                babylonMesh.rotationQuaternion = transform.localRotation.ToFloat();
-            }
-
-            // Collisions
-            if (exportationOptions.ExportCollisions)
-            {
-                var collider = gameObject.GetComponent<Collider>();
-
-                if (collider != null)
+                for (int i = 0; i < mesh.triangles.Length; i += 3)
                 {
-                    babylonMesh.checkCollisions = true;
+                    babylonMesh.indices[i] = mesh.triangles[i + 2];
+                    babylonMesh.indices[i + 1] = mesh.triangles[i + 1];
+                    babylonMesh.indices[i + 2] = mesh.triangles[i];
+                }
+
+                if (renderer != null && renderer.sharedMaterial != null)
+                {
+                    if (mesh.subMeshCount > 1) // Multimaterials
+                    {
+                        BabylonMultiMaterial bMultiMat;
+                        if (!multiMatDictionary.ContainsKey(renderer.sharedMaterial.name))
+                        {
+                            bMultiMat = new BabylonMultiMaterial
+                            {
+                                materials = new string[mesh.subMeshCount],
+                                id = Guid.NewGuid().ToString(),
+                                name = renderer.sharedMaterial.name
+                            };
+
+                            for (int i = 0; i < renderer.sharedMaterials.Length; i++)
+                            {
+                                var sharedMaterial = renderer.sharedMaterials[i];
+                                BabylonMaterial babylonMaterial;
+
+                                if (sharedMaterial.HasProperty("_Metallic"))
+                                {
+                                    babylonMaterial = DumpPBRMaterial(sharedMaterial, renderer);
+                                }
+                                else
+                                {
+                                    babylonMaterial = DumpMaterial(sharedMaterial, renderer);
+                                }
+
+                                bMultiMat.materials[i] = babylonMaterial.id;
+                            }
+                            if (mesh.subMeshCount > 1)
+                            {
+                                multiMatDictionary.Add(bMultiMat.name, bMultiMat);
+                            }
+                        }
+                        else
+                        {
+                            bMultiMat = multiMatDictionary[renderer.sharedMaterial.name];
+                        }
+
+                        babylonMesh.materialId = bMultiMat.id;
+                        babylonMesh.subMeshes = new BabylonSubMesh[mesh.subMeshCount];
+
+                        var offset = 0;
+                        for (int materialIndex = 0; materialIndex < mesh.subMeshCount; materialIndex++)
+                        {
+                            var unityTriangles = mesh.GetTriangles(materialIndex);
+
+                            babylonMesh.subMeshes[materialIndex] = new BabylonSubMesh
+                            {
+                                verticesStart = 0,
+                                verticesCount = mesh.vertexCount,
+                                materialIndex = materialIndex,
+                                indexStart = offset,
+                                indexCount = unityTriangles.Length
+                            };
+
+                            offset += unityTriangles.Length;
+                        }
+                    }
+                    else
+                    {
+                        if (renderer.sharedMaterial.HasProperty("_Metallic"))
+                        {
+                            babylonMesh.materialId = DumpPBRMaterial(renderer.sharedMaterial, renderer).id;
+                        }
+                        else
+                        {
+                            babylonMesh.materialId = DumpMaterial(renderer.sharedMaterial, renderer).id;
+                        }
+                    }
+                }
+
+                babylonScene.MeshesList.Add(babylonMesh);
+
+                // Animations
+                ExportAnimations(transform, babylonMesh);
+
+                if (IsRotationQuaternionAnimated(babylonMesh))
+                {
+                    babylonMesh.rotationQuaternion = transform.localRotation.ToFloat();
+                }
+
+                // Collisions
+                if (exportationOptions.ExportCollisions)
+                {
+                    var collider = gameObject.GetComponent<Collider>();
+
+                    if (collider != null)
+                    {
+                        babylonMesh.checkCollisions = true;
+                    }
                 }
             }
-
-            // Physics
-            if (exportationOptions.ExportPhysics)
-            {
-                DumpPhysics(gameObject, babylonMesh);
-            }
-        }
-
-        void DumpPhysics(GameObject gameObject, BabylonMesh babylonMesh)
-        {
-            var impostor = gameObject.GetComponent<Collider>();
-
-            if (impostor == null)
-            {
-                return;
-            }
-
-            babylonScene.physicsEnabled = true;
-            babylonScene.physicsGravity = Physics.gravity.ToFloat();
-
-            if (impostor is SphereCollider)
-            {
-                babylonMesh.physicsImpostor = 1;
-            }
-            else if (impostor is BoxCollider)
-            {
-                babylonMesh.physicsImpostor = 2;
-            }
-            else if (impostor is MeshCollider)
-            {
-                babylonMesh.physicsImpostor = 4;
-            }
-
-            var rigidBody = gameObject.GetComponent<Rigidbody>();
-
-            if (rigidBody == null)
-            {
-                return;
-            }
-
-            babylonMesh.physicsMass = rigidBody.mass;
         }
     }
 }
