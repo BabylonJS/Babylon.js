@@ -305,7 +305,7 @@ var BABYLON;
                 database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
             };
             if (url.indexOf("file:") !== -1) {
-                var fileName = url.substring(5);
+                var fileName = url.substring(5).toLowerCase();
                 Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
             }
             else {
@@ -806,7 +806,7 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    })();
+    }());
     BABYLON.Tools = Tools;
     /**
      * An implementation of a loop for asynchronous functions.
@@ -890,6 +890,6 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    })();
+    }());
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));

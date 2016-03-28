@@ -374,7 +374,7 @@
             };
 
             if (url.indexOf("file:") !== -1) {
-                var fileName = url.substring(5);
+                var fileName = url.substring(5).toLowerCase();
                 Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
             }
             else {
