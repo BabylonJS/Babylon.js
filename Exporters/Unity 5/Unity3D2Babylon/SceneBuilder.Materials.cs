@@ -150,7 +150,7 @@ namespace Unity3D2Babylon
 
             if (!materialsDictionary.ContainsKey(material.name))
             {
-                var bMat = new BabylonMaterial
+                var bMat = new BabylonStandardMaterial
                 {
                     name = material.name,
                     id = Guid.NewGuid().ToString(),
@@ -244,6 +244,45 @@ namespace Unity3D2Babylon
                     bMat.lightmapTexture.uOffset = renderer.lightmapScaleOffset.z;
                     bMat.lightmapTexture.vOffset = renderer.lightmapScaleOffset.w;
                 }
+
+                materialsDictionary.Add(bMat.name, bMat);
+                return bMat;
+            }
+
+            return materialsDictionary[material.name];
+        }
+
+
+        private BabylonMaterial DumpPBRMaterial(Material material, Renderer renderer)
+        {
+            if (!materialsDictionary.ContainsKey(material.name))
+            {
+                var bMat = new BabylonPBRMaterial
+                {
+                    name = material.name,
+                    id = Guid.NewGuid().ToString(),
+                    albedoColor = new float[4]
+                };
+
+                if (material.HasProperty("_Color"))
+                {
+                    bMat.albedoColor = material.color.ToFloat();
+                }
+
+                bMat.albedoTexture = DumpTextureFromMaterial(material, "_MainTex");
+
+                if (material.HasProperty("_Glossiness"))
+                {
+                    bMat.microSurface = material.GetFloat("_Glossiness");
+                }
+
+                if (material.HasProperty("_Metallic"))
+                {
+                    var metallic = material.GetFloat("_Metallic");
+                    bMat.reflectivityColor = new float[] { metallic, metallic, metallic };
+                }
+
+                bMat.bumpTexture = DumpTextureFromMaterial(material, "_BumpMap");
 
                 materialsDictionary.Add(bMat.name, bMat);
                 return bMat;

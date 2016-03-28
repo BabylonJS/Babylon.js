@@ -6,6 +6,7 @@ using JsonFx;
 using UnityEditor;
 using UnityEngine;
 using JsonFx.Json;
+using UnityEditor.SceneManagement;
 
 namespace Unity3D2Babylon
 {
@@ -40,7 +41,7 @@ namespace Unity3D2Babylon
 
         void Initialize()
         {
-            title = "Babylon.js";
+            titleContent = new GUIContent("Babylon.js");
         }
 
         void OnGUI()
@@ -63,9 +64,17 @@ namespace Unity3D2Babylon
             EditorGUILayout.Space();
             GUILayout.Label("Collisions options", EditorStyles.boldLabel);
             exportationOptions.ExportCollisions = EditorGUILayout.Toggle("Collisions", exportationOptions.ExportCollisions);
-            exportationOptions.CameraEllipsoid = EditorGUILayout.Vector3Field("Camera's Ellipsoid:", exportationOptions.CameraEllipsoid);
-            exportationOptions.Gravity = EditorGUILayout.Vector3Field("Gravity:", exportationOptions.Gravity);
 
+            EditorGUILayout.BeginHorizontal(GUILayout.ExpandHeight(false));
+            GUILayout.Label("Camera's Ellipsoid");
+            exportationOptions.CameraEllipsoid = EditorGUILayout.Vector3Field("", exportationOptions.CameraEllipsoid, GUILayout.ExpandWidth(false));
+            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(-16);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("Gravity");
+            exportationOptions.Gravity = EditorGUILayout.Vector3Field("", exportationOptions.Gravity, GUILayout.ExpandWidth(false));
+            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(-16);
             EditorGUILayout.Space();
             GUILayout.Label("Physics options", EditorStyles.boldLabel);
             exportationOptions.ExportPhysics = EditorGUILayout.Toggle("Physics", exportationOptions.ExportPhysics);
@@ -105,8 +114,7 @@ namespace Unity3D2Babylon
         {
             try
             {
-                int pos = EditorApplication.currentScene.LastIndexOf("/", StringComparison.Ordinal);
-                string sceneName = EditorApplication.currentScene.Substring(pos + 1);
+                string sceneName = EditorSceneManager.GetActiveScene().name;
 
                 exportationOptions.DefaultFolder = EditorUtility.SaveFolderPanel("Please select a folder", exportationOptions.DefaultFolder, "");
 
@@ -119,7 +127,7 @@ namespace Unity3D2Babylon
 
                 watch.Start();
 
-                var jsWriter = new JsonWriter();                
+                var jsWriter = new JsonWriter();
                 File.WriteAllText("Unity3D2Babylon.ini", jsWriter.Write(exportationOptions));
                 logs.Clear();
 
