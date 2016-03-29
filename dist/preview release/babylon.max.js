@@ -44778,6 +44778,7 @@ var BABYLON;
             this.reflectionColor = new BABYLON.Color3(0.5, 0.5, 0.5);
             this.emissiveColor = new BABYLON.Color3(0, 0, 0);
             /**
+    
              * AKA Glossiness in other nomenclature.
              */
             this.microSurface = 0.9;
@@ -45686,7 +45687,7 @@ var BABYLON;
             BABYLON.serializeAsColor3("reflection")
         ], PBRMaterial.prototype, "reflectionColor", void 0);
         __decorate([
-            BABYLON.serializeAsColor3("emissivie")
+            BABYLON.serializeAsColor3("emissive")
         ], PBRMaterial.prototype, "emissiveColor", void 0);
         __decorate([
             BABYLON.serialize()

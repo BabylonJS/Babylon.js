@@ -316,10 +316,11 @@
         @serializeAsColor3("reflection")
         public reflectionColor = new Color3(0.5, 0.5, 0.5);
 
-        @serializeAsColor3("emissivie")
+        @serializeAsColor3("emissive")
         public emissiveColor = new Color3(0, 0, 0);
         
         /**
+
          * AKA Glossiness in other nomenclature.
          */
         @serialize()
