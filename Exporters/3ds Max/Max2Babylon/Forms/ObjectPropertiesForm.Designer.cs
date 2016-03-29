@@ -297,7 +297,7 @@
             // 
             this.nupTo.Location = new System.Drawing.Point(47, 40);
             this.nupTo.Maximum = new decimal(new int[] {
-            1000,
+            100000,
             0,
             0,
             0});
@@ -318,7 +318,7 @@
             // 
             this.nupFrom.Location = new System.Drawing.Point(47, 14);
             this.nupFrom.Maximum = new decimal(new int[] {
-            1000,
+            100000,
             0,
             0,
             0});

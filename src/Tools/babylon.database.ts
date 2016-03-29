@@ -59,12 +59,17 @@ module BABYLON {
             }
 
             var that = this;
+            var timeStampUsed = false;
             var manifestURL = this.currentSceneUrl + ".manifest";
-
+            
             var xhr: XMLHttpRequest = new XMLHttpRequest();
 
-            var manifestURLTimeStamped = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + (new Date()).getTime();
-            xhr.open("GET", manifestURLTimeStamped, true);
+            if (navigator.onLine) {
+                // Adding a timestamp to by-pass browsers' cache
+                timeStampUsed = true;
+                manifestURL = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + (new Date()).getTime();
+            }
+            xhr.open("GET", manifestURL, true);
 
             xhr.addEventListener("load",() => {
                 if (xhr.status === 200 || Tools.ValidateXHRData(xhr, 1)) {
@@ -89,7 +94,17 @@ module BABYLON {
             }, false);
 
             xhr.addEventListener("error", event => {
-                noManifestFile();
+                if (timeStampUsed) {
+                    timeStampUsed = false;
+                    // Let's retry without the timeStamp
+                    // It could fail when coupled with HTML5 Offline API
+                    var retryManifestURL = this.currentSceneUrl + ".manifest";
+                    xhr.open("GET", retryManifestURL, true);
+                    xhr.send();
+                }
+                else {
+                    noManifestFile();
+                }
             }, false);
 
             try {

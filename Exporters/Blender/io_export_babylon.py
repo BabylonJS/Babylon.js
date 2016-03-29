@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 2, 1),
+    'version': (4, 4, 2),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -163,9 +163,14 @@ class ExporterSettingsPanel(bpy.types.Panel):
         default = True
         )
     bpy.types.Scene.inlineTextures = bpy.props.BoolProperty(
-        name="inline textures",
+        name="inline",
         description="turn textures into encoded strings, for direct inclusion into source code",
         default = False,
+        )
+    bpy.types.Scene.textureDir = bpy.props.StringProperty(
+        name='sub-directory',
+        description='The path below the output directory to write texture files (any separators OS dependent)',
+        default = ''
         )
     bpy.types.Scene.ignoreIKBones = bpy.props.BoolProperty(
         name="Ignore IK Bones",
@@ -179,8 +184,14 @@ class ExporterSettingsPanel(bpy.types.Panel):
         scene = context.scene
         layout.prop(scene, "export_onlySelectedLayer")
         layout.prop(scene, "export_flatshadeScene")
-        layout.prop(scene, "inlineTextures")
         layout.prop(scene, "ignoreIKBones")
+
+        box = layout.box()
+        box.label(text='Texture Location:')
+        box.prop(scene, "inlineTextures")
+        row = box.row()
+        row.enabled = not scene.inlineTextures
+        row.prop(scene, "textureDir")
 
         box = layout.box()
         box.prop(scene, 'attachedSound')
@@ -250,11 +261,22 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
             if bpy.ops.object.mode_set.poll():
                 bpy.ops.object.mode_set(mode = 'OBJECT')
 
+            # assign texture location, purely temporary if inlining
+            self.textureDir = os.path.dirname(self.filepath)
+            if not scene.inlineTextures:
+                self.textureDir = os.path.join(self.textureDir, scene.textureDir)
+                if not os.path.isdir(self.textureDir):
+                    os.makedirs(self.textureDir)
+                    Main.warn("Texture sub-directory did not already exist, created: " + self.textureDir)
+
             Main.log('========= Conversion from Blender to Babylon.js =========', 0)
             Main.log('Scene settings used:', 1)
             Main.log('selected layers only:  ' + format_bool(scene.export_onlySelectedLayer), 2)
             Main.log('flat shading entire scene:  ' + format_bool(scene.export_flatshadeScene), 2)
             Main.log('inline textures:  ' + format_bool(scene.inlineTextures), 2)
+            if not scene.inlineTextures:
+                Main.log('texture directory:  ' + self.textureDir, 2)
+
             self.world = World(scene)
 
             bpy.ops.screen.animation_cancel()
@@ -377,6 +399,7 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
         # Open file
         file_handler = io.open(self.filepathMinusExtension + '.babylon', 'w', encoding='utf8')
         file_handler.write('{')
+        file_handler.write('"producer":{"name":"Blender","version":"' + bpy.app.version_string + '","exporter_version":"' + format_version() + '","file":"' + Main.nameSpace + '.babylon"},\n')
         self.world.to_scene_file(file_handler)
 
         # Materials
@@ -1395,7 +1418,7 @@ class Skeleton:
                         bone.append_animation_pose(frame + frameOffset, frame == animationRange.highest_frame)
 
                 frameOffset = animationRange.frame_end + 1
-                
+
         # mode_set's only work when there is an active object, switch bones to edit mode to rest position
         scene.objects.active = skeleton
         bpy.ops.object.mode_set(mode='EDIT')
@@ -1407,7 +1430,7 @@ class Skeleton:
                 if editBone.name == myBoneObj.name:
                     myBoneObj.set_rest_pose(editBone, matrix_world)
                     break
-           
+
         bpy.ops.object.mode_set(mode='OBJECT')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Since IK bones could be being skipped, looking up index of bone in second pass of mesh required
@@ -1713,29 +1736,28 @@ class Texture:
             if len(usingMap) == 0:
                 usingMap = mesh.data.uv_textures[0].name
 
-            Main.log('Image texture found, type:  ' + slot + ', mapped using: "' + usingMap + '"', 3)
+            Main.log('Image texture found, type:  ' + slot + ', mapped using: "' + usingMap + '"', 4)
             if mesh.data.uv_textures[0].name == usingMap:
                 self.coordinatesIndex = 0
             elif mesh.data.uv_textures[1].name == usingMap:
                 self.coordinatesIndex = 1
             else:
-                Main.warn('Texture is not mapped as UV or UV2, assigned 1', 4)
+                Main.warn('Texture is not mapped as UV or UV2, assigned 1', 5)
                 self.coordinatesIndex = 0
 
         # always write the file out, since base64 encoding is easiest from a file
         try:
             imageFilepath = os.path.normpath(bpy.path.abspath(image.filepath))
             basename = os.path.basename(imageFilepath)
-            targetdir = os.path.dirname(exporter.filepath)
 
             internalImage = image.packed_file or wasBaked
 
             # when coming from either a packed image or a baked image, then save_render
             if internalImage:
                 if exporter.scene.inlineTextures:
-                    textureFile = os.path.join(targetdir, basename + "temp")
+                    textureFile = os.path.join(exporter.textureDir, basename + "temp")
                 else:
-                    textureFile = os.path.join(targetdir, basename)
+                    textureFile = os.path.join(exporter.textureDir, basename)
 
                 image.save_render(textureFile)
 
@@ -1743,10 +1765,10 @@ class Texture:
             else:
                 textureFile = bpy.path.abspath(image.filepath)
                 if not exporter.scene.inlineTextures:
-                    shutil.copy(textureFile, targetdir)
+                    shutil.copy(textureFile, exporter.textureDir)
         except:
             ex = sys.exc_info()
-            Main.log('Error encountered processing image file:  ' + ', Error:  '+ str(ex[1]))
+            Main.warn('Error encountered processing image file:  ' + ', Error:  '+ str(ex[1]))
 
         if exporter.scene.inlineTextures:
             # base64 is easiest from a file, so sometimes a temp file was made above;  need to delete those
@@ -2016,34 +2038,34 @@ class StdMaterial(Material):
 
             if mtex.use_map_diffuse or mtex.use_map_color_diffuse:
                 if mtex.texture_coords == 'REFLECTION':
-                    Main.log('Reflection texture found"' + mtex.name + '"', 2)
+                    Main.log('Reflection texture found "' + mtex.name + '"', 3)
                     self.textures.append(Texture('reflectionTexture', mtex.diffuse_color_factor, mtex, mesh, exporter))
                 else:
-                    Main.log('Diffuse texture found"' + mtex.name + '"', 2)
+                    Main.log('Diffuse texture found "' + mtex.name + '"', 3)
                     self.textures.append(Texture('diffuseTexture', mtex.diffuse_color_factor, mtex, mesh, exporter))
 
             if mtex.use_map_ambient:
-                Main.log('Ambient texture found"' + mtex.name + '"', 2)
+                Main.log('Ambient texture found "' + mtex.name + '"', 3)
                 self.textures.append(Texture('ambientTexture', mtex.ambient_factor, mtex, mesh, exporter))
 
             if mtex.use_map_alpha:
                 if self.alpha > 0:
-                    Main.log('Opacity texture found"' + mtex.name + '"', 2)
+                    Main.log('Opacity texture found "' + mtex.name + '"', 3)
                     self.textures.append(Texture('opacityTexture', mtex.alpha_factor, mtex, mesh, exporter))
                 else:
-                    Main.warn('Opacity non-std way to indicate opacity, use material alpha to also use Opacity texture', 2)
+                    Main.warn('Opacity non-std way to indicate opacity, use material alpha to also use Opacity texture', 4)
                     self.alpha = 1
 
             if mtex.use_map_emit:
-                Main.log('Emissive texture found"' + mtex.name + '"', 2)
+                Main.log('Emissive texture found "' + mtex.name + '"', 3)
                 self.textures.append(Texture('emissiveTexture', mtex.emit_factor, mtex, mesh, exporter))
 
             if mtex.use_map_normal:
-                Main.log('Bump texture found"' + mtex.name + '"', 2)
+                Main.log('Bump texture found "' + mtex.name + '"', 3)
                 self.textures.append(Texture('bumpTexture', 1.0 / mtex.normal_factor, mtex, mesh, exporter))
 
             if mtex.use_map_color_spec:
-                Main.log('Specular texture found"' + mtex.name + '"', 2)
+                Main.log('Specular texture found "' + mtex.name + '"', 3)
                 self.textures.append(Texture('specularTexture', mtex.specular_color_factor, mtex, mesh, exporter))
 #===============================================================================
 class BakedMaterial(Material):

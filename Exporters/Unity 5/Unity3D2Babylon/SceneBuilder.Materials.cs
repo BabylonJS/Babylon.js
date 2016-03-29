@@ -64,7 +64,7 @@ namespace Unity3D2Babylon
             babylonTexture.coordinatesMode = 3;
         }
 
-        private void CopyTexture(string texturePath, Texture2D texture2D, BabylonTexture babylonTexture)
+        private void CopyTexture(string texturePath, Texture2D texture2D, BabylonTexture babylonTexture, bool isLightmap = false)
         {
             bool needToDelete = false;
             var useJPG = !texture2D.alphaIsTransparency;
@@ -82,6 +82,7 @@ namespace Unity3D2Babylon
                     var previousConvertToNormalmap = textureImporter.convertToNormalmap;
                     var previousTextureType = textureImporter.textureType;
                     var previousGrayscaleToAlpha = textureImporter.grayscaleToAlpha;
+
                     textureImporter.textureType = TextureImporterType.Advanced;
                     textureImporter.isReadable = true;
                     textureImporter.lightmap = false;
@@ -97,7 +98,20 @@ namespace Unity3D2Babylon
 
                     var tempTexture = new Texture2D(texture2D.width, texture2D.height, TextureFormat.ARGB32, false);
 
-                    tempTexture.SetPixels32(texture2D.GetPixels32());
+                    if (isLightmap)
+                    {
+                        Color[] pixels = texture2D.GetPixels(0, 0, texture2D.width, texture2D.height);
+                        for (int index = 0; index < pixels.Length; index++)
+                        {
+                            pixels[index].r = pixels[index].r * pixels[index].a * 5;
+                            pixels[index].g = pixels[index].g * pixels[index].a * 5;
+                            pixels[index].b = pixels[index].b * pixels[index].a * 5;
+                        }
+                        tempTexture.SetPixels(pixels);
+                    }
+                    else {
+                        tempTexture.SetPixels32(texture2D.GetPixels32());
+                    }
                     tempTexture.Apply();
 
                     File.WriteAllBytes(texturePath, useJPG ? tempTexture.EncodeToJPG() : tempTexture.EncodeToPNG());
@@ -132,9 +146,11 @@ namespace Unity3D2Babylon
 
         private BabylonMaterial DumpMaterial(Material material, Renderer renderer)
         {
+            var materialNotSupported = false; 
+
             if (!materialsDictionary.ContainsKey(material.name))
             {
-                var bMat = new BabylonMaterial
+                var bMat = new BabylonStandardMaterial
                 {
                     name = material.name,
                     id = Guid.NewGuid().ToString(),
@@ -170,7 +186,13 @@ namespace Unity3D2Babylon
                     bMat.emissive = emissiveColor.ToFloat();
                 }
 
-                if (material.mainTexture)
+                if (material.mainTexture && material.mainTexture.GetType().FullName == "UnityEngine.ProceduralTexture")
+                {
+                    materialNotSupported = true;
+                    Debug.LogWarning("ProceduralTexture: " + material.mainTexture.name + " not supported by Babylon.js");
+                }
+
+                if (material.mainTexture && !(materialNotSupported))
                 {
                     var mainTexturePath = AssetDatabase.GetAssetPath(material.mainTexture);
                     bMat.diffuseTexture = new BabylonTexture
@@ -209,18 +231,58 @@ namespace Unity3D2Babylon
                 bMat.ambientTexture = DumpTextureFromMaterial(material, "_LightMap");
                 bMat.reflectionTexture = DumpTextureFromMaterial(material, "_Cube");
 
-                //if (bMat.ambientTexture == null && renderer.lightmapIndex >= 0 && renderer.lightmapIndex != 255 && LightmapSettings.lightmaps.Length > renderer.lightmapIndex)
-                //{
-                //    var lightmap = LightmapSettings.lightmaps[renderer.lightmapIndex].lightmapFar;
-                //    bMat.ambientTexture = DumpTexture(lightmap);
-                //    bMat.ambientTexture.coordinatesIndex = 1;
+                if (bMat.ambientTexture == null && renderer.lightmapIndex >= 0 && renderer.lightmapIndex != 255 && LightmapSettings.lightmaps.Length > renderer.lightmapIndex)
+                {
+                    var lightmap = LightmapSettings.lightmaps[renderer.lightmapIndex].lightmapFar;
+                    bMat.lightmapTexture = DumpTexture(lightmap, isLightmap: true);
+                    bMat.lightmapTexture.coordinatesIndex = 1;
+                    bMat.useLightmapAsShadowmap = true;
 
-                //    bMat.ambientTexture.uScale = renderer.lightmapTilingOffset.x;
-                //    bMat.ambientTexture.vScale = renderer.lightmapTilingOffset.y;
+                    bMat.lightmapTexture.uScale = renderer.lightmapScaleOffset.x;
+                    bMat.lightmapTexture.vScale = renderer.lightmapScaleOffset.y;
 
-                //    bMat.ambientTexture.uOffset = renderer.lightmapTilingOffset.z;
-                //    bMat.ambientTexture.vOffset = renderer.lightmapTilingOffset.w;
-                //}
+                    bMat.lightmapTexture.uOffset = renderer.lightmapScaleOffset.z;
+                    bMat.lightmapTexture.vOffset = renderer.lightmapScaleOffset.w;
+                }
+
+                materialsDictionary.Add(bMat.name, bMat);
+                return bMat;
+            }
+
+            return materialsDictionary[material.name];
+        }
+
+
+        private BabylonMaterial DumpPBRMaterial(Material material, Renderer renderer)
+        {
+            if (!materialsDictionary.ContainsKey(material.name))
+            {
+                var bMat = new BabylonPBRMaterial
+                {
+                    name = material.name,
+                    id = Guid.NewGuid().ToString(),
+                    albedoColor = new float[4]
+                };
+
+                if (material.HasProperty("_Color"))
+                {
+                    bMat.albedoColor = material.color.ToFloat();
+                }
+
+                bMat.albedoTexture = DumpTextureFromMaterial(material, "_MainTex");
+
+                if (material.HasProperty("_Glossiness"))
+                {
+                    bMat.microSurface = material.GetFloat("_Glossiness");
+                }
+
+                if (material.HasProperty("_Metallic"))
+                {
+                    var metallic = material.GetFloat("_Metallic");
+                    bMat.reflectivityColor = new float[] { metallic, metallic, metallic };
+                }
+
+                bMat.bumpTexture = DumpTextureFromMaterial(material, "_BumpMap");
 
                 materialsDictionary.Add(bMat.name, bMat);
                 return bMat;
@@ -240,7 +302,7 @@ namespace Unity3D2Babylon
             return DumpTexture(texture, material, name);
         }
 
-        private BabylonTexture DumpTexture(Texture texture, Material material = null, string name = "")
+        private BabylonTexture DumpTexture(Texture texture, Material material = null, string name = "", bool isLightmap = false)
         {
             if (texture == null)
             {
@@ -267,7 +329,7 @@ namespace Unity3D2Babylon
             {
                 babylonTexture.hasAlpha = texture2D.alphaIsTransparency;
 
-                CopyTexture(texturePath, texture2D, babylonTexture);
+                CopyTexture(texturePath, texture2D, babylonTexture, isLightmap);
             }
             else
             {

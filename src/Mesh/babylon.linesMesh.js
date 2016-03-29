@@ -12,12 +12,40 @@ var BABYLON;
             _super.call(this, name, scene, parent, source, doNotCloneChildren);
             this.color = new BABYLON.Color3(1, 1, 1);
             this.alpha = 1;
+            this._intersectionThreshold = 0.1;
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", scene, "color", {
                 attributes: ["position"],
                 uniforms: ["worldViewProjection", "color"],
                 needAlphaBlending: true
             });
         }
+        Object.defineProperty(LinesMesh.prototype, "intersectionThreshold", {
+            /**
+             * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
+             * This margin is expressed in world space coordinates, so its value may vary.
+             * Default value is 0.1
+             * @returns the intersection Threshold value.
+             */
+            get: function () {
+                return this._intersectionThreshold;
+            },
+            /**
+             * The intersection Threshold is the margin applied when intersection a segment of the LinesMesh with a Ray.
+             * This margin is expressed in world space coordinates, so its value may vary.
+             * @param value the new threshold to apply
+             */
+            set: function (value) {
+                if (this._intersectionThreshold === value) {
+                    return;
+                }
+                this._intersectionThreshold = value;
+                if (this.geometry) {
+                    this.geometry.boundingBias = new BABYLON.Vector2(0, value);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(LinesMesh.prototype, "material", {
             get: function () {
                 return this._colorShader;
@@ -27,7 +55,7 @@ var BABYLON;
         });
         Object.defineProperty(LinesMesh.prototype, "isPickable", {
             get: function () {
-                return false;
+                return true;
             },
             enumerable: true,
             configurable: true
@@ -55,9 +83,6 @@ var BABYLON;
             // Draw order
             engine.draw(false, subMesh.indexStart, subMesh.indexCount);
         };
-        LinesMesh.prototype.intersects = function (ray, fastCheck) {
-            return null;
-        };
         LinesMesh.prototype.dispose = function (doNotRecurse) {
             this._colorShader.dispose();
             _super.prototype.dispose.call(this, doNotRecurse);
@@ -66,6 +91,6 @@ var BABYLON;
             return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
         };
         return LinesMesh;
-    })(BABYLON.Mesh);
+    }(BABYLON.Mesh));
     BABYLON.LinesMesh = LinesMesh;
 })(BABYLON || (BABYLON = {}));

@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-uniform sampler2D textureSampler;
+﻿uniform sampler2D textureSampler;
 varying vec2 vUV;
 
 #if defined(GAUSSIAN_BLUR_H) || defined(GAUSSIAN_BLUR_V)

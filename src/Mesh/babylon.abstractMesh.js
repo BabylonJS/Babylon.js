@@ -11,11 +11,27 @@ var BABYLON;
         function AbstractMesh(name, scene) {
             var _this = this;
             _super.call(this, name, scene);
+            // Events
+            /**
+            * An event triggered when this mesh collides with another one
+            * @type {BABYLON.Observable}
+            */
+            this.onCollideObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the collision's position changes
+            * @type {BABYLON.Observable}
+            */
+            this.onCollisionPositionChangeObservable = new BABYLON.Observable();
+            /**
+            * An event triggered after the world matrix is updated
+            * @type {BABYLON.Observable}
+            */
+            this.onAfterWorldMatrixUpdateObservable = new BABYLON.Observable();
             // Properties
             this.definedFacingForward = true; // orientation for POV movement & rotation
             this.position = new BABYLON.Vector3(0, 0, 0);
-            this.rotation = new BABYLON.Vector3(0, 0, 0);
-            this.scaling = new BABYLON.Vector3(1, 1, 1);
+            this._rotation = new BABYLON.Vector3(0, 0, 0);
+            this._scaling = new BABYLON.Vector3(1, 1, 1);
             this.billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
             this.visibility = 1.0;
             this.alphaIndex = Number.MAX_VALUE;
@@ -45,8 +61,6 @@ var BABYLON;
             this.useOctreeForCollisions = true;
             this.layerMask = 0x0FFFFFFF;
             this.alwaysSelectAsActiveMesh = false;
-            // Physics
-            this._physicImpostor = BABYLON.PhysicsEngine.NoImpostor;
             // Collisions
             this._checkCollisions = false;
             this.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5);
@@ -70,7 +84,6 @@ var BABYLON;
             this._isDisposed = false;
             this._renderId = 0;
             this._intersectionsInProgress = new Array();
-            this._onAfterWorldMatrixUpdate = new Array();
             this._isWorldMatrixFrozen = false;
             this._unIndexed = false;
             this._onCollisionPositionChange = function (collisionId, newPosition, collidedMesh) {
@@ -82,12 +95,10 @@ var BABYLON;
                 if (_this._diffPositionForCollisions.length() > BABYLON.Engine.CollisionsEpsilon) {
                     _this.position.addInPlace(_this._diffPositionForCollisions);
                 }
-                if (_this.onCollide && collidedMesh) {
-                    _this.onCollide(collidedMesh);
+                if (collidedMesh) {
+                    _this.onCollideObservable.notifyObservers(collidedMesh);
                 }
-                if (_this.onCollisionPositionChange) {
-                    _this.onCollisionPositionChange(_this.position);
-                }
+                _this.onCollisionPositionChangeObservable.notifyObservers(_this.position);
             };
             scene.addMesh(this);
         }
@@ -126,6 +137,26 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AbstractMesh.prototype, "onCollide", {
+            set: function (callback) {
+                if (this._onCollideObserver) {
+                    this.onCollideObservable.remove(this._onCollideObserver);
+                }
+                this._onCollideObserver = this.onCollideObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "onCollisionPositionChange", {
+            set: function (callback) {
+                if (this._onCollisionPositionChangeObserver) {
+                    this.onCollisionPositionChangeObservable.remove(this._onCollisionPositionChangeObserver);
+                }
+                this._onCollisionPositionChangeObserver = this.onCollisionPositionChangeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(AbstractMesh.prototype, "skeleton", {
             get: function () {
                 return this._skeleton;
@@ -140,6 +171,62 @@ var BABYLON;
                 this._skeleton = value;
                 if (!this._skeleton) {
                     this._bonesTransformMatrices = null;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        AbstractMesh.prototype.toString = function (fullDetails) {
+            var ret = "Name: " + this.name + ", isInstance: " + (this instanceof BABYLON.InstancedMesh ? "YES" : "NO");
+            ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
+            if (this._skeleton) {
+                ret += ", skeleton: " + this._skeleton.name;
+            }
+            if (fullDetails) {
+                ret += ", billboard mode: " + (["NONE", "X", "Y", null, "Z", null, null, "ALL"])[this.billboardMode];
+                ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingFreezeWorldMatrix ? "YES" : "NO");
+            }
+            return ret;
+        };
+        Object.defineProperty(AbstractMesh.prototype, "rotation", {
+            /**
+             * Getting the rotation object.
+             * If rotation quaternion is set, this vector will (almost always) be the Zero vector!
+             */
+            get: function () {
+                return this._rotation;
+            },
+            set: function (newRotation) {
+                this._rotation = newRotation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "scaling", {
+            get: function () {
+                return this._scaling;
+            },
+            set: function (newScaling) {
+                this._scaling = newScaling;
+                if (this.physicsImpostor) {
+                    this.physicsImpostor.forceUpdate();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractMesh.prototype, "rotationQuaternion", {
+            get: function () {
+                return this._rotationQuaternion;
+            },
+            set: function (quaternion) {
+                this._rotationQuaternion = quaternion;
+                //reset the rotation vector. 
+                if (quaternion && this.rotation.length()) {
+                    this.rotation.copyFromFloats(0, 0, 0);
                 }
             },
             enumerable: true,
@@ -203,6 +290,8 @@ var BABYLON;
             configurable: true
         });
         AbstractMesh.prototype._preActivate = function () {
+        };
+        AbstractMesh.prototype._preActivateForIntermediateRendering = function (renderId) {
         };
         AbstractMesh.prototype._activate = function (renderId) {
             this._renderId = renderId;
@@ -415,7 +504,7 @@ var BABYLON;
         };
         AbstractMesh.prototype._updateBoundingInfo = function () {
             this._boundingInfo = this._boundingInfo || new BABYLON.BoundingInfo(this.absolutePosition, this.absolutePosition);
-            this._boundingInfo._update(this.worldMatrixFromCache);
+            this._boundingInfo.update(this.worldMatrixFromCache);
             this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         };
         AbstractMesh.prototype._updateSubMeshesBoundingInfo = function (matrix) {
@@ -446,6 +535,14 @@ var BABYLON;
             // Scaling
             BABYLON.Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, BABYLON.Tmp.Matrix[1]);
             // Rotation
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                var len = this.rotation.length();
+                if (len) {
+                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z));
+                    this.rotation.copyFromFloats(0, 0, 0);
+                }
+            }
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(BABYLON.Tmp.Matrix[0]);
                 this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
@@ -471,7 +568,21 @@ var BABYLON;
             BABYLON.Tmp.Matrix[4].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
-                var localPosition = this.position.clone();
+                BABYLON.Tmp.Vector3[0].copyFrom(this.position);
+                var localPosition = BABYLON.Tmp.Vector3[0];
+                if (this.parent && this.parent.getWorldMatrix) {
+                    this._markSyncedWithParent();
+                    var parentMatrix;
+                    if (this._meshToBoneReferal) {
+                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                        parentMatrix = BABYLON.Tmp.Matrix[6];
+                    }
+                    else {
+                        parentMatrix = this.parent.getWorldMatrix();
+                    }
+                    BABYLON.Vector3.TransformCoordinatesToRef(localPosition, parentMatrix, BABYLON.Tmp.Vector3[1]);
+                    localPosition = BABYLON.Tmp.Vector3[1];
+                }
                 var zero = this.getScene().activeCamera.globalPosition.clone();
                 if (this.parent && this.parent.position) {
                     localPosition.addInPlace(this.parent.position);
@@ -479,11 +590,11 @@ var BABYLON;
                 }
                 if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_X)
-                        zero.x = localPosition.x + BABYLON.Engine.Epsilon;
+                        zero.x = localPosition.x + BABYLON.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Y)
-                        zero.y = localPosition.y + 0.001;
+                        zero.y = localPosition.y + BABYLON.Epsilon;
                     if (this.billboardMode & AbstractMesh.BILLBOARDMODE_Z)
-                        zero.z = localPosition.z + 0.001;
+                        zero.z = localPosition.z + BABYLON.Epsilon;
                 }
                 BABYLON.Matrix.LookAtLHToRef(localPosition, zero, BABYLON.Vector3.Up(), BABYLON.Tmp.Matrix[3]);
                 BABYLON.Tmp.Matrix[3].m[12] = BABYLON.Tmp.Matrix[3].m[13] = BABYLON.Tmp.Matrix[3].m[14] = 0;
@@ -512,9 +623,7 @@ var BABYLON;
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
             // Callbacks
-            for (var callbackIndex = 0; callbackIndex < this._onAfterWorldMatrixUpdate.length; callbackIndex++) {
-                this._onAfterWorldMatrixUpdate[callbackIndex](this);
-            }
+            this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
             if (!this._poseMatrix) {
                 this._poseMatrix = BABYLON.Matrix.Invert(this._worldMatrix);
             }
@@ -525,13 +634,10 @@ var BABYLON;
         * @param func: callback function to add
         */
         AbstractMesh.prototype.registerAfterWorldMatrixUpdate = function (func) {
-            this._onAfterWorldMatrixUpdate.push(func);
+            this.onAfterWorldMatrixUpdateObservable.add(func);
         };
         AbstractMesh.prototype.unregisterAfterWorldMatrixUpdate = function (func) {
-            var index = this._onAfterWorldMatrixUpdate.indexOf(func);
-            if (index > -1) {
-                this._onAfterWorldMatrixUpdate.splice(index, 1);
-            }
+            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
         };
         AbstractMesh.prototype.setPositionWithLocalVector = function (vector3) {
             this.computeWorldMatrix();
@@ -603,61 +709,38 @@ var BABYLON;
             return this._boundingInfo.intersectsPoint(point);
         };
         // Physics
+        /**
+         *  @Deprecated. Use new PhysicsImpostor instead.
+         * */
         AbstractMesh.prototype.setPhysicsState = function (impostor, options) {
-            var physicsEngine = this.getScene().getPhysicsEngine();
-            if (!physicsEngine) {
-                return null;
-            }
-            impostor = impostor || BABYLON.PhysicsEngine.NoImpostor;
+            //legacy support
             if (impostor.impostor) {
-                // Old API
                 options = impostor;
                 impostor = impostor.impostor;
             }
-            if (impostor === BABYLON.PhysicsEngine.NoImpostor) {
-                physicsEngine._unregisterMesh(this);
-                return null;
-            }
-            if (!options) {
-                options = { mass: 0, friction: 0.2, restitution: 0.2 };
-            }
-            else {
-                if (!options.mass && options.mass !== 0)
-                    options.mass = 0;
-                if (!options.friction && options.friction !== 0)
-                    options.friction = 0.2;
-                if (!options.restitution && options.restitution !== 0)
-                    options.restitution = 0.2;
-            }
-            this._physicImpostor = impostor;
-            this._physicsMass = options.mass;
-            this._physicsFriction = options.friction;
-            this._physicRestitution = options.restitution;
-            return physicsEngine._registerMesh(this, impostor, options);
+            this.physicsImpostor = new BABYLON.PhysicsImpostor(this, impostor, options, this.getScene());
+            return this.physicsImpostor.physicsBody;
         };
         AbstractMesh.prototype.getPhysicsImpostor = function () {
-            if (!this._physicImpostor) {
-                return BABYLON.PhysicsEngine.NoImpostor;
-            }
-            return this._physicImpostor;
+            return this.physicsImpostor;
         };
+        /**
+         * @Deprecated. Use getPhysicsImpostor().getParam("mass");
+         */
         AbstractMesh.prototype.getPhysicsMass = function () {
-            if (!this._physicsMass) {
-                return 0;
-            }
-            return this._physicsMass;
+            return this.physicsImpostor.getParam("mass");
         };
+        /**
+         * @Deprecated. Use getPhysicsImpostor().getParam("friction");
+         */
         AbstractMesh.prototype.getPhysicsFriction = function () {
-            if (!this._physicsFriction) {
-                return 0;
-            }
-            return this._physicsFriction;
+            return this.physicsImpostor.getParam("friction");
         };
+        /**
+         * @Deprecated. Use getPhysicsImpostor().getParam("restitution");
+         */
         AbstractMesh.prototype.getPhysicsRestitution = function () {
-            if (!this._physicRestitution) {
-                return 0;
-            }
-            return this._physicRestitution;
+            return this.physicsImpostor.getParam("resitution");
         };
         AbstractMesh.prototype.getPositionInCameraSpace = function (camera) {
             if (!camera) {
@@ -672,22 +755,35 @@ var BABYLON;
             return this.absolutePosition.subtract(camera.position).length();
         };
         AbstractMesh.prototype.applyImpulse = function (force, contactPoint) {
-            if (!this._physicImpostor) {
+            if (!this.physicsImpostor) {
                 return;
             }
-            this.getScene().getPhysicsEngine()._applyImpulse(this, force, contactPoint);
+            this.physicsImpostor.applyImpulse(force, contactPoint);
         };
         AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh, pivot1, pivot2, options) {
-            if (!this._physicImpostor) {
+            if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
                 return;
             }
-            this.getScene().getPhysicsEngine()._createLink(this, otherMesh, pivot1, pivot2, options);
+            this.physicsImpostor.createJoint(otherMesh.physicsImpostor, BABYLON.PhysicsJoint.HingeJoint, {
+                mainPivot: pivot1,
+                connectedPivot: pivot2,
+                nativeParams: options
+            });
         };
+        /**
+         * @Deprecated
+         */
         AbstractMesh.prototype.updatePhysicsBodyPosition = function () {
-            if (!this._physicImpostor) {
-                return;
-            }
-            this.getScene().getPhysicsEngine()._updateBodyPosition(this);
+            BABYLON.Tools.Warn("updatePhysicsBodyPosition() is deprecated, please use updatePhysicsBody()");
+            this.updatePhysicsBody();
+        };
+        /**
+         * @Deprecated
+         * Calling this function is not needed anymore.
+         * The physics engine takes care of transofmration automatically.
+         */
+        AbstractMesh.prototype.updatePhysicsBody = function () {
+            //Unneeded
         };
         Object.defineProperty(AbstractMesh.prototype, "checkCollisions", {
             // Collisions
@@ -855,14 +951,20 @@ var BABYLON;
             }
         };
         AbstractMesh.prototype.dispose = function (doNotRecurse) {
+            var _this = this;
             var index;
+            // Action manager
+            if (this.actionManager) {
+                this.actionManager.dispose();
+                this.actionManager = null;
+            }
             // Skeleton
             this.skeleton = null;
             // Animations
             this.getScene().stopAnimation(this);
             // Physics
-            if (this.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
-                this.setPhysicsState(BABYLON.PhysicsEngine.NoImpostor);
+            if (this.physicsImpostor) {
+                this.physicsImpostor.dispose();
             }
             // Intersections in progress
             for (index = 0; index < this._intersectionsInProgress.length; index++) {
@@ -871,6 +973,18 @@ var BABYLON;
                 other._intersectionsInProgress.splice(pos, 1);
             }
             this._intersectionsInProgress = [];
+            // Lights
+            var lights = this.getScene().lights;
+            lights.forEach(function (light) {
+                var meshIndex = light.includedOnlyMeshes.indexOf(_this);
+                if (meshIndex !== -1) {
+                    light.includedOnlyMeshes.splice(meshIndex, 1);
+                }
+                meshIndex = light.excludedMeshes.indexOf(_this);
+                if (meshIndex !== -1) {
+                    light.excludedMeshes.splice(meshIndex, 1);
+                }
+            });
             // Edges
             if (this._edgesRenderer) {
                 this._edgesRenderer.dispose();
@@ -889,23 +1003,21 @@ var BABYLON;
                     }
                 }
                 // Children
-                var objects = this.getScene().meshes.slice(0);
+                var objects = this.getDescendants(true);
                 for (index = 0; index < objects.length; index++) {
-                    if (objects[index].parent === this) {
-                        objects[index].dispose();
-                    }
+                    objects[index].dispose();
                 }
             }
             else {
-                for (index = 0; index < this.getScene().meshes.length; index++) {
-                    var obj = this.getScene().meshes[index];
-                    if (obj.parent === this) {
-                        obj.parent = null;
-                        obj.computeWorldMatrix(true);
-                    }
+                var childMeshes = this.getChildMeshes(true);
+                for (index = 0; index < childMeshes.length; index++) {
+                    var child = childMeshes[index];
+                    child.parent = null;
+                    child.computeWorldMatrix(true);
                 }
             }
-            this._onAfterWorldMatrixUpdate = [];
+            _super.prototype.dispose.call(this);
+            this.onAfterWorldMatrixUpdateObservable.clear();
             this._isDisposed = true;
             // Callback
             if (this.onDispose) {
@@ -919,6 +1031,6 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
         return AbstractMesh;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));

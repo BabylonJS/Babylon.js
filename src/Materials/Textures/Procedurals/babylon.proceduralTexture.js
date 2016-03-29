@@ -7,9 +7,11 @@ var BABYLON;
 (function (BABYLON) {
     var ProceduralTexture = (function (_super) {
         __extends(ProceduralTexture, _super);
-        function ProceduralTexture(name, size, fragment, scene, fallbackTexture, generateMipMaps) {
+        function ProceduralTexture(name, size, fragment, scene, fallbackTexture, generateMipMaps, isCube) {
             if (generateMipMaps === void 0) { generateMipMaps = true; }
+            if (isCube === void 0) { isCube = false; }
             _super.call(this, null, scene, !generateMipMaps);
+            this.isCube = isCube;
             this.isEnabled = true;
             this._currentRefreshId = -1;
             this._refreshRate = 1;
@@ -33,7 +35,13 @@ var BABYLON;
             this._generateMipMaps = generateMipMaps;
             this.setFragment(fragment);
             this._fallbackTexture = fallbackTexture;
-            this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+            if (isCube) {
+                this._texture = scene.getEngine().createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps });
+                this.setFloat("face", 0);
+            }
+            else {
+                this._texture = scene.getEngine().createRenderTargetTexture(size, generateMipMaps);
+            }
             // VBO
             var vertices = [];
             vertices.push(1, 1);
@@ -180,9 +188,6 @@ var BABYLON;
         ProceduralTexture.prototype.render = function (useCameraPostProcess) {
             var scene = this.getScene();
             var engine = scene.getEngine();
-            engine.bindFramebuffer(this._texture);
-            // Clear
-            engine.clear(scene.clearColor, true, true);
             // Render
             engine.enableEffect(this._effect);
             engine.setState(false);
@@ -221,10 +226,32 @@ var BABYLON;
             }
             // VBOs
             engine.bindBuffers(this._vertexBuffer, this._indexBuffer, this._vertexDeclaration, this._vertexStrideSize, this._effect);
-            // Draw order
-            engine.draw(true, 0, 6);
+            if (this.isCube) {
+                for (var face = 0; face < 6; face++) {
+                    engine.bindFramebuffer(this._texture, face);
+                    this._effect.setFloat("face", face);
+                    // Clear
+                    engine.clear(scene.clearColor, true, true);
+                    // Draw order
+                    engine.draw(true, 0, 6);
+                    // Mipmaps
+                    if (face === 5) {
+                        engine.generateMipMapsForCubemap(this._texture);
+                    }
+                }
+            }
+            else {
+                engine.bindFramebuffer(this._texture);
+                // Clear
+                engine.clear(scene.clearColor, true, true);
+                // Draw order
+                engine.draw(true, 0, 6);
+            }
             // Unbind
-            engine.unBindFramebuffer(this._texture);
+            engine.unBindFramebuffer(this._texture, this.isCube);
+            if (this.onGenerated) {
+                this.onGenerated();
+            }
         };
         ProceduralTexture.prototype.clone = function () {
             var textureSize = this.getSize();
@@ -244,6 +271,6 @@ var BABYLON;
             _super.prototype.dispose.call(this);
         };
         return ProceduralTexture;
-    })(BABYLON.Texture);
+    }(BABYLON.Texture));
     BABYLON.ProceduralTexture = ProceduralTexture;
 })(BABYLON || (BABYLON = {}));

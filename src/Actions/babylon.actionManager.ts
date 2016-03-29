@@ -67,6 +67,7 @@
         private static _OnIntersectionExitTrigger = 12;
         private static _OnKeyDownTrigger = 13;
         private static _OnKeyUpTrigger = 14;
+        private static _OnPickOutTrigger = 15;
 
         public static get NothingTrigger(): number {
             return ActionManager._NothingTrigger;
@@ -94,6 +95,11 @@
 
         public static get OnPickUpTrigger(): number {
             return ActionManager._OnPickUpTrigger;
+        }
+
+        /// This trigger will only be raised if you also declared a OnPickDown
+        public static get OnPickOutTrigger(): number {
+            return ActionManager._OnPickOutTrigger;
         }
 
         public static get OnLongPressTrigger(): number {

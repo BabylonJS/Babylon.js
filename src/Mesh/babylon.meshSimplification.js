@@ -7,7 +7,7 @@ var BABYLON;
             this.optimizeMesh = optimizeMesh;
         }
         return SimplificationSettings;
-    })();
+    }());
     BABYLON.SimplificationSettings = SimplificationSettings;
     var SimplificationQueue = (function () {
         function SimplificationQueue() {
@@ -77,7 +77,7 @@ var BABYLON;
             }
         };
         return SimplificationQueue;
-    })();
+    }());
     BABYLON.SimplificationQueue = SimplificationQueue;
     /**
      * The implemented types of simplification.
@@ -97,7 +97,7 @@ var BABYLON;
             this.borderFactor = 0;
         }
         return DecimationTriangle;
-    })();
+    }());
     BABYLON.DecimationTriangle = DecimationTriangle;
     var DecimationVertex = (function () {
         function DecimationVertex(position, id) {
@@ -113,7 +113,7 @@ var BABYLON;
             this.position.copyFrom(newPosition);
         };
         return DecimationVertex;
-    })();
+    }());
     BABYLON.DecimationVertex = DecimationVertex;
     var QuadraticMatrix = (function () {
         function QuadraticMatrix(data) {
@@ -158,7 +158,7 @@ var BABYLON;
             return [a * a, a * b, a * c, a * d, b * b, b * c, b * d, c * c, c * d, d * d];
         };
         return QuadraticMatrix;
-    })();
+    }());
     BABYLON.QuadraticMatrix = QuadraticMatrix;
     var Reference = (function () {
         function Reference(vertexId, triangleId) {
@@ -166,7 +166,7 @@ var BABYLON;
             this.triangleId = triangleId;
         }
         return Reference;
-    })();
+    }());
     BABYLON.Reference = Reference;
     /**
      * An implementation of the Quadratic Error simplification algorithm.
@@ -181,7 +181,7 @@ var BABYLON;
             this.syncIterations = 5000;
             this.aggressiveness = 7;
             this.decimationIterations = 100;
-            this.boundingBoxEpsilon = BABYLON.Engine.Epsilon;
+            this.boundingBoxEpsilon = BABYLON.Epsilon;
         }
         QuadraticErrorSimplification.prototype.simplify = function (settings, successCallback) {
             var _this = this;
@@ -653,6 +653,6 @@ var BABYLON;
             return error;
         };
         return QuadraticErrorSimplification;
-    })();
+    }());
     BABYLON.QuadraticErrorSimplification = QuadraticErrorSimplification;
 })(BABYLON || (BABYLON = {}));

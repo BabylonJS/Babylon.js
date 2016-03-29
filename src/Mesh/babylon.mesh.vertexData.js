@@ -914,18 +914,22 @@ var BABYLON;
             vertexData.uvs = uvs;
             return vertexData;
         };
-        VertexData.CreateLines = function (options) {
+        VertexData.CreateLineSystem = function (options) {
             var indices = [];
             var positions = [];
-            var points = options.points;
-            for (var index = 0; index < points.length; index++) {
-                positions.push(points[index].x, points[index].y, points[index].z);
-                if (index > 0) {
-                    indices.push(index - 1);
-                    indices.push(index);
+            var lines = options.lines;
+            var idx = 0;
+            for (var l = 0; l < lines.length; l++) {
+                var points = lines[l];
+                for (var index = 0; index < points.length; index++) {
+                    positions.push(points[index].x, points[index].y, points[index].z);
+                    if (index > 0) {
+                        indices.push(idx - 1);
+                        indices.push(idx);
+                    }
+                    idx++;
                 }
             }
-            // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
             vertexData.positions = positions;
@@ -1813,6 +1817,6 @@ var BABYLON;
             geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
         };
         return VertexData;
-    })();
+    }());
     BABYLON.VertexData = VertexData;
 })(BABYLON || (BABYLON = {}));

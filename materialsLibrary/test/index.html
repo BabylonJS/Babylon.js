@@ -10,11 +10,11 @@
 	<script src="../dist/babylon.fireMaterial.js"></script>
     <script src="../dist/babylon.lavaMaterial.js"></script>
 	<script src="../dist/babylon.terrainMaterial.js"></script>
-	<script src="../dist/babylon.pbrMaterial.js"></script>
 	<script src="../dist/babylon.furMaterial.js"></script>
 	<script src="../dist/babylon.triPlanarMaterial.js"></script>
 	<script src="../dist/babylon.gradientMaterial.js"></script>
 	<script src="../dist/babylon.skyMaterial.js"></script>
+	<script src="../dist/babylon.gridMaterial.js"></script>
 
 	<style>
 		html, body {
@@ -49,7 +49,6 @@
 	<canvas id="renderCanvas"></canvas>
 
 	<script src="index.js"></script>
-    <script src="add/addpbr.js"></script>
     <script src="add/addlava.js"></script>
     <script src="add/addnormal.js"></script>
 	<script src="add/addwater.js"></script>
@@ -59,6 +58,7 @@
 	<script src="add/addtriplanar.js"></script>
 	<script src="add/addgradient.js"></script>
 	<script src="add/addsky.js"></script>
+	<script src="add/addgrid.js"></script>
 	
 	<script>
 		if (BABYLON.Engine.isSupported()) {
@@ -199,23 +199,23 @@
 				
 				var terrain = prepareTerrain();
 				
-				var pbr = preparePBR();
-				
 				var triPlanar = prepareTriPlanar();
 				
 				var sky = prepareSky();
+                
+                var grid = prepareGrid();
 				
 				// Default to std
 				var currentMaterial = std;
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'fur', 'triPlanar', 'gradient', 'sky', 'grid']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
 					fur.resetFur();
-					
+                    
 					switch (options.material) {
 						case "simple":
 							currentMaterial = simple;
@@ -237,12 +237,9 @@
 						case "terrain":
 							currentMaterial = terrain;
 							break;
-						case "pbr":
-							currentMaterial = pbr;
-							break;
 						case "fur":
 							currentMaterial = fur.material;
-							fur.configureFur(currentMesh, true);
+							fur.configureFur(currentMesh);
 							break;
 						case "triPlanar":
 							currentMaterial = triPlanar;
@@ -254,6 +251,9 @@
 							skybox.setEnabled(true);
 							skybox.material = sky;
 							break;
+                        case "grid":
+                            currentMaterial = grid;
+                            break;
 						default:
 							currentMaterial = std;
 							break;
@@ -293,12 +293,34 @@
 					water.mesh = currentMesh;
 					
 					if (currentMaterial === fur.material) {
+                        // Furify the mesh
 						fur.resetFur();
-						fur.configureFur(currentMesh, currentMaterial === fur.material);
+						fur.configureFur(currentMesh);
 					}
 				});
 
 				var f1 = gui.addFolder('lights');
+                f1.add(options, 'lightIntensity').onChange(function() {
+                    hemisphericLight.intensity = options.lightIntensity;
+                    directionalLight.intensity = options.lightIntensity;
+                    pointLight.intensity = options.lightIntensity;
+                    spotLight.intensity = options.lightIntensity;
+                });
+                
+                f1.add(options, 'lightRange').onChange(function() {
+                    hemisphericLight.range = options.lightRange;
+                    directionalLight.range = options.lightRange;
+                    pointLight.range = options.lightRange;
+                    spotLight.range = options.lightRange;
+                });
+                
+                f1.add(options, 'lightRadius').onChange(function() {
+                    hemisphericLight.radius = options.lightRadius;
+                    directionalLight.radius = options.lightRadius;
+                    pointLight.radius = options.lightRadius;
+                    spotLight.radius = options.lightRadius;
+                });
+                
 				f1.add(options, 'hemisphericLight').onChange(function () {
 					hemisphericLight.setEnabled(options.hemisphericLight);
 				});

@@ -65,11 +65,14 @@ var BABYLON;
             };
         }
         DepthRenderer.prototype.isReady = function (subMesh, useInstances) {
+            var material = subMesh.getMaterial();
+            if (material.disableDepthWrite) {
+                return false;
+            }
             var defines = [];
             var attribs = [BABYLON.VertexBuffer.PositionKind];
             var mesh = subMesh.getMesh();
             var scene = mesh.getScene();
-            var material = subMesh.getMaterial();
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
@@ -120,6 +123,6 @@ var BABYLON;
             this._depthMap.dispose();
         };
         return DepthRenderer;
-    })();
+    }());
     BABYLON.DepthRenderer = DepthRenderer;
 })(BABYLON || (BABYLON = {}));

@@ -41,6 +41,7 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.chkNoExport = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.ckForceBackFaces = new System.Windows.Forms.CheckBox();
             this.grpBlurInfo = new System.Windows.Forms.GroupBox();
             this.nupBlurBoxOffset = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
@@ -50,7 +51,6 @@
             this.label6 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.cbCameraType = new System.Windows.Forms.ComboBox();
-            this.ckForceBackFaces = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             this.grpAutoAnimate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).BeginInit();
@@ -131,7 +131,7 @@
             // 
             this.nupTo.Location = new System.Drawing.Point(47, 40);
             this.nupTo.Maximum = new decimal(new int[] {
-            1000,
+            100000,
             0,
             0,
             0});
@@ -152,7 +152,7 @@
             // 
             this.nupFrom.Location = new System.Drawing.Point(47, 14);
             this.nupFrom.Maximum = new decimal(new int[] {
-            1000,
+            100000,
             0,
             0,
             0});
@@ -219,6 +219,17 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Shadows";
+            // 
+            // ckForceBackFaces
+            // 
+            this.ckForceBackFaces.AutoSize = true;
+            this.ckForceBackFaces.Location = new System.Drawing.Point(24, 61);
+            this.ckForceBackFaces.Name = "ckForceBackFaces";
+            this.ckForceBackFaces.Size = new System.Drawing.Size(135, 17);
+            this.ckForceBackFaces.TabIndex = 14;
+            this.ckForceBackFaces.Text = "Force Back Faces only";
+            this.ckForceBackFaces.ThreeState = true;
+            this.ckForceBackFaces.UseVisualStyleBackColor = true;
             // 
             // grpBlurInfo
             // 
@@ -343,17 +354,6 @@
             this.cbCameraType.Size = new System.Drawing.Size(289, 21);
             this.cbCameraType.TabIndex = 7;
             this.cbCameraType.SelectedIndexChanged += new System.EventHandler(this.cbCameraType_SelectedIndexChanged);
-            // 
-            // ckForceBackFaces
-            // 
-            this.ckForceBackFaces.AutoSize = true;
-            this.ckForceBackFaces.Location = new System.Drawing.Point(24, 61);
-            this.ckForceBackFaces.Name = "ckForceBackFaces";
-            this.ckForceBackFaces.Size = new System.Drawing.Size(135, 17);
-            this.ckForceBackFaces.TabIndex = 14;
-            this.ckForceBackFaces.Text = "Force Back Faces only";
-            this.ckForceBackFaces.ThreeState = true;
-            this.ckForceBackFaces.UseVisualStyleBackColor = true;
             // 
             // LightPropertiesForm
             // 

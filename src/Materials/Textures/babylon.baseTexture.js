@@ -1,19 +1,25 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var BaseTexture = (function () {
         function BaseTexture(scene) {
-            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this.hasAlpha = false;
             this.getAlphaFromRGB = false;
             this.level = 1;
-            this.isCube = false;
-            this.isRenderTarget = false;
-            this.animations = new Array();
             this.coordinatesIndex = 0;
             this.coordinatesMode = BABYLON.Texture.EXPLICIT_MODE;
             this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
             this.anisotropicFilteringLevel = 4;
+            this.isCube = false;
+            this.isRenderTarget = false;
+            this.animations = new Array();
+            this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._scene = scene;
             this._scene.textures.push(this);
         }
@@ -117,22 +123,48 @@ var BABYLON;
             }
         };
         BaseTexture.prototype.serialize = function () {
-            var serializationObject = {};
             if (!this.name) {
                 return null;
             }
-            serializationObject.name = this.name;
-            serializationObject.hasAlpha = this.hasAlpha;
-            serializationObject.level = this.level;
-            serializationObject.coordinatesIndex = this.coordinatesIndex;
-            serializationObject.coordinatesMode = this.coordinatesMode;
-            serializationObject.wrapU = this.wrapU;
-            serializationObject.wrapV = this.wrapV;
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             // Animations
             BABYLON.Animation.AppendSerializedAnimations(this, serializationObject);
             return serializationObject;
         };
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "name", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "hasAlpha", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "getAlphaFromRGB", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "level", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "coordinatesIndex", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "coordinatesMode", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "wrapU", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "wrapV", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "anisotropicFilteringLevel", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "isCube", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], BaseTexture.prototype, "isRenderTarget", void 0);
         return BaseTexture;
-    })();
+    }());
     BABYLON.BaseTexture = BaseTexture;
 })(BABYLON || (BABYLON = {}));

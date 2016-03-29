@@ -1107,26 +1107,27 @@
             return vertexData;
         }
 
-        public static CreateLines(options: { points: Vector3[] }): VertexData {
+        public static CreateLineSystem(options: { lines: Vector3[][] }): VertexData {
             var indices = [];
             var positions = [];
-            var points = options.points;
+            var lines = options.lines;
+            var idx = 0;
 
-            for (var index = 0; index < points.length; index++) {
-                positions.push(points[index].x, points[index].y, points[index].z);
+            for (var l = 0; l < lines.length; l++) {
+                var points = lines[l];
+                for (var index = 0; index < points.length; index++) {
+                    positions.push(points[index].x, points[index].y, points[index].z);
 
-                if (index > 0) {
-                    indices.push(index - 1);
-                    indices.push(index);
+                    if (index > 0) {
+                        indices.push(idx - 1);
+                        indices.push(idx);
+                    }
+                    idx++;
                 }
             }
-
-            // Result
             var vertexData = new VertexData();
-
             vertexData.indices = indices;
             vertexData.positions = positions;
-
             return vertexData;
         }
 
@@ -1465,7 +1466,7 @@
             return vertexData;
         }
 
-        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: number, subdivisions?: number, sideOrientation?: number }): VertexData {
+        public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number }): VertexData {
             var sideOrientation = options.sideOrientation || Mesh.DEFAULTSIDE;
             var radius = options.radius || 1;
             var flat = (options.flat === undefined) ? true : options.flat;

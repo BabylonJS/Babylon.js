@@ -3,10 +3,16 @@
 
         public cameraDirection = new Vector3(0, 0, 0);
         public cameraRotation = new Vector2(0, 0);
+
+        @serializeAsVector3()
         public rotation = new Vector3(0, 0, 0);
 
+        @serialize()
         public speed = 2.0;
+
         public noRotationConstraint = false;
+
+        @serializeAsMeshReference("lockedTargetId")
         public lockedTarget = null;
 
         public _currentTarget = Vector3.Zero();
@@ -22,8 +28,6 @@
         public _tempMatrix = Matrix.Zero();
 
         public _reset: () => void;
-
-        public _waitingLockedTargetId: string;
 
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
@@ -162,26 +166,26 @@
 
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.x) < Epsilon) {
                     this.cameraDirection.x = 0;
                 }
 
-                if (Math.abs(this.cameraDirection.y) < Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.y) < Epsilon) {
                     this.cameraDirection.y = 0;
                 }
 
-                if (Math.abs(this.cameraDirection.z) < Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.z) < Epsilon) {
                     this.cameraDirection.z = 0;
                 }
 
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < Engine.Epsilon) {
+                if (Math.abs(this.cameraRotation.x) < Epsilon) {
                     this.cameraRotation.x = 0;
                 }
 
-                if (Math.abs(this.cameraRotation.y) < Engine.Epsilon) {
+                if (Math.abs(this.cameraRotation.y) < Epsilon) {
                     this.cameraRotation.y = 0;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);
@@ -261,8 +265,8 @@
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    var camLeft = <TargetCamera> this._rigCameras[0];
-                    var camRight = <TargetCamera> this._rigCameras[1];
+                    var camLeft = <TargetCamera>this._rigCameras[0];
+                    var camRight = <TargetCamera>this._rigCameras[1];
 
                     if (this.cameraRigMode === Camera.RIG_MODE_VR) {
                         camLeft.rotation.x = camRight.rotation.x = this.rotation.x;
@@ -297,19 +301,8 @@
             Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         }
 
-        public serialize(): any {
-            var serializationObject = super.serialize();
-            serializationObject.speed = this.speed;
-
-            if (this.rotation) {
-                serializationObject.rotation = this.rotation.asArray();
-            }
-
-            if (this.lockedTarget && this.lockedTarget.id) {
-                serializationObject.lockedTargetId = this.lockedTarget.id;
-            }
-
-            return serializationObject;
+        public getTypeName(): string {
+            return "TargetCamera";
         }
     }
 } 

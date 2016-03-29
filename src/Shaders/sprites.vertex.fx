@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// Attributes
+﻿// Attributes
 attribute vec4 position;
 attribute vec4 options;
 attribute vec4 cellInfo;
@@ -15,9 +13,7 @@ uniform mat4 projection;
 varying vec2 vUV;
 varying vec4 vColor;
 
-#ifdef FOG
-varying float fFogDistance;
-#endif
+#include<fogVertexDeclaration>
 
 void main(void) {	
 	vec3 viewPos = (view * vec4(position.xyz, 1.0)).xyz; 

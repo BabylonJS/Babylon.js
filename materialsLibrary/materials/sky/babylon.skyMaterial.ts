@@ -16,18 +16,38 @@ module BABYLON {
     
     export class SkyMaterial extends Material {
         // Public members
+        @serialize()
         public luminance: number = 1.0;
-		public turbidity: number = 10.0;
-		public rayleigh: number = 2.0;
-		public mieCoefficient: number = 0.005;
-		public mieDirectionalG: number = 0.8;
         
+        @serialize()
+		public turbidity: number = 10.0;
+        
+        @serialize()
+		public rayleigh: number = 2.0;
+		
+        @serialize()
+        public mieCoefficient: number = 0.005;
+		
+        @serialize()
+        public mieDirectionalG: number = 0.8;
+        
+        @serialize()
         public distance: number = 500;
+        
+        @serialize()
         public inclination: number = 0.49;
-		public azimuth: number = 0.25;
+		
+        @serialize()
+        public azimuth: number = 0.25;
+        
+        @serializeAsVector3()
+        public sunPosition: Vector3 = new Vector3(0, 100, 0);
+        
+        @serialize()
+        public useSunPosition: boolean = false;
         
         // Private members
-        private _sunPosition: Vector3 = Vector3.Zero();
+        private _cameraPosition: Vector3 = Vector3.Zero();
         
         private _renderId: number;
         
@@ -134,9 +154,10 @@ module BABYLON {
                 var join = this._defines.toString();
                 this._effect = scene.getEngine().createEffect(shaderName,
                     attribs,
-                    ["world", "viewProjection",
+                    ["world", "viewProjection", "view",
                         "vFogInfos", "vFogColor", "pointSize", "vClipPlane",
-                        "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition"
+                        "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
+                        "cameraPosition"
                     ],
                     [],
                     join, fallbacks, this.onCompiled, this.onError);
@@ -190,26 +211,34 @@ module BABYLON {
             }
             
             // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
+            MaterialHelper.BindFogParameters(scene, mesh, this._effect);
             
             // Sky
+            var camera = scene.activeCamera;
+            if (camera) {
+                var cameraWorldMatrix = camera.getWorldMatrix();
+                this._cameraPosition.x = cameraWorldMatrix.m[12];
+                this._cameraPosition.y = cameraWorldMatrix.m[13];
+                this._cameraPosition.z = cameraWorldMatrix.m[14];
+                this._effect.setVector3("cameraPosition", this._cameraPosition);
+            }
+            
             this._effect.setFloat("luminance", this.luminance);
 			this._effect.setFloat("turbidity", this.turbidity);
 			this._effect.setFloat("rayleigh", this.rayleigh);
 			this._effect.setFloat("mieCoefficient", this.mieCoefficient);
 			this._effect.setFloat("mieDirectionalG", this.mieDirectionalG);
             
-            var theta = Math.PI * (this.inclination - 0.5);
-			var phi = 2 * Math.PI * (this.azimuth - 0.5);
+            if (!this.useSunPosition) {
+                var theta = Math.PI * (this.inclination - 0.5);
+                var phi = 2 * Math.PI * (this.azimuth - 0.5);
+                
+                this.sunPosition.x = this.distance * Math.cos(phi);
+                this.sunPosition.y = this.distance * Math.sin(phi) * Math.sin(theta);
+                this.sunPosition.z = this.distance * Math.sin(phi) * Math.cos(theta);
+            }
             
-            this._sunPosition.x = this.distance * Math.cos( phi );
-			this._sunPosition.y = this.distance * Math.sin( phi ) * Math.sin( theta );
-			this._sunPosition.z = this.distance * Math.sin( phi ) * Math.cos( theta );
-            
-			this._effect.setVector3("sunPosition", this._sunPosition);
+			this._effect.setVector3("sunPosition", this.sunPosition);
 
             super.bind(world, mesh);
         }
@@ -223,64 +252,18 @@ module BABYLON {
         }
 
         public clone(name: string): SkyMaterial {
-            var newMaterial = new SkyMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-            
-            newMaterial.luminance = this.luminance;
-            newMaterial.turbidity = this.turbidity;
-            newMaterial.rayleigh = this.rayleigh;
-            newMaterial.mieCoefficient = this.mieCoefficient;
-            newMaterial.mieDirectionalG = this.mieDirectionalG;
-            newMaterial.distance = this.distance;
-            newMaterial.inclination = this.inclination;
-            newMaterial.azimuth = this.azimuth;
-            
-            return newMaterial;
+            return SerializationHelper.Clone<SkyMaterial>(() => new SkyMaterial(name, this.getScene()), this);
         }
-		
-		public serialize(): any {
-		
-            var serializationObject = super.serialize();
-            serializationObject.customType = "BABYLON.SkyMaterial";
-            
-            serializationObject.luminance = this.luminance;
-            serializationObject.turbidity = this.turbidity;
-            serializationObject.rayleigh = this.rayleigh;
-            serializationObject.mieCoefficient = this.mieCoefficient;
-            serializationObject.mieDirectionalG = this.mieDirectionalG;
-            serializationObject.distance = this.distance;
-            serializationObject.inclination = this.inclination;
-            serializationObject.azimuth = this.azimuth;
-
+        
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType  = "BABYLON.SkyMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): SkyMaterial {
-            var material = new SkyMaterial(source.name, scene);
-
-            material.alpha = source.alpha;
-            material.id = source.id;
-            
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.checkReadyOnlyOnce) {
-                material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
-            }
-            
-            material.luminance = source.luminance;
-            material.turbidity = source.turbidity;
-            material.rayleigh = source.rayleigh;
-            material.mieCoefficient = source.mieCoefficient;
-            material.mieDirectionalG = source.mieDirectionalG;
-            material.distance = source.distance;
-            material.inclination = source.inclination;
-            material.azimuth = source.azimuth;
-
-            return material;
+            return SerializationHelper.Parse(() => new SkyMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
 } 

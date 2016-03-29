@@ -3,6 +3,12 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var TargetCamera = (function (_super) {
@@ -129,22 +135,22 @@ var BABYLON;
             }
             // Inertia
             if (needToMove) {
-                if (Math.abs(this.cameraDirection.x) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.x) < BABYLON.Epsilon) {
                     this.cameraDirection.x = 0;
                 }
-                if (Math.abs(this.cameraDirection.y) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.y) < BABYLON.Epsilon) {
                     this.cameraDirection.y = 0;
                 }
-                if (Math.abs(this.cameraDirection.z) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraDirection.z) < BABYLON.Epsilon) {
                     this.cameraDirection.z = 0;
                 }
                 this.cameraDirection.scaleInPlace(this.inertia);
             }
             if (needToRotate) {
-                if (Math.abs(this.cameraRotation.x) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraRotation.x) < BABYLON.Epsilon) {
                     this.cameraRotation.x = 0;
                 }
-                if (Math.abs(this.cameraRotation.y) < BABYLON.Engine.Epsilon) {
+                if (Math.abs(this.cameraRotation.y) < BABYLON.Epsilon) {
                     this.cameraRotation.y = 0;
                 }
                 this.cameraRotation.scaleInPlace(this.inertia);
@@ -240,18 +246,19 @@ var BABYLON;
             this._rigCamTransformMatrix = this._rigCamTransformMatrix.multiply(BABYLON.Matrix.Translation(target.x, target.y, target.z));
             BABYLON.Vector3.TransformCoordinatesToRef(this.position, this._rigCamTransformMatrix, result);
         };
-        TargetCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.speed = this.speed;
-            if (this.rotation) {
-                serializationObject.rotation = this.rotation.asArray();
-            }
-            if (this.lockedTarget && this.lockedTarget.id) {
-                serializationObject.lockedTargetId = this.lockedTarget.id;
-            }
-            return serializationObject;
+        TargetCamera.prototype.getTypeName = function () {
+            return "TargetCamera";
         };
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], TargetCamera.prototype, "rotation", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], TargetCamera.prototype, "speed", void 0);
+        __decorate([
+            BABYLON.serializeAsMeshReference("lockedTargetId")
+        ], TargetCamera.prototype, "lockedTarget", void 0);
         return TargetCamera;
-    })(BABYLON.Camera);
+    }(BABYLON.Camera));
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));

@@ -4,10 +4,16 @@
      * Node is the basic class for all scene objects (Mesh, Light Camera).
      */
     export class Node {
-        public parent: Node;
+        @serialize()
         public name: string;
+
+        @serialize()
         public id: string;
+
+        @serialize()
         public uniqueId: number;
+
+        @serialize()
         public state = "";
 
         public animations = new Array<Animation>();
@@ -25,6 +31,35 @@
 
         private _scene: Scene;
         public _cache;
+
+        private _parentNode: Node;
+        private _children: Node[];
+
+        public set parent(parent: Node) {
+            if (this._parentNode === parent) {
+                return;
+            }
+
+            if (this._parentNode) {
+                var index = this._parentNode._children.indexOf(this);
+                if (index !== -1) {
+                    this._parentNode._children.splice(index, 1);
+                }
+            }
+
+            this._parentNode = parent;
+
+            if (this._parentNode) {
+                if (!this._parentNode._children) {
+                    this._parentNode._children = new Array<Node>();
+                }
+                this._parentNode._children.push(this);
+            }
+        }
+
+        public get parent(): Node {
+            return this._parentNode;
+        }
 
         /**
          * @constructor
@@ -163,31 +198,66 @@
                     return true;
                 }
 
-
                 return this.parent.isDescendantOf(ancestor);
             }
             return false;
         }
 
-        public _getDescendants(list: Node[], results: Node[]): void {
-            for (var index = 0; index < list.length; index++) {
-                var item = list[index];
-                if (item.isDescendantOf(this)) {
+        /**
+         * Evaluate the list of children and determine if they should be considered as descendants considering the given criterias
+         * @param {BABYLON.Node[]} results the result array containing the nodes matching the given criterias
+         * @param {boolean} directDescendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
+         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
+         */
+        public _getDescendants(results: Node[], directDescendantsOnly: boolean = false, predicate?: (node: Node) => boolean): void {
+            if (!this._children) {
+                return;
+            }
+
+            for (var index = 0; index < this._children.length; index++) {
+                var item = this._children[index];
+
+                if (!predicate || predicate(item)) {
                     results.push(item);
+                }
+
+                if (!directDescendantsOnly) {
+                    item._getDescendants(results, false, predicate);
                 }
             }
         }
 
         /**
-         * Will return all nodes that have this node as parent.
+         * Will return all nodes that have this node as ascendant.
+         * @param {boolean} directDescendantsOnly if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered.
+         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
          * @return {BABYLON.Node[]} all children nodes of all types.
          */
-        public getDescendants(): Node[] {
+        public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
             var results = [];
-            this._getDescendants(this._scene.meshes, results);
-            this._getDescendants(this._scene.lights, results);
-            this._getDescendants(this._scene.cameras, results);
 
+            this._getDescendants(results, directDescendantsOnly, predicate);
+
+            return results;
+        }
+        
+        /**
+         * @param predicate: an optional predicate that will be called on every evaluated children, the predicate must return true for a given child to be part of the result, otherwise it will be ignored.
+         * @Deprecated, legacy support.
+         * use getDecendants instead.
+         */
+        public getChildren(predicate?: (node: Node) => boolean): Node[] {
+            return this.getDescendants(true, predicate);
+        }
+        
+        /**
+         * Get all child-meshes of this node.
+         */
+        public getChildMeshes(directDecendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
+            var results: Array<AbstractMesh> = [];
+            this._getDescendants(results, directDecendantsOnly, (node: Node) => {
+                return ((!predicate || predicate(node)) && (node instanceof AbstractMesh));
+            });
             return results;
         }
 
@@ -264,6 +334,10 @@
                 serializationRanges.push(range);
             }
             return serializationRanges;
+        }
+
+        public dispose(): void {
+            this.parent = null;
         }
 
         public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {

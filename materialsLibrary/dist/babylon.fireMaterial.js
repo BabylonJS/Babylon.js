@@ -1,5 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
+    switch (arguments.length) {
+        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+    }
+};
 var BABYLON;
 (function (BABYLON) {
     var maxSimultaneousLights = 4;
@@ -13,12 +21,10 @@ var BABYLON;
             this.POINTSIZE = false;
             this.FOG = false;
             this.UV1 = false;
-            this.NORMAL = false;
             this.VERTEXCOLOR = false;
             this.VERTEXALPHA = false;
-            this.BONES = false;
-            this.BONES4 = false;
             this.BonesPerMesh = 0;
+            this.NUM_BONE_INFLUENCERS = 0;
             this.INSTANCES = false;
             this._keys = Object.keys(this);
         }
@@ -29,7 +35,6 @@ var BABYLON;
         function FireMaterial(name, scene) {
             _super.call(this, name, scene);
             this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            this.disableLighting = false;
             this.speed = 1.0;
             this._scaledDiffuse = new BABYLON.Color3();
             this._defines = new FireMaterialDefines();
@@ -104,9 +109,6 @@ var BABYLON;
             }
             // Attribs
             if (mesh) {
-                if (needNormals && mesh.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)) {
-                    this._defines.NORMAL = true;
-                }
                 if (needUVs) {
                     if (mesh.isVerticesDataPresent(BABYLON.VertexBuffer.UVKind)) {
                         this._defines.UV1 = true;
@@ -119,9 +121,8 @@ var BABYLON;
                     }
                 }
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._defines.BONES = true;
+                    this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
-                    this._defines.BONES4 = true;
                 }
                 // Instances
                 if (useInstances) {
@@ -137,30 +138,19 @@ var BABYLON;
                 if (this._defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-                if (this._defines.BONES4) {
-                    fallbacks.addFallback(0, "BONES4");
+                if (this._defines.NUM_BONE_INFLUENCERS > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
                 }
                 //Attributes
                 var attribs = [BABYLON.VertexBuffer.PositionKind];
-                if (this._defines.NORMAL) {
-                    attribs.push(BABYLON.VertexBuffer.NormalKind);
-                }
                 if (this._defines.UV1) {
                     attribs.push(BABYLON.VertexBuffer.UVKind);
                 }
                 if (this._defines.VERTEXCOLOR) {
                     attribs.push(BABYLON.VertexBuffer.ColorKind);
                 }
-                if (this._defines.BONES) {
-                    attribs.push(BABYLON.VertexBuffer.MatricesIndicesKind);
-                    attribs.push(BABYLON.VertexBuffer.MatricesWeightsKind);
-                }
-                if (this._defines.INSTANCES) {
-                    attribs.push("world0");
-                    attribs.push("world1");
-                    attribs.push("world2");
-                    attribs.push("world3");
-                }
+                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, this._defines, fallbacks);
+                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, this._defines);
                 // Legacy browser patch
                 var shaderName = "fire";
                 var join = this._defines.toString();
@@ -198,9 +188,7 @@ var BABYLON;
             this.bindOnlyWorldMatrix(world);
             this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
-            }
+            BABYLON.MaterialHelper.BindBonesParameters(mesh, this._effect);
             if (scene.getCachedMaterial() !== this) {
                 // Textures        
                 if (this.diffuseTexture && BABYLON.StandardMaterial.DiffuseTextureEnabled) {
@@ -227,10 +215,7 @@ var BABYLON;
                 this._effect.setMatrix("view", scene.getViewMatrix());
             }
             // Fog
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE) {
-                this._effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-                this._effect.setColor3("vFogColor", scene.fogColor);
-            }
+            BABYLON.MaterialHelper.BindFogParameters(scene, mesh, this._effect);
             // Time
             this._lastTime += scene.getEngine().getDeltaTime();
             this._effect.setFloat("time", this._lastTime);
@@ -261,28 +246,14 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         FireMaterial.prototype.clone = function (name) {
-            var newMaterial = new FireMaterial(name, this.getScene());
-            // Base material
-            this.copyTo(newMaterial);
-            // Fire material
-            if (this.diffuseTexture && this.diffuseTexture.clone) {
-                newMaterial.diffuseTexture = this.diffuseTexture.clone();
-            }
-            if (this.distortionTexture && this.distortionTexture.clone) {
-                newMaterial.distortionTexture = this.distortionTexture.clone();
-            }
-            if (this.opacityTexture && this.opacityTexture.clone) {
-                newMaterial.opacityTexture = this.opacityTexture.clone();
-            }
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            var _this = this;
+            return BABYLON.SerializationHelper.Clone(function () { return new FireMaterial(name, _this.getScene()); }, this);
         };
         FireMaterial.prototype.serialize = function () {
             var serializationObject = _super.prototype.serialize.call(this);
             serializationObject.customType = "BABYLON.FireMaterial";
             serializationObject.diffuseColor = this.diffuseColor.asArray();
             serializationObject.speed = this.speed;
-            serializationObject.disableLighting = this.disableLighting;
             if (this.diffuseTexture) {
                 serializationObject.diffuseTexture = this.diffuseTexture.serialize();
             }
@@ -298,7 +269,6 @@ var BABYLON;
             var material = new FireMaterial(source.name, scene);
             material.diffuseColor = BABYLON.Color3.FromArray(source.diffuseColor);
             material.speed = source.speed;
-            material.disableLighting = source.disableLighting;
             material.alpha = source.alpha;
             material.id = source.id;
             BABYLON.Tags.AddTagsTo(material, source.tags);
@@ -318,10 +288,25 @@ var BABYLON;
             }
             return material;
         };
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], FireMaterial.prototype, "diffuseTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], FireMaterial.prototype, "distortionTexture");
+        __decorate([
+            BABYLON.serializeAsTexture()
+        ], FireMaterial.prototype, "opacityTexture");
+        __decorate([
+            BABYLON.serialize("diffuseColor")
+        ], FireMaterial.prototype, "diffuseColor");
+        __decorate([
+            BABYLON.serialize()
+        ], FireMaterial.prototype, "speed");
         return FireMaterial;
     })(BABYLON.Material);
     BABYLON.FireMaterial = FireMaterial;
 })(BABYLON || (BABYLON = {}));
 
-BABYLON.Effect.ShadersStore['fireVertexShader'] = "precision highp float;\r\n\r\n// Attributes\r\nattribute vec3 position;\r\n#ifdef NORMAL\r\nattribute vec3 normal;\r\n#endif\r\n#ifdef UV1\r\nattribute vec2 uv;\r\n#endif\r\n#ifdef UV2\r\nattribute vec2 uv2;\r\n#endif\r\n#ifdef VERTEXCOLOR\r\nattribute vec4 color;\r\n#endif\r\n#ifdef BONES\r\nattribute vec4 matricesIndices;\r\nattribute vec4 matricesWeights;\r\n#endif\r\n\r\n// Uniforms\r\n\r\n#ifdef INSTANCES\r\nattribute vec4 world0;\r\nattribute vec4 world1;\r\nattribute vec4 world2;\r\nattribute vec4 world3;\r\n#else\r\nuniform mat4 world;\r\n#endif\r\n\r\nuniform mat4 view;\r\nuniform mat4 viewProjection;\r\n\r\n#ifdef DIFFUSE\r\nvarying vec2 vDiffuseUV;\r\n#endif\r\n\r\n#ifdef BONES\r\nuniform mat4 mBones[BonesPerMesh];\r\n#endif\r\n\r\n#ifdef POINTSIZE\r\nuniform float pointSize;\r\n#endif\r\n\r\n// Output\r\nvarying vec3 vPositionW;\r\n#ifdef NORMAL\r\nvarying vec3 vNormalW;\r\n#endif\r\n\r\n#ifdef VERTEXCOLOR\r\nvarying vec4 vColor;\r\n#endif\r\n\r\n#ifdef CLIPPLANE\r\nuniform vec4 vClipPlane;\r\nvarying float fClipDistance;\r\n#endif\r\n\r\n#ifdef FOG\r\nvarying float fFogDistance;\r\n#endif\r\n\r\n// Fire\r\nuniform float time;\r\nuniform float speed;\r\n\r\nvarying vec2 vDistortionCoords1;\r\nvarying vec2 vDistortionCoords2;\r\nvarying vec2 vDistortionCoords3;\r\n\r\nvoid main(void) {\r\n\tmat4 finalWorld;\r\n\r\n#ifdef INSTANCES\r\n\tfinalWorld = mat4(world0, world1, world2, world3);\r\n#else\r\n\tfinalWorld = world;\r\n#endif\r\n\r\n#ifdef BONES\r\n\tmat4 m0 = mBones[int(matricesIndices.x)] * matricesWeights.x;\r\n\tmat4 m1 = mBones[int(matricesIndices.y)] * matricesWeights.y;\r\n\tmat4 m2 = mBones[int(matricesIndices.z)] * matricesWeights.z;\r\n\r\n#ifdef BONES4\r\n\tmat4 m3 = mBones[int(matricesIndices.w)] * matricesWeights.w;\r\n\tfinalWorld = finalWorld * (m0 + m1 + m2 + m3);\r\n#else\r\n\tfinalWorld = finalWorld * (m0 + m1 + m2);\r\n#endif \r\n\r\n#endif\r\n\tgl_Position = viewProjection * finalWorld * vec4(position, 1.0);\r\n\r\n\tvec4 worldPos = finalWorld * vec4(position, 1.0);\r\n\tvPositionW = vec3(worldPos);\r\n\r\n#ifdef NORMAL\r\n\tvNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));\r\n#endif\r\n\r\n\t// Texture coordinates\r\n#ifdef DIFFUSE\r\n\tvDiffuseUV = uv;\r\n\tvDiffuseUV.y -= 0.2;\r\n#endif\r\n\r\n\t// Clip plane\r\n#ifdef CLIPPLANE\r\n\tfClipDistance = dot(worldPos, vClipPlane);\r\n#endif\r\n\r\n\t// Fog\r\n#ifdef FOG\r\n\tfFogDistance = (view * worldPos).z;\r\n#endif\r\n\r\n\t// Vertex color\r\n#ifdef VERTEXCOLOR\r\n\tvColor = color;\r\n#endif\r\n\r\n\t// Point size\r\n#ifdef POINTSIZE\r\n\tgl_PointSize = pointSize;\r\n#endif\r\n\r\n\t// Fire\r\n\tvec3 layerSpeed = vec3(-0.2, -0.52, -0.1) * speed;\r\n\t\r\n\tvDistortionCoords1.x = uv.x;\r\n\tvDistortionCoords1.y = uv.y + layerSpeed.x * time / 1000.0;\r\n\t\r\n\tvDistortionCoords2.x = uv.x;\r\n\tvDistortionCoords2.y = uv.y + layerSpeed.y * time / 1000.0;\r\n\t\r\n\tvDistortionCoords3.x = uv.x;\r\n\tvDistortionCoords3.y = uv.y + layerSpeed.z * time / 1000.0;\r\n}\r\n";
-BABYLON.Effect.ShadersStore['firePixelShader'] = "precision highp float;\r\n\r\n// Constants\r\nuniform vec3 vEyePosition;\r\n\r\n// Input\r\nvarying vec3 vPositionW;\r\n\r\n#ifdef NORMAL\r\nvarying vec3 vNormalW;\r\n#endif\r\n\r\n#ifdef VERTEXCOLOR\r\nvarying vec4 vColor;\r\n#endif\r\n\r\n// Samplers\r\n#ifdef DIFFUSE\r\nvarying vec2 vDiffuseUV;\r\nuniform sampler2D diffuseSampler;\r\nuniform vec2 vDiffuseInfos;\r\n#endif\r\n\r\n// Fire\r\nuniform sampler2D distortionSampler;\r\nuniform sampler2D opacitySampler;\r\n\r\nvarying vec2 vDistortionCoords1;\r\nvarying vec2 vDistortionCoords2;\r\nvarying vec2 vDistortionCoords3;\r\n\r\n#ifdef CLIPPLANE\r\nvarying float fClipDistance;\r\n#endif\r\n\r\n// Fog\r\n#ifdef FOG\r\n\r\n#define FOGMODE_NONE    0.\r\n#define FOGMODE_EXP     1.\r\n#define FOGMODE_EXP2    2.\r\n#define FOGMODE_LINEAR  3.\r\n#define E 2.71828\r\n\r\nuniform vec4 vFogInfos;\r\nuniform vec3 vFogColor;\r\nvarying float fFogDistance;\r\n\r\nfloat CalcFogFactor()\r\n{\r\n\tfloat fogCoeff = 1.0;\r\n\tfloat fogStart = vFogInfos.y;\r\n\tfloat fogEnd = vFogInfos.z;\r\n\tfloat fogDensity = vFogInfos.w;\r\n\r\n\tif (FOGMODE_LINEAR == vFogInfos.x)\r\n\t{\r\n\t\tfogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);\r\n\t}\r\n\telse if (FOGMODE_EXP == vFogInfos.x)\r\n\t{\r\n\t\tfogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);\r\n\t}\r\n\telse if (FOGMODE_EXP2 == vFogInfos.x)\r\n\t{\r\n\t\tfogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);\r\n\t}\r\n\r\n\treturn clamp(fogCoeff, 0.0, 1.0);\r\n}\r\n#endif\r\n\r\nvec4 bx2(vec4 x)\r\n{\r\n   return vec4(2.0) * x - vec4(1.0);\r\n}\r\n\r\nvoid main(void) {\r\n\t// Clip plane\r\n#ifdef CLIPPLANE\r\n\tif (fClipDistance > 0.0)\r\n\t\tdiscard;\r\n#endif\r\n\r\n\tvec3 viewDirectionW = normalize(vEyePosition - vPositionW);\r\n\r\n\t// Base color\r\n\tvec4 baseColor = vec4(1., 1., 1., 1.);\r\n\r\n\t// Alpha\r\n\tfloat alpha = 1.0;\r\n\r\n#ifdef DIFFUSE\r\n\t// Fire\r\n\tconst float distortionAmount0  = 0.092;\r\n\tconst float distortionAmount1  = 0.092;\r\n\tconst float distortionAmount2  = 0.092;\r\n\t\r\n\tvec2 heightAttenuation = vec2(0.3, 0.39);\r\n\t\r\n\tvec4 noise0 = texture2D(distortionSampler, vDistortionCoords1);\r\n\tvec4 noise1 = texture2D(distortionSampler, vDistortionCoords2);\r\n\tvec4 noise2 = texture2D(distortionSampler, vDistortionCoords3);\r\n\t\r\n\tvec4 noiseSum = bx2(noise0) * distortionAmount0 + bx2(noise1) * distortionAmount1 + bx2(noise2) * distortionAmount2;\r\n\t\r\n\tvec4 perturbedBaseCoords = vec4(vDiffuseUV, 0.0, 1.0) + noiseSum * (vDiffuseUV.y * heightAttenuation.x + heightAttenuation.y);\r\n\t\r\n\tvec4 opacityColor = texture2D(opacitySampler, perturbedBaseCoords.xy);\r\n\t\r\n#ifdef ALPHATEST\r\n\tif (opacityColor.r < 0.1)\r\n\t\tdiscard;\r\n#endif\r\n\t\r\n\tbaseColor = texture2D(diffuseSampler, perturbedBaseCoords.xy) * 2.0;\r\n\tbaseColor *= opacityColor;\r\n\r\n\tbaseColor.rgb *= vDiffuseInfos.y;\r\n#endif\r\n\r\n#ifdef VERTEXCOLOR\r\n\tbaseColor.rgb *= vColor.rgb;\r\n#endif\r\n\r\n\t// Bump\r\n#ifdef NORMAL\r\n\tvec3 normalW = normalize(vNormalW);\r\n#else\r\n\tvec3 normalW = vec3(1.0, 1.0, 1.0);\r\n#endif\r\n\r\n\t// Lighting\r\n\tvec3 diffuseBase = vec3(1.0, 1.0, 1.0);\r\n\r\n#ifdef VERTEXALPHA\r\n\talpha *= vColor.a;\r\n#endif\r\n\r\n\t// Composition\r\n\tvec4 color = vec4(baseColor.rgb, alpha);\r\n\r\n#ifdef FOG\r\n\tfloat fog = CalcFogFactor();\r\n\tcolor.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;\r\n#endif\r\n\r\n\tgl_FragColor = color;\r\n}";
+BABYLON.Effect.ShadersStore['fireVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<shadowsVertexDeclaration>\n\nuniform float time;\nuniform float speed;\nvarying vec2 vDistortionCoords1;\nvarying vec2 vDistortionCoords2;\nvarying vec2 vDistortionCoords3;\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n\n#ifdef DIFFUSE\nvDiffuseUV=uv;\nvDiffuseUV.y-=0.2;\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n\nvec3 layerSpeed=vec3(-0.2,-0.52,-0.1)*speed;\nvDistortionCoords1.x=uv.x;\nvDistortionCoords1.y=uv.y+layerSpeed.x*time/1000.0;\nvDistortionCoords2.x=uv.x;\nvDistortionCoords2.y=uv.y+layerSpeed.y*time/1000.0;\nvDistortionCoords3.x=uv.x;\nvDistortionCoords3.y=uv.y+layerSpeed.z*time/1000.0;\n}\n";
+BABYLON.Effect.ShadersStore['firePixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n\nuniform sampler2D distortionSampler;\nuniform sampler2D opacitySampler;\nvarying vec2 vDistortionCoords1;\nvarying vec2 vDistortionCoords2;\nvarying vec2 vDistortionCoords3;\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvec4 bx2(vec4 x)\n{\nreturn vec4(2.0)*x-vec4(1.0);\n}\nvoid main(void) {\n\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\n\nfloat alpha=1.0;\n#ifdef DIFFUSE\n\nconst float distortionAmount0=0.092;\nconst float distortionAmount1=0.092;\nconst float distortionAmount2=0.092;\nvec2 heightAttenuation=vec2(0.3,0.39);\nvec4 noise0=texture2D(distortionSampler,vDistortionCoords1);\nvec4 noise1=texture2D(distortionSampler,vDistortionCoords2);\nvec4 noise2=texture2D(distortionSampler,vDistortionCoords3);\nvec4 noiseSum=bx2(noise0)*distortionAmount0+bx2(noise1)*distortionAmount1+bx2(noise2)*distortionAmount2;\nvec4 perturbedBaseCoords=vec4(vDiffuseUV,0.0,1.0)+noiseSum*(vDiffuseUV.y*heightAttenuation.x+heightAttenuation.y);\nvec4 opacityColor=texture2D(opacitySampler,perturbedBaseCoords.xy);\n#ifdef ALPHATEST\nif (opacityColor.r<0.1)\ndiscard;\n#endif\nbaseColor=texture2D(diffuseSampler,perturbedBaseCoords.xy)*2.0;\nbaseColor*=opacityColor;\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\nvec3 diffuseBase=vec3(1.0,1.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n\nvec4 color=vec4(baseColor.rgb,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}";

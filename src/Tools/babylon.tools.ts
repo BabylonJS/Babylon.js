@@ -47,23 +47,6 @@
             return fn;
         }
 
-        public static GetConstructorName(obj) {
-            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
-            var cname = str.match(/function\s(\w*)/)[1];
-            var aliases = ["", "anonymous", "Anonymous"];
-            return aliases.indexOf(cname) > -1 ? "Function" : cname;
-        }
-
-        public static ToHex(i: number): string {
-            var str = i.toString(16);
-
-            if (i <= 15) {
-                return ("0" + str).toUpperCase();
-            }
-
-            return str.toUpperCase();
-        }
-
         public static SetImmediate(action: () => void) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -154,7 +137,7 @@
             return "data:image/png;base64," + output;
         }
 
-        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[] | Int32Array, indexStart: number, indexCount: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMaxIndexed(positions: number[] | Float32Array, indices: number[] | Int32Array, indexStart: number, indexCount: number, bias: Vector2 = null): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -165,13 +148,22 @@
                 maximum = Vector3.Maximize(current, maximum);
             }
 
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                minimum.z -= minimum.z * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+                maximum.z += maximum.z * bias.x + bias.y;
+            }
+
             return {
                 minimum: minimum,
                 maximum: maximum
             };
         }
 
-        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number): { minimum: Vector3; maximum: Vector3 } {
+        public static ExtractMinAndMax(positions: number[] | Float32Array, start: number, count: number, bias: Vector2 = null): { minimum: Vector3; maximum: Vector3 } {
             var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
@@ -180,6 +172,15 @@
 
                 minimum = Vector3.Minimize(current, minimum);
                 maximum = Vector3.Maximize(current, maximum);
+            }
+
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                minimum.z -= minimum.z * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+                maximum.z += maximum.z * bias.x + bias.y;
             }
 
             return {
@@ -306,7 +307,7 @@
 
 
             //ANY database to do!
-            if (database && database.enableTexturesOffline && Database.IsUASupportingBlobStorage) {
+            if (url.substr(0, 5) !== "data:" && database && database.enableTexturesOffline && Database.IsUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
@@ -373,8 +374,8 @@
             };
 
             if (url.indexOf("file:") !== -1) {
-                var fileName = url.substring(5);
-                Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
+                var fileName = url.substring(5).toLowerCase();
+                Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
             }
             else {
                 // Caching all files
@@ -425,22 +426,7 @@
             return link;
         }
 
-        // Misc.   
-        public static Clamp(value: number, min = 0, max = 1): number {
-            return Math.min(max, Math.max(min, value));
-        }
-
-        // Returns -1 when value is a negative number and
-        // +1 when value is a positive number. 
-        public static Sign(value: number): number {
-            value = +value; // convert to a number
-
-            if (value === 0 || isNaN(value))
-                return value;
-
-            return value > 0 ? 1 : -1;
-        }
-
+        // Misc.
         public static Format(value: number, decimals: number = 2): string {
             return value.toFixed(decimals);
         }
@@ -459,11 +445,6 @@
                 max.y = v.y;
             if (v.z > max.z)
                 max.z = v.z;
-        }
-
-        public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
-            var num = a - b;
-            return -epsilon <= num && num <= epsilon;
         }
 
         public static DeepCopy(source, destination, doNotCopyList?: string[], mustCopyList?: string[]): void {
@@ -592,7 +573,7 @@
                     var a = window.document.createElement("a");
                     a.href = base64Image;
                     var date = new Date();
-                    var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                    var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
                     a.setAttribute("download", "screenshot_" + stringDate + ".png");
 
                     window.document.body.appendChild(a);
@@ -1011,5 +992,3 @@
         }
     }
 } 
-
-

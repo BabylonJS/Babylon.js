@@ -1,246 +1,5 @@
 var BABYLON;
 (function (BABYLON) {
-    var _DepthCullingState = (function () {
-        function _DepthCullingState() {
-            this._isDepthTestDirty = false;
-            this._isDepthMaskDirty = false;
-            this._isDepthFuncDirty = false;
-            this._isCullFaceDirty = false;
-            this._isCullDirty = false;
-            this._isZOffsetDirty = false;
-        }
-        Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
-            get: function () {
-                return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "zOffset", {
-            get: function () {
-                return this._zOffset;
-            },
-            set: function (value) {
-                if (this._zOffset === value) {
-                    return;
-                }
-                this._zOffset = value;
-                this._isZOffsetDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "cullFace", {
-            get: function () {
-                return this._cullFace;
-            },
-            set: function (value) {
-                if (this._cullFace === value) {
-                    return;
-                }
-                this._cullFace = value;
-                this._isCullFaceDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "cull", {
-            get: function () {
-                return this._cull;
-            },
-            set: function (value) {
-                if (this._cull === value) {
-                    return;
-                }
-                this._cull = value;
-                this._isCullDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthFunc", {
-            get: function () {
-                return this._depthFunc;
-            },
-            set: function (value) {
-                if (this._depthFunc === value) {
-                    return;
-                }
-                this._depthFunc = value;
-                this._isDepthFuncDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthMask", {
-            get: function () {
-                return this._depthMask;
-            },
-            set: function (value) {
-                if (this._depthMask === value) {
-                    return;
-                }
-                this._depthMask = value;
-                this._isDepthMaskDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_DepthCullingState.prototype, "depthTest", {
-            get: function () {
-                return this._depthTest;
-            },
-            set: function (value) {
-                if (this._depthTest === value) {
-                    return;
-                }
-                this._depthTest = value;
-                this._isDepthTestDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        _DepthCullingState.prototype.reset = function () {
-            this._depthMask = true;
-            this._depthTest = true;
-            this._depthFunc = null;
-            this._cull = null;
-            this._cullFace = null;
-            this._zOffset = 0;
-            this._isDepthTestDirty = true;
-            this._isDepthMaskDirty = true;
-            this._isDepthFuncDirty = false;
-            this._isCullFaceDirty = false;
-            this._isCullDirty = false;
-            this._isZOffsetDirty = false;
-        };
-        _DepthCullingState.prototype.apply = function (gl) {
-            if (!this.isDirty) {
-                return;
-            }
-            // Cull
-            if (this._isCullDirty) {
-                if (this.cull) {
-                    gl.enable(gl.CULL_FACE);
-                }
-                else {
-                    gl.disable(gl.CULL_FACE);
-                }
-                this._isCullDirty = false;
-            }
-            // Cull face
-            if (this._isCullFaceDirty) {
-                gl.cullFace(this.cullFace);
-                this._isCullFaceDirty = false;
-            }
-            // Depth mask
-            if (this._isDepthMaskDirty) {
-                gl.depthMask(this.depthMask);
-                this._isDepthMaskDirty = false;
-            }
-            // Depth test
-            if (this._isDepthTestDirty) {
-                if (this.depthTest) {
-                    gl.enable(gl.DEPTH_TEST);
-                }
-                else {
-                    gl.disable(gl.DEPTH_TEST);
-                }
-                this._isDepthTestDirty = false;
-            }
-            // Depth func
-            if (this._isDepthFuncDirty) {
-                gl.depthFunc(this.depthFunc);
-                this._isDepthFuncDirty = false;
-            }
-            // zOffset
-            if (this._isZOffsetDirty) {
-                if (this.zOffset) {
-                    gl.enable(gl.POLYGON_OFFSET_FILL);
-                    gl.polygonOffset(this.zOffset, 0);
-                }
-                else {
-                    gl.disable(gl.POLYGON_OFFSET_FILL);
-                }
-                this._isZOffsetDirty = false;
-            }
-        };
-        return _DepthCullingState;
-    })();
-    BABYLON._DepthCullingState = _DepthCullingState;
-    var _AlphaState = (function () {
-        function _AlphaState() {
-            this._isAlphaBlendDirty = false;
-            this._isBlendFunctionParametersDirty = false;
-            this._alphaBlend = false;
-            this._blendFunctionParameters = new Array(4);
-        }
-        Object.defineProperty(_AlphaState.prototype, "isDirty", {
-            get: function () {
-                return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(_AlphaState.prototype, "alphaBlend", {
-            get: function () {
-                return this._alphaBlend;
-            },
-            set: function (value) {
-                if (this._alphaBlend === value) {
-                    return;
-                }
-                this._alphaBlend = value;
-                this._isAlphaBlendDirty = true;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        _AlphaState.prototype.setAlphaBlendFunctionParameters = function (value0, value1, value2, value3) {
-            if (this._blendFunctionParameters[0] === value0 &&
-                this._blendFunctionParameters[1] === value1 &&
-                this._blendFunctionParameters[2] === value2 &&
-                this._blendFunctionParameters[3] === value3) {
-                return;
-            }
-            this._blendFunctionParameters[0] = value0;
-            this._blendFunctionParameters[1] = value1;
-            this._blendFunctionParameters[2] = value2;
-            this._blendFunctionParameters[3] = value3;
-            this._isBlendFunctionParametersDirty = true;
-        };
-        _AlphaState.prototype.reset = function () {
-            this._alphaBlend = false;
-            this._blendFunctionParameters[0] = null;
-            this._blendFunctionParameters[1] = null;
-            this._blendFunctionParameters[2] = null;
-            this._blendFunctionParameters[3] = null;
-            this._isAlphaBlendDirty = true;
-            this._isBlendFunctionParametersDirty = false;
-        };
-        _AlphaState.prototype.apply = function (gl) {
-            if (!this.isDirty) {
-                return;
-            }
-            // Alpha blend
-            if (this._isAlphaBlendDirty) {
-                if (this._alphaBlend) {
-                    gl.enable(gl.BLEND);
-                }
-                else {
-                    gl.disable(gl.BLEND);
-                }
-                this._isAlphaBlendDirty = false;
-            }
-            // Alpha function
-            if (this._isBlendFunctionParametersDirty) {
-                gl.blendFuncSeparate(this._blendFunctionParameters[0], this._blendFunctionParameters[1], this._blendFunctionParameters[2], this._blendFunctionParameters[3]);
-                this._isBlendFunctionParametersDirty = false;
-            }
-        };
-        return _AlphaState;
-    })();
-    BABYLON._AlphaState = _AlphaState;
     var compileShader = function (gl, source, type, defines) {
         var shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
         gl.shaderSource(shader, (defines ? defines + "\n" : "") + source);
@@ -291,7 +50,7 @@ var BABYLON;
             mag: magFilter
         };
     };
-    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode) {
+    var prepareWebGLTexture = function (texture, gl, scene, width, height, invertY, noMipmap, isCompressed, processFunction, onLoad, samplingMode) {
         if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
         var engine = scene.getEngine();
         var potWidth = BABYLON.Tools.GetExponentOfTwo(width, engine.getCaps().maxTextureSize);
@@ -313,6 +72,9 @@ var BABYLON;
         gl.bindTexture(gl.TEXTURE_2D, null);
         engine.resetTextureCache();
         scene._removePendingData(texture);
+        if (onLoad) {
+            onLoad();
+        }
     };
     var partialLoad = function (url, index, loadedImages, scene, onfinish) {
         var img;
@@ -330,18 +92,18 @@ var BABYLON;
         img = BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
         scene._addPendingData(img);
     };
-    var cascadeLoad = function (rootUrl, scene, onfinish, extensions) {
+    var cascadeLoad = function (rootUrl, scene, onfinish, files) {
         var loadedImages = [];
         loadedImages._internalCount = 0;
         for (var index = 0; index < 6; index++) {
-            partialLoad(rootUrl + extensions[index], index, loadedImages, scene, onfinish);
+            partialLoad(files[index], index, loadedImages, scene, onfinish);
         }
     };
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    })();
+    }());
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -365,6 +127,7 @@ var BABYLON;
             this.enableOfflineSupport = true;
             this.scenes = new Array();
             this._windowIsBackground = false;
+            this._webGLVersion = "1.0";
             this._drawCalls = 0;
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = [];
@@ -374,8 +137,8 @@ var BABYLON;
             this.fps = 60;
             this.deltaTime = 0;
             // States
-            this._depthCullingState = new _DepthCullingState();
-            this._alphaState = new _AlphaState();
+            this._depthCullingState = new BABYLON.Internals._DepthCullingState();
+            this._alphaState = new BABYLON.Internals._AlphaState();
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._loadedTexturesCache = new Array();
@@ -390,11 +153,21 @@ var BABYLON;
                 options.preserveDrawingBuffer = false;
             }
             // GL
-            try {
-                this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
-            }
-            catch (e) {
-                throw new Error("WebGL not supported");
+            //try {
+            //    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+            //    if (this._gl) {
+            //        this._webGLVersion = "2.0";
+            //    }
+            //} catch (e) {
+            //    // Do nothing
+            //}
+            if (!this._gl) {
+                try {
+                    this._gl = (canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                }
+                catch (e) {
+                    throw new Error("WebGL not supported");
+                }
             }
             if (!this._gl) {
                 throw new Error("WebGL not supported");
@@ -408,7 +181,8 @@ var BABYLON;
             window.addEventListener("blur", this._onBlur);
             window.addEventListener("focus", this._onFocus);
             // Viewport
-            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / (window.devicePixelRatio || 1.0) : 1.0;
+            var limitDeviceRatio = options.limitDeviceRatio || window.devicePixelRatio || 1.0;
+            this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, window.devicePixelRatio || 1.0) : 1.0;
             this.resize();
             // Caps
             this._caps = new EngineCapabilities();
@@ -439,6 +213,9 @@ var BABYLON;
             this._caps.uintIndices = this._gl.getExtension('OES_element_index_uint') !== null;
             this._caps.fragmentDepthSupported = this._gl.getExtension('EXT_frag_depth') !== null;
             this._caps.highPrecisionShaderSupported = true;
+            this._caps.drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
+            this._caps.textureFloatLinearFiltering = this._gl.getExtension('OES_texture_float_linear');
+            this._caps.textureLOD = this._gl.getExtension('EXT_shader_texture_lod');
             if (this._gl.getShaderPrecisionFormat) {
                 var highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
                 this._caps.highPrecisionShaderSupported = highp.precision !== 0;
@@ -622,7 +399,14 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.3.0-beta";
+                return "2.4.0-alpha";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "webGLVersion", {
+            get: function () {
+                return this._webGLVersion;
             },
             enumerable: true,
             configurable: true
@@ -1154,11 +938,13 @@ var BABYLON;
             // Use program
             this._gl.useProgram(effect.getProgram());
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //make sure this is a number)
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._vertexAttribArrays[i] = false;
-                this._gl.disableVertexAttribArray(i);
+                this._vertexAttribArrays[iAsNumber] = false;
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
             var attributesCount = effect.getAttributesCount();
             for (var index = 0; index < attributesCount; index++) {
@@ -1401,10 +1187,7 @@ var BABYLON;
                     var header = BABYLON.Internals.TGATools.GetTGAHeader(data);
                     prepareWebGLTexture(texture, _this._gl, scene, header.width, header.height, invertY, noMipmap, false, function () {
                         BABYLON.Internals.TGATools.UploadContent(_this._gl, data);
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    }, samplingMode);
+                    }, onLoad, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (arrayBuffer) {
@@ -1419,10 +1202,7 @@ var BABYLON;
                     var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                     prepareWebGLTexture(texture, _this._gl, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, function () {
                         BABYLON.Internals.DDSTools.UploadDDSLevels(_this._gl, _this.getCaps().s3tc, data, info, loadMipmap, 1);
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    }, samplingMode);
+                    }, onLoad, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadFile(url, function (data) {
@@ -1456,10 +1236,7 @@ var BABYLON;
                             }
                         }
                         _this._gl.texImage2D(_this._gl.TEXTURE_2D, 0, _this._gl.RGBA, _this._gl.RGBA, _this._gl.UNSIGNED_BYTE, isPot ? img : _this._workingCanvas);
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    }, samplingMode);
+                    }, onLoad, samplingMode);
                 };
                 if (!(fromData instanceof Array))
                     BABYLON.Tools.LoadImage(url, onload, onerror, scene.database);
@@ -1468,8 +1245,7 @@ var BABYLON;
             }
             return texture;
         };
-        Engine.prototype.updateRawTexture = function (texture, data, format, invertY, compression) {
-            if (compression === void 0) { compression = null; }
+        Engine.prototype._getInternalFormat = function (format) {
             var internalFormat = this._gl.RGBA;
             switch (format) {
                 case Engine.TEXTUREFORMAT_ALPHA:
@@ -1488,6 +1264,11 @@ var BABYLON;
                     internalFormat = this._gl.RGBA;
                     break;
             }
+            return internalFormat;
+        };
+        Engine.prototype.updateRawTexture = function (texture, data, format, invertY, compression) {
+            if (compression === void 0) { compression = null; }
+            var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             if (compression) {
@@ -1714,7 +1495,7 @@ var BABYLON;
             var framebuffer = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-            // mipmaps
+            // Mipmaps
             if (texture.generateMipMaps) {
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -1731,7 +1512,7 @@ var BABYLON;
             texture.isReady = true;
             return texture;
         };
-        Engine.prototype.createCubeTexture = function (rootUrl, scene, extensions, noMipmap) {
+        Engine.prototype.createCubeTexture = function (rootUrl, scene, files, noMipmap) {
             var _this = this;
             var gl = this._gl;
             var texture = gl.createTexture();
@@ -1790,10 +1571,95 @@ var BABYLON;
                     texture._width = width;
                     texture._height = height;
                     texture.isReady = true;
-                }, extensions);
+                }, files);
             }
             return texture;
         };
+        Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback, mipmmapGenerator) {
+            var _this = this;
+            var gl = this._gl;
+            var texture = gl.createTexture();
+            scene._addPendingData(texture);
+            texture.isCube = true;
+            texture.references = 1;
+            texture.url = url;
+            var internalFormat = this._getInternalFormat(format);
+            var textureType = gl.UNSIGNED_BYTE;
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                textureType = gl.FLOAT;
+            }
+            var width = size;
+            var height = width;
+            var isPot = (BABYLON.Tools.IsExponentOfTwo(width) && BABYLON.Tools.IsExponentOfTwo(height));
+            texture._width = width;
+            texture._height = height;
+            var onerror = function () {
+                scene._removePendingData(texture);
+            };
+            var internalCallback = function (data) {
+                var rgbeDataArrays = callback(data);
+                var facesIndex = [
+                    gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                    gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
+                ];
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+                if (!noMipmap && isPot) {
+                    if (mipmmapGenerator) {
+                        var arrayTemp = [];
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        // mipmmapGenerator data is expected to be order in +X -X +Y -Y +Z -Z
+                        arrayTemp.push(rgbeDataArrays[0]); // +X
+                        arrayTemp.push(rgbeDataArrays[3]); // -X
+                        arrayTemp.push(rgbeDataArrays[1]); // +Y
+                        arrayTemp.push(rgbeDataArrays[4]); // -Y
+                        arrayTemp.push(rgbeDataArrays[2]); // +Z
+                        arrayTemp.push(rgbeDataArrays[5]); // -Z
+                        var mipData = mipmmapGenerator(arrayTemp);
+                        for (var level = 0; level < mipData.length; level++) {
+                            var mipSize = width >> level;
+                            // mipData is order in +X -X +Y -Y +Z -Z
+                            gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
+                            gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);
+                            gl.texImage2D(facesIndex[2], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][4]);
+                            gl.texImage2D(facesIndex[3], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][1]);
+                            gl.texImage2D(facesIndex[4], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][3]);
+                            gl.texImage2D(facesIndex[5], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][5]);
+                        }
+                    }
+                    else {
+                        // Data are known to be in +X +Y +Z -X -Y -Z
+                        for (var index = 0; index < facesIndex.length; index++) {
+                            var faceData = rgbeDataArrays[index];
+                            gl.texImage2D(facesIndex[index], 0, internalFormat, width, height, 0, internalFormat, textureType, faceData);
+                        }
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    }
+                }
+                else {
+                    noMipmap = true;
+                }
+                if (textureType == gl.FLOAT && !_this._caps.textureFloatLinearFiltering) {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                }
+                else {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, noMipmap ? gl.LINEAR : gl.LINEAR_MIPMAP_LINEAR);
+                }
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                texture.isReady = true;
+                _this.resetTextureCache();
+                scene._removePendingData(texture);
+            };
+            BABYLON.Tools.LoadFile(url, function (data) {
+                internalCallback(data);
+            }, onerror, scene.database, true);
+            return texture;
+        };
+        ;
         Engine.prototype._releaseTexture = function (texture) {
             var gl = this._gl;
             if (texture._framebuffer) {
@@ -1959,10 +1825,12 @@ var BABYLON;
             }
             // Unbind
             for (var i in this._vertexAttribArrays) {
-                if (i > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[i]) {
+                //making sure this is a string
+                var iAsNumber = +i;
+                if (iAsNumber > this._gl.VERTEX_ATTRIB_ARRAY_ENABLED || !this._vertexAttribArrays[iAsNumber]) {
                     continue;
                 }
-                this._gl.disableVertexAttribArray(i);
+                this._gl.disableVertexAttribArray(iAsNumber);
             }
             this._gl = null;
             // Events
@@ -2068,11 +1936,10 @@ var BABYLON;
         Engine._TEXTURETYPE_UNSIGNED_INT = 0;
         Engine._TEXTURETYPE_FLOAT = 1;
         // Updatable statics so stick with vars here
-        Engine.Epsilon = 0.001;
         Engine.CollisionsEpsilon = 0.001;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    })();
+    }());
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));

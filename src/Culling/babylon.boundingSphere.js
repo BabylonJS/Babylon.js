@@ -29,7 +29,7 @@ var BABYLON;
             var y = this.centerWorld.y - point.y;
             var z = this.centerWorld.z - point.z;
             var distance = Math.sqrt((x * x) + (y * y) + (z * z));
-            if (Math.abs(this.radiusWorld - distance) < BABYLON.Engine.Epsilon)
+            if (Math.abs(this.radiusWorld - distance) < BABYLON.Epsilon)
                 return false;
             return true;
         };
@@ -44,6 +44,6 @@ var BABYLON;
             return true;
         };
         return BoundingSphere;
-    })();
+    }());
     BABYLON.BoundingSphere = BoundingSphere;
 })(BABYLON || (BABYLON = {}));

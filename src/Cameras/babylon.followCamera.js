@@ -3,17 +3,24 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var FollowCamera = (function (_super) {
         __extends(FollowCamera, _super);
-        function FollowCamera(name, position, scene) {
+        function FollowCamera(name, position, scene, target) {
             _super.call(this, name, position, scene);
             this.radius = 12;
             this.rotationOffset = 0;
             this.heightOffset = 4;
             this.cameraAcceleration = 0.05;
             this.maxCameraSpeed = 20;
+            this.target = target;
         }
         FollowCamera.prototype.getRadians = function (degrees) {
             return degrees * Math.PI / 180;
@@ -55,15 +62,29 @@ var BABYLON;
             _super.prototype._checkInputs.call(this);
             this.follow(this.target);
         };
-        FollowCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.radius = this.radius;
-            serializationObject.heightOffset = this.heightOffset;
-            serializationObject.rotationOffset = this.rotationOffset;
-            return serializationObject;
+        FollowCamera.prototype.getTypeName = function () {
+            return "FollowCamera";
         };
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "radius", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "rotationOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "heightOffset", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "cameraAcceleration", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], FollowCamera.prototype, "maxCameraSpeed", void 0);
+        __decorate([
+            BABYLON.serializeAsMeshReference("lockedTargetId")
+        ], FollowCamera.prototype, "target", void 0);
         return FollowCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.FollowCamera = FollowCamera;
     var ArcFollowCamera = (function (_super) {
         __extends(ArcFollowCamera, _super);
@@ -87,12 +108,10 @@ var BABYLON;
             _super.prototype._checkInputs.call(this);
             this.follow();
         };
-        ArcFollowCamera.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.radius = this.radius;
-            return serializationObject;
+        ArcFollowCamera.prototype.getTypeName = function () {
+            return "ArcFollowCamera";
         };
         return ArcFollowCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.ArcFollowCamera = ArcFollowCamera;
 })(BABYLON || (BABYLON = {}));

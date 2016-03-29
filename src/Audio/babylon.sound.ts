@@ -96,24 +96,25 @@
                     if (typeof (urlOrArrayBuffer) === "string") {
                         // Loading sound using XHR2
                         if (!this._streaming) {
-                            Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, null, true);
+                            Tools.LoadFile(urlOrArrayBuffer, (data) => { this._soundLoaded(data); }, null, this._scene.database, true);
                         }
                         // Streaming sound using HTML5 Audio tag
                         else {
-                            this._htmlAudioElement = new Audio();
-                            this._htmlAudioElement.src = urlOrArrayBuffer;
+                            this._htmlAudioElement = new Audio(urlOrArrayBuffer);
                             this._htmlAudioElement.controls = false;
                             this._htmlAudioElement.loop = this.loop;
                             this._htmlAudioElement.crossOrigin = "anonymous";
-                            this._isReadyToPlay = true;
-                            document.body.appendChild(this._htmlAudioElement);
-                            // Simulating a ready to play event for consistent behavior with non streamed audio source
-                            if (this._readyToPlayCallback) {
-                                window.setTimeout(() => {
+                            this._htmlAudioElement.preload = "auto";
+                            this._htmlAudioElement.addEventListener("canplaythrough", () => {
+                                this._isReadyToPlay = true;
+                                if (this.autoplay) {
+                                    this.play();
+                                }
+                                if (this._readyToPlayCallback) {
                                     this._readyToPlayCallback();
-                                }, 1000);
-                            }
-                            if (this.autoplay) { this.play(); }
+                                }
+                            });
+                            document.body.appendChild(this._htmlAudioElement);
                         }
                     }
                     else {
@@ -342,6 +343,10 @@
         public play(time?: number) {
             if (this._isReadyToPlay && this._scene.audioEnabled) {
                 try {
+                    if (this._startOffset < 0) {
+                        time = -this._startOffset;
+                        this._startOffset = 0;
+                    }  
                     var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
                         if (this.spatialSound) {
@@ -376,7 +381,7 @@
                         this._soundSource.loop = this.loop;
                         this._soundSource.playbackRate.value = this._playbackRate;
                         this._soundSource.onended = () => { this._onended(); };
-                        this._soundSource.start(this._startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
+                        this._soundSource.start(startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : 0);
                     }
                     this._startTime = startTime;
                     this.isPlaying = true;
@@ -411,6 +416,9 @@
                 else {
                     var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     this._soundSource.stop(stopTime);
+                    if (!this.isPaused) {
+                        this._startOffset = 0;
+                    }
                 }
                 this.isPlaying = false;
             }
@@ -418,6 +426,7 @@
 
         public pause() {
             if (this.isPlaying) {
+                this.isPaused = true;
                 if (this._streaming) {
                     this._htmlAudioElement.pause();
                 }
@@ -425,7 +434,6 @@
                     this.stop(0);
                     this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
                 }
-                this.isPaused = true;
             }
         }
 

@@ -57,6 +57,7 @@ var BABYLON;
         // Methods
         Bone.prototype.updateMatrix = function (matrix) {
             this._baseMatrix = matrix.clone();
+            this._matrix = matrix.clone();
             this._skeleton._markAsDirty();
             this._updateDifferenceMatrix();
         };
@@ -84,6 +85,7 @@ var BABYLON;
             // all animation may be coming from a library skeleton, so may need to create animation
             if (this.animations.length === 0) {
                 this.animations.push(new BABYLON.Animation(this.name, "_matrix", source.animations[0].framePerSecond, BABYLON.Animation.ANIMATIONTYPE_MATRIX, 0));
+                this.animations[0].setKeys([]);
             }
             // get animation info / verify there is such a range from the source bone
             var sourceRange = source.animations[0].getRange(rangeName);
@@ -122,6 +124,6 @@ var BABYLON;
             return true;
         };
         return Bone;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.Bone = Bone;
 })(BABYLON || (BABYLON = {}));

@@ -112,19 +112,12 @@
         }
 
         // Physics
-        if (mesh.getPhysicsImpostor() !== PhysicsEngine.NoImpostor) {
+        //TODO implement correct serialization for physics impostors.
+        if (mesh.getPhysicsImpostor()) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
-
-            switch (mesh.getPhysicsImpostor()) {
-                case PhysicsEngine.BoxImpostor:
-                    serializationObject.physicsImpostor = 1;
-                    break;
-                case PhysicsEngine.SphereImpostor:
-                    serializationObject.physicsImpostor = 2;
-                    break;
-            }
+            serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
 
         // Instances
@@ -207,6 +200,10 @@
     }
 
     export class SceneSerializer {
+        public static ClearCache(): void {
+            serializedGeometries = [];
+        }
+
         public static Serialize(scene: Scene): any {
             var serializationObject: any = {};
 
@@ -231,7 +228,7 @@
             //Physics
             if (scene.isPhysicsEnabled()) {
                 serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
+                serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
 
@@ -254,6 +251,9 @@
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
+
+            // Animations
+            Animation.AppendSerializedAnimations(scene, serializationObject);
 
             // Materials
             serializationObject.materials = [];
@@ -367,3 +367,5 @@
         }
     }
 }
+
+

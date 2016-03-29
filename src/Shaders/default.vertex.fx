@@ -1,6 +1,4 @@
-﻿precision highp float;
-
-// Attributes
+﻿// Attributes
 attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
@@ -15,27 +13,10 @@ attribute vec2 uv2;
 attribute vec4 color;
 #endif
 
-#if NUM_BONE_INFLUENCERS > 0
-	uniform mat4 mBones[BonesPerMesh];
-
-	attribute vec4 matricesIndices;
-	attribute vec4 matricesWeights;
-	#if NUM_BONE_INFLUENCERS > 4
-		attribute vec4 matricesIndicesExtra;
-		attribute vec4 matricesWeightsExtra;
-	#endif
-#endif
+#include<bonesDeclaration>
 
 // Uniforms
-
-#ifdef INSTANCES
-attribute vec4 world0;
-attribute vec4 world1;
-attribute vec4 world2;
-attribute vec4 world3;
-#else
-uniform mat4 world;
-#endif
+#include<instancesDeclaration>
 
 uniform mat4 view;
 uniform mat4 viewProjection;
@@ -78,13 +59,11 @@ uniform mat4 specularMatrix;
 
 #ifdef BUMP
 varying vec2 vBumpUV;
-uniform vec2 vBumpInfos;
+uniform vec3 vBumpInfos;
 uniform mat4 bumpMatrix;
 #endif
 
-#ifdef POINTSIZE
-uniform float pointSize;
-#endif
+#include<pointCloudVertexDeclaration>
 
 // Output
 varying vec3 vPositionW;
@@ -96,33 +75,10 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-uniform vec4 vClipPlane;
-varying float fClipDistance;
-#endif
+#include<clipPlaneVertexDeclaration>
 
-#ifdef FOG
-varying float fFogDistance;
-#endif
-
-#ifdef SHADOWS
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-uniform mat4 lightMatrix0;
-varying vec4 vPositionFromLight0;
-#endif
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-uniform mat4 lightMatrix1;
-varying vec4 vPositionFromLight1;
-#endif
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-uniform mat4 lightMatrix2;
-varying vec4 vPositionFromLight2;
-#endif
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-uniform mat4 lightMatrix3;
-varying vec4 vPositionFromLight3;
-#endif
-#endif
+#include<fogVertexDeclaration>
+#include<shadowsVertexDeclaration>
 
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
@@ -132,51 +88,16 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
-#ifdef LOGARITHMICDEPTH
-uniform float logarithmicDepthConstant;
-varying float vFragmentDepth;
-#endif
+#include<logDepthDeclaration>
 
 void main(void) {
 #ifdef REFLECTIONMAP_SKYBOX
 	vPositionUVW = position;
 #endif 
 
-#ifdef INSTANCES
-	mat4 finalWorld = mat4(world0, world1, world2, world3);
-#else
-	mat4 finalWorld = world;
-#endif
+#include<instancesVertex>
+#include<bonesVertex>
 
-#if NUM_BONE_INFLUENCERS > 0
-	mat4 influence;
-	influence = mBones[int(matricesIndices[0])] * matricesWeights[0];
-
-	#if NUM_BONE_INFLUENCERS > 1
-		influence += mBones[int(matricesIndices[1])] * matricesWeights[1];
-	#endif 
-	#if NUM_BONE_INFLUENCERS > 2
-		influence += mBones[int(matricesIndices[2])] * matricesWeights[2];
-	#endif	
-	#if NUM_BONE_INFLUENCERS > 3
-		influence += mBones[int(matricesIndices[3])] * matricesWeights[3];
-	#endif	
-
-	#if NUM_BONE_INFLUENCERS > 4
-		influence += mBones[int(matricesIndicesExtra[0])] * matricesWeightsExtra[0];
-	#endif
-	#if NUM_BONE_INFLUENCERS > 5
-		influence += mBones[int(matricesIndicesExtra[1])] * matricesWeightsExtra[1];
-	#endif	
-	#if NUM_BONE_INFLUENCERS > 6
-		influence += mBones[int(matricesIndicesExtra[2])] * matricesWeightsExtra[2];
-	#endif	
-	#if NUM_BONE_INFLUENCERS > 7
-		influence += mBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
-	#endif	
-
-	finalWorld = finalWorld * influence;
-#endif
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
@@ -275,45 +196,16 @@ void main(void) {
 	}
 #endif
 
-	// Clip plane
-#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, vClipPlane);
-#endif
-
-	// Fog
-#ifdef FOG
-	fFogDistance = (view * worldPos).z;
-#endif
-
-	// Shadows
-#ifdef SHADOWS
-#if defined(SPOTLIGHT0) || defined(DIRLIGHT0)
-	vPositionFromLight0 = lightMatrix0 * worldPos;
-#endif
-#if defined(SPOTLIGHT1) || defined(DIRLIGHT1)
-	vPositionFromLight1 = lightMatrix1 * worldPos;
-#endif
-#if defined(SPOTLIGHT2) || defined(DIRLIGHT2)
-	vPositionFromLight2 = lightMatrix2 * worldPos;
-#endif
-#if defined(SPOTLIGHT3) || defined(DIRLIGHT3)
-	vPositionFromLight3 = lightMatrix3 * worldPos;
-#endif
-#endif
+#include<clipPlaneVertex>
+#include<fogVertex>
+#include<shadowsVertex>
 
 	// Vertex color
 #ifdef VERTEXCOLOR
 	vColor = color;
 #endif
 
-	// Point size
-#ifdef POINTSIZE
-	gl_PointSize = pointSize;
-#endif
+#include<pointCloudVertex>
+#include<logDepthVertex>
 
-	// Log. depth
-#ifdef LOGARITHMICDEPTH
-	vFragmentDepth = 1.0 + gl_Position.w;
-	gl_Position.z = log2(max(0.000001, vFragmentDepth)) * logarithmicDepthConstant;
-#endif
 }

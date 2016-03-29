@@ -2,8 +2,43 @@
 
     declare var SIMD;
 
-    const ToGammaSpace = 1 / 2.2;
-    const ToLinearSpace = 2.2;
+    export const ToGammaSpace = 1 / 2.2;
+    export const ToLinearSpace = 2.2;
+    export const Epsilon = 0.001;
+
+
+    export class MathTools {
+        public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
+            var num = a - b;
+            return -epsilon <= num && num <= epsilon;
+        }
+
+        public static ToHex(i: number): string {
+            var str = i.toString(16);
+
+            if (i <= 15) {
+                return ("0" + str).toUpperCase();
+            }
+
+            return str.toUpperCase();
+        }
+        
+        // Returns -1 when value is a negative number and
+        // +1 when value is a positive number. 
+        public static Sign(value: number): number {
+            value = +value; // convert to a number
+
+            if (value === 0 || isNaN(value))
+                return value;
+
+            return value > 0 ? 1 : -1;
+        }
+
+        public static Clamp(value: number, min = 0, max = 1): number {
+            return Math.min(max, Math.max(min, value));
+        }
+    }
+
 
     export class Color3 {
         constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
@@ -123,7 +158,7 @@
             var intG = (this.g * 255) | 0;
             var intB = (this.b * 255) | 0;
 
-            return "#" + Tools.ToHex(intR) + Tools.ToHex(intG) + Tools.ToHex(intB);
+            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB);
         }
 
         public toLinearSpace(): Color3 {
@@ -157,7 +192,7 @@
         // Statics
         public static FromHexString(hex: string): Color3 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
-                Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
+                //Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
 
@@ -282,13 +317,13 @@
             var intB = (this.b * 255) | 0;
             var intA = (this.a * 255) | 0;
 
-            return "#" + Tools.ToHex(intR) + Tools.ToHex(intG) + Tools.ToHex(intB) + Tools.ToHex(intA);
+            return "#" + MathTools.ToHex(intR) + MathTools.ToHex(intG) + MathTools.ToHex(intB) + MathTools.ToHex(intA);
         }
 
         // Statics
         public static FromHexString(hex: string): Color4 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
-                Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
+                //Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0, 0, 0, 0);
             }
 
@@ -450,8 +485,8 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y;
         }
 
-        public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Engine.Epsilon): boolean {
-            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && Tools.WithinEpsilon(this.y, otherVector.y, epsilon);
+        public equalsWithEpsilon(otherVector: Vector2, epsilon: number = Epsilon): boolean {
+            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon);
         }
 
         // Properties
@@ -591,6 +626,7 @@
     export class Vector3 {
 
         constructor(public x: number, public y: number, public z: number) {
+
         }
 
         public toString(): string {
@@ -709,8 +745,8 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
-        public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Engine.Epsilon): boolean {
-            return otherVector && Tools.WithinEpsilon(this.x, otherVector.x, epsilon) && Tools.WithinEpsilon(this.y, otherVector.y, epsilon) && Tools.WithinEpsilon(this.z, otherVector.z, epsilon);
+        public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Epsilon): boolean {
+            return otherVector && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon) && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon) && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon);
         }
 
         public equalsToFloats(x: number, y: number, z: number): boolean {
@@ -1028,7 +1064,7 @@
             var vector = Vector3.TransformCoordinates(source, matrix);
             var num = source.x * matrix.m[3] + source.y * matrix.m[7] + source.z * matrix.m[11] + matrix.m[15];
 
-            if (Tools.WithinEpsilon(num, 1.0)) {
+            if (MathTools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -1042,7 +1078,7 @@
             var vector = Vector3.TransformCoordinates(screenSource, matrix);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
 
-            if (Tools.WithinEpsilon(num, 1.0)) {
+            if (MathTools.WithinEpsilon(num, 1.0)) {
                 vector = vector.scale(1.0 / num);
             }
 
@@ -1118,10 +1154,10 @@
             // Rv3(u) = u1, and u1 belongs to plane xOz
             // Rv3(w) = w1 = w invariant
             var u1: Vector3 = Tmp.Vector3[1];
-            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
+            if (MathTools.WithinEpsilon(w.z, 0, Epsilon)) {
                 z = 1.0;
             }
-            else if (Tools.WithinEpsilon(w.x, 0, Engine.Epsilon)) {
+            else if (MathTools.WithinEpsilon(w.x, 0, Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -1159,7 +1195,7 @@
             y = 0.0;
             z = 0.0;
             sign = -1.0;
-            if (Tools.WithinEpsilon(w.z, 0, Engine.Epsilon)) {
+            if (MathTools.WithinEpsilon(w.z, 0, Epsilon)) {
                 x = 1.0;
             }
             else {
@@ -1324,12 +1360,12 @@
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z && this.w === otherVector.w;
         }
 
-        public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Engine.Epsilon): boolean {
+        public equalsWithEpsilon(otherVector: Vector4, epsilon: number = Epsilon): boolean {
             return otherVector
-                && Tools.WithinEpsilon(this.x, otherVector.x, epsilon)
-                && Tools.WithinEpsilon(this.y, otherVector.y, epsilon)
-                && Tools.WithinEpsilon(this.z, otherVector.z, epsilon)
-                && Tools.WithinEpsilon(this.w, otherVector.w, epsilon);
+                && MathTools.WithinEpsilon(this.x, otherVector.x, epsilon)
+                && MathTools.WithinEpsilon(this.y, otherVector.y, epsilon)
+                && MathTools.WithinEpsilon(this.z, otherVector.z, epsilon)
+                && MathTools.WithinEpsilon(this.w, otherVector.w, epsilon);
         }
 
         public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
@@ -1520,7 +1556,6 @@
 
     export class Quaternion {
         constructor(public x: number = 0, public y: number = 0, public z: number = 0, public w: number = 1) {
-
         }
 
         public toString(): string {
@@ -1593,6 +1628,23 @@
             return this;
         }
 
+        public conjugateToRef(ref: Quaternion): Quaternion {
+            ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
+            return this;
+        }
+
+        public conjugateInPlace(): Quaternion {
+            this.x *= -1;
+            this.y *= -1;
+            this.z *= -1;
+            return this;
+        }
+
+        public conjugate(): Quaternion {
+            var result = new Quaternion(-this.x, -this.y, -this.z, this.w);
+            return result;
+        }
+
         public length(): number {
             return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
         }
@@ -1651,7 +1703,7 @@
 
             return this;
         };
-        
+
         public toRotationMatrix(result: Matrix): Quaternion {
             var xx = this.x * this.x;
             var yy = this.y * this.y;
@@ -2100,9 +2152,9 @@
             translation.y = this.m[13];
             translation.z = this.m[14];
 
-            var xs = Tools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
-            var ys = Tools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
-            var zs = Tools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
+            var xs = MathTools.Sign(this.m[0] * this.m[1] * this.m[2] * this.m[3]) < 0 ? -1 : 1;
+            var ys = MathTools.Sign(this.m[4] * this.m[5] * this.m[6] * this.m[7]) < 0 ? -1 : 1;
+            var zs = MathTools.Sign(this.m[8] * this.m[9] * this.m[10] * this.m[11]) < 0 ? -1 : 1;
 
             scale.x = xs * Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = ys * Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
@@ -2549,12 +2601,10 @@
             return matrix;
         }
 
-        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, fovMode = Camera.FOVMODE_VERTICAL_FIXED): void {
+        public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             var tan = 1.0 / (Math.tan(fov * 0.5));
-
-            var v_fixed = (fovMode === Camera.FOVMODE_VERTICAL_FIXED);
-
-            if (v_fixed) {
+            
+            if (isVerticalFovFixed) {
                 result.m[0] = tan / aspect;
             }
             else {
@@ -2563,7 +2613,7 @@
 
             result.m[1] = result.m[2] = result.m[3] = 0.0;
 
-            if (v_fixed) {
+            if (isVerticalFovFixed) {
                 result.m[5] = tan;
             }
             else {
@@ -2795,16 +2845,8 @@
         constructor(public x: number, public y: number, public width: number, public height: number) {
         }
 
-        public toGlobal(engine: Engine): Viewport {
-            var width = engine.getRenderWidth();
-            var height = engine.getRenderHeight();
-            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
-        }
-
-        public toScreenGlobal(engine: Engine): Viewport {
-            var width = engine.getRenderWidth(true);
-            var height = engine.getRenderHeight(true);
-            return new Viewport(this.x * width, this.y * height, this.width * width, this.height * height);
+        public toGlobal(renderWidth: number, renderHeight: number): Viewport {
+            return new Viewport(this.x * renderWidth, this.y * renderHeight, this.width * renderWidth, this.height * renderHeight);
         }
     }
 
@@ -2863,213 +2905,6 @@
             frustumPlanes[5].normal.z = transform.m[11] + transform.m[9];
             frustumPlanes[5].d = transform.m[15] + transform.m[13];
             frustumPlanes[5].normalize();
-        }
-    }
-
-    export class Ray {
-        private _edge1: Vector3;
-        private _edge2: Vector3;
-        private _pvec: Vector3;
-        private _tvec: Vector3;
-        private _qvec: Vector3;
-
-        constructor(public origin: Vector3, public direction: Vector3, public length: number = Number.MAX_VALUE) {
-        }
-
-        // Methods
-        public intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean {
-            var d = 0.0;
-            var maxValue = Number.MAX_VALUE;
-            var inv: number;
-            var min: number;
-            var max: number;
-            var temp: number;
-            if (Math.abs(this.direction.x) < 0.0000001) {
-                if (this.origin.x < minimum.x || this.origin.x > maximum.x) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.x;
-                min = (minimum.x - this.origin.x) * inv;
-                max = (maximum.x - this.origin.x) * inv;
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-
-            if (Math.abs(this.direction.y) < 0.0000001) {
-                if (this.origin.y < minimum.y || this.origin.y > maximum.y) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.y;
-                min = (minimum.y - this.origin.y) * inv;
-                max = (maximum.y - this.origin.y) * inv;
-
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-
-            if (Math.abs(this.direction.z) < 0.0000001) {
-                if (this.origin.z < minimum.z || this.origin.z > maximum.z) {
-                    return false;
-                }
-            }
-            else {
-                inv = 1.0 / this.direction.z;
-                min = (minimum.z - this.origin.z) * inv;
-                max = (maximum.z - this.origin.z) * inv;
-
-                if (max === -Infinity) {
-                    max = Infinity;
-                }
-
-                if (min > max) {
-                    temp = min;
-                    min = max;
-                    max = temp;
-                }
-
-                d = Math.max(min, d);
-                maxValue = Math.min(max, maxValue);
-
-                if (d > maxValue) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public intersectsBox(box: BoundingBox): boolean {
-            return this.intersectsBoxMinMax(box.minimum, box.maximum);
-        }
-
-        public intersectsSphere(sphere): boolean {
-            var x = sphere.center.x - this.origin.x;
-            var y = sphere.center.y - this.origin.y;
-            var z = sphere.center.z - this.origin.z;
-            var pyth = (x * x) + (y * y) + (z * z);
-            var rr = sphere.radius * sphere.radius;
-
-            if (pyth <= rr) {
-                return true;
-            }
-
-            var dot = (x * this.direction.x) + (y * this.direction.y) + (z * this.direction.z);
-            if (dot < 0.0) {
-                return false;
-            }
-
-            var temp = pyth - (dot * dot);
-
-            return temp <= rr;
-        }
-
-        public intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): IntersectionInfo {
-            if (!this._edge1) {
-                this._edge1 = Vector3.Zero();
-                this._edge2 = Vector3.Zero();
-                this._pvec = Vector3.Zero();
-                this._tvec = Vector3.Zero();
-                this._qvec = Vector3.Zero();
-            }
-
-            vertex1.subtractToRef(vertex0, this._edge1);
-            vertex2.subtractToRef(vertex0, this._edge2);
-            Vector3.CrossToRef(this.direction, this._edge2, this._pvec);
-            var det = Vector3.Dot(this._edge1, this._pvec);
-
-            if (det === 0) {
-                return null;
-            }
-
-            var invdet = 1 / det;
-
-            this.origin.subtractToRef(vertex0, this._tvec);
-
-            var bu = Vector3.Dot(this._tvec, this._pvec) * invdet;
-
-            if (bu < 0 || bu > 1.0) {
-                return null;
-            }
-
-            Vector3.CrossToRef(this._tvec, this._edge1, this._qvec);
-
-            var bv = Vector3.Dot(this.direction, this._qvec) * invdet;
-
-            if (bv < 0 || bu + bv > 1.0) {
-                return null;
-            }
-
-            //check if the distance is longer than the predefined length.
-            var distance = Vector3.Dot(this._edge2, this._qvec) * invdet;
-            if (distance > this.length) {
-                return null;
-            }
-
-            return new IntersectionInfo(bu, bv, distance);
-        }
-
-        // Statics
-        public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray {
-            var start = Vector3.Unproject(new Vector3(x, y, 0), viewportWidth, viewportHeight, world, view, projection);
-            var end = Vector3.Unproject(new Vector3(x, y, 1), viewportWidth, viewportHeight, world, view, projection);
-
-            var direction = end.subtract(start);
-            direction.normalize();
-
-            return new Ray(start, direction);
-        }
-
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        public static CreateNewFromTo(origin: Vector3, end: Vector3, world: Matrix = Matrix.Identity()): Ray {
-            var direction = end.subtract(origin);
-            var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
-            direction.normalize();
-
-            return Ray.Transform(new Ray(origin, direction, length), world);
-        }
-
-        public static Transform(ray: Ray, matrix: Matrix): Ray {
-            var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
-            var newDirection = Vector3.TransformNormal(ray.direction, matrix);
-
-            return new Ray(newOrigin, newDirection, ray.length);
         }
     }
 
@@ -3181,77 +3016,6 @@
         }
     }
 
-    export class PathCursor {
-        private _onchange = new Array<(cursor: PathCursor) => void>();
-
-        value: number = 0;
-        animations = new Array<Animation>();
-
-        constructor(private path: Path2) {
-        }
-
-        public getPoint(): Vector3 {
-            var point = this.path.getPointAtLengthPosition(this.value);
-            return new Vector3(point.x, 0, point.y);
-        }
-
-        public moveAhead(step: number = 0.002): PathCursor {
-            this.move(step);
-
-            return this;
-        }
-
-        public moveBack(step: number = 0.002): PathCursor {
-            this.move(-step);
-
-            return this;
-        }
-
-        public move(step: number): PathCursor {
-
-            if (Math.abs(step) > 1) {
-                throw "step size should be less than 1.";
-            }
-
-            this.value += step;
-            this.ensureLimits();
-            this.raiseOnChange();
-
-            return this;
-        }
-
-        private ensureLimits(): PathCursor {
-            while (this.value > 1) {
-                this.value -= 1;
-            }
-            while (this.value < 0) {
-                this.value += 1;
-            }
-
-            return this;
-        }
-
-        // used by animation engine
-        private markAsDirty(propertyName: string): PathCursor {
-            this.ensureLimits();
-            this.raiseOnChange();
-
-            return this;
-        }
-
-        private raiseOnChange(): PathCursor {
-            this._onchange.forEach(f => f(this));
-
-            return this;
-        }
-
-        public onchange(f: (cursor: PathCursor) => void): PathCursor {
-            this._onchange.push(f);
-
-            return this;
-        }
-    }
-
     export class Path2 {
         private _points = new Array<Vector2>();
         private _length = 0;
@@ -3264,7 +3028,7 @@
 
         public addLineTo(x: number, y: number): Path2 {
             if (closed) {
-                Tools.Error("cannot add lines to closed paths");
+                //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
             var newPoint = new Vector2(x, y);
@@ -3276,7 +3040,7 @@
 
         public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
             if (closed) {
-                Tools.Error("cannot add arcs to closed paths");
+                //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
             var startPoint = this._points[this._points.length - 1];
@@ -3321,7 +3085,7 @@
 
         public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
-                Tools.Error("normalized length position should be between 0 and 1.");
+                //Tools.Error("normalized length position should be between 0 and 1.");
                 return Vector2.Zero();
             }
 
@@ -3348,7 +3112,7 @@
                 previousOffset = nextOffset;
             }
 
-            Tools.Error("internal error");
+            //Tools.Error("internal error");
             return Vector2.Zero();
         }
 
@@ -3367,6 +3131,8 @@
 
         /**
         * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.  
+        * please read the description in the tutorial :  http://doc.babylonjs.com/tutorials/How_to_use_Path3D  
         * path : an array of Vector3, the curve axis of the Path3D
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
@@ -3379,26 +3145,49 @@
             this._compute(firstNormal);
         }
 
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.  
+         */
         public getCurve(): Vector3[] {
             return this._curve;
         }
 
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         */
         public getTangents(): Vector3[] {
             return this._tangents;
         }
 
+
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         */
         public getNormals(): Vector3[] {
             return this._normals;
         }
 
+
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         */
         public getBinormals(): Vector3[] {
             return this._binormals;
         }
 
+
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
         public getDistances(): number[] {
             return this._distances;
         }
 
+
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * Returns the same object updated.  
+         */
         public update(path: Vector3[], firstNormal?: Vector3): Path3D {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
@@ -3500,13 +3289,13 @@
 
             if (va === undefined || va === null) {
                 var point: Vector3;
-                if (!Tools.WithinEpsilon(vt.y, 1, Engine.Epsilon)) {     // search for a point in the plane
+                if (!MathTools.WithinEpsilon(vt.y, 1, Epsilon)) {     // search for a point in the plane
                     point = new Vector3(0, -1, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.x, 1, Engine.Epsilon)) {
+                else if (!MathTools.WithinEpsilon(vt.x, 1, Epsilon)) {
                     point = new Vector3(1, 0, 0);
                 }
-                else if (!Tools.WithinEpsilon(vt.z, 1, Engine.Epsilon)) {
+                else if (!MathTools.WithinEpsilon(vt.z, 1, Epsilon)) {
                     point = new Vector3(0, 0, 1);
                 }
                 normal0 = Vector3.Cross(vt, point);
@@ -3525,7 +3314,13 @@
         private _points: Vector3[];
         private _length: number = 0;
 
-        // QuadraticBezier(origin_V3, control_V3, destination_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#quadratic-bezier-curve  
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         public static CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 2 ? nbPoints : 3;
             var bez = new Array<Vector3>();
@@ -3538,8 +3333,15 @@
             }
             return new Curve3(bez);
         }
-
-        // CubicBezier(origin_V3, control1_V3, control2_V3, destination_V3, nbPoints)
+        
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve  
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         public static CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: number): Curve3 {
             nbPoints = nbPoints > 3 ? nbPoints : 4;
             var bez = new Array<Vector3>();
@@ -3553,7 +3355,14 @@
             return new Curve3(bez);
         }
 
-        // HermiteSpline(origin_V3, originTangent_V3, destination_V3, destinationTangent_V3, nbPoints)
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#hermite-spline  
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         */
         public static CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: number): Curve3 {
             var hermite = new Array<Vector3>();
             var step = 1 / nbPoints;
@@ -3563,19 +3372,35 @@
             return new Curve3(hermite);
         }
 
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.  
+         * A Curve3 is designed from a series of successive Vector3.  
+         * Tuto : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#curve3-object
+         */
         constructor(points: Vector3[]) {
             this._points = points;
             this._length = this._computeLength(points);
         }
 
+        /**
+         * Returns the Curve3 stored array of successive Vector3
+         */
         public getPoints() {
             return this._points;
         }
 
+        /**
+         * Returns the computed length (float) of the curve.
+         */
         public length() {
             return this._length;
         }
 
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);  
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.  
+         * curveA and curveB keep unchanged.  
+         */
         public continue(curve: Curve3): Curve3 {
             var lastPoint = this._points[this._points.length - 1];
             var continuedPoints = this._points.slice();
@@ -3593,6 +3418,87 @@
                 l += (path[i].subtract(path[i - 1])).length();
             }
             return l;
+        }
+    }
+
+    // SphericalHarmonics
+    export class SphericalHarmonics {
+        public L00: Vector3 = Vector3.Zero();
+        public L1_1: Vector3 = Vector3.Zero();
+        public L10: Vector3 = Vector3.Zero();
+        public L11: Vector3 = Vector3.Zero();
+        public L2_2: Vector3 = Vector3.Zero();
+        public L2_1: Vector3 = Vector3.Zero();
+        public L20: Vector3 = Vector3.Zero();
+        public L21: Vector3 = Vector3.Zero();
+        public L22: Vector3 = Vector3.Zero();
+
+        public addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void {
+            var colorVector = new Vector3(color.r, color.g, color.b);
+            var c = colorVector.scale(deltaSolidAngle);
+
+            this.L00 = this.L00.add(c.scale(0.282095));
+
+            this.L1_1 = this.L1_1.add(c.scale(0.488603 * direction.y));
+            this.L10 = this.L10.add(c.scale(0.488603 * direction.z));
+            this.L11 = this.L11.add(c.scale(0.488603 * direction.x));
+
+            this.L2_2 = this.L2_2.add(c.scale(1.092548 * direction.x * direction.y));
+            this.L2_1 = this.L2_1.add(c.scale(1.092548 * direction.y * direction.z));
+            this.L21 = this.L21.add(c.scale(1.092548 * direction.x * direction.z));
+
+            this.L20 = this.L20.add(c.scale(0.315392 * (3.0 * direction.z * direction.z - 1.0)));
+            this.L22 = this.L22.add(c.scale(0.546274 * (direction.x * direction.x - direction.y * direction.y)));
+        }
+
+        public scale(scale: number): void {
+            this.L00 = this.L00.scale(scale);
+            this.L1_1 = this.L1_1.scale(scale);
+            this.L10 = this.L10.scale(scale);
+            this.L11 = this.L11.scale(scale);
+            this.L2_2 = this.L2_2.scale(scale);
+            this.L2_1 = this.L2_1.scale(scale);
+            this.L20 = this.L20.scale(scale);
+            this.L21 = this.L21.scale(scale);
+            this.L22 = this.L22.scale(scale);
+        }
+    }
+
+    // SphericalPolynomial
+    export class SphericalPolynomial {
+        public x: Vector3 = Vector3.Zero();
+        public y: Vector3 = Vector3.Zero();
+        public z: Vector3 = Vector3.Zero();
+        public xx: Vector3 = Vector3.Zero();
+        public yy: Vector3 = Vector3.Zero();
+        public zz: Vector3 = Vector3.Zero();
+        public xy: Vector3 = Vector3.Zero();
+        public yz: Vector3 = Vector3.Zero();
+        public zx: Vector3 = Vector3.Zero();
+
+        public addAmbient(color: Color3): void {
+            var colorVector = new Vector3(color.r, color.g, color.b);
+            this.xx = this.xx.add(colorVector);
+            this.yy = this.yy.add(colorVector);
+            this.zz = this.zz.add(colorVector);
+        }
+
+        public static getSphericalPolynomialFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial {
+            var result = new SphericalPolynomial();
+
+            result.x = harmonics.L11.scale(1.02333);
+            result.y = harmonics.L1_1.scale(1.02333);
+            result.z = harmonics.L10.scale(1.02333);
+
+            result.xx = harmonics.L00.scale(0.886277).subtract(harmonics.L20.scale(0.247708)).add(harmonics.L22.scale(0.429043));
+            result.yy = harmonics.L00.scale(0.886277).subtract(harmonics.L20.scale(0.247708)).subtract(harmonics.L22.scale(0.429043));
+            result.zz = harmonics.L00.scale(0.886277).add(harmonics.L20.scale(0.495417));
+
+            result.yz = harmonics.L2_1.scale(0.858086);
+            result.zx = harmonics.L21.scale(0.858086);
+            result.xy = harmonics.L2_2.scale(0.858086);
+
+            return result;
         }
     }
 
@@ -3622,9 +3528,10 @@
     // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
     // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
     export class Tmp {
+        public static Color3: Color3[] = [Color3.Black(), Color3.Black(), Color3.Black()];
         public static Vector2: Vector2[] = [Vector2.Zero(), Vector2.Zero(), Vector2.Zero()];  // 3 temp Vector2 at once should be enough
-        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()
-            , Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 6 temp Vector3 at once should be enough
+        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(),
+            Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];    // 9 temp Vector3 at once should be enough
         public static Vector4: Vector4[] = [Vector4.Zero(), Vector4.Zero(), Vector4.Zero()];  // 3 temp Vector4 at once should be enough
         public static Quaternion: Quaternion[] = [new Quaternion(0, 0, 0, 0)];                // 1 temp Quaternion at once should be enough
         public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero(),
@@ -3633,4 +3540,3 @@
             Matrix.Zero(), Matrix.Zero()];                      // 6 temp Matrices at once should be enough
     }
 }
-

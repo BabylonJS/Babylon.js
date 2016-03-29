@@ -46,7 +46,7 @@ var BABYLON;
             return currentDefines;
         };
         return EffectFallbacks;
-    })();
+    }());
     BABYLON.EffectFallbacks = EffectFallbacks;
     var Effect = (function () {
         function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, fallbacks, onCompiled, onError) {
@@ -83,8 +83,12 @@ var BABYLON;
                 fragmentSource = baseName.fragment || baseName;
             }
             this._loadVertexShader(vertexSource, function (vertexCode) {
-                _this._loadFragmentShader(fragmentSource, function (fragmentCode) {
-                    _this._prepareEffect(vertexCode, fragmentCode, attributesNames, defines, fallbacks);
+                _this._processIncludes(vertexCode, function (vertexCodeWithIncludes) {
+                    _this._loadFragmentShader(fragmentSource, function (fragmentCode) {
+                        _this._processIncludes(fragmentCode, function (fragmentCodeWithIncludes) {
+                            _this._prepareEffect(vertexCodeWithIncludes, fragmentCodeWithIncludes, attributesNames, defines, fallbacks);
+                        });
+                    });
                 });
             });
         }
@@ -183,13 +187,64 @@ var BABYLON;
                 BABYLON.Tools.Error("Fragment shader:" + this.name);
             }
         };
+        Effect.prototype._processIncludes = function (sourceCode, callback) {
+            var _this = this;
+            var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+            var match = regex.exec(sourceCode);
+            var returnValue = new String(sourceCode);
+            while (match != null) {
+                var includeFile = match[1];
+                if (Effect.IncludesShadersStore[includeFile]) {
+                    // Substitution
+                    var includeContent = Effect.IncludesShadersStore[includeFile];
+                    if (match[2]) {
+                        var splits = match[3].split(",");
+                        for (var index = 0; index < splits.length; index += 2) {
+                            var source = new RegExp(splits[index], "g");
+                            var dest = splits[index + 1];
+                            includeContent = includeContent.replace(source, dest);
+                        }
+                    }
+                    if (match[4]) {
+                        includeContent = includeContent.replace(/\{X\}/g, match[5]);
+                    }
+                    // Replace
+                    returnValue = returnValue.replace(match[0], includeContent);
+                }
+                else {
+                    var includeShaderUrl = BABYLON.Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+                    BABYLON.Tools.LoadFile(includeShaderUrl, function (fileContent) {
+                        Effect.IncludesShadersStore[includeFile] = fileContent;
+                        _this._processIncludes(returnValue, callback);
+                    });
+                    return;
+                }
+                match = regex.exec(sourceCode);
+            }
+            callback(returnValue);
+        };
+        Effect.prototype._processPrecision = function (source) {
+            if (source.indexOf("precision highp float") === -1) {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) {
+                    source = "precision mediump float;\n" + source;
+                }
+                else {
+                    source = "precision highp float;\n" + source;
+                }
+            }
+            else {
+                if (!this._engine.getCaps().highPrecisionShaderSupported) {
+                    source = source.replace("precision highp float", "precision mediump float");
+                }
+            }
+            return source;
+        };
         Effect.prototype._prepareEffect = function (vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks) {
             try {
                 var engine = this._engine;
-                if (!engine.getCaps().highPrecisionShaderSupported) {
-                    vertexSourceCode = vertexSourceCode.replace("precision highp float", "precision mediump float");
-                    fragmentSourceCode = fragmentSourceCode.replace("precision highp float", "precision mediump float");
-                }
+                // Precision
+                vertexSourceCode = this._processPrecision(vertexSourceCode);
+                fragmentSourceCode = this._processPrecision(fragmentSourceCode);
                 this._program = engine.createShaderProgram(vertexSourceCode, fragmentSourceCode, defines);
                 this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
                 this._attributes = engine.getAttributes(this._program, attributesNames);
@@ -391,7 +446,8 @@ var BABYLON;
         };
         // Statics
         Effect.ShadersStore = {};
+        Effect.IncludesShadersStore = {};
         return Effect;
-    })();
+    }());
     BABYLON.Effect = Effect;
 })(BABYLON || (BABYLON = {}));

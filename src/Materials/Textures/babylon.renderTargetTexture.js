@@ -137,6 +137,7 @@ var BABYLON;
             // Prepare renderingManager
             this._renderingManager.reset();
             var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+            var sceneRenderId = scene.getRenderId();
             for (var meshIndex = 0; meshIndex < currentRenderList.length; meshIndex++) {
                 var mesh = currentRenderList[meshIndex];
                 if (mesh) {
@@ -145,8 +146,9 @@ var BABYLON;
                         this.resetRefreshCounter();
                         continue;
                     }
+                    mesh._preActivateForIntermediateRendering(sceneRenderId);
                     if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && ((mesh.layerMask & scene.activeCamera.layerMask) !== 0)) {
-                        mesh._activate(scene.getRenderId());
+                        mesh._activate(sceneRenderId);
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
                             scene._activeIndices += subMesh.indexCount;
@@ -159,6 +161,7 @@ var BABYLON;
                 for (var face = 0; face < 6; face++) {
                     this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
                     scene.incrementRenderId();
+                    scene.resetCachedMaterial();
                 }
             }
             else {
@@ -249,6 +252,6 @@ var BABYLON;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYFRAME = 1;
         RenderTargetTexture._REFRESHRATE_RENDER_ONEVERYTWOFRAMES = 2;
         return RenderTargetTexture;
-    })(BABYLON.Texture);
+    }(BABYLON.Texture));
     BABYLON.RenderTargetTexture = RenderTargetTexture;
 })(BABYLON || (BABYLON = {}));

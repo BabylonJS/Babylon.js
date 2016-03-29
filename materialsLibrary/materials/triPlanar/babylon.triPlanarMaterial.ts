@@ -65,21 +65,40 @@ module BABYLON {
     }
 
     export class TriPlanarMaterial extends Material {
+        @serializeAsTexture()
         public mixTexture: BaseTexture;
         
+        @serializeAsTexture()
         public diffuseTextureX: Texture;
+        
+        @serializeAsTexture()
         public diffuseTextureY: Texture;
+        
+        @serializeAsTexture()
         public diffuseTextureZ: Texture;
         
+        @serializeAsTexture()
         public normalTextureX: Texture;
+        
+        @serializeAsTexture()
         public normalTextureY: Texture;
+        
+        @serializeAsTexture()
         public normalTextureZ: Texture;
         
+        @serialize()
         public tileSize: number = 1;
         
+        @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
+        
+        @serializeAsColor3()
         public specularColor = new Color3(0.2, 0.2, 0.2);
+        
+        @serialize()
         public specularPower = 64;
+        
+        @serialize()
         public disableLighting = false;
 
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -419,7 +438,7 @@ module BABYLON {
 
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
-                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices());
+                this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
             }
             
             this._effect.setFloat("tileSize", this.tileSize);
@@ -547,75 +566,20 @@ module BABYLON {
 
             super.dispose(forceDisposeEffect);
         }
-
+        
         public clone(name: string): TriPlanarMaterial {
-            var newMaterial = new TriPlanarMaterial(name, this.getScene());
-
-            // Base material
-            this.copyTo(newMaterial);
-
-            // Simple material
-            if (this.mixTexture && this.mixTexture.clone) {
-                newMaterial.mixTexture = this.mixTexture.clone();
-            }
-
-            newMaterial.diffuseColor = this.diffuseColor.clone();
-            return newMaterial;
+            return SerializationHelper.Clone(() => new TriPlanarMaterial(name, this.getScene()), this);
         }
-		
-		public serialize(): any {
-		
-            var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.TerrainMaterial";
-            serializationObject.diffuseColor    = this.diffuseColor.asArray();
-			serializationObject.specularColor   = this.specularColor.asArray();
-            serializationObject.specularPower   = this.specularPower;
-            serializationObject.disableLighting = this.disableLighting;
 
-            if (this.diffuseTextureX) {
-                serializationObject.diffuseTextureX = this.diffuseTextureX.serialize();
-            }
-			
-			if (this.diffuseTextureY) {
-                serializationObject.diffuseTextureY = this.diffuseTextureY.serialize();
-            }
-			
-			if (this.diffuseTextureZ) {
-                serializationObject.diffuseTextureZ = this.diffuseTextureZ.serialize();
-            }
-
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.TriPlanarMaterial";
             return serializationObject;
         }
 
+        // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): TriPlanarMaterial {
-            var material = new TriPlanarMaterial(source.name, scene);
-
-            material.diffuseColor   = Color3.FromArray(source.diffuseColor);
-			material.specularColor   = Color3.FromArray(source.specularColor);
-            material.specularPower          = source.specularPower;
-            material.disableLighting    = source.disableLighting;
-
-            material.alpha          = source.alpha;
-
-            material.id             = source.id;
-
-            Tags.AddTagsTo(material, source.tags);
-            material.backFaceCulling = source.backFaceCulling;
-            material.wireframe = source.wireframe;
-
-            if (source.diffuseTextureX) {
-                material.diffuseTextureX = <Texture>Texture.Parse(source.diffuseTextureX, scene, rootUrl);
-            }
-			
-			if (source.diffuseTextureY) {
-                material.diffuseTextureY = <Texture>Texture.Parse(source.diffuseTextureY, scene, rootUrl);
-            }
-
-			if (source.diffuseTextureZ) {
-                material.diffuseTextureZ = <Texture>Texture.Parse(source.diffuseTextureZ, scene, rootUrl);
-            }
-
-            return material;
+            return SerializationHelper.Parse(() => new TriPlanarMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
 } 

@@ -30,19 +30,6 @@ var BABYLON;
             }
             return fn;
         };
-        Tools.GetConstructorName = function (obj) {
-            var str = (obj.prototype ? obj.prototype.constructor : obj.constructor).toString();
-            var cname = str.match(/function\s(\w*)/)[1];
-            var aliases = ["", "anonymous", "Anonymous"];
-            return aliases.indexOf(cname) > -1 ? "Function" : cname;
-        };
-        Tools.ToHex = function (i) {
-            var str = i.toString(16);
-            if (i <= 15) {
-                return ("0" + str).toUpperCase();
-            }
-            return str.toUpperCase();
-        };
         Tools.SetImmediate = function (action) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -115,7 +102,8 @@ var BABYLON;
             }
             return "data:image/png;base64," + output;
         };
-        Tools.ExtractMinAndMaxIndexed = function (positions, indices, indexStart, indexCount) {
+        Tools.ExtractMinAndMaxIndexed = function (positions, indices, indexStart, indexCount, bias) {
+            if (bias === void 0) { bias = null; }
             var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = indexStart; index < indexStart + indexCount; index++) {
@@ -123,18 +111,35 @@ var BABYLON;
                 minimum = BABYLON.Vector3.Minimize(current, minimum);
                 maximum = BABYLON.Vector3.Maximize(current, maximum);
             }
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                minimum.z -= minimum.z * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+                maximum.z += maximum.z * bias.x + bias.y;
+            }
             return {
                 minimum: minimum,
                 maximum: maximum
             };
         };
-        Tools.ExtractMinAndMax = function (positions, start, count) {
+        Tools.ExtractMinAndMax = function (positions, start, count, bias) {
+            if (bias === void 0) { bias = null; }
             var minimum = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var maximum = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             for (var index = start; index < start + count; index++) {
                 var current = new BABYLON.Vector3(positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]);
                 minimum = BABYLON.Vector3.Minimize(current, minimum);
                 maximum = BABYLON.Vector3.Maximize(current, maximum);
+            }
+            if (bias) {
+                minimum.x -= minimum.x * bias.x + bias.y;
+                minimum.y -= minimum.y * bias.x + bias.y;
+                minimum.z -= minimum.z * bias.x + bias.y;
+                maximum.x += maximum.x * bias.x + bias.y;
+                maximum.y += maximum.y * bias.x + bias.y;
+                maximum.z += maximum.z * bias.x + bias.y;
             }
             return {
                 minimum: minimum,
@@ -241,7 +246,7 @@ var BABYLON;
                 database.loadImageFromDB(url, img);
             };
             //ANY database to do!
-            if (database && database.enableTexturesOffline && BABYLON.Database.IsUASupportingBlobStorage) {
+            if (url.substr(0, 5) !== "data:" && database && database.enableTexturesOffline && BABYLON.Database.IsUASupportingBlobStorage) {
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
@@ -300,8 +305,8 @@ var BABYLON;
                 database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
             };
             if (url.indexOf("file:") !== -1) {
-                var fileName = url.substring(5);
-                Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, true);
+                var fileName = url.substring(5).toLowerCase();
+                Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
             }
             else {
                 // Caching all files
@@ -348,20 +353,7 @@ var BABYLON;
             var link = url.createObjectURL(fileBlob);
             return link;
         };
-        // Misc.   
-        Tools.Clamp = function (value, min, max) {
-            if (min === void 0) { min = 0; }
-            if (max === void 0) { max = 1; }
-            return Math.min(max, Math.max(min, value));
-        };
-        // Returns -1 when value is a negative number and
-        // +1 when value is a positive number. 
-        Tools.Sign = function (value) {
-            value = +value; // convert to a number
-            if (value === 0 || isNaN(value))
-                return value;
-            return value > 0 ? 1 : -1;
-        };
+        // Misc.
         Tools.Format = function (value, decimals) {
             if (decimals === void 0) { decimals = 2; }
             return value.toFixed(decimals);
@@ -379,11 +371,6 @@ var BABYLON;
                 max.y = v.y;
             if (v.z > max.z)
                 max.z = v.z;
-        };
-        Tools.WithinEpsilon = function (a, b, epsilon) {
-            if (epsilon === void 0) { epsilon = 1.401298E-45; }
-            var num = a - b;
-            return -epsilon <= num && num <= epsilon;
         };
         Tools.DeepCopy = function (source, destination, doNotCopyList, mustCopyList) {
             for (var prop in source) {
@@ -496,7 +483,7 @@ var BABYLON;
                     var a = window.document.createElement("a");
                     a.href = base64Image;
                     var date = new Date();
-                    var stringDate = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
+                    var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(-2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
                     a.setAttribute("download", "screenshot_" + stringDate + ".png");
                     window.document.body.appendChild(a);
                     a.addEventListener("click", function () {
@@ -819,7 +806,7 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    })();
+    }());
     BABYLON.Tools = Tools;
     /**
      * An implementation of a loop for asynchronous functions.
@@ -903,6 +890,6 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    })();
+    }());
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));

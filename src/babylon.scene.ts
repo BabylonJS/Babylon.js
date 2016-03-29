@@ -7,7 +7,7 @@
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
-    export class Scene {
+    export class Scene implements IAnimatable {
         // Statics
         private static _FOGMODE_NONE = 0;
         private static _FOGMODE_EXP = 1;
@@ -37,23 +37,7 @@
         public autoClear = true;
         public clearColor: any = new Color3(0.2, 0.2, 0.3);
         public ambientColor = new Color3(0, 0, 0);
-        /**
-        * A function to be executed before rendering this scene
-        * @type {Function}
-        */
-        public beforeRender: () => void;
-        /**
-        * A function to be executed after rendering this scene
-        * @type {Function}
-        */
-        public afterRender: () => void;
-        /**
-        * A function to be executed when this scene is disposed.
-        * @type {Function}
-        */
-        public onDispose: () => void;
-        public beforeCameraRender: (camera: Camera) => void;
-        public afterCameraRender: (camera: Camera) => void;
+
         public forceWireframe = false;
         public forcePointsCloud = false;
         public forceShowBoundingBoxes = false;
@@ -61,17 +45,152 @@
         public animationsEnabled = true;
         public constantlyUpdateMeshUnderPointer = false;
 
+        // Events
+
+        /**
+        * An event triggered when the scene is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<Scene>();
+
+        private _onDisposeObserver: Observer<Scene>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
+
+        /**
+        * An event triggered before rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeRenderObservable = new Observable<Scene>();
+
+        private _onBeforeRenderObserver: Observer<Scene>;
+        public set beforeRender(callback: () => void) {
+            if (this._onBeforeRenderObserver) {
+                this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            }
+            this._onBeforeRenderObserver = this.onBeforeRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after rendering the scene
+        * @type {BABYLON.Observable}
+        */
+        public onAfterRenderObservable = new Observable<Scene>();
+
+        private _onAfterRenderObserver: Observer<Scene>;
+        public set afterRender(callback: () => void) {
+            if (this._onAfterRenderObserver) {
+                this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+            }
+            this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when the scene is ready
+        * @type {BABYLON.Observable}
+        */
+        public onReadyObservable = new Observable<Scene>();
+
+        /**
+        * An event triggered before rendering a camera
+        * @type {BABYLON.Observable}
+        */
+        public onBeforeCameraRenderObservable = new Observable<Camera>();
+
+        private _onBeforeCameraRenderObserver: Observer<Camera>;
+        public set beforeCameraRender(callback: () => void) {
+            if (this._onBeforeCameraRenderObserver) {
+                this.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
+            }
+
+            this._onBeforeCameraRenderObserver = this.onBeforeCameraRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered after rendering a camera
+        * @type {BABYLON.Observable}
+        */
+        public onAfterCameraRenderObservable = new Observable<Camera>();
+
+        private _onAfterCameraRenderObserver: Observer<Camera>;
+        public set afterCameraRender(callback: () => void) {
+            if (this._onAfterCameraRenderObserver) {
+                this.onAfterCameraRenderObservable.remove(this._onAfterCameraRenderObserver);
+            }
+            this._onAfterCameraRenderObserver = this.onAfterCameraRenderObservable.add(callback);
+        }
+
+        /**
+        * An event triggered when a camera is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewCameraAddedObservable = new Observable<Camera>();
+
+        /**
+        * An event triggered when a camera is removed
+        * @type {BABYLON.Observable}
+        */
+        public onCameraRemovedObservable = new Observable<Camera>();
+
+        /**
+        * An event triggered when a light is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewLightAddedObservable = new Observable<Light>();
+
+        /**
+        * An event triggered when a light is removed
+        * @type {BABYLON.Observable}
+        */
+        public onLightRemovedObservable = new Observable<Light>();
+
+        /**
+        * An event triggered when a geometry is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewGeometryAddedObservable = new Observable<Geometry>();
+
+        /**
+        * An event triggered when a geometry is removed
+        * @type {BABYLON.Observable}
+        */
+        public onGeometryRemovedObservable = new Observable<Geometry>();
+
+        /**
+        * An event triggered when a mesh is created
+        * @type {BABYLON.Observable}
+        */
+        public onNewMeshAddedObservable = new Observable<AbstractMesh>();
+
+        /**
+        * An event triggered when a mesh is removed
+        * @type {BABYLON.Observable}
+        */
+        public onMeshRemovedObservable = new Observable<AbstractMesh>();
+
+        // Animations
+        public animations: Animation[] = [];
+
         // Pointers
+        public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
+        public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
+        public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
-        private _meshUnderPointer: AbstractMesh;
+        private _unTranslatedPointerX: number;
+        private _unTranslatedPointerY: number;
         private _startingPointerPosition = new Vector2(0, 0);
         private _startingPointerTime = 0;
         // Mirror
@@ -110,8 +229,6 @@
         * @type {BABYLON.Light[]}
         */
         public lights = new Array<Light>();
-        public onNewLightAdded: (newLight?: Light, positionInArray?: number, scene?: Scene) => void;
-        public onLightRemoved: (removedLight?: Light) => void;
 
         // Cameras
         /**
@@ -120,8 +237,6 @@
         * @type {BABYLON.Camera[]}
         */
         public cameras = new Array<Camera>();
-        public onNewCameraAdded: (newCamera?: Camera, positionInArray?: number, scene?: Scene) => void;
-        public onCameraRemoved: (removedCamera?: Camera) => void;
         public activeCameras = new Array<Camera>();
         public activeCamera: Camera;
 
@@ -132,13 +247,9 @@
         * @type {BABYLON.AbstractMesh[]}
         */
         public meshes = new Array<AbstractMesh>();
-        public onNewMeshAdded: (newMesh?: AbstractMesh, positionInArray?: number, scene?: Scene) => void;
-        public onMeshRemoved: (removedMesh?: AbstractMesh) => void;
 
         // Geometries
         private _geometries = new Array<Geometry>();
-        public onGeometryAdded: (newGeometry?: Geometry) => void;
-        public onGeometryRemoved: (removedGeometry?: Geometry) => void;
 
         public materials = new Array<Material>();
         public multiMaterials = new Array<MultiMaterial>();
@@ -235,14 +346,10 @@
 
         private _renderId = 0;
         private _executeWhenReadyTimeoutId = -1;
+        private _intermediateRendering = false;
 
         public _toBeDisposed = new SmartArray<IDisposable>(256);
-
-        private _onReadyCallbacks = new Array<() => void>();
         private _pendingData = [];//ANY
-
-        private _onBeforeRenderCallbacks = new Array<() => void>();
-        private _onAfterRenderCallbacks = new Array<() => void>();
 
         private _activeMeshes = new SmartArray<Mesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
@@ -271,12 +378,16 @@
         private _selectionOctree: Octree<AbstractMesh>;
 
         private _pointerOverMesh: AbstractMesh;
+        private _pointerOverSprite: Sprite;
 
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: DepthRenderer;
 
         private _uniqueIdCounter = 0;
+
+        private _pickedDownMesh: AbstractMesh;
+        private _pickedDownSprite: Sprite;
 
         /**
          * @constructor
@@ -348,7 +459,7 @@
          * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
          */
         public get meshUnderPointer(): AbstractMesh {
-            return this._meshUnderPointer;
+            return this._pointerOverMesh;
         }
 
         /**
@@ -446,6 +557,9 @@
             this._pointerX = evt.clientX - canvasRect.left;
             this._pointerY = evt.clientY - canvasRect.top;
 
+            this._unTranslatedPointerX = this._pointerX;
+            this._unTranslatedPointerY = this._pointerY;
+
             if (this.cameraToUseForPointers) {
                 this._pointerX = this._pointerX - this.cameraToUseForPointers.viewport.x * this._engine.getRenderWidth();
                 this._pointerY = this._pointerY - this.cameraToUseForPointers.viewport.y * this._engine.getRenderHeight();
@@ -453,9 +567,16 @@
         }
 
         // Pointers handling
-        public attachControl() {
+
+        /**
+        * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
+        * @param attachUp defines if you want to attach events to pointerup
+        * @param attachDown defines if you want to attach events to pointerdown
+        * @param attachMove defines if you want to attach events to pointermove
+        */
+        public attachControl(attachUp = true, attachDown = true, attachMove = true) {
             var spritePredicate = (sprite: Sprite): boolean => {
-                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPickTriggers;
+                return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
 
             this._onPointerMove = (evt: PointerEvent) => {
@@ -467,34 +588,35 @@
 
                 this._updatePointerPosition(evt);
 
-                // Meshes
-                var pickResult = this.pick(this._pointerX, this._pointerY,
-                    (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined),
-                    false,
-                    this.cameraToUseForPointers);
+                if (!this.pointerMovePredicate) {
+                    this.pointerMovePredicate = (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && (this.constantlyUpdateMeshUnderPointer || mesh.actionManager !== null && mesh.actionManager !== undefined);
+                }
 
+                // Meshes
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);
+                    
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    this._meshUnderPointer = pickResult.pickedMesh;
+                    this.setPointerOverSprite(null);
 
                     this.setPointerOverMesh(pickResult.pickedMesh);
 
-                    if (this._meshUnderPointer.actionManager && this._meshUnderPointer.actionManager.hasPointerTriggers) {
+                    if (this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
                         canvas.style.cursor = "pointer";
                     } else {
                         canvas.style.cursor = "";
                     }
                 } else {
+                    this.setPointerOverMesh(null);
                     // Sprites
-                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         canvas.style.cursor = "pointer";
+                        this.setPointerOverSprite(pickResult.pickedSprite);
                     } else {
-
+                        this.setPointerOverSprite(null);
                         // Restore pointer
-                        this.setPointerOverMesh(null);
                         canvas.style.cursor = "";
-                        this._meshUnderPointer = null;
                     }
                 }
 
@@ -509,23 +631,23 @@
                 }
 
                 this._updatePointerPosition(evt);
-
                 this._startingPointerPosition.x = this._pointerX;
                 this._startingPointerPosition.y = this._pointerY;
                 this._startingPointerTime = new Date().getTime();
 
-                var predicate = null;
-
-                // Meshes
-                if (!this.onPointerDown) {
-                    predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasPointerTriggers;
+                if (!this.pointerDownPredicate) {
+                    this.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || mesh.actionManager.hasPointerTriggers);
                     };
                 }
-                var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
+
+                // Meshes
+                this._pickedDownMesh = null;
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
                     if (pickResult.pickedMesh.actionManager) {
+                        this._pickedDownMesh = pickResult.pickedMesh;
                         if (pickResult.pickedMesh.actionManager.hasPickTriggers) {
                             switch (evt.button) {
                                 case 0:
@@ -543,8 +665,8 @@
 
                         if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
                             var that = this;
-                            window.setTimeout(function () {
-                                var pickResult = that.pick(that._pointerX, that._pointerY,
+                            window.setTimeout(function() {
+                                var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY,
                                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
                                     false, that.cameraToUseForPointers);
 
@@ -566,11 +688,13 @@
                 }
 
                 // Sprites
+                this._pickedDownSprite = null;
                 if (this.spriteManagers.length > 0) {
-                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
+                            this._pickedDownSprite = pickResult.pickedSprite;
                             switch (evt.button) {
                                 case 0:
                                     pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
@@ -592,21 +716,22 @@
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
-
-                var predicate = null;
-
+                
                 this._updatePointerPosition(evt);
 
-                if (!this.onPointerUp) {
-                    predicate = (mesh: AbstractMesh): boolean => {
-                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger));
+                if (!this.pointerUpPredicate) {
+                    this.pointerUpPredicate = (mesh: AbstractMesh): boolean => {
+                        return mesh.isPickable && mesh.isVisible && mesh.isReady() && (!mesh.actionManager || (mesh.actionManager.hasPickTriggers || mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)));
                     };
                 }
 
                 // Meshes
-                var pickResult = this.pick(this._pointerX, this._pointerY, predicate, false, this.cameraToUseForPointers);
+                var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerUpPredicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
+                    if (this.onPointerPick && this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
+                        this.onPointerPick(evt, pickResult);
+                    }
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
 
@@ -614,6 +739,9 @@
                             pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                         }
                     }
+                }
+                if (this._pickedDownMesh && this._pickedDownMesh !== pickResult.pickedMesh) {
+                    this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
                 }
 
                 if (this.onPointerUp) {
@@ -624,13 +752,21 @@
                 
                 // Sprites
                 if (this.spriteManagers.length > 0) {
-                    pickResult = this.pickSprite(this._pointerX, this._pointerY, spritePredicate, false, this.cameraToUseForPointers);
+                    pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
 
                     if (pickResult.hit && pickResult.pickedSprite) {
                         if (pickResult.pickedSprite.actionManager) {
                             pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+
+                            if (Math.abs(this._startingPointerPosition.x - this._pointerX) < ActionManager.DragMovementThreshold && Math.abs(this._startingPointerPosition.y - this._pointerY) < ActionManager.DragMovementThreshold) {
+                                pickResult.pickedSprite.actionManager.processTrigger(ActionManager.OnPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, this, evt));
+                            }
                         }
                     }
+                    if (this._pickedDownSprite && this._pickedDownSprite !== pickResult.pickedSprite) {
+                        this._pickedDownSprite.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNewFromSprite(this._pickedDownSprite, this, evt));
+                    }
+
                 }
             };
 
@@ -648,13 +784,21 @@
 
 
             var eventPrefix = Tools.GetPointerPrefix();
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
 
-            // Wheel
-            this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+            if (attachMove) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
+                // Wheel
+                this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
+                this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+            }
+
+            if (attachDown) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            }
+
+            if (attachUp) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
+            }
 
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
@@ -715,27 +859,19 @@
         }
 
         public registerBeforeRender(func: () => void): void {
-            this._onBeforeRenderCallbacks.push(func);
+            this.onBeforeRenderObservable.add(func);
         }
 
         public unregisterBeforeRender(func: () => void): void {
-            var index = this._onBeforeRenderCallbacks.indexOf(func);
-
-            if (index > -1) {
-                this._onBeforeRenderCallbacks.splice(index, 1);
-            }
+            this.onBeforeRenderObservable.removeCallback(func);
         }
 
         public registerAfterRender(func: () => void): void {
-            this._onAfterRenderCallbacks.push(func);
+            this.onAfterRenderObservable.add(func);
         }
 
         public unregisterAfterRender(func: () => void): void {
-            var index = this._onAfterRenderCallbacks.indexOf(func);
-
-            if (index > -1) {
-                this._onAfterRenderCallbacks.splice(index, 1);
-            }
+            this.onAfterRenderObservable.removeCallback(func);
         }
 
         public _addPendingData(data): void {
@@ -759,7 +895,7 @@
          * @param {Function} func - the function to be executed.
          */
         public executeWhenReady(func: () => void): void {
-            this._onReadyCallbacks.push(func);
+            this.onReadyObservable.add(func);
 
             if (this._executeWhenReadyTimeoutId !== -1) {
                 return;
@@ -772,11 +908,9 @@
 
         public _checkIsReady() {
             if (this.isReady()) {
-                this._onReadyCallbacks.forEach(func => {
-                    func();
-                });
+                this.onReadyObservable.notifyObservers(this);
 
-                this._onReadyCallbacks = [];
+                this.onReadyObservable.clear();
                 this._executeWhenReadyTimeoutId = -1;
                 return;
             }
@@ -820,6 +954,8 @@
                     this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
                 }
             }
+
+            animatable.reset();
 
             return animatable;
         }
@@ -911,9 +1047,7 @@
             //notify the collision coordinator
             this.collisionCoordinator.onMeshAdded(newMesh);
 
-            if (this.onNewMeshAdded) {
-                this.onNewMeshAdded(newMesh, position, this);
-            }
+            this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
 
         public removeMesh(toRemove: AbstractMesh): number {
@@ -925,9 +1059,8 @@
             //notify the collision coordinator
             this.collisionCoordinator.onMeshRemoved(toRemove);
 
-            if (this.onMeshRemoved) {
-                this.onMeshRemoved(toRemove);
-            }
+            this.onMeshRemovedObservable.notifyObservers(toRemove);
+
             return index;
         }
 
@@ -947,9 +1080,7 @@
                 // Remove from the scene if mesh found 
                 this.lights.splice(index, 1);
             }
-            if (this.onLightRemoved) {
-                this.onLightRemoved(toRemove);
-            }
+            this.onLightRemovedObservable.notifyObservers(toRemove);
             return index;
         }
 
@@ -973,25 +1104,33 @@
                     this.activeCamera = null;
                 }
             }
-            if (this.onCameraRemoved) {
-                this.onCameraRemoved(toRemove);
-            }
+            this.onCameraRemovedObservable.notifyObservers(toRemove);
             return index;
         }
 
         public addLight(newLight: Light) {
             newLight.uniqueId = this._uniqueIdCounter++;
             var position = this.lights.push(newLight);
-            if (this.onNewLightAdded) {
-                this.onNewLightAdded(newLight, position, this);
-            }
+            this.onNewLightAddedObservable.notifyObservers(newLight);
         }
 
         public addCamera(newCamera: Camera) {
             newCamera.uniqueId = this._uniqueIdCounter++;
             var position = this.cameras.push(newCamera);
-            if (this.onNewCameraAdded) {
-                this.onNewCameraAdded(newCamera, position, this);
+            this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        }
+        
+        /**
+         * Switch active camera
+         * @param {Camera} newCamera - new active camera
+		 * @param {boolean} attachControl - call attachControl for the new active camera (default: true)
+         */
+        public swithActiveCamera(newCamera: Camera, attachControl = true) {
+            var canvas = this._engine.getRenderingCanvas();
+            this.activeCamera.detachControl(canvas);
+            this.activeCamera = newCamera;
+            if (attachControl) {
+                newCamera.attachControl(canvas);
             }
         }
 
@@ -1232,9 +1371,7 @@
             //notify the collision coordinator
             this.collisionCoordinator.onGeometryAdded(geometry);
 
-            if (this.onGeometryAdded) {
-                this.onGeometryAdded(geometry);
-            }
+            this.onNewGeometryAddedObservable.notifyObservers(geometry);
 
             return true;
         }
@@ -1253,9 +1390,7 @@
                 //notify the collision coordinator
                 this.collisionCoordinator.onGeometryDeleted(geometry);
 
-                if (this.onGeometryRemoved) {
-                    this.onGeometryRemoved(geometry);
-                }
+                this.onGeometryRemovedObservable.notifyObservers(geometry);
                 return true;
             }
             return false;
@@ -1465,7 +1600,7 @@
                         if (this._processedMaterials.indexOf(material) === -1) {
                             this._processedMaterials.push(material);
 
-                            this._renderTargets.concat(material.getRenderTargetTextures());
+                            this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
                         }
                     }
 
@@ -1474,6 +1609,10 @@
                     this._renderingManager.dispatch(subMesh);
                 }
             }
+        }
+
+        public _isInIntermediateRendering(): boolean {
+            return this._intermediateRendering
         }
 
         private _evaluateActiveMeshes(): void {
@@ -1627,10 +1766,8 @@
             this._renderId++;
             this.updateTransformMatrix();
 
-            if (this.beforeCameraRender) {
-                this.beforeCameraRender(this.activeCamera);
-            }
-
+            this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
+            
             // Meshes
             var beforeEvaluateActiveMeshesDate = Tools.Now;
             Tools.StartPerformanceCounter("Active meshes evaluation");
@@ -1655,6 +1792,7 @@
             // Render targets
             var beforeRenderTargetDate = Tools.Now;
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
+                this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     var renderTarget = this._renderTargets.data[renderIndex];
@@ -1666,6 +1804,7 @@
                 }
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
+                this._intermediateRendering = false;
                 this._renderId++;
                 engine.restoreDefaultFramebuffer(); // Restore back buffer
             }
@@ -1738,9 +1877,7 @@
             // Reset some special arrays
             this._renderTargets.reset();
 
-            if (this.afterCameraRender) {
-                this.afterCameraRender(this.activeCamera);
-            }
+            this.onAfterCameraRenderObservable.notifyObservers(this.activeCamera);
 
             Tools.EndPerformanceCounter("Rendering camera " + this.activeCamera.name);
         }
@@ -1837,18 +1974,12 @@
             // Physics
             if (this._physicsEngine) {
                 Tools.StartPerformanceCounter("Physics");
-                this._physicsEngine._runOneStep(deltaTime / 1000.0);
+                this._physicsEngine._step(deltaTime / 1000.0);
                 Tools.EndPerformanceCounter("Physics");
             }
 
             // Before render
-            if (this.beforeRender) {
-                this.beforeRender();
-            }
-            var callbackIndex: number;
-            for (callbackIndex = 0; callbackIndex < this._onBeforeRenderCallbacks.length; callbackIndex++) {
-                this._onBeforeRenderCallbacks[callbackIndex]();
-            }
+            this.onBeforeRenderObservable.notifyObservers(this);
 
             // Customs render targets
             var beforeRenderTargetDate = Tools.Now;
@@ -1953,9 +2084,7 @@
                 this.afterRender();
             }
 
-            for (callbackIndex = 0; callbackIndex < this._onAfterRenderCallbacks.length; callbackIndex++) {
-                this._onAfterRenderCallbacks[callbackIndex]();
-            }
+            this.onAfterRenderObservable.notifyObservers(this);
 
             // Cleaning
             for (var index = 0; index < this._toBeDisposed.length; index++) {
@@ -2139,8 +2268,8 @@
                 this.onDispose();
             }
 
-            this._onBeforeRenderCallbacks = [];
-            this._onAfterRenderCallbacks = [];
+            this.onBeforeRenderObservable.clear();
+            this.onAfterRenderObservable.clear();
 
             this.detachControl();
 
@@ -2269,7 +2398,7 @@
             }
 
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
             // Moving coordinates to local viewport world
             x = x / this._engine.getHardwareScalingLevel() - viewport.x;
@@ -2289,7 +2418,7 @@
             }
 
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine);
+            var viewport = cameraViewport.toGlobal(engine. getRenderWidth(), engine.getRenderHeight());
             var identity = Matrix.Identity();
 
             // Moving coordinates to local viewport world
@@ -2413,6 +2542,25 @@
             return this._pointerOverMesh;
         }
 
+        public setPointerOverSprite(sprite: Sprite): void {
+            if (this._pointerOverSprite === sprite) {
+                return;
+            }
+
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOutTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+
+            this._pointerOverSprite = sprite;
+            if (this._pointerOverSprite && this._pointerOverSprite.actionManager) {
+                this._pointerOverSprite.actionManager.processTrigger(ActionManager.OnPointerOverTrigger, ActionEvent.CreateNewFromSprite(this._pointerOverSprite, this));
+            }
+        }
+
+        public getPointerOverSprite(): Sprite {
+            return this._pointerOverSprite;
+        }
+
         // Physics
         public getPhysicsEngine(): PhysicsEngine {
             return this._physicsEngine;
@@ -2429,16 +2577,14 @@
                 return true;
             }
 
-            this._physicsEngine = new PhysicsEngine(plugin);
-
-            if (!this._physicsEngine.isSupported()) {
-                this._physicsEngine = null;
+            try {
+                this._physicsEngine = new PhysicsEngine(gravity, plugin);
+                return true;
+            } catch (e) {
+                Tools.Error(e.message);
                 return false;
             }
 
-            this._physicsEngine._initialize(gravity);
-
-            return true;
         }
 
         public disablePhysicsEngine(): void {
@@ -2455,45 +2601,49 @@
         }
 
         /**
+         * 
          * Sets the gravity of the physics engine (and NOT of the scene)
          * @param {BABYLON.Vector3} [gravity] - the new gravity to be used
          */
         public setGravity(gravity: Vector3): void {
+            Tools.Warn("Deprecated, please use 'scene.getPhysicsEngine().setGravity()'")
             if (!this._physicsEngine) {
                 return;
             }
 
-            this._physicsEngine._setGravity(gravity);
+            this._physicsEngine.setGravity(gravity);
         }
 
-        public createCompoundImpostor(parts: any, options: PhysicsBodyCreationOptions): any {
+        /**
+         * Legacy support, using the new API
+         * @Deprecated
+         */
+        public createCompoundImpostor(parts: any, options: PhysicsImpostorParameters): any {
+            Tools.Warn("Scene.createCompoundImpostor is deprecated. Please use PhysicsImpostor parent/child")
+
             if (parts.parts) { // Old API
                 options = parts;
                 parts = parts.parts;
             }
 
-            if (!this._physicsEngine) {
-                return null;
+            var mainMesh: AbstractMesh = parts[0].mesh;
+            mainMesh.physicsImpostor = new PhysicsImpostor(mainMesh, parts[0].impostor, options, this)
+            for (var index = 1; index < parts.length; index++) {
+                var mesh: AbstractMesh = parts[index].mesh;
+                if (mesh.parent !== mainMesh) {
+                    mesh.position = mesh.position.subtract(mainMesh.position);
+                    mesh.parent = mainMesh;
+                }
+                mesh.physicsImpostor = new PhysicsImpostor(mesh, parts[index].impostor, options, this)
+
             }
-
-            for (var index = 0; index < parts.length; index++) {
-                var mesh = parts[index].mesh;
-
-                mesh._physicImpostor = parts[index].impostor;
-                mesh._physicsMass = options.mass / parts.length;
-                mesh._physicsFriction = options.friction;
-                mesh._physicRestitution = options.restitution;
-            }
-
-            return this._physicsEngine._registerMeshesAsCompound(parts, options);
+            mainMesh.physicsImpostor.forceUpdate();
         }
 
         public deleteCompoundImpostor(compound: any): void {
-            for (var index = 0; index < compound.parts.length; index++) {
-                var mesh = compound.parts[index].mesh;
-                mesh._physicImpostor = PhysicsEngine.NoImpostor;
-                this._physicsEngine._unregisterMesh(mesh);
-            }
+            var mesh: AbstractMesh = compound.parts[0].mesh;
+            mesh.physicsImpostor.dispose(/*true*/);
+            mesh.physicsImpostor = null;
         }
 
         // Misc.

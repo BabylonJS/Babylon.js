@@ -96,18 +96,12 @@ var BABYLON;
             serializationObject.skeletonId = mesh.skeleton.id;
         }
         // Physics
-        if (mesh.getPhysicsImpostor() !== BABYLON.PhysicsEngine.NoImpostor) {
+        //TODO implement correct serialization for physics impostors.
+        if (mesh.getPhysicsImpostor()) {
             serializationObject.physicsMass = mesh.getPhysicsMass();
             serializationObject.physicsFriction = mesh.getPhysicsFriction();
             serializationObject.physicsRestitution = mesh.getPhysicsRestitution();
-            switch (mesh.getPhysicsImpostor()) {
-                case BABYLON.PhysicsEngine.BoxImpostor:
-                    serializationObject.physicsImpostor = 1;
-                    break;
-                case BABYLON.PhysicsEngine.SphereImpostor:
-                    serializationObject.physicsImpostor = 2;
-                    break;
-            }
+            serializationObject.physicsImpostor = mesh.getPhysicsImpostor().type;
         }
         // Instances
         serializationObject.instances = [];
@@ -183,6 +177,9 @@ var BABYLON;
     var SceneSerializer = (function () {
         function SceneSerializer() {
         }
+        SceneSerializer.ClearCache = function () {
+            serializedGeometries = [];
+        };
         SceneSerializer.Serialize = function (scene) {
             var serializationObject = {};
             // Scene
@@ -204,7 +201,7 @@ var BABYLON;
             //Physics
             if (scene.isPhysicsEnabled()) {
                 serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine()._getGravity().asArray();
+                serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
                 serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
             }
             // Lights
@@ -224,6 +221,8 @@ var BABYLON;
             if (scene.activeCamera) {
                 serializationObject.activeCameraID = scene.activeCamera.id;
             }
+            // Animations
+            BABYLON.Animation.AppendSerializedAnimations(scene, serializationObject);
             // Materials
             serializationObject.materials = [];
             serializationObject.multiMaterials = [];
@@ -319,6 +318,6 @@ var BABYLON;
             return serializationObject;
         };
         return SceneSerializer;
-    })();
+    }());
     BABYLON.SceneSerializer = SceneSerializer;
 })(BABYLON || (BABYLON = {}));

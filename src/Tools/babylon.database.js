@@ -27,10 +27,15 @@ var BABYLON;
                 that.callbackManifestChecked(false);
             }
             var that = this;
+            var timeStampUsed = false;
             var manifestURL = this.currentSceneUrl + ".manifest";
             var xhr = new XMLHttpRequest();
-            var manifestURLTimeStamped = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + (new Date()).getTime();
-            xhr.open("GET", manifestURLTimeStamped, true);
+            if (navigator.onLine) {
+                // Adding a timestamp to by-pass browsers' cache
+                timeStampUsed = true;
+                manifestURL = manifestURL + (manifestURL.match(/\?/) == null ? "?" : "&") + (new Date()).getTime();
+            }
+            xhr.open("GET", manifestURL, true);
             xhr.addEventListener("load", function () {
                 if (xhr.status === 200 || BABYLON.Tools.ValidateXHRData(xhr, 1)) {
                     try {
@@ -53,7 +58,17 @@ var BABYLON;
                 }
             }, false);
             xhr.addEventListener("error", function (event) {
-                noManifestFile();
+                if (timeStampUsed) {
+                    timeStampUsed = false;
+                    // Let's retry without the timeStamp
+                    // It could fail when coupled with HTML5 Offline API
+                    var retryManifestURL = _this.currentSceneUrl + ".manifest";
+                    xhr.open("GET", retryManifestURL, true);
+                    xhr.send();
+                }
+                else {
+                    noManifestFile();
+                }
             }, false);
             try {
                 xhr.send();
@@ -493,6 +508,6 @@ var BABYLON;
             }
         };
         return Database;
-    })();
+    }());
     BABYLON.Database = Database;
 })(BABYLON || (BABYLON = {}));

@@ -3,13 +3,18 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var BABYLON;
 (function (BABYLON) {
     var DirectionalLight = (function (_super) {
         __extends(DirectionalLight, _super);
         function DirectionalLight(name, direction, scene) {
             _super.call(this, name, scene);
-            this.direction = direction;
             this.shadowOrthoScale = 0.5;
             this.autoUpdateExtends = true;
             // Cache
@@ -18,6 +23,7 @@ var BABYLON;
             this._orthoTop = Number.MIN_VALUE;
             this._orthoBottom = Number.MAX_VALUE;
             this.position = direction.scale(-1);
+            this.direction = direction;
         }
         DirectionalLight.prototype.getAbsolutePosition = function () {
             return this.transformedPosition ? this.transformedPosition : this.position;
@@ -102,14 +108,22 @@ var BABYLON;
             BABYLON.Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, this._worldMatrix);
             return this._worldMatrix;
         };
-        DirectionalLight.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
-            serializationObject.type = 1;
-            serializationObject.position = this.position.asArray();
-            serializationObject.direction = this.direction.asArray();
-            return serializationObject;
+        DirectionalLight.prototype.getTypeID = function () {
+            return 1;
         };
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], DirectionalLight.prototype, "position", void 0);
+        __decorate([
+            BABYLON.serializeAsVector3()
+        ], DirectionalLight.prototype, "direction", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], DirectionalLight.prototype, "shadowOrthoScale", void 0);
+        __decorate([
+            BABYLON.serialize()
+        ], DirectionalLight.prototype, "autoUpdateExtends", void 0);
         return DirectionalLight;
-    })(BABYLON.Light);
+    }(BABYLON.Light));
     BABYLON.DirectionalLight = DirectionalLight;
 })(BABYLON || (BABYLON = {}));

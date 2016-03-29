@@ -24,6 +24,16 @@ BABYLON.SceneLoader.ImportMesh(["myMesh1", "myMesh2", "..."], "./", "duck.gltf",
 });
 ```
 
+In order the fix the UP vector (Y with Babylon.js) if you want to play with physics, you can customize the loader:
+```
+BABYLON.GLTFFileLoader.MakeYUP = true; // false by default
+```
+
+In order to work with homogeneous coordinates (that can be available with some converters and exporters):
+```
+BABYLON.GLTFFileLoader.HomogeneousCoordinates = true; // false by default
+```
+
 ## Supported features
 * Load scenes (SceneLoader.Load and SceneLoader.Append)
 * Support of ImportMesh function
@@ -32,12 +42,12 @@ BABYLON.SceneLoader.ImportMesh(["myMesh1", "myMesh2", "..."], "./", "duck.gltf",
     * From base64 buffers
 * Import lights
 * Import cameras
-* Import and set custom shaders (BETA) (if no shaders, the Babylon.js default material is applied)
+* Import and set custom shaders
     * Automatically bind attributes
     * Automatically bind matrices
     * Set uniforms
 * Import and set animations
-* Skinning (BETA)
+* Skinning (BETA, sometimes wrong on tricky models)
     * Skeletons
     * Hardware skinning (shaders support)
     * Bones import

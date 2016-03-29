@@ -227,10 +227,10 @@ var BABYLON;
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
         ShaderMaterial.prototype.serialize = function () {
-            var serializationObject = _super.prototype.serialize.call(this);
+            var serializationObject = BABYLON.SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.ShaderMaterial";
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;
-            serializationObject.customType = "BABYLON.ShaderMaterial";
             // Texture
             serializationObject.textures = {};
             for (var name in this._textures) {
@@ -289,7 +289,7 @@ var BABYLON;
             return serializationObject;
         };
         ShaderMaterial.Parse = function (source, scene, rootUrl) {
-            var material = new ShaderMaterial(source.name, scene, source.shaderPath, source.options);
+            var material = BABYLON.SerializationHelper.Parse(function () { return new ShaderMaterial(source.name, scene, source.shaderPath, source.options); }, source, scene, rootUrl);
             // Texture
             for (var name in source.textures) {
                 material.setTexture(name, BABYLON.Texture.Parse(source.textures[name], scene, rootUrl));
@@ -337,6 +337,6 @@ var BABYLON;
             return material;
         };
         return ShaderMaterial;
-    })(BABYLON.Material);
+    }(BABYLON.Material));
     BABYLON.ShaderMaterial = ShaderMaterial;
 })(BABYLON || (BABYLON = {}));

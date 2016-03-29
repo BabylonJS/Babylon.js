@@ -7,11 +7,10 @@ varying vec3 vPositionW;
 varying vec4 vColor;
 #endif
 
-#ifdef CLIPPLANE
-varying float fClipDistance;
-#endif
+#include<clipPlaneFragmentDeclaration>
 
 // Sky
+uniform vec3 cameraPosition;
 uniform float luminance;
 uniform float turbidity;
 uniform float rayleigh;
@@ -20,40 +19,7 @@ uniform float mieDirectionalG;
 uniform vec3 sunPosition;
 
 // Fog
-#ifdef FOG
-#define FOGMODE_NONE    0.
-#define FOGMODE_EXP     1.
-#define FOGMODE_EXP2    2.
-#define FOGMODE_LINEAR  3.
-#define E 2.71828
-
-uniform vec4 vFogInfos;
-uniform vec3 vFogColor;
-varying float fFogDistance;
-
-float CalcFogFactor()
-{
-	float fogCoeff = 1.0;
-	float fogStart = vFogInfos.y;
-	float fogEnd = vFogInfos.z;
-	float fogDensity = vFogInfos.w;
-
-	if (FOGMODE_LINEAR == vFogInfos.x)
-	{
-		fogCoeff = (fogEnd - fFogDistance) / (fogEnd - fogStart);
-	}
-	else if (FOGMODE_EXP == vFogInfos.x)
-	{
-		fogCoeff = 1.0 / pow(E, fFogDistance * fogDensity);
-	}
-	else if (FOGMODE_EXP2 == vFogInfos.x)
-	{
-		fogCoeff = 1.0 / pow(E, fFogDistance * fFogDistance * fogDensity * fogDensity);
-	}
-
-	return clamp(fogCoeff, 0.0, 1.0);
-}
-#endif
+#include<fogFragmentDeclaration>
 
 // Constants
 const float e = 2.71828182845904523536028747135266249775724709369995957;
@@ -112,39 +78,35 @@ float A = 0.15;
 float B = 0.50;
 float C = 0.10;
 float D = 0.20;
-float E = 0.02;
+float EEE = 0.02;
 float F = 0.30;
 float W = 1000.0;
 
 vec3 Uncharted2Tonemap(vec3 x)
 {
-	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+	return ((x*(A*x+C*B)+D*EEE)/(x*(A*x+B)+D*F))-EEE/F;
 }
 
 void main(void) {
 	// Clip plane
-#ifdef CLIPPLANE
-	if (fClipDistance > 0.0)
-		discard;
-#endif
+#include<clipPlaneFragment>
 
 	/**
 	*--------------------------------------------------------------------------------------------------
 	* Sky Color
 	*--------------------------------------------------------------------------------------------------
 	*/
-	const vec3 cameraPos = vec3(0.0, 0.0, 0.0);
 	float sunfade = 1.0 - clamp(1.0 - exp((sunPosition.y / 450000.0)), 0.0, 1.0);
 	float rayleighCoefficient = rayleigh - (1.0 * (1.0 - sunfade));
 	vec3 sunDirection = normalize(sunPosition);
 	float sunE = sunIntensity(dot(sunDirection, up));
 	vec3 betaR = simplifiedRayleigh() * rayleighCoefficient;
 	vec3 betaM = totalMie(lambda, K, turbidity) * mieCoefficient;
-	float zenithAngle = acos(max(0.0, dot(up, normalize(vPositionW - cameraPos))));
+	float zenithAngle = acos(max(0.0, dot(up, normalize(vPositionW - cameraPosition))));
 	float sR = rayleighZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));
 	float sM = mieZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));
 	vec3 Fex = exp(-(betaR * sR + betaM * sM));
-	float cosTheta = dot(normalize(vPositionW - cameraPos), sunDirection);
+	float cosTheta = dot(normalize(vPositionW - cameraPosition), sunDirection);
 	float rPhase = rayleighPhase(cosTheta*0.5+0.5);
 	vec3 betaRTheta = betaR * rPhase;
 	float mPhase = hgPhase(cosTheta, mieDirectionalG);
@@ -153,7 +115,7 @@ void main(void) {
 	vec3 Lin = pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * (1.0 - Fex),vec3(1.5));
 	Lin *= mix(vec3(1.0), pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * Fex, vec3(1.0 / 2.0)), clamp(pow(1.0-dot(up, sunDirection), 5.0), 0.0, 1.0));
 
-	vec3 direction = normalize(vPositionW - cameraPos);
+	vec3 direction = normalize(vPositionW - cameraPosition);
 	float theta = acos(direction.y);
 	float phi = atan(direction.z, direction.x);
 	vec2 uv = vec2(phi, theta) / vec2(2.0 * pi, pi) + vec2(0.5, 0.0);
@@ -202,10 +164,8 @@ void main(void) {
 	// Composition
 	vec4 color = vec4(baseColor.rgb, alpha);
 
-#ifdef FOG
-	float fog = CalcFogFactor();
-	color.rgb = fog * color.rgb + (1.0 - fog) * vFogColor;
-#endif
+    // Fog
+#include<fogFragment>
 
 	gl_FragColor = color;
 }

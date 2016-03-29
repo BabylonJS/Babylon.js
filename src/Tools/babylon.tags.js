@@ -31,11 +31,23 @@ var BABYLON;
             }
             return !BABYLON.Tools.IsEmpty(obj._tags);
         };
-        Tags.GetTags = function (obj) {
+        Tags.GetTags = function (obj, asString) {
+            if (asString === void 0) { asString = true; }
             if (!obj._tags) {
                 return null;
             }
-            return obj._tags;
+            if (asString) {
+                var tagsArray = [];
+                for (var tag in obj._tags) {
+                    if (obj._tags.hasOwnProperty(tag) && obj._tags[tag] === true) {
+                        tagsArray.push(tag);
+                    }
+                }
+                return tagsArray.join(" ");
+            }
+            else {
+                return obj._tags;
+            }
         };
         // the tags 'true' and 'false' are reserved and cannot be used as tags
         // a tag cannot start with '||', '&&', and '!'
@@ -85,6 +97,6 @@ var BABYLON;
             return BABYLON.Internals.AndOrNotEvaluator.Eval(tagsQuery, function (r) { return Tags.HasTags(obj) && obj._tags[r]; });
         };
         return Tags;
-    })();
+    }());
     BABYLON.Tags = Tags;
 })(BABYLON || (BABYLON = {}));
