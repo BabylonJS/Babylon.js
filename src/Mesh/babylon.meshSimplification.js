@@ -250,7 +250,7 @@ var BABYLON;
                                 var deleted1 = [];
                                 var v0 = t.vertices[j];
                                 var v1 = t.vertices[(j + 1) % 3];
-                                if (v0.isBorder !== v1.isBorder)
+                                if (v0.isBorder || v1.isBorder)
                                     continue;
                                 var p = BABYLON.Vector3.Zero();
                                 var n = BABYLON.Vector3.Zero();
