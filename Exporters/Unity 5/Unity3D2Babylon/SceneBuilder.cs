@@ -25,6 +25,8 @@ namespace Unity3D2Babylon
 
         readonly ExportationOptions exportationOptions;
 
+        BabylonTexture sceneReflectionTexture;
+
         public SceneBuilder(string outputPath, string sceneName, ExportationOptions exportationOptions)
         {
             OutputPath = outputPath;
@@ -143,6 +145,7 @@ namespace Unity3D2Babylon
                 if (camera != null)
                 {
                     ConvertUnityCameraToBabylon(camera, progress);
+                    ConvertUnitySkyboxToBabylon(camera, progress);
                     continue;
                 }
 
