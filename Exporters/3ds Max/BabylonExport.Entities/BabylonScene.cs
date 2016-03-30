@@ -9,6 +9,9 @@ namespace BabylonExport.Entities
     public class BabylonScene
     {
         [DataMember]
+        public BabylonProducer producer { get; set; }
+
+        [DataMember]
         public bool autoClear { get; set; }
 
         [DataMember]
@@ -34,6 +37,12 @@ namespace BabylonExport.Entities
 
         [DataMember]
         public float[] gravity { get; set; }
+        
+        [DataMember]
+        public bool physicsEnabled { get; set; }
+
+        [DataMember]
+        public float[] physicsGravity { get; set; }
 
         [DataMember]
         public BabylonCamera[] cameras { get; set; }
