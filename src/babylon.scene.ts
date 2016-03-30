@@ -629,7 +629,7 @@
 
                 // Meshes
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);
-                    
+
                 if (pickResult.hit && pickResult.pickedMesh) {
                     this.setPointerOverSprite(null);
 
@@ -705,7 +705,7 @@
 
                         if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
                             var that = this;
-                            window.setTimeout(function() {
+                            window.setTimeout(function () {
                                 var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY,
                                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
                                     false, that.cameraToUseForPointers);
@@ -761,7 +761,7 @@
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
-                
+
                 this._updatePointerPosition(evt);
 
                 if (!this.pointerUpPredicate) {
@@ -805,7 +805,7 @@
                 }
 
                 this._startingPointerTime = 0;
-                
+
                 // Sprites
                 if (this.spriteManagers.length > 0) {
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
@@ -1175,7 +1175,7 @@
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
-        
+
         /**
          * Switch active camera
          * @param {Camera} newCamera - new active camera
@@ -1823,7 +1823,7 @@
             this.updateTransformMatrix();
 
             this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
-            
+
             // Meshes
             var beforeEvaluateActiveMeshesDate = Tools.Now;
             Tools.StartPerformanceCounter("Active meshes evaluation");
@@ -2474,7 +2474,7 @@
             }
 
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine. getRenderWidth(), engine.getRenderHeight());
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             var identity = Matrix.Identity();
 
             // Moving coordinates to local viewport world
@@ -2763,4 +2763,5 @@
         }
     }
 }
+
 

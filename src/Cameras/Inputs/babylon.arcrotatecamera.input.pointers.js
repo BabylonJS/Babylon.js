@@ -23,6 +23,77 @@ var BABYLON;
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
             var pointers = new BABYLON.SmartCollection();
             var previousPinchDistance = 0;
+            this._pointerInput = function (p, s) {
+                var evt = p.event;
+                if (p.type === 1 /* PointerDown */) {
+                    evt.srcElement.setPointerCapture(evt.pointerId);
+                    // Manage panning with right click
+                    _this._isRightClick = evt.button === 2;
+                    // manage pointers
+                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
+                    cacheSoloPointer = pointers.item(evt.pointerId);
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                }
+                else if (p.type === 2 /* PointerUp */) {
+                    evt.srcElement.releasePointerCapture(evt.pointerId);
+                    cacheSoloPointer = null;
+                    previousPinchDistance = 0;
+                    //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
+                    //but emptying completly pointers collection is required to fix a bug on iPhone : 
+                    //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
+                    //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
+                    pointers.empty();
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                }
+                else if (p.type === 3 /* PointerMove */) {
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                    switch (pointers.count) {
+                        case 1:
+                            if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) || (!_this.camera._useCtrlForPanning && _this._isRightClick))) {
+                                _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
+                                _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
+                            }
+                            else {
+                                var offsetX = evt.clientX - cacheSoloPointer.x;
+                                var offsetY = evt.clientY - cacheSoloPointer.y;
+                                _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                                _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
+                            }
+                            cacheSoloPointer.x = evt.clientX;
+                            cacheSoloPointer.y = evt.clientY;
+                            break;
+                        case 2:
+                            //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                            pointers.item(evt.pointerId).x = evt.clientX;
+                            pointers.item(evt.pointerId).y = evt.clientY;
+                            var direction = _this.pinchInwards ? 1 : -1;
+                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
+                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
+                            var pinchSquaredDistance = (distX * distX) + (distY * distY);
+                            if (previousPinchDistance === 0) {
+                                previousPinchDistance = pinchSquaredDistance;
+                                return;
+                            }
+                            if (pinchSquaredDistance !== previousPinchDistance) {
+                                _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
+                                previousPinchDistance = pinchSquaredDistance;
+                            }
+                            break;
+                        default:
+                            if (pointers.item(evt.pointerId)) {
+                                pointers.item(evt.pointerId).x = evt.clientX;
+                                pointers.item(evt.pointerId).y = evt.clientY;
+                            }
+                    }
+                }
+            };
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
             this._onContextMenu = function (evt) {
                 evt.preventDefault();
             };
@@ -40,71 +111,6 @@ var BABYLON;
             };
             this._onKeyUp = function (evt) {
                 _this._isCtrlPushed = evt.ctrlKey;
-            };
-            this._onPointerDown = function (evt) {
-                // Manage panning with right click
-                _this._isRightClick = evt.button === 2;
-                // manage pointers
-                pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
-                cacheSoloPointer = pointers.item(evt.pointerId);
-                if (!noPreventDefault) {
-                    evt.preventDefault();
-                }
-            };
-            this._onPointerUp = function (evt) {
-                cacheSoloPointer = null;
-                previousPinchDistance = 0;
-                //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
-                //but emptying completly pointers collection is required to fix a bug on iPhone : 
-                //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
-                //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                pointers.empty();
-                if (!noPreventDefault) {
-                    evt.preventDefault();
-                }
-            };
-            this._onPointerMove = function (evt) {
-                if (!noPreventDefault) {
-                    evt.preventDefault();
-                }
-                switch (pointers.count) {
-                    case 1:
-                        if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) || (!_this.camera._useCtrlForPanning && _this._isRightClick))) {
-                            _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
-                            _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
-                        }
-                        else {
-                            var offsetX = evt.clientX - cacheSoloPointer.x;
-                            var offsetY = evt.clientY - cacheSoloPointer.y;
-                            _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
-                            _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
-                        }
-                        cacheSoloPointer.x = evt.clientX;
-                        cacheSoloPointer.y = evt.clientY;
-                        break;
-                    case 2:
-                        //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
-                        pointers.item(evt.pointerId).x = evt.clientX;
-                        pointers.item(evt.pointerId).y = evt.clientY;
-                        var direction = _this.pinchInwards ? 1 : -1;
-                        var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
-                        var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
-                        var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                        if (previousPinchDistance === 0) {
-                            previousPinchDistance = pinchSquaredDistance;
-                            return;
-                        }
-                        if (pinchSquaredDistance !== previousPinchDistance) {
-                            _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
-                            previousPinchDistance = pinchSquaredDistance;
-                        }
-                        break;
-                    default:
-                        if (pointers.item(evt.pointerId)) {
-                            pointers.item(evt.pointerId).x = evt.clientX;
-                            pointers.item(evt.pointerId).y = evt.clientY;
-                        }
-                }
             };
             this._onMouseMove = function (evt) {
                 if (!engine.isPointerLock) {
@@ -137,10 +143,6 @@ var BABYLON;
                     }
                 }
             };
-            element.addEventListener(eventPrefix + "down", this._onPointerDown, false);
-            element.addEventListener(eventPrefix + "up", this._onPointerUp, false);
-            element.addEventListener(eventPrefix + "out", this._onPointerUp, false);
-            element.addEventListener(eventPrefix + "move", this._onPointerMove, false);
             element.addEventListener("mousemove", this._onMouseMove, false);
             element.addEventListener("MSPointerDown", this._onGestureStart, false);
             element.addEventListener("MSGestureChange", this._onGesture, false);
@@ -151,12 +153,10 @@ var BABYLON;
             ]);
         };
         ArcRotateCameraPointersInput.prototype.detachControl = function (element) {
-            if (element && this._onPointerDown) {
+            if (element && this._observer) {
+                this.camera.getScene().onPointerObservable.remove(this._observer);
+                this._observer = null;
                 element.removeEventListener("contextmenu", this._onContextMenu);
-                element.removeEventListener(eventPrefix + "down", this._onPointerDown);
-                element.removeEventListener(eventPrefix + "up", this._onPointerUp);
-                element.removeEventListener(eventPrefix + "out", this._onPointerUp);
-                element.removeEventListener(eventPrefix + "move", this._onPointerMove);
                 element.removeEventListener("mousemove", this._onMouseMove);
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
@@ -165,9 +165,6 @@ var BABYLON;
                 this.pinchInwards = true;
                 this._onKeyDown = null;
                 this._onKeyUp = null;
-                this._onPointerDown = null;
-                this._onPointerUp = null;
-                this._onPointerMove = null;
                 this._onMouseMove = null;
                 this._onGestureStart = null;
                 this._onGesture = null;

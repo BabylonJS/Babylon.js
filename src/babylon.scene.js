@@ -1,6 +1,19 @@
 var BABYLON;
 (function (BABYLON) {
     /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instnce of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel
+     */
+    var PointerInfo = (function () {
+        function PointerInfo(type, event, pickInfo) {
+            this.type = type;
+            this.event = event;
+            this.pickInfo = pickInfo;
+        }
+        return PointerInfo;
+    }());
+    BABYLON.PointerInfo = PointerInfo;
+    /**
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
@@ -92,6 +105,10 @@ var BABYLON;
             this.onMeshRemovedObservable = new BABYLON.Observable();
             // Animations
             this.animations = [];
+            /**
+             * Observable event triggered each time an input event is received from the rendering canvas
+             */
+            this.onPointerObservable = new BABYLON.Observable();
             this.cameraToUseForPointers = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
             this._startingPointerPosition = new BABYLON.Vector2(0, 0);
             this._startingPointerTime = 0;
@@ -490,6 +507,10 @@ var BABYLON;
                 if (_this.onPointerMove) {
                     _this.onPointerMove(evt, pickResult);
                 }
+                if (_this.onPointerObservable.hasObservers()) {
+                    var pi = new PointerInfo(evt.type === "mousewheel" ? 4 /* PointerWheel */ : 3 /* PointerMove */, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi);
+                }
             };
             this._onPointerDown = function (evt) {
                 if (!_this.cameraToUseForPointers && !_this.activeCamera) {
@@ -543,6 +564,10 @@ var BABYLON;
                 if (_this.onPointerDown) {
                     _this.onPointerDown(evt, pickResult);
                 }
+                if (_this.onPointerObservable.hasObservers()) {
+                    var pi = new PointerInfo(1 /* PointerDown */, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi);
+                }
                 // Sprites
                 _this._pickedDownSprite = null;
                 if (_this.spriteManagers.length > 0) {
@@ -579,8 +604,14 @@ var BABYLON;
                 // Meshes
                 var pickResult = _this.pick(_this._unTranslatedPointerX, _this._unTranslatedPointerY, _this.pointerUpPredicate, false, _this.cameraToUseForPointers);
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    if (_this.onPointerPick && _this._pickedDownMesh != null && pickResult.pickedMesh == _this._pickedDownMesh) {
-                        _this.onPointerPick(evt, pickResult);
+                    if (_this._pickedDownMesh != null && pickResult.pickedMesh == _this._pickedDownMesh) {
+                        if (_this.onPointerPick) {
+                            _this.onPointerPick(evt, pickResult);
+                        }
+                        if (_this.onPointerObservable.hasObservers()) {
+                            var pi = new PointerInfo(5 /* PointerPick */, evt, pickResult);
+                            _this.onPointerObservable.notifyObservers(pi);
+                        }
                     }
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(BABYLON.ActionManager.OnPickUpTrigger, BABYLON.ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -594,6 +625,10 @@ var BABYLON;
                 }
                 if (_this.onPointerUp) {
                     _this.onPointerUp(evt, pickResult);
+                }
+                if (_this.onPointerObservable.hasObservers()) {
+                    var pi = new PointerInfo(2 /* PointerUp */, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi);
                 }
                 _this._startingPointerTime = 0;
                 // Sprites

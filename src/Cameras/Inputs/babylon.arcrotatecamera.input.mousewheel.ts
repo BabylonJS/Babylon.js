@@ -42,11 +42,11 @@ module BABYLON {
         getTypeName(): string {
             return "ArcRotateCameraMouseWheelInput";
         }
-        
-        getSimpleName(){
+
+        getSimpleName() {
             return "mousewheel";
         }
     }
-    
+
     CameraInputTypes["ArcRotateCameraMouseWheelInput"] = ArcRotateCameraMouseWheelInput;
 }
