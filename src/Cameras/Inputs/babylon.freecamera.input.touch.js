@@ -18,80 +18,76 @@ var BABYLON;
         FreeCameraTouchInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             var previousPosition;
-            if (this._onPointerDown === undefined) {
+            if (this._pointerInput === undefined) {
                 this._onLostFocus = function (evt) {
                     _this._offsetX = null;
                     _this._offsetY = null;
                 };
-                this._onPointerDown = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
+                this._pointerInput = function (p, s) {
+                    var evt = p.event;
+                    if (p.type === 1 /* PointerDown */) {
+                        if (evt.pointerType === "mouse") {
+                            return;
+                        }
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                        evt.srcElement.setPointerCapture(evt.pointerId);
+                        _this._pointerPressed.push(evt.pointerId);
+                        if (_this._pointerPressed.length !== 1) {
+                            return;
+                        }
+                        previousPosition = {
+                            x: evt.clientX,
+                            y: evt.clientY
+                        };
                     }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
+                    else if (p.type === 2 /* PointerUp */) {
+                        if (evt.pointerType === "mouse") {
+                            return;
+                        }
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                        var index = _this._pointerPressed.indexOf(evt.pointerId);
+                        if (index === -1) {
+                            return;
+                        }
+                        _this._pointerPressed.splice(index, 1);
+                        if (index != 0) {
+                            return;
+                        }
+                        previousPosition = null;
+                        _this._offsetX = null;
+                        _this._offsetY = null;
                     }
-                    _this._pointerPressed.push(evt.pointerId);
-                    if (_this._pointerPressed.length !== 1) {
-                        return;
+                    else if (p.type === 3 /* PointerMove */) {
+                        if (evt.pointerType === "mouse") {
+                            return;
+                        }
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                        if (!previousPosition) {
+                            return;
+                        }
+                        var index = _this._pointerPressed.indexOf(evt.pointerId);
+                        if (index != 0) {
+                            return;
+                        }
+                        _this._offsetX = evt.clientX - previousPosition.x;
+                        _this._offsetY = -(evt.clientY - previousPosition.y);
                     }
-                    previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                };
-                this._onPointerUp = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    var index = _this._pointerPressed.indexOf(evt.pointerId);
-                    if (index === -1) {
-                        return;
-                    }
-                    _this._pointerPressed.splice(index, 1);
-                    if (index != 0) {
-                        return;
-                    }
-                    previousPosition = null;
-                    _this._offsetX = null;
-                    _this._offsetY = null;
-                };
-                this._onPointerMove = function (evt) {
-                    if (evt.pointerType === "mouse") {
-                        return;
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                    if (!previousPosition) {
-                        return;
-                    }
-                    var index = _this._pointerPressed.indexOf(evt.pointerId);
-                    if (index != 0) {
-                        return;
-                    }
-                    _this._offsetX = evt.clientX - previousPosition.x;
-                    _this._offsetY = -(evt.clientY - previousPosition.y);
                 };
             }
             element.addEventListener("blur", this._onLostFocus);
-            element.addEventListener("pointerdown", this._onPointerDown);
-            element.addEventListener("pointerup", this._onPointerUp);
-            element.addEventListener("pointerout", this._onPointerUp);
-            element.addEventListener("pointermove", this._onPointerMove);
         };
         FreeCameraTouchInput.prototype.detachControl = function (element) {
-            if (this._onPointerDown && element) {
+            if (this._pointerInput && element) {
+                this.camera.getScene().onPointerObservable.remove(this._observer);
+                this._observer = null;
                 element.removeEventListener("blur", this._onLostFocus);
-                element.removeEventListener("pointerdown", this._onPointerDown);
-                element.removeEventListener("pointerup", this._onPointerUp);
-                element.removeEventListener("pointerout", this._onPointerUp);
-                element.removeEventListener("pointermove", this._onPointerMove);
-                this._onPointerDown = null;
-                this._onPointerUp = null;
-                this._onPointerMove = null;
                 this._onLostFocus = null;
                 this._pointerPressed = [];
                 this._offsetX = null;

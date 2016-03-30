@@ -3,7 +3,7 @@ module BABYLON {
 
     export class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
-        
+
         @serialize()
         public angularSensibilityX = 1000.0;
 
@@ -200,22 +200,22 @@ module BABYLON {
                 element.removeEventListener("mousemove", this._onMouseMove);
                 element.removeEventListener("MSPointerDown", this._onGestureStart);
                 element.removeEventListener("MSGestureChange", this._onGesture);
-                
+
                 this._isRightClick = false;
                 this._isCtrlPushed = false;
                 this.pinchInwards = true;
 
-                this._onKeyDown= null;
-                this._onKeyUp= null;
-                this._onMouseMove= null;
-                this._onGestureStart= null;
-                this._onGesture= null;
-                this._MSGestureHandler= null;
-                this._onLostFocus= null;
+                this._onKeyDown = null;
+                this._onKeyUp = null;
+                this._onMouseMove = null;
+                this._onGestureStart = null;
+                this._onGesture = null;
+                this._MSGestureHandler = null;
+                this._onLostFocus = null;
                 this._onContextMenu = null;
 
             }
-            
+
             Tools.UnregisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },
                 { name: "keyup", handler: this._onKeyUp },

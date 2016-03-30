@@ -1,10 +1,10 @@
-module BABYLON {       
+module BABYLON {
     export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        camera : FreeCamera;
-        
+        camera: FreeCamera;
+
         @serialize()
         public angularSensibility = 2000.0;
-        
+
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
         private _observer: Observer<PointerInfo>;
 
@@ -12,8 +12,7 @@ module BABYLON {
 
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
 
-            if (!this._pointerInput)
-            {
+            if (!this._pointerInput) {
                 var camera = this.camera;
                 var engine = this.camera.getEngine();
                 this._pointerInput = (p, s) => {
@@ -69,26 +68,26 @@ module BABYLON {
                 }
             }
 
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput); 
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
         }
-        
+
         detachControl(element: HTMLElement) {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
                 this._observer = null;
 
                 this.previousPosition = null;
-            }        
+            }
         }
-        
-        getTypeName(): string{
+
+        getTypeName(): string {
             return "FreeCameraMouseInput";
         }
-        
-        getSimpleName(){
+
+        getSimpleName() {
             return "mouse";
         }
     }
-    
+
     CameraInputTypes["FreeCameraMouseInput"] = FreeCameraMouseInput;
 }
