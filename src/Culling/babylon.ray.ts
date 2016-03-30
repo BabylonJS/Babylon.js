@@ -106,7 +106,7 @@
             return this.intersectsBoxMinMax(box.minimum, box.maximum);
         }
 
-        public intersectsSphere(sphere): boolean {
+        public intersectsSphere(sphere: BoundingSphere): boolean {
             var x = sphere.center.x - this.origin.x;
             var y = sphere.center.y - this.origin.y;
             var z = sphere.center.z - this.origin.z;
@@ -306,6 +306,8 @@
         public static Transform(ray: Ray, matrix: Matrix): Ray {
             var newOrigin = Vector3.TransformCoordinates(ray.origin, matrix);
             var newDirection = Vector3.TransformNormal(ray.direction, matrix);
+
+            newDirection.normalize();
 
             return new Ray(newOrigin, newDirection, ray.length);
         }

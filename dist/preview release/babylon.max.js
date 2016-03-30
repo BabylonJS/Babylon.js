@@ -8320,6 +8320,7 @@ var BABYLON;
         Ray.Transform = function (ray, matrix) {
             var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
             var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
+            newDirection.normalize();
             return new Ray(newOrigin, newDirection, ray.length);
         };
         Ray.smallnum = 0.00000001;
