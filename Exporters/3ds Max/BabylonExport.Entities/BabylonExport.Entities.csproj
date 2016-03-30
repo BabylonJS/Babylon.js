@@ -15,7 +15,8 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,6 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,6 +35,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -55,10 +58,13 @@
     <Compile Include="BabylonLensFlareSystem.cs" />
     <Compile Include="BabylonLight.cs" />
     <Compile Include="BabylonMaterial.cs" />
+    <Compile Include="BabylonPBRMaterial.cs" />
+    <Compile Include="BabylonStandardMaterial.cs" />
     <Compile Include="BabylonAbstractMesh.cs" />
     <Compile Include="BabylonMesh.cs" />
     <Compile Include="BabylonMultiMaterial.cs" />
     <Compile Include="BabylonParticleSystem.cs" />
+    <Compile Include="BabylonProducer.cs" />
     <Compile Include="BabylonScene.cs" />
     <Compile Include="BabylonShadowGenerator.cs" />
     <Compile Include="BabylonSkeleton.cs" />

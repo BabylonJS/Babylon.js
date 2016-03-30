@@ -162,6 +162,7 @@ module BABYLON {
                     var construct = CameraInputTypes[this.attached[n].getTypeName()];
                     if (construct) {
                         var input = SerializationHelper.Parse(() => { return new construct() }, parsedCamera, null);
+                        this.remove(this.attached[n]);
                         this.add(input as any);
                     }
                 }

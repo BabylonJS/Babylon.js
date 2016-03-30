@@ -10,7 +10,6 @@
 	<script src="../dist/babylon.fireMaterial.js"></script>
     <script src="../dist/babylon.lavaMaterial.js"></script>
 	<script src="../dist/babylon.terrainMaterial.js"></script>
-	<script src="../dist/babylon.pbrMaterial.js"></script>
 	<script src="../dist/babylon.furMaterial.js"></script>
 	<script src="../dist/babylon.triPlanarMaterial.js"></script>
 	<script src="../dist/babylon.gradientMaterial.js"></script>
@@ -50,7 +49,6 @@
 	<canvas id="renderCanvas"></canvas>
 
 	<script src="index.js"></script>
-    <script src="add/addpbr.js"></script>
     <script src="add/addlava.js"></script>
     <script src="add/addnormal.js"></script>
 	<script src="add/addwater.js"></script>
@@ -201,8 +199,6 @@
 				
 				var terrain = prepareTerrain();
 				
-				var pbr = preparePBR();
-				
 				var triPlanar = prepareTriPlanar();
 				
 				var sky = prepareSky();
@@ -214,7 +210,7 @@
 				sphere.material = std;				
 				sphere.receiveShadows = true;
 
-				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'pbr', 'fur', 'triPlanar', 'gradient', 'sky', 'grid']).onFinishChange(function () {
+				gui.add(options, 'material', ['standard', 'simple', 'water', 'fire', 'lava', 'normal', 'terrain', 'fur', 'triPlanar', 'gradient', 'sky', 'grid']).onFinishChange(function () {
 					water.enableRenderTargets(false);
 					skybox.material = skyboxMaterial;
 					currentMesh.isVisible = true;
@@ -240,9 +236,6 @@
 							break;
 						case "terrain":
 							currentMaterial = terrain;
-							break;
-						case "pbr":
-							currentMaterial = pbr;
 							break;
 						case "fur":
 							currentMaterial = fur.material;

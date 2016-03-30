@@ -179,8 +179,7 @@
                 manifestChecked(true);
             }
         }
-
-        private static _warned : boolean;
+        
         /**
         * Load a scene
         * @param rootUrl a string that defines the root url for scene and resources
@@ -188,10 +187,6 @@
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
         public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void {
-            if (!SceneLoader._warned) {
-                Tools.Warn("SceneLoader.Load deprecated since 2.4.  Use SceneLoader.Append.");
-                SceneLoader._warned = true;
-            }
             SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onsuccess, progressCallBack, onerror);
         }
 

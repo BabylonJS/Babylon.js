@@ -168,10 +168,6 @@ var BABYLON;
         * @param engine is the instance of BABYLON.Engine to use to create the scene
         */
         SceneLoader.Load = function (rootUrl, sceneFilename, engine, onsuccess, progressCallBack, onerror) {
-            if (!SceneLoader._warned) {
-                BABYLON.Tools.Warn("SceneLoader.Load deprecated since 2.4.  Use SceneLoader.Append.");
-                SceneLoader._warned = true;
-            }
             SceneLoader.Append(rootUrl, sceneFilename, new BABYLON.Scene(engine), onsuccess, progressCallBack, onerror);
         };
         /**
@@ -257,7 +253,7 @@ var BABYLON;
         // Members
         SceneLoader._registeredPlugins = new Array();
         return SceneLoader;
-    })();
+    }());
     BABYLON.SceneLoader = SceneLoader;
     ;
 })(BABYLON || (BABYLON = {}));

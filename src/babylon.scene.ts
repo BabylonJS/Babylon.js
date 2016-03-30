@@ -567,7 +567,14 @@
         }
 
         // Pointers handling
-        public attachControl() {
+
+        /**
+        * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
+        * @param attachUp defines if you want to attach events to pointerup
+        * @param attachDown defines if you want to attach events to pointerdown
+        * @param attachMove defines if you want to attach events to pointermove
+        */
+        public attachControl(attachUp = true, attachDown = true, attachMove = true) {
             var spritePredicate = (sprite: Sprite): boolean => {
                 return sprite.isPickable && sprite.actionManager && sprite.actionManager.hasPointerTriggers;
             };
@@ -777,13 +784,21 @@
 
 
             var eventPrefix = Tools.GetPointerPrefix();
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
-            this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
 
-            // Wheel
-            this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
-            this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+            if (attachMove) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "move", this._onPointerMove, false);
+                // Wheel
+                this._engine.getRenderingCanvas().addEventListener('mousewheel', this._onPointerMove, false);
+                this._engine.getRenderingCanvas().addEventListener('DOMMouseScroll', this._onPointerMove, false);
+            }
+
+            if (attachDown) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "down", this._onPointerDown, false);
+            }
+
+            if (attachUp) {
+                this._engine.getRenderingCanvas().addEventListener(eventPrefix + "up", this._onPointerUp, false);
+            }
 
             Tools.RegisterTopRootEvents([
                 { name: "keydown", handler: this._onKeyDown },

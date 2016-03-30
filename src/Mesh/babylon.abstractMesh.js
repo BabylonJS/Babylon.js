@@ -568,7 +568,21 @@ var BABYLON;
             BABYLON.Tmp.Matrix[4].multiplyToRef(BABYLON.Tmp.Matrix[0], BABYLON.Tmp.Matrix[5]);
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
-                var localPosition = this.position.clone();
+                BABYLON.Tmp.Vector3[0].copyFrom(this.position);
+                var localPosition = BABYLON.Tmp.Vector3[0];
+                if (this.parent && this.parent.getWorldMatrix) {
+                    this._markSyncedWithParent();
+                    var parentMatrix;
+                    if (this._meshToBoneReferal) {
+                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), BABYLON.Tmp.Matrix[6]);
+                        parentMatrix = BABYLON.Tmp.Matrix[6];
+                    }
+                    else {
+                        parentMatrix = this.parent.getWorldMatrix();
+                    }
+                    BABYLON.Vector3.TransformCoordinatesToRef(localPosition, parentMatrix, BABYLON.Tmp.Vector3[1]);
+                    localPosition = BABYLON.Tmp.Vector3[1];
+                }
                 var zero = this.getScene().activeCamera.globalPosition.clone();
                 if (this.parent && this.parent.position) {
                     localPosition.addInPlace(this.parent.position);
@@ -996,7 +1010,7 @@ var BABYLON;
             }
             else {
                 var childMeshes = this.getChildMeshes(true);
-                for (index = 0; childMeshes.length; index++) {
+                for (index = 0; index < childMeshes.length; index++) {
                     var child = childMeshes[index];
                     child.parent = null;
                     child.computeWorldMatrix(true);
@@ -1017,6 +1031,6 @@ var BABYLON;
         AbstractMesh._BILLBOARDMODE_Z = 4;
         AbstractMesh._BILLBOARDMODE_ALL = 7;
         return AbstractMesh;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.AbstractMesh = AbstractMesh;
 })(BABYLON || (BABYLON = {}));
