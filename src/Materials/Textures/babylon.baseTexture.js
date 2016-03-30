@@ -54,7 +54,7 @@ var BABYLON;
             return { width: 0, height: 0 };
         };
         BaseTexture.prototype.getBaseSize = function () {
-            if (!this.isReady())
+            if (!this.isReady() || !this._texture)
                 return { width: 0, height: 0 };
             if (this._texture._size) {
                 return { width: this._texture._size, height: this._texture._size };
@@ -165,6 +165,6 @@ var BABYLON;
             BABYLON.serialize()
         ], BaseTexture.prototype, "isRenderTarget", void 0);
         return BaseTexture;
-    })();
+    }());
     BABYLON.BaseTexture = BaseTexture;
 })(BABYLON || (BABYLON = {}));

@@ -157,7 +157,7 @@
                     }
                 }
             }
-            else if (this._mesh instanceof Mesh) {
+            else {
                 // Triangles test
                 for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
                     var p0 = positions[indices[index]];

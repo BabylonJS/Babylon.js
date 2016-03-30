@@ -419,8 +419,6 @@ var BABYLON;
                                 var emptySound = new BABYLON.Sound(parsedSound.name, null, scene);
                             }
                         }
-                        log += (index === 0 ? "\n\tSounds:" : "");
-                        log += "\n\t\t" + mat.toString(fullDetails);
                     }
                     loadedSounds = [];
                     // Connect parents & children and parse actions

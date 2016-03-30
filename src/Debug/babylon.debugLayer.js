@@ -629,6 +629,7 @@ var BABYLON;
                 + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Count</b><br>"
                 + "Total meshes: " + scene.meshes.length + "<br>"
+                + "Total lights: " + scene.lights.length + "<br>"
                 + "Total vertices: " + scene.getTotalVertices() + "<br>"
                 + "Total materials: " + scene.materials.length + "<br>"
                 + "Total textures: " + scene.textures.length + "<br>"
@@ -636,7 +637,7 @@ var BABYLON;
                 + "Active indices: " + scene.getActiveIndices() + "<br>"
                 + "Active bones: " + scene.getActiveBones() + "<br>"
                 + "Active particles: " + scene.getActiveParticles() + "<br>"
-                + "<b>Draw calls: " + engine.drawCalls + "</b><br><br><br>"
+                + "<b>Draw calls: " + engine.drawCalls + "</b><br><br>"
                 + "<b>Duration</b><br>"
                 + "Meshes selection:</i> " + BABYLON.Tools.Format(scene.getEvaluateActiveMeshesDuration()) + " ms<br>"
                 + "Render Targets: " + BABYLON.Tools.Format(scene.getRenderTargetsDuration()) + " ms<br>"
@@ -645,7 +646,7 @@ var BABYLON;
                 + "Render: <b>" + BABYLON.Tools.Format(scene.getRenderDuration()) + " ms</b><br>"
                 + "Frame: " + BABYLON.Tools.Format(scene.getLastFrameDuration()) + " ms<br>"
                 + "Potential FPS: " + BABYLON.Tools.Format(1000.0 / scene.getLastFrameDuration(), 0) + "<br>"
-                + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br>"
+                + "Resolution: " + engine.getRenderWidth() + "x" + engine.getRenderHeight() + "<br><br>"
                 + "</div>"
                 + "<div style='column-count: 2;-moz-column-count:2;-webkit-column-count:2'>"
                 + "<b>Extensions</b><br>"
@@ -673,6 +674,6 @@ var BABYLON;
             }
         };
         return DebugLayer;
-    })();
+    }());
     BABYLON.DebugLayer = DebugLayer;
 })(BABYLON || (BABYLON = {}));

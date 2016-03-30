@@ -618,7 +618,24 @@
 
             // Billboarding
             if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
-                var localPosition = this.position.clone();
+                Tmp.Vector3[0].copyFrom(this.position);
+                var localPosition = Tmp.Vector3[0];
+
+                if (this.parent && this.parent.getWorldMatrix) {
+                    this._markSyncedWithParent();
+
+                    var parentMatrix: Matrix;
+                    if (this._meshToBoneReferal) {
+                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
+                        parentMatrix = Tmp.Matrix[6];
+                    } else {
+                        parentMatrix = this.parent.getWorldMatrix();
+                    }
+
+                    Vector3.TransformCoordinatesToRef(localPosition, parentMatrix, Tmp.Vector3[1]);
+                    localPosition = Tmp.Vector3[1];
+                }
+
                 var zero = this.getScene().activeCamera.globalPosition.clone();
 
                 if (this.parent && (<any>this.parent).position) {
@@ -1162,7 +1179,7 @@
                 }
             } else {
                 var childMeshes = this.getChildMeshes(true);
-                for (index = 0; childMeshes.length; index++) {
+                for (index = 0; index < childMeshes.length; index++) {
                     var child = childMeshes[index];
                     child.parent = null;
                     child.computeWorldMatrix(true);

@@ -90,7 +90,7 @@
         }
 
         public getBaseSize(): ISize {
-            if (!this.isReady())
+            if (!this.isReady() || !this._texture)
                 return { width: 0, height: 0 };
 
             if (this._texture._size) {
