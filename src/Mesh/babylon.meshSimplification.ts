@@ -320,7 +320,7 @@
                                 var v0 = t.vertices[j];
                                 var v1 = t.vertices[(j + 1) % 3];
 
-                                if (v0.isBorder !== v1.isBorder) continue;
+                                if (v0.isBorder || v1.isBorder) continue;
 
                                 var p = Vector3.Zero();
                                 var n = Vector3.Zero();
