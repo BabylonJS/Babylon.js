@@ -236,8 +236,10 @@
         
         public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
+            
+            var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
 
-            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
 
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
@@ -250,6 +252,8 @@
 
         public serialize(): any {
             var serializationObject: any = {};
+            
+            serializationObject.name = this.name;
 
             serializationObject.emitterId = this.getEmitter().id;
             serializationObject.borderLimit = this.borderLimit;
