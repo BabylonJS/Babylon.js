@@ -86,7 +86,7 @@
                         case "image/jpeg":
                         case "image/png":
                         case "image/bmp":
-                            FilesInput.FilesTextures[this._filesToLoad[i].name] = this._filesToLoad[i];
+                            FilesInput.FilesTextures[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
                             break;
                         case "image/targa":
                         case "image/vnd.ms-dds":
@@ -97,11 +97,11 @@
                         case "audio/mpeg3":
                         case "audio/x-mpeg-3":
                         case "audio/ogg":
-                            FilesInput.FilesToLoad[this._filesToLoad[i].name] = this._filesToLoad[i];
+                            FilesInput.FilesToLoad[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
                             break;
                         default:
                             if (this._filesToLoad[i].name.indexOf(".mtl") !== -1) {
-                                FilesInput.FilesToLoad[this._filesToLoad[i].name] = this._filesToLoad[i];
+                                FilesInput.FilesToLoad[this._filesToLoad[i].name.toLowerCase()] = this._filesToLoad[i];
                             }
                             else if ((
                                 this._filesToLoad[i].name.indexOf(".babylon") !== -1 || 

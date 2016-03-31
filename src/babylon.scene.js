@@ -438,6 +438,12 @@ var BABYLON;
             }
         };
         // Pointers handling
+        /**
+        * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
+        * @param attachUp defines if you want to attach events to pointerup
+        * @param attachDown defines if you want to attach events to pointerdown
+        * @param attachMove defines if you want to attach events to pointermove
+        */
         Scene.prototype.attachControl = function (attachUp, attachDown, attachMove) {
             var _this = this;
             if (attachUp === void 0) { attachUp = true; }
@@ -2203,6 +2209,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    })();
+    }());
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
