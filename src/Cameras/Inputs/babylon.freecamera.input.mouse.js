@@ -18,7 +18,7 @@ var BABYLON;
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
                     if (p.type === 1 /* PointerDown */) {
-                        evt.srcElement.setPointerCapture(evt.pointerId);
+                        //   evt.srcElement.setPointerCapture(evt.pointerId);
                         _this.previousPosition = {
                             x: evt.clientX,
                             y: evt.clientY
@@ -28,7 +28,7 @@ var BABYLON;
                         }
                     }
                     else if (p.type === 2 /* PointerUp */) {
-                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                        //  evt.srcElement.releasePointerCapture(evt.pointerId);
                         _this.previousPosition = null;
                         if (!noPreventDefault) {
                             evt.preventDefault();
