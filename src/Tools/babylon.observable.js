@@ -84,6 +84,12 @@ var BABYLON;
             }
         };
         /**
+         * return true is the Observable has at least one Observer registered
+         */
+        Observable.prototype.hasObservers = function () {
+            return this._observers.length > 0;
+        };
+        /**
         * Clear the list of observers
         */
         Observable.prototype.clear = function () {

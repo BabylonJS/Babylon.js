@@ -12,7 +12,8 @@ var BABYLON;
         }
         ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            this._wheel = function (event) {
+            this._wheel = function (p, s) {
+                var event = p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
                     delta = event.wheelDelta / (_this.wheelPrecision * 40);
@@ -28,13 +29,12 @@ var BABYLON;
                     }
                 }
             };
-            element.addEventListener('mousewheel', this._wheel, false);
-            element.addEventListener('DOMMouseScroll', this._wheel, false);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel);
         };
         ArcRotateCameraMouseWheelInput.prototype.detachControl = function (element) {
-            if (this._wheel && element) {
-                element.removeEventListener('mousewheel', this._wheel);
-                element.removeEventListener('DOMMouseScroll', this._wheel);
+            if (this._observer && element) {
+                this.camera.getScene().onPointerObservable.remove(this._observer);
+                this._observer = null;
                 this._wheel = null;
             }
         };

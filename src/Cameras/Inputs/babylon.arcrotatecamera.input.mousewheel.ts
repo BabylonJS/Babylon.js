@@ -1,14 +1,16 @@
 module BABYLON {
     export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
-        
-        private _wheel: (e: MouseWheelEvent) => void;
+
+        private _wheel: (p: PointerInfo, s: EventState) => void;
+        private _observer: Observer<PointerInfo>;
 
         @serialize()
         public wheelPrecision = 3.0;
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
-            this._wheel = event => {
+            this._wheel = (p, s) => {
+                var event = <MouseWheelEvent>p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
                     delta = event.wheelDelta / (this.wheelPrecision * 40);
@@ -25,14 +27,14 @@ module BABYLON {
                     }
                 }
             };
-            element.addEventListener('mousewheel', this._wheel, false);
-            element.addEventListener('DOMMouseScroll', this._wheel, false);
+
+            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel);
         }
 
         public detachControl(element: HTMLElement) {
-            if (this._wheel && element){
-                element.removeEventListener('mousewheel', this._wheel);
-                element.removeEventListener('DOMMouseScroll', this._wheel);
+            if (this._observer && element) {
+                this.camera.getScene().onPointerObservable.remove(this._observer);
+                this._observer = null;
                 this._wheel = null;
             }
         }
@@ -40,11 +42,11 @@ module BABYLON {
         getTypeName(): string {
             return "ArcRotateCameraMouseWheelInput";
         }
-        
-        getSimpleName(){
+
+        getSimpleName() {
             return "mousewheel";
         }
     }
-    
+
     CameraInputTypes["ArcRotateCameraMouseWheelInput"] = ArcRotateCameraMouseWheelInput;
 }
