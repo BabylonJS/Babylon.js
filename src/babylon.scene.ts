@@ -4,6 +4,22 @@
     }
 
     /**
+     * Different type of pointer event, enumerations are self explanatory
+     */
+    export const enum PointerEventType {
+        None, PointerDown, PointerUp, PointerMove, PointerWheel, PointerPick
+    }
+
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instnce of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel
+     */
+    export class PointerInfo {
+        constructor(public type: PointerEventType, public event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
+        }
+    }
+
+    /**
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
@@ -182,10 +198,29 @@
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
         private _onPointerUp: (evt: PointerEvent) => void;
+
+        /**
+         * @deprecated Use onPointerObservable instead
+         */
         public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /**
+         * @deprecated Use onPointerObservable instead
+         */
         public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /**
+         * @deprecated Use onPointerObservable instead
+         */
         public onPointerUp: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        /**
+         * @deprecated Use onPointerObservable instead
+         */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+
+        /**
+         * Observable event triggered each time an input event is received from the rendering canvas
+         */
+        public onPointerObservable = new Observable<PointerInfo>();
+
         public cameraToUseForPointers: Camera = null; // Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position
         private _pointerX: number;
         private _pointerY: number;
@@ -594,7 +629,7 @@
 
                 // Meshes
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerMovePredicate, false, this.cameraToUseForPointers);
-                    
+
                 if (pickResult.hit && pickResult.pickedMesh) {
                     this.setPointerOverSprite(null);
 
@@ -622,6 +657,11 @@
 
                 if (this.onPointerMove) {
                     this.onPointerMove(evt, pickResult);
+                }
+
+                if (this.onPointerObservable.hasObservers()) {
+                    let pi = new PointerInfo(evt.type === "mousewheel" ? PointerEventType.PointerWheel : PointerEventType.PointerMove, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi);
                 }
             };
 
@@ -665,7 +705,7 @@
 
                         if (pickResult.pickedMesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger)) {
                             var that = this;
-                            window.setTimeout(function() {
+                            window.setTimeout(function () {
                                 var pickResult = that.pick(that._unTranslatedPointerX, that._unTranslatedPointerY,
                                     (mesh: AbstractMesh): boolean => mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.actionManager && mesh.actionManager.hasSpecificTrigger(ActionManager.OnLongPressTrigger),
                                     false, that.cameraToUseForPointers);
@@ -685,6 +725,11 @@
 
                 if (this.onPointerDown) {
                     this.onPointerDown(evt, pickResult);
+                }
+
+                if (this.onPointerObservable.hasObservers()) {
+                    let pi = new PointerInfo(PointerEventType.PointerDown, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi);
                 }
 
                 // Sprites
@@ -716,7 +761,7 @@
                 if (!this.cameraToUseForPointers && !this.activeCamera) {
                     return;
                 }
-                
+
                 this._updatePointerPosition(evt);
 
                 if (!this.pointerUpPredicate) {
@@ -729,8 +774,14 @@
                 var pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerUpPredicate, false, this.cameraToUseForPointers);
 
                 if (pickResult.hit && pickResult.pickedMesh) {
-                    if (this.onPointerPick && this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
-                        this.onPointerPick(evt, pickResult);
+                    if (this._pickedDownMesh != null && pickResult.pickedMesh == this._pickedDownMesh) {
+                        if (this.onPointerPick) {
+                            this.onPointerPick(evt, pickResult);
+                        }
+                        if (this.onPointerObservable.hasObservers()) {
+                            let pi = new PointerInfo(PointerEventType.PointerPick, evt, pickResult);
+                            this.onPointerObservable.notifyObservers(pi);
+                        }
                     }
                     if (pickResult.pickedMesh.actionManager) {
                         pickResult.pickedMesh.actionManager.processTrigger(ActionManager.OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -748,8 +799,13 @@
                     this.onPointerUp(evt, pickResult);
                 }
 
+                if (this.onPointerObservable.hasObservers()) {
+                    let pi = new PointerInfo(PointerEventType.PointerUp, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi);
+                }
+
                 this._startingPointerTime = 0;
-                
+
                 // Sprites
                 if (this.spriteManagers.length > 0) {
                     pickResult = this.pickSprite(this._unTranslatedPointerX, this._unTranslatedPointerY, spritePredicate, false, this.cameraToUseForPointers);
@@ -1119,7 +1175,7 @@
             var position = this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
-        
+
         /**
          * Switch active camera
          * @param {Camera} newCamera - new active camera
@@ -1767,7 +1823,7 @@
             this.updateTransformMatrix();
 
             this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
-            
+
             // Meshes
             var beforeEvaluateActiveMeshesDate = Tools.Now;
             Tools.StartPerformanceCounter("Active meshes evaluation");
@@ -2418,7 +2474,7 @@
             }
 
             var cameraViewport = camera.viewport;
-            var viewport = cameraViewport.toGlobal(engine. getRenderWidth(), engine.getRenderHeight());
+            var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
             var identity = Matrix.Identity();
 
             // Moving coordinates to local viewport world
@@ -2707,4 +2763,5 @@
         }
     }
 }
+
 

@@ -164,14 +164,7 @@ namespace Unity3D2Babylon
                                 var sharedMaterial = renderer.sharedMaterials[i];
                                 BabylonMaterial babylonMaterial;
 
-                                if (sharedMaterial.HasProperty("_Metallic"))
-                                {
-                                    babylonMaterial = DumpPBRMaterial(sharedMaterial, renderer);
-                                }
-                                else
-                                {
-                                    babylonMaterial = DumpMaterial(sharedMaterial, renderer);
-                                }
+                                babylonMaterial = DumpMaterial(sharedMaterial, renderer);
 
                                 bMultiMat.materials[i] = babylonMaterial.id;
                             }
@@ -207,14 +200,7 @@ namespace Unity3D2Babylon
                     }
                     else
                     {
-                        if (renderer.sharedMaterial.HasProperty("_Metallic"))
-                        {
-                            babylonMesh.materialId = DumpPBRMaterial(renderer.sharedMaterial, renderer).id;
-                        }
-                        else
-                        {
-                            babylonMesh.materialId = DumpMaterial(renderer.sharedMaterial, renderer).id;
-                        }
+                        babylonMesh.materialId = DumpMaterial(renderer.sharedMaterial, renderer).id;
                     }
                 }
 

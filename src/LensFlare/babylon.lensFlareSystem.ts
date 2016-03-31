@@ -233,10 +233,10 @@
             var index = this._scene.lensFlareSystems.indexOf(this);
             this._scene.lensFlareSystems.splice(index, 1);
         }
-        
+
         public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
-            
+
             var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
 
             var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
@@ -252,7 +252,7 @@
 
         public serialize(): any {
             var serializationObject: any = {};
-            
+
             serializationObject.name = this.name;
 
             serializationObject.emitterId = this.getEmitter().id;
