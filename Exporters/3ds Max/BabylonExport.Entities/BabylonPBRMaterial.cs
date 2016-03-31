@@ -6,7 +6,7 @@ namespace BabylonExport.Entities
     {
         [DataMember]
         public string customType { get; private set; }
-        
+
         [DataMember]
         public float directIntensity { get; set; }
 
@@ -47,19 +47,19 @@ namespace BabylonExport.Entities
         public float overloadedEmissiveIntensity { get; set; }
 
         [DataMember]
-        public float overloadedAmbient { get; set; }
+        public float[] overloadedAmbient { get; set; }
 
         [DataMember]
-        public float overloadedAlbedo { get; set; }
+        public float[] overloadedAlbedo { get; set; }
 
         [DataMember]
-        public float overloadedReflectivity { get; set; }
+        public float[] overloadedReflectivity { get; set; }
 
         [DataMember]
-        public float overloadedEmissive { get; set; }
+        public float[] overloadedEmissive { get; set; }
 
         [DataMember]
-        public float overloadedReflection { get; set; }
+        public float[] overloadedReflection { get; set; }
 
         [DataMember]
         public float overloadedMicroSurface { get; set; }
@@ -101,19 +101,19 @@ namespace BabylonExport.Entities
         public BabylonTexture refractionTexture { get; set; }
 
         [DataMember]
-        public float[] ambientColor { get; set; }
+        public float[] ambient { get; set; }
 
         [DataMember]
-        public float[] albedoColor { get; set; }
+        public float[] albedo { get; set; }
 
         [DataMember]
-        public float[] reflectivityColor { get; set; }
+        public float[] reflectivity { get; set; }
 
         [DataMember]
-        public float[] reflectionColor { get; set; }
+        public float[] reflection { get; set; }
 
         [DataMember]
-        public float[] emissiveColor { get; set; }
+        public float[] emissive { get; set; }
 
         [DataMember]
         public bool useAlphaFromAlbedoTexture { get; set; }
@@ -128,6 +128,9 @@ namespace BabylonExport.Entities
         public bool useSpecularOverAlpha { get; set; }
 
         [DataMember]
+        public bool useRadianceOverAlpha { get; set; }
+
+        [DataMember]
         public float indexOfRefraction { get; set; }
 
         [DataMember]
@@ -139,7 +142,7 @@ namespace BabylonExport.Entities
         [DataMember]
         public BabylonFresnelParameters opacityFresnelParameters { get; set; }
 
-        public BabylonPBRMaterial(): base()
+        public BabylonPBRMaterial() : base()
         {
             customType = "BABYLON.PBRMaterial";
 
@@ -153,10 +156,17 @@ namespace BabylonExport.Entities
             overloadedShadowIntensity = 1.0f;
             overloadedShadeIntensity = 1.0f;
 
-            ambientColor = new[] { 0f, 0f, 0f };
-            reflectionColor = new[] { 0f, 0f, 0f };
-            emissiveColor = new[] { 0f, 0f, 0f };
+            ambient = new[] { 0f, 0f, 0f };
+            albedo = new[] { 0f, 0f, 0f };
+            reflectivity = new[] { 0f, 0f, 0f };
+            reflection = new[] { 0f, 0f, 0f };
+            emissive = new[] { 0f, 0f, 0f };
+
+            overloadedAmbient = new[] { 0f, 0f, 0f };
+            overloadedAlbedo = new[] { 0f, 0f, 0f };
+            overloadedReflectivity = new[] { 0f, 0f, 0f };
+            overloadedEmissive = new[] { 0f, 0f, 0f };
+            overloadedReflection = new[] { 0f, 0f, 0f };
         }
     }
 }
-;
