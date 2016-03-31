@@ -1,4 +1,4 @@
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+
 var BABYLON;
 (function (BABYLON) {
     /**
@@ -354,6 +354,13 @@ var BABYLON;
                     unwrappedNormalsForBabylon.push(wrappedNormalsForBabylon[l].x, wrappedNormalsForBabylon[l].y, wrappedNormalsForBabylon[l].z);
                     unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
                 }
+				// Reset arrays for the next new meshes
+                wrappedPositionForBabylon = [];
+                wrappedNormalsForBabylon = [];
+                wrappedUvsForBabylon = [];
+                tuplePosNorm = [];
+                curPositionInIndices = 0;
+                
             };
             /**
              * Create triangles from polygons by recursion
@@ -498,7 +505,7 @@ var BABYLON;
                     indicesForBabylon = [];
                     unwrappedPositionsForBabylon = [];
                     unwrappedNormalsForBabylon = [];
-                    unwrappedUVForBabylon = [];
+                    unwrappedUVForBabylon = [];  
                 }
             };
             //Main function
@@ -653,7 +660,6 @@ var BABYLON;
                 });
             }
             //Create a BABYLON.Mesh list
-            var vertexData = new BABYLON.VertexData(); //The container for the values
             var babylonMeshesArray = []; //The mesh for babylon
             var materialToUse = [];
             //Set data for each mesh
@@ -680,6 +686,8 @@ var BABYLON;
                 //This is indispensable for the importMesh function
                 materialToUse.push(meshesFromObj[j].materialName);
                 //Set the data for the babylonMesh
+                
+                var vertexData = new BABYLON.VertexData(); //The container for the values
                 vertexData.positions = handledMesh.positions;
                 vertexData.normals = handledMesh.normals;
                 vertexData.uvs = handledMesh.uvs;
