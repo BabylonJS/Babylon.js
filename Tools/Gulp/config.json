@@ -209,7 +209,8 @@
       "../../src/tools/hdr/babylon.tools.hdr.js",
       "../../src/tools/hdr/babylon.tools.pmremGenerator.js",
       "../../src/materials/textures/babylon.hdrcubetexture.js",
-      "../../src/debug/babylon.skeletonViewer.js"      
+      "../../src/debug/babylon.skeletonViewer.js",
+      "../../src/materials/babylon.pbrmaterial.js"      
     ]
   }
 }

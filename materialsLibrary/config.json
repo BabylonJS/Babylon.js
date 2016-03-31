@@ -10,24 +10,6 @@
       "output": "babylon.gradientMaterial.js"
     },
     {
-      "file": "materials/pbr/babylon.pbrMaterial.ts",
-      "referenceFiles": [
-        "materials/pbr/includes/pbrFunctions.fx",
-        "materials/pbr/includes/harmonicsFunctions.fx",
-        "materials/pbr/includes/pbrLightFunctions.fx",
-        "materials/pbr/includes/pbrLightFunctionsCall.fx",
-        "materials/pbr/includes/pbrShadowFunctions.fx"  
-      ],
-      "shaderFiles": [
-        "materials/pbr/pbr.vertex.fx",
-        "materials/pbr/pbr.fragment.fx",
-        "materials/pbr/legacypbr.vertex.fx",
-        "materials/pbr/legacypbr.fragment.fx"
-      ],
-      "output": "babylon.pbrMaterial.js",
-      "declarationFilename": "babylon.pbrMaterial.d.ts"
-    },
-    {
       "file": "materials/normal/babylon.normalMaterial.ts",
       "shaderFiles": [
         "materials/normal/normal.vertex.fx",
