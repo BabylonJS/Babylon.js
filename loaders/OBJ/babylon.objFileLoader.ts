@@ -390,7 +390,13 @@ module BABYLON {
                     unwrappedPositionsForBabylon.push(wrappedPositionForBabylon[l].x, wrappedPositionForBabylon[l].y, wrappedPositionForBabylon[l].z);
                     unwrappedNormalsForBabylon.push(wrappedNormalsForBabylon[l].x, wrappedNormalsForBabylon[l].y, wrappedNormalsForBabylon[l].z);
                     unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
-                }
+                }				
+				// Reset arrays for the next new meshes
+                wrappedPositionForBabylon = [];
+                wrappedNormalsForBabylon = [];
+                wrappedUvsForBabylon = [];
+                tuplePosNorm = [];
+                curPositionInIndices = 0;
             };
 
             /**
@@ -782,7 +788,6 @@ module BABYLON {
             }
 
             //Create a BABYLON.Mesh list
-            var vertexData: VertexData = new BABYLON.VertexData(); //The container for the values
             var babylonMeshesArray: Array<BABYLON.Mesh> = []; //The mesh for babylon
             var materialToUse = [];
 
@@ -812,6 +817,7 @@ module BABYLON {
                 //This is indispensable for the importMesh function
                 materialToUse.push(meshesFromObj[j].materialName);
 
+				var vertexData: VertexData = new BABYLON.VertexData(); //The container for the values
                 //Set the data for the babylonMesh
                 vertexData.positions = handledMesh.positions;
                 vertexData.normals = handledMesh.normals;
