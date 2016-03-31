@@ -390,7 +390,13 @@ module BABYLON {
                     unwrappedPositionsForBabylon.push(wrappedPositionForBabylon[l].x, wrappedPositionForBabylon[l].y, wrappedPositionForBabylon[l].z);
                     unwrappedNormalsForBabylon.push(wrappedNormalsForBabylon[l].x, wrappedNormalsForBabylon[l].y, wrappedNormalsForBabylon[l].z);
                     unwrappedUVForBabylon.push(wrappedUvsForBabylon[l].x, wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
-                }
+                }				
+				// Reset arrays for the next new meshes
+                wrappedPositionForBabylon = [];
+                wrappedNormalsForBabylon = [];
+                wrappedUvsForBabylon = [];
+                tuplePosNorm = [];
+                curPositionInIndices = 0;
             };
 
             /**
