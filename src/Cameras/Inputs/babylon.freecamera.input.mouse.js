@@ -12,71 +12,61 @@ var BABYLON;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
-            if (!this._onMouseDown) {
+            if (!this._pointerInput) {
                 var camera = this.camera;
                 var engine = this.camera.getEngine();
-                this._onMouseDown = function (evt) {
-                    _this.previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
+                this._pointerInput = function (p, s) {
+                    var evt = p.event;
+                    if (p.type === 1 /* PointerDown */) {
+                        //   evt.srcElement.setPointerCapture(evt.pointerId);
+                        _this.previousPosition = {
+                            x: evt.clientX,
+                            y: evt.clientY
+                        };
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
                     }
-                };
-                this._onMouseUp = function (evt) {
-                    _this.previousPosition = null;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
+                    else if (p.type === 2 /* PointerUp */) {
+                        //  evt.srcElement.releasePointerCapture(evt.pointerId);
+                        _this.previousPosition = null;
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
                     }
-                };
-                this._onMouseOut = function (evt) {
-                    _this.previousPosition = null;
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                };
-                this._onMouseMove = function (evt) {
-                    if (!_this.previousPosition && !engine.isPointerLock) {
-                        return;
-                    }
-                    var offsetX;
-                    var offsetY;
-                    if (!engine.isPointerLock) {
-                        offsetX = evt.clientX - _this.previousPosition.x;
-                        offsetY = evt.clientY - _this.previousPosition.y;
-                    }
-                    else {
-                        offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                        offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
-                    }
-                    camera.cameraRotation.y += offsetX / _this.angularSensibility;
-                    camera.cameraRotation.x += offsetY / _this.angularSensibility;
-                    _this.previousPosition = {
-                        x: evt.clientX,
-                        y: evt.clientY
-                    };
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
+                    else if (p.type === 3 /* PointerMove */) {
+                        if (!_this.previousPosition && !engine.isPointerLock) {
+                            return;
+                        }
+                        var offsetX;
+                        var offsetY;
+                        if (!engine.isPointerLock) {
+                            offsetX = evt.clientX - _this.previousPosition.x;
+                            offsetY = evt.clientY - _this.previousPosition.y;
+                        }
+                        else {
+                            offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                            offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                        }
+                        camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                        camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                        _this.previousPosition = {
+                            x: evt.clientX,
+                            y: evt.clientY
+                        };
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
                     }
                 };
             }
-            element.addEventListener("mousedown", this._onMouseDown, false);
-            element.addEventListener("mouseup", this._onMouseUp, false);
-            element.addEventListener("mouseout", this._onMouseOut, false);
-            element.addEventListener("mousemove", this._onMouseMove, false);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
         };
         FreeCameraMouseInput.prototype.detachControl = function (element) {
-            if (this._onMouseDown && element) {
+            if (this._observer && element) {
+                this.camera.getScene().onPointerObservable.remove(this._observer);
+                this._observer = null;
                 this.previousPosition = null;
-                element.removeEventListener("mousedown", this._onMouseDown);
-                element.removeEventListener("mouseup", this._onMouseUp);
-                element.removeEventListener("mouseout", this._onMouseOut);
-                element.removeEventListener("mousemove", this._onMouseMove);
-                this._onMouseDown = null;
-                this._onMouseUp = null;
-                this._onMouseOut = null;
-                this._onMouseMove = null;
             }
         };
         FreeCameraMouseInput.prototype.getTypeName = function () {

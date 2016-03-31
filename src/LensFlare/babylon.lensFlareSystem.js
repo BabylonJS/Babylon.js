@@ -178,7 +178,8 @@ var BABYLON;
         };
         LensFlareSystem.Parse = function (parsedLensFlareSystem, scene, rootUrl) {
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
-            var lensFlareSystem = new LensFlareSystem("lensFlareSystem#" + parsedLensFlareSystem.emitterId, emitter, scene);
+            var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
+            var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
                 var parsedFlare = parsedLensFlareSystem.flares[index];
@@ -188,6 +189,7 @@ var BABYLON;
         };
         LensFlareSystem.prototype.serialize = function () {
             var serializationObject = {};
+            serializationObject.name = this.name;
             serializationObject.emitterId = this.getEmitter().id;
             serializationObject.borderLimit = this.borderLimit;
             serializationObject.flares = [];
