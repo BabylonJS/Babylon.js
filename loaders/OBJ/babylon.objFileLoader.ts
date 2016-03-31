@@ -788,7 +788,6 @@ module BABYLON {
             }
 
             //Create a BABYLON.Mesh list
-            var vertexData: VertexData = new BABYLON.VertexData(); //The container for the values
             var babylonMeshesArray: Array<BABYLON.Mesh> = []; //The mesh for babylon
             var materialToUse = [];
 
@@ -818,6 +817,7 @@ module BABYLON {
                 //This is indispensable for the importMesh function
                 materialToUse.push(meshesFromObj[j].materialName);
 
+				var vertexData: VertexData = new BABYLON.VertexData(); //The container for the values
                 //Set the data for the babylonMesh
                 vertexData.positions = handledMesh.positions;
                 vertexData.normals = handledMesh.normals;
