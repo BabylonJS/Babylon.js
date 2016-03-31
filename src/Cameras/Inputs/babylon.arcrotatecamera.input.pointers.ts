@@ -40,7 +40,7 @@ module BABYLON {
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
                 if (p.type === PointerEventType.PointerDown) {
-                    evt.srcElement.setPointerCapture(evt.pointerId);
+                   // evt.srcElement.setPointerCapture(evt.pointerId);
 
                     // Manage panning with right click
                     this._isRightClick = evt.button === 2;
@@ -52,7 +52,7 @@ module BABYLON {
                         evt.preventDefault();
                     }
                 } else if (p.type === PointerEventType.PointerUp) {
-                    evt.srcElement.releasePointerCapture(evt.pointerId);
+                   // evt.srcElement.releasePointerCapture(evt.pointerId);
 
                     cacheSoloPointer = null;
                     previousPinchDistance = 0;
