@@ -3,19 +3,40 @@
         dispose(): void;
     }
 
-    /**
-     * Different type of pointer event, enumerations are self explanatory
-     */
-    export const enum PointerEventType {
-        None, PointerDown, PointerUp, PointerMove, PointerWheel, PointerPick
+    export class PointerEventTypes {
+        static _POINTERDOWN  = 0x01;
+        static _POINTERUP    = 0x02;
+        static _POINTERMOVE  = 0x04;
+        static _POINTERWHEEL = 0x08;
+        static _POINTERPICK  = 0x10;
+
+        public static get POINTERDOWN() : number {
+            return PointerEventTypes._POINTERDOWN;
+        }
+
+        public static get POINTERUP(): number {
+            return PointerEventTypes._POINTERUP;
+        }
+
+        public static get POINTERMOVE(): number {
+            return PointerEventTypes._POINTERMOVE;
+        }
+
+        public static get POINTERWHEEL(): number {
+            return PointerEventTypes._POINTERWHEEL;
+        }
+
+        public static get POINTERPICK(): number {
+            return PointerEventTypes._POINTERPICK;
+        }
     }
 
     /**
      * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instnce of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The differents event types can be found in the PointerEventTypes class.
      */
     export class PointerInfo {
-        constructor(public type: PointerEventType, public event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
+        constructor(public type: number, public event: PointerEvent | MouseWheelEvent, public pickInfo: PickingInfo) {
         }
     }
 
@@ -660,8 +681,9 @@
                 }
 
                 if (this.onPointerObservable.hasObservers()) {
-                    let pi = new PointerInfo(evt.type === "mousewheel" ? PointerEventType.PointerWheel : PointerEventType.PointerMove, evt, pickResult);
-                    this.onPointerObservable.notifyObservers(pi);
+                    let type = evt.type === "mousewheel" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                    let pi = new PointerInfo(type, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi, type);
                 }
             };
 
@@ -728,8 +750,9 @@
                 }
 
                 if (this.onPointerObservable.hasObservers()) {
-                    let pi = new PointerInfo(PointerEventType.PointerDown, evt, pickResult);
-                    this.onPointerObservable.notifyObservers(pi);
+                    let type = PointerEventTypes.POINTERDOWN;
+                    let pi = new PointerInfo(type, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi, type);
                 }
 
                 // Sprites
@@ -779,8 +802,9 @@
                             this.onPointerPick(evt, pickResult);
                         }
                         if (this.onPointerObservable.hasObservers()) {
-                            let pi = new PointerInfo(PointerEventType.PointerPick, evt, pickResult);
-                            this.onPointerObservable.notifyObservers(pi);
+                            let type = PointerEventTypes.POINTERPICK;
+                            let pi = new PointerInfo(type, evt, pickResult);
+                            this.onPointerObservable.notifyObservers(pi, type);
                         }
                     }
                     if (pickResult.pickedMesh.actionManager) {
@@ -800,8 +824,9 @@
                 }
 
                 if (this.onPointerObservable.hasObservers()) {
-                    let pi = new PointerInfo(PointerEventType.PointerUp, evt, pickResult);
-                    this.onPointerObservable.notifyObservers(pi);
+                    let type = PointerEventTypes.POINTERUP;
+                    let pi = new PointerInfo(type, evt, pickResult);
+                    this.onPointerObservable.notifyObservers(pi, type);
                 }
 
                 this._startingPointerTime = 0;

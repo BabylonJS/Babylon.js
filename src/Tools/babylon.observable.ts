@@ -13,7 +13,7 @@
     }
 
     export class Observer<T> {
-        constructor(public callback: (eventData: T, eventState: EventState) => void) {
+        constructor(public callback: (eventData: T, eventState: EventState) => void, public mask:number) {
         }
     }
 
@@ -25,12 +25,12 @@
          * @param callback the callback that will be executed for that Observer
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
          */
-        public add(callback: (eventData: T, eventState: EventState) => void, insertFirst = false): Observer<T> {
+        public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false): Observer<T> {
             if (!callback) {
                 return null;
             }
 
-            var observer = new Observer(callback);
+            var observer = new Observer(callback, mask);
 
             if (insertFirst) {
                 this._observers.unshift(observer);
@@ -78,11 +78,13 @@
          * Notify all Observers by calling their respective callback with the given data
          * @param eventData
          */
-        public notifyObservers(eventData: T): void {
+        public notifyObservers(eventData: T, mask:number = -1): void {
             var state = new EventState();
 
             for (var obs of this._observers) {
-                obs.callback(eventData, state);
+                if (obs.mask & mask) {
+                    obs.callback(eventData, state);
+                }
                 if (state.skipNextObervers) {
                     break;
                 }

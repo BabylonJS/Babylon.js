@@ -11,7 +11,7 @@ module BABYLON {
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             this._wheel = (p, s) => {
                 //sanity check - this should be a PointerWheel event.
-                if (p.type !== PointerEventType.PointerWheel) return;
+                if (p.type !== PointerEventTypes.POINTERWHEEL) return;
                 var event = <MouseWheelEvent>p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
@@ -30,7 +30,7 @@ module BABYLON {
                 }
             };
 
-            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
         }
 
         public detachControl(element: HTMLElement) {
