@@ -8320,6 +8320,7 @@ var BABYLON;
         Ray.Transform = function (ray, matrix) {
             var newOrigin = BABYLON.Vector3.TransformCoordinates(ray.origin, matrix);
             var newDirection = BABYLON.Vector3.TransformNormal(ray.direction, matrix);
+            newDirection.normalize();
             return new Ray(newOrigin, newDirection, ray.length);
         };
         Ray.smallnum = 0.00000001;
@@ -11637,7 +11638,7 @@ var BABYLON;
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
                     if (p.type === 1 /* PointerDown */) {
-                        evt.srcElement.setPointerCapture(evt.pointerId);
+                        //   evt.srcElement.setPointerCapture(evt.pointerId);
                         _this.previousPosition = {
                             x: evt.clientX,
                             y: evt.clientY
@@ -11647,7 +11648,7 @@ var BABYLON;
                         }
                     }
                     else if (p.type === 2 /* PointerUp */) {
-                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                        //  evt.srcElement.releasePointerCapture(evt.pointerId);
                         _this.previousPosition = null;
                         if (!noPreventDefault) {
                             evt.preventDefault();
@@ -11845,7 +11846,7 @@ var BABYLON;
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
-                        evt.srcElement.setPointerCapture(evt.pointerId);
+                        //  evt.srcElement.setPointerCapture(evt.pointerId);
                         _this._pointerPressed.push(evt.pointerId);
                         if (_this._pointerPressed.length !== 1) {
                             return;
@@ -11862,7 +11863,7 @@ var BABYLON;
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
-                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                        //  evt.srcElement.releasePointerCapture(evt.pointerId);
                         var index = _this._pointerPressed.indexOf(evt.pointerId);
                         if (index === -1) {
                             return;

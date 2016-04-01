@@ -32,7 +32,7 @@ var BABYLON;
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
-                        evt.srcElement.setPointerCapture(evt.pointerId);
+                        //  evt.srcElement.setPointerCapture(evt.pointerId);
                         _this._pointerPressed.push(evt.pointerId);
                         if (_this._pointerPressed.length !== 1) {
                             return;
@@ -49,7 +49,7 @@ var BABYLON;
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
-                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                        //  evt.srcElement.releasePointerCapture(evt.pointerId);
                         var index = _this._pointerPressed.indexOf(evt.pointerId);
                         if (index === -1) {
                             return;

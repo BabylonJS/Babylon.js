@@ -38,6 +38,7 @@
   - **Bug fixes**
     - Fixed bug with billboards and parenting ([deltakosh](https://github.com/deltakosh))
     - Fixed bug with ArcRotateCamera.setTarget ([deltakosh](https://github.com/deltakosh))
+    - Fixed bug with OBJ Loader - All meshes were concatenated with the previous one ([Temechon](https://github.com/Temechon))
   - **Breaking changes**
     - `VertexData.CreateLines()` removed as `MeshBuilder.CreateLines()` now calls `MeshBuilder.CreateLineSystem()`
     - `scene.onNewXXXAdded` and `scene.onXXXRemoved' callbacks were removed and replaced by `scene.onNewXXXAddedObservable` and `scene.onXXXRemovedObservable`

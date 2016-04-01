@@ -44,9 +44,11 @@ varying vec4 vColor;
 uniform float time;
 uniform float speed;
 
+#ifdef DIFFUSE
 varying vec2 vDistortionCoords1;
 varying vec2 vDistortionCoords2;
 varying vec2 vDistortionCoords3;
+#endif
 
 void main(void) {
 
@@ -80,6 +82,7 @@ void main(void) {
 	gl_PointSize = pointSize;
 #endif
 
+#ifdef DIFFUSE
 	// Fire
 	vec3 layerSpeed = vec3(-0.2, -0.52, -0.1) * speed;
 	
@@ -91,4 +94,5 @@ void main(void) {
 	
 	vDistortionCoords3.x = uv.x;
 	vDistortionCoords3.y = uv.y + layerSpeed.z * time / 1000.0;
+#endif
 }
