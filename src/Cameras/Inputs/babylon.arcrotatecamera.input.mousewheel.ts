@@ -10,6 +10,8 @@ module BABYLON {
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             this._wheel = (p, s) => {
+                //sanity check - this should be a PointerWheel event.
+                if (p.type !== PointerEventType.PointerWheel) return;
                 var event = <MouseWheelEvent>p.event;
                 var delta = 0;
                 if (event.wheelDelta) {

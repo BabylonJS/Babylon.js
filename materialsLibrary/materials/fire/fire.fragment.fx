@@ -21,9 +21,11 @@ uniform vec2 vDiffuseInfos;
 uniform sampler2D distortionSampler;
 uniform sampler2D opacitySampler;
 
+#ifdef DIFFUSE
 varying vec2 vDistortionCoords1;
 varying vec2 vDistortionCoords2;
 varying vec2 vDistortionCoords3;
+#endif
 
 #include<clipPlaneFragmentDeclaration>
 

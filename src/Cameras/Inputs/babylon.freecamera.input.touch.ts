@@ -36,7 +36,7 @@ module BABYLON {
                             evt.preventDefault();
                         }
 
-//                        evt.srcElement.setPointerCapture(evt.pointerId);
+                      //  evt.srcElement.setPointerCapture(evt.pointerId);
                         this._pointerPressed.push(evt.pointerId);
 
                         if (this._pointerPressed.length !== 1) {
@@ -58,7 +58,7 @@ module BABYLON {
                             evt.preventDefault();
                         }
 
-//                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                      //  evt.srcElement.releasePointerCapture(evt.pointerId);
                         var index: number = this._pointerPressed.indexOf(evt.pointerId);
 
                         if (index === -1) {
