@@ -23,6 +23,7 @@
         /**
          * Create a new Observer with the specified callback
          * @param callback the callback that will be executed for that Observer
+         * @param mash the mask used to filter observers
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
          */
         public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false): Observer<T> {
@@ -77,6 +78,7 @@
         /**
          * Notify all Observers by calling their respective callback with the given data
          * @param eventData
+         * @param mask
          */
         public notifyObservers(eventData: T, mask:number = -1): void {
             var state = new EventState();

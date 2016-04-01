@@ -1,8 +1,54 @@
 var BABYLON;
 (function (BABYLON) {
+    var PointerEventTypes = (function () {
+        function PointerEventTypes() {
+        }
+        Object.defineProperty(PointerEventTypes, "POINTERDOWN", {
+            get: function () {
+                return PointerEventTypes._POINTERDOWN;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERUP", {
+            get: function () {
+                return PointerEventTypes._POINTERUP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERMOVE", {
+            get: function () {
+                return PointerEventTypes._POINTERMOVE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERWHEEL", {
+            get: function () {
+                return PointerEventTypes._POINTERWHEEL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERPICK", {
+            get: function () {
+                return PointerEventTypes._POINTERPICK;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        PointerEventTypes._POINTERDOWN = 0x01;
+        PointerEventTypes._POINTERUP = 0x02;
+        PointerEventTypes._POINTERMOVE = 0x04;
+        PointerEventTypes._POINTERWHEEL = 0x08;
+        PointerEventTypes._POINTERPICK = 0x10;
+        return PointerEventTypes;
+    })();
+    BABYLON.PointerEventTypes = PointerEventTypes;
     /**
      * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instnce of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The differents event types can be found in the PointerEventTypes class.
      */
     var PointerInfo = (function () {
         function PointerInfo(type, event, pickInfo) {
@@ -11,7 +57,7 @@ var BABYLON;
             this.pickInfo = pickInfo;
         }
         return PointerInfo;
-    }());
+    })();
     BABYLON.PointerInfo = PointerInfo;
     /**
      * Represents a scene to be rendered by the engine.
@@ -508,8 +554,9 @@ var BABYLON;
                     _this.onPointerMove(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    var pi = new PointerInfo(evt.type === "mousewheel" ? 4 /* PointerWheel */ : 3 /* PointerMove */, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi);
+                    var type = evt.type === "mousewheel" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                    var pi = new PointerInfo(type, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi, type);
                 }
             };
             this._onPointerDown = function (evt) {
@@ -565,8 +612,9 @@ var BABYLON;
                     _this.onPointerDown(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    var pi = new PointerInfo(1 /* PointerDown */, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi);
+                    var type = PointerEventTypes.POINTERDOWN;
+                    var pi = new PointerInfo(type, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi, type);
                 }
                 // Sprites
                 _this._pickedDownSprite = null;
@@ -609,8 +657,9 @@ var BABYLON;
                             _this.onPointerPick(evt, pickResult);
                         }
                         if (_this.onPointerObservable.hasObservers()) {
-                            var pi = new PointerInfo(5 /* PointerPick */, evt, pickResult);
-                            _this.onPointerObservable.notifyObservers(pi);
+                            var type = PointerEventTypes.POINTERPICK;
+                            var pi = new PointerInfo(type, evt, pickResult);
+                            _this.onPointerObservable.notifyObservers(pi, type);
                         }
                     }
                     if (pickResult.pickedMesh.actionManager) {
@@ -627,8 +676,9 @@ var BABYLON;
                     _this.onPointerUp(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    var pi = new PointerInfo(2 /* PointerUp */, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi);
+                    var type = PointerEventTypes.POINTERUP;
+                    var pi = new PointerInfo(type, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi, type);
                 }
                 _this._startingPointerTime = 0;
                 // Sprites
@@ -2244,6 +2294,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    }());
+    })();
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));
