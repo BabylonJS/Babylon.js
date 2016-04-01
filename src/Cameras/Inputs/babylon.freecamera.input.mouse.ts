@@ -18,7 +18,11 @@ module BABYLON {
                 this._pointerInput = (p, s) => {
                     var evt = <PointerEvent>p.event;
                     if (p.type === PointerEventTypes.POINTERDOWN) {
-//                        evt.srcElement.setPointerCapture(evt.pointerId);
+                        try {
+                            evt.srcElement.setPointerCapture(evt.pointerId);
+                        } catch (e) {
+                            //Nothing to do with the error. Execution will continue.
+                        }
 
                         this.previousPosition = {
                             x: evt.clientX,
@@ -30,7 +34,11 @@ module BABYLON {
                         }
                     }
                     else if (p.type === PointerEventTypes.POINTERUP) {
-//                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                        try {
+                            evt.srcElement.releasePointerCapture(evt.pointerId);
+                        } catch (e) {
+                            //Nothing to do with the error.
+                        }
                         this.previousPosition = null;
                         if (!noPreventDefault) {
                             evt.preventDefault();
