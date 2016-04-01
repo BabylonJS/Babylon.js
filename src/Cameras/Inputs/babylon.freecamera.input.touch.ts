@@ -27,7 +27,7 @@ module BABYLON {
 
                 this._pointerInput = (p, s) => {
                     var evt = <PointerEvent>p.event;
-                    if (p.type === PointerEventType.PointerDown) {
+                    if (p.type === PointerEventTypes.POINTERDOWN) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -49,7 +49,7 @@ module BABYLON {
                         };
                     }
 
-                    else if (p.type === PointerEventType.PointerUp) {
+                    else if (p.type === PointerEventTypes.POINTERUP) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -74,7 +74,7 @@ module BABYLON {
                         this._offsetY = null;
                     }
 
-                    else if (p.type === PointerEventType.PointerMove) {
+                    else if (p.type === PointerEventTypes.POINTERMOVE) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -98,6 +98,8 @@ module BABYLON {
                     }
                 }
             }
+
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
             element.addEventListener("blur", this._onLostFocus);
         }
