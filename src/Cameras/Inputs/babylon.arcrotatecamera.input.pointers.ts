@@ -39,8 +39,8 @@ module BABYLON {
 
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
-                if (p.type === PointerEventType.PointerDown) {
-                    evt.srcElement.setPointerCapture(evt.pointerId);
+                if (p.type === PointerEventTypes.POINTERDOWN) {
+//                    evt.srcElement.setPointerCapture(evt.pointerId);
 
                     // Manage panning with right click
                     this._isRightClick = evt.button === 2;
@@ -51,8 +51,8 @@ module BABYLON {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                } else if (p.type === PointerEventType.PointerUp) {
-                    evt.srcElement.releasePointerCapture(evt.pointerId);
+                } else if (p.type === PointerEventTypes.POINTERUP) {
+//                    evt.srcElement.releasePointerCapture(evt.pointerId);
 
                     cacheSoloPointer = null;
                     previousPinchDistance = 0;
@@ -66,7 +66,7 @@ module BABYLON {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                } else if (p.type === PointerEventType.PointerMove) {
+                } else if (p.type === PointerEventTypes.POINTERMOVE) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -114,7 +114,7 @@ module BABYLON {
                 }
             }
 
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
             this._onContextMenu = evt => {
                 evt.preventDefault();

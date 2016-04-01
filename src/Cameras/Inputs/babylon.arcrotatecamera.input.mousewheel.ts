@@ -28,7 +28,7 @@ module BABYLON {
                 }
             };
 
-            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
         }
 
         public detachControl(element: HTMLElement) {
