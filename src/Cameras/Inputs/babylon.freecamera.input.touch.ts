@@ -27,16 +27,17 @@ module BABYLON {
 
                 this._pointerInput = (p, s) => {
                     var evt = <PointerEvent>p.event;
+
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
+
                     if (p.type === PointerEventTypes.POINTERDOWN) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
 
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
 
-                      //  evt.srcElement.setPointerCapture(evt.pointerId);
                         this._pointerPressed.push(evt.pointerId);
 
                         if (this._pointerPressed.length !== 1) {
@@ -50,15 +51,10 @@ module BABYLON {
                     }
 
                     else if (p.type === PointerEventTypes.POINTERUP) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
-
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
 
-                      //  evt.srcElement.releasePointerCapture(evt.pointerId);
                         var index: number = this._pointerPressed.indexOf(evt.pointerId);
 
                         if (index === -1) {
@@ -75,10 +71,6 @@ module BABYLON {
                     }
 
                     else if (p.type === PointerEventTypes.POINTERMOVE) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
-
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }

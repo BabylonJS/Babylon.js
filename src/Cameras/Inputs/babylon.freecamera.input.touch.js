@@ -25,14 +25,13 @@ var BABYLON;
                 };
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
+                    if (evt.pointerType === "mouse") {
+                        return;
+                    }
                     if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
-                        //  evt.srcElement.setPointerCapture(evt.pointerId);
                         _this._pointerPressed.push(evt.pointerId);
                         if (_this._pointerPressed.length !== 1) {
                             return;
@@ -43,13 +42,9 @@ var BABYLON;
                         };
                     }
                     else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
-                        //  evt.srcElement.releasePointerCapture(evt.pointerId);
                         var index = _this._pointerPressed.indexOf(evt.pointerId);
                         if (index === -1) {
                             return;
@@ -63,9 +58,6 @@ var BABYLON;
                         _this._offsetY = null;
                     }
                     else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                        if (evt.pointerType === "mouse") {
-                            return;
-                        }
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
