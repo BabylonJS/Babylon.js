@@ -17,6 +17,11 @@ module BABYLON {
                 var engine = this.camera.getEngine();
                 this._pointerInput = (p, s) => {
                     var evt = <PointerEvent>p.event;
+
+                    if (evt.pointerType === "touch") {
+                        return;
+                    }
+
                     if (p.type === PointerEventTypes.POINTERDOWN) {
                         try {
                             evt.srcElement.setPointerCapture(evt.pointerId);
