@@ -11329,6 +11329,8 @@ var BABYLON;
                 this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
         };
+        Camera.prototype._setupInputs = function () {
+        };
         Camera.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             // Type
@@ -11406,6 +11408,7 @@ var BABYLON;
             //If camera has an input manager, let it parse inputs settings
             if (camera.inputs) {
                 camera.inputs.parse(parsedCamera);
+                camera._setupInputs();
             }
             // Target
             if (parsedCamera.target) {
@@ -11634,7 +11637,9 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var FreeCameraMouseInput = (function () {
-        function FreeCameraMouseInput() {
+        function FreeCameraMouseInput(touchEnabled) {
+            if (touchEnabled === void 0) { touchEnabled = true; }
+            this.touchEnabled = touchEnabled;
             this.angularSensibility = 2000.0;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
@@ -11644,7 +11649,7 @@ var BABYLON;
                 var engine = this.camera.getEngine();
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
-                    if (evt.pointerType === "touch") {
+                    if (!_this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
                     if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
@@ -13139,8 +13144,9 @@ var BABYLON;
             this.add(new BABYLON.FreeCameraKeyboardMoveInput());
             return this;
         };
-        FreeCameraInputsManager.prototype.addMouse = function () {
-            this.add(new BABYLON.FreeCameraMouseInput());
+        FreeCameraInputsManager.prototype.addMouse = function (touchEnabled) {
+            if (touchEnabled === void 0) { touchEnabled = true; }
+            this.add(new BABYLON.FreeCameraMouseInput(touchEnabled));
             return this;
         };
         FreeCameraInputsManager.prototype.addGamepad = function () {
@@ -13296,6 +13302,7 @@ var BABYLON;
         function TouchCamera(name, position, scene) {
             _super.call(this, name, position, scene);
             this.inputs.addTouch();
+            this._setupInputs();
         }
         Object.defineProperty(TouchCamera.prototype, "touchAngularSensibility", {
             //-- Begin properties for backward compatibility for inputs
@@ -13328,6 +13335,12 @@ var BABYLON;
         });
         TouchCamera.prototype.getTypeName = function () {
             return "TouchCamera";
+        };
+        TouchCamera.prototype._setupInputs = function () {
+            var mouse = this.inputs.attached["mouse"];
+            if (mouse) {
+                mouse.touchEnabled = false;
+            }
         };
         return TouchCamera;
     })(BABYLON.FreeCamera);

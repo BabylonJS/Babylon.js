@@ -30,10 +30,19 @@ module BABYLON {
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
             this.inputs.addTouch();
+
+            this._setupInputs();
         }
 
         public getTypeName(): string {
             return "TouchCamera";
+        }
+
+        public _setupInputs() {
+            var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
+            if (mouse) {
+                mouse.touchEnabled = false;
+            }
         }
     }
 }
