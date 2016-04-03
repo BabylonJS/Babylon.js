@@ -36,7 +36,8 @@
             }
 
             this._boundingBias = value.clone();
-            this.updateExtend();
+
+            this.updateBoundingInfo(true, null);
         }
 
         constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
@@ -143,28 +144,32 @@
                 var stride = vertexBuffer.getStrideSize();
                 this._totalVertices = data.length / stride;
 
-                if (updateExtends) {
-                    this.updateExtend(data);
-                }
-
-                var meshes = this._meshes;
-                var numOfMeshes = meshes.length;
-
-                for (var index = 0; index < numOfMeshes; index++) {
-                    var mesh = meshes[index];
-                    mesh._resetPointsArrayCache();
-                    if (updateExtends) {
-                        mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
-
-                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            var subMesh = mesh.subMeshes[subIndex];
-
-                            subMesh.refreshBoundingInfo();
-                        }
-                    }
-                }
+                this.updateBoundingInfo(updateExtends, data);
             }
             this.notifyUpdate(kind);
+        }
+
+        private updateBoundingInfo(updateExtends: boolean, data: number[] | Float32Array) {
+            if (updateExtends) {
+                this.updateExtend(data);
+            }
+
+            var meshes = this._meshes;
+            var numOfMeshes = meshes.length;
+
+            for (var index = 0; index < numOfMeshes; index++) {
+                var mesh = meshes[index];
+                mesh._resetPointsArrayCache();
+                if (updateExtends) {
+                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+
+                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                        var subMesh = mesh.subMeshes[subIndex];
+
+                        subMesh.refreshBoundingInfo();
+                    }
+                }
+            }            
         }
 
         public getTotalVertices(): number {
