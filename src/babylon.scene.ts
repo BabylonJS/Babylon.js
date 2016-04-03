@@ -4,13 +4,13 @@
     }
 
     export class PointerEventTypes {
-        static _POINTERDOWN  = 0x01;
-        static _POINTERUP    = 0x02;
-        static _POINTERMOVE  = 0x04;
+        static _POINTERDOWN = 0x01;
+        static _POINTERUP = 0x02;
+        static _POINTERMOVE = 0x04;
         static _POINTERWHEEL = 0x08;
-        static _POINTERPICK  = 0x10;
+        static _POINTERPICK = 0x10;
 
-        public static get POINTERDOWN() : number {
+        public static get POINTERDOWN(): number {
             return PointerEventTypes._POINTERDOWN;
         }
 
@@ -1288,7 +1288,7 @@
 
             return null;
         }
-        
+
         public getLensFlareSystemByID(id: string): LensFlareSystem {
             for (var index = 0; index < this.lensFlareSystems.length; index++) {
                 if (this.lensFlareSystems[index].id === id) {
@@ -2798,5 +2798,4 @@
         }
     }
 }
-
 

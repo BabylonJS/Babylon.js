@@ -25,8 +25,12 @@ var BABYLON;
             var previousPinchDistance = 0;
             this._pointerInput = function (p, s) {
                 var evt = p.event;
-                if (p.type === 1 /* PointerDown */) {
-                    evt.srcElement.setPointerCapture(evt.pointerId);
+                if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    try {
+                        evt.srcElement.setPointerCapture(evt.pointerId);
+                    }
+                    catch (e) {
+                    }
                     // Manage panning with right click
                     _this._isRightClick = evt.button === 2;
                     // manage pointers
@@ -36,8 +40,12 @@ var BABYLON;
                         evt.preventDefault();
                     }
                 }
-                else if (p.type === 2 /* PointerUp */) {
-                    evt.srcElement.releasePointerCapture(evt.pointerId);
+                else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
+                    try {
+                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                    }
+                    catch (e) {
+                    }
                     cacheSoloPointer = null;
                     previousPinchDistance = 0;
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
@@ -49,7 +57,7 @@ var BABYLON;
                         evt.preventDefault();
                     }
                 }
-                else if (p.type === 3 /* PointerMove */) {
+                else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -93,7 +101,7 @@ var BABYLON;
                     }
                 }
             };
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
             this._onContextMenu = function (evt) {
                 evt.preventDefault();
             };
@@ -197,7 +205,7 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCameraPointersInput.prototype, "panningSensibility", void 0);
         return ArcRotateCameraPointersInput;
-    }());
+    })();
     BABYLON.ArcRotateCameraPointersInput = ArcRotateCameraPointersInput;
     BABYLON.CameraInputTypes["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
 })(BABYLON || (BABYLON = {}));

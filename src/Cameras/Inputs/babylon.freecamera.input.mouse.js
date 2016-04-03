@@ -17,8 +17,12 @@ var BABYLON;
                 var engine = this.camera.getEngine();
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
-                    if (p.type === 1 /* PointerDown */) {
-                        //   evt.srcElement.setPointerCapture(evt.pointerId);
+                    if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                        try {
+                            evt.srcElement.setPointerCapture(evt.pointerId);
+                        }
+                        catch (e) {
+                        }
                         _this.previousPosition = {
                             x: evt.clientX,
                             y: evt.clientY
@@ -27,14 +31,18 @@ var BABYLON;
                             evt.preventDefault();
                         }
                     }
-                    else if (p.type === 2 /* PointerUp */) {
-                        //  evt.srcElement.releasePointerCapture(evt.pointerId);
+                    else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
+                        try {
+                            evt.srcElement.releasePointerCapture(evt.pointerId);
+                        }
+                        catch (e) {
+                        }
                         _this.previousPosition = null;
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
-                    else if (p.type === 3 /* PointerMove */) {
+                    else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (!_this.previousPosition && !engine.isPointerLock) {
                             return;
                         }
@@ -60,7 +68,7 @@ var BABYLON;
                     }
                 };
             }
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
         };
         FreeCameraMouseInput.prototype.detachControl = function (element) {
             if (this._observer && element) {
@@ -79,7 +87,7 @@ var BABYLON;
             BABYLON.serialize()
         ], FreeCameraMouseInput.prototype, "angularSensibility", void 0);
         return FreeCameraMouseInput;
-    }());
+    })();
     BABYLON.FreeCameraMouseInput = FreeCameraMouseInput;
     BABYLON.CameraInputTypes["FreeCameraMouseInput"] = FreeCameraMouseInput;
 })(BABYLON || (BABYLON = {}));

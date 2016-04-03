@@ -12,14 +12,15 @@ var BABYLON;
             this.skipNextObervers = skipNextObervers;
         }
         return EventState;
-    }());
+    })();
     BABYLON.EventState = EventState;
     var Observer = (function () {
-        function Observer(callback) {
+        function Observer(callback, mask) {
             this.callback = callback;
+            this.mask = mask;
         }
         return Observer;
-    }());
+    })();
     BABYLON.Observer = Observer;
     var Observable = (function () {
         function Observable() {
@@ -28,14 +29,16 @@ var BABYLON;
         /**
          * Create a new Observer with the specified callback
          * @param callback the callback that will be executed for that Observer
+         * @param mash the mask used to filter observers
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
          */
-        Observable.prototype.add = function (callback, insertFirst) {
+        Observable.prototype.add = function (callback, mask, insertFirst) {
+            if (mask === void 0) { mask = -1; }
             if (insertFirst === void 0) { insertFirst = false; }
             if (!callback) {
                 return null;
             }
-            var observer = new Observer(callback);
+            var observer = new Observer(callback, mask);
             if (insertFirst) {
                 this._observers.unshift(observer);
             }
@@ -72,12 +75,16 @@ var BABYLON;
         /**
          * Notify all Observers by calling their respective callback with the given data
          * @param eventData
+         * @param mask
          */
-        Observable.prototype.notifyObservers = function (eventData) {
+        Observable.prototype.notifyObservers = function (eventData, mask) {
+            if (mask === void 0) { mask = -1; }
             var state = new EventState();
             for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
                 var obs = _a[_i];
-                obs.callback(eventData, state);
+                if (obs.mask & mask) {
+                    obs.callback(eventData, state);
+                }
                 if (state.skipNextObervers) {
                     break;
                 }
@@ -104,6 +111,6 @@ var BABYLON;
             return result;
         };
         return Observable;
-    }());
+    })();
     BABYLON.Observable = Observable;
 })(BABYLON || (BABYLON = {}));

@@ -242,9 +242,8 @@
             var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
 
             var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
-            if (parsedLensFlareSystem.id) {
-                lensFlareSystem.id = parsedLensFlareSystem.id;
-            }
+
+            lensFlareSystem.id = parsedLensFlareSystem.id || name;
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
 
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
@@ -257,7 +256,7 @@
 
         public serialize(): any {
             var serializationObject: any = {};
-            
+
             serializationObject.id = this.id;
             serializationObject.name = this.name;
 
