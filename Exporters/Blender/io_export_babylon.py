@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 4, 2),
+    'version': (4, 4, 3),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -601,7 +601,7 @@ class FCurveAnimatable:
                 scaleAnimation = VectorAnimation(object, 'scaling', 'scale')
 
             self.ranges = []
-            frameOffset = bpy.context.scene.frame_start
+            frameOffset = bpy.context.scene.frame_start - 1
 
             for action in bpy.data.actions:
                 # get the range / assigning the action to the object
@@ -1401,7 +1401,7 @@ class Skeleton:
 
         if (skeleton.animation_data):
             self.ranges = []
-            frameOffset = scene.frame_start
+            frameOffset = scene.frame_start - 1
             for action in bpy.data.actions:
                 # get the range / assigning the action to the object
                 animationRange = AnimationRange.actionPrep(skeleton, action, FRAME_BASED_ANIMATION, frameOffset)
@@ -1459,7 +1459,7 @@ class Skeleton:
         file_handler.write(']')
 
         if hasattr(self, 'ranges'):
-            file_handler.write(',"ranges":[')
+            file_handler.write('\n,"ranges":[')
             first = True
             for range in self.ranges:
                 if first != True:
@@ -2232,7 +2232,7 @@ class AnimationRange:
     def __init__(self, name, frames, frameOffset):
         self.name = name
         self.highest_frame = frames[len(frames) - 1]
-        self.frame_start = frameOffset
+        self.frame_start = frameOffset + 1
         self.frame_end   = frameOffset + self.highest_frame
         self.frames = frames
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2320,7 +2320,7 @@ class Animation:
             if first != True:
                 file_handler.write(',')
             first = False
-            file_handler.write('{')
+            file_handler.write('\n{')
             write_int(file_handler, 'frame', self.frames[frame_idx], True)
             value_idx = self.values[frame_idx]
             if self.dataType == ANIMATIONTYPE_MATRIX:

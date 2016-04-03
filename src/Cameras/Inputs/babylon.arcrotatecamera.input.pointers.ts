@@ -39,8 +39,13 @@ module BABYLON {
 
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
-                if (p.type === PointerEventType.PointerDown) {
-                   // evt.srcElement.setPointerCapture(evt.pointerId);
+                if (p.type === PointerEventTypes.POINTERDOWN) {
+                    try {
+                        evt.srcElement.setPointerCapture(evt.pointerId);
+                    } catch (e) {
+                        //Nothing to do with the error. Execution will continue.
+                    }
+
 
                     // Manage panning with right click
                     this._isRightClick = evt.button === 2;
@@ -51,9 +56,13 @@ module BABYLON {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                } else if (p.type === PointerEventType.PointerUp) {
-                   // evt.srcElement.releasePointerCapture(evt.pointerId);
-
+                } else if (p.type === PointerEventTypes.POINTERUP) {
+                    try {
+                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                    } catch (e) {
+                        //Nothing to do with the error.
+                    }
+                    
                     cacheSoloPointer = null;
                     previousPinchDistance = 0;
 
@@ -66,7 +75,7 @@ module BABYLON {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                } else if (p.type === PointerEventType.PointerMove) {
+                } else if (p.type === PointerEventTypes.POINTERMOVE) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -114,7 +123,7 @@ module BABYLON {
                 }
             }
 
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
             this._onContextMenu = evt => {
                 evt.preventDefault();

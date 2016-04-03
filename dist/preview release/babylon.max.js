@@ -3091,8 +3091,9 @@ var BABYLON;
     }());
     BABYLON.EventState = EventState;
     var Observer = (function () {
-        function Observer(callback) {
+        function Observer(callback, mask) {
             this.callback = callback;
+            this.mask = mask;
         }
         return Observer;
     }());
@@ -3104,14 +3105,16 @@ var BABYLON;
         /**
          * Create a new Observer with the specified callback
          * @param callback the callback that will be executed for that Observer
+         * @param mash the mask used to filter observers
          * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
          */
-        Observable.prototype.add = function (callback, insertFirst) {
+        Observable.prototype.add = function (callback, mask, insertFirst) {
+            if (mask === void 0) { mask = -1; }
             if (insertFirst === void 0) { insertFirst = false; }
             if (!callback) {
                 return null;
             }
-            var observer = new Observer(callback);
+            var observer = new Observer(callback, mask);
             if (insertFirst) {
                 this._observers.unshift(observer);
             }
@@ -3148,12 +3151,16 @@ var BABYLON;
         /**
          * Notify all Observers by calling their respective callback with the given data
          * @param eventData
+         * @param mask
          */
-        Observable.prototype.notifyObservers = function (eventData) {
+        Observable.prototype.notifyObservers = function (eventData, mask) {
+            if (mask === void 0) { mask = -1; }
             var state = new EventState();
             for (var _i = 0, _a = this._observers; _i < _a.length; _i++) {
                 var obs = _a[_i];
-                obs.callback(eventData, state);
+                if (obs.mask & mask) {
+                    obs.callback(eventData, state);
+                }
                 if (state.skipNextObervers) {
                     break;
                 }
@@ -11637,8 +11644,12 @@ var BABYLON;
                 var engine = this.camera.getEngine();
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
-                    if (p.type === 1 /* PointerDown */) {
-                        //   evt.srcElement.setPointerCapture(evt.pointerId);
+                    if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                        try {
+                            evt.srcElement.setPointerCapture(evt.pointerId);
+                        }
+                        catch (e) {
+                        }
                         _this.previousPosition = {
                             x: evt.clientX,
                             y: evt.clientY
@@ -11647,14 +11658,18 @@ var BABYLON;
                             evt.preventDefault();
                         }
                     }
-                    else if (p.type === 2 /* PointerUp */) {
-                        //  evt.srcElement.releasePointerCapture(evt.pointerId);
+                    else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
+                        try {
+                            evt.srcElement.releasePointerCapture(evt.pointerId);
+                        }
+                        catch (e) {
+                        }
                         _this.previousPosition = null;
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
                     }
-                    else if (p.type === 3 /* PointerMove */) {
+                    else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (!_this.previousPosition && !engine.isPointerLock) {
                             return;
                         }
@@ -11680,7 +11695,7 @@ var BABYLON;
                     }
                 };
             }
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
         };
         FreeCameraMouseInput.prototype.detachControl = function (element) {
             if (this._observer && element) {
@@ -11839,7 +11854,7 @@ var BABYLON;
                 };
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
-                    if (p.type === 1 /* PointerDown */) {
+                    if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -11856,7 +11871,7 @@ var BABYLON;
                             y: evt.clientY
                         };
                     }
-                    else if (p.type === 2 /* PointerUp */) {
+                    else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -11876,7 +11891,7 @@ var BABYLON;
                         _this._offsetX = null;
                         _this._offsetY = null;
                     }
-                    else if (p.type === 3 /* PointerMove */) {
+                    else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -11895,6 +11910,7 @@ var BABYLON;
                     }
                 };
             }
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
             element.addEventListener("blur", this._onLostFocus);
         };
         FreeCameraTouchInput.prototype.detachControl = function (element) {
@@ -12304,6 +12320,9 @@ var BABYLON;
         ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             this._wheel = function (p, s) {
+                //sanity check - this should be a PointerWheel event.
+                if (p.type !== BABYLON.PointerEventTypes.POINTERWHEEL)
+                    return;
                 var event = p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
@@ -12320,7 +12339,7 @@ var BABYLON;
                     }
                 }
             };
-            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, BABYLON.PointerEventTypes.POINTERWHEEL);
         };
         ArcRotateCameraMouseWheelInput.prototype.detachControl = function (element) {
             if (this._observer && element) {
@@ -12366,8 +12385,12 @@ var BABYLON;
             var previousPinchDistance = 0;
             this._pointerInput = function (p, s) {
                 var evt = p.event;
-                if (p.type === 1 /* PointerDown */) {
-                    evt.srcElement.setPointerCapture(evt.pointerId);
+                if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    try {
+                        evt.srcElement.setPointerCapture(evt.pointerId);
+                    }
+                    catch (e) {
+                    }
                     // Manage panning with right click
                     _this._isRightClick = evt.button === 2;
                     // manage pointers
@@ -12377,8 +12400,12 @@ var BABYLON;
                         evt.preventDefault();
                     }
                 }
-                else if (p.type === 2 /* PointerUp */) {
-                    evt.srcElement.releasePointerCapture(evt.pointerId);
+                else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
+                    try {
+                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                    }
+                    catch (e) {
+                    }
                     cacheSoloPointer = null;
                     previousPinchDistance = 0;
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
@@ -12390,7 +12417,7 @@ var BABYLON;
                         evt.preventDefault();
                     }
                 }
-                else if (p.type === 3 /* PointerMove */) {
+                else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -12434,7 +12461,7 @@ var BABYLON;
                     }
                 }
             };
-            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
             this._onContextMenu = function (evt) {
                 evt.preventDefault();
             };
@@ -14092,9 +14119,55 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var PointerEventTypes = (function () {
+        function PointerEventTypes() {
+        }
+        Object.defineProperty(PointerEventTypes, "POINTERDOWN", {
+            get: function () {
+                return PointerEventTypes._POINTERDOWN;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERUP", {
+            get: function () {
+                return PointerEventTypes._POINTERUP;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERMOVE", {
+            get: function () {
+                return PointerEventTypes._POINTERMOVE;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERWHEEL", {
+            get: function () {
+                return PointerEventTypes._POINTERWHEEL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PointerEventTypes, "POINTERPICK", {
+            get: function () {
+                return PointerEventTypes._POINTERPICK;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        PointerEventTypes._POINTERDOWN = 0x01;
+        PointerEventTypes._POINTERUP = 0x02;
+        PointerEventTypes._POINTERMOVE = 0x04;
+        PointerEventTypes._POINTERWHEEL = 0x08;
+        PointerEventTypes._POINTERPICK = 0x10;
+        return PointerEventTypes;
+    }());
+    BABYLON.PointerEventTypes = PointerEventTypes;
     /**
      * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instnce of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The differents event types can be found in the PointerEventTypes class.
      */
     var PointerInfo = (function () {
         function PointerInfo(type, event, pickInfo) {
@@ -14600,8 +14673,9 @@ var BABYLON;
                     _this.onPointerMove(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    var pi = new PointerInfo(evt.type === "mousewheel" ? 4 /* PointerWheel */ : 3 /* PointerMove */, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi);
+                    var type = evt.type === "mousewheel" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                    var pi = new PointerInfo(type, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi, type);
                 }
             };
             this._onPointerDown = function (evt) {
@@ -14657,8 +14731,9 @@ var BABYLON;
                     _this.onPointerDown(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    var pi = new PointerInfo(1 /* PointerDown */, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi);
+                    var type = PointerEventTypes.POINTERDOWN;
+                    var pi = new PointerInfo(type, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi, type);
                 }
                 // Sprites
                 _this._pickedDownSprite = null;
@@ -14701,8 +14776,9 @@ var BABYLON;
                             _this.onPointerPick(evt, pickResult);
                         }
                         if (_this.onPointerObservable.hasObservers()) {
-                            var pi = new PointerInfo(5 /* PointerPick */, evt, pickResult);
-                            _this.onPointerObservable.notifyObservers(pi);
+                            var type = PointerEventTypes.POINTERPICK;
+                            var pi = new PointerInfo(type, evt, pickResult);
+                            _this.onPointerObservable.notifyObservers(pi, type);
                         }
                     }
                     if (pickResult.pickedMesh.actionManager) {
@@ -14719,8 +14795,9 @@ var BABYLON;
                     _this.onPointerUp(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    var pi = new PointerInfo(2 /* PointerUp */, evt, pickResult);
-                    _this.onPointerObservable.notifyObservers(pi);
+                    var type = PointerEventTypes.POINTERUP;
+                    var pi = new PointerInfo(type, evt, pickResult);
+                    _this.onPointerObservable.notifyObservers(pi, type);
                 }
                 _this._startingPointerTime = 0;
                 // Sprites
