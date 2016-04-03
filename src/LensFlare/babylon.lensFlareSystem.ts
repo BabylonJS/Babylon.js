@@ -4,6 +4,7 @@
         public borderLimit = 300;
         public meshesSelectionPredicate: (mesh: Mesh) => boolean;
         public layerMask: number = 0x0FFFFFFF;
+        public id: string;
 
         private _scene: Scene;
         private _emitter: any;
@@ -20,6 +21,7 @@
 
             this._scene = scene;
             this._emitter = emitter;
+            this.id = name;
             scene.lensFlareSystems.push(this);
 
             this.meshesSelectionPredicate = m => m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0);
@@ -240,6 +242,9 @@
             var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
 
             var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
+            if (parsedLensFlareSystem.id) {
+                lensFlareSystem.id = parsedLensFlareSystem.id;
+            }
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
 
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
@@ -252,7 +257,8 @@
 
         public serialize(): any {
             var serializationObject: any = {};
-
+            
+            serializationObject.id = this.id;
             serializationObject.name = this.name;
 
             serializationObject.emitterId = this.getEmitter().id;
