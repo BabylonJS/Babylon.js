@@ -48,7 +48,7 @@ var BABYLON;
                     return;
                 }
                 this._boundingBias = value.clone();
-                this.updateExtend();
+                this.updateBoundingInfo(true, null);
             },
             enumerable: true,
             configurable: true
@@ -111,24 +111,27 @@ var BABYLON;
             if (kind === BABYLON.VertexBuffer.PositionKind) {
                 var stride = vertexBuffer.getStrideSize();
                 this._totalVertices = data.length / stride;
+                this.updateBoundingInfo(updateExtends, data);
+            }
+            this.notifyUpdate(kind);
+        };
+        Geometry.prototype.updateBoundingInfo = function (updateExtends, data) {
+            if (updateExtends) {
+                this.updateExtend(data);
+            }
+            var meshes = this._meshes;
+            var numOfMeshes = meshes.length;
+            for (var index = 0; index < numOfMeshes; index++) {
+                var mesh = meshes[index];
+                mesh._resetPointsArrayCache();
                 if (updateExtends) {
-                    this.updateExtend(data);
-                }
-                var meshes = this._meshes;
-                var numOfMeshes = meshes.length;
-                for (var index = 0; index < numOfMeshes; index++) {
-                    var mesh = meshes[index];
-                    mesh._resetPointsArrayCache();
-                    if (updateExtends) {
-                        mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
-                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            var subMesh = mesh.subMeshes[subIndex];
-                            subMesh.refreshBoundingInfo();
-                        }
+                    mesh._boundingInfo = new BABYLON.BoundingInfo(this._extend.minimum, this._extend.maximum);
+                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                        var subMesh = mesh.subMeshes[subIndex];
+                        subMesh.refreshBoundingInfo();
                     }
                 }
             }
-            this.notifyUpdate(kind);
         };
         Geometry.prototype.getTotalVertices = function () {
             if (!this.isReady()) {
@@ -1044,3 +1047,4 @@ var BABYLON;
         })(Primitives = Geometry.Primitives || (Geometry.Primitives = {}));
     })(Geometry = BABYLON.Geometry || (BABYLON.Geometry = {}));
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.geometry.js.map
