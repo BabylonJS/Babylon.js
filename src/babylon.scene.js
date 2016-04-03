@@ -1062,6 +1062,14 @@ var BABYLON;
             }
             return null;
         };
+        Scene.prototype.getLensFlareSystemByID = function (id) {
+            for (var index = 0; index < this.lensFlareSystems.length; index++) {
+                if (this.lensFlareSystems[index].id === id) {
+                    return this.lensFlareSystems[index];
+                }
+            }
+            return null;
+        };
         Scene.prototype.getCameraByID = function (id) {
             for (var index = 0; index < this.cameras.length; index++) {
                 if (this.cameras[index].id === id) {

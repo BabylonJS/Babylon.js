@@ -25,7 +25,7 @@ var BABYLON;
                 };
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
-                    if (p.type === 1 /* PointerDown */) {
+                    if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -42,7 +42,7 @@ var BABYLON;
                             y: evt.clientY
                         };
                     }
-                    else if (p.type === 2 /* PointerUp */) {
+                    else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -62,7 +62,7 @@ var BABYLON;
                         _this._offsetX = null;
                         _this._offsetY = null;
                     }
-                    else if (p.type === 3 /* PointerMove */) {
+                    else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (evt.pointerType === "mouse") {
                             return;
                         }
@@ -81,6 +81,7 @@ var BABYLON;
                     }
                 };
             }
+            this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
             element.addEventListener("blur", this._onLostFocus);
         };
         FreeCameraTouchInput.prototype.detachControl = function (element) {
@@ -123,7 +124,7 @@ var BABYLON;
             BABYLON.serialize()
         ], FreeCameraTouchInput.prototype, "touchMoveSensibility", void 0);
         return FreeCameraTouchInput;
-    }());
+    })();
     BABYLON.FreeCameraTouchInput = FreeCameraTouchInput;
     BABYLON.CameraInputTypes["FreeCameraTouchInput"] = FreeCameraTouchInput;
 })(BABYLON || (BABYLON = {}));

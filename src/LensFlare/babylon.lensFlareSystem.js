@@ -11,6 +11,7 @@ var BABYLON;
             this._isEnabled = true;
             this._scene = scene;
             this._emitter = emitter;
+            this.id = name;
             scene.lensFlareSystems.push(this);
             this.meshesSelectionPredicate = function (m) { return m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0); };
             // VBO
@@ -180,6 +181,7 @@ var BABYLON;
             var emitter = scene.getLastEntryByID(parsedLensFlareSystem.emitterId);
             var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
             var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
+            lensFlareSystem.id = parsedLensFlareSystem.id || name;
             lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
             for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
                 var parsedFlare = parsedLensFlareSystem.flares[index];
@@ -189,6 +191,7 @@ var BABYLON;
         };
         LensFlareSystem.prototype.serialize = function () {
             var serializationObject = {};
+            serializationObject.id = this.id;
             serializationObject.name = this.name;
             serializationObject.emitterId = this.getEmitter().id;
             serializationObject.borderLimit = this.borderLimit;
@@ -205,6 +208,6 @@ var BABYLON;
             return serializationObject;
         };
         return LensFlareSystem;
-    }());
+    })();
     BABYLON.LensFlareSystem = LensFlareSystem;
 })(BABYLON || (BABYLON = {}));

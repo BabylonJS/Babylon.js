@@ -676,7 +676,7 @@ var BABYLON;
             return geometry;
         };
         return Geometry;
-    }());
+    })();
     BABYLON.Geometry = Geometry;
     /////// Primitives //////////////////////////////////////////////
     var Geometry;
@@ -734,7 +734,7 @@ var BABYLON;
                     return serializationObject;
                 };
                 return _Primitive;
-            }(Geometry));
+            })(Geometry);
             Primitives._Primitive = _Primitive;
             var Ribbon = (function (_super) {
                 __extends(Ribbon, _super);
@@ -755,7 +755,7 @@ var BABYLON;
                     return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), null, this.side);
                 };
                 return Ribbon;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.Ribbon = Ribbon;
             var Box = (function (_super) {
                 __extends(Box, _super);
@@ -787,7 +787,7 @@ var BABYLON;
                     return box;
                 };
                 return Box;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.Box = Box;
             var Sphere = (function (_super) {
                 __extends(Sphere, _super);
@@ -820,7 +820,7 @@ var BABYLON;
                     return sphere;
                 };
                 return Sphere;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.Sphere = Sphere;
             var Disc = (function (_super) {
                 __extends(Disc, _super);
@@ -839,7 +839,7 @@ var BABYLON;
                     return new Disc(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
                 };
                 return Disc;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.Disc = Disc;
             var Cylinder = (function (_super) {
                 __extends(Cylinder, _super);
@@ -878,7 +878,7 @@ var BABYLON;
                     return cylinder;
                 };
                 return Cylinder;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.Cylinder = Cylinder;
             var Torus = (function (_super) {
                 __extends(Torus, _super);
@@ -913,7 +913,7 @@ var BABYLON;
                     return torus;
                 };
                 return Torus;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.Torus = Torus;
             var Ground = (function (_super) {
                 __extends(Ground, _super);
@@ -946,7 +946,7 @@ var BABYLON;
                     return ground;
                 };
                 return Ground;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.Ground = Ground;
             var TiledGround = (function (_super) {
                 __extends(TiledGround, _super);
@@ -966,7 +966,7 @@ var BABYLON;
                     return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
                 };
                 return TiledGround;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.TiledGround = TiledGround;
             var Plane = (function (_super) {
                 __extends(Plane, _super);
@@ -997,7 +997,7 @@ var BABYLON;
                     return plane;
                 };
                 return Plane;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.Plane = Plane;
             var TorusKnot = (function (_super) {
                 __extends(TorusKnot, _super);
@@ -1039,7 +1039,7 @@ var BABYLON;
                     return torusKnot;
                 };
                 return TorusKnot;
-            }(_Primitive));
+            })(_Primitive);
             Primitives.TorusKnot = TorusKnot;
         })(Primitives = Geometry.Primitives || (Geometry.Primitives = {}));
     })(Geometry = BABYLON.Geometry || (BABYLON.Geometry = {}));

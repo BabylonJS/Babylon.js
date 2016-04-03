@@ -13,6 +13,9 @@ var BABYLON;
         ArcRotateCameraMouseWheelInput.prototype.attachControl = function (element, noPreventDefault) {
             var _this = this;
             this._wheel = function (p, s) {
+                //sanity check - this should be a PointerWheel event.
+                if (p.type !== BABYLON.PointerEventTypes.POINTERWHEEL)
+                    return;
                 var event = p.event;
                 var delta = 0;
                 if (event.wheelDelta) {
@@ -29,7 +32,7 @@ var BABYLON;
                     }
                 }
             };
-            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel);
+            this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, BABYLON.PointerEventTypes.POINTERWHEEL);
         };
         ArcRotateCameraMouseWheelInput.prototype.detachControl = function (element) {
             if (this._observer && element) {
@@ -48,7 +51,7 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCameraMouseWheelInput.prototype, "wheelPrecision", void 0);
         return ArcRotateCameraMouseWheelInput;
-    }());
+    })();
     BABYLON.ArcRotateCameraMouseWheelInput = ArcRotateCameraMouseWheelInput;
     BABYLON.CameraInputTypes["ArcRotateCameraMouseWheelInput"] = ArcRotateCameraMouseWheelInput;
 })(BABYLON || (BABYLON = {}));

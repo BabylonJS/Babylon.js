@@ -268,6 +268,6 @@ var BABYLON;
         Ray.smallnum = 0.00000001;
         Ray.rayl = 10e8;
         return Ray;
-    }());
+    })();
     BABYLON.Ray = Ray;
 })(BABYLON || (BABYLON = {}));
