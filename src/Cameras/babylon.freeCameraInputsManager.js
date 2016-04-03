@@ -14,8 +14,9 @@ var BABYLON;
             this.add(new BABYLON.FreeCameraKeyboardMoveInput());
             return this;
         };
-        FreeCameraInputsManager.prototype.addMouse = function () {
-            this.add(new BABYLON.FreeCameraMouseInput());
+        FreeCameraInputsManager.prototype.addMouse = function (touchEnabled) {
+            if (touchEnabled === void 0) { touchEnabled = true; }
+            this.add(new BABYLON.FreeCameraMouseInput(touchEnabled));
             return this;
         };
         FreeCameraInputsManager.prototype.addGamepad = function () {

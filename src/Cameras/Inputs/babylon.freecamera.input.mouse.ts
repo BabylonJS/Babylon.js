@@ -10,6 +10,9 @@ module BABYLON {
 
         private previousPosition: { x: number, y: number };
 
+        constructor(public touchEnabled = true) {
+        }
+
         attachControl(element: HTMLElement, noPreventDefault?: boolean) {
 
             if (!this._pointerInput) {
@@ -18,7 +21,7 @@ module BABYLON {
                 this._pointerInput = (p, s) => {
                     var evt = <PointerEvent>p.event;
 
-                    if (evt.pointerType === "touch") {
+                    if (!this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
 

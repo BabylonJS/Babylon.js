@@ -7,7 +7,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var BABYLON;
 (function (BABYLON) {
     var FreeCameraMouseInput = (function () {
-        function FreeCameraMouseInput() {
+        function FreeCameraMouseInput(touchEnabled) {
+            if (touchEnabled === void 0) { touchEnabled = true; }
+            this.touchEnabled = touchEnabled;
             this.angularSensibility = 2000.0;
         }
         FreeCameraMouseInput.prototype.attachControl = function (element, noPreventDefault) {
@@ -17,7 +19,7 @@ var BABYLON;
                 var engine = this.camera.getEngine();
                 this._pointerInput = function (p, s) {
                     var evt = p.event;
-                    if (evt.pointerType === "touch") {
+                    if (!_this.touchEnabled && evt.pointerType === "touch") {
                         return;
                     }
                     if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {

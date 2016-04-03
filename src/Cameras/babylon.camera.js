@@ -470,6 +470,8 @@ var BABYLON;
                 this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
             }
         };
+        Camera.prototype._setupInputs = function () {
+        };
         Camera.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             // Type
@@ -547,6 +549,7 @@ var BABYLON;
             //If camera has an input manager, let it parse inputs settings
             if (camera.inputs) {
                 camera.inputs.parse(parsedCamera);
+                camera._setupInputs();
             }
             // Target
             if (parsedCamera.target) {

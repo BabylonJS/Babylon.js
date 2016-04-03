@@ -9,8 +9,8 @@ module BABYLON {
             return this;
         }
 
-        addMouse(): FreeCameraInputsManager {
-            this.add(new FreeCameraMouseInput());
+        addMouse(touchEnabled = true): FreeCameraInputsManager {
+            this.add(new FreeCameraMouseInput(touchEnabled));
             return this;
         }
 

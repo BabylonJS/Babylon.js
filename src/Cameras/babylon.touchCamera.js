@@ -12,6 +12,7 @@ var BABYLON;
         function TouchCamera(name, position, scene) {
             _super.call(this, name, position, scene);
             this.inputs.addTouch();
+            this._setupInputs();
         }
         Object.defineProperty(TouchCamera.prototype, "touchAngularSensibility", {
             //-- Begin properties for backward compatibility for inputs
@@ -44,6 +45,12 @@ var BABYLON;
         });
         TouchCamera.prototype.getTypeName = function () {
             return "TouchCamera";
+        };
+        TouchCamera.prototype._setupInputs = function () {
+            var mouse = this.inputs.attached["mouse"];
+            if (mouse) {
+                mouse.touchEnabled = false;
+            }
         };
         return TouchCamera;
     })(BABYLON.FreeCamera);

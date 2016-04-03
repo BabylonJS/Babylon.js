@@ -582,6 +582,9 @@
             }
         }
 
+        public _setupInputs() {
+        }
+
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
 
@@ -668,6 +671,8 @@
             //If camera has an input manager, let it parse inputs settings
             if (camera.inputs) {
                 camera.inputs.parse(parsedCamera);
+
+                camera._setupInputs();
             }
             
             // Target
