@@ -194,8 +194,8 @@ var BABYLON;
                 });
             }
         };
-        CannonJSPlugin.prototype.removeJoint = function (joint) {
-            //TODO
+        CannonJSPlugin.prototype.removeJoint = function (impostorJoint) {
+            this.world.remove(impostorJoint.joint);
         };
         CannonJSPlugin.prototype._addMaterial = function (name, friction, restitution) {
             var index;
