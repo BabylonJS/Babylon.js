@@ -898,41 +898,43 @@
             return results;
         }
 
-        public dispose(forceDisposeEffect?: boolean): void {
-            if (this.diffuseTexture) {
-                this.diffuseTexture.dispose();
-            }
+        public dispose(forceDisposeEffect?: boolean, keepTextures?: boolean): void {
+            if (!keepTextures) {
+                if (this.diffuseTexture) {
+                    this.diffuseTexture.dispose();
+                }
 
-            if (this.ambientTexture) {
-                this.ambientTexture.dispose();
-            }
+                if (this.ambientTexture) {
+                    this.ambientTexture.dispose();
+                }
 
-            if (this.opacityTexture) {
-                this.opacityTexture.dispose();
-            }
+                if (this.opacityTexture) {
+                    this.opacityTexture.dispose();
+                }
 
-            if (this.reflectionTexture) {
-                this.reflectionTexture.dispose();
-            }
+                if (this.reflectionTexture) {
+                    this.reflectionTexture.dispose();
+                }
 
-            if (this.emissiveTexture) {
-                this.emissiveTexture.dispose();
-            }
+                if (this.emissiveTexture) {
+                    this.emissiveTexture.dispose();
+                }
 
-            if (this.specularTexture) {
-                this.specularTexture.dispose();
-            }
+                if (this.specularTexture) {
+                    this.specularTexture.dispose();
+                }
 
-            if (this.bumpTexture) {
-                this.bumpTexture.dispose();
-            }
+                if (this.bumpTexture) {
+                    this.bumpTexture.dispose();
+                }
 
-            if (this.lightmapTexture) {
-                this.lightmapTexture.dispose();
-            }
+                if (this.lightmapTexture) {
+                    this.lightmapTexture.dispose();
+                }
 
-            if (this.refractionTexture) {
-                this.refractionTexture.dispose();
+                if (this.refractionTexture) {
+                    this.refractionTexture.dispose();
+                }
             }
 
             super.dispose(forceDisposeEffect);

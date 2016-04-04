@@ -1004,35 +1004,37 @@ var BABYLON;
             }
             return results;
         };
-        PBRMaterial.prototype.dispose = function (forceDisposeEffect) {
-            if (this.albedoTexture) {
-                this.albedoTexture.dispose();
+        PBRMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
+            if (!keepTextures) {
+                if (this.albedoTexture) {
+                    this.albedoTexture.dispose();
+                }
+                if (this.ambientTexture) {
+                    this.ambientTexture.dispose();
+                }
+                if (this.opacityTexture) {
+                    this.opacityTexture.dispose();
+                }
+                if (this.reflectionTexture) {
+                    this.reflectionTexture.dispose();
+                }
+                if (this.emissiveTexture) {
+                    this.emissiveTexture.dispose();
+                }
+                if (this.reflectivityTexture) {
+                    this.reflectivityTexture.dispose();
+                }
+                if (this.bumpTexture) {
+                    this.bumpTexture.dispose();
+                }
+                if (this.lightmapTexture) {
+                    this.lightmapTexture.dispose();
+                }
+                if (this.refractionTexture) {
+                    this.refractionTexture.dispose();
+                }
             }
-            if (this.ambientTexture) {
-                this.ambientTexture.dispose();
-            }
-            if (this.opacityTexture) {
-                this.opacityTexture.dispose();
-            }
-            if (this.reflectionTexture) {
-                this.reflectionTexture.dispose();
-            }
-            if (this.emissiveTexture) {
-                this.emissiveTexture.dispose();
-            }
-            if (this.reflectivityTexture) {
-                this.reflectivityTexture.dispose();
-            }
-            if (this.bumpTexture) {
-                this.bumpTexture.dispose();
-            }
-            if (this.lightmapTexture) {
-                this.lightmapTexture.dispose();
-            }
-            if (this.refractionTexture) {
-                this.refractionTexture.dispose();
-            }
-            _super.prototype.dispose.call(this, forceDisposeEffect);
+            _super.prototype.dispose.call(this, forceDisposeEffect, keepTextures);
         };
         PBRMaterial.prototype.clone = function (name) {
             var _this = this;
