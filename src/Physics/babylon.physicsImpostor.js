@@ -321,6 +321,11 @@ var BABYLON;
             return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         };
         PhysicsImpostor.prototype.dispose = function () {
+            var _this = this;
+            this._joints.forEach(function (j) {
+                _this._physicsEngine.removeJoint(_this, j.otherImpostor, j.joint);
+            });
+            //dispose the physics body
             this.physicsBody = null;
             if (this.parent) {
                 this.parent.forceUpdate();

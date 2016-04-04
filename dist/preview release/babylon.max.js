@@ -22627,7 +22627,7 @@ var BABYLON;
             }
             return result;
         };
-        Material.prototype.dispose = function (forceDisposeEffect) {
+        Material.prototype.dispose = function (forceDisposeEffect, keepTextures) {
             // Animations
             this.getScene().stopAnimation(this);
             // Remove from scene
@@ -23423,33 +23423,35 @@ var BABYLON;
             }
             return results;
         };
-        StandardMaterial.prototype.dispose = function (forceDisposeEffect) {
-            if (this.diffuseTexture) {
-                this.diffuseTexture.dispose();
-            }
-            if (this.ambientTexture) {
-                this.ambientTexture.dispose();
-            }
-            if (this.opacityTexture) {
-                this.opacityTexture.dispose();
-            }
-            if (this.reflectionTexture) {
-                this.reflectionTexture.dispose();
-            }
-            if (this.emissiveTexture) {
-                this.emissiveTexture.dispose();
-            }
-            if (this.specularTexture) {
-                this.specularTexture.dispose();
-            }
-            if (this.bumpTexture) {
-                this.bumpTexture.dispose();
-            }
-            if (this.lightmapTexture) {
-                this.lightmapTexture.dispose();
-            }
-            if (this.refractionTexture) {
-                this.refractionTexture.dispose();
+        StandardMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
+            if (!keepTextures) {
+                if (this.diffuseTexture) {
+                    this.diffuseTexture.dispose();
+                }
+                if (this.ambientTexture) {
+                    this.ambientTexture.dispose();
+                }
+                if (this.opacityTexture) {
+                    this.opacityTexture.dispose();
+                }
+                if (this.reflectionTexture) {
+                    this.reflectionTexture.dispose();
+                }
+                if (this.emissiveTexture) {
+                    this.emissiveTexture.dispose();
+                }
+                if (this.specularTexture) {
+                    this.specularTexture.dispose();
+                }
+                if (this.bumpTexture) {
+                    this.bumpTexture.dispose();
+                }
+                if (this.lightmapTexture) {
+                    this.lightmapTexture.dispose();
+                }
+                if (this.refractionTexture) {
+                    this.refractionTexture.dispose();
+                }
             }
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
@@ -27528,6 +27530,11 @@ var BABYLON;
             return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         };
         PhysicsImpostor.prototype.dispose = function () {
+            var _this = this;
+            this._joints.forEach(function (j) {
+                _this._physicsEngine.removeJoint(_this, j.otherImpostor, j.joint);
+            });
+            //dispose the physics body
             this.physicsBody = null;
             if (this.parent) {
                 this.parent.forceUpdate();
@@ -34556,12 +34563,14 @@ var BABYLON;
             var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
             return newShaderMaterial;
         };
-        ShaderMaterial.prototype.dispose = function (forceDisposeEffect) {
-            for (var name in this._textures) {
-                this._textures[name].dispose();
+        ShaderMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
+            if (!keepTextures) {
+                for (var name in this._textures) {
+                    this._textures[name].dispose();
+                }
             }
             this._textures = {};
-            _super.prototype.dispose.call(this, forceDisposeEffect);
+            _super.prototype.dispose.call(this, forceDisposeEffect, keepTextures);
         };
         ShaderMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
@@ -35059,8 +35068,8 @@ var BABYLON;
                 });
             }
         };
-        CannonJSPlugin.prototype.removeJoint = function (joint) {
-            //TODO
+        CannonJSPlugin.prototype.removeJoint = function (impostorJoint) {
+            this.world.remove(impostorJoint.joint);
         };
         CannonJSPlugin.prototype._addMaterial = function (name, friction, restitution) {
             var index;
@@ -45662,35 +45671,37 @@ var BABYLON;
             }
             return results;
         };
-        PBRMaterial.prototype.dispose = function (forceDisposeEffect) {
-            if (this.albedoTexture) {
-                this.albedoTexture.dispose();
+        PBRMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
+            if (!keepTextures) {
+                if (this.albedoTexture) {
+                    this.albedoTexture.dispose();
+                }
+                if (this.ambientTexture) {
+                    this.ambientTexture.dispose();
+                }
+                if (this.opacityTexture) {
+                    this.opacityTexture.dispose();
+                }
+                if (this.reflectionTexture) {
+                    this.reflectionTexture.dispose();
+                }
+                if (this.emissiveTexture) {
+                    this.emissiveTexture.dispose();
+                }
+                if (this.reflectivityTexture) {
+                    this.reflectivityTexture.dispose();
+                }
+                if (this.bumpTexture) {
+                    this.bumpTexture.dispose();
+                }
+                if (this.lightmapTexture) {
+                    this.lightmapTexture.dispose();
+                }
+                if (this.refractionTexture) {
+                    this.refractionTexture.dispose();
+                }
             }
-            if (this.ambientTexture) {
-                this.ambientTexture.dispose();
-            }
-            if (this.opacityTexture) {
-                this.opacityTexture.dispose();
-            }
-            if (this.reflectionTexture) {
-                this.reflectionTexture.dispose();
-            }
-            if (this.emissiveTexture) {
-                this.emissiveTexture.dispose();
-            }
-            if (this.reflectivityTexture) {
-                this.reflectivityTexture.dispose();
-            }
-            if (this.bumpTexture) {
-                this.bumpTexture.dispose();
-            }
-            if (this.lightmapTexture) {
-                this.lightmapTexture.dispose();
-            }
-            if (this.refractionTexture) {
-                this.refractionTexture.dispose();
-            }
-            _super.prototype.dispose.call(this, forceDisposeEffect);
+            _super.prototype.dispose.call(this, forceDisposeEffect, keepTextures);
         };
         PBRMaterial.prototype.clone = function (name) {
             var _this = this;
