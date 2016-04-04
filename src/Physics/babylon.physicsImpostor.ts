@@ -395,7 +395,7 @@ module BABYLON {
                 this._physicsEngine.removeJoint(this, j.otherImpostor, j.joint);
             })
             //dispose the physics body
-            this.physicsBody = null;
+            this._physicsEngine.removeImpostor(this);
             if (this.parent) {
                 this.parent.forceUpdate();
             } else {
