@@ -283,14 +283,17 @@
             return newShaderMaterial;
         }
 
-        public dispose(forceDisposeEffect?: boolean): void {
-            for (var name in this._textures) {
-                this._textures[name].dispose();
+        public dispose(forceDisposeEffect?: boolean, keepTextures?: boolean): void {
+
+            if (!keepTextures) {
+                for (var name in this._textures) {
+                    this._textures[name].dispose();
+                }
             }
 
             this._textures = {};
 
-            super.dispose(forceDisposeEffect);
+            super.dispose(forceDisposeEffect, keepTextures);
         }
 
         public serialize(): any {

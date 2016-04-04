@@ -269,7 +269,7 @@
             return result;
         }
 
-        public dispose(forceDisposeEffect?: boolean): void {
+        public dispose(forceDisposeEffect?: boolean, keepTextures?: boolean): void {
             // Animations
             this.getScene().stopAnimation(this);
 

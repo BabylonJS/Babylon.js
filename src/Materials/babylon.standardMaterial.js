@@ -693,33 +693,35 @@ var BABYLON;
             }
             return results;
         };
-        StandardMaterial.prototype.dispose = function (forceDisposeEffect) {
-            if (this.diffuseTexture) {
-                this.diffuseTexture.dispose();
-            }
-            if (this.ambientTexture) {
-                this.ambientTexture.dispose();
-            }
-            if (this.opacityTexture) {
-                this.opacityTexture.dispose();
-            }
-            if (this.reflectionTexture) {
-                this.reflectionTexture.dispose();
-            }
-            if (this.emissiveTexture) {
-                this.emissiveTexture.dispose();
-            }
-            if (this.specularTexture) {
-                this.specularTexture.dispose();
-            }
-            if (this.bumpTexture) {
-                this.bumpTexture.dispose();
-            }
-            if (this.lightmapTexture) {
-                this.lightmapTexture.dispose();
-            }
-            if (this.refractionTexture) {
-                this.refractionTexture.dispose();
+        StandardMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
+            if (!keepTextures) {
+                if (this.diffuseTexture) {
+                    this.diffuseTexture.dispose();
+                }
+                if (this.ambientTexture) {
+                    this.ambientTexture.dispose();
+                }
+                if (this.opacityTexture) {
+                    this.opacityTexture.dispose();
+                }
+                if (this.reflectionTexture) {
+                    this.reflectionTexture.dispose();
+                }
+                if (this.emissiveTexture) {
+                    this.emissiveTexture.dispose();
+                }
+                if (this.specularTexture) {
+                    this.specularTexture.dispose();
+                }
+                if (this.bumpTexture) {
+                    this.bumpTexture.dispose();
+                }
+                if (this.lightmapTexture) {
+                    this.lightmapTexture.dispose();
+                }
+                if (this.refractionTexture) {
+                    this.refractionTexture.dispose();
+                }
             }
             _super.prototype.dispose.call(this, forceDisposeEffect);
         };
