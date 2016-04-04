@@ -391,6 +391,10 @@ module BABYLON {
         }
 
         public dispose(/*disposeChildren: boolean = true*/) {
+            this._joints.forEach((j) => {
+                this._physicsEngine.removeJoint(this, j.otherImpostor, j.joint);
+            })
+            //dispose the physics body
             this.physicsBody = null;
             if (this.parent) {
                 this.parent.forceUpdate();

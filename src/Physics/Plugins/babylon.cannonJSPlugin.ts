@@ -205,8 +205,8 @@
             }
         }
 
-        public removeJoint(joint: PhysicsImpostorJoint) {
-            //TODO
+        public removeJoint(impostorJoint: PhysicsImpostorJoint) {
+            this.world.remove(impostorJoint.joint);
         }
 
         private _addMaterial(name: string, friction: number, restitution: number) {
