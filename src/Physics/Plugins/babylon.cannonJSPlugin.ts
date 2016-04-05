@@ -92,7 +92,7 @@
                 //try to keep the body moving in the right direction by taking old properties.
                 //Should be tested!
                 if (oldBody) {
-                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
+                    ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function (param) {
                         impostor.physicsBody[param].copy(oldBody[param]);
                     });
                 }
@@ -199,7 +199,7 @@
             if (impostorJoint.joint.type !== PhysicsJoint.SpringJoint) {
                 this.world.addConstraint(constraint);
             } else {
-                impostorJoint.mainImpostor.registerAfterPhysicsStep(function() {
+                impostorJoint.mainImpostor.registerAfterPhysicsStep(function () {
                     constraint.applyForce();
                 });
             }
@@ -496,4 +496,3 @@
         }
     }
 }
-

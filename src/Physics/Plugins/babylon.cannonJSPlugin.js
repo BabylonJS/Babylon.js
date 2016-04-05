@@ -195,7 +195,7 @@ var BABYLON;
             }
         };
         CannonJSPlugin.prototype.removeJoint = function (impostorJoint) {
-            this.world.remove(impostorJoint.joint);
+            this.world.removeConstraint(impostorJoint.joint.physicsJoint);
         };
         CannonJSPlugin.prototype._addMaterial = function (name, friction, restitution) {
             var index;
@@ -206,7 +206,7 @@ var BABYLON;
                     return mat;
                 }
             }
-            var currentMat = new CANNON.Material("mat");
+            var currentMat = new CANNON.Material(name);
             currentMat.friction = friction;
             currentMat.restitution = restitution;
             this._physicsMaterials.push(currentMat);

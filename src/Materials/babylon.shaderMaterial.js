@@ -219,14 +219,15 @@ var BABYLON;
             var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
             return newShaderMaterial;
         };
-        ShaderMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
-            if (!keepTextures) {
+        ShaderMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
+            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
+            if (forceDisposeTextures) {
                 for (var name in this._textures) {
                     this._textures[name].dispose();
                 }
             }
             this._textures = {};
-            _super.prototype.dispose.call(this, forceDisposeEffect, keepTextures);
+            _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         ShaderMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);

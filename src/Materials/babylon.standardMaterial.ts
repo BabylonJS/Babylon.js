@@ -898,8 +898,8 @@
             return results;
         }
 
-        public dispose(forceDisposeEffect?: boolean, keepTextures?: boolean): void {
-            if (!keepTextures) {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures: boolean = true): void {
+            if (forceDisposeTextures) {
                 if (this.diffuseTexture) {
                     this.diffuseTexture.dispose();
                 }
@@ -937,7 +937,7 @@
                 }
             }
 
-            super.dispose(forceDisposeEffect);
+            super.dispose(forceDisposeEffect, forceDisposeTextures);
         }
 
         public clone(name: string): StandardMaterial {

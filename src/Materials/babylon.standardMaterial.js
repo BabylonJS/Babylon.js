@@ -693,8 +693,9 @@ var BABYLON;
             }
             return results;
         };
-        StandardMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
-            if (!keepTextures) {
+        StandardMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
+            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
+            if (forceDisposeTextures) {
                 if (this.diffuseTexture) {
                     this.diffuseTexture.dispose();
                 }
@@ -723,7 +724,7 @@ var BABYLON;
                     this.refractionTexture.dispose();
                 }
             }
-            _super.prototype.dispose.call(this, forceDisposeEffect);
+            _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         StandardMaterial.prototype.clone = function (name) {
             var _this = this;

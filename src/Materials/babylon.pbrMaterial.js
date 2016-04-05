@@ -1004,8 +1004,9 @@ var BABYLON;
             }
             return results;
         };
-        PBRMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
-            if (!keepTextures) {
+        PBRMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
+            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
+            if (forceDisposeTextures) {
                 if (this.albedoTexture) {
                     this.albedoTexture.dispose();
                 }
@@ -1034,7 +1035,7 @@ var BABYLON;
                     this.refractionTexture.dispose();
                 }
             }
-            _super.prototype.dispose.call(this, forceDisposeEffect, keepTextures);
+            _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         PBRMaterial.prototype.clone = function (name) {
             var _this = this;
