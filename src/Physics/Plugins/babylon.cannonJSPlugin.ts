@@ -206,7 +206,7 @@
         }
 
         public removeJoint(impostorJoint: PhysicsImpostorJoint) {
-            this.world.removeConstraint(impostorJoint.joint);
+            this.world.removeConstraint(impostorJoint.joint.physicsJoint);
         }
 
         private _addMaterial(name: string, friction: number, restitution: number) {
@@ -221,7 +221,7 @@
                 }
             }
 
-            var currentMat = new CANNON.Material("mat");
+            var currentMat = new CANNON.Material(name);
             currentMat.friction = friction;
             currentMat.restitution = restitution;
 
