@@ -56,6 +56,11 @@
             return false;
         }
 
+        public createInstance(name: string): InstancedMesh {
+            Tools.Log("LinesMeshes do not support createInstance.");
+            return null;
+        }
+
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): void {
             var engine = this.getScene().getEngine();
 

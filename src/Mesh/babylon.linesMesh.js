@@ -67,6 +67,10 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        LinesMesh.prototype.createInstance = function (name) {
+            BABYLON.Tools.Log("LinesMeshes do not support createInstance.");
+            return null;
+        };
         LinesMesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
             var indexToBind = this._geometry.getIndexBuffer();

@@ -22627,7 +22627,8 @@ var BABYLON;
             }
             return result;
         };
-        Material.prototype.dispose = function (forceDisposeEffect, keepTextures) {
+        Material.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
+            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             // Animations
             this.getScene().stopAnimation(this);
             // Remove from scene
@@ -23423,8 +23424,9 @@ var BABYLON;
             }
             return results;
         };
-        StandardMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
-            if (!keepTextures) {
+        StandardMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
+            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
+            if (forceDisposeTextures) {
                 if (this.diffuseTexture) {
                     this.diffuseTexture.dispose();
                 }
@@ -23453,7 +23455,7 @@ var BABYLON;
                     this.refractionTexture.dispose();
                 }
             }
-            _super.prototype.dispose.call(this, forceDisposeEffect);
+            _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         StandardMaterial.prototype.clone = function (name) {
             var _this = this;
@@ -27535,7 +27537,7 @@ var BABYLON;
                 _this._physicsEngine.removeJoint(_this, j.otherImpostor, j.joint);
             });
             //dispose the physics body
-            this.physicsBody = null;
+            this._physicsEngine.removeImpostor(this);
             if (this.parent) {
                 this.parent.forceUpdate();
             }
@@ -32472,6 +32474,10 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        LinesMesh.prototype.createInstance = function (name) {
+            BABYLON.Tools.Log("LinesMeshes do not support createInstance.");
+            return null;
+        };
         LinesMesh.prototype._bind = function (subMesh, effect, fillMode) {
             var engine = this.getScene().getEngine();
             var indexToBind = this._geometry.getIndexBuffer();
@@ -34563,14 +34569,15 @@ var BABYLON;
             var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
             return newShaderMaterial;
         };
-        ShaderMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
-            if (!keepTextures) {
+        ShaderMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
+            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
+            if (forceDisposeTextures) {
                 for (var name in this._textures) {
                     this._textures[name].dispose();
                 }
             }
             this._textures = {};
-            _super.prototype.dispose.call(this, forceDisposeEffect, keepTextures);
+            _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         ShaderMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
@@ -35069,7 +35076,7 @@ var BABYLON;
             }
         };
         CannonJSPlugin.prototype.removeJoint = function (impostorJoint) {
-            this.world.remove(impostorJoint.joint);
+            this.world.removeConstraint(impostorJoint.joint.physicsJoint);
         };
         CannonJSPlugin.prototype._addMaterial = function (name, friction, restitution) {
             var index;
@@ -35080,7 +35087,7 @@ var BABYLON;
                     return mat;
                 }
             }
-            var currentMat = new CANNON.Material("mat");
+            var currentMat = new CANNON.Material(name);
             currentMat.friction = friction;
             currentMat.restitution = restitution;
             this._physicsMaterials.push(currentMat);
@@ -45671,8 +45678,9 @@ var BABYLON;
             }
             return results;
         };
-        PBRMaterial.prototype.dispose = function (forceDisposeEffect, keepTextures) {
-            if (!keepTextures) {
+        PBRMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
+            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
+            if (forceDisposeTextures) {
                 if (this.albedoTexture) {
                     this.albedoTexture.dispose();
                 }
@@ -45701,7 +45709,7 @@ var BABYLON;
                     this.refractionTexture.dispose();
                 }
             }
-            _super.prototype.dispose.call(this, forceDisposeEffect, keepTextures);
+            _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
         };
         PBRMaterial.prototype.clone = function (name) {
             var _this = this;
