@@ -5,11 +5,11 @@ var BABYLON;
      */
     var EventState = (function () {
         /**
-        * If the callback of a given Observer set skipNextObervers to true the following observers will be ignored
+        * If the callback of a given Observer set skipNextObservers to true the following observers will be ignored
         */
-        function EventState(skipNextObervers) {
-            if (skipNextObervers === void 0) { skipNextObervers = false; }
-            this.skipNextObervers = skipNextObervers;
+        function EventState(skipNextObservers) {
+            if (skipNextObservers === void 0) { skipNextObservers = false; }
+            this.skipNextObservers = skipNextObservers;
         }
         return EventState;
     })();
@@ -85,7 +85,7 @@ var BABYLON;
                 if (obs.mask & mask) {
                     obs.callback(eventData, state);
                 }
-                if (state.skipNextObervers) {
+                if (state.skipNextObservers) {
                     break;
                 }
             }

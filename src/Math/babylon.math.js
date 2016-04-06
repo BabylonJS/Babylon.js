@@ -1172,6 +1172,9 @@ var BABYLON;
             this.w *= num;
             return this;
         };
+        Vector4.prototype.toVector3 = function () {
+            return new Vector3(this.x, this.y, this.z);
+        };
         Vector4.prototype.clone = function () {
             return new Vector4(this.x, this.y, this.z, this.w);
         };
@@ -1664,6 +1667,9 @@ var BABYLON;
             this.m[14] = vector3.z;
             return this;
         };
+        Matrix.prototype.getTranslation = function () {
+            return new Vector3(this.m[12], this.m[13], this.m[14]);
+        };
         Matrix.prototype.multiply = function (other) {
             var result = new Matrix();
             this.multiplyToRef(other, result);
@@ -1804,6 +1810,24 @@ var BABYLON;
             result.m[13] = initialM42;
             result.m[14] = initialM43;
             result.m[15] = initialM44;
+        };
+        Matrix.prototype.getRow = function (index) {
+            if (index < 0 || index > 3) {
+                return null;
+            }
+            var i = index * 4;
+            return new Vector4(this.m[i + 0], this.m[i + 1], this.m[i + 2], this.m[i + 3]);
+        };
+        Matrix.prototype.setRow = function (index, row) {
+            if (index < 0 || index > 3) {
+                return this;
+            }
+            var i = index * 4;
+            this.m[i + 0] = row.x;
+            this.m[i + 1] = row.y;
+            this.m[i + 2] = row.z;
+            this.m[i + 3] = row.w;
+            return this;
         };
         Matrix.FromValues = function (initialM11, initialM12, initialM13, initialM14, initialM21, initialM22, initialM23, initialM24, initialM31, initialM32, initialM33, initialM34, initialM41, initialM42, initialM43, initialM44) {
             var result = new Matrix();
