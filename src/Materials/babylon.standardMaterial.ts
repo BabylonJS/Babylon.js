@@ -898,7 +898,7 @@
             return results;
         }
 
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures: boolean = true): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             if (forceDisposeTextures) {
                 if (this.diffuseTexture) {
                     this.diffuseTexture.dispose();

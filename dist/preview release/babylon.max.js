@@ -22654,7 +22654,6 @@ var BABYLON;
             return result;
         };
         Material.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             // Animations
             this.getScene().stopAnimation(this);
             // Remove from scene
@@ -23451,7 +23450,6 @@ var BABYLON;
             return results;
         };
         StandardMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             if (forceDisposeTextures) {
                 if (this.diffuseTexture) {
                     this.diffuseTexture.dispose();
@@ -34596,7 +34594,6 @@ var BABYLON;
             return newShaderMaterial;
         };
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             if (forceDisposeTextures) {
                 for (var name in this._textures) {
                     this._textures[name].dispose();
@@ -45705,7 +45702,6 @@ var BABYLON;
             return results;
         };
         PBRMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             if (forceDisposeTextures) {
                 if (this.albedoTexture) {
                     this.albedoTexture.dispose();

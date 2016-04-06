@@ -694,7 +694,6 @@ var BABYLON;
             return results;
         };
         StandardMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             if (forceDisposeTextures) {
                 if (this.diffuseTexture) {
                     this.diffuseTexture.dispose();

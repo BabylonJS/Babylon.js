@@ -220,7 +220,6 @@ var BABYLON;
             return newShaderMaterial;
         };
         ShaderMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             if (forceDisposeTextures) {
                 for (var name in this._textures) {
                     this._textures[name].dispose();

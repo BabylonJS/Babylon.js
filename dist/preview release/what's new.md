@@ -42,3 +42,4 @@
   - **Breaking changes**
     - `VertexData.CreateLines()` removed as `MeshBuilder.CreateLines()` now calls `MeshBuilder.CreateLineSystem()`
     - `scene.onNewXXXAdded` and `scene.onXXXRemoved' callbacks were removed and replaced by `scene.onNewXXXAddedObservable` and `scene.onXXXRemovedObservable`
+    - `Material.dispose` does not dispose textures by default. You have to call `material.dispose(false, true)` to get the previous behavior.
