@@ -22,7 +22,7 @@
 
             return str.toUpperCase();
         }
-        
+
         // Returns -1 when value is a negative number and
         // +1 when value is a positive number. 
         public static Sign(value: number): number {
@@ -2047,7 +2047,7 @@
 
             return this;
         }
-        
+
         public getTranslation(): Vector3 {
             return new Vector3(this.m[12], this.m[13], this.m[14]);
         }
@@ -2244,9 +2244,9 @@
             return new Vector4(this.m[i + 0], this.m[i + 1], this.m[i + 2], this.m[i + 3]);
         }
 
-        public setRow(index: number, row: Vector4): boolean {
+        public setRow(index: number, row: Vector4): Matrix {
             if (index < 0 || index > 3) {
-                return false;
+                return this;
             }
 
             var i = index * 4;
@@ -2254,6 +2254,8 @@
             this.m[i + 1] = row.y;
             this.m[i + 2] = row.z;
             this.m[i + 3] = row.w;
+
+            return this;
         }
 
         public static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
@@ -2632,7 +2634,7 @@
 
         public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             var tan = 1.0 / (Math.tan(fov * 0.5));
-            
+
             if (isVerticalFovFixed) {
                 result.m[0] = tan / aspect;
             }
@@ -3362,7 +3364,7 @@
             }
             return new Curve3(bez);
         }
-        
+
         /**
          * Returns a Curve3 object along a Cubic Bezier curve : http://doc.babylonjs.com/tutorials/How_to_use_Curve3#cubic-bezier-curve  
          * @param v0 (Vector3) the origin point of the Cubic Bezier

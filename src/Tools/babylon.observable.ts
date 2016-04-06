@@ -13,7 +13,7 @@
     }
 
     export class Observer<T> {
-        constructor(public callback: (eventData: T, eventState: EventState) => void, public mask:number) {
+        constructor(public callback: (eventData: T, eventState: EventState) => void, public mask: number) {
         }
     }
 
@@ -80,7 +80,7 @@
          * @param eventData
          * @param mask
          */
-        public notifyObservers(eventData: T, mask:number = -1): void {
+        public notifyObservers(eventData: T, mask: number = -1): void {
             var state = new EventState();
 
             for (var obs of this._observers) {
@@ -119,4 +119,3 @@
         }
     }
 }
-
