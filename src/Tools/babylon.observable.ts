@@ -6,9 +6,9 @@
     export class EventState {
 
         /**
-        * If the callback of a given Observer set skipNextObervers to true the following observers will be ignored
+        * If the callback of a given Observer set skipNextObservers to true the following observers will be ignored
         */
-        constructor(public skipNextObervers = false) {
+        constructor(public skipNextObservers = false) {
         }
     }
 
@@ -87,7 +87,7 @@
                 if (obs.mask & mask) {
                     obs.callback(eventData, state);
                 }
-                if (state.skipNextObervers) {
+                if (state.skipNextObservers) {
                     break;
                 }
             }
