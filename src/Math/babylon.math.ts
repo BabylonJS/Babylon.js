@@ -1455,6 +1455,10 @@
             return this;
         }
 
+        public toVector3(): Vector3 {
+            return new Vector3(this.x, this.y, this.z);
+        }
+
         public clone(): Vector4 {
             return new Vector4(this.x, this.y, this.z, this.w);
         }
@@ -2043,6 +2047,10 @@
 
             return this;
         }
+        
+        public getTranslation(): Vector3 {
+            return new Vector3(this.m[12], this.m[13], this.m[14]);
+        }
 
         public multiply(other: Matrix): Matrix {
             var result = new Matrix();
@@ -2225,6 +2233,27 @@
             result.m[13] = initialM42;
             result.m[14] = initialM43;
             result.m[15] = initialM44;
+        }
+
+        public getRow(index: number): Vector4 {
+            if (index < 0 || index > 3) {
+                return null;
+            }
+
+            var i = index * 4;
+            return new Vector4(this.m[i + 0], this.m[i + 1], this.m[i + 2], this.m[i + 3]);
+        }
+
+        public setRow(index: number, row: Vector4): boolean {
+            if (index < 0 || index > 3) {
+                return false;
+            }
+
+            var i = index * 4;
+            this.m[i + 0] = row.x;
+            this.m[i + 1] = row.y;
+            this.m[i + 2] = row.z;
+            this.m[i + 3] = row.w;
         }
 
         public static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
