@@ -1322,7 +1322,7 @@
             return results;
         }
 
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures: boolean = true): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             if (forceDisposeTextures) {
                 if (this.albedoTexture) {
                     this.albedoTexture.dispose();

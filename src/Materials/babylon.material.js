@@ -222,7 +222,6 @@ var BABYLON;
             return result;
         };
         Material.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             // Animations
             this.getScene().stopAnimation(this);
             // Remove from scene

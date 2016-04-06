@@ -283,7 +283,7 @@
             return newShaderMaterial;
         }
 
-        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures: boolean = true): void {
+        public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
 
             if (forceDisposeTextures) {
                 for (var name in this._textures) {

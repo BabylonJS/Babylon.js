@@ -1005,7 +1005,6 @@ var BABYLON;
             return results;
         };
         PBRMaterial.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures === void 0) { forceDisposeTextures = true; }
             if (forceDisposeTextures) {
                 if (this.albedoTexture) {
                     this.albedoTexture.dispose();
