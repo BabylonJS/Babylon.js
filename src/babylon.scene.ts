@@ -681,7 +681,8 @@
                 }
 
                 if (this.onPointerObservable.hasObservers()) {
-                    let type = evt.type === "mousewheel" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+                    console.log(evt.type);
+                    let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
                     let pi = new PointerInfo(type, evt, pickResult);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
