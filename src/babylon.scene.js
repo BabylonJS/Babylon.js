@@ -554,7 +554,6 @@ var BABYLON;
                     _this.onPointerMove(evt, pickResult);
                 }
                 if (_this.onPointerObservable.hasObservers()) {
-                    console.log(evt.type);
                     var type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
                     var pi = new PointerInfo(type, evt, pickResult);
                     _this.onPointerObservable.notifyObservers(pi, type);
