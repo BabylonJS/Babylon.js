@@ -23779,6 +23779,10 @@ var BABYLON;
                 BABYLON.Tools.Error("Wrong sceneFilename parameter");
                 return;
             }
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                BABYLON.Tools.Error("Wrong sceneFilename parameter");
+                return;
+            }
             var loadingToken = {};
             scene._addPendingData(loadingToken);
             var manifestChecked = function (success) {
