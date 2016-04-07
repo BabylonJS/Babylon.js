@@ -107,6 +107,11 @@
                 return;
             }
 
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                Tools.Error("Wrong sceneFilename parameter");
+                return;
+            }
+
             var loadingToken = {};
             scene._addPendingData(loadingToken);
 
