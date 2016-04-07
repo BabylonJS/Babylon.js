@@ -158,7 +158,7 @@
                         }
                     } catch (e) {
                         if (onerror) {
-                            onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename + ' (Exception: ' + e + ')');
+                            onerror(scene, 'Unable to import meshes from ' + rootUrl + sceneFilename, e);
                         }
                         scene._removePendingData(loadingToken);
                     }
