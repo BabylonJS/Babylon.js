@@ -465,7 +465,7 @@
             if (this.particleTexture) {
                 serializationObject.textureName = this.particleTexture.name;
             }
-            
+
             // Animations
             Animation.AppendSerializedAnimations(this, serializationObject);
 
@@ -550,8 +550,9 @@
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
-            particleSystem.start();
-
+            if (!parsedParticleSystem.preventAutoStart) {
+                particleSystem.start();
+            }
             return particleSystem;
         }
     }
