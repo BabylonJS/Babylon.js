@@ -277,8 +277,16 @@ module BABYLON {
             impostorJoint.joint.physicsJoint = new OIMO.Link(nativeJointData).joint//this.world.add(nativeJointData);
         }
 
-        public removeJoint(joint: PhysicsImpostorJoint) {
-            joint.joint.physicsJoint.dispose();
+        public removeJoint(impostorJoint: PhysicsImpostorJoint) {
+            //Bug in Oimo prevents us from disposing a joint in the playground
+            //joint.joint.physicsJoint.dispose();
+            //So we will bruteforce it!
+            try {
+                this.world.removeJoint(impostorJoint.joint.physicsJoint);
+            } catch(e) {
+                Tools.Warn(e);
+            }
+            
         }
 
         public isSupported(): boolean {
