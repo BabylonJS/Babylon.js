@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 4, 3),
+    'version': (4, 4, 4),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -281,7 +281,6 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 
             bpy.ops.screen.animation_cancel()
             currentFrame = bpy.context.scene.frame_current
-            bpy.context.scene.frame_set(0)
 
             # Active camera
             if scene.camera != None:
@@ -312,6 +311,7 @@ class Main(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
                     else:
                         Main.warn('The following armature not visible in scene thus ignored: ' + object.name)
 
+            bpy.context.scene.frame_set(0)
             # exclude lamps in this pass, so ShadowGenerator constructor can be passed meshesAnNodes
             for object in [object for object in scene.objects]:
                 if object.type == 'CAMERA':
