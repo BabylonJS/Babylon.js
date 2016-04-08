@@ -86,11 +86,36 @@ module BABYLON {
             this._physicsPlugin.updateDistanceJoint(this, maxDistance, minDistance);
         }
     }
+    
+    export class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
+        
+        constructor(type: number, jointData:PhysicsJointData) {
+            super(type, jointData);
+        }
+        
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        public setMotor(force?: number, maxForce?: number) {
+            this._physicsPlugin.setMotor(this, force, maxForce);
+        }
+        
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        public setLimit(upperLimit: number, lowerLimit?: number) {
+            this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
+        }
+    }
 
     /**
      * This class represents a single hinge physics joint
      */
-    export class HingeJoint extends PhysicsJoint implements IMotorEnabledJoint {
+    export class HingeJoint extends MotorEnabledJoint {
         
         constructor(jointData:PhysicsJointData) {
             super(PhysicsJoint.HingeJoint, jointData);
@@ -118,7 +143,7 @@ module BABYLON {
     /**
      * This class represents a dual hinge physics joint (same as wheel joint)
      */
-    export class Hinge2Joint extends PhysicsJoint implements IMotorEnabledJoint {
+    export class Hinge2Joint extends MotorEnabledJoint {
         
         constructor(jointData:PhysicsJointData) {
             super(PhysicsJoint.Hinge2Joint, jointData);
