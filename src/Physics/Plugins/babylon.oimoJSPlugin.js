@@ -230,8 +230,16 @@ var BABYLON;
             nativeJointData.type = type;
             impostorJoint.joint.physicsJoint = new OIMO.Link(nativeJointData).joint; //this.world.add(nativeJointData);
         };
-        OimoJSPlugin.prototype.removeJoint = function (joint) {
-            joint.joint.physicsJoint.dispose();
+        OimoJSPlugin.prototype.removeJoint = function (impostorJoint) {
+            //Bug in Oimo prevents us from disposing a joint in the playground
+            //joint.joint.physicsJoint.dispose();
+            //So we will bruteforce it!
+            try {
+                this.world.removeJoint(impostorJoint.joint.physicsJoint);
+            }
+            catch (e) {
+                BABYLON.Tools.Warn(e);
+            }
         };
         OimoJSPlugin.prototype.isSupported = function () {
             return OIMO !== undefined;

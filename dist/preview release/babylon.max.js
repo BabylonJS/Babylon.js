@@ -27174,6 +27174,30 @@ var BABYLON;
         return DistanceJoint;
     })(PhysicsJoint);
     BABYLON.DistanceJoint = DistanceJoint;
+    var MotorEnabledJoint = (function (_super) {
+        __extends(MotorEnabledJoint, _super);
+        function MotorEnabledJoint(type, jointData) {
+            _super.call(this, type, jointData);
+        }
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        MotorEnabledJoint.prototype.setMotor = function (force, maxForce) {
+            this._physicsPlugin.setMotor(this, force, maxForce);
+        };
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        MotorEnabledJoint.prototype.setLimit = function (upperLimit, lowerLimit) {
+            this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
+        };
+        return MotorEnabledJoint;
+    })(PhysicsJoint);
+    BABYLON.MotorEnabledJoint = MotorEnabledJoint;
     /**
      * This class represents a single hinge physics joint
      */
@@ -27199,7 +27223,7 @@ var BABYLON;
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
         };
         return HingeJoint;
-    })(PhysicsJoint);
+    })(MotorEnabledJoint);
     BABYLON.HingeJoint = HingeJoint;
     /**
      * This class represents a dual hinge physics joint (same as wheel joint)
@@ -27232,7 +27256,7 @@ var BABYLON;
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit, motorIndex);
         };
         return Hinge2Joint;
-    })(PhysicsJoint);
+    })(MotorEnabledJoint);
     BABYLON.Hinge2Joint = Hinge2Joint;
 })(BABYLON || (BABYLON = {}));
 
@@ -27285,6 +27309,8 @@ var BABYLON;
             };
             //event and body object due to cannon's event-based architecture.
             this.onCollide = function (e) {
+                if (!_this._onPhysicsCollideCallbacks.length)
+                    return;
                 var otherImpostor = _this._physicsEngine.getImpostorWithPhysicsBody(e.body);
                 if (otherImpostor) {
                     _this._onPhysicsCollideCallbacks.filter(function (obj) {
@@ -35564,8 +35590,16 @@ var BABYLON;
             nativeJointData.type = type;
             impostorJoint.joint.physicsJoint = new OIMO.Link(nativeJointData).joint; //this.world.add(nativeJointData);
         };
-        OimoJSPlugin.prototype.removeJoint = function (joint) {
-            joint.joint.physicsJoint.dispose();
+        OimoJSPlugin.prototype.removeJoint = function (impostorJoint) {
+            //Bug in Oimo prevents us from disposing a joint in the playground
+            //joint.joint.physicsJoint.dispose();
+            //So we will bruteforce it!
+            try {
+                this.world.removeJoint(impostorJoint.joint.physicsJoint);
+            }
+            catch (e) {
+                BABYLON.Tools.Warn(e);
+            }
         };
         OimoJSPlugin.prototype.isSupported = function () {
             return OIMO !== undefined;
@@ -41888,6 +41922,7 @@ var BABYLON;
             this._viewMatrix = BABYLON.Matrix.Identity();
             this._target = BABYLON.Vector3.Zero();
             this._add = BABYLON.Vector3.Zero();
+            this.invertYAxis = false;
             this.position = BABYLON.Vector3.Zero();
             this._scene = scene;
             this._scene.reflectionProbes.push(this);
@@ -41901,10 +41936,10 @@ var BABYLON;
                         _this._add.copyFromFloats(-1, 0, 0);
                         break;
                     case 2:
-                        _this._add.copyFromFloats(0, -1, 0);
+                        _this._add.copyFromFloats(0, _this.invertYAxis ? 1 : -1, 0);
                         break;
                     case 3:
-                        _this._add.copyFromFloats(0, 1, 0);
+                        _this._add.copyFromFloats(0, _this.invertYAxis ? -1 : 1, 0);
                         break;
                     case 4:
                         _this._add.copyFromFloats(0, 0, 1);

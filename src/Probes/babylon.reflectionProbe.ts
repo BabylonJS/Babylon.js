@@ -8,6 +8,7 @@
         private _add = Vector3.Zero();
         private _attachedMesh: AbstractMesh;
 
+        public invertYAxis = false;
         public position = Vector3.Zero();
           
         constructor(public name: string, size: number, scene: Scene, generateMipMaps = true) {
@@ -26,10 +27,10 @@
                         this._add.copyFromFloats(-1, 0, 0);
                         break;
                     case 2:
-                        this._add.copyFromFloats(0, -1, 0);
+                        this._add.copyFromFloats(0, this.invertYAxis ? 1 : -1, 0);
                         break;
                     case 3:
-                        this._add.copyFromFloats(0, 1, 0);
+                        this._add.copyFromFloats(0, this.invertYAxis ? -1 : 1, 0);
                         break;
                     case 4:
                         this._add.copyFromFloats(0, 0, 1);

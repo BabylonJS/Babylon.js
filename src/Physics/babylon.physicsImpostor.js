@@ -47,6 +47,8 @@ var BABYLON;
             };
             //event and body object due to cannon's event-based architecture.
             this.onCollide = function (e) {
+                if (!_this._onPhysicsCollideCallbacks.length)
+                    return;
                 var otherImpostor = _this._physicsEngine.getImpostorWithPhysicsBody(e.body);
                 if (otherImpostor) {
                     _this._onPhysicsCollideCallbacks.filter(function (obj) {

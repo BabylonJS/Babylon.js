@@ -79,6 +79,30 @@ var BABYLON;
         return DistanceJoint;
     })(PhysicsJoint);
     BABYLON.DistanceJoint = DistanceJoint;
+    var MotorEnabledJoint = (function (_super) {
+        __extends(MotorEnabledJoint, _super);
+        function MotorEnabledJoint(type, jointData) {
+            _super.call(this, type, jointData);
+        }
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        MotorEnabledJoint.prototype.setMotor = function (force, maxForce) {
+            this._physicsPlugin.setMotor(this, force, maxForce);
+        };
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        MotorEnabledJoint.prototype.setLimit = function (upperLimit, lowerLimit) {
+            this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
+        };
+        return MotorEnabledJoint;
+    })(PhysicsJoint);
+    BABYLON.MotorEnabledJoint = MotorEnabledJoint;
     /**
      * This class represents a single hinge physics joint
      */
@@ -104,7 +128,7 @@ var BABYLON;
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit);
         };
         return HingeJoint;
-    })(PhysicsJoint);
+    })(MotorEnabledJoint);
     BABYLON.HingeJoint = HingeJoint;
     /**
      * This class represents a dual hinge physics joint (same as wheel joint)
@@ -137,6 +161,6 @@ var BABYLON;
             this._physicsPlugin.setLimit(this, upperLimit, lowerLimit, motorIndex);
         };
         return Hinge2Joint;
-    })(PhysicsJoint);
+    })(MotorEnabledJoint);
     BABYLON.Hinge2Joint = Hinge2Joint;
 })(BABYLON || (BABYLON = {}));

@@ -8,6 +8,7 @@ var BABYLON;
             this._viewMatrix = BABYLON.Matrix.Identity();
             this._target = BABYLON.Vector3.Zero();
             this._add = BABYLON.Vector3.Zero();
+            this.invertYAxis = false;
             this.position = BABYLON.Vector3.Zero();
             this._scene = scene;
             this._scene.reflectionProbes.push(this);
@@ -21,10 +22,10 @@ var BABYLON;
                         _this._add.copyFromFloats(-1, 0, 0);
                         break;
                     case 2:
-                        _this._add.copyFromFloats(0, -1, 0);
+                        _this._add.copyFromFloats(0, _this.invertYAxis ? 1 : -1, 0);
                         break;
                     case 3:
-                        _this._add.copyFromFloats(0, 1, 0);
+                        _this._add.copyFromFloats(0, _this.invertYAxis ? -1 : 1, 0);
                         break;
                     case 4:
                         _this._add.copyFromFloats(0, 0, 1);
