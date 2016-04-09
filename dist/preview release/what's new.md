@@ -31,10 +31,10 @@
     - Geometry.boundingBias property to enlarge the boundingInfo objects ([nockawa](https://github.com/nockawa))
     - Tools.ExtractMinAndMax & ExtractMinAndMaxIndexed now supports an optional Bias for Extent computation.
 	- Scene.onPointerObservable property added to enable a unique Observable event for user input (see ArcRotateCamera inputs for examples) ([nockawa](https://github.com/nockawa))
-
   - **API doc**
     - class `SolidParticleSystem` documented
     - class `MeshBuilder` documented
+    - class `physicsEngine` new architecture - (Basic Usage) documented
   - **Bug fixes**
     - Fixed bug with billboards and parenting ([deltakosh](https://github.com/deltakosh))
     - Fixed bug with ArcRotateCamera.setTarget ([deltakosh](https://github.com/deltakosh))
