@@ -1575,6 +1575,10 @@ var BABYLON;
             }
             return texture;
         };
+        Engine.prototype.updateTextureSize = function (texture, width, height) {
+            texture._width = width;
+            texture._height = height;
+        };
         Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback, mipmmapGenerator) {
             var _this = this;
             var gl = this._gl;
@@ -1602,6 +1606,9 @@ var BABYLON;
                     gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                     gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
+                width = texture._width;
+                height = texture._height;
+                isPot = (BABYLON.Tools.IsExponentOfTwo(width) && BABYLON.Tools.IsExponentOfTwo(height));
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
                 if (!noMipmap && isPot) {
