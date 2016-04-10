@@ -550,9 +550,11 @@
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
+
             if (!parsedParticleSystem.preventAutoStart) {
                 particleSystem.start();
             }
+
             return particleSystem;
         }
     }

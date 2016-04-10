@@ -25268,7 +25268,9 @@ var BABYLON;
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
-            particleSystem.start();
+            if (!parsedParticleSystem.preventAutoStart) {
+                particleSystem.start();
+            }
             return particleSystem;
         };
         // Statics
@@ -35460,7 +35462,8 @@ var BABYLON;
                         x: impostor.object.rotationQuaternion.x,
                         y: impostor.object.rotationQuaternion.y,
                         z: impostor.object.rotationQuaternion.z,
-                        s: impostor.object.rotationQuaternion.w });
+                        s: impostor.object.rotationQuaternion.w
+                    });
                     var extendSize = i.getObjectExtendSize();
                     if (i === impostor) {
                         var center = impostor.getObjectCenter();
@@ -35671,13 +35674,15 @@ var BABYLON;
             }
         };
         OimoJSPlugin.prototype.setMotor = function (joint, speed, maxForce, motorIndex) {
-            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
+            //TODO separate rotational and transational motors.
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
             if (motor) {
                 motor.setMotor(speed, maxForce);
             }
         };
         OimoJSPlugin.prototype.setLimit = function (joint, upperLimit, lowerLimit, motorIndex) {
-            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
+            //TODO separate rotational and transational motors.
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
             if (motor) {
                 motor.setLimit(upperLimit, lowerLimit === void 0 ? -upperLimit : lowerLimit);
             }
