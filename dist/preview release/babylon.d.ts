@@ -255,6 +255,7 @@ declare module BABYLON {
         createRenderTargetTexture(size: any, options: any): WebGLTexture;
         createRenderTargetCubeTexture(size: number, options?: any): WebGLTexture;
         createCubeTexture(rootUrl: string, scene: Scene, files: string[], noMipmap?: boolean): WebGLTexture;
+        updateTextureSize(texture: WebGLTexture, width: number, height: number): void;
         createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer) => ArrayBufferView[], mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture;
         _releaseTexture(texture: WebGLTexture): void;
         bindSamplers(effect: Effect): void;
@@ -1074,224 +1075,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Animatable {
-        target: any;
-        fromFrame: number;
-        toFrame: number;
-        loopAnimation: boolean;
-        speedRatio: number;
-        onAnimationEnd: any;
-        private _localDelayOffset;
-        private _pausedDelay;
-        private _animations;
-        private _paused;
-        private _scene;
-        animationStarted: boolean;
-        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: any, animations?: any);
-        getAnimations(): Animation[];
-        appendAnimations(target: any, animations: Animation[]): void;
-        getAnimationByTargetProperty(property: string): Animation;
-        reset(): void;
-        enableBlending(blendingSpeed: number): void;
-        disableBlending(): void;
-        goToFrame(frame: number): void;
-        pause(): void;
-        restart(): void;
-        stop(): void;
-        _animate(delay: number): boolean;
-    }
-}
-
-declare module BABYLON {
-    class AnimationRange {
-        name: string;
-        from: number;
-        to: number;
-        constructor(name: string, from: number, to: number);
-        clone(): AnimationRange;
-    }
-    /**
-     * Composed of a frame, and an action function
-     */
-    class AnimationEvent {
-        frame: number;
-        action: () => void;
-        onlyOnce: boolean;
-        isDone: boolean;
-        constructor(frame: number, action: () => void, onlyOnce?: boolean);
-    }
-    class PathCursor {
-        private path;
-        private _onchange;
-        value: number;
-        animations: Animation[];
-        constructor(path: Path2);
-        getPoint(): Vector3;
-        moveAhead(step?: number): PathCursor;
-        moveBack(step?: number): PathCursor;
-        move(step: number): PathCursor;
-        private ensureLimits();
-        private markAsDirty(propertyName);
-        private raiseOnChange();
-        onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-    class Animation {
-        name: string;
-        targetProperty: string;
-        framePerSecond: number;
-        dataType: number;
-        loopMode: number;
-        enableBlending: boolean;
-        private _keys;
-        private _offsetsCache;
-        private _highLimitsCache;
-        private _stopped;
-        _target: any;
-        private _blendingFactor;
-        private _easingFunction;
-        private _events;
-        targetPropertyPath: string[];
-        currentFrame: number;
-        allowMatricesInterpolation: boolean;
-        blendingSpeed: number;
-        private _originalBlendValue;
-        private _ranges;
-        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation;
-        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
-        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
-        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number, enableBlending?: boolean);
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-         * Add an event to this animation.
-         */
-        addEvent(event: AnimationEvent): void;
-        /**
-         * Remove all events found at the given frame
-         * @param frame
-         */
-        removeEvents(frame: number): void;
-        createRange(name: string, from: number, to: number): void;
-        deleteRange(name: string, deleteFrames?: boolean): void;
-        getRange(name: string): AnimationRange;
-        reset(): void;
-        isStopped(): boolean;
-        getKeys(): any[];
-        getHighestFrame(): number;
-        getEasingFunction(): IEasingFunction;
-        setEasingFunction(easingFunction: EasingFunction): void;
-        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
-        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
-        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
-        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
-        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
-        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        clone(): Animation;
-        setKeys(values: Array<any>): void;
-        private _getKeyValue(value);
-        private _interpolate(currentFrame, repeatCount, loopMode, offsetValue?, highLimitValue?);
-        setValue(currentValue: any, blend?: boolean): void;
-        goToFrame(frame: number): void;
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend?: boolean): boolean;
-        serialize(): any;
-        private static _ANIMATIONTYPE_FLOAT;
-        private static _ANIMATIONTYPE_VECTOR3;
-        private static _ANIMATIONTYPE_QUATERNION;
-        private static _ANIMATIONTYPE_MATRIX;
-        private static _ANIMATIONTYPE_COLOR3;
-        private static _ANIMATIONTYPE_VECTOR2;
-        private static _ANIMATIONLOOPMODE_RELATIVE;
-        private static _ANIMATIONLOOPMODE_CYCLE;
-        private static _ANIMATIONLOOPMODE_CONSTANT;
-        static ANIMATIONTYPE_FLOAT: number;
-        static ANIMATIONTYPE_VECTOR3: number;
-        static ANIMATIONTYPE_VECTOR2: number;
-        static ANIMATIONTYPE_QUATERNION: number;
-        static ANIMATIONTYPE_MATRIX: number;
-        static ANIMATIONTYPE_COLOR3: number;
-        static ANIMATIONLOOPMODE_RELATIVE: number;
-        static ANIMATIONLOOPMODE_CYCLE: number;
-        static ANIMATIONLOOPMODE_CONSTANT: number;
-        static Parse(parsedAnimation: any): Animation;
-        static AppendSerializedAnimations(source: IAnimatable, destination: any): any;
-    }
-}
-
-declare module BABYLON {
-    interface IEasingFunction {
-        ease(gradient: number): number;
-    }
-    class EasingFunction implements IEasingFunction {
-        private static _EASINGMODE_EASEIN;
-        private static _EASINGMODE_EASEOUT;
-        private static _EASINGMODE_EASEINOUT;
-        static EASINGMODE_EASEIN: number;
-        static EASINGMODE_EASEOUT: number;
-        static EASINGMODE_EASEINOUT: number;
-        private _easingMode;
-        setEasingMode(easingMode: number): void;
-        getEasingMode(): number;
-        easeInCore(gradient: number): number;
-        ease(gradient: number): number;
-    }
-    class CircleEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BackEase extends EasingFunction implements IEasingFunction {
-        amplitude: number;
-        constructor(amplitude?: number);
-        easeInCore(gradient: number): number;
-    }
-    class BounceEase extends EasingFunction implements IEasingFunction {
-        bounces: number;
-        bounciness: number;
-        constructor(bounces?: number, bounciness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class CubicEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class ElasticEase extends EasingFunction implements IEasingFunction {
-        oscillations: number;
-        springiness: number;
-        constructor(oscillations?: number, springiness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class ExponentialEase extends EasingFunction implements IEasingFunction {
-        exponent: number;
-        constructor(exponent?: number);
-        easeInCore(gradient: number): number;
-    }
-    class PowerEase extends EasingFunction implements IEasingFunction {
-        power: number;
-        constructor(power?: number);
-        easeInCore(gradient: number): number;
-    }
-    class QuadraticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuarticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuinticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class SineEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BezierCurveEase extends EasingFunction implements IEasingFunction {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
-        easeInCore(gradient: number): number;
-    }
-}
-
-declare module BABYLON {
     class Action {
         triggerOptions: any;
         trigger: number;
@@ -1575,6 +1358,224 @@ declare module BABYLON {
         constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration?: number, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void);
         _prepare(): void;
         execute(): void;
+    }
+}
+
+declare module BABYLON {
+    class Animatable {
+        target: any;
+        fromFrame: number;
+        toFrame: number;
+        loopAnimation: boolean;
+        speedRatio: number;
+        onAnimationEnd: any;
+        private _localDelayOffset;
+        private _pausedDelay;
+        private _animations;
+        private _paused;
+        private _scene;
+        animationStarted: boolean;
+        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: any, animations?: any);
+        getAnimations(): Animation[];
+        appendAnimations(target: any, animations: Animation[]): void;
+        getAnimationByTargetProperty(property: string): Animation;
+        reset(): void;
+        enableBlending(blendingSpeed: number): void;
+        disableBlending(): void;
+        goToFrame(frame: number): void;
+        pause(): void;
+        restart(): void;
+        stop(): void;
+        _animate(delay: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    class AnimationRange {
+        name: string;
+        from: number;
+        to: number;
+        constructor(name: string, from: number, to: number);
+        clone(): AnimationRange;
+    }
+    /**
+     * Composed of a frame, and an action function
+     */
+    class AnimationEvent {
+        frame: number;
+        action: () => void;
+        onlyOnce: boolean;
+        isDone: boolean;
+        constructor(frame: number, action: () => void, onlyOnce?: boolean);
+    }
+    class PathCursor {
+        private path;
+        private _onchange;
+        value: number;
+        animations: Animation[];
+        constructor(path: Path2);
+        getPoint(): Vector3;
+        moveAhead(step?: number): PathCursor;
+        moveBack(step?: number): PathCursor;
+        move(step: number): PathCursor;
+        private ensureLimits();
+        private markAsDirty(propertyName);
+        private raiseOnChange();
+        onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+    class Animation {
+        name: string;
+        targetProperty: string;
+        framePerSecond: number;
+        dataType: number;
+        loopMode: number;
+        enableBlending: boolean;
+        private _keys;
+        private _offsetsCache;
+        private _highLimitsCache;
+        private _stopped;
+        _target: any;
+        private _blendingFactor;
+        private _easingFunction;
+        private _events;
+        targetPropertyPath: string[];
+        currentFrame: number;
+        allowMatricesInterpolation: boolean;
+        blendingSpeed: number;
+        private _originalBlendValue;
+        private _ranges;
+        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Animation;
+        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
+        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Animatable;
+        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number, enableBlending?: boolean);
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+         * Add an event to this animation.
+         */
+        addEvent(event: AnimationEvent): void;
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        removeEvents(frame: number): void;
+        createRange(name: string, from: number, to: number): void;
+        deleteRange(name: string, deleteFrames?: boolean): void;
+        getRange(name: string): AnimationRange;
+        reset(): void;
+        isStopped(): boolean;
+        getKeys(): any[];
+        getHighestFrame(): number;
+        getEasingFunction(): IEasingFunction;
+        setEasingFunction(easingFunction: EasingFunction): void;
+        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
+        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
+        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
+        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
+        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
+        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        clone(): Animation;
+        setKeys(values: Array<any>): void;
+        private _getKeyValue(value);
+        private _interpolate(currentFrame, repeatCount, loopMode, offsetValue?, highLimitValue?);
+        setValue(currentValue: any, blend?: boolean): void;
+        goToFrame(frame: number): void;
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend?: boolean): boolean;
+        serialize(): any;
+        private static _ANIMATIONTYPE_FLOAT;
+        private static _ANIMATIONTYPE_VECTOR3;
+        private static _ANIMATIONTYPE_QUATERNION;
+        private static _ANIMATIONTYPE_MATRIX;
+        private static _ANIMATIONTYPE_COLOR3;
+        private static _ANIMATIONTYPE_VECTOR2;
+        private static _ANIMATIONLOOPMODE_RELATIVE;
+        private static _ANIMATIONLOOPMODE_CYCLE;
+        private static _ANIMATIONLOOPMODE_CONSTANT;
+        static ANIMATIONTYPE_FLOAT: number;
+        static ANIMATIONTYPE_VECTOR3: number;
+        static ANIMATIONTYPE_VECTOR2: number;
+        static ANIMATIONTYPE_QUATERNION: number;
+        static ANIMATIONTYPE_MATRIX: number;
+        static ANIMATIONTYPE_COLOR3: number;
+        static ANIMATIONLOOPMODE_RELATIVE: number;
+        static ANIMATIONLOOPMODE_CYCLE: number;
+        static ANIMATIONLOOPMODE_CONSTANT: number;
+        static Parse(parsedAnimation: any): Animation;
+        static AppendSerializedAnimations(source: IAnimatable, destination: any): any;
+    }
+}
+
+declare module BABYLON {
+    interface IEasingFunction {
+        ease(gradient: number): number;
+    }
+    class EasingFunction implements IEasingFunction {
+        private static _EASINGMODE_EASEIN;
+        private static _EASINGMODE_EASEOUT;
+        private static _EASINGMODE_EASEINOUT;
+        static EASINGMODE_EASEIN: number;
+        static EASINGMODE_EASEOUT: number;
+        static EASINGMODE_EASEINOUT: number;
+        private _easingMode;
+        setEasingMode(easingMode: number): void;
+        getEasingMode(): number;
+        easeInCore(gradient: number): number;
+        ease(gradient: number): number;
+    }
+    class CircleEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BackEase extends EasingFunction implements IEasingFunction {
+        amplitude: number;
+        constructor(amplitude?: number);
+        easeInCore(gradient: number): number;
+    }
+    class BounceEase extends EasingFunction implements IEasingFunction {
+        bounces: number;
+        bounciness: number;
+        constructor(bounces?: number, bounciness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class CubicEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class ElasticEase extends EasingFunction implements IEasingFunction {
+        oscillations: number;
+        springiness: number;
+        constructor(oscillations?: number, springiness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class ExponentialEase extends EasingFunction implements IEasingFunction {
+        exponent: number;
+        constructor(exponent?: number);
+        easeInCore(gradient: number): number;
+    }
+    class PowerEase extends EasingFunction implements IEasingFunction {
+        power: number;
+        constructor(power?: number);
+        easeInCore(gradient: number): number;
+    }
+    class QuadraticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuarticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuinticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class SineEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BezierCurveEase extends EasingFunction implements IEasingFunction {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
+        easeInCore(gradient: number): number;
     }
 }
 
@@ -2889,6 +2890,619 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface ISceneLoaderPlugin {
+        extensions: string;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+    }
+    interface ISceneLoaderPluginAsync {
+        extensions: string;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static NO_LOGGING: number;
+        static MINIMAL_LOGGING: number;
+        static SUMMARY_LOGGING: number;
+        static DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        private static _registeredPlugins;
+        private static _getPluginForFilename(sceneFilename);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+    }
+}
+
+declare module BABYLON {
+    class EffectFallbacks {
+        private _defines;
+        private _currentRank;
+        private _maxRank;
+        private _mesh;
+        private _meshRank;
+        addFallback(rank: number, define: string): void;
+        addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh): void;
+        isMoreFallbacks: boolean;
+        reduce(currentDefines: string): string;
+    }
+    class Effect {
+        name: any;
+        defines: string;
+        onCompiled: (effect: Effect) => void;
+        onError: (effect: Effect, errors: string) => void;
+        onBind: (effect: Effect) => void;
+        private _engine;
+        private _uniformsNames;
+        private _samplers;
+        private _isReady;
+        private _compilationError;
+        private _attributesNames;
+        private _attributes;
+        private _uniforms;
+        _key: string;
+        private _program;
+        private _valueCache;
+        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine: any, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void);
+        isReady(): boolean;
+        getProgram(): WebGLProgram;
+        getAttributesNames(): string[];
+        getAttributeLocation(index: number): number;
+        getAttributeLocationByName(name: string): number;
+        getAttributesCount(): number;
+        getUniformIndex(uniformName: string): number;
+        getUniform(uniformName: string): WebGLUniformLocation;
+        getSamplers(): string[];
+        getCompilationError(): string;
+        _loadVertexShader(vertex: any, callback: (data: any) => void): void;
+        _loadFragmentShader(fragment: any, callback: (data: any) => void): void;
+        private _dumpShadersName();
+        private _processIncludes(sourceCode, callback);
+        private _processPrecision(source);
+        private _prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks?);
+        isSupported: boolean;
+        _bindTexture(channel: string, texture: WebGLTexture): void;
+        setTexture(channel: string, texture: BaseTexture): void;
+        setTextureFromPostProcess(channel: string, postProcess: PostProcess): void;
+        _cacheMatrix(uniformName: any, matrix: any): void;
+        _cacheFloat2(uniformName: string, x: number, y: number): void;
+        _cacheFloat3(uniformName: string, x: number, y: number, z: number): void;
+        _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
+        setArray(uniformName: string, array: number[]): Effect;
+        setArray2(uniformName: string, array: number[]): Effect;
+        setArray3(uniformName: string, array: number[]): Effect;
+        setArray4(uniformName: string, array: number[]): Effect;
+        setMatrices(uniformName: string, matrices: Float32Array): Effect;
+        setMatrix(uniformName: string, matrix: Matrix): Effect;
+        setMatrix3x3(uniformName: string, matrix: Float32Array): Effect;
+        setMatrix2x2(uniformname: string, matrix: Float32Array): Effect;
+        setFloat(uniformName: string, value: number): Effect;
+        setBool(uniformName: string, bool: boolean): Effect;
+        setVector2(uniformName: string, vector2: Vector2): Effect;
+        setFloat2(uniformName: string, x: number, y: number): Effect;
+        setVector3(uniformName: string, vector3: Vector3): Effect;
+        setFloat3(uniformName: string, x: number, y: number, z: number): Effect;
+        setVector4(uniformName: string, vector4: Vector4): Effect;
+        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect;
+        setColor3(uniformName: string, color3: Color3): Effect;
+        setColor4(uniformName: string, color3: Color3, alpha: number): Effect;
+        static ShadersStore: {};
+        static IncludesShadersStore: {};
+    }
+}
+
+declare module BABYLON {
+    class FresnelParameters {
+        isEnabled: boolean;
+        leftColor: Color3;
+        rightColor: Color3;
+        bias: number;
+        power: number;
+        clone(): FresnelParameters;
+        serialize(): any;
+        static Parse(parsedFresnelParameters: any): FresnelParameters;
+    }
+}
+
+declare module BABYLON {
+    class MaterialDefines {
+        _keys: string[];
+        isEqual(other: MaterialDefines): boolean;
+        cloneTo(other: MaterialDefines): void;
+        reset(): void;
+        toString(): string;
+    }
+    class Material {
+        name: string;
+        private static _TriangleFillMode;
+        private static _WireFrameFillMode;
+        private static _PointFillMode;
+        static TriangleFillMode: number;
+        static WireFrameFillMode: number;
+        static PointFillMode: number;
+        private static _ClockWiseSideOrientation;
+        private static _CounterClockWiseSideOrientation;
+        static ClockWiseSideOrientation: number;
+        static CounterClockWiseSideOrientation: number;
+        id: string;
+        checkReadyOnEveryCall: boolean;
+        checkReadyOnlyOnce: boolean;
+        state: string;
+        alpha: number;
+        backFaceCulling: boolean;
+        sideOrientation: number;
+        onCompiled: (effect: Effect) => void;
+        onError: (effect: Effect, errors: string) => void;
+        onDispose: () => void;
+        onBind: (material: Material, mesh: Mesh) => void;
+        getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+        alphaMode: number;
+        disableDepthWrite: boolean;
+        fogEnabled: boolean;
+        pointSize: number;
+        zOffset: number;
+        wireframe: boolean;
+        pointsCloud: boolean;
+        fillMode: number;
+        _effect: Effect;
+        _wasPreviouslyReady: boolean;
+        private _scene;
+        private _fillMode;
+        private _cachedDepthWriteState;
+        constructor(name: string, scene: Scene, doNotAdd?: boolean);
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * subclasses should override adding information pertainent to themselves
+         */
+        toString(fullDetails?: boolean): string;
+        isFrozen: boolean;
+        freeze(): void;
+        unfreeze(): void;
+        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        getEffect(): Effect;
+        getScene(): Scene;
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BaseTexture;
+        trackCreation(onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void): void;
+        markDirty(): void;
+        _preBind(): void;
+        bind(world: Matrix, mesh?: Mesh): void;
+        bindOnlyWorldMatrix(world: Matrix): void;
+        unbind(): void;
+        clone(name: string): Material;
+        getBindedMeshes(): AbstractMesh[];
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        serialize(): any;
+        static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial;
+        static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any;
+    }
+}
+
+declare module BABYLON {
+    class MaterialHelper {
+        static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines): boolean;
+        static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks): void;
+        static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines, fallbacks: EffectFallbacks): void;
+        static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void;
+        static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: number, effect: Effect, depthValuesAlreadySet: boolean): boolean;
+        static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void;
+        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines): void;
+        static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect): void;
+        static BindBonesParameters(mesh: AbstractMesh, effect: Effect): void;
+        static BindLogDepth(defines: MaterialDefines, effect: Effect, scene: Scene): void;
+        static BindClipPlane(effect: Effect, scene: Scene): void;
+    }
+}
+
+declare module BABYLON {
+    class MultiMaterial extends Material {
+        subMaterials: Material[];
+        constructor(name: string, scene: Scene);
+        getSubMaterial(index: any): Material;
+        isReady(mesh?: AbstractMesh): boolean;
+        clone(name: string, cloneChildren?: boolean): MultiMaterial;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The Physically based material of BJS.
+     *
+     * This offers the main features of a standard PBR material.
+     * For more information, please refer to the documentation :
+     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+     */
+    class PBRMaterial extends BABYLON.Material {
+        /**
+         * Intensity of the direct lights e.g. the four lights available in your scene.
+         * This impacts both the direct diffuse and specular highlights.
+         */
+        directIntensity: number;
+        /**
+         * Intensity of the emissive part of the material.
+         * This helps controlling the emissive effect without modifying the emissive color.
+         */
+        emissiveIntensity: number;
+        /**
+         * Intensity of the environment e.g. how much the environment will light the object
+         * either through harmonics for rough material or through the refelction for shiny ones.
+         */
+        environmentIntensity: number;
+        /**
+         * This is a special control allowing the reduction of the specular highlights coming from the
+         * four lights of the scene. Those highlights may not be needed in full environment lighting.
+         */
+        specularIntensity: number;
+        private _lightingInfos;
+        /**
+         * Debug Control allowing disabling the bump map on this material.
+         */
+        disableBumpMap: boolean;
+        /**
+         * Debug Control helping enforcing or dropping the darkness of shadows.
+         * 1.0 means the shadows have their normal darkness, 0.0 means the shadows are not visible.
+         */
+        overloadedShadowIntensity: number;
+        /**
+         * Debug Control helping dropping the shading effect coming from the diffuse lighting.
+         * 1.0 means the shade have their normal impact, 0.0 means no shading at all.
+         */
+        overloadedShadeIntensity: number;
+        private _overloadedShadowInfos;
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        cameraExposure: number;
+        /**
+         * The camera contrast used on this material.
+         * This property is here and not in the camera to allow controlling contrast without full screen post process.
+         */
+        cameraContrast: number;
+        private _cameraInfos;
+        private _microsurfaceTextureLods;
+        /**
+         * Debug Control allowing to overload the ambient color.
+         * This as to be use with the overloadedAmbientIntensity parameter.
+         */
+        overloadedAmbient: Color3;
+        /**
+         * Debug Control indicating how much the overloaded ambient color is used against the default one.
+         */
+        overloadedAmbientIntensity: number;
+        /**
+         * Debug Control allowing to overload the albedo color.
+         * This as to be use with the overloadedAlbedoIntensity parameter.
+         */
+        overloadedAlbedo: Color3;
+        /**
+         * Debug Control indicating how much the overloaded albedo color is used against the default one.
+         */
+        overloadedAlbedoIntensity: number;
+        /**
+         * Debug Control allowing to overload the reflectivity color.
+         * This as to be use with the overloadedReflectivityIntensity parameter.
+         */
+        overloadedReflectivity: Color3;
+        /**
+         * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
+         */
+        overloadedReflectivityIntensity: number;
+        /**
+         * Debug Control allowing to overload the emissive color.
+         * This as to be use with the overloadedEmissiveIntensity parameter.
+         */
+        overloadedEmissive: Color3;
+        /**
+         * Debug Control indicating how much the overloaded emissive color is used against the default one.
+         */
+        overloadedEmissiveIntensity: number;
+        private _overloadedIntensity;
+        /**
+         * Debug Control allowing to overload the reflection color.
+         * This as to be use with the overloadedReflectionIntensity parameter.
+         */
+        overloadedReflection: Color3;
+        /**
+         * Debug Control indicating how much the overloaded reflection color is used against the default one.
+         */
+        overloadedReflectionIntensity: number;
+        /**
+         * Debug Control allowing to overload the microsurface.
+         * This as to be use with the overloadedMicroSurfaceIntensity parameter.
+         */
+        overloadedMicroSurface: number;
+        /**
+         * Debug Control indicating how much the overloaded microsurface is used against the default one.
+         */
+        overloadedMicroSurfaceIntensity: number;
+        private _overloadedMicroSurface;
+        /**
+         * AKA Diffuse Texture in standard nomenclature.
+         */
+        albedoTexture: BaseTexture;
+        /**
+         * AKA Occlusion Texture in other nomenclature.
+         */
+        ambientTexture: BaseTexture;
+        opacityTexture: BaseTexture;
+        reflectionTexture: BaseTexture;
+        emissiveTexture: BaseTexture;
+        /**
+         * AKA Specular texture in other nomenclature.
+         */
+        reflectivityTexture: BaseTexture;
+        bumpTexture: BaseTexture;
+        lightmapTexture: BaseTexture;
+        refractionTexture: BaseTexture;
+        ambientColor: Color3;
+        /**
+         * AKA Diffuse Color in other nomenclature.
+         */
+        albedoColor: Color3;
+        /**
+         * AKA Specular Color in other nomenclature.
+         */
+        reflectivityColor: Color3;
+        reflectionColor: Color3;
+        emissiveColor: Color3;
+        /**
+
+         * AKA Glossiness in other nomenclature.
+         */
+        microSurface: number;
+        /**
+         * source material index of refraction (IOR)' / 'destination material IOR.
+         */
+        indexOfRefraction: number;
+        /**
+         * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
+         */
+        invertRefractionY: boolean;
+        opacityFresnelParameters: FresnelParameters;
+        emissiveFresnelParameters: FresnelParameters;
+        /**
+         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+         * Materials half opaque for instance using refraction could benefit from this control.
+         */
+        linkRefractionWithTransparency: boolean;
+        /**
+         * The emissive and albedo are linked to never be more than one (Energy conservation).
+         */
+        linkEmissiveWithAlbedo: boolean;
+        useLightmapAsShadowmap: boolean;
+        /**
+         * In this mode, the emissive informtaion will always be added to the lighting once.
+         * A light for instance can be thought as emissive.
+         */
+        useEmissiveAsIllumination: boolean;
+        /**
+         * Secifies that the alpha is coming form the albedo channel alpha channel.
+         */
+        useAlphaFromAlbedoTexture: boolean;
+        /**
+         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
+         * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+         */
+        useSpecularOverAlpha: boolean;
+        /**
+         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+         */
+        useMicroSurfaceFromReflectivityMapAlpha: boolean;
+        /**
+         * In case the reflectivity map does not contain the microsurface information in its alpha channel,
+         * The material will try to infer what glossiness each pixel should be.
+         */
+        useAutoMicroSurfaceFromReflectivityMap: boolean;
+        /**
+         * Allows to work with scalar in linear mode. This is definitely a matter of preferences and tools used during
+         * the creation of the material.
+         */
+        useScalarInLinearSpace: boolean;
+        /**
+         * BJS is using an harcoded light falloff based on a manually sets up range.
+         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
+         */
+        usePhysicalLightFalloff: boolean;
+        /**
+         * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
+         * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+         */
+        useRadianceOverAlpha: boolean;
+        /**
+         * Allows using the bump map in parallax mode.
+         */
+        useParallax: boolean;
+        /**
+         * Allows using the bump map in parallax occlusion mode.
+         */
+        useParallaxOcclusion: boolean;
+        /**
+         * Controls the scale bias of the parallax mode.
+         */
+        parallaxScaleBias: number;
+        disableLighting: boolean;
+        private _renderTargets;
+        private _worldViewProjectionMatrix;
+        private _globalAmbientColor;
+        private _tempColor;
+        private _renderId;
+        private _defines;
+        private _cachedDefines;
+        private _useLogarithmicDepth;
+        /**
+         * Instantiates a new PBRMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
+        constructor(name: string, scene: Scene);
+        useLogarithmicDepth: boolean;
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        private _shouldUseAlphaFromAlbedoTexture();
+        getAlphaTestTexture(): BaseTexture;
+        private _checkCache(scene, mesh?, useInstances?);
+        private convertColorToLinearSpaceToRef(color, ref);
+        private static convertColorToLinearSpaceToRef(color, ref, useScalarInLinear);
+        private static _scaledAlbedo;
+        private static _scaledReflectivity;
+        private static _scaledEmissive;
+        private static _scaledReflection;
+        private static _lightRadiuses;
+        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean): void;
+        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        unbind(): void;
+        bindOnlyWorldMatrix(world: Matrix): void;
+        private _myScene;
+        private _myShadowGenerator;
+        bind(world: Matrix, mesh?: Mesh): void;
+        getAnimatables(): IAnimatable[];
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        clone(name: string): PBRMaterial;
+        serialize(): any;
+        static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial;
+    }
+}
+
+declare module BABYLON {
+    class ShaderMaterial extends Material {
+        private _shaderPath;
+        private _options;
+        private _textures;
+        private _floats;
+        private _floatsArrays;
+        private _colors3;
+        private _colors4;
+        private _vectors2;
+        private _vectors3;
+        private _vectors4;
+        private _matrices;
+        private _matrices3x3;
+        private _matrices2x2;
+        private _cachedWorldViewMatrix;
+        private _renderId;
+        constructor(name: string, scene: Scene, shaderPath: any, options: any);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        private _checkUniform(uniformName);
+        setTexture(name: string, texture: Texture): ShaderMaterial;
+        setFloat(name: string, value: number): ShaderMaterial;
+        setFloats(name: string, value: number[]): ShaderMaterial;
+        setColor3(name: string, value: Color3): ShaderMaterial;
+        setColor4(name: string, value: Color4): ShaderMaterial;
+        setVector2(name: string, value: Vector2): ShaderMaterial;
+        setVector3(name: string, value: Vector3): ShaderMaterial;
+        setVector4(name: string, value: Vector4): ShaderMaterial;
+        setMatrix(name: string, value: Matrix): ShaderMaterial;
+        setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
+        setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
+        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        bindOnlyWorldMatrix(world: Matrix): void;
+        bind(world: Matrix, mesh?: Mesh): void;
+        clone(name: string): ShaderMaterial;
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        serialize(): any;
+        static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial;
+    }
+}
+
+declare module BABYLON {
+    class StandardMaterial extends Material {
+        diffuseTexture: BaseTexture;
+        ambientTexture: BaseTexture;
+        opacityTexture: BaseTexture;
+        reflectionTexture: BaseTexture;
+        emissiveTexture: BaseTexture;
+        specularTexture: BaseTexture;
+        bumpTexture: BaseTexture;
+        lightmapTexture: BaseTexture;
+        refractionTexture: BaseTexture;
+        ambientColor: Color3;
+        diffuseColor: Color3;
+        specularColor: Color3;
+        emissiveColor: Color3;
+        specularPower: number;
+        useAlphaFromDiffuseTexture: boolean;
+        useEmissiveAsIllumination: boolean;
+        linkEmissiveWithDiffuse: boolean;
+        useReflectionFresnelFromSpecular: boolean;
+        useSpecularOverAlpha: boolean;
+        useReflectionOverAlpha: boolean;
+        disableLighting: boolean;
+        useParallax: boolean;
+        useParallaxOcclusion: boolean;
+        parallaxScaleBias: number;
+        roughness: number;
+        indexOfRefraction: number;
+        invertRefractionY: boolean;
+        useLightmapAsShadowmap: boolean;
+        diffuseFresnelParameters: FresnelParameters;
+        opacityFresnelParameters: FresnelParameters;
+        reflectionFresnelParameters: FresnelParameters;
+        refractionFresnelParameters: FresnelParameters;
+        emissiveFresnelParameters: FresnelParameters;
+        useGlossinessFromSpecularMapAlpha: boolean;
+        private _renderTargets;
+        private _worldViewProjectionMatrix;
+        private _globalAmbientColor;
+        private _renderId;
+        private _defines;
+        private _cachedDefines;
+        private _useLogarithmicDepth;
+        constructor(name: string, scene: Scene);
+        useLogarithmicDepth: boolean;
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        private _shouldUseAlphaFromDiffuseTexture();
+        getAlphaTestTexture(): BaseTexture;
+        private _checkCache(scene, mesh?, useInstances?);
+        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        unbind(): void;
+        bindOnlyWorldMatrix(world: Matrix): void;
+        bind(world: Matrix, mesh?: Mesh): void;
+        getAnimatables(): IAnimatable[];
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+        clone(name: string): StandardMaterial;
+        serialize(): any;
+        static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial;
+        static DiffuseTextureEnabled: boolean;
+        static AmbientTextureEnabled: boolean;
+        static OpacityTextureEnabled: boolean;
+        static ReflectionTextureEnabled: boolean;
+        static EmissiveTextureEnabled: boolean;
+        static SpecularTextureEnabled: boolean;
+        static BumpTextureEnabled: boolean;
+        static FresnelEnabled: boolean;
+        static LightmapTextureEnabled: boolean;
+        static RefractionTextureEnabled: boolean;
+    }
+}
+
+declare module BABYLON {
     class SIMDVector3 {
         static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void;
         static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
@@ -3488,619 +4102,6 @@ declare module BABYLON {
         static Vector4: Vector4[];
         static Quaternion: Quaternion[];
         static Matrix: Matrix[];
-    }
-}
-
-declare module BABYLON {
-    class EffectFallbacks {
-        private _defines;
-        private _currentRank;
-        private _maxRank;
-        private _mesh;
-        private _meshRank;
-        addFallback(rank: number, define: string): void;
-        addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh): void;
-        isMoreFallbacks: boolean;
-        reduce(currentDefines: string): string;
-    }
-    class Effect {
-        name: any;
-        defines: string;
-        onCompiled: (effect: Effect) => void;
-        onError: (effect: Effect, errors: string) => void;
-        onBind: (effect: Effect) => void;
-        private _engine;
-        private _uniformsNames;
-        private _samplers;
-        private _isReady;
-        private _compilationError;
-        private _attributesNames;
-        private _attributes;
-        private _uniforms;
-        _key: string;
-        private _program;
-        private _valueCache;
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine: any, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void);
-        isReady(): boolean;
-        getProgram(): WebGLProgram;
-        getAttributesNames(): string[];
-        getAttributeLocation(index: number): number;
-        getAttributeLocationByName(name: string): number;
-        getAttributesCount(): number;
-        getUniformIndex(uniformName: string): number;
-        getUniform(uniformName: string): WebGLUniformLocation;
-        getSamplers(): string[];
-        getCompilationError(): string;
-        _loadVertexShader(vertex: any, callback: (data: any) => void): void;
-        _loadFragmentShader(fragment: any, callback: (data: any) => void): void;
-        private _dumpShadersName();
-        private _processIncludes(sourceCode, callback);
-        private _processPrecision(source);
-        private _prepareEffect(vertexSourceCode, fragmentSourceCode, attributesNames, defines, fallbacks?);
-        isSupported: boolean;
-        _bindTexture(channel: string, texture: WebGLTexture): void;
-        setTexture(channel: string, texture: BaseTexture): void;
-        setTextureFromPostProcess(channel: string, postProcess: PostProcess): void;
-        _cacheMatrix(uniformName: any, matrix: any): void;
-        _cacheFloat2(uniformName: string, x: number, y: number): void;
-        _cacheFloat3(uniformName: string, x: number, y: number, z: number): void;
-        _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
-        setArray(uniformName: string, array: number[]): Effect;
-        setArray2(uniformName: string, array: number[]): Effect;
-        setArray3(uniformName: string, array: number[]): Effect;
-        setArray4(uniformName: string, array: number[]): Effect;
-        setMatrices(uniformName: string, matrices: Float32Array): Effect;
-        setMatrix(uniformName: string, matrix: Matrix): Effect;
-        setMatrix3x3(uniformName: string, matrix: Float32Array): Effect;
-        setMatrix2x2(uniformname: string, matrix: Float32Array): Effect;
-        setFloat(uniformName: string, value: number): Effect;
-        setBool(uniformName: string, bool: boolean): Effect;
-        setVector2(uniformName: string, vector2: Vector2): Effect;
-        setFloat2(uniformName: string, x: number, y: number): Effect;
-        setVector3(uniformName: string, vector3: Vector3): Effect;
-        setFloat3(uniformName: string, x: number, y: number, z: number): Effect;
-        setVector4(uniformName: string, vector4: Vector4): Effect;
-        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect;
-        setColor3(uniformName: string, color3: Color3): Effect;
-        setColor4(uniformName: string, color3: Color3, alpha: number): Effect;
-        static ShadersStore: {};
-        static IncludesShadersStore: {};
-    }
-}
-
-declare module BABYLON {
-    class FresnelParameters {
-        isEnabled: boolean;
-        leftColor: Color3;
-        rightColor: Color3;
-        bias: number;
-        power: number;
-        clone(): FresnelParameters;
-        serialize(): any;
-        static Parse(parsedFresnelParameters: any): FresnelParameters;
-    }
-}
-
-declare module BABYLON {
-    class MaterialDefines {
-        _keys: string[];
-        isEqual(other: MaterialDefines): boolean;
-        cloneTo(other: MaterialDefines): void;
-        reset(): void;
-        toString(): string;
-    }
-    class Material {
-        name: string;
-        private static _TriangleFillMode;
-        private static _WireFrameFillMode;
-        private static _PointFillMode;
-        static TriangleFillMode: number;
-        static WireFrameFillMode: number;
-        static PointFillMode: number;
-        private static _ClockWiseSideOrientation;
-        private static _CounterClockWiseSideOrientation;
-        static ClockWiseSideOrientation: number;
-        static CounterClockWiseSideOrientation: number;
-        id: string;
-        checkReadyOnEveryCall: boolean;
-        checkReadyOnlyOnce: boolean;
-        state: string;
-        alpha: number;
-        backFaceCulling: boolean;
-        sideOrientation: number;
-        onCompiled: (effect: Effect) => void;
-        onError: (effect: Effect, errors: string) => void;
-        onDispose: () => void;
-        onBind: (material: Material, mesh: Mesh) => void;
-        getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
-        alphaMode: number;
-        disableDepthWrite: boolean;
-        fogEnabled: boolean;
-        pointSize: number;
-        zOffset: number;
-        wireframe: boolean;
-        pointsCloud: boolean;
-        fillMode: number;
-        _effect: Effect;
-        _wasPreviouslyReady: boolean;
-        private _scene;
-        private _fillMode;
-        private _cachedDepthWriteState;
-        constructor(name: string, scene: Scene, doNotAdd?: boolean);
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         * subclasses should override adding information pertainent to themselves
-         */
-        toString(fullDetails?: boolean): string;
-        isFrozen: boolean;
-        freeze(): void;
-        unfreeze(): void;
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        getEffect(): Effect;
-        getScene(): Scene;
-        needAlphaBlending(): boolean;
-        needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
-        trackCreation(onCompiled: (effect: Effect) => void, onError: (effect: Effect, errors: string) => void): void;
-        markDirty(): void;
-        _preBind(): void;
-        bind(world: Matrix, mesh?: Mesh): void;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        unbind(): void;
-        clone(name: string): Material;
-        getBindedMeshes(): AbstractMesh[];
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
-        serialize(): any;
-        static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial;
-        static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any;
-    }
-}
-
-declare module BABYLON {
-    class MaterialHelper {
-        static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines): boolean;
-        static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks): void;
-        static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines, fallbacks: EffectFallbacks): void;
-        static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void;
-        static BindLightShadow(light: Light, scene: Scene, mesh: AbstractMesh, lightIndex: number, effect: Effect, depthValuesAlreadySet: boolean): boolean;
-        static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void;
-        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines): void;
-        static BindFogParameters(scene: Scene, mesh: AbstractMesh, effect: Effect): void;
-        static BindBonesParameters(mesh: AbstractMesh, effect: Effect): void;
-        static BindLogDepth(defines: MaterialDefines, effect: Effect, scene: Scene): void;
-        static BindClipPlane(effect: Effect, scene: Scene): void;
-    }
-}
-
-declare module BABYLON {
-    class MultiMaterial extends Material {
-        subMaterials: Material[];
-        constructor(name: string, scene: Scene);
-        getSubMaterial(index: any): Material;
-        isReady(mesh?: AbstractMesh): boolean;
-        clone(name: string, cloneChildren?: boolean): MultiMaterial;
-        serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The Physically based material of BJS.
-     *
-     * This offers the main features of a standard PBR material.
-     * For more information, please refer to the documentation :
-     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
-     */
-    class PBRMaterial extends BABYLON.Material {
-        /**
-         * Intensity of the direct lights e.g. the four lights available in your scene.
-         * This impacts both the direct diffuse and specular highlights.
-         */
-        directIntensity: number;
-        /**
-         * Intensity of the emissive part of the material.
-         * This helps controlling the emissive effect without modifying the emissive color.
-         */
-        emissiveIntensity: number;
-        /**
-         * Intensity of the environment e.g. how much the environment will light the object
-         * either through harmonics for rough material or through the refelction for shiny ones.
-         */
-        environmentIntensity: number;
-        /**
-         * This is a special control allowing the reduction of the specular highlights coming from the
-         * four lights of the scene. Those highlights may not be needed in full environment lighting.
-         */
-        specularIntensity: number;
-        private _lightingInfos;
-        /**
-         * Debug Control allowing disabling the bump map on this material.
-         */
-        disableBumpMap: boolean;
-        /**
-         * Debug Control helping enforcing or dropping the darkness of shadows.
-         * 1.0 means the shadows have their normal darkness, 0.0 means the shadows are not visible.
-         */
-        overloadedShadowIntensity: number;
-        /**
-         * Debug Control helping dropping the shading effect coming from the diffuse lighting.
-         * 1.0 means the shade have their normal impact, 0.0 means no shading at all.
-         */
-        overloadedShadeIntensity: number;
-        private _overloadedShadowInfos;
-        /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        cameraExposure: number;
-        /**
-         * The camera contrast used on this material.
-         * This property is here and not in the camera to allow controlling contrast without full screen post process.
-         */
-        cameraContrast: number;
-        private _cameraInfos;
-        private _microsurfaceTextureLods;
-        /**
-         * Debug Control allowing to overload the ambient color.
-         * This as to be use with the overloadedAmbientIntensity parameter.
-         */
-        overloadedAmbient: Color3;
-        /**
-         * Debug Control indicating how much the overloaded ambient color is used against the default one.
-         */
-        overloadedAmbientIntensity: number;
-        /**
-         * Debug Control allowing to overload the albedo color.
-         * This as to be use with the overloadedAlbedoIntensity parameter.
-         */
-        overloadedAlbedo: Color3;
-        /**
-         * Debug Control indicating how much the overloaded albedo color is used against the default one.
-         */
-        overloadedAlbedoIntensity: number;
-        /**
-         * Debug Control allowing to overload the reflectivity color.
-         * This as to be use with the overloadedReflectivityIntensity parameter.
-         */
-        overloadedReflectivity: Color3;
-        /**
-         * Debug Control indicating how much the overloaded reflectivity color is used against the default one.
-         */
-        overloadedReflectivityIntensity: number;
-        /**
-         * Debug Control allowing to overload the emissive color.
-         * This as to be use with the overloadedEmissiveIntensity parameter.
-         */
-        overloadedEmissive: Color3;
-        /**
-         * Debug Control indicating how much the overloaded emissive color is used against the default one.
-         */
-        overloadedEmissiveIntensity: number;
-        private _overloadedIntensity;
-        /**
-         * Debug Control allowing to overload the reflection color.
-         * This as to be use with the overloadedReflectionIntensity parameter.
-         */
-        overloadedReflection: Color3;
-        /**
-         * Debug Control indicating how much the overloaded reflection color is used against the default one.
-         */
-        overloadedReflectionIntensity: number;
-        /**
-         * Debug Control allowing to overload the microsurface.
-         * This as to be use with the overloadedMicroSurfaceIntensity parameter.
-         */
-        overloadedMicroSurface: number;
-        /**
-         * Debug Control indicating how much the overloaded microsurface is used against the default one.
-         */
-        overloadedMicroSurfaceIntensity: number;
-        private _overloadedMicroSurface;
-        /**
-         * AKA Diffuse Texture in standard nomenclature.
-         */
-        albedoTexture: BaseTexture;
-        /**
-         * AKA Occlusion Texture in other nomenclature.
-         */
-        ambientTexture: BaseTexture;
-        opacityTexture: BaseTexture;
-        reflectionTexture: BaseTexture;
-        emissiveTexture: BaseTexture;
-        /**
-         * AKA Specular texture in other nomenclature.
-         */
-        reflectivityTexture: BaseTexture;
-        bumpTexture: BaseTexture;
-        lightmapTexture: BaseTexture;
-        refractionTexture: BaseTexture;
-        ambientColor: Color3;
-        /**
-         * AKA Diffuse Color in other nomenclature.
-         */
-        albedoColor: Color3;
-        /**
-         * AKA Specular Color in other nomenclature.
-         */
-        reflectivityColor: Color3;
-        reflectionColor: Color3;
-        emissiveColor: Color3;
-        /**
-
-         * AKA Glossiness in other nomenclature.
-         */
-        microSurface: number;
-        /**
-         * source material index of refraction (IOR)' / 'destination material IOR.
-         */
-        indexOfRefraction: number;
-        /**
-         * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
-         */
-        invertRefractionY: boolean;
-        opacityFresnelParameters: FresnelParameters;
-        emissiveFresnelParameters: FresnelParameters;
-        /**
-         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
-         * Materials half opaque for instance using refraction could benefit from this control.
-         */
-        linkRefractionWithTransparency: boolean;
-        /**
-         * The emissive and albedo are linked to never be more than one (Energy conservation).
-         */
-        linkEmissiveWithAlbedo: boolean;
-        useLightmapAsShadowmap: boolean;
-        /**
-         * In this mode, the emissive informtaion will always be added to the lighting once.
-         * A light for instance can be thought as emissive.
-         */
-        useEmissiveAsIllumination: boolean;
-        /**
-         * Secifies that the alpha is coming form the albedo channel alpha channel.
-         */
-        useAlphaFromAlbedoTexture: boolean;
-        /**
-         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
-         * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
-         */
-        useSpecularOverAlpha: boolean;
-        /**
-         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
-         */
-        useMicroSurfaceFromReflectivityMapAlpha: boolean;
-        /**
-         * In case the reflectivity map does not contain the microsurface information in its alpha channel,
-         * The material will try to infer what glossiness each pixel should be.
-         */
-        useAutoMicroSurfaceFromReflectivityMap: boolean;
-        /**
-         * Allows to work with scalar in linear mode. This is definitely a matter of preferences and tools used during
-         * the creation of the material.
-         */
-        useScalarInLinearSpace: boolean;
-        /**
-         * BJS is using an harcoded light falloff based on a manually sets up range.
-         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
-         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
-         */
-        usePhysicalLightFalloff: boolean;
-        /**
-         * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
-         * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
-         */
-        useRadianceOverAlpha: boolean;
-        /**
-         * Allows using the bump map in parallax mode.
-         */
-        useParallax: boolean;
-        /**
-         * Allows using the bump map in parallax occlusion mode.
-         */
-        useParallaxOcclusion: boolean;
-        /**
-         * Controls the scale bias of the parallax mode.
-         */
-        parallaxScaleBias: number;
-        disableLighting: boolean;
-        private _renderTargets;
-        private _worldViewProjectionMatrix;
-        private _globalAmbientColor;
-        private _tempColor;
-        private _renderId;
-        private _defines;
-        private _cachedDefines;
-        private _useLogarithmicDepth;
-        /**
-         * Instantiates a new PBRMaterial instance.
-         *
-         * @param name The material name
-         * @param scene The scene the material will be use in.
-         */
-        constructor(name: string, scene: Scene);
-        useLogarithmicDepth: boolean;
-        needAlphaBlending(): boolean;
-        needAlphaTesting(): boolean;
-        private _shouldUseAlphaFromAlbedoTexture();
-        getAlphaTestTexture(): BaseTexture;
-        private _checkCache(scene, mesh?, useInstances?);
-        private convertColorToLinearSpaceToRef(color, ref);
-        private static convertColorToLinearSpaceToRef(color, ref, useScalarInLinear);
-        private static _scaledAlbedo;
-        private static _scaledReflectivity;
-        private static _scaledEmissive;
-        private static _scaledReflection;
-        private static _lightRadiuses;
-        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean): void;
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        unbind(): void;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        private _myScene;
-        private _myShadowGenerator;
-        bind(world: Matrix, mesh?: Mesh): void;
-        getAnimatables(): IAnimatable[];
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
-        clone(name: string): PBRMaterial;
-        serialize(): any;
-        static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial;
-    }
-}
-
-declare module BABYLON {
-    class ShaderMaterial extends Material {
-        private _shaderPath;
-        private _options;
-        private _textures;
-        private _floats;
-        private _floatsArrays;
-        private _colors3;
-        private _colors4;
-        private _vectors2;
-        private _vectors3;
-        private _vectors4;
-        private _matrices;
-        private _matrices3x3;
-        private _matrices2x2;
-        private _cachedWorldViewMatrix;
-        private _renderId;
-        constructor(name: string, scene: Scene, shaderPath: any, options: any);
-        needAlphaBlending(): boolean;
-        needAlphaTesting(): boolean;
-        private _checkUniform(uniformName);
-        setTexture(name: string, texture: Texture): ShaderMaterial;
-        setFloat(name: string, value: number): ShaderMaterial;
-        setFloats(name: string, value: number[]): ShaderMaterial;
-        setColor3(name: string, value: Color3): ShaderMaterial;
-        setColor4(name: string, value: Color4): ShaderMaterial;
-        setVector2(name: string, value: Vector2): ShaderMaterial;
-        setVector3(name: string, value: Vector3): ShaderMaterial;
-        setVector4(name: string, value: Vector4): ShaderMaterial;
-        setMatrix(name: string, value: Matrix): ShaderMaterial;
-        setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
-        setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
-        clone(name: string): ShaderMaterial;
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
-        serialize(): any;
-        static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial;
-    }
-}
-
-declare module BABYLON {
-    class StandardMaterial extends Material {
-        diffuseTexture: BaseTexture;
-        ambientTexture: BaseTexture;
-        opacityTexture: BaseTexture;
-        reflectionTexture: BaseTexture;
-        emissiveTexture: BaseTexture;
-        specularTexture: BaseTexture;
-        bumpTexture: BaseTexture;
-        lightmapTexture: BaseTexture;
-        refractionTexture: BaseTexture;
-        ambientColor: Color3;
-        diffuseColor: Color3;
-        specularColor: Color3;
-        emissiveColor: Color3;
-        specularPower: number;
-        useAlphaFromDiffuseTexture: boolean;
-        useEmissiveAsIllumination: boolean;
-        linkEmissiveWithDiffuse: boolean;
-        useReflectionFresnelFromSpecular: boolean;
-        useSpecularOverAlpha: boolean;
-        useReflectionOverAlpha: boolean;
-        disableLighting: boolean;
-        useParallax: boolean;
-        useParallaxOcclusion: boolean;
-        parallaxScaleBias: number;
-        roughness: number;
-        indexOfRefraction: number;
-        invertRefractionY: boolean;
-        useLightmapAsShadowmap: boolean;
-        diffuseFresnelParameters: FresnelParameters;
-        opacityFresnelParameters: FresnelParameters;
-        reflectionFresnelParameters: FresnelParameters;
-        refractionFresnelParameters: FresnelParameters;
-        emissiveFresnelParameters: FresnelParameters;
-        useGlossinessFromSpecularMapAlpha: boolean;
-        private _renderTargets;
-        private _worldViewProjectionMatrix;
-        private _globalAmbientColor;
-        private _renderId;
-        private _defines;
-        private _cachedDefines;
-        private _useLogarithmicDepth;
-        constructor(name: string, scene: Scene);
-        useLogarithmicDepth: boolean;
-        needAlphaBlending(): boolean;
-        needAlphaTesting(): boolean;
-        private _shouldUseAlphaFromDiffuseTexture();
-        getAlphaTestTexture(): BaseTexture;
-        private _checkCache(scene, mesh?, useInstances?);
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        unbind(): void;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
-        getAnimatables(): IAnimatable[];
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
-        clone(name: string): StandardMaterial;
-        serialize(): any;
-        static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial;
-        static DiffuseTextureEnabled: boolean;
-        static AmbientTextureEnabled: boolean;
-        static OpacityTextureEnabled: boolean;
-        static ReflectionTextureEnabled: boolean;
-        static EmissiveTextureEnabled: boolean;
-        static SpecularTextureEnabled: boolean;
-        static BumpTextureEnabled: boolean;
-        static FresnelEnabled: boolean;
-        static LightmapTextureEnabled: boolean;
-        static RefractionTextureEnabled: boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ISceneLoaderPlugin {
-        extensions: string;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-    }
-    interface ISceneLoaderPluginAsync {
-        extensions: string;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static NO_LOGGING: number;
-        static MINIMAL_LOGGING: number;
-        static SUMMARY_LOGGING: number;
-        static DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        private static _registeredPlugins;
-        private static _getPluginForFilename(sceneFilename);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
     }
 }
 
@@ -7113,138 +7114,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        refreshRate: number;
-        getScene(): Scene;
-        cubeTexture: RenderTargetTexture;
-        renderList: AbstractMesh[];
-        attachToMesh(mesh: AbstractMesh): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBoxRenderer {
-        frontColor: Color3;
-        backColor: Color3;
-        showBackLines: boolean;
-        renderList: SmartArray<BoundingBox>;
-        private _scene;
-        private _colorShader;
-        private _vb;
-        private _ib;
-        constructor(scene: Scene);
-        private _prepareRessources();
-        reset(): void;
-        render(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _worldViewProjection;
-        private _cachedDefines;
-        constructor(scene: Scene, type?: number);
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        getDepthMap(): RenderTargetTexture;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class EdgesRenderer {
-        edgesWidthScalerForOrthographic: number;
-        edgesWidthScalerForPerspective: number;
-        private _source;
-        private _linesPositions;
-        private _linesNormals;
-        private _linesIndices;
-        private _epsilon;
-        private _indicesCount;
-        private _lineShader;
-        private _vb0;
-        private _vb1;
-        private _ib;
-        private _buffers;
-        private _checkVerticesInsteadOfIndices;
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
-        private _prepareRessources();
-        dispose(): void;
-        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
-        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
-        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
-        _generateEdgesLines(): void;
-        render(): void;
-    }
-}
-
-declare module BABYLON {
-    class OutlineRenderer {
-        private _scene;
-        private _effect;
-        private _cachedDefines;
-        constructor(scene: Scene);
-        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class RenderingGroup {
-        index: number;
-        private _scene;
-        private _opaqueSubMeshes;
-        private _transparentSubMeshes;
-        private _alphaTestSubMeshes;
-        private _activeVertices;
-        onBeforeTransparentRendering: () => void;
-        constructor(index: number, scene: Scene);
-        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): boolean;
-        prepare(): void;
-        dispatch(subMesh: SubMesh): void;
-    }
-}
-
-declare module BABYLON {
-    class RenderingManager {
-        static MAX_RENDERINGGROUPS: number;
-        private _scene;
-        private _renderingGroups;
-        private _depthBufferAlreadyCleaned;
-        private _currentIndex;
-        private _currentActiveMeshes;
-        private _currentRenderParticles;
-        private _currentRenderSprites;
-        constructor(scene: Scene);
-        private _renderParticles(index, activeMeshes);
-        private _renderSprites(index);
-        private _clearDepthBuffer();
-        private _renderSpritesAndParticles();
-        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
-        reset(): void;
-        dispatch(subMesh: SubMesh): void;
-    }
-}
-
-declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         constructor(name: string, ratio: number, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean);
     }
@@ -7817,6 +7686,138 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        refreshRate: number;
+        getScene(): Scene;
+        cubeTexture: RenderTargetTexture;
+        renderList: AbstractMesh[];
+        attachToMesh(mesh: AbstractMesh): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBoxRenderer {
+        frontColor: Color3;
+        backColor: Color3;
+        showBackLines: boolean;
+        renderList: SmartArray<BoundingBox>;
+        private _scene;
+        private _colorShader;
+        private _vb;
+        private _ib;
+        constructor(scene: Scene);
+        private _prepareRessources();
+        reset(): void;
+        render(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class DepthRenderer {
+        private _scene;
+        private _depthMap;
+        private _effect;
+        private _viewMatrix;
+        private _projectionMatrix;
+        private _transformMatrix;
+        private _worldViewProjection;
+        private _cachedDefines;
+        constructor(scene: Scene, type?: number);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        getDepthMap(): RenderTargetTexture;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class EdgesRenderer {
+        edgesWidthScalerForOrthographic: number;
+        edgesWidthScalerForPerspective: number;
+        private _source;
+        private _linesPositions;
+        private _linesNormals;
+        private _linesIndices;
+        private _epsilon;
+        private _indicesCount;
+        private _lineShader;
+        private _vb0;
+        private _vb1;
+        private _ib;
+        private _buffers;
+        private _checkVerticesInsteadOfIndices;
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
+        private _prepareRessources();
+        dispose(): void;
+        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
+        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
+        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
+        _generateEdgesLines(): void;
+        render(): void;
+    }
+}
+
+declare module BABYLON {
+    class OutlineRenderer {
+        private _scene;
+        private _effect;
+        private _cachedDefines;
+        constructor(scene: Scene);
+        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class RenderingGroup {
+        index: number;
+        private _scene;
+        private _opaqueSubMeshes;
+        private _transparentSubMeshes;
+        private _alphaTestSubMeshes;
+        private _activeVertices;
+        onBeforeTransparentRendering: () => void;
+        constructor(index: number, scene: Scene);
+        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void): boolean;
+        prepare(): void;
+        dispatch(subMesh: SubMesh): void;
+    }
+}
+
+declare module BABYLON {
+    class RenderingManager {
+        static MAX_RENDERINGGROUPS: number;
+        private _scene;
+        private _renderingGroups;
+        private _depthBufferAlreadyCleaned;
+        private _currentIndex;
+        private _currentActiveMeshes;
+        private _currentRenderParticles;
+        private _currentRenderSprites;
+        constructor(scene: Scene);
+        private _renderParticles(index, activeMeshes);
+        private _renderSprites(index);
+        private _clearDepthBuffer();
+        private _renderSpritesAndParticles();
+        render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, activeMeshes: AbstractMesh[], renderParticles: boolean, renderSprites: boolean): void;
+        reset(): void;
+        dispatch(subMesh: SubMesh): void;
     }
 }
 
@@ -8656,6 +8657,61 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class VRCameraMetrics {
+        hResolution: number;
+        vResolution: number;
+        hScreenSize: number;
+        vScreenSize: number;
+        vScreenCenter: number;
+        eyeToScreenDistance: number;
+        lensSeparationDistance: number;
+        interpupillaryDistance: number;
+        distortionK: number[];
+        chromaAbCorrection: number[];
+        postProcessScaleFactor: number;
+        lensCenterOffset: number;
+        compensateDistortion: boolean;
+        aspectRatio: number;
+        aspectRatioFov: number;
+        leftHMatrix: Matrix;
+        rightHMatrix: Matrix;
+        leftPreViewMatrix: Matrix;
+        rightPreViewMatrix: Matrix;
+        static GetDefault(): VRCameraMetrics;
+    }
+}
+
+declare module BABYLON {
+    class VRDeviceOrientationFreeCamera extends FreeCamera {
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
+        getTypeName(): string;
+    }
+    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean);
+        getTypeName(): string;
+    }
+}
+
+declare var HMDVRDevice: any;
+declare var PositionSensorVRDevice: any;
+declare module BABYLON {
+    class WebVRFreeCamera extends FreeCamera {
+        _hmdDevice: any;
+        _sensorDevice: any;
+        _cacheState: any;
+        _cacheQuaternion: Quaternion;
+        _cacheRotation: Vector3;
+        _vrEnabled: boolean;
+        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
+        private _getWebVRDevices(devices);
+        _checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: HTMLElement): void;
+        getTypeName(): string;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
         gamepad: Gamepad;
@@ -8885,61 +8941,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class VRCameraMetrics {
-        hResolution: number;
-        vResolution: number;
-        hScreenSize: number;
-        vScreenSize: number;
-        vScreenCenter: number;
-        eyeToScreenDistance: number;
-        lensSeparationDistance: number;
-        interpupillaryDistance: number;
-        distortionK: number[];
-        chromaAbCorrection: number[];
-        postProcessScaleFactor: number;
-        lensCenterOffset: number;
-        compensateDistortion: boolean;
-        aspectRatio: number;
-        aspectRatioFov: number;
-        leftHMatrix: Matrix;
-        rightHMatrix: Matrix;
-        leftPreViewMatrix: Matrix;
-        rightPreViewMatrix: Matrix;
-        static GetDefault(): VRCameraMetrics;
-    }
-}
-
-declare module BABYLON {
-    class VRDeviceOrientationFreeCamera extends FreeCamera {
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
-        getTypeName(): string;
-    }
-    class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean);
-        getTypeName(): string;
-    }
-}
-
-declare var HMDVRDevice: any;
-declare var PositionSensorVRDevice: any;
-declare module BABYLON {
-    class WebVRFreeCamera extends FreeCamera {
-        _hmdDevice: any;
-        _sensorDevice: any;
-        _cacheState: any;
-        _cacheQuaternion: Quaternion;
-        _cacheRotation: Vector3;
-        _vrEnabled: boolean;
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean);
-        private _getWebVRDevices(devices);
-        _checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: HTMLElement): void;
-        getTypeName(): string;
-    }
-}
-
-declare module BABYLON {
     interface IOctreeContainer<T> {
         blocks: Array<OctreeBlock<T>>;
     }
@@ -9044,6 +9045,9 @@ declare module BABYLON {
     }
 }
 
+declare module BABYLON.Internals {
+}
+
 declare module BABYLON {
     class BaseTexture {
         name: string;
@@ -9132,6 +9136,7 @@ declare module BABYLON {
         private _textureMatrix;
         private _size;
         private _usePMREMGenerator;
+        private _isBABYLONPreprocessed;
         /**
          * The texture URL.
          */
@@ -9154,19 +9159,50 @@ declare module BABYLON {
          *
          * @param url The location of the HDR raw data (Panorama stored in RGBE format)
          * @param scene The scene the texture will be used in
-         * @param size The cubemap desired size (the more it increases the longer the generation will be)
+         * @param size The cubemap desired size (the more it increases the longer the generation will be) If the size is omitted this implies you are using a preprocessed cubemap.
          * @param noMipmap Forces to not generate the mipmap if true
          * @param generateHarmonics Specifies wether you want to extract the polynomial harmonics during the generation process
          * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
          * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
          */
-        constructor(url: string, scene: Scene, size: number, noMipmap?: boolean, generateHarmonics?: boolean, useInGammaSpace?: boolean, usePMREMGenerator?: boolean);
+        constructor(url: string, scene: Scene, size?: number, noMipmap?: boolean, generateHarmonics?: boolean, useInGammaSpace?: boolean, usePMREMGenerator?: boolean);
+        /**
+         * Occurs when the file is a preprocessed .babylon.hdr file.
+         */
+        private loadBabylonTexture();
+        /**
+         * Occurs when the file is raw .hdr file.
+         */
+        private loadHDRTexture();
+        /**
+         * Starts the loading process of the texture.
+         */
         private loadTexture();
         clone(): HDRCubeTexture;
         delayLoad(): void;
         getReflectionTextureMatrix(): Matrix;
         static Parse(parsedTexture: any, scene: Scene, rootUrl: string): HDRCubeTexture;
         serialize(): any;
+        /**
+         * Saves as a file the data contained in the texture in a binary format.
+         * This can be used to prevent the long loading tie associated with creating the seamless texture as well
+         * as the spherical used in the lighting.
+         * @param url The HDR file url.
+         * @param size The size of the texture data to generate (one of the cubemap face desired width).
+         * @param onError Method called if any error happens during download.
+         * @return The packed binary data.
+         */
+        static generateBabylonHDROnDisk(url: string, size: number, onError?: (() => void)): void;
+        /**
+         * Serializes the data contained in the texture in a binary format.
+         * This can be used to prevent the long loading tie associated with creating the seamless texture as well
+         * as the spherical used in the lighting.
+         * @param url The HDR file url.
+         * @param size The size of the texture data to generate (one of the cubemap face desired width).
+         * @param onError Method called if any error happens during download.
+         * @return The packed binary data.
+         */
+        static generateBabylonHDR(url: string, size: number, callback: ((ArrayBuffer) => void), onError?: (() => void)): void;
     }
 }
 
@@ -9332,9 +9368,6 @@ declare module BABYLON {
         private _createTexture();
         update(): boolean;
     }
-}
-
-declare module BABYLON.Internals {
 }
 
 declare module BABYLON {
