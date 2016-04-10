@@ -422,7 +422,9 @@ var BABYLON;
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
-            particleSystem.start();
+            if (!parsedParticleSystem.preventAutoStart) {
+                particleSystem.start();
+            }
             return particleSystem;
         };
         // Statics
