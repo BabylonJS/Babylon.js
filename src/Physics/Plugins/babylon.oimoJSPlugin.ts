@@ -25,7 +25,7 @@ module BABYLON {
 
         public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
 
-            impostors.forEach(function(impostor) {
+            impostors.forEach(function (impostor) {
                 impostor.beforeStep();
             });
 
@@ -96,8 +96,8 @@ module BABYLON {
 
                 var impostors = [impostor];
                 function addToArray(parent: IPhysicsEnabledObject) {
-                    if(!parent.getChildMeshes) return;
-                    parent.getChildMeshes().forEach(function(m) {
+                    if (!parent.getChildMeshes) return;
+                    parent.getChildMeshes().forEach(function (m) {
                         if (m.physicsImpostor) {
                             impostors.push(m.physicsImpostor);
                             m.physicsImpostor._init();
@@ -114,11 +114,12 @@ module BABYLON {
 
                     //get the correct bounding box
                     var oldQuaternion = i.object.rotationQuaternion;
-                    var rot = new OIMO.Euler().setFromQuaternion({ 
-                        x: impostor.object.rotationQuaternion.x, 
-                        y: impostor.object.rotationQuaternion.y, 
-                        z: impostor.object.rotationQuaternion.z, 
-                        s: impostor.object.rotationQuaternion.w });
+                    var rot = new OIMO.Euler().setFromQuaternion({
+                        x: impostor.object.rotationQuaternion.x,
+                        y: impostor.object.rotationQuaternion.y,
+                        z: impostor.object.rotationQuaternion.z,
+                        s: impostor.object.rotationQuaternion.w
+                    });
 
 
                     var extendSize = i.getObjectExtendSize();
@@ -283,10 +284,10 @@ module BABYLON {
             //So we will bruteforce it!
             try {
                 this.world.removeJoint(impostorJoint.joint.physicsJoint);
-            } catch(e) {
+            } catch (e) {
                 Tools.Warn(e);
             }
-            
+
         }
 
         public isSupported(): boolean {
@@ -370,14 +371,16 @@ module BABYLON {
         }
 
         public setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number) {
-            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
+            //TODO separate rotational and transational motors.
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
             if (motor) {
                 motor.setMotor(speed, maxForce);
             }
         }
 
         public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number) {
-            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.limitMotor;
+            //TODO separate rotational and transational motors.
+            var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
             if (motor) {
                 motor.setLimit(upperLimit, lowerLimit === void 0 ? -upperLimit : lowerLimit);
             }
