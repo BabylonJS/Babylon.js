@@ -1911,7 +1911,12 @@
 
             return texture;
         }
-
+        
+        public updateTextureSize(texture: WebGLTexture, width: number, height: number) {
+            texture._width = width;
+            texture._height = height;
+        }
+        
         public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer) => ArrayBufferView[],
             mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
@@ -1947,7 +1952,11 @@
                     gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                     gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
-
+                
+                width = texture._width;
+                height = texture._height;
+                isPot = (Tools.IsExponentOfTwo(width) && Tools.IsExponentOfTwo(height));
+            
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
