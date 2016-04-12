@@ -16100,9 +16100,7 @@ var BABYLON;
             // Debug layer
             this.debugLayer.hide();
             // Events
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
             this.onBeforeRenderObservable.clear();
             this.onAfterRenderObservable.clear();
             this.detachControl();
@@ -32518,13 +32516,6 @@ var BABYLON;
         Object.defineProperty(LinesMesh.prototype, "material", {
             get: function () {
                 return this._colorShader;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinesMesh.prototype, "isPickable", {
-            get: function () {
-                return true;
             },
             enumerable: true,
             configurable: true

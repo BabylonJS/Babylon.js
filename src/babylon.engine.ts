@@ -470,7 +470,7 @@
             if (AudioEngine && !Engine.audioEngine) {
                 Engine.audioEngine = new AudioEngine();
             }
-			
+
             //default loading screen
             this._loadingScreen = new DefaultLoadingScreen(this._renderingCanvas);
 
@@ -1911,12 +1911,12 @@
 
             return texture;
         }
-        
+
         public updateTextureSize(texture: WebGLTexture, width: number, height: number) {
             texture._width = width;
             texture._height = height;
         }
-        
+
         public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer) => ArrayBufferView[],
             mipmmapGenerator: ((faces: ArrayBufferView[]) => ArrayBufferView[][])): WebGLTexture {
@@ -1952,11 +1952,11 @@
                     gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                     gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
-                
+
                 width = texture._width;
                 height = texture._height;
                 isPot = (Tools.IsExponentOfTwo(width) && Tools.IsExponentOfTwo(height));
-            
+
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
@@ -1972,11 +1972,11 @@
                         arrayTemp.push(rgbeDataArrays[4]); // -Y
                         arrayTemp.push(rgbeDataArrays[2]); // +Z
                         arrayTemp.push(rgbeDataArrays[5]); // -Z
-                        
+
                         var mipData = mipmmapGenerator(arrayTemp);
                         for (var level = 0; level < mipData.length; level++) {
                             var mipSize = width >> level;
-                            
+
                             // mipData is order in +X -X +Y -Y +Z -Z
                             gl.texImage2D(facesIndex[0], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][0]);
                             gl.texImage2D(facesIndex[1], level, internalFormat, mipSize, mipSize, 0, internalFormat, textureType, mipData[level][2]);

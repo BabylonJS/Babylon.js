@@ -60,17 +60,17 @@ module BABYLON {
          */
         constructor(url: string, scene: Scene, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false) {
             super(scene);
-            
+
             if (!url) {
                 return;
             }
-            
+
             this.name = url;
             this.url = url;
             this.hasAlpha = false;
             this.isCube = true;
             this._textureMatrix = Matrix.Identity();
-            
+
             if (size) {
                 this._isBABYLONPreprocessed = false;
                 this._noMipmap = noMipmap;
@@ -85,9 +85,9 @@ module BABYLON {
                 this._usePMREMGenerator = scene.getEngine().getCaps().textureLOD;
             }
             this.isPMREM = this._usePMREMGenerator;
-            
+
             this._texture = this._getFromCache(url, this._noMipmap);
-            
+
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
                     this.loadTexture();
@@ -96,15 +96,15 @@ module BABYLON {
                 }
             }
         }
-        
+
         /**
          * Occurs when the file is a preprocessed .babylon.hdr file.
          */
         private loadBabylonTexture() {
-            
+
             var mipLevels = 0;
             var floatArrayView: Float32Array = null;
-            
+
             var mipmapGenerator = (data: ArrayBufferView[]) => {
                 var mips = [];
                 var startIndex = 30;
@@ -113,29 +113,29 @@ module BABYLON {
                     // Fill each pixel of the mip level.
                     var faceSize = Math.pow(this._size >> level, 2) * 3;
                     for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
-                        
+
                         var faceData = floatArrayView.subarray(startIndex, startIndex + faceSize);
                         mips[level].push(faceData);
-                        
+
                         startIndex += faceSize;
-                    } 
+                    }
                 }
 
                 return mips;
             };
-            
+
             var callback = (buffer: ArrayBuffer) => {
                 // Create Native Array Views
                 var intArrayView = new Int32Array(buffer);
                 floatArrayView = new Float32Array(buffer);
-                
+
                 // Fill header.
                 var version = intArrayView[0]; // Version 1. (MAy be use in case of format changes for backward compaibility)
                 this._size = intArrayView[1]; // CubeMap max mip face size.
-                
+
                 // Update Texture Information.
                 this.getScene().getEngine().updateTextureSize(this._texture, this._size, this._size);
-                
+
                 // Fill polynomial information.
                 this.sphericalPolynomial = new SphericalPolynomial();
                 this.sphericalPolynomial.x.copyFromFloats(floatArrayView[2], floatArrayView[3], floatArrayView[4]);
@@ -156,7 +156,7 @@ module BABYLON {
                 for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
                     data.push(floatArrayView.subarray(startIndex, startIndex + faceSize));
                 }
-                
+
                 var results = [];
                 var byteArray: Uint8Array = null;
 
@@ -200,13 +200,13 @@ module BABYLON {
 
                     results.push(dataFace);
                 }
-                
+
                 return results;
             }
 
             this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size, Engine.TEXTUREFORMAT_RGB, Engine.TEXTURETYPE_FLOAT, this._noMipmap, callback, mipmapGenerator);
         }
-        
+
         /**
          * Occurs when the file is raw .hdr file.
          */
@@ -286,7 +286,7 @@ module BABYLON {
 
             this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size, Engine.TEXTUREFORMAT_RGB, Engine.TEXTURETYPE_FLOAT, this._noMipmap, callback, mipmapGenerator);
         }
-        
+
         /**
          * Starts the loading process of the texture.
          */
@@ -381,7 +381,7 @@ module BABYLON {
 
                 // Returns a URL you can use as a href.
                 var objUrl = window.URL.createObjectURL(data);
-                
+
                 // Simulates a link to it and click to dowload.
                 var a = document.createElement("a");
                 document.body.appendChild(a);
@@ -390,10 +390,10 @@ module BABYLON {
                 (<any>a).download = "envmap.babylon.hdr";
                 a.click();
             };
-            
+
             HDRCubeTexture.generateBabylonHDR(url, size, callback, onError);
         }
-        
+
         /**
          * Serializes the data contained in the texture in a binary format.
          * This can be used to prevent the long loading tie associated with creating the seamless texture as well
@@ -460,11 +460,11 @@ module BABYLON {
                 var buffer = new ArrayBuffer(byteLength);
                 var intArrayView = new Int32Array(buffer);
                 var floatArrayView = new Float32Array(buffer);
-                
+
                 // Fill header.
                 intArrayView[0] = 1; // Version 1.
                 intArrayView[1] = size; // CubeMap max mip face size.
-                
+
                 // Fill polynomial information.
                 sphericalPolynomial.x.toArray(floatArrayView, 2);
                 sphericalPolynomial.y.toArray(floatArrayView, 5);
@@ -485,13 +485,13 @@ module BABYLON {
                     for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
                         floatArrayView.set(<any>mippedData[level][faceIndex], startIndex);
                         startIndex += faceSize;
-                    } 
+                    }
                 }
-                
+
                 // Callback.
                 callback(buffer);
             }
-            
+
             // Download and process.
             Tools.LoadFile(url, data => {
                 getDataCallback(data);
@@ -499,4 +499,3 @@ module BABYLON {
         }
     }
 }
-
