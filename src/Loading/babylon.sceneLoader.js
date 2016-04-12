@@ -74,7 +74,7 @@ var BABYLON;
                     return plugin;
                 }
             }
-            return this._registeredPlugins[this._registeredPlugins.length - 1];
+            return this._registeredPlugins[0];
         };
         // Public functions
         SceneLoader.GetPluginForExtension = function (extension) {

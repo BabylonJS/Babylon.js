@@ -53,13 +53,6 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(LinesMesh.prototype, "isPickable", {
-            get: function () {
-                return true;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(LinesMesh.prototype, "checkCollisions", {
             get: function () {
                 return false;
