@@ -48,10 +48,6 @@
             return this._colorShader;
         }
 
-        public get isPickable(): boolean {
-            return true;
-        }
-
         public get checkCollisions(): boolean {
             return false;
         }
