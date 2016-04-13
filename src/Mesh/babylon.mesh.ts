@@ -167,7 +167,7 @@
                     if (impostor) {
                         this.physicsImpostor = impostor.clone(this);
                     }
-                }  
+                }
 
                 // Particles
                 for (index = 0; index < scene.particleSystems.length; index++) {
@@ -1829,8 +1829,8 @@
             } else {
                 mesh.layerMask = 0x0FFFFFFF;
             }
-            
-             
+
+
             //(Deprecated) physics
             if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
@@ -1873,7 +1873,7 @@
 
             return mesh;
         }
-        
+
         /**
          * Creates a ribbon mesh.   
          * Please consider using the same method from the `MeshBuilder` class instead.   
@@ -2593,7 +2593,3 @@
         }
     }
 }
-
-
-
-

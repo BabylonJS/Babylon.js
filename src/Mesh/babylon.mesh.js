@@ -333,7 +333,7 @@ var BABYLON;
         };
         /**
          * Returns an array of integers or floats, or a Float32Array, depending on the requested `kind` (positions, indices, normals, etc).
-         * If `copywhenShared` is true (default false) and if the mesh has submeshes, the submesh data are duplicated in the returned array.
+         * If `copywhenShared` is true (default false) and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
          * Returns null if the mesh has no geometry or no vertex buffer.
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -443,7 +443,7 @@ var BABYLON;
         };
         /**
          * Returns an array of integers or a Int32Array populated with the mesh indices.
-         * If the parameter `copyWhenShared` is true (default false) and if the mesh has submeshes, the submesh indices are duplicated in the returned array.
+         * If the parameter `copyWhenShared` is true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
          * Returns an empty array if the mesh has no geometry.
          */
         Mesh.prototype.getIndices = function (copyWhenShared) {
@@ -542,7 +542,7 @@ var BABYLON;
         };
         /**
          * This method recomputes and sets a new `BoundingInfo` to the mesh unless it is locked.
-         * This means the mesh underlying bounding box and shpere are recomputed.
+         * This means the mesh underlying bounding box and sphere are recomputed.
          */
         Mesh.prototype.refreshBoundingInfo = function () {
             if (this._boundingInfo.isLocked) {
@@ -593,10 +593,10 @@ var BABYLON;
          * Sets the vertex data of the mesh geometry for the requested `kind`.
          * If the mesh has no geometry, a new `Geometry` object is set to the mesh and then passed this vertex data.
          * The `data` are either a numeric array either a Float32Array.
+         * The parameter `updatable` is passed as is to the underlying `Geometry` object constructor (if initianilly none) or updater.
          * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).
          * Note that a new underlying `VertexBuffer` object is created each call.
          * If the `kind` is the `PositionKind`, the mesh `BoundingInfo` is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
-         * The same for the mesh submeshes if any.
          *
          * Possible `kind` values :
          * - BABYLON.VertexBuffer.PositionKind
@@ -629,7 +629,6 @@ var BABYLON;
          * The `data` are either a numeric array either a Float32Array.
          * No new underlying `VertexBuffer` object is created.
          * If the `kind` is the `PositionKind` and if `updateExtends` is true, the mesh `BoundingInfo` is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
-         * The same for the mesh submeshes if any.
          * If the parameter `makeItUnique` is true, a new global geometry is created from this positions and is set to the mesh.
          *
          * Possible `kind` values :
@@ -769,7 +768,7 @@ var BABYLON;
             }
         };
         /**
-         * Registers a javascript function for this mesh that will be called just before the rendering process.
+         * Registers for this mesh a javascript function called just before the rendering process.
          * This function is passed the current mesh and doesn't return anything.
          */
         Mesh.prototype.registerBeforeRender = function (func) {
@@ -783,7 +782,7 @@ var BABYLON;
             this.onBeforeRenderObservable.removeCallback(func);
         };
         /**
-         * Registers a javascript function for this mesh that will be called just after the rendering is complete.
+         * Registers for this mesh a javascript function called just after the rendering is complete.
          * This function is passed the current mesh and doesn't return anything.
          */
         Mesh.prototype.registerAfterRender = function (func) {
@@ -893,7 +892,7 @@ var BABYLON;
         };
         /**
          * Triggers the draw call for the mesh.
-         * You don't need to call this method by your own usually because the mesh rendering is handled by the scene rendering manager.
+         * Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager.
          */
         Mesh.prototype.render = function (subMesh, enableAlphaMode) {
             var scene = this.getScene();
@@ -1021,6 +1020,11 @@ var BABYLON;
             this._checkDelayState();
             return true;
         };
+        /**
+         * Sets the mesh material by the material or multiMaterial `id` property.
+         * The material `id` is a string identifying the material or the multiMaterial.
+         * This method returns nothing.
+         */
         Mesh.prototype.setMaterialByID = function (id) {
             var materials = this.getScene().materials;
             var index;
@@ -1039,6 +1043,9 @@ var BABYLON;
                 }
             }
         };
+        /**
+         * Returns as a new array
+         */
         Mesh.prototype.getAnimatables = function () {
             var results = [];
             if (this.material) {
@@ -1049,7 +1056,13 @@ var BABYLON;
             }
             return results;
         };
-        // Geometry
+        /**
+         * Modifies the mesh geometry according to the passed transformation matrix.
+         * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable.
+         * The mesh normals are modified accordingly the same transformation.
+         * tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform
+         * Note that, under the hood, this method sets a new VertexBuffer each call.
+         */
         Mesh.prototype.bakeTransformIntoVertices = function (transform) {
             // Position
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
@@ -1078,7 +1091,13 @@ var BABYLON;
                 this.flipFaces();
             }
         };
-        // Will apply current transform to mesh and reset world matrix
+        /**
+         * Modifies the mesh geometry according to its own current World Matrix.
+         * The mesh World Matrix is then reset.
+         * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
+         * tuto : tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform
+         * Note that, under the hood, this method sets a new VertexBuffer each call.
+         */
         Mesh.prototype.bakeCurrentTransformIntoVertices = function () {
             this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
             this.scaling.copyFromFloats(1, 1, 1);
@@ -1107,12 +1126,22 @@ var BABYLON;
             }
             return true;
         };
-        // Clone
+        /**
+         * Returns a new `Mesh` object generated from the current mesh properties.
+         * This method must not get confused with createInstance().
+         * The parameter `name` is a string, the name given to the new mesh.
+         * The optional parameter `newParent` can be any `Node` object (default `null`).
+         * The optional parameter `doNotCloneChildren` (default `false`) allows/denies the recursive cloning of the original mesh children if any.
+         * The parameter `clonePhysicsImpostor` (default `true`)  allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any.
+         */
         Mesh.prototype.clone = function (name, newParent, doNotCloneChildren, clonePhysicsImpostor) {
             if (clonePhysicsImpostor === void 0) { clonePhysicsImpostor = true; }
             return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
         };
-        // Dispose
+        /**
+         * Disposes the mesh.
+         * This also frees the memory allocated under the hood to all the buffers used by WebGL.
+         */
         Mesh.prototype.dispose = function (doNotRecurse) {
             if (this._geometry) {
                 this._geometry.releaseForMesh(this, true);
@@ -1127,7 +1156,15 @@ var BABYLON;
             }
             _super.prototype.dispose.call(this, doNotRecurse);
         };
-        // Geometric tools
+        /**
+         * Modifies the mesh geometry according to a displacement map.
+         * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
+         * The mesh must be set as updatable. Its internal geometry is directly modified, no new buffer are allocated.
+         * This method returns nothing.
+         * The parameter `url` is a string, the URL from the image file is to be downloaded.
+         * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
+         * The parameter `onSuccess` is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
+         */
         Mesh.prototype.applyDisplacementMap = function (url, minHeight, maxHeight, onSuccess) {
             var _this = this;
             var scene = this.getScene();
@@ -1151,6 +1188,15 @@ var BABYLON;
             };
             BABYLON.Tools.LoadImage(url, onload, function () { }, scene.database);
         };
+        /**
+         * Modifies the mesh geometry according to a displacementMap buffer.
+         * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
+         * The mesh must be set as updatable. Its internal geometry is directly modified, no new buffer are allocated.
+         * This method returns nothing.
+         * The parameter `buffer` is a `Uint8Array` buffer containing series of `Uint8` lower than 255, the red, green, blue and alpha values of each successive pixel.
+         * The parameters `heightMapWidth` and `heightMapHeight` are positive integers to set the width and height of the buffer image.
+         * The parameters `minHeight` and `maxHeight` are the lower and upper limits of the displacement.
+         */
         Mesh.prototype.applyDisplacementMapFromBuffer = function (buffer, heightMapWidth, heightMapHeight, minHeight, maxHeight) {
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)
                 || !this.isVerticesDataPresent(BABYLON.VertexBuffer.NormalKind)
@@ -1188,7 +1234,8 @@ var BABYLON;
         /**
          * Modify the mesh to get a flat shading rendering.
          * This means each mesh facet will then have its own normals. Usually new vertices are added in the mesh geometry to get this result.
-         * Warning : the mesh is really modified.
+         * This method returns nothing.
+         * Warning : the mesh is really modified even if not set originally as updatable and, under the hood, a new VertexBuffer is allocated.
          */
         Mesh.prototype.convertToFlatShadedMesh = function () {
             /// <summary>Update normals and vertices to get a flat shading rendering.</summary>
@@ -1267,6 +1314,9 @@ var BABYLON;
         /**
          * This method removes all the mesh indices and add new vertices (duplication) in order to unfold facets into buffers.
          * In other words, more vertices, no more indices and a single bigger VBO.
+         * This method returns nothing.
+         * The mesh is really modified even if not set originally as updatable. Under the hood, a new VertexBuffer is allocated.
+         *
          */
         Mesh.prototype.convertToUnIndexedMesh = function () {
             /// <summary>Remove indices by unfolding faces into buffers</summary>
@@ -1323,8 +1373,9 @@ var BABYLON;
             this.synchronizeInstances();
         };
         /**
-         * Inverses facet orientations and inverts also the normals with `flipNormals` (default false) if true.
-         * Warning : the mesh is really modified.
+         * Inverses facet orientations and inverts also the normals with `flipNormals` (default `false`) if true.
+         * This method returns nothing.
+         * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
          */
         Mesh.prototype.flipFaces = function (flipNormals) {
             if (flipNormals === void 0) { flipNormals = false; }
@@ -1347,10 +1398,23 @@ var BABYLON;
         // Instances
         /**
          * Creates a new `InstancedMesh` object from the mesh model.
+         * An instance shares the same properties and the same material than its model.
+         * Only these properties of each instance can then be set individually :
+         * - position
+         * - rotation
+         * - rotationQuaternion
+         * - setPivotMatrix
+         * - scaling
+         * tuto : http://doc.babylonjs.com/tutorials/How_to_use_Instances
          */
         Mesh.prototype.createInstance = function (name) {
             return new BABYLON.InstancedMesh(name, this);
         };
+        /**
+         * Synchronises all the mesh instance submeshes to the current mesh submeshes, if any.
+         * After this call, all the mesh instances have the same submeshes than the current mesh.
+         * This method returns nothing.
+         */
         Mesh.prototype.synchronizeInstances = function () {
             for (var instanceIndex = 0; instanceIndex < this.instances.length; instanceIndex++) {
                 var instance = this.instances[instanceIndex];
@@ -1359,7 +1423,7 @@ var BABYLON;
         };
         /**
          * Simplify the mesh according to the given array of settings.
-         * Function will return immediately and will simplify async.
+         * Function will return immediately and will simplify async. It returns nothing.
          * @param settings a collection of simplification settings.
          * @param parallelProcessing should all levels calculate parallel or one after the other.
          * @param type the type of simplification to run.
