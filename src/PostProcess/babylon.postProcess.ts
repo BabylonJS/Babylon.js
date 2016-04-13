@@ -65,11 +65,18 @@
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
 
-            var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
-            var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
+            var desiredWidth = this._renderRatio.width || ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
+            var desiredHeight = this._renderRatio.height || ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
 
-            desiredWidth = this._renderRatio.width || Tools.GetExponentOfTwo(desiredWidth, maxSize);
-            desiredHeight = this._renderRatio.height || Tools.GetExponentOfTwo(desiredHeight, maxSize);
+            if (this.renderTargetSamplingMode !== Texture.NEAREST_SAMPLINGMODE) {
+                if (!this._renderRatio.width) {
+                    desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
+                }
+
+                if (!this._renderRatio.height) {
+                    desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize);
+                }
+            }
 
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {

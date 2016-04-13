@@ -39,10 +39,16 @@ var BABYLON;
             camera = camera || this._camera;
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
-            var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
-            var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
-            desiredWidth = this._renderRatio.width || BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
-            desiredHeight = this._renderRatio.height || BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
+            var desiredWidth = this._renderRatio.width || ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
+            var desiredHeight = this._renderRatio.height || ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
+            if (this.renderTargetSamplingMode !== BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                if (!this._renderRatio.width) {
+                    desiredWidth = BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
+                }
+                if (!this._renderRatio.height) {
+                    desiredHeight = BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
+                }
+            }
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
