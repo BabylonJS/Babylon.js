@@ -4,7 +4,7 @@
     - Added support for HDR cubemaps ([sebavan](https://github.com/sebavan))
     - Support for shaders includes ([deltakosh](https://github.com/deltakosh))
     - new mesh type : `LineSystem` ([jerome](https://github.com/jbousquie))
-    - SerializationHelper for complex classes using TypeScript decorators  ([deltakosh](https://github.com/deltakosh))
+    - SerializationHelper for complex classes using TypeScript decorators ([deltakosh](https://github.com/deltakosh))
     - StandardMaterial now supports Parallax and Parallax Occlusion Mapping ([nockawa](https://github.com/nockawa))
     - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#3). More [info here](NEED DOC!) ([deltakosh](https://github.com/deltakosh))
     - New debuger tool: SkeletonViewer. See [demo here](Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8) (Adam & [deltakosh](https://github.com/deltakosh))
@@ -15,6 +15,7 @@
     - Unity3D exporter: Added support for export and run (local webserver) ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
     - Moved PBR Material to core ([deltakosh](https://github.com/deltakosh))
   - **Updates**
+    - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
     - Added skeleton.getBoneIndexByName(boneName: string) [dad72](https://github.com/dad72)
     - Added node._children to track children hierarchy ([deltakosh](https://github.com/deltakosh))
     - Added Camera.ForceAttachControlToAlwaysPreventDefault to help embedding Babylon.js in iFrames ([deltakosh](https://github.com/deltakosh))

@@ -1044,7 +1044,7 @@ var BABYLON;
             }
         };
         /**
-         * Returns as a new array
+         * Returns as a new array populated with the mesh material and/or skeleton, if any.
          */
         Mesh.prototype.getAnimatables = function () {
             var results = [];
@@ -1479,6 +1479,11 @@ var BABYLON;
             });
         };
         // Statics
+        /**
+         * Returns a new `Mesh` object what is a deep copy of the passed mesh.
+         * The parameter `parsedMesh` is the mesh to be copied.
+         * The parameter `rootUrl` is a string, it's the root URL to prefix the `delayLoadingFile` property with
+         */
         Mesh.Parse = function (parsedMesh, scene, rootUrl) {
             var mesh = new Mesh(parsedMesh.name, scene);
             mesh.id = parsedMesh.id;
@@ -2221,6 +2226,10 @@ var BABYLON;
             return this;
         };
         // Tools
+        /**
+         * Returns an object `{min: Vector3, max: Vector3}`
+         * This min and max `Vector3` are the minimum and maximum vectors of each mesh bounding box from the passed array, in the World system
+         */
         Mesh.MinMax = function (meshes) {
             var minVector = null;
             var maxVector = null;
@@ -2240,6 +2249,9 @@ var BABYLON;
                 max: maxVector
             };
         };
+        /**
+         * Returns a `Vector3`, the center of the `{min: Vector3, max: Vector3}` or the center of MinMax vector3 computed from a mesh array.
+         */
         Mesh.Center = function (meshesOrMinMaxVector) {
             var minMaxVector = meshesOrMinMaxVector.min !== undefined ? meshesOrMinMaxVector : Mesh.MinMax(meshesOrMinMaxVector);
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
