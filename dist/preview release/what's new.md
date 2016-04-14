@@ -35,6 +35,7 @@
   - **API doc**
     - class `SolidParticleSystem` documented
     - class `MeshBuilder` documented
+    - class `Mesh` documented
   - **Bug fixes**
     - Fixed bug with billboards and parenting ([deltakosh](https://github.com/deltakosh))
     - Fixed bug with ArcRotateCamera.setTarget ([deltakosh](https://github.com/deltakosh))
