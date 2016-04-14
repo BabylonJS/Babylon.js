@@ -16,7 +16,7 @@ var BABYLON;
             return "AnaglyphFreeCamera";
         };
         return AnaglyphFreeCamera;
-    }(BABYLON.FreeCamera));
+    })(BABYLON.FreeCamera);
     BABYLON.AnaglyphFreeCamera = AnaglyphFreeCamera;
     var AnaglyphArcRotateCamera = (function (_super) {
         __extends(AnaglyphArcRotateCamera, _super);
@@ -29,7 +29,7 @@ var BABYLON;
             return "AnaglyphArcRotateCamera";
         };
         return AnaglyphArcRotateCamera;
-    }(BABYLON.ArcRotateCamera));
+    })(BABYLON.ArcRotateCamera);
     BABYLON.AnaglyphArcRotateCamera = AnaglyphArcRotateCamera;
     var AnaglyphGamepadCamera = (function (_super) {
         __extends(AnaglyphGamepadCamera, _super);
@@ -42,7 +42,7 @@ var BABYLON;
             return "AnaglyphGamepadCamera";
         };
         return AnaglyphGamepadCamera;
-    }(BABYLON.GamepadCamera));
+    })(BABYLON.GamepadCamera);
     BABYLON.AnaglyphGamepadCamera = AnaglyphGamepadCamera;
     var AnaglyphUniversalCamera = (function (_super) {
         __extends(AnaglyphUniversalCamera, _super);
@@ -55,7 +55,7 @@ var BABYLON;
             return "AnaglyphUniversalCamera";
         };
         return AnaglyphUniversalCamera;
-    }(BABYLON.UniversalCamera));
+    })(BABYLON.UniversalCamera);
     BABYLON.AnaglyphUniversalCamera = AnaglyphUniversalCamera;
     var StereoscopicFreeCamera = (function (_super) {
         __extends(StereoscopicFreeCamera, _super);
@@ -69,7 +69,7 @@ var BABYLON;
             return "StereoscopicFreeCamera";
         };
         return StereoscopicFreeCamera;
-    }(BABYLON.FreeCamera));
+    })(BABYLON.FreeCamera);
     BABYLON.StereoscopicFreeCamera = StereoscopicFreeCamera;
     var StereoscopicArcRotateCamera = (function (_super) {
         __extends(StereoscopicArcRotateCamera, _super);
@@ -83,7 +83,7 @@ var BABYLON;
             return "StereoscopicArcRotateCamera";
         };
         return StereoscopicArcRotateCamera;
-    }(BABYLON.ArcRotateCamera));
+    })(BABYLON.ArcRotateCamera);
     BABYLON.StereoscopicArcRotateCamera = StereoscopicArcRotateCamera;
     var StereoscopicGamepadCamera = (function (_super) {
         __extends(StereoscopicGamepadCamera, _super);
@@ -97,7 +97,7 @@ var BABYLON;
             return "StereoscopicGamepadCamera";
         };
         return StereoscopicGamepadCamera;
-    }(BABYLON.GamepadCamera));
+    })(BABYLON.GamepadCamera);
     BABYLON.StereoscopicGamepadCamera = StereoscopicGamepadCamera;
     var StereoscopicUniversalCamera = (function (_super) {
         __extends(StereoscopicUniversalCamera, _super);
@@ -111,6 +111,6 @@ var BABYLON;
             return "StereoscopicUniversalCamera";
         };
         return StereoscopicUniversalCamera;
-    }(BABYLON.UniversalCamera));
+    })(BABYLON.UniversalCamera);
     BABYLON.StereoscopicUniversalCamera = StereoscopicUniversalCamera;
 })(BABYLON || (BABYLON = {}));
