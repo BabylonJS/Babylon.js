@@ -103,7 +103,7 @@ var BABYLON;
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    }());
+    })();
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -1947,6 +1947,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    }());
+    })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
