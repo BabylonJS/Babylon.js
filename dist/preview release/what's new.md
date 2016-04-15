@@ -34,9 +34,9 @@
 	- Scene.onPointerObservable property added to enable a unique Observable event for user input (see ArcRotateCamera inputs for examples) ([nockawa](https://github.com/nockawa))
 
   - **API doc**
-    - class `SolidParticleSystem` documented
-    - class `MeshBuilder` documented
-    - class `Mesh` documented
+    - class `SolidParticleSystem` documented ([jerome](https://github.com/jbousquie))
+    - class `MeshBuilder` documented ([jerome](https://github.com/jbousquie))
+    - class `Mesh` documented ([jerome](https://github.com/jbousquie))
   - **Bug fixes**
     - Fixed bug with billboards and parenting ([deltakosh](https://github.com/deltakosh))
     - Fixed bug with ArcRotateCamera.setTarget ([deltakosh](https://github.com/deltakosh))
