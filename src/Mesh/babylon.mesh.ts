@@ -1591,6 +1591,7 @@
          * - setPivotMatrix
          * - scaling
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_Instances
+         * Warning : this method is not supported for `Line` mesh and `LineSystem`
          */
         public createInstance(name: string): InstancedMesh {
             return new InstancedMesh(name, this);
