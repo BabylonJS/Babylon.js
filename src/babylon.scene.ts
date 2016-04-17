@@ -1506,6 +1506,12 @@
             return null;
         }
 
+        public getMeshesByID(id: string): Array<AbstractMesh> {
+            return this.meshes.filter(function (m) {
+                return m.id === id;
+            })
+        }
+
         /**
          * Get a mesh with its auto-generated unique id
          * @param {number} uniqueId - the unique id to search for
