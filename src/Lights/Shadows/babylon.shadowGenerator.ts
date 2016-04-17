@@ -436,9 +436,10 @@
             var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
 
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
-
-                shadowGenerator.getShadowMap().renderList.push(mesh);
+                var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
+                meshes.forEach(function(mesh) {
+                    shadowGenerator.getShadowMap().renderList.push(mesh);
+                });
             }
 
             if (parsedShadowGenerator.usePoissonSampling) {
