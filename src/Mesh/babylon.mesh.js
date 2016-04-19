@@ -1406,6 +1406,7 @@ var BABYLON;
          * - setPivotMatrix
          * - scaling
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_Instances
+         * Warning : this method is not supported for `Line` mesh and `LineSystem`
          */
         Mesh.prototype.createInstance = function (name) {
             return new BABYLON.InstancedMesh(name, this);
