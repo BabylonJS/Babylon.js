@@ -255,7 +255,7 @@ var BABYLON;
                 }
                 else {
                     try {
-                        var textureName = url.substring(5);
+                        var textureName = url.substring(5).toLowerCase();
                         var blobURL;
                         try {
                             blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName], { oneTimeOnly: true });

@@ -437,7 +437,7 @@
 
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
                 var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
-                meshes.forEach(function(mesh) {
+                meshes.forEach(function (mesh) {
                     shadowGenerator.getShadowMap().renderList.push(mesh);
                 });
             }

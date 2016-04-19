@@ -4422,7 +4422,7 @@ var BABYLON;
                 }
                 else {
                     try {
-                        var textureName = url.substring(5);
+                        var textureName = url.substring(5).toLowerCase();
                         var blobURL;
                         try {
                             blobURL = URL.createObjectURL(BABYLON.FilesInput.FilesTextures[textureName], { oneTimeOnly: true });
@@ -10314,8 +10314,10 @@ var BABYLON;
             var light = scene.getLightByID(parsedShadowGenerator.lightId);
             var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-                var mesh = scene.getMeshByID(parsedShadowGenerator.renderList[meshIndex]);
-                shadowGenerator.getShadowMap().renderList.push(mesh);
+                var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
+                meshes.forEach(function (mesh) {
+                    shadowGenerator.getShadowMap().renderList.push(mesh);
+                });
             }
             if (parsedShadowGenerator.usePoissonSampling) {
                 shadowGenerator.usePoissonSampling = true;
@@ -15403,6 +15405,11 @@ var BABYLON;
             }
             return null;
         };
+        Scene.prototype.getMeshesByID = function (id) {
+            return this.meshes.filter(function (m) {
+                return m.id === id;
+            });
+        };
         /**
          * Get a mesh with its auto-generated unique id
          * @param {number} uniqueId - the unique id to search for
@@ -16100,7 +16107,9 @@ var BABYLON;
             // Debug layer
             this.debugLayer.hide();
             // Events
-            this.onDisposeObservable.notifyObservers(this);
+            if (this.onDispose) {
+                this.onDispose();
+            }
             this.onBeforeRenderObservable.clear();
             this.onAfterRenderObservable.clear();
             this.detachControl();
@@ -18241,6 +18250,7 @@ var BABYLON;
          * - setPivotMatrix
          * - scaling
          * tuto : http://doc.babylonjs.com/tutorials/How_to_use_Instances
+         * Warning : this method is not supported for `Line` mesh and `LineSystem`
          */
         Mesh.prototype.createInstance = function (name) {
             return new BABYLON.InstancedMesh(name, this);

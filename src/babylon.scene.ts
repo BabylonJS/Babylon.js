@@ -2361,7 +2361,9 @@
             this.debugLayer.hide();
 
             // Events
-            this.onDisposeObservable.notifyObservers(this);
+            if (this.onDispose) {
+                this.onDispose();
+            }
 
             this.onBeforeRenderObservable.clear();
             this.onAfterRenderObservable.clear();
@@ -2802,4 +2804,3 @@
         }
     }
 }
-
