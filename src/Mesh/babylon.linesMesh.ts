@@ -32,8 +32,13 @@
         private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
-        constructor(name: string, scene: Scene, parent: Node = null, source?: Mesh, doNotCloneChildren?: boolean) {
+        constructor(name: string, scene: Scene, parent: Node = null, source?: LinesMesh, doNotCloneChildren?: boolean) {
             super(name, scene, parent, source, doNotCloneChildren);
+
+            if (source) {
+                this.color = source.color.clone();
+                this.alpha = source.alpha;
+            }
 
             this._intersectionThreshold = 0.1;
             this._colorShader = new ShaderMaterial("colorShader", scene, "color",
