@@ -16,6 +16,13 @@
         public execute(): void {
             this._target[this._property] = !this._target[this._property];
         }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "SwitchBooleanAction",
+                properties: [{ name: "propertyPath", value: this.propertyPath }]
+            }, parent, this._target);
+        }
     }
 
     export class SetStateAction extends Action {
