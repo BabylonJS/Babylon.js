@@ -20,6 +20,35 @@
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
         }
+        
+        public serialize(): any {
+        }
+        
+        protected _serialize(serializedCondition: any, target?: Node | Scene): any {
+            var serializationObject = { 
+                type: 3, // Condition
+                children: [],
+                name: serializedCondition.name,
+                properties: serializedCondition.properties
+            };
+            
+            // If target, auto-complete
+            if (target) {
+                var targetObject = {
+                    name: "target",
+                    targetType: target instanceof Mesh ? "MeshProperties"
+                              : target instanceof Light ? "LightProperties"
+                              : target instanceof Camera ? "CameraProperties"
+                              : "Scene",
+                    value: target instanceof Scene ? "Scene" : target.name
+                }
+                
+                // Concat action's properties
+                serializationObject.properties = [targetObject].concat(serializationObject.properties);
+            }
+            
+            return serializationObject;
+        }
     }
 
     export class ValueCondition extends Condition {
@@ -110,6 +139,13 @@
         // Methods
         public isValid(): boolean {
             return this._target.state === this.value;
+        }
+        
+        public serialize(): any {
+            return this._serialize({
+               name: "StateCondition",
+               properties: [{ name: "value", value: this.value }]
+            }, this._target);
         }
     }
 
