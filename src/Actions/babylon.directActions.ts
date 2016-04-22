@@ -25,7 +25,7 @@
                     Action._GetTargetProperty(this._target),
                     { name: "propertyPath", value: this.propertyPath }
                 ]
-            }, parent, this._target);
+            }, parent);
         }
     }
 
@@ -48,7 +48,7 @@
                     Action._GetTargetProperty(this._target),
                     { name: "value", value: this.value }
                 ]
-            }, parent, this._target);
+            }, parent);
         }
     }
 
@@ -79,7 +79,7 @@
                     { name: "propertyPath", value: this.propertyPath },
                     { name: "value", value: Action._SerializeValueAsString(this.value) }
                 ]
-            }, parent, this._target);
+            }, parent);
         }
     }
 
@@ -114,7 +114,7 @@
                     { name: "propertyPath", value: this.propertyPath },
                     { name: "value", value: Action._SerializeValueAsString(this.value) }
                 ]
-            }, parent, this._target);
+            }, parent);
         }
     }
 
@@ -143,7 +143,7 @@
                     { name: "to", value: String(this.to) },
                     { name: "loop", value: Action._SerializeValueAsString(this.loop) || false }
                 ]
-            }, parent, this._target);
+            }, parent);
         }
     }
 
@@ -167,7 +167,7 @@
             return super._serialize({
                 name: "StopAnimationAction",
                 properties: [Action._GetTargetProperty(this._target)]
-            }, parent, this._target);
+            }, parent);
         }
     }
 

@@ -94,30 +94,13 @@
         }
         
         // Called by BABYLON.Action objects in serialize(...). Internal use
-        protected _serialize(serializedAction: any, parent?: any, target?: Node | Scene): any {
+        protected _serialize(serializedAction: any, parent?: any): any {
             var serializationObject: any = { 
                 type: 1,
                 children: [],
                 name: serializedAction.name,
                 properties: serializedAction.properties || []
             };
-            
-            /*
-            // If target, auto-complete
-            if (target) {
-                var targetObject = {
-                    name: "target",
-                    targetType: target instanceof Mesh ? "MeshProperties"
-                              : target instanceof Light ? "LightProperties"
-                              : target instanceof Camera ? "CameraProperties"
-                              : "Scene",
-                    value: target instanceof Scene ? "Scene" : target.name
-                }
-                
-                // Concat action's properties
-                serializationObject.properties = [targetObject].concat(serializationObject.properties);
-            }
-            */
             
             // Serialize child
             if (this._child) {

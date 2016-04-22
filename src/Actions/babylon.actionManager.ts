@@ -317,28 +317,6 @@
             
             return root;
         }
-        
-        public static GetTriggerName(trigger: number): string {
-            switch (trigger) {
-                case 0:  return "NothingTrigger";
-                case 1:  return "OnPickTrigger";
-                case 2:  return "OnLeftPickTrigger";
-                case 3:  return "OnRightPickTrigger";
-                case 4:  return "OnCenterPickTrigger";
-                case 5:  return "OnPickDownTrigger";
-                case 6:  return "OnPickUpTrigger";
-                case 7:  return "OnLongPressTrigger";
-                case 8:  return "OnPointerOverTrigger";
-                case 9:  return "OnPointerOutTrigger";
-                case 10: return "OnEveryFrameTrigger";
-                case 11: return "OnIntersectionEnterTrigger";
-                case 12: return "OnIntersectionExitTrigger";
-                case 13: return "OnKeyDownTrigger";
-                case 14: return "OnKeyUpTrigger";
-                case 15: return "OnPickOutTrigger";
-                default: return "";
-            }
-        }
 
         public static Parse(parsedActions: any, object: AbstractMesh, scene: Scene) {
             var actionManager = new BABYLON.ActionManager(scene);
@@ -519,5 +497,26 @@
             }
         }
 
+        public static GetTriggerName(trigger: number): string {
+            switch (trigger) {
+                case 0:  return "NothingTrigger";
+                case 1:  return "OnPickTrigger";
+                case 2:  return "OnLeftPickTrigger";
+                case 3:  return "OnRightPickTrigger";
+                case 4:  return "OnCenterPickTrigger";
+                case 5:  return "OnPickDownTrigger";
+                case 6:  return "OnPickUpTrigger";
+                case 7:  return "OnLongPressTrigger";
+                case 8:  return "OnPointerOverTrigger";
+                case 9:  return "OnPointerOutTrigger";
+                case 10: return "OnEveryFrameTrigger";
+                case 11: return "OnIntersectionEnterTrigger";
+                case 12: return "OnIntersectionExitTrigger";
+                case 13: return "OnKeyDownTrigger";
+                case 14: return "OnKeyUpTrigger";
+                case 15: return "OnPickOutTrigger";
+                default: return "";
+            }
+        }
     }
 } 

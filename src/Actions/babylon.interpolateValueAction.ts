@@ -65,7 +65,7 @@
                     { name: "duration", value: Action._SerializeValueAsString(this.duration) },
                     { name: "stopOtherAnimations", value: Action._SerializeValueAsString(this.stopOtherAnimations) || false }
                 ]
-            }, parent, this._target);
+            }, parent);
         }
     }
 } 
