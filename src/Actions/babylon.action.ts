@@ -102,6 +102,7 @@
                 properties: serializedAction.properties || []
             };
             
+            /*
             // If target, auto-complete
             if (target) {
                 var targetObject = {
@@ -116,6 +117,7 @@
                 // Concat action's properties
                 serializationObject.properties = [targetObject].concat(serializationObject.properties);
             }
+            */
             
             // Serialize child
             if (this._child) {
@@ -138,5 +140,42 @@
             }
             return serializationObject;
         }
+        
+        public static _SerializeValueAsString = (value: any): string => {
+            if (typeof value === "number") {
+                return String(value);
+            }
+            
+            if (typeof value === "boolean") {
+                return value ? "true" : "false";
+            }
+            
+            if (value instanceof Vector2) {
+                return String(value.x + ", " + value.y);
+            }
+            if (value instanceof Vector3) {
+                return String(value.x + ", " + value.y + ", " + value.z);
+            }
+            
+            if (value instanceof Color3) {
+                return String(value.r + ", " + value.g + ", " + value.b);
+            }
+            if (value instanceof Color4) {
+                return String(value.r + ", " + value.g + ", " + value.b + ", " + value.a);
+            }
+            
+            return value; // String
+        };
+    
+        public static _GetTargetProperty = (target: Scene | Node) => {
+            return {
+                name: "target",
+                targetType: target instanceof Mesh ? "MeshProperties"
+                            : target instanceof Light ? "LightProperties"
+                            : target instanceof Camera ? "CameraProperties"
+                            : "Scene",
+                value: target instanceof Scene ? "Scene" : target.name
+            }  
+        };
     }
 }

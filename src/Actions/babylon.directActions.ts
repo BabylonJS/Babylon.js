@@ -1,26 +1,30 @@
 ﻿module BABYLON {
     export class SwitchBooleanAction extends Action {
         private _target: any;
+        private _effectiveTarget: any;
         private _property: string;
 
         constructor(triggerOptions: any, target: any, public propertyPath: string, condition?: Condition) {
             super(triggerOptions, condition);
-            this._target = target;
+            this._target = this._effectiveTarget = target;
         }
 
         public _prepare(): void {
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
 
         public execute(): void {
-            this._target[this._property] = !this._target[this._property];
+            this._effectiveTarget[this._property] = !this._effectiveTarget[this._property];
         }
         
         public serialize(parent: any): any {
             return super._serialize({
                 name: "SwitchBooleanAction",
-                properties: [{ name: "propertyPath", value: this.propertyPath }]
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath }
+                ]
             }, parent, this._target);
         }
     }
@@ -36,47 +40,81 @@
         public execute(): void {
             this._target.state = this.value;
         }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "SetStateAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "value", value: this.value }
+                ]
+            }, parent, this._target);
+        }
     }
 
     export class SetValueAction extends Action {
         private _target: any;
+        private _effectiveTarget: any;
         private _property: string;
 
         constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, condition?: Condition) {
             super(triggerOptions, condition);
-            this._target = target;
+            this._target = this._effectiveTarget = target;
         }
 
         public _prepare(): void {
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
 
         public execute(): void {
-            this._target[this._property] = this.value;
+            this._effectiveTarget[this._property] = this.value;
+        }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "SetValueAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: Action._SerializeValueAsString(this.value) }
+                ]
+            }, parent, this._target);
         }
     }
 
     export class IncrementValueAction extends Action {
         private _target: any;
+        private _effectiveTarget: any;
         private _property: string;
 
         constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, condition?: Condition) {
             super(triggerOptions, condition);
-            this._target = target;
+            this._target = this._effectiveTarget = target;
         }
 
         public _prepare(): void {
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
 
-            if (typeof this._target[this._property] !== "number") {
+            if (typeof this._effectiveTarget[this._property] !== "number") {
                 Tools.Warn("Warning: IncrementValueAction can only be used with number values");
             }
         }
 
         public execute(): void {
-            this._target[this._property] += this.value;
+            this._effectiveTarget[this._property] += this.value;
+        }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "IncrementValueAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: Action._SerializeValueAsString(this.value) }
+                ]
+            }, parent, this._target);
         }
     }
 
@@ -95,6 +133,18 @@
             var scene = this._actionManager.getScene();
             scene.beginAnimation(this._target, this.from, this.to, this.loop);
         }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "PlayAnimationAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "from", value: String(this.from) },
+                    { name: "to", value: String(this.to) },
+                    { name: "loop", value: Action._SerializeValueAsString(this.loop) || false }
+                ]
+            }, parent, this._target);
+        }
     }
 
     export class StopAnimationAction extends Action {
@@ -112,6 +162,13 @@
             var scene = this._actionManager.getScene();
             scene.stopAnimation(this._target);
         }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "StopAnimationAction",
+                properties: [Action._GetTargetProperty(this._target)]
+            }, parent, this._target);
+        }
     }
 
     export class DoNothingAction extends Action {
@@ -120,6 +177,13 @@
         }
 
         public execute(): void {
+        }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "DoNothingAction",
+                properties: []
+            }, parent);
         }
     }
 
@@ -139,6 +203,20 @@
             for (var index = 0; index < this.children.length; index++) {
                 this.children[index].execute(evt);
             }
+        }
+        
+        public serialize(parent: any): any {
+            var serializationObject = super._serialize({
+                name: "CombineAction",
+                properties: [],
+                combine: []
+            }, parent);
+            
+            for (var i=0; i < this.children.length; i++) {
+                serializationObject.combine.push(this.children[i].serialize(null));
+            }
+            
+            return serializationObject;
         }
     }
 
@@ -177,6 +255,16 @@
 
             this._target.parent = this._parent;
         }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "SetParentAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    Action._GetTargetProperty(this._parent),
+                ]
+            }, parent);
+        }
     }
 
     export class PlaySoundAction extends Action {
@@ -194,6 +282,13 @@
             if (this._sound !== undefined)
                 this._sound.play();
         }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "PlaySoundAction",
+                properties: [{ name: "sound", value: this._sound.name }]
+            }, parent);
+        }
     }
 
     export class StopSoundAction extends Action {
@@ -210,6 +305,13 @@
         public execute(): void {
             if (this._sound !== undefined)
                 this._sound.stop();
+        }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "StopSoundAction",
+                properties: [{ name: "sound", value: this._sound.name }]
+            }, parent);
         }
     }
 } 
