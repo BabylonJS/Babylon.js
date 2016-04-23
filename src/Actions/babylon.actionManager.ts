@@ -309,12 +309,12 @@
                 };
                 
                 var triggerOptions = this.actions[i].triggerOptions;
-                if (triggerOptions) {
-                    if (triggerOptions instanceof Node) {
-                        triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.trigger));
+                if (triggerOptions) {   
+                    if (triggerOptions.parameter instanceof Node) {
+                        triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.parameter));
                     }
                     else {
-                        triggerObject.properties.push({ name: "parameter", value: triggerOptions.parameter });
+                        triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
                     }
                 }
                 
