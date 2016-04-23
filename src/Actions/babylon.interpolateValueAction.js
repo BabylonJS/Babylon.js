@@ -15,10 +15,10 @@ var BABYLON;
             this.duration = duration;
             this.stopOtherAnimations = stopOtherAnimations;
             this.onInterpolationDone = onInterpolationDone;
-            this._target = target;
+            this._target = this._effectiveTarget = target;
         }
         InterpolateValueAction.prototype._prepare = function () {
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         };
         InterpolateValueAction.prototype.execute = function () {
@@ -26,7 +26,7 @@ var BABYLON;
             var keys = [
                 {
                     frame: 0,
-                    value: this._target[this._property]
+                    value: this._effectiveTarget[this._property]
                 }, {
                     frame: 100,
                     value: this.value
@@ -55,11 +55,23 @@ var BABYLON;
             var animation = new BABYLON.Animation("InterpolateValueAction", this._property, 100 * (1000.0 / this.duration), dataType, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
             animation.setKeys(keys);
             if (this.stopOtherAnimations) {
-                scene.stopAnimation(this._target);
+                scene.stopAnimation(this._effectiveTarget);
             }
-            scene.beginDirectAnimation(this._target, [animation], 0, 100, false, 1, this.onInterpolationDone);
+            scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, this.onInterpolationDone);
+        };
+        InterpolateValueAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "InterpolateValueAction",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: BABYLON.Action._SerializeValueAsString(this.value) },
+                    { name: "duration", value: BABYLON.Action._SerializeValueAsString(this.duration) },
+                    { name: "stopOtherAnimations", value: BABYLON.Action._SerializeValueAsString(this.stopOtherAnimations) || false }
+                ]
+            }, parent);
         };
         return InterpolateValueAction;
-    })(BABYLON.Action);
+    }(BABYLON.Action));
     BABYLON.InterpolateValueAction = InterpolateValueAction;
 })(BABYLON || (BABYLON = {}));
