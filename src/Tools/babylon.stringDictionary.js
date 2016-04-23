@@ -7,6 +7,7 @@ var BABYLON;
      */
     var StringDictionary = (function () {
         function StringDictionary() {
+            this._count = 0;
             this._data = {};
         }
         /**
@@ -29,7 +30,7 @@ var BABYLON;
          * The factory will only be invoked if there's no data for the given key.
          * @return the value corresponding to the key.
          */
-        StringDictionary.prototype.getOrAdd = function (key, factory) {
+        StringDictionary.prototype.getOrAddWithFactory = function (key, factory) {
             var val = this.get(key);
             if (val !== undefined) {
                 return val;
@@ -38,6 +39,20 @@ var BABYLON;
             if (val) {
                 this.add(key, val);
             }
+            return val;
+        };
+        /**
+         * Get a value from its key if present in the dictionary otherwise add it
+         * @param key the key to get the value from
+         * @param val if there's no such key/value pair in the dictionary add it with this value
+         * @return the value corresponding to the key
+         */
+        StringDictionary.prototype.getOrAdd = function (key, val) {
+            var val = this.get(key);
+            if (val !== undefined) {
+                return val;
+            }
+            this.add(key, val);
             return val;
         };
         /**
@@ -59,16 +74,36 @@ var BABYLON;
                 return false;
             }
             this._data[key] = value;
+            ++this._count;
             return true;
         };
         /**
          * Remove a key/value from the dictionary.
-         * For performance reason, calling this method won't tell you if there was the given key in the dictionary
          * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
          */
         StringDictionary.prototype.remove = function (key) {
-            delete this._data[key];
+            if (this.contains(key)) {
+                delete this._data[key];
+                --this._count;
+                return true;
+            }
+            return false;
         };
+        /**
+         * Clear the whole content of the dictionary
+         */
+        StringDictionary.prototype.clear = function () {
+            this._data = {};
+            this._count = 0;
+        };
+        Object.defineProperty(StringDictionary.prototype, "count", {
+            get: function () {
+                return this._count;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Execute a callback on each key/val of the dictionary.
          * Note that you can remove any element in this dictionary in the callback implementation
