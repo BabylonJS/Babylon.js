@@ -308,6 +308,16 @@
                     properties: []
                 };
                 
+                var triggerOptions = this.actions[i].triggerOptions;
+                if (triggerOptions) {
+                    if (triggerOptions instanceof Node) {
+                        triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.trigger));
+                    }
+                    else {
+                        triggerObject.properties.push({ name: "parameter", value: triggerOptions.parameter });
+                    }
+                }
+                
                 // Serialize child action, recursively
                 this.actions[i].serialize(triggerObject);
                 
