@@ -34,7 +34,9 @@ module BABYLON {
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             var engine = this.camera.getEngine();
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
-            var pointers = new SmartCollection();
+            var pointers = new StringDictionary<{ x: number, y: number, type: any }>();
+            var pointersOrder = new Array<number>(2);
+            var curPointerCount = 0;
             var previousPinchDistance = 0;
 
             this._pointerInput = (p, s) => {
@@ -51,8 +53,8 @@ module BABYLON {
                     this._isRightClick = evt.button === 2;
 
                     // manage pointers
-                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
-                    cacheSoloPointer = pointers.item(evt.pointerId);
+                    cacheSoloPointer = pointers.add(evt.pointerId.toString(), { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
+                    pointersOrder[curPointerCount++] = evt.pointerId;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -70,7 +72,9 @@ module BABYLON {
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    pointers.empty();
+                    pointers.clear();
+                    pointersOrder = new Array<number>();
+                    curPointerCount = 0;
 
                     if (!noPreventDefault) {
                         evt.preventDefault();
@@ -97,11 +101,14 @@ module BABYLON {
 
                         case 2: //pinch
                             //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
-                            pointers.item(evt.pointerId).x = evt.clientX;
-                            pointers.item(evt.pointerId).y = evt.clientY;
+                            var ed = pointers.get(evt.pointerId.toString());
+                            ed.x = evt.clientX;
+                            ed.y = evt.clientY;
                             var direction = this.pinchInwards ? 1 : -1;
-                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
-                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
+                            var p1 = pointers.get(pointersOrder[0].toString());
+                            var p2 = pointers.get(pointersOrder[1].toString());
+                            var distX = p1.x - p2.x;
+                            var distY = p1.y - p2.y;
                             var pinchSquaredDistance = (distX * distX) + (distY * distY);
                             if (previousPinchDistance === 0) {
                                 previousPinchDistance = pinchSquaredDistance;
@@ -115,9 +122,10 @@ module BABYLON {
                             break;
 
                         default:
-                            if (pointers.item(evt.pointerId)) {
-                                pointers.item(evt.pointerId).x = evt.clientX;
-                                pointers.item(evt.pointerId).y = evt.clientY;
+                            var ed = pointers.get(evt.pointerId.toString());
+                            if (ed) {
+                                ed.x = evt.clientX;
+                                ed.y = evt.clientY;
                             }
                     }
                 }
@@ -135,7 +143,9 @@ module BABYLON {
 
             this._onLostFocus = () => {
                 //this._keys = [];
-                pointers.empty();
+                pointers.clear();
+                pointersOrder = new Array<number>();
+                curPointerCount = 0;
                 previousPinchDistance = 0;
                 cacheSoloPointer = null;
             };

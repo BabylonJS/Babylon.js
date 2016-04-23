@@ -27,7 +27,7 @@ var BABYLON;
             this.reverseLeftRight = false;
             this.reverseUpDown = false;
             // collections of pointers
-            this._touches = new BABYLON.SmartCollection();
+            this._touches = new BABYLON.StringDictionary();
             this.deltaPosition = BABYLON.Vector3.Zero();
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
@@ -166,9 +166,10 @@ var BABYLON;
                 }
             }
             else {
-                if (this._touches.item(e.pointerId.toString())) {
-                    this._touches.item(e.pointerId.toString()).x = e.clientX;
-                    this._touches.item(e.pointerId.toString()).y = e.clientY;
+                var data = this._touches.get(e.pointerId.toString());
+                if (data) {
+                    data.x = e.clientX;
+                    data.y = e.clientY;
                 }
             }
         };
@@ -180,7 +181,7 @@ var BABYLON;
                 this.pressed = false;
             }
             else {
-                var touch = this._touches.item(e.pointerId.toString());
+                var touch = this._touches.get(e.pointerId.toString());
                 if (touch) {
                     VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
                 }
@@ -291,6 +292,7 @@ var BABYLON;
         // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
         VirtualJoystick._globalJoystickIndex = 0;
         return VirtualJoystick;
-    })();
+    }());
     BABYLON.VirtualJoystick = VirtualJoystick;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.virtualJoystick.js.map
