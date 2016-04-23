@@ -26,7 +26,7 @@
          * The factory will only be invoked if there's no data for the given key.
          * @return the value corresponding to the key.
          */
-        public getOrAdd(key: string, factory: (key: string) => T): T {
+        public getOrAddWithFactory(key: string, factory: (key: string) => T): T {
             var val = this.get(key);
             if (val !== undefined) {
                 return val;
@@ -37,6 +37,22 @@
                 this.add(key, val);
             }
 
+            return val;
+        }
+
+        /**
+         * Get a value from its key if present in the dictionary otherwise add it
+         * @param key the key to get the value from
+         * @param val if there's no such key/value pair in the dictionary add it with this value
+         * @return the value corresponding to the key
+         */
+        public getOrAdd(key: string, val: T): T {
+            var val = this.get(key);
+            if (val !== undefined) {
+                return val;
+            }
+
+            this.add(key, val);
             return val;
         }
 
