@@ -588,6 +588,11 @@ var BABYLON;
             }
             return false;
         };
+        Tools.getClassName = function (obj) {
+            var funcNameRegex = /function (.{1,})\(/;
+            var results = (funcNameRegex).exec((obj).constructor.toString());
+            return (results && results.length > 1) ? results[1] : "";
+        };
         Object.defineProperty(Tools, "NoneLogLevel", {
             get: function () {
                 return Tools._NoneLogLevel;
@@ -806,7 +811,7 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    })();
+    }());
     BABYLON.Tools = Tools;
     /**
      * An implementation of a loop for asynchronous functions.
@@ -890,6 +895,7 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    })();
+    }());
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tools.js.map
