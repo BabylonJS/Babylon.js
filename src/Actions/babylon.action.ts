@@ -156,7 +156,7 @@
                 targetType: target instanceof Mesh ? "MeshProperties"
                             : target instanceof Light ? "LightProperties"
                             : target instanceof Camera ? "CameraProperties"
-                            : "Scene",
+                            : "SceneProperties",
                 value: target instanceof Scene ? "Scene" : target.name
             }  
         };

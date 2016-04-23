@@ -309,7 +309,7 @@
                 };
                 
                 var triggerOptions = this.actions[i].triggerOptions;
-                if (triggerOptions) {   
+                if (triggerOptions && typeof triggerOptions !== "number") {
                     if (triggerOptions.parameter instanceof Node) {
                         triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.parameter));
                     }
