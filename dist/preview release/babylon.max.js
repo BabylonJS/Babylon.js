@@ -4066,103 +4066,140 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SmartCollection = (function () {
-        function SmartCollection(capacity) {
-            if (capacity === void 0) { capacity = 10; }
-            this.count = 0;
-            this._initialCapacity = capacity;
-            this.items = {};
-            this._keys = new Array(this._initialCapacity);
+    /**
+     * This class implement a typical dictionary using a string as key and the generic type T as value.
+     * The underlying implemetation relies on an associative array to ensure the best performances.
+     * The value can be anything including 'null' but except 'undefined'
+     */
+    var StringDictionary = (function () {
+        function StringDictionary() {
+            this._count = 0;
+            this._data = {};
         }
-        SmartCollection.prototype.add = function (key, item) {
-            if (this.items[key] != undefined) {
-                return -1;
+        /**
+         * Get a value based from its key
+         * @param key the given key to get the matching value from
+         * @return the value if found, otherwise undefined is returned
+         */
+        StringDictionary.prototype.get = function (key) {
+            var val = this._data[key];
+            if (val !== undefined) {
+                return val;
             }
-            this.items[key] = item;
-            //literal keys are always strings, but we keep source type of key in _keys array
-            this._keys[this.count++] = key;
-            if (this.count > this._keys.length) {
-                this._keys.length *= 2;
-            }
-            return this.count;
+            return undefined;
         };
-        SmartCollection.prototype.remove = function (key) {
-            if (this.items[key] == undefined) {
-                return -1;
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matchin value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        StringDictionary.prototype.getOrAddWithFactory = function (key, factory) {
+            var val = this.get(key);
+            if (val !== undefined) {
+                return val;
             }
-            return this.removeItemOfIndex(this.indexOf(key));
+            val = factory(key);
+            if (val) {
+                this.add(key, val);
+            }
+            return val;
         };
-        SmartCollection.prototype.removeItemOfIndex = function (index) {
-            if (index < this.count && index > -1) {
-                delete this.items[this._keys[index]];
-                //here, shifting by hand is better optimised than .splice
-                while (index < this.count) {
-                    this._keys[index] = this._keys[index + 1];
-                    index++;
+        /**
+         * Get a value from its key if present in the dictionary otherwise add it
+         * @param key the key to get the value from
+         * @param val if there's no such key/value pair in the dictionary add it with this value
+         * @return the value corresponding to the key
+         */
+        StringDictionary.prototype.getOrAdd = function (key, val) {
+            var val = this.get(key);
+            if (val !== undefined) {
+                return val;
+            }
+            this.add(key, val);
+            return val;
+        };
+        /**
+         * Check if there's a given key in the dictionary
+         * @param key the key to check for
+         * @return true if the key is present, false otherwise
+         */
+        StringDictionary.prototype.contains = function (key) {
+            return this._data[key] !== undefined;
+        };
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        StringDictionary.prototype.add = function (key, value) {
+            if (this._data[key] !== undefined) {
+                return false;
+            }
+            this._data[key] = value;
+            ++this._count;
+            return true;
+        };
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        StringDictionary.prototype.remove = function (key) {
+            if (this.contains(key)) {
+                delete this._data[key];
+                --this._count;
+                return true;
+            }
+            return false;
+        };
+        /**
+         * Clear the whole content of the dictionary
+         */
+        StringDictionary.prototype.clear = function () {
+            this._data = {};
+            this._count = 0;
+        };
+        Object.defineProperty(StringDictionary.prototype, "count", {
+            get: function () {
+                return this._count;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Execute a callback on each key/val of the dictionary.
+         * Note that you can remove any element in this dictionary in the callback implementation
+         * @param callback the callback to execute on a given key/value pair
+         */
+        StringDictionary.prototype.forEach = function (callback) {
+            for (var cur in this._data) {
+                var val = this._data[cur];
+                callback(cur, val);
+            }
+        };
+        /**
+         * Execute a callback on every occurence of the dictionary until it returns a valid TRes object.
+         * If the callback returns null or undefined the method will iterate to the next key/value pair
+         * Note that you can remove any element in this dictionary in the callback implementation
+         * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
+         */
+        StringDictionary.prototype.first = function (callback) {
+            for (var cur in this._data) {
+                var val = this._data[cur];
+                var res = callback(cur, val);
+                if (res) {
+                    return res;
                 }
             }
-            else {
-                return -1;
-            }
-            return --this.count;
+            return null;
         };
-        SmartCollection.prototype.indexOf = function (key) {
-            for (var i = 0; i !== this.count; i++) {
-                if (this._keys[i] === key) {
-                    return i;
-                }
-            }
-            return -1;
-        };
-        SmartCollection.prototype.item = function (key) {
-            return this.items[key];
-        };
-        SmartCollection.prototype.getAllKeys = function () {
-            if (this.count > 0) {
-                var keys = new Array(this.count);
-                for (var i = 0; i < this.count; i++) {
-                    keys[i] = this._keys[i];
-                }
-                return keys;
-            }
-            else {
-                return undefined;
-            }
-        };
-        SmartCollection.prototype.getKeyByIndex = function (index) {
-            if (index < this.count && index > -1) {
-                return this._keys[index];
-            }
-            else {
-                return undefined;
-            }
-        };
-        SmartCollection.prototype.getItemByIndex = function (index) {
-            if (index < this.count && index > -1) {
-                return this.items[this._keys[index]];
-            }
-            else {
-                return undefined;
-            }
-        };
-        SmartCollection.prototype.empty = function () {
-            if (this.count > 0) {
-                this.count = 0;
-                this.items = {};
-                this._keys = new Array(this._initialCapacity);
-            }
-        };
-        SmartCollection.prototype.forEach = function (block) {
-            var key;
-            for (key in this.items) {
-                if (this.items.hasOwnProperty(key)) {
-                    block(this.items[key]);
-                }
-            }
-        };
-        return SmartCollection;
+        return StringDictionary;
     })();
-    BABYLON.SmartCollection = SmartCollection;
+    BABYLON.StringDictionary = StringDictionary;
 })(BABYLON || (BABYLON = {}));
 
 var BABYLON;
@@ -4754,6 +4791,11 @@ var BABYLON;
             catch (e) {
             }
             return false;
+        };
+        Tools.getClassName = function (obj) {
+            var funcNameRegex = /function (.{1,})\(/;
+            var results = (funcNameRegex).exec((obj).constructor.toString());
+            return (results && results.length > 1) ? results[1] : "";
         };
         Object.defineProperty(Tools, "NoneLogLevel", {
             get: function () {
@@ -12415,7 +12457,7 @@ var BABYLON;
             var _this = this;
             var engine = this.camera.getEngine();
             var cacheSoloPointer; // cache pointer object for better perf on camera rotation
-            var pointers = new BABYLON.SmartCollection();
+            var pointA, pointB;
             var previousPinchDistance = 0;
             this._pointerInput = function (p, s) {
                 var evt = p.event;
@@ -12428,8 +12470,13 @@ var BABYLON;
                     // Manage panning with right click
                     _this._isRightClick = evt.button === 2;
                     // manage pointers
-                    pointers.add(evt.pointerId, { x: evt.clientX, y: evt.clientY, type: evt.pointerType });
-                    cacheSoloPointer = pointers.item(evt.pointerId);
+                    cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
+                    if (pointA === undefined) {
+                        pointA = cacheSoloPointer;
+                    }
+                    else if (pointB === undefined) {
+                        pointB = cacheSoloPointer;
+                    }
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -12446,7 +12493,7 @@ var BABYLON;
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    pointers.empty();
+                    pointA = pointB = undefined;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -12455,43 +12502,46 @@ var BABYLON;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                    switch (pointers.count) {
-                        case 1:
-                            if (_this.panningSensibility !== 0 && ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) || (!_this.camera._useCtrlForPanning && _this._isRightClick))) {
-                                _this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
-                                _this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
-                            }
-                            else {
-                                var offsetX = evt.clientX - cacheSoloPointer.x;
-                                var offsetY = evt.clientY - cacheSoloPointer.y;
-                                _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
-                                _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
-                            }
-                            cacheSoloPointer.x = evt.clientX;
-                            cacheSoloPointer.y = evt.clientY;
-                            break;
-                        case 2:
-                            //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
-                            pointers.item(evt.pointerId).x = evt.clientX;
-                            pointers.item(evt.pointerId).y = evt.clientY;
-                            var direction = _this.pinchInwards ? 1 : -1;
-                            var distX = pointers.getItemByIndex(0).x - pointers.getItemByIndex(1).x;
-                            var distY = pointers.getItemByIndex(0).y - pointers.getItemByIndex(1).y;
-                            var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                            if (previousPinchDistance === 0) {
-                                previousPinchDistance = pinchSquaredDistance;
-                                return;
-                            }
-                            if (pinchSquaredDistance !== previousPinchDistance) {
-                                _this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) / (_this.pinchPrecision * ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) * direction);
-                                previousPinchDistance = pinchSquaredDistance;
-                            }
-                            break;
-                        default:
-                            if (pointers.item(evt.pointerId)) {
-                                pointers.item(evt.pointerId).x = evt.clientX;
-                                pointers.item(evt.pointerId).y = evt.clientY;
-                            }
+                    // One button down
+                    if (pointA && pointB === undefined) {
+                        if (_this.panningSensibility !== 0 &&
+                            ((_this._isCtrlPushed && _this.camera._useCtrlForPanning) ||
+                                (!_this.camera._useCtrlForPanning && _this._isRightClick))) {
+                            _this.camera
+                                .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / _this.panningSensibility;
+                            _this.camera
+                                .inertialPanningY += (evt.clientY - cacheSoloPointer.y) / _this.panningSensibility;
+                        }
+                        else {
+                            var offsetX = evt.clientX - cacheSoloPointer.x;
+                            var offsetY = evt.clientY - cacheSoloPointer.y;
+                            _this.camera.inertialAlphaOffset -= offsetX / _this.angularSensibilityX;
+                            _this.camera.inertialBetaOffset -= offsetY / _this.angularSensibilityY;
+                        }
+                        cacheSoloPointer.x = evt.clientX;
+                        cacheSoloPointer.y = evt.clientY;
+                    }
+                    else if (pointA && pointB) {
+                        //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                        var ed = (pointA.pointerId === evt.pointerId) ? pointA : pointB;
+                        ed.x = evt.clientX;
+                        ed.y = evt.clientY;
+                        var direction = _this.pinchInwards ? 1 : -1;
+                        var distX = pointA.x - pointB.x;
+                        var distY = pointA.y - pointB.y;
+                        var pinchSquaredDistance = (distX * distX) + (distY * distY);
+                        if (previousPinchDistance === 0) {
+                            previousPinchDistance = pinchSquaredDistance;
+                            return;
+                        }
+                        if (pinchSquaredDistance !== previousPinchDistance) {
+                            _this.camera
+                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) /
+                                (_this.pinchPrecision *
+                                    ((_this.angularSensibilityX + _this.angularSensibilityY) / 2) *
+                                    direction);
+                            previousPinchDistance = pinchSquaredDistance;
+                        }
                     }
                 }
             };
@@ -12504,7 +12554,7 @@ var BABYLON;
             }
             this._onLostFocus = function () {
                 //this._keys = [];
-                pointers.empty();
+                pointA = pointB = undefined;
                 previousPinchDistance = 0;
                 cacheSoloPointer = null;
             };
@@ -37654,7 +37704,7 @@ var BABYLON;
             this.reverseLeftRight = false;
             this.reverseUpDown = false;
             // collections of pointers
-            this._touches = new BABYLON.SmartCollection();
+            this._touches = new BABYLON.StringDictionary();
             this.deltaPosition = BABYLON.Vector3.Zero();
             this._joystickSensibility = 25;
             this._inversedSensibility = 1 / (this._joystickSensibility / 1000);
@@ -37793,9 +37843,10 @@ var BABYLON;
                 }
             }
             else {
-                if (this._touches.item(e.pointerId.toString())) {
-                    this._touches.item(e.pointerId.toString()).x = e.clientX;
-                    this._touches.item(e.pointerId.toString()).y = e.clientY;
+                var data = this._touches.get(e.pointerId.toString());
+                if (data) {
+                    data.x = e.clientX;
+                    data.y = e.clientY;
                 }
             }
         };
@@ -37807,7 +37858,7 @@ var BABYLON;
                 this.pressed = false;
             }
             else {
-                var touch = this._touches.item(e.pointerId.toString());
+                var touch = this._touches.get(e.pointerId.toString());
                 if (touch) {
                     VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 43, touch.prevY - 43, 86, 86);
                 }

@@ -21,7 +21,7 @@
       "../../src/Tools/babylon.database.js",
       "../../src/Tools/babylon.tools.tga.js",
       "../../src/Tools/babylon.smartArray.js",
-      "../../src/Tools/babylon.smartCollection.js",
+      "../../src/Tools/babylon.stringDictionary.js",
       "../../src/Tools/babylon.tools.js",      
       "../../src/States/babylon.alphaCullingState.js",
       "../../src/States/babylon.depthCullingState.js",
