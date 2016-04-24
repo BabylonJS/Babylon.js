@@ -3,11 +3,6 @@
         animations: Array<Animation>;
     }
 
-    export interface ISize {
-        width: number;
-        height: number;
-    }
-
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 

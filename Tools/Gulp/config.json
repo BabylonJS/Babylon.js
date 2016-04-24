@@ -22,6 +22,7 @@
       "../../src/Tools/babylon.tools.tga.js",
       "../../src/Tools/babylon.smartArray.js",
       "../../src/Tools/babylon.stringDictionary.js",
+	  "../../src/Tools/babylon.rectPackingMap.js",
       "../../src/Tools/babylon.tools.js",      
       "../../src/States/babylon.alphaCullingState.js",
       "../../src/States/babylon.depthCullingState.js",

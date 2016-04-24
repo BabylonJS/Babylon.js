@@ -31,6 +31,8 @@
     - LinesMesh class now supports Intersection. Added the intersectionThreshold property to set a tolerance margin during intersection with wire lines. ([nockawa](https://github.com/nockawa))
     - Geometry.boundingBias property to enlarge the boundingInfo objects ([nockawa](https://github.com/nockawa))
     - Tools.ExtractMinAndMax & ExtractMinAndMaxIndexed now supports an optional Bias for Extent computation.
+	- Added StringDictionary<T> class to implement an efficient generic typed string dictionary based on Javascript associative array. ([nockawa](https://github.com/nockawa))
+	- Added RectanglePackingMap class to fix several rectangles in a big map in the most optimal way.  ([nockawa](https://github.com/nockawa))
 	- Scene.onPointerObservable property added to enable a unique Observable event for user input (see ArcRotateCamera inputs for examples) ([nockawa](https://github.com/nockawa))
 
   - **API doc**
