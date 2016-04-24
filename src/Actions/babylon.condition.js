@@ -18,8 +18,18 @@ var BABYLON;
         Condition.prototype._getEffectiveTarget = function (target, propertyPath) {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
         };
+        Condition.prototype.serialize = function () {
+        };
+        Condition.prototype._serialize = function (serializedCondition) {
+            return {
+                type: 2,
+                children: [],
+                name: serializedCondition.name,
+                properties: serializedCondition.properties
+            };
+        };
         return Condition;
-    })();
+    }());
     BABYLON.Condition = Condition;
     var ValueCondition = (function (_super) {
         __extends(ValueCondition, _super);
@@ -29,7 +39,8 @@ var BABYLON;
             this.propertyPath = propertyPath;
             this.value = value;
             this.operator = operator;
-            this._target = this._getEffectiveTarget(target, this.propertyPath);
+            this._target = target;
+            this._effectiveTarget = this._getEffectiveTarget(target, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
         Object.defineProperty(ValueCondition, "IsEqual", {
@@ -64,21 +75,41 @@ var BABYLON;
         ValueCondition.prototype.isValid = function () {
             switch (this.operator) {
                 case ValueCondition.IsGreater:
-                    return this._target[this._property] > this.value;
+                    return this._effectiveTarget[this._property] > this.value;
                 case ValueCondition.IsLesser:
-                    return this._target[this._property] < this.value;
+                    return this._effectiveTarget[this._property] < this.value;
                 case ValueCondition.IsEqual:
                 case ValueCondition.IsDifferent:
                     var check;
                     if (this.value.equals) {
-                        check = this.value.equals(this._target[this._property]);
+                        check = this.value.equals(this._effectiveTarget[this._property]);
                     }
                     else {
-                        check = this.value === this._target[this._property];
+                        check = this.value === this._effectiveTarget[this._property];
                     }
                     return this.operator === ValueCondition.IsEqual ? check : !check;
             }
             return false;
+        };
+        ValueCondition.prototype.serialize = function () {
+            return this._serialize({
+                name: "ValueCondition",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: BABYLON.Action._SerializeValueAsString(this.value) },
+                    { name: "operator", value: ValueCondition.GetOperatorName(this.operator) }
+                ]
+            });
+        };
+        ValueCondition.GetOperatorName = function (operator) {
+            switch (operator) {
+                case ValueCondition._IsEqual: return "IsEqual";
+                case ValueCondition._IsDifferent: return "IsDifferent";
+                case ValueCondition._IsGreater: return "IsGreater";
+                case ValueCondition._IsLesser: return "IsLesser";
+                default: return "";
+            }
         };
         // Statics
         ValueCondition._IsEqual = 0;
@@ -86,7 +117,7 @@ var BABYLON;
         ValueCondition._IsGreater = 2;
         ValueCondition._IsLesser = 3;
         return ValueCondition;
-    })(Condition);
+    }(Condition));
     BABYLON.ValueCondition = ValueCondition;
     var PredicateCondition = (function (_super) {
         __extends(PredicateCondition, _super);
@@ -98,7 +129,7 @@ var BABYLON;
             return this.predicate();
         };
         return PredicateCondition;
-    })(Condition);
+    }(Condition));
     BABYLON.PredicateCondition = PredicateCondition;
     var StateCondition = (function (_super) {
         __extends(StateCondition, _super);
@@ -111,7 +142,16 @@ var BABYLON;
         StateCondition.prototype.isValid = function () {
             return this._target.state === this.value;
         };
+        StateCondition.prototype.serialize = function () {
+            return this._serialize({
+                name: "StateCondition",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    { name: "value", value: this.value }
+                ]
+            });
+        };
         return StateCondition;
-    })(Condition);
+    }(Condition));
     BABYLON.StateCondition = StateCondition;
 })(BABYLON || (BABYLON = {}));

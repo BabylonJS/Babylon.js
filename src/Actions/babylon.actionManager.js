@@ -47,7 +47,7 @@ var BABYLON;
             return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
         };
         return ActionEvent;
-    })();
+    }());
     BABYLON.ActionEvent = ActionEvent;
     /**
      * Action Manager manages all events to be triggered on a given mesh or the global scene.
@@ -297,6 +297,36 @@ var BABYLON;
             var properties = propertyPath.split(".");
             return properties[properties.length - 1];
         };
+        ActionManager.prototype.serialize = function (name) {
+            var root = {
+                children: [],
+                name: name,
+                type: 3,
+                properties: [] // Empty for root but required
+            };
+            for (var i = 0; i < this.actions.length; i++) {
+                var triggerObject = {
+                    type: 0,
+                    children: [],
+                    name: ActionManager.GetTriggerName(this.actions[i].trigger),
+                    properties: []
+                };
+                var triggerOptions = this.actions[i].triggerOptions;
+                if (triggerOptions && typeof triggerOptions !== "number") {
+                    if (triggerOptions.parameter instanceof BABYLON.Node) {
+                        triggerObject.properties.push(BABYLON.Action._GetTargetProperty(triggerOptions.parameter));
+                    }
+                    else {
+                        triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
+                    }
+                }
+                // Serialize child action, recursively
+                this.actions[i].serialize(triggerObject);
+                // Add serialized trigger
+                root.children.push(triggerObject);
+            }
+            return root;
+        };
         ActionManager.Parse = function (parsedActions, object, scene) {
             var actionManager = new BABYLON.ActionManager(scene);
             if (object === null)
@@ -448,6 +478,27 @@ var BABYLON;
                 }
             }
         };
+        ActionManager.GetTriggerName = function (trigger) {
+            switch (trigger) {
+                case 0: return "NothingTrigger";
+                case 1: return "OnPickTrigger";
+                case 2: return "OnLeftPickTrigger";
+                case 3: return "OnRightPickTrigger";
+                case 4: return "OnCenterPickTrigger";
+                case 5: return "OnPickDownTrigger";
+                case 6: return "OnPickUpTrigger";
+                case 7: return "OnLongPressTrigger";
+                case 8: return "OnPointerOverTrigger";
+                case 9: return "OnPointerOutTrigger";
+                case 10: return "OnEveryFrameTrigger";
+                case 11: return "OnIntersectionEnterTrigger";
+                case 12: return "OnIntersectionExitTrigger";
+                case 13: return "OnKeyDownTrigger";
+                case 14: return "OnKeyUpTrigger";
+                case 15: return "OnPickOutTrigger";
+                default: return "";
+            }
+        };
         // Statics
         ActionManager._NothingTrigger = 0;
         ActionManager._OnPickTrigger = 1;
@@ -468,6 +519,6 @@ var BABYLON;
         ActionManager.DragMovementThreshold = 10; // in pixels
         ActionManager.LongPressDelay = 500; // in milliseconds
         return ActionManager;
-    })();
+    }());
     BABYLON.ActionManager = ActionManager;
 })(BABYLON || (BABYLON = {}));

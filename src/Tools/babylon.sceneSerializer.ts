@@ -147,6 +147,11 @@
 
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
+        
+        // Action Manager
+        if (mesh.actionManager) {
+            serializationObject.actions = mesh.actionManager.serialize(mesh.name);
+        }
 
         return serializationObject;
     };
@@ -332,6 +337,11 @@
                 if (light.getShadowGenerator()) {
                     serializationObject.shadowGenerators.push(light.getShadowGenerator().serialize());
                 }
+            }
+            
+            // Action Manager
+            if (scene.actionManager) {
+                serializationObject.actions = scene.actionManager.serialize("scene");
             }
 
             return serializationObject;
