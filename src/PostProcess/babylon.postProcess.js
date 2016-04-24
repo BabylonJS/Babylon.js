@@ -7,9 +7,15 @@ var BABYLON;
             this.name = name;
             this.width = -1;
             this.height = -1;
+            /*
+                Enable Pixel Perfect mode where texture is not scaled to be power of 2.
+                Can only be used on a single postprocess or on the last one of a chain.
+            */
+            this.enablePixelPerfectMode = false;
             this._reusable = false;
             this._textures = new BABYLON.SmartArray(2);
             this._currentRenderTextureInd = 0;
+            this._scaleRatio = new BABYLON.Vector2(1, 1);
             if (camera != null) {
                 this._camera = camera;
                 this._scene = camera.getScene();
@@ -27,6 +33,7 @@ var BABYLON;
             this._samplers.push("textureSampler");
             this._fragmentUrl = fragmentUrl;
             this._parameters = parameters || [];
+            this._parameters.push("scale");
             this.updateEffect(defines);
         }
         PostProcess.prototype.updateEffect = function (defines) {
@@ -39,10 +46,18 @@ var BABYLON;
             camera = camera || this._camera;
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
-            var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
-            var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
-            desiredWidth = this._renderRatio.width || BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
-            desiredHeight = this._renderRatio.height || BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
+            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
+            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
+            var desiredWidth = this._renderRatio.width || requiredWidth;
+            var desiredHeight = this._renderRatio.height || requiredHeight;
+            if (this.renderTargetSamplingMode !== BABYLON.Texture.NEAREST_SAMPLINGMODE) {
+                if (!this._renderRatio.width) {
+                    desiredWidth = BABYLON.Tools.GetExponentOfTwo(desiredWidth, maxSize);
+                }
+                if (!this._renderRatio.height) {
+                    desiredHeight = BABYLON.Tools.GetExponentOfTwo(desiredHeight, maxSize);
+                }
+            }
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
                     for (var i = 0; i < this._textures.length; i++) {
@@ -60,7 +75,14 @@ var BABYLON;
                     this.onSizeChanged();
                 }
             }
-            this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd]);
+            if (this.enablePixelPerfectMode) {
+                this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
+                this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd], 0, requiredWidth, requiredHeight);
+            }
+            else {
+                this._scaleRatio.copyFromFloats(1, 1);
+                this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd]);
+            }
             if (this.onActivate) {
                 this.onActivate(camera);
             }
@@ -95,6 +117,7 @@ var BABYLON;
             // Texture
             this._effect._bindTexture("textureSampler", this._textures.data[this._currentRenderTextureInd]);
             // Parameters
+            this._effect.setVector2("scale", this._scaleRatio);
             if (this.onApply) {
                 this.onApply(this._effect);
             }

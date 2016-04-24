@@ -10,14 +10,23 @@ var BABYLON;
         function SwitchBooleanAction(triggerOptions, target, propertyPath, condition) {
             _super.call(this, triggerOptions, condition);
             this.propertyPath = propertyPath;
-            this._target = target;
+            this._target = this._effectiveTarget = target;
         }
         SwitchBooleanAction.prototype._prepare = function () {
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         };
         SwitchBooleanAction.prototype.execute = function () {
-            this._target[this._property] = !this._target[this._property];
+            this._effectiveTarget[this._property] = !this._effectiveTarget[this._property];
+        };
+        SwitchBooleanAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "SwitchBooleanAction",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath }
+                ]
+            }, parent);
         };
         return SwitchBooleanAction;
     })(BABYLON.Action);
@@ -32,6 +41,15 @@ var BABYLON;
         SetStateAction.prototype.execute = function () {
             this._target.state = this.value;
         };
+        SetStateAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "SetStateAction",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    { name: "value", value: this.value }
+                ]
+            }, parent);
+        };
         return SetStateAction;
     })(BABYLON.Action);
     BABYLON.SetStateAction = SetStateAction;
@@ -41,14 +59,24 @@ var BABYLON;
             _super.call(this, triggerOptions, condition);
             this.propertyPath = propertyPath;
             this.value = value;
-            this._target = target;
+            this._target = this._effectiveTarget = target;
         }
         SetValueAction.prototype._prepare = function () {
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         };
         SetValueAction.prototype.execute = function () {
-            this._target[this._property] = this.value;
+            this._effectiveTarget[this._property] = this.value;
+        };
+        SetValueAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "SetValueAction",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: BABYLON.Action._SerializeValueAsString(this.value) }
+                ]
+            }, parent);
         };
         return SetValueAction;
     })(BABYLON.Action);
@@ -59,17 +87,27 @@ var BABYLON;
             _super.call(this, triggerOptions, condition);
             this.propertyPath = propertyPath;
             this.value = value;
-            this._target = target;
+            this._target = this._effectiveTarget = target;
         }
         IncrementValueAction.prototype._prepare = function () {
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
-            if (typeof this._target[this._property] !== "number") {
+            if (typeof this._effectiveTarget[this._property] !== "number") {
                 BABYLON.Tools.Warn("Warning: IncrementValueAction can only be used with number values");
             }
         };
         IncrementValueAction.prototype.execute = function () {
-            this._target[this._property] += this.value;
+            this._effectiveTarget[this._property] += this.value;
+        };
+        IncrementValueAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "IncrementValueAction",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: BABYLON.Action._SerializeValueAsString(this.value) }
+                ]
+            }, parent);
         };
         return IncrementValueAction;
     })(BABYLON.Action);
@@ -89,6 +127,17 @@ var BABYLON;
             var scene = this._actionManager.getScene();
             scene.beginAnimation(this._target, this.from, this.to, this.loop);
         };
+        PlayAnimationAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "PlayAnimationAction",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    { name: "from", value: String(this.from) },
+                    { name: "to", value: String(this.to) },
+                    { name: "loop", value: BABYLON.Action._SerializeValueAsString(this.loop) || false }
+                ]
+            }, parent);
+        };
         return PlayAnimationAction;
     })(BABYLON.Action);
     BABYLON.PlayAnimationAction = PlayAnimationAction;
@@ -104,6 +153,12 @@ var BABYLON;
             var scene = this._actionManager.getScene();
             scene.stopAnimation(this._target);
         };
+        StopAnimationAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "StopAnimationAction",
+                properties: [BABYLON.Action._GetTargetProperty(this._target)]
+            }, parent);
+        };
         return StopAnimationAction;
     })(BABYLON.Action);
     BABYLON.StopAnimationAction = StopAnimationAction;
@@ -114,6 +169,12 @@ var BABYLON;
             _super.call(this, triggerOptions, condition);
         }
         DoNothingAction.prototype.execute = function () {
+        };
+        DoNothingAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "DoNothingAction",
+                properties: []
+            }, parent);
         };
         return DoNothingAction;
     })(BABYLON.Action);
@@ -134,6 +195,17 @@ var BABYLON;
             for (var index = 0; index < this.children.length; index++) {
                 this.children[index].execute(evt);
             }
+        };
+        CombineAction.prototype.serialize = function (parent) {
+            var serializationObject = _super.prototype._serialize.call(this, {
+                name: "CombineAction",
+                properties: [],
+                combine: []
+            }, parent);
+            for (var i = 0; i < this.children.length; i++) {
+                serializationObject.combine.push(this.children[i].serialize(null));
+            }
+            return serializationObject;
         };
         return CombineAction;
     })(BABYLON.Action);
@@ -168,6 +240,15 @@ var BABYLON;
             this._target.position = BABYLON.Vector3.TransformCoordinates(this._target.position, invertParentWorldMatrix);
             this._target.parent = this._parent;
         };
+        SetParentAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "SetParentAction",
+                properties: [
+                    BABYLON.Action._GetTargetProperty(this._target),
+                    BABYLON.Action._GetTargetProperty(this._parent),
+                ]
+            }, parent);
+        };
         return SetParentAction;
     })(BABYLON.Action);
     BABYLON.SetParentAction = SetParentAction;
@@ -183,6 +264,12 @@ var BABYLON;
             if (this._sound !== undefined)
                 this._sound.play();
         };
+        PlaySoundAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "PlaySoundAction",
+                properties: [{ name: "sound", value: this._sound.name }]
+            }, parent);
+        };
         return PlaySoundAction;
     })(BABYLON.Action);
     BABYLON.PlaySoundAction = PlaySoundAction;
@@ -197,6 +284,12 @@ var BABYLON;
         StopSoundAction.prototype.execute = function () {
             if (this._sound !== undefined)
                 this._sound.stop();
+        };
+        StopSoundAction.prototype.serialize = function (parent) {
+            return _super.prototype._serialize.call(this, {
+                name: "StopSoundAction",
+                properties: [{ name: "sound", value: this._sound.name }]
+            }, parent);
         };
         return StopSoundAction;
     })(BABYLON.Action);

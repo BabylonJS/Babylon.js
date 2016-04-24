@@ -750,7 +750,7 @@
             }
         }
 
-        public bindFramebuffer(texture: WebGLTexture, faceIndex?: number): void {
+        public bindFramebuffer(texture: WebGLTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number): void {
             this._currentRenderTarget = texture;
 
             var gl = this._gl;
@@ -762,7 +762,7 @@
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             }
 
-            this._gl.viewport(0, 0, texture._width, texture._height);
+            this._gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
 
             this.wipeCaches();
         }
