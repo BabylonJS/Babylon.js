@@ -1,16 +1,17 @@
 ﻿module BABYLON {
     export class InterpolateValueAction extends Action {
         private _target: any;
+        private _effectiveTarget: any;
         private _property: string;
 
         constructor(triggerOptions: any, target: any, public propertyPath: string, public value: any, public duration: number = 1000, condition?: Condition, public stopOtherAnimations?: boolean, public onInterpolationDone?: () => void) {
             super(triggerOptions, condition);
 
-            this._target = target;
+            this._target = this._effectiveTarget = target;
         }
 
         public _prepare(): void {
-            this._target = this._getEffectiveTarget(this._target, this.propertyPath);
+            this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
             this._property = this._getProperty(this.propertyPath);
         }
 
@@ -19,7 +20,7 @@
             var keys = [
                 {
                     frame: 0,
-                    value: this._target[this._property]
+                    value: this._effectiveTarget[this._property]
                 }, {
                     frame: 100,
                     value: this.value
@@ -48,10 +49,23 @@
             animation.setKeys(keys);
 
             if (this.stopOtherAnimations) {
-                scene.stopAnimation(this._target);
+                scene.stopAnimation(this._effectiveTarget);
             }
 
-            scene.beginDirectAnimation(this._target, [animation], 0, 100, false, 1, this.onInterpolationDone);
+            scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, this.onInterpolationDone);
+        }
+        
+        public serialize(parent: any): any {
+            return super._serialize({
+                name: "InterpolateValueAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: Action._SerializeValueAsString(this.value) },
+                    { name: "duration", value: Action._SerializeValueAsString(this.duration) },
+                    { name: "stopOtherAnimations", value: Action._SerializeValueAsString(this.stopOtherAnimations) || false }
+                ]
+            }, parent);
         }
     }
 } 
