@@ -126,7 +126,7 @@
         
         public static _SerializeValueAsString = (value: any): string => {
             if (typeof value === "number") {
-                return String(value);
+                return value.toString();
             }
             
             if (typeof value === "boolean") {
@@ -134,20 +134,20 @@
             }
             
             if (value instanceof Vector2) {
-                return String(value.x + ", " + value.y);
+                return value.x + ", " + value.y;
             }
             if (value instanceof Vector3) {
-                return String(value.x + ", " + value.y + ", " + value.z);
+                return value.x + ", " + value.y + ", " + value.z;
             }
             
             if (value instanceof Color3) {
-                return String(value.r + ", " + value.g + ", " + value.b);
+                return value.r + ", " + value.g + ", " + value.b;
             }
             if (value instanceof Color4) {
-                return String(value.r + ", " + value.g + ", " + value.b + ", " + value.a);
+                return value.r + ", " + value.g + ", " + value.b + ", " + value.a;
             }
             
-            return value; // String
+            return value; // string
         };
     
         public static _GetTargetProperty = (target: Scene | Node) => {
@@ -157,7 +157,7 @@
                             : target instanceof Light ? "LightProperties"
                             : target instanceof Camera ? "CameraProperties"
                             : "SceneProperties",
-                value: target instanceof Scene ? "Scene" : target.name
+                value: target instanceof Scene ? "Scene" : (<Node>target).name
             }  
         };
     }

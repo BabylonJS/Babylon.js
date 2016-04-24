@@ -218,7 +218,7 @@
                 // Scene
                 scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
                 scene.autoClear = parsedData.autoClear;
-                scene.clearColor = BABYLON.Color3.FromArray(parsedData.clearColor);
+                scene.clearColor = BABYLON.Color4.FromArray(parsedData.clearColor);
                 scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
                 if (parsedData.gravity) {
                     scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);

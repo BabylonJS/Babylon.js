@@ -147,7 +147,7 @@
 
         // Layer mask
         serializationObject.layerMask = mesh.layerMask;
-        
+
         // Action Manager
         if (mesh.actionManager) {
             serializationObject.actions = mesh.actionManager.serialize(mesh.name);
@@ -220,7 +220,7 @@
             serializationObject.gravity = scene.gravity.asArray();
             serializationObject.collisionsEnabled = scene.collisionsEnabled;
             serializationObject.workerCollisions = scene.workerCollisions;
-            
+
             // Fog
             if (scene.fogMode && scene.fogMode !== 0) {
                 serializationObject.fogMode = scene.fogMode;
@@ -229,7 +229,7 @@
                 serializationObject.fogEnd = scene.fogEnd;
                 serializationObject.fogDensity = scene.fogDensity;
             }
-            
+
             //Physics
             if (scene.isPhysicsEnabled()) {
                 serializationObject.physicsEnabled = true;
@@ -275,7 +275,7 @@
                 var multiMaterial = scene.multiMaterials[index];
                 serializationObject.multiMaterials.push(multiMaterial.serialize());
             }
-            
+
             // Skeletons
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
@@ -338,7 +338,7 @@
                     serializationObject.shadowGenerators.push(light.getShadowGenerator().serialize());
                 }
             }
-            
+
             // Action Manager
             if (scene.actionManager) {
                 serializationObject.actions = scene.actionManager.serialize("scene");
@@ -377,5 +377,4 @@
         }
     }
 }
-
 

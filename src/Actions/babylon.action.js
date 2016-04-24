@@ -96,24 +96,24 @@ var BABYLON;
         };
         Action._SerializeValueAsString = function (value) {
             if (typeof value === "number") {
-                return String(value);
+                return value.toString();
             }
             if (typeof value === "boolean") {
                 return value ? "true" : "false";
             }
             if (value instanceof BABYLON.Vector2) {
-                return String(value.x + ", " + value.y);
+                return value.x + ", " + value.y;
             }
             if (value instanceof BABYLON.Vector3) {
-                return String(value.x + ", " + value.y + ", " + value.z);
+                return value.x + ", " + value.y + ", " + value.z;
             }
             if (value instanceof BABYLON.Color3) {
-                return String(value.r + ", " + value.g + ", " + value.b);
+                return value.r + ", " + value.g + ", " + value.b;
             }
             if (value instanceof BABYLON.Color4) {
-                return String(value.r + ", " + value.g + ", " + value.b + ", " + value.a);
+                return value.r + ", " + value.g + ", " + value.b + ", " + value.a;
             }
-            return value; // String
+            return value; // string
         };
         Action._GetTargetProperty = function (target) {
             return {
@@ -126,6 +126,6 @@ var BABYLON;
             };
         };
         return Action;
-    }());
+    })();
     BABYLON.Action = Action;
 })(BABYLON || (BABYLON = {}));
