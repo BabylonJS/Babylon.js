@@ -2,6 +2,7 @@
     /**
      * The purpose of this class is to pack several Rectangles into a big map, while trying to fit everything as optimaly as possible.
      * This class is typically used to build lightmaps, sprite map or to pack several little textures into a big one.
+     * Note that this class allows allocated Rectangles to be freed: that is the map is dynamically maintained so you can add/remove rectangle based on their lifecycle.
      */
     export class RectPackingMap extends PackedRect {
         /**
@@ -25,7 +26,7 @@
         }
 
         /**
-         * Return the space free normalized between [0;1]
+         * Return the current space free normalized between [0;1]
          * @returns {} 
          */
         public get freeSpace(): number {
@@ -82,8 +83,8 @@
         }
 
         /**
-         * Free this node's content.
-         * Call this method when you no longer need the rectangle to be in the map. The node will then be available for future additions.
+         * Free this rectangle from the map.
+         * Call this method when you no longer need the rectangle to be in the map.
          */
         public freeContent() {
             if (!this.contentSize) {
