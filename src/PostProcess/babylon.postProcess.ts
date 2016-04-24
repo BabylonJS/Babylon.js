@@ -10,6 +10,12 @@
         public renderTargetSamplingMode: number;
         public clearColor: Color4;
 
+        /*
+            Enable Pixel Perfect mode where texture is not scaled to be power of 2.
+            Can only be used on a single postprocess or on the last one of a chain.
+        */ 
+        public enablePixelPerfectMode = false;
+
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
@@ -22,6 +28,7 @@
         private _samplers: string[];
         private _fragmentUrl: string;
         private _parameters: string[];
+        private _scaleRatio = new Vector2(1, 1);
 
         constructor(public name: string, fragmentUrl: string, parameters: string[], samplers: string[], ratio: number|any, camera: Camera, samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines?: string, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             if (camera != null) {
@@ -45,6 +52,8 @@
             this._fragmentUrl = fragmentUrl;
             this._parameters = parameters || [];
 
+            this._parameters.push("scale");
+
             this.updateEffect(defines);
         }
 
@@ -65,11 +74,21 @@
             var scene = camera.getScene();
             var maxSize = camera.getEngine().getCaps().maxTextureSize;
 
-            var desiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
-            var desiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
+            var requiredWidth = ((sourceTexture ? sourceTexture._width : this._engine.getRenderingCanvas().width) * this._renderRatio) | 0;
+            var requiredHeight = ((sourceTexture ? sourceTexture._height : this._engine.getRenderingCanvas().height) * this._renderRatio) | 0;
 
-            desiredWidth = this._renderRatio.width || Tools.GetExponentOfTwo(desiredWidth, maxSize);
-            desiredHeight = this._renderRatio.height || Tools.GetExponentOfTwo(desiredHeight, maxSize);
+            var desiredWidth = this._renderRatio.width || requiredWidth;
+            var desiredHeight = this._renderRatio.height || requiredHeight;
+
+            if (this.renderTargetSamplingMode !== Texture.NEAREST_SAMPLINGMODE) {
+                if (!this._renderRatio.width) {
+                    desiredWidth = Tools.GetExponentOfTwo(desiredWidth, maxSize);
+                }
+
+                if (!this._renderRatio.height) {
+                    desiredHeight = Tools.GetExponentOfTwo(desiredHeight, maxSize);
+                }
+            }
 
             if (this.width !== desiredWidth || this.height !== desiredHeight) {
                 if (this._textures.length > 0) {
@@ -91,7 +110,14 @@
                 }
             }
 
-            this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd]);
+            if (this.enablePixelPerfectMode) {
+                this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
+                this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd], 0, requiredWidth, requiredHeight);
+            }
+            else {
+                this._scaleRatio.copyFromFloats(1, 1);
+                this._engine.bindFramebuffer(this._textures.data[this._currentRenderTextureInd]);
+            }
 
             if (this.onActivate) {
                 this.onActivate(camera);
@@ -129,6 +155,7 @@
             this._effect._bindTexture("textureSampler", this._textures.data[this._currentRenderTextureInd]);
 
             // Parameters
+            this._effect.setVector2("scale", this._scaleRatio);
             if (this.onApply) {
                 this.onApply(this._effect);
             }

@@ -12,6 +12,10 @@ var BABYLON;
             _super.call(this, name, scene, parent, source, doNotCloneChildren);
             this.color = new BABYLON.Color3(1, 1, 1);
             this.alpha = 1;
+            if (source) {
+                this.color = source.color.clone();
+                this.alpha = source.alpha;
+            }
             this._intersectionThreshold = 0.1;
             this._colorShader = new BABYLON.ShaderMaterial("colorShader", scene, "color", {
                 attributes: ["position"],

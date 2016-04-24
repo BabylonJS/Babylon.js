@@ -1506,6 +1506,12 @@
             return null;
         }
 
+        public getMeshesByID(id: string): Array<AbstractMesh> {
+            return this.meshes.filter(function (m) {
+                return m.id === id;
+            })
+        }
+
         /**
          * Get a mesh with its auto-generated unique id
          * @param {number} uniqueId - the unique id to search for
@@ -2355,7 +2361,9 @@
             this.debugLayer.hide();
 
             // Events
-            this.onDisposeObservable.notifyObservers(this);
+            if (this.onDispose) {
+                this.onDispose();
+            }
 
             this.onBeforeRenderObservable.clear();
             this.onAfterRenderObservable.clear();
@@ -2796,4 +2804,3 @@
         }
     }
 }
-

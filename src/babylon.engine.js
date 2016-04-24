@@ -635,7 +635,7 @@ var BABYLON;
                 }
             }
         };
-        Engine.prototype.bindFramebuffer = function (texture, faceIndex) {
+        Engine.prototype.bindFramebuffer = function (texture, faceIndex, requiredWidth, requiredHeight) {
             this._currentRenderTarget = texture;
             var gl = this._gl;
             gl.bindFramebuffer(gl.FRAMEBUFFER, texture._framebuffer);
@@ -645,7 +645,7 @@ var BABYLON;
             else {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
             }
-            this._gl.viewport(0, 0, texture._width, texture._height);
+            this._gl.viewport(0, 0, requiredWidth || texture._width, requiredHeight || texture._height);
             this.wipeCaches();
         };
         Engine.prototype.unBindFramebuffer = function (texture, disableGenerateMipMaps) {
