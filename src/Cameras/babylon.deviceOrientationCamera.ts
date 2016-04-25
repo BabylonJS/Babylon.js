@@ -5,25 +5,25 @@ module BABYLON {
         public get angularSensibility() {
             var gamepad = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
             if (gamepad)
-                return gamepad.angularSensibility;
+                return 0; //gamepad.angularSensibility;
         }
         
         public set angularSensibility(value) {
             var gamepad = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (gamepad)
-                gamepad.angularSensibility = value;
+            //if (gamepad)
+            //    gamepad.angularSensibility = value;
         }
         
         public get moveSensibility() {
             var gamepad = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
             if (gamepad)
-                return gamepad.moveSensibility;
+                return 0; // gamepad.moveSensibility;
         }
         
         public set moveSensibility(value) {
             var gamepad = <FreeCameraDeviceOrientationInput>this.inputs.attached["deviceOrientation"];
-            if (gamepad)
-                gamepad.moveSensibility = value;
+            //if (gamepad)
+            //    gamepad.moveSensibility = value;
         }
         //-- end properties for backward compatibility for inputs
         
