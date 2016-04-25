@@ -1558,6 +1558,42 @@
         }
     }
 
+    export interface ISize {
+        width: number;
+        height: number;
+    }
+
+    export class Size implements ISize {
+        width: number;
+        height: number;
+
+        public constructor(width: number, height: number) {
+            this.width = width;
+            this.height = height;
+        }
+
+        public clone(): Size {
+            return new Size(this.width, this.height);
+        }
+
+        public equals(other: Size): boolean {
+            if (!other) {
+                return false;
+            }
+
+            return (this.width === other.width) && (this.height === other.height);
+        }
+
+        public get surface(): number {
+            return this.width * this.height;
+        }
+
+        public static Zero(): Size {
+            return new Size(0, 0);
+        }
+    }
+
+
     export class Quaternion {
         constructor(public x: number = 0, public y: number = 0, public z: number = 0, public w: number = 1) {
         }
