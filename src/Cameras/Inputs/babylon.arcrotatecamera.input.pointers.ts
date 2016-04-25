@@ -67,7 +67,7 @@ module BABYLON {
                     } catch (e) {
                         //Nothing to do with the error.
                     }
-                    
+
                     cacheSoloPointer = null;
                     previousPinchDistance = 0;
 
@@ -88,8 +88,8 @@ module BABYLON {
                     // One button down
                     if (pointA && pointB === undefined) {
                         if (this.panningSensibility !== 0 &&
-                        ((this._isCtrlPushed && this.camera._useCtrlForPanning) ||
-                        (!this.camera._useCtrlForPanning && this._isRightClick))) {
+                            ((this._isCtrlPushed && this.camera._useCtrlForPanning) ||
+                                (!this.camera._useCtrlForPanning && this._isRightClick))) {
                             this.camera
                                 .inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
                             this.camera
@@ -104,10 +104,10 @@ module BABYLON {
                         cacheSoloPointer.y = evt.clientY;
                     }
 
-                   // Two buttons down: pinch
+                    // Two buttons down: pinch
                     else if (pointA && pointB) {
-                        //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
-                        var ed = (pointA.pointerId===evt.pointerId) ? pointA : pointB;
+                        //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be useful to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                        var ed = (pointA.pointerId === evt.pointerId) ? pointA : pointB;
                         ed.x = evt.clientX;
                         ed.y = evt.clientY;
                         var direction = this.pinchInwards ? 1 : -1;

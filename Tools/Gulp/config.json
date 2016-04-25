@@ -22,9 +22,7 @@
       "../../src/Tools/babylon.tools.tga.js",
       "../../src/Tools/babylon.smartArray.js",
       "../../src/Tools/babylon.stringDictionary.js",
-	  "../../src/Tools/babylon.rectPackingMap.js",
-	  "../../src/Tools/babylon.dynamicFloatArray.js",
-      "../../src/Tools/babylon.tools.js",      
+      "../../src/Tools/babylon.tools.js",
       "../../src/States/babylon.alphaCullingState.js",
       "../../src/States/babylon.depthCullingState.js",
       "../../src/babylon.engine.js",
@@ -84,7 +82,7 @@
       "../../src/Materials/Textures/babylon.videoTexture.js",
       "../../src/Materials/Textures/Procedurals/babylon.customProceduralTexture.js",
       "../../src/Materials/babylon.effect.js",
-      "../../src/Materials/babylon.materialHelper.js",      
+      "../../src/Materials/babylon.materialHelper.js",
       "../../src/Materials/babylon.fresnelParameters.js",
       "../../src/Materials/babylon.material.js",
       "../../src/Materials/babylon.standardMaterial.js",
@@ -155,8 +153,10 @@
     }
   ],
   "extras": {
-    "files": [      
+    "files": [
       "../../src/Math/babylon.math.SIMD.js",
+      "../../src/Tools/babylon.rectPackingMap.js",
+      "../../src/Tools/babylon.dynamicFloatArray.js",
       "../../src/Materials/babylon.shaderMaterial.js",
       "../../src/Tools/babylon.tools.dds.js",
       "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
@@ -212,7 +212,7 @@
       "../../src/tools/hdr/babylon.tools.pmremGenerator.js",
       "../../src/materials/textures/babylon.hdrcubetexture.js",
       "../../src/debug/babylon.skeletonViewer.js",
-      "../../src/materials/babylon.pbrmaterial.js"      
+      "../../src/materials/babylon.pbrmaterial.js"
     ]
   }
 }

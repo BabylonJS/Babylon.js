@@ -632,7 +632,7 @@
                         parentMatrix = this.parent.getWorldMatrix();
                     }
 
-                    Vector3.TransformCoordinatesToRef(localPosition, parentMatrix, Tmp.Vector3[1]);
+                    Vector3.TransformNormalToRef(localPosition, parentMatrix, Tmp.Vector3[1]);
                     localPosition = Tmp.Vector3[1];
                 }
 
