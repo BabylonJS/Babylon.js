@@ -131,13 +131,12 @@ var BABYLON;
             this.entryCount = newEntryCount;
         };
         return DynamicFloatArray;
-    }());
+    })();
     BABYLON.DynamicFloatArray = DynamicFloatArray;
     var DynamicFloatArrayEntry = (function () {
         function DynamicFloatArrayEntry() {
         }
         return DynamicFloatArrayEntry;
-    }());
+    })();
     BABYLON.DynamicFloatArrayEntry = DynamicFloatArrayEntry;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.dynamicFloatArray.js.map

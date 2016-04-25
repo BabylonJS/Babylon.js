@@ -1068,6 +1068,7 @@ var BABYLON;
             if (!this.isVerticesDataPresent(BABYLON.VertexBuffer.PositionKind)) {
                 return;
             }
+            var submeshes = this.subMeshes.splice(0);
             this._resetPointsArrayCache();
             var data = this.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var temp = [];
@@ -1090,6 +1091,9 @@ var BABYLON;
             if (transform.m[0] * transform.m[5] * transform.m[10] < 0) {
                 this.flipFaces();
             }
+            // Restore submeshes
+            this.releaseSubMeshes();
+            this.subMeshes = submeshes;
         };
         /**
          * Modifies the mesh geometry according to its own current World Matrix.

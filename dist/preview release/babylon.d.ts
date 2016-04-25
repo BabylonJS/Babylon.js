@@ -2923,50 +2923,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface ISceneLoaderPlugin {
-        extensions: string;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string) => boolean;
-    }
-    interface ISceneLoaderPluginAsync {
-        extensions: string;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        static NO_LOGGING: number;
-        static MINIMAL_LOGGING: number;
-        static SUMMARY_LOGGING: number;
-        static DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        private static _registeredPlugins;
-        private static _getPluginForFilename(sceneFilename);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
-        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
-    }
-}
-
-declare module BABYLON {
     class EffectFallbacks {
         private _defines;
         private _currentRank;
@@ -3536,6 +3492,50 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface ISceneLoaderPlugin {
+        extensions: string;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string) => boolean;
+    }
+    interface ISceneLoaderPluginAsync {
+        extensions: string;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onerror?: () => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onsuccess: () => void, onerror: () => void) => boolean;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        static NO_LOGGING: number;
+        static MINIMAL_LOGGING: number;
+        static SUMMARY_LOGGING: number;
+        static DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        private static _registeredPlugins;
+        private static _getPluginForFilename(sceneFilename);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin): void;
+        static ImportMesh(meshesNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onsuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, progressCallBack?: () => void, onerror?: (scene: Scene, message: string, exception?: any) => void): void;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onsuccess?: (scene: Scene) => void, progressCallBack?: any, onerror?: (scene: Scene) => void): void;
+    }
+}
+
+declare module BABYLON {
     class SIMDVector3 {
         static TransformCoordinatesToRefSIMD(vector: Vector3, transformation: Matrix, result: Vector3): void;
         static TransformCoordinatesFromFloatsToRefSIMD(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
@@ -3804,6 +3804,19 @@ declare module BABYLON {
         static Distance(value1: Vector4, value2: Vector4): number;
         static DistanceSquared(value1: Vector4, value2: Vector4): number;
         static Center(value1: Vector4, value2: Vector4): Vector4;
+    }
+    interface ISize {
+        width: number;
+        height: number;
+    }
+    class Size implements ISize {
+        width: number;
+        height: number;
+        constructor(width: number, height: number);
+        clone(): Size;
+        equals(other: Size): boolean;
+        surface: number;
+        static Zero(): Size;
     }
     class Quaternion {
         x: number;
@@ -8180,6 +8193,42 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+    * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
+    * The intent is to maintain through time data that will be bound to a WebGlBuffer with the ability to change add/remove elements.
+    * It was first built to effiently maintain the WebGlBuffer that contain instancing based data.
+    * Allocating an Element will return a instance of DynamicFloatArrayEntry which contains the offset into the Float32Array of where the element starts, you are then responsible to copy your data using this offset.
+    * Beware, calling pack() may change the offset of some Entries because this method will defrag the Float32Array to replace empty elements by moving allocated ones at their location.
+     * This method will retrun an ArrayBufferView on the existing Float32Array that describes the occupied elements. Use this View to update the WebGLBuffer and NOT the "buffer" field of the class. The pack() method won't shrink/reallocate the buffer to keep it GC friendly, all the empty space will be put at the end of the buffer, the method just ensure there're no "free holes".
+    */
+    class DynamicFloatArray {
+        /**
+         * Construct an instance of the dynamic float array
+         * @param stride size of one entry in float (i.e. not bytes!)
+         * @param initialEntryCount the number of available entries at construction
+         */
+        constructor(stride: number, initialEntryCount: number);
+        allocElement(): DynamicFloatArrayEntry;
+        freeElement(entry: DynamicFloatArrayEntry): void;
+        /**
+         * This method will pack all the occupied elements into a linear sequence and free the rest.
+         * Instances of DynamicFloatArrayEntry may have their 'offset' member changed as data could be copied from one location to another, so be sure to read/write your data based on the value inside this member after you called pack().
+         */
+        pack(): Float32Array;
+        private _moveEntry(entry, destOffset);
+        private _growBuffer();
+        buffer: Float32Array;
+        entryCount: number;
+        stride: number;
+        allEntries: Array<DynamicFloatArrayEntry>;
+        freeEntries: Array<DynamicFloatArrayEntry>;
+    }
+    class DynamicFloatArrayEntry {
+        offset: number;
+    }
+}
+
+declare module BABYLON {
     class FilesInput {
         private _engine;
         private _currentScene;
@@ -8412,6 +8461,74 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * The purpose of this class is to pack several Rectangles into a big map, while trying to fit everything as optimaly as possible.
+     * This class is typically used to build lightmaps, sprite map or to pack several little textures into a big one.
+     * Note that this class allows allocated Rectangles to be freed: that is the map is dynamically maintained so you can add/remove rectangle based on their lifecycle.
+     */
+    class RectPackingMap extends PackedRect {
+        /**
+         * Create an instance of the object with a dimension using the given size
+         * @param size The dimension of the rectangle that will contain all the sub ones.
+         */
+        constructor(size: Size);
+        /**
+         * Add a rectangle, finding the best location to store it into the map
+         * @param size the dimension of the rectangle to store
+         * @return the Node containing the rectangle information, or null if we couldn't find a free spot
+         */
+        addRect(size: Size): PackedRect;
+        /**
+         * Return the current space free normalized between [0;1]
+         * @returns {}
+         */
+        freeSpace: number;
+    }
+    /**
+     * This class describe a rectangle that were added to the map.
+     * You have access to its coordinates either in pixel or normalized (UV)
+     */
+    class PackedRect {
+        constructor(root: PackedRect, parent: PackedRect, pos: Vector2, size: Size);
+        /**
+         * @returns the position of this node into the map
+         */
+        pos: Vector2;
+        /**
+         * @returns the size of the rectangle this node handles
+         */
+        contentSize: Size;
+        /**
+         * Compute the UV of the top/left, top/right, bottom/right, bottom/left points of the rectangle this node handles into the map
+         * @returns And array of 4 Vector2, containing UV coordinates for the four corners of the Rectangle into the map
+         */
+        UVs: Vector2[];
+        /**
+         * Free this rectangle from the map.
+         * Call this method when you no longer need the rectangle to be in the map.
+         */
+        freeContent(): void;
+        protected isUsed: boolean;
+        protected findAndSplitNode(contentSize: Size): PackedRect;
+        private findNode(size);
+        private splitNode(contentSize);
+        private attemptDefrag();
+        private clearNode();
+        private isRecursiveFree;
+        protected evalFreeSize(size: number): number;
+        protected _root: PackedRect;
+        protected _parent: PackedRect;
+        private _contentSize;
+        private _initialSize;
+        private _leftNode;
+        private _rightNode;
+        private _bottomNode;
+        private _pos;
+        protected _size: Size;
+    }
+}
+
+declare module BABYLON {
     class SceneOptimization {
         priority: number;
         apply: (scene: Scene) => boolean;
@@ -8489,6 +8606,26 @@ declare module BABYLON {
         concatWithNoDuplicate(array: any): void;
         indexOf(value: any): number;
         private static _GlobalId;
+    }
+}
+
+declare module BABYLON {
+    class SmartCollection {
+        count: number;
+        items: any;
+        private _keys;
+        private _initialCapacity;
+        constructor(capacity?: number);
+        add(key: any, item: any): number;
+        remove(key: any): number;
+        removeItemOfIndex(index: number): number;
+        indexOf(key: any): number;
+        item(key: any): any;
+        getAllKeys(): any[];
+        getKeyByIndex(index: number): any;
+        getItemByIndex(index: number): any;
+        empty(): void;
+        forEach(block: (item: any) => void): void;
     }
 }
 
@@ -8625,10 +8762,6 @@ declare module BABYLON.Internals {
 declare module BABYLON {
     interface IAnimatable {
         animations: Array<Animation>;
-    }
-    interface ISize {
-        width: number;
-        height: number;
     }
     class Tools {
         static BaseUrl: string;
@@ -9213,9 +9346,6 @@ declare module BABYLON {
     }
 }
 
-declare module BABYLON.Internals {
-}
-
 declare module BABYLON {
     class BaseTexture {
         name: string;
@@ -9536,6 +9666,9 @@ declare module BABYLON {
         private _createTexture();
         update(): boolean;
     }
+}
+
+declare module BABYLON.Internals {
 }
 
 declare module BABYLON {

@@ -1190,6 +1190,8 @@
                 return;
             }
 
+            var submeshes = this.subMeshes.splice(0);
+
             this._resetPointsArrayCache();
 
             var data = this.getVerticesData(VertexBuffer.PositionKind);
@@ -1214,6 +1216,10 @@
 
             // flip faces?
             if (transform.m[0] * transform.m[5] * transform.m[10] < 0) { this.flipFaces(); }
+
+            // Restore submeshes
+            this.releaseSubMeshes();
+            this.subMeshes = submeshes;
         }
 
         /**

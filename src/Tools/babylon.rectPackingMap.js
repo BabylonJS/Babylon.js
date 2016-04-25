@@ -43,7 +43,7 @@ var BABYLON;
             configurable: true
         });
         return RectPackingMap;
-    }(PackedRect));
+    })(PackedRect);
     BABYLON.RectPackingMap = RectPackingMap;
     /**
      * This class describe a rectangle that were added to the map.
@@ -203,7 +203,6 @@ var BABYLON;
             return levelSize + size;
         };
         return PackedRect;
-    }());
+    })();
     BABYLON.PackedRect = PackedRect;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.rectPackingMap.js.map
