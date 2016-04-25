@@ -32,7 +32,8 @@
     - Geometry.boundingBias property to enlarge the boundingInfo objects ([nockawa](https://github.com/nockawa))
     - Tools.ExtractMinAndMax & ExtractMinAndMaxIndexed now supports an optional Bias for Extent computation.
 	- Added StringDictionary<T> class to implement an efficient generic typed string dictionary based on Javascript associative array. ([nockawa](https://github.com/nockawa))
-	- Added RectanglePackingMap class to fix several rectangles in a big map in the most optimal way.  ([nockawa](https://github.com/nockawa))
+	- Added RectanglePackingMap class to fix several rectangles in a big map in the most optimal way. ([nockawa](https://github.com/nockawa))
+	- Added DynamicFloatArray class to store float32 based elements of a given size (stride) into one big Float32Array, with allocation/free/pack operations to then access an optimal buffer that can be used to update a WebGLBuffer dynamically. ([nockawa](https://github.com/nockawa))
 	- Scene.onPointerObservable property added to enable a unique Observable event for user input (see ArcRotateCamera inputs for examples) ([nockawa](https://github.com/nockawa))
 
   - **API doc**
