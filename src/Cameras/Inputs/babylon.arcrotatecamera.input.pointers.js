@@ -86,7 +86,7 @@ var BABYLON;
                         cacheSoloPointer.y = evt.clientY;
                     }
                     else if (pointA && pointB) {
-                        //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be usefull to force preventDefault to avoid html page scroll/zoom in some mobile browsers
+                        //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be useful to force preventDefault to avoid html page scroll/zoom in some mobile browsers
                         var ed = (pointA.pointerId === evt.pointerId) ? pointA : pointB;
                         ed.x = evt.clientX;
                         ed.y = evt.clientY;

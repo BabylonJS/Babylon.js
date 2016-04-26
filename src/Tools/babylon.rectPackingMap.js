@@ -6,49 +6,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 var BABYLON;
 (function (BABYLON) {
     /**
-     * The purpose of this class is to pack several Rectangles into a big map, while trying to fit everything as optimaly as possible.
-     * This class is typically used to build lightmaps, sprite map or to pack several little textures into a big one.
-     * Note that this class allows allocated Rectangles to be freed: that is the map is dynamically maintained so you can add/remove rectangle based on their lifecycle.
-     */
-    var RectPackingMap = (function (_super) {
-        __extends(RectPackingMap, _super);
-        /**
-         * Create an instance of the object with a dimension using the given size
-         * @param size The dimension of the rectangle that will contain all the sub ones.
-         */
-        function RectPackingMap(size) {
-            _super.call(this, null, null, BABYLON.Vector2.Zero(), size);
-            this._root = this;
-        }
-        /**
-         * Add a rectangle, finding the best location to store it into the map
-         * @param size the dimension of the rectangle to store
-         * @return the Node containing the rectangle information, or null if we couldn't find a free spot
-         */
-        RectPackingMap.prototype.addRect = function (size) {
-            var node = this.findAndSplitNode(size);
-            return node;
-        };
-        Object.defineProperty(RectPackingMap.prototype, "freeSpace", {
-            /**
-             * Return the current space free normalized between [0;1]
-             * @returns {}
-             */
-            get: function () {
-                var freeSize = 0;
-                freeSize = this.evalFreeSize(freeSize);
-                return freeSize / (this._size.width * this._size.height);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return RectPackingMap;
-    }(PackedRect));
-    BABYLON.RectPackingMap = RectPackingMap;
-    /**
-     * This class describe a rectangle that were added to the map.
-     * You have access to its coordinates either in pixel or normalized (UV)
-     */
+  * This class describe a rectangle that were added to the map.
+  * You have access to its coordinates either in pixel or normalized (UV)
+  */
     var PackedRect = (function () {
         function PackedRect(root, parent, pos, size) {
             this._pos = pos;
@@ -203,7 +163,46 @@ var BABYLON;
             return levelSize + size;
         };
         return PackedRect;
-    }());
+    })();
     BABYLON.PackedRect = PackedRect;
+    /**
+     * The purpose of this class is to pack several Rectangles into a big map, while trying to fit everything as optimaly as possible.
+     * This class is typically used to build lightmaps, sprite map or to pack several little textures into a big one.
+     * Note that this class allows allocated Rectangles to be freed: that is the map is dynamically maintained so you can add/remove rectangle based on their lifecycle.
+     */
+    var RectPackingMap = (function (_super) {
+        __extends(RectPackingMap, _super);
+        /**
+         * Create an instance of the object with a dimension using the given size
+         * @param size The dimension of the rectangle that will contain all the sub ones.
+         */
+        function RectPackingMap(size) {
+            _super.call(this, null, null, BABYLON.Vector2.Zero(), size);
+            this._root = this;
+        }
+        /**
+         * Add a rectangle, finding the best location to store it into the map
+         * @param size the dimension of the rectangle to store
+         * @return the Node containing the rectangle information, or null if we couldn't find a free spot
+         */
+        RectPackingMap.prototype.addRect = function (size) {
+            var node = this.findAndSplitNode(size);
+            return node;
+        };
+        Object.defineProperty(RectPackingMap.prototype, "freeSpace", {
+            /**
+             * Return the current space free normalized between [0;1]
+             * @returns {}
+             */
+            get: function () {
+                var freeSize = 0;
+                freeSize = this.evalFreeSize(freeSize);
+                return freeSize / (this._size.width * this._size.height);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return RectPackingMap;
+    })(PackedRect);
+    BABYLON.RectPackingMap = RectPackingMap;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.rectPackingMap.js.map
