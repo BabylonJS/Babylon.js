@@ -580,7 +580,7 @@ var BABYLON;
                     else {
                         parentMatrix = this.parent.getWorldMatrix();
                     }
-                    BABYLON.Vector3.TransformCoordinatesToRef(localPosition, parentMatrix, BABYLON.Tmp.Vector3[1]);
+                    BABYLON.Vector3.TransformNormalToRef(localPosition, parentMatrix, BABYLON.Tmp.Vector3[1]);
                     localPosition = BABYLON.Tmp.Vector3[1];
                 }
                 var zero = this.getScene().activeCamera.globalPosition.clone();
