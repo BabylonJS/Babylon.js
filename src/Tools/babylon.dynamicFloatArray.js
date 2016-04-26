@@ -6,7 +6,7 @@ var BABYLON;
     * It was first built to effiently maintain the WebGlBuffer that contain instancing based data.
     * Allocating an Element will return a instance of DynamicFloatArrayEntry which contains the offset into the Float32Array of where the element starts, you are then responsible to copy your data using this offset.
     * Beware, calling pack() may change the offset of some Entries because this method will defrag the Float32Array to replace empty elements by moving allocated ones at their location.
-     * This method will retrun an ArrayBufferView on the existing Float32Array that describes the occupied elements. Use this View to update the WebGLBuffer and NOT the "buffer" field of the class. The pack() method won't shrink/reallocate the buffer to keep it GC friendly, all the empty space will be put at the end of the buffer, the method just ensure there're no "free holes".
+     * This method will return an ArrayBufferView on the existing Float32Array that describes the occupied elements. Use this View to update the WebGLBuffer and NOT the "buffer" field of the class. The pack() method won't shrink/reallocate the buffer to keep it GC friendly, all the empty space will be put at the end of the buffer, the method just ensure there're no "free holes".
     */
     var DynamicFloatArray = (function () {
         /**
@@ -18,6 +18,8 @@ var BABYLON;
             this.stride = stride;
             this.entryCount = initialEntryCount;
             this.buffer = new Float32Array(stride * initialEntryCount);
+            this.lastOccupied = 0;
+            this.firstFree = 0;
             this.allEntries = new Array(initialEntryCount);
             this.freeEntries = new Array(initialEntryCount);
             for (var i = 0; i < initialEntryCount; i++) {
@@ -32,29 +34,46 @@ var BABYLON;
                 this._growBuffer();
             }
             var entry = this.freeEntries.pop();
+            this.lastOccupied = Math.max(entry.offset, this.lastOccupied);
+            if (entry.offset === this.firstFree) {
+                if (this.freeEntries.length > 0) {
+                    this.firstFree = this.freeEntries[this.freeEntries.length - 1].offset;
+                }
+                else {
+                    this.firstFree += this.stride;
+                }
+            }
             return entry;
         };
         DynamicFloatArray.prototype.freeElement = function (entry) {
+            this.firstFree = Math.min(entry.offset, this.firstFree);
             this.freeEntries.push(entry);
         };
         /**
-         * This method will pack all the occupied elements into a linear sequence and free the rest.
+         * This method will pack all the occupied elements into a linear sequence and put all the free space at the end.
          * Instances of DynamicFloatArrayEntry may have their 'offset' member changed as data could be copied from one location to another, so be sure to read/write your data based on the value inside this member after you called pack().
+         * @return the subarray that is the view of the occupied elements area, you can use it as a source to update a WebGLBuffer
          */
         DynamicFloatArray.prototype.pack = function () {
             // no free slot? no need to pack
             if (this.freeEntries.length === 0) {
                 return this.buffer;
             }
+            // If the buffer is already packed the last occupied will always be lower than the first free
+            if (this.lastOccupied < this.firstFree) {
+                var elementsBuffer_1 = this.buffer.subarray(0, this.lastOccupied + this.stride);
+                return elementsBuffer_1;
+            }
             var s = this.stride;
-            var sortedFree = this.freeEntries.sort(function (a, b) { return a.offset - b.offset; });
-            var sortedAll = this.allEntries.sort(function (a, b) { return a.offset - b.offset; });
             // Make sure there's a free element at the very end, we need it to create a range where we'll move the occupied elements that may appear before
             var lastFree = new DynamicFloatArrayEntry();
             lastFree.offset = this.entryCount * s;
-            sortedFree.push(lastFree);
+            this.freeEntries.push(lastFree);
+            var sortedFree = this.freeEntries.sort(function (a, b) { return a.offset - b.offset; });
+            var sortedAll = this.allEntries.sort(function (a, b) { return a.offset - b.offset; });
             var firstFreeSlotOffset = sortedFree[0].offset;
             var freeZoneSize = 1;
+            // The sortedFree array is sorted in reverse, first free at the end, last free at the beginning, so we loop from the end to beginning
             var prevOffset = sortedFree[0].offset;
             for (var i = 1; i < sortedFree.length; i++) {
                 var curFree = sortedFree[i];
@@ -100,12 +119,13 @@ var BABYLON;
                 // as we're about to iterate to the next, the cur becomes the prev...
                 prevOffset = curOffset;
             }
-            // Allocate a new buffer with the perfect size, copy the content, update free data
-            this.entryCount = firstFreeSlotOffset / s;
-            var optimizedBuffer = this.buffer.subarray(0, firstFreeSlotOffset);
-            this.freeEntries.splice(0);
-            this.allEntries = sortedAll.slice(0, this.entryCount);
-            return optimizedBuffer;
+            var elementsBuffer = this.buffer.subarray(0, firstFreeSlotOffset);
+            this.lastOccupied = firstFreeSlotOffset - s;
+            this.firstFree = firstFreeSlotOffset;
+            sortedFree.pop(); // Remove the last free because that's the one we added at the start of the method
+            this.freeEntries = sortedFree.sort(function (a, b) { return b.offset - a.offset; });
+            this.allEntries = sortedAll;
+            return elementsBuffer;
         };
         DynamicFloatArray.prototype._moveEntry = function (entry, destOffset) {
             for (var i = 0; i < this.stride; i++) {
