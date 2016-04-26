@@ -605,8 +605,8 @@
         }
 
         public static Transform(vector: Vector2, transformation: Matrix): Vector2 {
-            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]);
-            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]);
+            var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + transformation.m[12];
+            var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + transformation.m[13];
 
             return new Vector2(x, y);
         }
