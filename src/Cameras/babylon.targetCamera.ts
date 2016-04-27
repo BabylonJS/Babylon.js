@@ -211,6 +211,12 @@
                 BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
             } else {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
+                if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
+                    Matrix.LookAtLHToRef(Vector3.Zero(), this._referencePoint, this.upVector, this._lookAtTemp);
+                    this._lookAtTemp.multiplyToRef(this._cameraRotationMatrix, this._tempMatrix);
+                    this._lookAtTemp.invert();
+                    this._tempMatrix.multiplyToRef(this._lookAtTemp, this._cameraRotationMatrix);
+                }
             }
         }
 
@@ -218,14 +224,6 @@
             if (!this.lockedTarget) {
                 // Compute
                 this._updateCameraRotationMatrix();
-
-                if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
-                    Matrix.LookAtLHToRef(Vector3.Zero(), this._referencePoint, this.upVector, this._lookAtTemp);
-
-                    this._lookAtTemp.multiplyToRef(this._cameraRotationMatrix, this._tempMatrix);
-                    this._lookAtTemp.invert();
-                    this._tempMatrix.multiplyToRef(this._lookAtTemp, this._cameraRotationMatrix);
-                }
 
                 Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
 
@@ -262,7 +260,7 @@
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
                 if (this.cameraRigMode === Camera.RIG_MODE_VR) {
-                    if(!this.rotationQuaternion) {
+                    if (!this.rotationQuaternion) {
                         this.rotationQuaternion = new Quaternion();
                     }
                     rigCamera._cameraRigParams = {};
