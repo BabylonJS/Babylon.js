@@ -328,7 +328,7 @@ module BABYLON {
 
         //event and body object due to cannon's event-based architecture.
         public onCollide = (e: { body: any }) => {
-            if(!this._onPhysicsCollideCallbacks.length) return;
+            if (!this._onPhysicsCollideCallbacks.length) return;
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {
                 this._onPhysicsCollideCallbacks.filter((obj) => {
@@ -392,11 +392,16 @@ module BABYLON {
         }
 
         public dispose(/*disposeChildren: boolean = true*/) {
+            //no dispose if no physics engine is available.
+            if (!this._physicsEngine) {
+                return;
+            }
+
             this._joints.forEach((j) => {
                 this._physicsEngine.removeJoint(this, j.otherImpostor, j.joint);
             })
             //dispose the physics body
-            this._physicsEngine.removeImpostor(this); 
+            this._physicsEngine.removeImpostor(this);
             if (this.parent) {
                 this.parent.forceUpdate();
             } else {
