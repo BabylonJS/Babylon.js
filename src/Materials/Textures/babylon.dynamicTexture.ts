@@ -86,7 +86,7 @@
             }
         }
 
-        public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, textAlign: string, invertY?: boolean, update = true) {
+        public drawTextAlign(text: string, x: number, y: number, font: string, color: string, clearColor: string, textAlign: string, invertY?: boolean, update = true) {
             this._context.textAlign = textAlign;
             this.drawText(text, x, y, font, color, clearColor, invertY, update);
         }
