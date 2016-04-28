@@ -86,6 +86,11 @@
             }
         }
 
+        public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, textAlign: string, invertY?: boolean, update = true) {
+            this._context.textAlign = textAlign;
+            this.drawText(text, x, y, font, color, clearColor, invertY, update);
+        }
+
         public clone(): DynamicTexture {
             var textureSize = this.getSize();
             var newTexture = new DynamicTexture(this.name, textureSize.width, this.getScene(), this._generateMipMaps);
