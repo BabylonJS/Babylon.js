@@ -14,16 +14,17 @@
 
             this._generateMipMaps = generateMipMaps;
 
-            if (options.getContext) {
+            /* there are probably clearer ways to verify all of this */
+            if (typeof options.canvas === "object" && typeof options.canvas.getContext === "function") {
                 this._canvas = options;
-                this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                this._texture = scene.getEngine().createDynamicTexture(options.canvas.width, options.canvas.height, generateMipMaps, samplingMode);
             } else {
                 this._canvas = document.createElement("canvas");
 
-                if (options.width) {
+                if (!(options.width === undefined || options.height === undefined)) {
                     this._texture = scene.getEngine().createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
-                } else {
-                    this._texture = scene.getEngine().createDynamicTexture(options, options, generateMipMaps, samplingMode);
+                } else if (options.size !== undefined) {
+                    this._texture = scene.getEngine().createDynamicTexture(options.size, options.size, generateMipMaps, samplingMode);
                 }
             }
 
@@ -32,6 +33,10 @@
             this._canvas.width = textureSize.width;
             this._canvas.height = textureSize.height;
             this._context = this._canvas.getContext("2d");
+
+            if (typeof this._options.textAlign === "string") {
+                this._context.textAlign = this._options.textAlign;
+            }
         }
 
         public get canRescale(): boolean {
@@ -67,6 +72,7 @@
 
         public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
             var size = this.getSize();
+
             if (clearColor) {
                 this._context.fillStyle = clearColor;
                 this._context.fillRect(0, 0, size.width, size.height);
