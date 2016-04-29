@@ -438,6 +438,8 @@
 
         private _debugLayer: DebugLayer;
 
+        private _screenCanvas: Canvas2D;
+
         private _depthRenderer: DepthRenderer;
 
         private _uniqueIdCounter = 0;
@@ -470,6 +472,8 @@
 
             this._debugLayer = new DebugLayer(this);
 
+            this._screenCanvas = Canvas2D.CreateScreenSpace(this, "ScreenCanvas", new Vector2(0, 0), new Size(engine.getRenderWidth(), engine.getRenderHeight()), Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS);
+
             if (SoundTrack) {
                 this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
             }
@@ -486,6 +490,10 @@
         // Properties
         public get debugLayer(): DebugLayer {
             return this._debugLayer;
+        }
+
+        public get screenCanvas(): Canvas2D {
+            return this._screenCanvas;
         }
 
         public set workerCollisions(enabled: boolean) {
@@ -1930,6 +1938,9 @@
             this._renderingManager.render(null, null, true, true);
             Tools.EndPerformanceCounter("Main render");
 
+            // Screen Canvas render
+            this._screenCanvas.render(camera);
+
             // Bounding boxes
             this._boundingBoxRenderer.render();
 
@@ -2359,6 +2370,9 @@
 
             // Debug layer
             this.debugLayer.hide();
+
+            // Screen Canvas
+            this._screenCanvas.dispose();
 
             // Events
             if (this.onDispose) {
