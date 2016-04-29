@@ -33,6 +33,10 @@
         @serialize()
         public isRenderTarget = false;
 
+        public toString(): string {
+            return this.name;
+        }
+
         public animations = new Array<Animation>();
 
         public onDispose: () => void;
