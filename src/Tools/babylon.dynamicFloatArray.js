@@ -1,5 +1,11 @@
 var BABYLON;
 (function (BABYLON) {
+    var DynamicFloatArrayElementInfo = (function () {
+        function DynamicFloatArrayElementInfo() {
+        }
+        return DynamicFloatArrayElementInfo;
+    })();
+    BABYLON.DynamicFloatArrayElementInfo = DynamicFloatArrayElementInfo;
     /**
     * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
     * The intent is to maintain through time data that will be bound to a WebGlBuffer with the ability to change add/remove elements.
@@ -203,13 +209,6 @@ var BABYLON;
             configurable: true
         });
         return DynamicFloatArray;
-    }());
+    })();
     BABYLON.DynamicFloatArray = DynamicFloatArray;
-    var DynamicFloatArrayElementInfo = (function () {
-        function DynamicFloatArrayElementInfo() {
-        }
-        return DynamicFloatArrayElementInfo;
-    }());
-    BABYLON.DynamicFloatArrayElementInfo = DynamicFloatArrayElementInfo;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.dynamicFloatArray.js.map

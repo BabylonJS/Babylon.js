@@ -1,4 +1,9 @@
 ﻿module BABYLON {
+
+    export class DynamicFloatArrayElementInfo {
+        offset: number;
+    }
+
     /**
     * The purpose of this class is to store float32 based elements of a given size (defined by the stride argument) in a dynamic fashion, that is, you can add/free elements. You can then access to a defragmented/packed version of the underlying Float32Array by calling the pack() method.
     * The intent is to maintain through time data that will be bound to a WebGlBuffer with the ability to change add/remove elements.
@@ -238,9 +243,5 @@
         private _stride: number;
         private _lastUsed: number;
         private _firstFree: number;
-    }
-
-    export class DynamicFloatArrayElementInfo {
-        offset: number;
     }
 }
