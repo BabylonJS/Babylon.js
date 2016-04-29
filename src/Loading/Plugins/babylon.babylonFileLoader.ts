@@ -280,6 +280,10 @@
                         log += "\n\t\t" + animation.toString(fullDetails);
                     }
                 }
+
+                if (parsedData.autoAnimate) {
+                    scene.beginAnimation(scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
+                }
     
                 // Materials
                 if (parsedData.materials) {
