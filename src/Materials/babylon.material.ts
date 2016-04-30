@@ -3,10 +3,17 @@
         _keys: string[];
 
         public rebuild() {
+            if (this._keys) {
+                delete this._keys;
+            }
             this._keys = Object.keys(this);
         } 
 
         public isEqual(other: MaterialDefines): boolean {
+            if (this._keys.length !== other._keys.length) {
+                return false;
+            }
+
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 
@@ -19,6 +26,10 @@
         }
 
         public cloneTo(other: MaterialDefines): void {
+            if (this._keys.length !== other._keys.length) {
+                other._keys = this._keys.slice(0);
+            }
+
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
 

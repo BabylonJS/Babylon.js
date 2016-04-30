@@ -54,6 +54,9 @@ var BABYLON;
                 else {
                     type = "DIRLIGHT" + lightIndex;
                 }
+                if (defines[type] === undefined) {
+                    needRebuild = true;
+                }
                 defines[type] = true;
                 // Specular
                 if (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined) {
@@ -63,12 +66,21 @@ var BABYLON;
                 if (scene.shadowsEnabled) {
                     var shadowGenerator = light.getShadowGenerator();
                     if (mesh && mesh.receiveShadows && shadowGenerator) {
+                        if (defines["SHADOW" + lightIndex] === undefined) {
+                            needRebuild = true;
+                        }
                         defines["SHADOW" + lightIndex] = true;
                         defines["SHADOWS"] = true;
                         if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
+                            if (defines["SHADOWVSM" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
                             defines["SHADOWVSM" + lightIndex] = true;
                         }
                         if (shadowGenerator.usePoissonSampling) {
+                            if (defines["SHADOWPCF" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
                             defines["SHADOWPCF" + lightIndex] = true;
                         }
                     }
