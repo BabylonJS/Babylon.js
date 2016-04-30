@@ -439,4 +439,3 @@ module BABYLON {
         public static HeightmapImpostor = 9;
     }
 }
-

@@ -324,6 +324,10 @@ var BABYLON;
         };
         PhysicsImpostor.prototype.dispose = function () {
             var _this = this;
+            //no dispose if no physics engine is available.
+            if (!this._physicsEngine) {
+                return;
+            }
             this._joints.forEach(function (j) {
                 _this._physicsEngine.removeJoint(_this, j.otherImpostor, j.joint);
             });

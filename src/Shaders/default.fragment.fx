@@ -32,10 +32,7 @@ varying vec4 vColor;
 #include<helperFunctions>
 
 // Lights
-#include<lightFragmentDeclaration>[0]
-#include<lightFragmentDeclaration>[1]
-#include<lightFragmentDeclaration>[2]
-#include<lightFragmentDeclaration>[3]
+#include<lightFragmentDeclaration>[0..maxSimultaneousLights]
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
@@ -225,10 +222,7 @@ void main(void) {
 #endif
 	float shadow = 1.;
 
-#include<lightFragment>[0]
-#include<lightFragment>[1]
-#include<lightFragment>[2]
-#include<lightFragment>[3]
+#include<lightFragment>[0..maxSimultaneousLights]
 
 	// Refraction
 	vec3 refractionColor = vec3(0., 0., 0.);

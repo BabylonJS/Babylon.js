@@ -2,6 +2,10 @@
     export class MaterialDefines {
         _keys: string[];
 
+        public rebuild() {
+            this._keys = Object.keys(this);
+        } 
+
         public isEqual(other: MaterialDefines): boolean {
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];

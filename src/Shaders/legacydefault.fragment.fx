@@ -18,10 +18,7 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<lightFragmentDeclaration>[0]
-#include<lightFragmentDeclaration>[1]
-#include<lightFragmentDeclaration>[2]
-#include<lightFragmentDeclaration>[3]
+#include<lightFragmentDeclaration>[0..3]
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
@@ -136,10 +133,7 @@ void main(void) {
 #endif
 	float shadow = 1.;
 
-#include<lightFragment>[0]
-#include<lightFragment>[1]
-#include<lightFragment>[2]
-#include<lightFragment>[3]
+#include<lightFragment>[0..3]
 
 	// Reflection
 	vec3 reflectionColor = vec3(0., 0., 0.);

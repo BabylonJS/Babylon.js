@@ -43,10 +43,7 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<lightFragmentDeclaration>[0]
-#include<lightFragmentDeclaration>[1]
-#include<lightFragmentDeclaration>[2]
-#include<lightFragmentDeclaration>[3]
+#include<lightFragmentDeclaration>[0..3]
 
 // Samplers
 #ifdef ALBEDO
@@ -203,10 +200,7 @@ void main(void) {
     float NdotL = -1.;
     lightingInfo info;
 
-#include<pbrLightFunctionsCall>[0]
-#include<pbrLightFunctionsCall>[1]
-#include<pbrLightFunctionsCall>[2]
-#include<pbrLightFunctionsCall>[3]
+#include<pbrLightFunctionsCall>[0..3]
 
 #ifdef SPECULARTERM
     lightSpecularContribution *= vLightingIntensity.w;
