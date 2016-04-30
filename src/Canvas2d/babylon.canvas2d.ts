@@ -7,6 +7,7 @@
         groupSprites: Array<{ group: Group2D, sprite: Sprite2D }>;
     }
 
+    @className("Canvas2D")
     export class Canvas2D extends Group2D {
         /**
          * In this strategy only the direct children groups of the Canvas will be cached, their whole content (whatever the sub groups they have) into a single bitmap.
@@ -92,18 +93,36 @@
             this._isScreeSpace = isScreenSpace;
         }
 
+        /**
+         * Accessor to the Scene that owns the Canvas
+         * @returns The instance of the Scene object
+         */
         public get scene(): Scene {
             return this._scene;
         }
 
+        /**
+         * Accessor to the Engine that drives the Scene used by this Canvas
+         * @returns The instance of the Engine object
+         */
         public get engine(): Engine {
             return this._engine;
         }
 
+        /**
+         * Accessor of the Caching Strategy used by this Canvas.
+         * See Canvas2D.CACHESTRATEGY_xxxx static members for more information
+         * @returns the value corresponding to the used strategy.
+         */
         public get cachingStrategy(): number {
             return this._cachingStrategy;
         }
 
+        /**
+         * Property that defines the fill object used to draw the background of the Canvas.
+         * Note that Canvas with a Caching Strategy of
+         * @returns If the background is not set, null will be returned, otherwise a valid fill object is returned.
+         */
         public get backgroundFill(): IFill2D {
             if (!this._background || !this._background.isVisible) {
                 return null;
@@ -122,6 +141,10 @@
             this._background.isVisible = true;
         }
 
+        /**
+         * Property that defines the border object used to draw the background of the Canvas.
+         * @returns If the background is not set, null will be returned, otherwise a valid border object is returned.
+         */
         public get border(): IBorder2D {
             if (!this._background || !this._background.isVisible) {
                 return null;
@@ -146,9 +169,16 @@
             }
         }
 
+        /**
+         * Read-only property that return the Z delta to apply for each sibling primitives inside of a given one.
+         * Sibling Primitives are defined in a specific order, the first ones will be draw below the next ones.
+         * This property define the Z value to apply between each sibling Primitive. Current implementation allows 1000 Siblings Primitives per level.
+         * @returns The Z Delta
+         */
         public get hierarchySiblingZDelta(): number {
             return this._hierarchySiblingZDelta;
         }
+
         private _mapCounter = 0;
         private _background: Rectangle2D;
         private _scene: Scene;
@@ -162,6 +192,10 @@
         private _groupCacheMaps: GroupsCacheMap[];
         public _renderingSize: Size;
 
+        /**
+         * Method that renders the Canvas
+         * @param camera the current camera.
+         */
         public render(camera: Camera) {
             this._renderingSize.width = this.engine.getRenderWidth();
             this._renderingSize.height = this.engine.getRenderHeight();
@@ -179,6 +213,12 @@
             this._groupRender(context);
         }
 
+        /**
+         * Internal method that alloc a cache for the given group.
+         * Caching is made using a collection of MapTexture where many groups have their bitmapt cache stored inside.
+         * @param group The group to allocate the cache of.
+         * @return custom type with the PackedRect instance giving information about the cache location into the texture and also the MapTexture instance that stores the cache.
+         */
         public _allocateGroupCache(group: Group2D): { node: PackedRect, texture: MapTexture } {
             // Determine size
             let size = group.actualSize;
@@ -223,21 +263,45 @@
             return res;
         }
 
+        /**
+         * Define the default size used for both the width and height of a MapTexture to allocate.
+         * Note that some MapTexture might be bigger than this size if the first node to allocate is bigger in width or height
+         */
         private static _groupTextureCacheSize = 1024;
 
-        public static getSolidColorFill(color: Color4): IFill2D {
+        /**
+         * Get a Solid Color Fill instance matching the given color.
+         * @param color The color to retrieve
+         * @return A shared instance of the SolidColorFill2D class that use the given color
+         */
+        public static GetSolidColorFill(color: Color4): IFill2D {
             return Canvas2D._solidColorFills.getOrAddWithFactory(color.toHexString(), () => new SolidColorFill2D(color.clone(), true));
         }
 
-        public static getSolidColorBorder(color: Color4): IBorder2D {
+        /**
+         * Get a Solid Color Border instance matching the given color.
+         * @param color The color to retrieve
+         * @return A shared instance of the SolidColorBorder2D class that use the given color
+         */
+        public static GetSolidColorBorder(color: Color4): IBorder2D {
             return Canvas2D._solidColorBorders.getOrAddWithFactory(color.toHexString(), () => new SolidColorBorder2D(color.clone(), true));
         }
 
-        public static getSolidColorFillFromHex(hexValue: string): IFill2D {
+        /**
+         * Get a Solid Color Fill instance matching the given color expressed as a CSS formatted hexadecimal value.
+         * @param color The color to retrieve
+         * @return A shared instance of the SolidColorFill2D class that use the given color
+         */
+        public static GetSolidColorFillFromHex(hexValue: string): IFill2D {
             return Canvas2D._solidColorFills.getOrAddWithFactory(hexValue, () => new SolidColorFill2D(Color4.FromHexString(hexValue), true));
         }
 
-        public static getSolidColorBorderFromHex(hexValue: string): IBorder2D {
+        /**
+         * Get a Solid Color Border instance matching the given color expressed as a CSS formatted hexadecimal value.
+         * @param color The color to retrieve
+         * @return A shared instance of the SolidColorBorder2D class that use the given color
+         */
+        public static GetSolidColorBorderFromHex(hexValue: string): IBorder2D {
             return Canvas2D._solidColorBorders.getOrAddWithFactory(hexValue, () => new SolidColorBorder2D(Color4.FromHexString(hexValue), true));
         }
 

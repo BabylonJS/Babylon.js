@@ -27,10 +27,10 @@
     }
 
     export class ClassTreeInfo<TClass, TProp>{
-        constructor(baseClass: ClassTreeInfo<TClass, TProp>, typeName: string, classContentFactory: (base: TClass) => TClass) {
+        constructor(baseClass: ClassTreeInfo<TClass, TProp>, type: Object, classContentFactory: (base: TClass) => TClass) {
             this._baseClass = baseClass;
-            this._typeName = typeName;
-            this._subClasses = new StringDictionary<ClassTreeInfo<TClass, TProp>>();
+            this._type = type;
+            this._subClasses = new Array<{ type: Object, node: ClassTreeInfo<TClass, TProp> }>();
             this._levelContent = new StringDictionary<TProp>();
             this._classContentFactory = classContentFactory;
         }
@@ -42,8 +42,8 @@
             return this._classContent;
         }
 
-        get typeName(): string {
-            return this._typeName;
+        get type(): Object {
+            return this._type;
         }
 
         get levelContent(): StringDictionary<TProp> {
@@ -66,62 +66,77 @@
         }
 
         getLevelOf(type: Object): ClassTreeInfo<TClass, TProp> {
-            let typeName = Tools.getClassName(type);
-
             // Are we already there?
-            if (typeName === this._typeName) {
+            if (type === this._type) {
                 return this;
             }
 
             let baseProto = Object.getPrototypeOf(type);
-            // If type is a class, this will get the base class proto, if type is an instance of a class, this will get the proto of the class
-            let baseTypeName = Tools.getClassName(baseProto);
+            return this.getOrAddType(baseProto, type);
 
-            // If both name are equal we only switch from instance to class, we need to get the next proto in the hierarchy to get the base class
-            if (baseTypeName === typeName) {
-                baseTypeName = Tools.getClassName(Object.getPrototypeOf(baseProto));
-            }
-            return this.getOrAddType(baseTypeName, typeName);
+            //// If type is a class, this will get the base class proto, if type is an instance of a class, this will get the proto of the class
+            //let baseTypeName = Tools.getClassName(baseProto);
+
+            //// If both name are equal we only switch from instance to class, we need to get the next proto in the hierarchy to get the base class
+            //if (baseTypeName === typeName) {
+            //    baseTypeName = Tools.getClassName(Object.getPrototypeOf(baseProto));
+            //}
+            //return this.getOrAddType(baseTypeName, typeName);
         }
 
-        getOrAddType(baseTypeName, typeName: string): ClassTreeInfo<TClass, TProp> {
+        getOrAddType(baseType: Object, type: Object): ClassTreeInfo<TClass, TProp> {
 
             // Are we at the level corresponding to the baseType?
             // If so, get or add the level we're looking for
-            if (baseTypeName === this._typeName) {
-                return this._subClasses.getOrAddWithFactory(typeName, k => new ClassTreeInfo<TClass, TProp>(this, typeName, this._classContentFactory));
+            if (baseType === this._type) {
+                for (let subType of this._subClasses) {
+                    if (subType.type === type) {
+                        return subType.node;
+                    }
+                }
+                let node = new ClassTreeInfo<TClass, TProp>(this, type, this._classContentFactory);
+                let info = { type: type, node: node};
+                this._subClasses.push(info);
+                return info.node;
             }
 
             // Recurse down to keep looking for the node corresponding to the baseTypeName
-            return this._subClasses.first<ClassTreeInfo<TClass, TProp>>((key, val) => val.getOrAddType(baseTypeName, typeName));
+            for (let subType of this._subClasses) {
+                let info = subType.node.getOrAddType(baseType, type);
+                if (info) {
+                    return info;
+                }
+            }
+            return null;
         }
 
-        static get<TClass, TProp>(target: Object): ClassTreeInfo<TClass, TProp> {
-            let dic = <ClassTreeInfo<TClass, TProp>>target["__classTreeInfo"];
+        static get<TClass, TProp>(type: Object): ClassTreeInfo<TClass, TProp> {
+            let dic = <ClassTreeInfo<TClass, TProp>>type["__classTreeInfo"];
             if (!dic) {
                 return null;
             }
-            return dic.getLevelOf(target);
+            return dic.getLevelOf(type);
         }
 
-        static getOrRegister<TClass, TProp>(target: Object, classContentFactory: (base: TClass) => TClass): ClassTreeInfo<TClass, TProp> {
-            let dic = <ClassTreeInfo<TClass, TProp>>target["__classTreeInfo"];
+        static getOrRegister<TClass, TProp>(type: Object, classContentFactory: (base: TClass) => TClass): ClassTreeInfo<TClass, TProp> {
+            let dic = <ClassTreeInfo<TClass, TProp>>type["__classTreeInfo"];
             if (!dic) {
-                dic = new ClassTreeInfo<TClass, TProp>(null, Tools.getClassName(target), classContentFactory);
-                target["__classTreeInfo"] = dic;
+                dic = new ClassTreeInfo<TClass, TProp>(null, type, classContentFactory);
+                type["__classTreeInfo"] = dic;
             }
             return dic;
         }
 
-        private _typeName: string;
+        private _type: Object;
         private _classContent: TClass;
         private _baseClass: ClassTreeInfo<TClass, TProp>;
-        private _subClasses: StringDictionary<ClassTreeInfo<TClass, TProp>>;
+        private _subClasses: Array<{type: Object, node: ClassTreeInfo<TClass, TProp>}>;
         private _levelContent: StringDictionary<TProp>;
         private _fullContent: StringDictionary<TProp>;
         private _classContentFactory: (base: TClass) => TClass;
     }
 
+    @className("SmartPropertyPrim")
     export class SmartPropertyPrim implements IPropertyChanged {
 
         protected setupSmartPropertyPrim() {
@@ -167,11 +182,15 @@
         protected static ModelCache: StringDictionary<ModelRenderCacheBase> = new StringDictionary<ModelRenderCacheBase>();
 
         private get propDic(): StringDictionary<Prim2DPropInfo> {
-            let cti = ClassTreeInfo.get<Prim2DClassInfo, Prim2DPropInfo>(this);
-            if (!cti) {
-                throw new Error("Can't access the propDic member in class definition, is this class SmartPropertyPrim based?");
+            if (!this._propInfo) {
+                let cti = ClassTreeInfo.get<Prim2DClassInfo, Prim2DPropInfo>(Object.getPrototypeOf(this));
+                if (!cti) {
+                    throw new Error("Can't access the propDic member in class definition, is this class SmartPropertyPrim based?");
+                }
+                this._propInfo = cti.fullContent;
             }
-            return cti.fullContent;
+
+            return this._propInfo;
         }
 
         private static _createPropInfo(target: Object, propName: string, propId: number, dirtyBoundingInfo: boolean, typeLevelCompare: boolean, kind: number): Prim2DPropInfo {
@@ -330,6 +349,7 @@
         }
 
         private _modelKey; string;
+        private _propInfo: StringDictionary<Prim2DPropInfo>;
         private _levelBoundingInfoDirty: boolean;
         protected _levelBoundingInfo: BoundingInfo2D;
         protected _boundingInfo: BoundingInfo2D;

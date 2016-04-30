@@ -4,6 +4,8 @@
         private _rectPackingMap: RectPackingMap;
         private _size: ISize;
 
+        private _replacedViewport: Viewport;
+
         constructor(name: string, scene: Scene, size: ISize, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(null, scene, true, false, samplingMode);
 
@@ -56,8 +58,7 @@
         public bindTextureForRect(rect: PackedRect) {
             let engine = this.getScene().getEngine();
             engine.bindFramebuffer(this._texture);
-//            engine.clear(new Color4(0,1,1,0), true, true);
-            engine.setDirectViewport(rect.pos.x, rect.pos.y, rect.contentSize.width, rect.contentSize.height);
+            this._replacedViewport = engine.setDirectViewport(rect.pos.x, rect.pos.y, rect.contentSize.width, rect.contentSize.height);
         }
 
         /**
@@ -72,6 +73,12 @@
             }
 
             let engine = this.getScene().getEngine();
+
+            if (this._replacedViewport) {
+                engine.setViewport(this._replacedViewport);
+                this._replacedViewport = null;
+            }
+
             engine.unBindFramebuffer(this._texture);
         }
 

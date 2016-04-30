@@ -723,10 +723,18 @@
             this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
         }
 
-        public setDirectViewport(x: number, y: number, width: number, height: number): void {
+        /**
+         * Directly set the WebGL Viewport
+         * The x, y, width & height are directly passed to the WebGL call
+         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state.
+         */
+        public setDirectViewport(x: number, y: number, width: number, height: number): Viewport {
+            let currentViewport = this._cachedViewport;
             this._cachedViewport = null;
 
             this._gl.viewport(x, y, width, height);
+
+            return currentViewport;
         }
 
         public beginFrame(): void {
