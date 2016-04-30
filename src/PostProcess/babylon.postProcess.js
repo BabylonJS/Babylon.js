@@ -141,6 +141,6 @@ var BABYLON;
             }
         };
         return PostProcess;
-    })();
+    }());
     BABYLON.PostProcess = PostProcess;
 })(BABYLON || (BABYLON = {}));

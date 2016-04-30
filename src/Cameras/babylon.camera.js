@@ -636,6 +636,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Camera.prototype, "isStereoscopicSideBySide", void 0);
         return Camera;
-    })(BABYLON.Node);
+    }(BABYLON.Node));
     BABYLON.Camera = Camera;
 })(BABYLON || (BABYLON = {}));
