@@ -22436,6 +22436,9 @@ var BABYLON;
                 else {
                     type = "DIRLIGHT" + lightIndex;
                 }
+                if (defines[type] === undefined) {
+                    needRebuild = true;
+                }
                 defines[type] = true;
                 // Specular
                 if (!light.specular.equalsFloats(0, 0, 0) && defines["SPECULARTERM"] !== undefined) {
@@ -22445,12 +22448,21 @@ var BABYLON;
                 if (scene.shadowsEnabled) {
                     var shadowGenerator = light.getShadowGenerator();
                     if (mesh && mesh.receiveShadows && shadowGenerator) {
+                        if (defines["SHADOW" + lightIndex] === undefined) {
+                            needRebuild = true;
+                        }
                         defines["SHADOW" + lightIndex] = true;
                         defines["SHADOWS"] = true;
                         if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
+                            if (defines["SHADOWVSM" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
                             defines["SHADOWVSM" + lightIndex] = true;
                         }
                         if (shadowGenerator.usePoissonSampling) {
+                            if (defines["SHADOWPCF" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
                             defines["SHADOWPCF" + lightIndex] = true;
                         }
                     }
@@ -22648,9 +22660,15 @@ var BABYLON;
         function MaterialDefines() {
         }
         MaterialDefines.prototype.rebuild = function () {
+            if (this._keys) {
+                delete this._keys;
+            }
             this._keys = Object.keys(this);
         };
         MaterialDefines.prototype.isEqual = function (other) {
+            if (this._keys.length !== other._keys.length) {
+                return false;
+            }
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
                 if (this[prop] !== other[prop]) {
@@ -22660,6 +22678,9 @@ var BABYLON;
             return true;
         };
         MaterialDefines.prototype.cloneTo = function (other) {
+            if (this._keys.length !== other._keys.length) {
+                other._keys = this._keys.slice(0);
+            }
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
                 other[prop] = this[prop];
