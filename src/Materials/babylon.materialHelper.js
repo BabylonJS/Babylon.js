@@ -1,12 +1,13 @@
 var BABYLON;
 (function (BABYLON) {
-    var maxSimultaneousLights = 4;
     var MaterialHelper = (function () {
         function MaterialHelper() {
         }
-        MaterialHelper.PrepareDefinesForLights = function (scene, mesh, defines) {
+        MaterialHelper.PrepareDefinesForLights = function (scene, mesh, defines, maxSimultaneousLights) {
+            if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             var lightIndex = 0;
             var needNormals = false;
+            var needRebuild = false;
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
                 if (!light.isEnabled()) {
@@ -36,6 +37,9 @@ var BABYLON;
                     continue;
                 }
                 needNormals = true;
+                if (defines["LIGHT" + lightIndex] === undefined) {
+                    needRebuild = true;
+                }
                 defines["LIGHT" + lightIndex] = true;
                 var type;
                 if (light instanceof BABYLON.SpotLight) {
@@ -73,12 +77,25 @@ var BABYLON;
                 if (lightIndex === maxSimultaneousLights)
                     break;
             }
+            if (needRebuild) {
+                defines.rebuild();
+            }
             return needNormals;
         };
-        MaterialHelper.HandleFallbacksForShadows = function (defines, fallbacks) {
+        MaterialHelper.PrepareUniformsListForList = function (uniformsList, defines, maxSimultaneousLights) {
+            if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
-                    continue;
+                    break;
+                }
+                uniformsList.push("vLightData" + lightIndex, "vLightDiffuse" + lightIndex, "vLightSpecular" + lightIndex, "vLightDirection" + lightIndex, "vLightGround" + lightIndex, "lightMatrix" + lightIndex, "shadowsInfo" + lightIndex);
+            }
+        };
+        MaterialHelper.HandleFallbacksForShadows = function (defines, fallbacks, maxSimultaneousLights) {
+            if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
+            for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+                if (!defines["LIGHT" + lightIndex]) {
+                    break;
                 }
                 if (lightIndex > 0) {
                     fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
@@ -149,7 +166,8 @@ var BABYLON;
                 light.transferToEffect(effect, "vLightData" + lightIndex, "vLightGround" + lightIndex);
             }
         };
-        MaterialHelper.BindLights = function (scene, mesh, effect, defines) {
+        MaterialHelper.BindLights = function (scene, mesh, effect, defines, maxSimultaneousLights) {
+            if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {

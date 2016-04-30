@@ -49,7 +49,7 @@ var BABYLON;
     })();
     BABYLON.EffectFallbacks = EffectFallbacks;
     var Effect = (function () {
-        function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, fallbacks, onCompiled, onError) {
+        function Effect(baseName, attributesNames, uniformsNames, samplers, engine, defines, fallbacks, onCompiled, onError, indexParameters) {
             var _this = this;
             this._isReady = false;
             this._compilationError = "";
@@ -62,6 +62,7 @@ var BABYLON;
             this._attributesNames = attributesNames;
             this.onError = onError;
             this.onCompiled = onCompiled;
+            this._indexParameters = indexParameters;
             var vertexSource;
             var fragmentSource;
             if (baseName.vertexElement) {
@@ -206,7 +207,23 @@ var BABYLON;
                         }
                     }
                     if (match[4]) {
-                        includeContent = includeContent.replace(/\{X\}/g, match[5]);
+                        var indexString = match[5];
+                        if (indexString.indexOf("..") !== -1) {
+                            var indexSplits = indexString.split("..");
+                            var minIndex = parseInt(indexSplits[0]);
+                            var maxIndex = parseInt(indexSplits[1]);
+                            var sourceIncludeContent = includeContent.slice(0);
+                            includeContent = "";
+                            if (isNaN(maxIndex)) {
+                                maxIndex = this._indexParameters[indexSplits[1]];
+                            }
+                            for (var i = minIndex; i <= maxIndex; i++) {
+                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
+                            }
+                        }
+                        else {
+                            includeContent = includeContent.replace(/\{X\}/g, indexString);
+                        }
                     }
                     // Replace
                     returnValue = returnValue.replace(match[0], includeContent);

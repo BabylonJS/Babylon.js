@@ -1,10 +1,10 @@
 ﻿module BABYLON {
-    var maxSimultaneousLights = 4;
-
     export class MaterialHelper {
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines): boolean {
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4): boolean {
             var lightIndex = 0;
             var needNormals = false;
+            var needRebuild = false;
+
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
 
@@ -42,6 +42,11 @@
                     continue;
                 }
                 needNormals = true;
+
+                if (defines["LIGHT" + lightIndex] === undefined) {
+                    needRebuild = true;
+                }
+
                 defines["LIGHT" + lightIndex] = true;
 
                 var type;
@@ -85,13 +90,35 @@
                     break;
             }
 
+            if (needRebuild) {
+                defines.rebuild();
+            }
+
             return needNormals;
         }
 
-        public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks): void {
+        public static PrepareUniformsListForList(uniformsList: string[], defines: MaterialDefines, maxSimultaneousLights = 4): void {
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
-                    continue;
+                    break;
+                }
+
+                uniformsList.push(
+                    "vLightData" + lightIndex,
+                    "vLightDiffuse" + lightIndex,
+                    "vLightSpecular" + lightIndex,
+                    "vLightDirection" + lightIndex,
+                    "vLightGround" + lightIndex,
+                    "lightMatrix" + lightIndex,
+                    "shadowsInfo" + lightIndex
+                );
+            }
+        }
+
+        public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
+            for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+                if (!defines["LIGHT" + lightIndex]) {
+                    break;
                 }
 
                 if (lightIndex > 0) {
@@ -169,7 +196,7 @@
             }
         }
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {

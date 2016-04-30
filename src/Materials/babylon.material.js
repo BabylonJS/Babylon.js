@@ -9,6 +9,9 @@ var BABYLON;
     var MaterialDefines = (function () {
         function MaterialDefines() {
         }
+        MaterialDefines.prototype.rebuild = function () {
+            this._keys = Object.keys(this);
+        };
         MaterialDefines.prototype.isEqual = function (other) {
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
