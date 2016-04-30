@@ -327,7 +327,7 @@ var BABYLON;
         };
         /**
         * Adds some particles to the SPS from the model shape. Returns the shape id.
-        * Please read the doc : http://doc.babylonjs.com/tutorials/Solid_Particle_System#create-an-immutable-sps
+        * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
         * `mesh` is any `Mesh` object that will be used as a model for the solid particles.
         * `nb` (positive integer) the number of particles to be created from this model
         * `positionFunction` is an optional javascript function to called for each particle on SPS creation.
@@ -819,6 +819,6 @@ var BABYLON;
         SolidParticleSystem.prototype.afterUpdateParticles = function (start, stop, update) {
         };
         return SolidParticleSystem;
-    })();
+    }());
     BABYLON.SolidParticleSystem = SolidParticleSystem;
 })(BABYLON || (BABYLON = {}));
