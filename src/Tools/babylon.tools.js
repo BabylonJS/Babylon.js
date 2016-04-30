@@ -588,11 +588,6 @@ var BABYLON;
             }
             return false;
         };
-        Tools.getClassName = function (obj) {
-            var funcNameRegex = /function (.{1,})\(/;
-            var results = (funcNameRegex).exec((obj).constructor.toString());
-            return (results && results.length > 1) ? results[1] : "";
-        };
         Object.defineProperty(Tools, "NoneLogLevel", {
             get: function () {
                 return Tools._NoneLogLevel;
@@ -790,6 +785,24 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * This method will return the name of the class used to create the instance of the given object.
+         * It will works only on Javascript basic data types (number, string, ...) and instance of class declared with the @className decorator.
+         * @param object the object to get the class name from
+         * @return the name of the class, will be "object" for a custom data type not using the @className decorator
+         */
+        Tools.getClassName = function (object, isType) {
+            if (isType === void 0) { isType = false; }
+            var name = null;
+            if (object instanceof Object) {
+                var classObj = isType ? object : Object.getPrototypeOf(object);
+                name = classObj.constructor["__bjsclassName__"];
+            }
+            if (!name) {
+                name = typeof object;
+            }
+            return name;
+        };
         Tools.BaseUrl = "";
         Tools.CorsBehavior = "anonymous";
         Tools.UseFallbackTexture = true;
@@ -811,8 +824,20 @@ var BABYLON;
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
         return Tools;
-    })();
+    }());
     BABYLON.Tools = Tools;
+    /**
+     * Use this className as a decorator on a given class definition to add it a name.
+     * You can then use the Tools.getClassName(obj) on an instance to retrieve its class name.
+     * This method is the only way to get it done in all cases, even if the .js file declaring the class is minified
+     * @param name
+     */
+    function className(name) {
+        return function (target) {
+            target["__bjsclassName__"] = name;
+        };
+    }
+    BABYLON.className = className;
     /**
      * An implementation of a loop for asynchronous functions.
      */
@@ -895,6 +920,7 @@ var BABYLON;
             }, callback);
         };
         return AsyncLoop;
-    })();
+    }());
     BABYLON.AsyncLoop = AsyncLoop;
 })(BABYLON || (BABYLON = {}));
+//# sourceMappingURL=babylon.tools.js.map

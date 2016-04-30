@@ -7,6 +7,7 @@
         forceRefreshPrimitive: boolean;
     }
 
+    @className("Prim2DBase")
     export class Prim2DBase extends SmartPropertyPrim {
         static PRIM2DBASE_PROPCOUNT: number = 10;
 

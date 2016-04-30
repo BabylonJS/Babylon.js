@@ -200,14 +200,19 @@
         }
 
         getClassTreeInfo(): ClassTreeInfo<InstanceClassInfo, InstancePropInfo> {
-            return ClassTreeInfo.get<InstanceClassInfo, InstancePropInfo>(this);
+            if (!this._typeInfo) {
+                this._typeInfo = ClassTreeInfo.get<InstanceClassInfo, InstancePropInfo>(Object.getPrototypeOf(this));
+            }
+            return this._typeInfo;
         }
 
         _dataElement: DynamicFloatArrayElementInfo;
         _dataBuffer: DynamicFloatArray;
+        _typeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
     }
 
-   export class RenderablePrim2D<TInstData extends InstanceDataBase> extends Prim2DBase {
+    @className("RenderablePrim2D")
+    export class RenderablePrim2D<TInstData extends InstanceDataBase> extends Prim2DBase {
         static RENDERABLEPRIM2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 10;
 
         public static borderProperty: Prim2DPropInfo;
@@ -279,7 +284,7 @@
                     var size = 0;
                     cti.fullContent.forEach((k, v) => {
                         if (!v.size) {
-                            console.log(`ERROR: Couldn't detect the size of the Property ${v.attributeName} from type ${cti.typeName}. Property is ignored.`);
+                            console.log(`ERROR: Couldn't detect the size of the Property ${v.attributeName} from type ${Tools.getClassName(cti.type)}. Property is ignored.`);
                         } else {
                             size += v.size;
                         }

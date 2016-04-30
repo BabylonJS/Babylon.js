@@ -62,6 +62,7 @@
         }
     }
 
+    @className("Sprite2D")
     export class Sprite2D extends RenderablePrim2D<Sprite2DInstanceData> {
 
         public static textureProperty: Prim2DPropInfo;

@@ -40,6 +40,7 @@
         }
     }
 
+    @className("Rectangle2D")
     export class Rectangle2D extends RenderablePrim2D<Rectangle2DInstanceData> {
 
         public static sizeProperty: Prim2DPropInfo;
@@ -91,7 +92,7 @@
 
             let rect = new Rectangle2D();
             rect.setupRectangle2D(parent.owner, parent, id, new Vector2(x, y), new Size(width, height), null);
-            rect.fill = fill || Canvas2D.getSolidColorFillFromHex("#FFFFFFFF");
+            rect.fill = fill || Canvas2D.GetSolidColorFillFromHex("#FFFFFFFF");
             rect.border = border;
             return rect;
         }
@@ -101,7 +102,7 @@
 
             let rect = new Rectangle2D();
             rect.setupRectangle2D(parent.owner, parent, id, new Vector2(x, y), new Size(width, height), roundRadius);
-            rect.fill = fill || Canvas2D.getSolidColorFillFromHex("#FFFFFFFF");
+            rect.fill = fill || Canvas2D.GetSolidColorFillFromHex("#FFFFFFFF");
             rect.border = border;
             return rect;
         }
