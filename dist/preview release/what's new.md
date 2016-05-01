@@ -17,7 +17,7 @@
     - StandardMaterial.maxSimultaneousLights can define how many dynamic lights the material can handle ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
-    - Added skeleton.getBoneIndexByName(boneName: string) [dad72](https://github.com/dad72)
+    - Added skeleton.getBoneIndexByName(boneName: string) ([dad72](https://github.com/dad72))
     - Added node._children to track children hierarchy ([deltakosh](https://github.com/deltakosh))
     - Added Camera.ForceAttachControlToAlwaysPreventDefault to help embedding Babylon.js in iFrames ([deltakosh](https://github.com/deltakosh))
     - Support for Layer.alphaTest ([deltakosh](https://github.com/deltakosh))
