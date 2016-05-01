@@ -6,7 +6,7 @@
     - New mesh type : `LineSystem` ([jerome](https://github.com/jbousquie))
     - SerializationHelper for complex classes using TypeScript decorators ([deltakosh](https://github.com/deltakosh))
     - StandardMaterial now supports Parallax and Parallax Occlusion Mapping ([nockawa](https://github.com/nockawa))
-    - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#3). More [info here](NEED DOC!) ([deltakosh](https://github.com/deltakosh))
+    - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#3). More [info here](http://doc.babylonjs.com/tutorials/Animations#animation-blending) ([deltakosh](https://github.com/deltakosh))
     - New debuger tool: SkeletonViewer. See [demo here](http://www.babylonjs-playground.com/#1BZJVJ#8) (Adam & [deltakosh](https://github.com/deltakosh))
     - Added Camera Inputs Manager to manage camera inputs (mouse, touch, keyboard, gamepad, ...) in a composable way, without relying on class inheritance ([gleborgne](https://github.com/gleborgne))
     - Introduced new observable system to handle events ([nockawa](https://github.com/nockawa), [deltakosh](https://github.com/deltakosh))
