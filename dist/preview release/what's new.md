@@ -47,5 +47,5 @@
     - Fixed bug with OBJ Loader - All meshes were concatenated with the previous one ([Temechon](https://github.com/Temechon))
   - **Breaking changes**
     - `VertexData.CreateLines()` removed as `MeshBuilder.CreateLines()` now calls `MeshBuilder.CreateLineSystem()`
-    - `scene.onNewXXXAdded` and `scene.onXXXRemoved' callbacks were removed and replaced by `scene.onNewXXXAddedObservable` and `scene.onXXXRemovedObservable`
+    - `scene.onNewXXXAdded` and `scene.onXXXRemoved` callbacks were removed and replaced by `scene.onNewXXXAddedObservable` and `scene.onXXXRemovedObservable`
     - `Material.dispose` does not dispose textures by default. You have to call `material.dispose(false, true)` to get the previous behavior.
