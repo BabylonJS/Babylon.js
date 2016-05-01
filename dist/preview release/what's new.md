@@ -3,7 +3,7 @@
     - New refraction channel for Standard material (including fresnel support). Refraction texture can be provided by a reflection probe or a refraction texture. [See demo here](http://www.babylonjs.com/Demos/refraction/) ([deltakosh](https://github.com/deltakosh))
     - Added support for HDR cubemaps ([sebavan](https://github.com/sebavan))
     - Support for shaders includes ([deltakosh](https://github.com/deltakosh))
-    - new mesh type : `LineSystem` ([jerome](https://github.com/jbousquie))
+    - New mesh type : `LineSystem` ([jerome](https://github.com/jbousquie))
     - SerializationHelper for complex classes using TypeScript decorators ([deltakosh](https://github.com/deltakosh))
     - StandardMaterial now supports Parallax and Parallax Occlusion Mapping ([nockawa](https://github.com/nockawa))
     - Animations blending. See [demo here](http://www.babylonjs-playground.com/#2BLI9T#3). More [info here](NEED DOC!) ([deltakosh](https://github.com/deltakosh))
