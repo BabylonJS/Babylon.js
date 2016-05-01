@@ -219,12 +219,6 @@
 
         protected onPrimBecomesDirty() {
             if (this._renderGroup) {
-                //if (this instanceof Group2D) {
-                //    var group: any= this;
-                //    if (group.isRenderableGroup) {
-                //        return;
-                //    }
-                //}
                 this._renderGroup._addPrimToDirtyList(this);
             }
         }
@@ -288,7 +282,6 @@
             }
         }
 
-
         protected updateGlobalTransVisOf(list: Prim2DBase[], context: Render2DContext, recurse: boolean) {
             for (let cur of list) {
                 cur.updateGlobalTransVis(context, recurse);
@@ -296,7 +289,6 @@
         }
 
         protected updateGlobalTransVis(context: Render2DContext, recurse: boolean) {
-
             this._globalTransformPreviousStep = this._globalTransformStep;
             this.isVisible = context.parentVisibleState && this.levelVisible;
 

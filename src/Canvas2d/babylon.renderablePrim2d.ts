@@ -213,40 +213,11 @@
 
     @className("RenderablePrim2D")
     export class RenderablePrim2D<TInstData extends InstanceDataBase> extends Prim2DBase {
-        static RENDERABLEPRIM2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 10;
-
-        public static borderProperty: Prim2DPropInfo;
-        public static fillProperty: Prim2DPropInfo;
+        static RENDERABLEPRIM2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
 
         setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean, fill: IFill2D, border: IBorder2D) {
             this.setupPrim2DBase(owner, parent, id, position);
             this._isTransparent = false;
-        }
-
-        @modelLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => RenderablePrim2D.borderProperty = pi, true)
-        public get border(): IBorder2D {
-            return this._border;
-        }
-
-        public set border(value: IBorder2D) {
-            if (value === this._border) {
-                return;
-            }
-
-            this._border = value;
-        }
-
-        @modelLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 2, pi => RenderablePrim2D.fillProperty = pi, true)
-        public get fill(): IFill2D {
-            return this._fill;
-        }
-
-        public set fill(value: IBorder2D) {
-            if (value === this._fill) {
-                return;
-            }
-
-            this._fill = value;
         }
 
         public _prepareRenderPre(context: Render2DContext) {
@@ -323,6 +294,10 @@
             }
         }
 
+        public get isTransparent(): boolean {
+            return this._isTransparent;
+        }
+
         protected createModelRenderCache(): ModelRenderCache<TInstData> {
             return null;
         }
@@ -367,9 +342,7 @@
         private _modelRenderInstanceID: string;
 
         protected _instanceData: TInstData;
-        private _border: IBorder2D;
-        private _fill: IFill2D;
-        private _isTransparent: boolean;
+        protected _isTransparent: boolean;
     }
 
 

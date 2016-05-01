@@ -26,8 +26,10 @@
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
 
             engine.updateAndBindInstancesBuffer(instanceInfo._instancesBuffer, null, this.instancingAttributes);
-
+            var cur = engine.getAlphaMode();
+            engine.setAlphaMode(Engine.ALPHA_COMBINE);
             engine.draw(true, 0, 6, instanceInfo._instancesData.usedElementCount);
+            engine.setAlphaMode(cur);
 
             engine.unBindInstancesBuffer(instanceInfo._instancesBuffer, this.instancingAttributes);
 
@@ -63,7 +65,7 @@
     }
 
     @className("Sprite2D")
-    export class Sprite2D extends RenderablePrim2D<Sprite2DInstanceData> {
+    export class Sprite2D extends Shape2D<Sprite2DInstanceData> {
 
         public static textureProperty: Prim2DPropInfo;
         public static spriteSizeProperty: Prim2DPropInfo;
@@ -71,7 +73,7 @@
         public static spriteFrameProperty: Prim2DPropInfo;
         public static invertYProperty: Prim2DPropInfo;
 
-        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Sprite2D.textureProperty = pi)
+        @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Sprite2D.textureProperty = pi)
         public get texture(): Texture {
             return this._texture;
         }
@@ -80,7 +82,7 @@
             this._texture = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.spriteSizeProperty = pi, false, true)
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Sprite2D.spriteSizeProperty = pi, false, true)
         public get spriteSize(): Size {
             return this._size;
         }
@@ -89,7 +91,7 @@
             this._size = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.spriteLocationProperty = pi)
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 3, pi => Sprite2D.spriteLocationProperty = pi)
         public get spriteLocation(): Vector2 {
             return this._location;
         }
@@ -98,7 +100,7 @@
             this._location = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteFrameProperty = pi)
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 4, pi => Sprite2D.spriteFrameProperty = pi)
         public get spriteFrame(): number {
             return this._spriteFrame;
         }
@@ -107,7 +109,7 @@
             this._spriteFrame = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Sprite2D.invertYProperty = pi)
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 5, pi => Sprite2D.invertYProperty = pi)
         public get invertY(): boolean {
             return this._invertY;
         }
@@ -128,6 +130,7 @@
             this.spriteLocation = spriteLocation;
             this.spriteFrame = 0;
             this.invertY = invertY;
+            this._isTransparent = true;
         }
 
         public static Create(parent: Prim2DBase, id: string, x: number, y: number, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean = false): Sprite2D {

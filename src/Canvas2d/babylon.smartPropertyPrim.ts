@@ -72,16 +72,12 @@
             }
 
             let baseProto = Object.getPrototypeOf(type);
+            let curProtoContent = this.getOrAddType(Object.getPrototypeOf(baseProto), baseProto);
+            if (!curProtoContent) {
+                this.getLevelOf(baseProto);
+            }
+
             return this.getOrAddType(baseProto, type);
-
-            //// If type is a class, this will get the base class proto, if type is an instance of a class, this will get the proto of the class
-            //let baseTypeName = Tools.getClassName(baseProto);
-
-            //// If both name are equal we only switch from instance to class, we need to get the next proto in the hierarchy to get the base class
-            //if (baseTypeName === typeName) {
-            //    baseTypeName = Tools.getClassName(Object.getPrototypeOf(baseProto));
-            //}
-            //return this.getOrAddType(baseTypeName, typeName);
         }
 
         getOrAddType(baseType: Object, type: Object): ClassTreeInfo<TClass, TProp> {
@@ -175,6 +171,10 @@
             return modelKey;
         }
 
+        public get isDirty(): boolean {
+            return (this._instanceDirtyFlags !== 0) || this._modelDirty;
+        }
+
         protected static GetOrAddModelCache<TInstData>(key: string, factory: (key: string) => ModelRenderCache<TInstData>): ModelRenderCache<TInstData> {
             return <ModelRenderCache<TInstData>>SmartPropertyPrim.ModelCache.getOrAddWithFactory(key, factory);
         }
@@ -248,6 +248,11 @@
             let propMask = propInfo.flagId;
             this.propertyChanged.notifyObservers(info, propMask);
 
+            // If the property belong to a group, check if it's a cached one, and dirty its render sprite accordingly
+            if (this instanceof Group2D) {
+                this.handleGroupChanged(propInfo);
+            }
+
             // Check if we need to dirty only if the type change and make the test
             var skipDirty = false;
             if (typeLevelCompare && curValue != null && newValue != null) {
@@ -260,17 +265,21 @@
             // Set the dirty flags
             if (!skipDirty) {
                 if (propInfo.kind === Prim2DPropInfo.PROPKIND_MODEL) {
-                    if ((this._instanceDirtyFlags === 0) && (!this._modelDirty)) {
+                    if (!this.isDirty) {
                         this.onPrimBecomesDirty();
                     }
                     this._modelDirty = true;
                 } else if (propInfo.kind === Prim2DPropInfo.PROPKIND_INSTANCE) {
-                    if ((this._instanceDirtyFlags === 0) && (!this._modelDirty)) {
+                    if (!this.isDirty) {
                         this.onPrimBecomesDirty();
                     }
                     this._instanceDirtyFlags |= propMask;
                 }
             }
+        }
+
+        protected handleGroupChanged(prop: Prim2DPropInfo) {
+
         }
 
         public checkPropertiesDirty(flags: number): boolean {

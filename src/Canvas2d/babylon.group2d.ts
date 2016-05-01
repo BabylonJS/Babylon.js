@@ -1,9 +1,12 @@
 ﻿module BABYLON {
     @className("Group2D")
     export class Group2D extends Prim2DBase {
-        static GROUP2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 10;
+        static GROUP2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
 
-        /**
+        public static sizeProperty: Prim2DPropInfo;
+        public static actualSizeProperty: Prim2DPropInfo;
+
+      /**
          * Default behavior, the group will use the caching strategy defined at the Canvas Level
          */
         public static GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY = 0;
@@ -65,10 +68,6 @@
             return this._isCachedGroup;
         }
 
-        public static sizeProperty: Prim2DPropInfo;
-        public static actualSizeProperty: Prim2DPropInfo;
-
-
         @instanceLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => Group2D.sizeProperty = pi, false, true)
         public get size(): Size {
             return this._size;
@@ -99,7 +98,7 @@
             return this._cacheBehavior;
         }
 
-        _addPrimToDirtyList(prim: Prim2DBase) {
+        public _addPrimToDirtyList(prim: Prim2DBase) {
             this._primDirtyList.push(prim);
         }
 
@@ -131,7 +130,6 @@
                 sortedDirtyList = this._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
                 this.updateGlobalTransVisOf(sortedDirtyList, childrenContext, true);
             }
-
 
             // Setup the size of the rendering viewport
             // In non cache mode, we're rendering directly to the rendering canvas, in this case we have to detect if the canvas size changed since the previous iteration, if it's the case all primitives must be preprared again because their transformation must be recompute
@@ -272,6 +270,7 @@
                 var res = this.owner._allocateGroupCache(this);
                 this._cacheNode = res.node;
                 this._cacheTexture = res.texture;
+                this._cacheRenderSprite = res.sprite;
             }
 
             let n = this._cacheNode;
@@ -281,6 +280,23 @@
         private _unbindCacheTarget() {
             if (this._cacheTexture) {
                 this._cacheTexture.unbindTexture();
+            }
+        }
+
+        protected handleGroupChanged(prop: Prim2DPropInfo) {
+            // This method is only for cachedGroup
+            if (!this.isCachedGroup || !this._cacheRenderSprite) {
+                return;
+            }
+
+            // For now we only support these property changes
+            // TODO: add more! :)
+            if (prop.id === Prim2DBase.positionProperty.id) {
+                this._cacheRenderSprite.position = this.position.clone();
+            } else if (prop.id === Prim2DBase.rotationProperty.id) {
+                this._cacheRenderSprite.rotation = this.rotation;
+            } else if (prop.id === Prim2DBase.scaleProperty.id) {
+                this._cacheRenderSprite.scale = this.scale;
             }
         }
 
@@ -357,6 +373,7 @@
         private _primDirtyList: Array<Prim2DBase>;
         private _cacheNode: PackedRect;
         private _cacheTexture: MapTexture;
+        private _cacheRenderSprite: Sprite2D;
         private _viewportPosition: Vector2;
         private _viewportSize: Size;
 
