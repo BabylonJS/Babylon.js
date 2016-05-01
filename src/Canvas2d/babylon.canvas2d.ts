@@ -1,12 +1,4 @@
 ﻿module BABYLON {
-    class GroupsCacheMap {
-        constructor() {
-            this.groupSprites = new Array<{ group: Group2D, sprite: Sprite2D }>();
-        }
-        texture: MapTexture;
-        groupSprites: Array<{ group: Group2D, sprite: Sprite2D }>;
-    }
-
     @className("Canvas2D")
     export class Canvas2D extends Group2D {
         /**
@@ -189,7 +181,7 @@
         private _hierarchyLevelZFactor: number;
         private _hierarchyLevelMaxSiblingCount: number;
         private _hierarchySiblingZDelta: number;
-        private _groupCacheMaps: GroupsCacheMap[];
+        private _groupCacheMaps: MapTexture[];
         public _renderingSize: Size;
 
         /**
@@ -219,20 +211,20 @@
          * @param group The group to allocate the cache of.
          * @return custom type with the PackedRect instance giving information about the cache location into the texture and also the MapTexture instance that stores the cache.
          */
-        public _allocateGroupCache(group: Group2D): { node: PackedRect, texture: MapTexture } {
+        public _allocateGroupCache(group: Group2D): { node: PackedRect, texture: MapTexture, sprite: Sprite2D } {
             // Determine size
             let size = group.actualSize;
             size = new Size(Math.ceil(size.width), Math.ceil(size.height));
             if (!this._groupCacheMaps) {
-                this._groupCacheMaps = new Array<GroupsCacheMap>();
+                this._groupCacheMaps = new Array<MapTexture>();
             }
 
             // Try to find a spot in one of the cached texture
             let res = null;
-            for (var g of this._groupCacheMaps) {
-                let node = g.texture.allocateRect(size);
+            for (var map of this._groupCacheMaps) {
+                let node = map.allocateRect(size);
                 if (node) {
-                    res = { node: node, texture: g.texture }
+                    res = { node: node, texture: map }
                     break;
                 }
             }
@@ -247,19 +239,18 @@
                     mapSize.height = Math.pow(2, Math.ceil(Math.log(size.height) / Math.log(2)));
                 }
 
-                g = new GroupsCacheMap();
                 let id = `groupsMapChache${this._mapCounter}forCanvas${this.id}`;
-                g.texture = new MapTexture(id, this._scene, mapSize);
-                this._groupCacheMaps.push(g);
+                map = new MapTexture(id, this._scene, mapSize);
+                this._groupCacheMaps.push(map);
 
-                let node = g.texture.allocateRect(size);
-                res = { node: node, texture: g.texture }
+                let node = map.allocateRect(size);
+                res = { node: node, texture: map }
             }
 
             // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
-            let sprite = Sprite2D.Create(this, `__cachedSpriteOfGroup__${group.id}`, 10, 10, g.texture, res.node.contentSize, res.node.pos, true);
+            let sprite = Sprite2D.Create(this, `__cachedSpriteOfGroup__${group.id}`, group.position.x, group.position.y, map, res.node.contentSize, res.node.pos, true);
             sprite.origin = Vector2.Zero();
-            g.groupSprites.push({ group: group, sprite: sprite });
+            res.sprite = sprite;
             return res;
         }
 

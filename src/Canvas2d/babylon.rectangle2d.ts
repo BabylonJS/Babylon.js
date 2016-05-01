@@ -41,13 +41,13 @@
     }
 
     @className("Rectangle2D")
-    export class Rectangle2D extends RenderablePrim2D<Rectangle2DInstanceData> {
+    export class Rectangle2D extends Shape2D<Rectangle2DInstanceData> {
 
         public static sizeProperty: Prim2DPropInfo;
         public static notRoundedProperty: Prim2DPropInfo;
         public static roundRadiusProperty: Prim2DPropInfo;
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Rectangle2D.sizeProperty = pi, false, true)
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Rectangle2D.sizeProperty = pi, false, true)
         public get size(): Size {
             return this._size;
         }
@@ -56,7 +56,7 @@
             this._size = value;
         }
 
-        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)
+        @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Rectangle2D.notRoundedProperty = pi)
         public get notRounded(): boolean {
             return this._notRounded;
         }
@@ -65,7 +65,7 @@
             this._notRounded = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Rectangle2D.roundRadiusProperty = pi)
+        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 3, pi => Rectangle2D.roundRadiusProperty = pi)
         public get roundRadius(): number {
             return this._roundRadius;
         }
