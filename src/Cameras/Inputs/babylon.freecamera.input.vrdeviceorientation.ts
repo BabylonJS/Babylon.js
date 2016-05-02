@@ -24,9 +24,9 @@ module BABYLON {
 
         public _onOrientationEvent(evt: DeviceOrientationEvent): void {
             var camera = this.camera;
-            this._alpha = +evt.alpha | 0;
-            this._beta = +evt.beta | 0;
-            this._gamma = +evt.gamma | 0;
+            this._alpha = evt.alpha;
+            this._beta = evt.beta;
+            this._gamma = evt.gamma;
             this._dirty = true;
         }
 
