@@ -84,6 +84,9 @@ namespace BabylonExport.Entities
         public int skeletonId { get; set; }
 
         [DataMember]
+        public int numBoneInfluencers { get; set; }
+
+        [DataMember]
         public bool showBoundingBox { get; set; }
 
         [DataMember]
