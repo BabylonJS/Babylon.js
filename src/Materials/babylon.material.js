@@ -9,7 +9,16 @@ var BABYLON;
     var MaterialDefines = (function () {
         function MaterialDefines() {
         }
+        MaterialDefines.prototype.rebuild = function () {
+            if (this._keys) {
+                delete this._keys;
+            }
+            this._keys = Object.keys(this);
+        };
         MaterialDefines.prototype.isEqual = function (other) {
+            if (this._keys.length !== other._keys.length) {
+                return false;
+            }
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
                 if (this[prop] !== other[prop]) {
@@ -19,6 +28,9 @@ var BABYLON;
             return true;
         };
         MaterialDefines.prototype.cloneTo = function (other) {
+            if (this._keys.length !== other._keys.length) {
+                other._keys = this._keys.slice(0);
+            }
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
                 other[prop] = this[prop];

@@ -869,14 +869,14 @@ var BABYLON;
                 }
             }
         };
-        Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, fallbacks, onCompiled, onError) {
+        Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, fallbacks, onCompiled, onError, indexParameters) {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
             var name = vertex + "+" + fragment + "@" + defines;
             if (this._compiledEffects[name]) {
                 return this._compiledEffects[name];
             }
-            var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError);
+            var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
             this._compiledEffects[name] = effect;
             return effect;
