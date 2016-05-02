@@ -195,3 +195,25 @@ float computeLightFalloff(vec3 lightOffset, float lightDistanceSquared, float ra
         return color;
     }
 #endif
+
+#ifdef CAMERACOLORGRADING
+    vec4 colorGrades(vec4 color, sampler2D lut, float level, float lutSize)
+    {
+        color = clamp(color, 0.0, 1.0);
+        vec2 uv = color.rg;
+        
+        float blueIndex = color.b / lutSize;
+        float fl = floor(blueIndex);
+        float fr = fract(blueIndex);
+        
+        uv.x += fl;
+        vec3 colorTransformInputLowerBound = texture2D(lut, uv).rgb;
+        uv.x += (1.0 / lutSize);
+        vec3 colorTransformInputUpperBound = texture2D(lut, uv).rgb;
+        
+        vec3 result = mix(colorTransformInputLowerBound, colorTransformInputUpperBound, fr);
+        
+        color.rgb = mix(color.rgb, result, level);
+        return color;
+    }
+#endif

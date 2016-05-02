@@ -128,28 +128,32 @@ uniform vec4 emissiveRightColor;
 
 // Reflection
 #ifdef REFLECTION
-uniform vec2 vReflectionInfos;
+    uniform vec2 vReflectionInfos;
 
-#ifdef REFLECTIONMAP_3D
-uniform samplerCube reflectionCubeSampler;
-#else
-uniform sampler2D reflection2DSampler;
-#endif
-
-#ifdef REFLECTIONMAP_SKYBOX
-varying vec3 vPositionUVW;
-#else
-    #ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
-    varying vec3 vDirectionW;
+    #ifdef REFLECTIONMAP_3D
+        uniform samplerCube reflectionCubeSampler;
+    #else
+        uniform sampler2D reflection2DSampler;
     #endif
 
-    #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-    uniform mat4 reflectionMatrix;
+    #ifdef REFLECTIONMAP_SKYBOX
+        varying vec3 vPositionUVW;
+    #else
+        #ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+            varying vec3 vDirectionW;
+        #endif
+
+        #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
+            uniform mat4 reflectionMatrix;
+        #endif
     #endif
+
+    #include<reflectionFunction>
+
 #endif
 
-#include<reflectionFunction>
-
+#ifdef CAMERACOLORGRADING
+    uniform sampler2D cameraColorGrading2DSampler;
 #endif
 
 // PBR
@@ -590,8 +594,15 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
 
     finalColor.rgb = toGammaSpace(finalColor.rgb);
 
+#include<logDepthFragment>
+#include<fogFragment>(color, finalColor)
+
 #ifdef CAMERACONTRAST
     finalColor = contrasts(finalColor);
+#endif
+
+#ifdef CAMERACOLORGRADING
+    finalColor = colorGrades(finalColor, cameraColorGrading2DSampler, vCameraInfos.z, vCameraInfos.w);
 #endif
 
     // Normal Display.
@@ -621,9 +632,6 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
     //// Emissive Color
     //vec2 test = vEmissiveUV * 0.5 + 0.5;
     //gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
-
-#include<logDepthFragment>
-#include<fogFragment>(color, finalColor)
 
     gl_FragColor = finalColor;
 }
