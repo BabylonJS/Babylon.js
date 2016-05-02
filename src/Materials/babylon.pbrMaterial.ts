@@ -81,6 +81,7 @@
         public LOGARITHMICDEPTH = false;
         public CAMERATONEMAP = false;
         public CAMERACONTRAST = false;
+        public CAMERACOLORGRADING = false;
         public OVERLOADEDVALUES = false;
         public OVERLOADEDSHADOWVALUES = false;
         public USESPHERICALFROMREFLECTIONMAP = false;
@@ -175,6 +176,13 @@
          */
         @serialize()
         public cameraContrast: number = 1.0;
+        
+        /**
+         * Color Grading 2D Lookup Texture.
+         * This allows special effects like sepia, black and white to sixties rendering style. 
+         */
+        @serializeAsTexture()
+        public cameraColorGradingTexture: BaseTexture = null;
 
         private _cameraInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
 
@@ -766,6 +774,14 @@
                         }
                     }
                 }
+            
+                if (this.cameraColorGradingTexture) {
+                    if (!this.cameraColorGradingTexture.isReady()) {
+                        return false;
+                    } else {
+                        this._defines.CAMERACOLORGRADING = true;
+                    }
+                }
             }
 
             // Effect
@@ -1009,7 +1025,8 @@
                         "vMicrosurfaceTextureLods", "vLightRadiuses"
                     ],
                     ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
+                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
+                        "cameraColorGrading2DSampler"
                     ],
                     join, fallbacks, this.onCompiled, this.onError);
             }
@@ -1188,6 +1205,12 @@
                     if ((this.reflectionTexture || this.refractionTexture)) {
                         this._effect.setFloat2("vMicrosurfaceTextureLods", this._microsurfaceTextureLods.x, this._microsurfaceTextureLods.y);
                     }
+                    
+                    if (this.cameraColorGradingTexture) {
+                        this._effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
+                        this._cameraInfos.z = this.cameraColorGradingTexture.level;
+                        this._cameraInfos.w = this.cameraColorGradingTexture.getSize().height;
+                    }
                 }
 
                 // Clip plane
@@ -1318,6 +1341,10 @@
             if (this.refractionTexture && this.refractionTexture.animations && this.refractionTexture.animations.length > 0) {
                 results.push(this.refractionTexture);
             }
+            
+            if (this.cameraColorGradingTexture && this.cameraColorGradingTexture.animations && this.cameraColorGradingTexture.animations.length > 0) {
+                results.push(this.cameraColorGradingTexture);
+            }
 
             return results;
         }
@@ -1358,6 +1385,10 @@
 
                 if (this.refractionTexture) {
                     this.refractionTexture.dispose();
+                }
+                
+                if (this.cameraColorGradingTexture) {
+                    this.cameraColorGradingTexture.dispose();
                 }
             }
 
