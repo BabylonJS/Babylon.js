@@ -123,7 +123,7 @@
             var result = this._sourceMesh.createInstance(name);
 
             // Deep copy
-            Tools.DeepCopy(this, result, ["name"], []);
+            Tools.DeepCopy(this, result, ["name", "subMeshes"], []);
 
             // Bounding info
             this.refreshBoundingInfo();

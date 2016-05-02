@@ -73,11 +73,12 @@
         private _attributes: number[];
         private _uniforms: WebGLUniformLocation[];
         public _key: string;
+        private _indexParameters: any;
 
         private _program: WebGLProgram;
         private _valueCache = [];
 
-        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+        constructor(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
             this._engine = engine;
             this.name = baseName;
             this.defines = defines;
@@ -87,6 +88,8 @@
 
             this.onError = onError;
             this.onCompiled = onCompiled;
+
+            this._indexParameters = indexParameters;
 
             var vertexSource;
             var fragmentSource;
@@ -260,7 +263,25 @@
                     }
 
                     if (match[4]) {
-                        includeContent = includeContent.replace(/\{X\}/g, match[5]);
+                        var indexString = match[5];
+
+                        if (indexString.indexOf("..") !== -1) {
+                            var indexSplits = indexString.split("..");
+                            var minIndex = parseInt(indexSplits[0]);
+                            var maxIndex = parseInt(indexSplits[1]);
+                            var sourceIncludeContent = includeContent.slice(0);
+                            includeContent = "";
+
+                            if (isNaN(maxIndex)) {
+                                maxIndex = this._indexParameters[indexSplits[1]];
+                            }
+
+                            for (var i = minIndex; i <= maxIndex; i++) {
+                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
+                            }
+                        } else {
+                            includeContent = includeContent.replace(/\{X\}/g, indexString);
+                        }
                     }
 
                     // Replace

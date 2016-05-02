@@ -58,7 +58,12 @@ namespace Max2Babylon
             {
                 var node = Loader.Core.GetSelNode(index);
 
-                if (node.ObjectRef != null && node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Geomobject)
+                if (node.ObjectRef != null && 
+                    (
+                    node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Geomobject
+                    ||
+                    node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Helper
+                    ))
                 {
                     objects.Add(node);
                 }
