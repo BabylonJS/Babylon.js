@@ -123,7 +123,11 @@ namespace Max2Babylon
 
                 foreach (var meshNode in maxScene.NodesListBySuperClass(SClass_ID.Geomobject))
                 {
+#if MAX2017
+                    if (meshNode.CastShadows)
+#else
                     if (meshNode.CastShadows == 1)
+#endif
                     {
                         var inList = maxLight.ExclList.FindNode(meshNode) != -1;
 

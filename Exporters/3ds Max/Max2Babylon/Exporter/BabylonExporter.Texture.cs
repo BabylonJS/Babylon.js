@@ -120,6 +120,11 @@ namespace Max2Babylon
             }
 
             // Bitmap
+            if (texMap.GetParamBlock(0) == null || texMap.GetParamBlock(0).Owner == null)
+            {
+                return null;
+            }
+
             var texture = texMap.GetParamBlock(0).Owner as IBitmapTex;
 
             if (texture == null)

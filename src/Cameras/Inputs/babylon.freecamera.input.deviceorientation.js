@@ -70,7 +70,7 @@ var BABYLON;
             BABYLON.serialize()
         ], FreeCameraDeviceOrientationInput.prototype, "moveSensibility", void 0);
         return FreeCameraDeviceOrientationInput;
-    }());
+    })();
     BABYLON.FreeCameraDeviceOrientationInput = FreeCameraDeviceOrientationInput;
     BABYLON.CameraInputTypes["FreeCameraDeviceOrientationInput"] = FreeCameraDeviceOrientationInput;
 })(BABYLON || (BABYLON = {}));
