@@ -15,7 +15,7 @@ namespace Max2Babylon
     {
         public static IntPtr GetNativeHandle(this INativeObject obj)
         {
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             return obj.NativePointer;
 #else
             return obj.Handle;
@@ -77,7 +77,7 @@ namespace Max2Babylon
 
         public static IMatrix3 Identity { get { return Loader.Global.Matrix3.Create(XAxis, YAxis, ZAxis, Origin); } }
 
-#if !MAX2015 && !MAX2016
+#if !MAX2015 && !MAX2016 && !MAX2017
         unsafe public static int GetParamBlockIndex(IIParamBlock paramBlock, string name)
         {
             for (short index = 0; index < paramBlock.NumParams; index++)
@@ -561,7 +561,7 @@ namespace Max2Babylon
         public static void SetStringProperty(this IINode node, string propertyName, string defaultState)
         {
             string state = defaultState;
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.SetUserPropString(propertyName, state);
 #else
             node.SetUserPropString(ref propertyName, ref state);
@@ -571,7 +571,7 @@ namespace Max2Babylon
         public static bool GetBoolProperty(this IINode node, string propertyName, int defaultState = 0)
         {
             int state = defaultState;
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropBool(propertyName, ref state);
 #else
             node.GetUserPropBool(ref propertyName, ref state);
@@ -583,7 +583,7 @@ namespace Max2Babylon
         public static string GetStringProperty(this IINode node, string propertyName, string defaultState)
         {
             string state = defaultState;
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropString(propertyName, ref state);
 #else
             node.GetUserPropString(ref propertyName, ref state);
@@ -595,7 +595,7 @@ namespace Max2Babylon
         public static float GetFloatProperty(this IINode node, string propertyName, float defaultState = 0)
         {
             float state = defaultState;
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropFloat(propertyName, ref state);
 #else
             node.GetUserPropFloat(ref propertyName, ref state);
@@ -608,7 +608,7 @@ namespace Max2Babylon
         {
             float state0 = 0;
             string name = propertyName + "_x";
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropFloat(name, ref state0);
 #else
             node.GetUserPropFloat(ref name, ref state0);
@@ -617,7 +617,7 @@ namespace Max2Babylon
 
             float state1 = 0;
             name = propertyName + "_y";
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropFloat(name, ref state1);
 #else
             node.GetUserPropFloat(ref name, ref state1);
@@ -625,7 +625,7 @@ namespace Max2Babylon
 
             float state2 = 0;
             name = propertyName + "_z";
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.GetUserPropFloat(name, ref state2);
 #else
             node.GetUserPropFloat(ref name, ref state2);
@@ -690,7 +690,7 @@ namespace Max2Babylon
         {
             if (checkBox.CheckState != CheckState.Indeterminate)
             {
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
                 node.SetUserPropBool(propertyName, checkBox.CheckState == CheckState.Checked);
 #else
                 node.SetUserPropBool(ref propertyName, checkBox.CheckState == CheckState.Checked);
@@ -711,7 +711,7 @@ namespace Max2Babylon
             foreach (var node in nodes)
             {
                 var value = textBox.Text;
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
                 node.SetUserPropString(propertyName, value);
 #else
                 node.SetUserPropString(ref propertyName, ref value);
@@ -728,7 +728,7 @@ namespace Max2Babylon
         {
             foreach (var node in nodes)
             {
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
                 node.SetUserPropFloat(propertyName, (float)nup.Value);
 #else
                 node.SetUserPropFloat(ref propertyName, (float)nup.Value);
@@ -746,21 +746,21 @@ namespace Max2Babylon
         public static void UpdateVector3Control(Vector3Control vector3Control, IINode node, string propertyName)
         {
             string name = propertyName + "_x";
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.SetUserPropFloat(name, vector3Control.X);
 #else
             node.SetUserPropFloat(ref name, vector3Control.X);
 #endif
 
             name = propertyName + "_y";
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.SetUserPropFloat(name, vector3Control.Y);
 #else
             node.SetUserPropFloat(ref name, vector3Control.Y);
 #endif
 
             name = propertyName + "_z";
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.SetUserPropFloat(name, vector3Control.Z);
 #else
             node.SetUserPropFloat(ref name, vector3Control.Z);
@@ -778,7 +778,7 @@ namespace Max2Babylon
         public static void UpdateComboBox(ComboBox comboBox, IINode node, string propertyName)
         {
             var value = comboBox.SelectedItem.ToString();
-#if MAX2015 || MAX2016
+#if MAX2015 || MAX2016 || MAX2017
             node.SetUserPropString(propertyName, value);
 #else
             node.SetUserPropString(ref propertyName, ref value);
