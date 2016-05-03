@@ -63,12 +63,15 @@
     /**
      * This classs implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
      */
+    @className("SolidColorBrush2D")
     export class SolidColorBrush2D extends LockableBase implements IBrush2D {
         constructor(color: Color4, lock: boolean = false) {
             super();
             this._color = color;
             if (lock) {
-                this.lock();
+                {
+                    this.lock();
+                }
             }
         }
 
@@ -96,4 +99,95 @@
         }
         private _color: Color4;
     }
+
+    @className("GradientColorBrush2D")
+    export class GradientColorBrush2D extends LockableBase implements IBrush2D {
+        constructor(color1: Color4, color2: Color4, translation: Vector2 = Vector2.Zero(), rotation: number = 0, scale: number = 1, lock: boolean = false) {
+            super();
+
+            this._color1 = color1;
+            this._color2 = color2;
+            this._translation = translation;
+            this._rotation = rotation;
+            this._scale = scale;
+
+            if (lock) {
+                this.lock();
+            }
+        }
+        public get color1(): Color4 {
+            return this._color1;
+        }
+
+        public set color1(value: Color4) {
+            if (this.isLocked()) {
+                return;
+            }
+
+            this._color1 = value;
+        }
+
+        public get color2(): Color4 {
+            return this._color2;
+        }
+
+        public set color2(value: Color4) {
+            if (this.isLocked()) {
+                return;
+            }
+
+            this._color2 = value;
+        }
+
+        public get translation(): Vector2 {
+            return this._translation;
+        }
+
+        public set translation(value: Vector2) {
+            if (this.isLocked()) {
+                return;
+            }
+
+            this._translation = value;
+        }
+
+        public get rotation(): number {
+            return this._rotation;
+        }
+
+        public set rotation(value: number) {
+            if (this.isLocked()) {
+                return;
+            }
+
+            this._rotation = value;
+        }
+
+        public get scale(): number {
+            return this._scale;
+        }
+
+        public set scale(value: number) {
+            if (this.isLocked()) {
+                return;
+            }
+
+            this._scale = value;
+        }
+
+        public toString(): string {
+            return `C1:${this._color1};C2:${this._color2};T:${this._translation.toString()};R:${this._rotation};S:${this._scale};`;
+        }
+
+        public static BuildKey(color1: Color4, color2: Color4, translation: Vector2, rotation: number, scale: number) {
+            return `C1:${color1};C2:${color2};T:${translation.toString()};R:${rotation};S:${scale};`;
+        }
+
+        private _color1: Color4;
+        private _color2: Color4;
+        private _translation: Vector2;
+        private _rotation: number;
+        private _scale: number;
+    }
+
 }

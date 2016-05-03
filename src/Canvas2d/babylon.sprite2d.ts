@@ -169,7 +169,7 @@
 
             renderCache.texture = this.texture;
 
-            var ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["index"]);
+            var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"]);
             renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ei.attributes, [], ["diffuseSampler"], ei.defines);
 
             return renderCache;
@@ -179,21 +179,23 @@
             return [new Sprite2DInstanceData(Sprite2D.SPRITE2D_MAINPARTID)];
         }
 
-        protected refreshInstanceDataParts(): boolean {
-            if (!super.refreshInstanceDataParts()) {
+        protected refreshInstanceDataParts(part: InstanceDataBase): boolean {
+            if (!super.refreshInstanceDataParts(part)) {
                 return false;
             }
 
-            let d = <Sprite2DInstanceData>this._instanceDataParts[0];
-            let ts = this.texture.getSize();
-            let sl = this.spriteLocation;
-            let ss = this.spriteSize;
-            d.topLeftUV = new Vector2(sl.x / ts.width, sl.y / ts.height);
-            let suv = new Vector2(ss.width / ts.width, ss.height / ts.height);
-            d.sizeUV = suv;
-            d.frame = this.spriteFrame;
-            d.textureSize = new Vector2(ts.width, ts.height);
-            d.invertY = this.invertY ? 1 : 0;
+            if (part.id === Sprite2D.SPRITE2D_MAINPARTID) {
+                let d = <Sprite2DInstanceData>this._instanceDataParts[0];
+                let ts = this.texture.getSize();
+                let sl = this.spriteLocation;
+                let ss = this.spriteSize;
+                d.topLeftUV = new Vector2(sl.x / ts.width, sl.y / ts.height);
+                let suv = new Vector2(ss.width / ts.width, ss.height / ts.height);
+                d.sizeUV = suv;
+                d.frame = this.spriteFrame;
+                d.textureSize = new Vector2(ts.width, ts.height);
+                d.invertY = this.invertY ? 1 : 0;
+            }
             return true;
         }
 

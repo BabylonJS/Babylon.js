@@ -2,18 +2,24 @@
     export class InstanceClassInfo {
         constructor(base: InstanceClassInfo) {
             this._baseInfo = base;
-            this._nextOffset = 0;
+            this._nextOffset = new StringDictionary<number>();
             this._attributes = new Array<InstancePropInfo>();
         }
 
-        mapProperty(propInfo: InstancePropInfo) {
-            propInfo.instanceOffset = this._baseOffset + this._nextOffset;
-            //console.log(`New PropInfo. Category: ${propInfo.category}, Name: ${propInfo.attributeName}, Offset: ${propInfo.instanceOffset}, Size: ${propInfo.size/4}`);
-            this._nextOffset += (propInfo.size / 4);
-            this._attributes.push(propInfo);
+        mapProperty(propInfo: InstancePropInfo, push: boolean) {
+            let curOff = this._nextOffset.getOrAdd(InstanceClassInfo._CurCategories, 0);
+            propInfo.instanceOffset.add(InstanceClassInfo._CurCategories, this._getBaseOffset(InstanceClassInfo._CurCategories) + curOff);
+            //console.log(`[${InstanceClassInfo._CurCategories}] New PropInfo. Category: ${propInfo.category}, Name: ${propInfo.attributeName}, Offset: ${propInfo.instanceOffset.get(InstanceClassInfo._CurCategories)}, Size: ${propInfo.size / 4}`);
+
+            this._nextOffset.set(InstanceClassInfo._CurCategories, curOff + (propInfo.size / 4));
+
+            if (push) {
+                this._attributes.push(propInfo);
+            }
         }
 
         getInstancingAttributeInfos(effect: Effect, categories: string[]): InstancingAttributeInfo[] {
+            let catInline = categories.join(";");
             let res = new Array<InstancingAttributeInfo>();
             let curInfo: InstanceClassInfo = this;
             while (curInfo) {
@@ -24,7 +30,7 @@
                         let iai = new InstancingAttributeInfo();
                         iai.index = index;
                         iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
-                        iai.offset = attrib.instanceOffset * 4; // attrub.instanceOffset is in float, iai.offset must be in bytes
+                        iai.offset = attrib.instanceOffset.get(catInline) * 4; // attrib.instanceOffset is in float, iai.offset must be in bytes
                         res.push(iai);
                     }
                 }
@@ -50,18 +56,19 @@
             return res;
         }
 
-        private get _baseOffset(): number {
+        private _getBaseOffset(categories: string): number {
             var curOffset = 0;
             var curBase = this._baseInfo;
             while (curBase) {
-                curOffset += curBase._nextOffset;
+                curOffset += curBase._nextOffset.getOrAdd(categories, 0);
                 curBase = curBase._baseInfo;
             }
             return curOffset;
         }
 
+        static _CurCategories: string;
         private _baseInfo: InstanceClassInfo;
-        private _nextOffset;
+        private _nextOffset: StringDictionary<number>;
         private _attributes: Array<InstancePropInfo>;
     }
 
@@ -70,8 +77,13 @@
         category: string;
         size: number;
         shaderOffset: number;
-        instanceOffset: number;
+        instanceOffset: StringDictionary<number>;
         dataType: ShaderDataType;
+
+        constructor() {
+            this.instanceOffset = new StringDictionary<number>();
+        }
+
         setSize(val) {
             if (val instanceof Vector2) {
                 this.size = 8;
@@ -197,12 +209,15 @@
             descriptor.set = function (val) {
                 if (!info.size) {
                     info.setSize(val);
-                    node.classContent.mapProperty(info);
+                    node.classContent.mapProperty(info, true);
+                } else if (!info.instanceOffset.contains(InstanceClassInfo._CurCategories)) {
+                    node.classContent.mapProperty(info, false);
                 }
 
                 var obj: InstanceDataBase = this;
                 if (obj._dataBuffer) {
-                    info.writeData(obj._dataBuffer.buffer, obj._dataElement.offset + info.instanceOffset, val);
+                    let offset = obj._dataElement.offset + info.instanceOffset.get(InstanceClassInfo._CurCategories);
+                    info.writeData(obj._dataBuffer.buffer, offset, val);
                 }
             }
 
@@ -286,7 +301,7 @@
                 if (!this._modelRenderCache._partsDataStride) {
                     let ctiArray = new Array<ClassTreeInfo<InstanceClassInfo, InstancePropInfo>>();
                     var dataStrides = new Array<number>();
-                    var usedCat = new Array<string[]>();
+                    var usedCatList = new Array<string[]>();
 
                     for (var dataPart of parts) {
                         let cat = this.getUsedShaderCategories(dataPart);
@@ -295,7 +310,9 @@
                         let curVisible = this.isVisible;
                         this.isVisible = true;
                         // We manually trigger refreshInstanceData for the only sake of evaluating each isntance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
-                        this.refreshInstanceDataParts();
+                        //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
+                        InstanceClassInfo._CurCategories = cat.join(";");
+                        this.refreshInstanceDataParts(dataPart);
                         this.isVisible = curVisible;
 
                         var size = 0;
@@ -309,11 +326,11 @@
                             }
                         });
                         dataStrides.push(size);
-                        usedCat.push(cat);
+                        usedCatList.push(cat);
                         ctiArray.push(cti);
                     }
                     this._modelRenderCache._partsDataStride = dataStrides;
-                    this._modelRenderCache._partsUsedCategories = usedCat;
+                    this._modelRenderCache._partsUsedCategories = usedCatList;
                     this._modelRenderCache._partsClassInfo = ctiArray;
                 }
 
@@ -340,9 +357,12 @@
             }
 
             if (context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformPreviousStep !== this._globalTransformStep)) {
-                // Will return false if the instance should not be rendered (not visible or other any reasons)
-                if (!this.refreshInstanceDataParts()) {
-                    for (let part of this._instanceDataParts) {
+                for (let part of this._instanceDataParts) {
+                    let cat = this.getUsedShaderCategories(part);
+                    InstanceClassInfo._CurCategories = cat.join(";");
+
+                    // Will return false if the instance should not be rendered (not visible or other any reasons)
+                    if (!this.refreshInstanceDataParts(part)) {
                         // Free the data element
                         if (part._dataElement) {
                             part._dataBuffer.freeElement(part._dataElement);
@@ -394,36 +414,34 @@
             return [];
         }
 
-        protected refreshInstanceDataParts(): boolean {
-            for (let part of this._instanceDataParts) {
-                if (!this.isVisible) {
-                    return false;
-                }
-
-                part.isVisible = this.isVisible;
-                let t = this.renderGroup.invGlobalTransform.multiply(this._globalTransform);
-                let size = (<Size>this.renderGroup.viewportSize);
-                let zBias = this.getActualZOffset();
-
-                // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
-                // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
-                // RenderGroup Width and Height are multiplied by zBias because the VertexShader will multiply X and Y by W, which is 1/zBias. Has we divide our coordinate by these Width/Height, we will also divide by the zBias to compensate the operation made by the VertexShader.
-                // So for X: 
-                //  - tx.x = value * 2 / width: is to switch from [0, renderGroup.width] to [0, 2]
-                //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1]. Don't forget it's -(1/zBias) and not -1 because everything need to be scaled by 1/zBias.
-                // Same thing for Y, except the "* -2" instead of "* 2" to switch the origin from top to bottom (has expected by the clip space)
-                let w = size.width * zBias;
-                let h = size.height * zBias;
-                let invZBias = 1 / zBias;
-                let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, t.m[8], (t.m[12] * 2 / w) - (invZBias));
-                let ty = new Vector4(t.m[1] * -2 / h, t.m[5] * -2 / h, t.m[9], ((t.m[13] * 2 / h) - (invZBias)) * -1);
-                part.transformX = tx;
-                part.transformY = ty;
-                part.origin = this.origin;
-
-                // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
-                part.zBias = new Vector2(zBias, invZBias);
+        protected refreshInstanceDataParts(part: InstanceDataBase): boolean {
+            if (!this.isVisible) {
+                return false;
             }
+
+            part.isVisible = this.isVisible;
+            let t = this.renderGroup.invGlobalTransform.multiply(this._globalTransform);
+            let size = (<Size>this.renderGroup.viewportSize);
+            let zBias = this.getActualZOffset();
+
+            // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
+            // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
+            // RenderGroup Width and Height are multiplied by zBias because the VertexShader will multiply X and Y by W, which is 1/zBias. Has we divide our coordinate by these Width/Height, we will also divide by the zBias to compensate the operation made by the VertexShader.
+            // So for X: 
+            //  - tx.x = value * 2 / width: is to switch from [0, renderGroup.width] to [0, 2]
+            //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1]. Don't forget it's -(1/zBias) and not -1 because everything need to be scaled by 1/zBias.
+            // Same thing for Y, except the "* -2" instead of "* 2" to switch the origin from top to bottom (has expected by the clip space)
+            let w = size.width * zBias;
+            let h = size.height * zBias;
+            let invZBias = 1 / zBias;
+            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, t.m[8], (t.m[12] * 2 / w) - (invZBias));
+            let ty = new Vector4(t.m[1] * -2 / h, t.m[5] * -2 / h, t.m[9], ((t.m[13] * 2 / h) - (invZBias)) * -1);
+            part.transformX = tx;
+            part.transformY = ty;
+            part.origin = this.origin;
+
+            // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
+            part.zBias = new Vector2(zBias, invZBias);
 
             return true;
         }

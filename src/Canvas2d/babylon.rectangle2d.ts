@@ -155,14 +155,15 @@
             return [new Rectangle2DInstanceData(Shape2D.SHAPE2D_FILLPARTID)];
         }
 
-        protected refreshInstanceDataParts(): boolean {
-            if (!super.refreshInstanceDataParts()) {
+        protected refreshInstanceDataParts(part: InstanceDataBase): boolean {
+            if (!super.refreshInstanceDataParts(part)) {
                 return false;
             }
-
-            let d = <Rectangle2DInstanceData>this._instanceDataParts[0];
-            let size = this.size;
-            d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
+            if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
+                let d = <Rectangle2DInstanceData>part;
+                let size = this.size;
+                d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
+            }
             return true;
         }
 
