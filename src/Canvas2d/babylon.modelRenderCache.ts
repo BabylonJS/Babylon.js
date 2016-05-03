@@ -4,22 +4,28 @@
     }
 
     export class GroupInstanceInfo {
-        constructor(owner: Group2D, classTreeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>, cache: ModelRenderCacheBase) {
+        constructor(owner: Group2D, cache: ModelRenderCache) {
             this._owner = owner;
-            this._classTreeInfo = classTreeInfo;
             this._modelCache = cache;
+            this._instancesPartsData = new Array<DynamicFloatArray>();
+            this._instancesPartsBuffer = new Array<WebGLBuffer>();
+            this._instancesPartsBufferSize = new Array<number>();
         }
 
         _owner: Group2D;
-        _classTreeInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>;
-        _modelCache: ModelRenderCacheBase;
-        _instancesData: DynamicFloatArray;
+        _modelCache: ModelRenderCache;
+        _instancesPartsData: DynamicFloatArray[];
         _dirtyInstancesData: boolean;
-        _instancesBuffer: WebGLBuffer;
-        _instancesBufferSize: number;
+        _instancesPartsBuffer: WebGLBuffer[];
+        _instancesPartsBufferSize: number[];
     }
 
-    export class ModelRenderCacheBase {
+    export class ModelRenderCache {
+        constructor() {
+            this._nextKey = 1;
+            this._instancesData = new StringDictionary<InstanceDataBase[]>();
+        }
+
         /**
          * Render the model instances
          * @param instanceInfo
@@ -29,18 +35,10 @@
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             return true;
         }
-    }
 
-    export class ModelRenderCache<TInstData> extends ModelRenderCacheBase {
-
-        constructor() {
-            super();
-            this._nextKey = 1;
-            this._instancesData = new StringDictionary<TInstData>();
-        }
-
-        addInstanceData(data: TInstData): string {
+        addInstanceDataParts(data: InstanceDataBase[]): string {
             let key = this._nextKey.toString();
+
             if (!this._instancesData.add(key, data)) {
                 throw Error(`Key: ${key} is already allocated`);
             }
@@ -54,9 +52,23 @@
             this._instancesData.remove(key);
         }
 
-        _instancesData: StringDictionary<TInstData>;
+        protected loadInstancingAttributes(effect: Effect): Array<InstancingAttributeInfo[]> {
+            var iai = new Array<InstancingAttributeInfo[]>();
+
+            for (let i = 0; i < this._partsClassInfo.length; i++) {
+                var ci = this._partsClassInfo[i];
+                var categories = this._partsUsedCategories[i];
+                iai.push(ci.classContent.getInstancingAttributeInfos(effect, categories));
+            }
+
+            return iai;
+        }
+
+        _instancesData: StringDictionary<InstanceDataBase[]>;
 
         private _nextKey: number;
+        _partsDataStride: number[];
+        _partsUsedCategories: Array<string[]>;
+        _partsClassInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>[];
     }
-
 }

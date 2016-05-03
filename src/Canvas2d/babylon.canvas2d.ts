@@ -115,14 +115,14 @@
          * Note that Canvas with a Caching Strategy of
          * @returns If the background is not set, null will be returned, otherwise a valid fill object is returned.
          */
-        public get backgroundFill(): IFill2D {
+        public get backgroundFill(): IBrush2D {
             if (!this._background || !this._background.isVisible) {
                 return null;
             }
             return this._background.fill;
         }
 
-        public set backgroundFill(value: IFill2D) {
+        public set backgroundFill(value: IBrush2D) {
             this.checkBackgroundAvailability();
 
             if (value === this._background.fill) {
@@ -137,14 +137,14 @@
          * Property that defines the border object used to draw the background of the Canvas.
          * @returns If the background is not set, null will be returned, otherwise a valid border object is returned.
          */
-        public get border(): IBorder2D {
+        public get border(): IBrush2D {
             if (!this._background || !this._background.isVisible) {
                 return null;
             }
             return this._background.border;
         }
 
-        public set border(value: IBorder2D) {
+        public set border(value: IBrush2D) {
             this.checkBackgroundAvailability();
 
             if (value === this._background.border) {
@@ -261,44 +261,23 @@
         private static _groupTextureCacheSize = 1024;
 
         /**
-         * Get a Solid Color Fill instance matching the given color.
+         * Get a Solid Color Brush instance matching the given color.
          * @param color The color to retrieve
-         * @return A shared instance of the SolidColorFill2D class that use the given color
+         * @return A shared instance of the SolidColorBrush2D class that use the given color
          */
-        public static GetSolidColorFill(color: Color4): IFill2D {
-            return Canvas2D._solidColorFills.getOrAddWithFactory(color.toHexString(), () => new SolidColorFill2D(color.clone(), true));
+        public static GetSolidColorFill(color: Color4): IBrush2D {
+            return Canvas2D._solidColorBrushes.getOrAddWithFactory(color.toHexString(), () => new SolidColorBrush2D(color.clone(), true));
         }
 
         /**
-         * Get a Solid Color Border instance matching the given color.
+         * Get a Solid Color Brush instance matching the given color expressed as a CSS formatted hexadecimal value.
          * @param color The color to retrieve
-         * @return A shared instance of the SolidColorBorder2D class that use the given color
+         * @return A shared instance of the SolidColorBrush2D class that uses the given color
          */
-        public static GetSolidColorBorder(color: Color4): IBorder2D {
-            return Canvas2D._solidColorBorders.getOrAddWithFactory(color.toHexString(), () => new SolidColorBorder2D(color.clone(), true));
+        public static GetSolidColorBrushFromHex(hexValue: string): IBrush2D {
+            return Canvas2D._solidColorBrushes.getOrAddWithFactory(hexValue, () => new SolidColorBrush2D(Color4.FromHexString(hexValue), true));
         }
 
-        /**
-         * Get a Solid Color Fill instance matching the given color expressed as a CSS formatted hexadecimal value.
-         * @param color The color to retrieve
-         * @return A shared instance of the SolidColorFill2D class that use the given color
-         */
-        public static GetSolidColorFillFromHex(hexValue: string): IFill2D {
-            return Canvas2D._solidColorFills.getOrAddWithFactory(hexValue, () => new SolidColorFill2D(Color4.FromHexString(hexValue), true));
-        }
-
-        /**
-         * Get a Solid Color Border instance matching the given color expressed as a CSS formatted hexadecimal value.
-         * @param color The color to retrieve
-         * @return A shared instance of the SolidColorBorder2D class that use the given color
-         */
-        public static GetSolidColorBorderFromHex(hexValue: string): IBorder2D {
-            return Canvas2D._solidColorBorders.getOrAddWithFactory(hexValue, () => new SolidColorBorder2D(Color4.FromHexString(hexValue), true));
-        }
-
-        private static _solidColorFills: StringDictionary<IFill2D> = new StringDictionary<IFill2D>();
-        private static _solidColorBorders: StringDictionary<IBorder2D> = new StringDictionary<IBorder2D>();
+        private static _solidColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
     }
-
-
 }

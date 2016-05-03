@@ -1,10 +1,10 @@
 ﻿module BABYLON {
-    export class Sprite2DRenderCache extends ModelRenderCache<Sprite2DInstanceData> {
+    export class Sprite2DRenderCache extends ModelRenderCache {
         vb: WebGLBuffer;
         ib: WebGLBuffer;
         borderVB: WebGLBuffer;
         borderIB: WebGLBuffer;
-        instancingAttributes: InstancingAttributeInfo[];
+        instancingAttributes: Array<InstancingAttributeInfo[]>;
 
         texture: Texture;
         effect: Effect;
@@ -17,7 +17,7 @@
 
             // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
             if (!this.instancingAttributes) {
-                this.instancingAttributes = instanceInfo._classTreeInfo.classContent.getInstancingAttributeInfos(this.effect);
+                this.instancingAttributes = this.loadInstancingAttributes(this.effect);
             }
             var engine = instanceInfo._owner.owner.engine;
 
@@ -25,13 +25,13 @@
             this.effect.setTexture("diffuseSampler", this.texture);
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
 
-            engine.updateAndBindInstancesBuffer(instanceInfo._instancesBuffer, null, this.instancingAttributes);
+            engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes[0]);
             var cur = engine.getAlphaMode();
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.draw(true, 0, 6, instanceInfo._instancesData.usedElementCount);
+            engine.draw(true, 0, 6, instanceInfo._instancesPartsData[0].usedElementCount);
             engine.setAlphaMode(cur);
 
-            engine.unBindInstancesBuffer(instanceInfo._instancesBuffer, this.instancingAttributes);
+            engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes[0]);
 
             return true;
         }
@@ -65,7 +65,8 @@
     }
 
     @className("Sprite2D")
-    export class Sprite2D extends Shape2D<Sprite2DInstanceData> {
+    export class Sprite2D extends RenderablePrim2D {
+        static SPRITE2D_MAINPARTID = 1;
 
         public static textureProperty: Prim2DPropInfo;
         public static spriteSizeProperty: Prim2DPropInfo;
@@ -73,7 +74,7 @@
         public static spriteFrameProperty: Prim2DPropInfo;
         public static invertYProperty: Prim2DPropInfo;
 
-        @modelLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 1, pi => Sprite2D.textureProperty = pi)
+        @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Sprite2D.textureProperty = pi)
         public get texture(): Texture {
             return this._texture;
         }
@@ -82,7 +83,7 @@
             this._texture = value;
         }
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 2, pi => Sprite2D.spriteSizeProperty = pi, false, true)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Sprite2D.spriteSizeProperty = pi, false, true)
         public get spriteSize(): Size {
             return this._size;
         }
@@ -91,7 +92,7 @@
             this._size = value;
         }
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 3, pi => Sprite2D.spriteLocationProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Sprite2D.spriteLocationProperty = pi)
         public get spriteLocation(): Vector2 {
             return this._location;
         }
@@ -100,7 +101,7 @@
             this._location = value;
         }
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 4, pi => Sprite2D.spriteFrameProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Sprite2D.spriteFrameProperty = pi)
         public get spriteFrame(): number {
             return this._spriteFrame;
         }
@@ -109,7 +110,7 @@
             this._spriteFrame = value;
         }
 
-        @instanceLevelProperty(Shape2D.SHAPE2D_PROPCOUNT + 5, pi => Sprite2D.invertYProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Sprite2D.invertYProperty = pi)
         public get invertY(): boolean {
             return this._invertY;
         }
@@ -141,8 +142,13 @@
             return sprite;
         }
 
-        protected createModelRenderCache(): ModelRenderCache<Sprite2DInstanceData> {
+        protected createModelRenderCache(): ModelRenderCache {
             let renderCache = new Sprite2DRenderCache();
+            return renderCache;
+        }
+
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache) {
+            let renderCache = <Sprite2DRenderCache>modelRenderCache;
             let engine = this.owner.engine;
 
             let vb = new Float32Array(4);
@@ -162,21 +168,23 @@
             renderCache.ib = engine.createIndexBuffer(ib);
 
             renderCache.texture = this.texture;
-            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ["index", "zBias", "transformX", "transformY", "topLeftUV", "sizeUV", "origin", "textureSize", "frame", "invertY"], [], ["diffuseSampler"], "");
+
+            var ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["index"]);
+            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ei.attributes, [], ["diffuseSampler"], ei.defines);
 
             return renderCache;
         }
 
-        protected createInstanceData(): Sprite2DInstanceData {
-            return new Sprite2DInstanceData();
+        protected createInstanceDataParts(): InstanceDataBase[] {
+            return [new Sprite2DInstanceData(Sprite2D.SPRITE2D_MAINPARTID)];
         }
 
-        protected refreshInstanceData(): boolean {
-            if (!super.refreshInstanceData()) {
+        protected refreshInstanceDataParts(): boolean {
+            if (!super.refreshInstanceDataParts()) {
                 return false;
             }
 
-            let d = this._instanceData;
+            let d = <Sprite2DInstanceData>this._instanceDataParts[0];
             let ts = this.texture.getSize();
             let sl = this.spriteLocation;
             let ss = this.spriteSize;

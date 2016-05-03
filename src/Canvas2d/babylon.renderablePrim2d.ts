@@ -7,22 +7,26 @@
         }
 
         mapProperty(propInfo: InstancePropInfo) {
-            propInfo.instanceOffset = (this._baseInfo ? this._baseInfo._nextOffset : 0) + this._nextOffset;
+            propInfo.instanceOffset = this._baseOffset + this._nextOffset;
+            //console.log(`New PropInfo. Category: ${propInfo.category}, Name: ${propInfo.attributeName}, Offset: ${propInfo.instanceOffset}, Size: ${propInfo.size/4}`);
             this._nextOffset += (propInfo.size / 4);
             this._attributes.push(propInfo);
         }
 
-        getInstancingAttributeInfos(effect: Effect): InstancingAttributeInfo[] {
+        getInstancingAttributeInfos(effect: Effect, categories: string[]): InstancingAttributeInfo[] {
             let res = new Array<InstancingAttributeInfo>();
             let curInfo: InstanceClassInfo = this;
             while (curInfo) {
                 for (let attrib of curInfo._attributes) {
-                    let index = effect.getAttributeLocationByName(attrib.attributeName);
-                    let iai = new InstancingAttributeInfo();
-                    iai.index = index;
-                    iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
-                    iai.offset = attrib.instanceOffset * 4; // attrub.instanceOffset is in float, iai.offset must be in bytes
-                    res.push(iai);
+                    // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
+                    if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
+                        let index = effect.getAttributeLocationByName(attrib.attributeName);
+                        let iai = new InstancingAttributeInfo();
+                        iai.index = index;
+                        iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
+                        iai.offset = attrib.instanceOffset * 4; // attrub.instanceOffset is in float, iai.offset must be in bytes
+                        res.push(iai);
+                    }
                 }
 
                 curInfo = curInfo._baseInfo;
@@ -30,7 +34,31 @@
             return res;
         }
 
-        public instanceDataStride;
+        getShaderAttributes(categories: string[]): string[] {
+            let res = new Array<string>();
+            let curInfo: InstanceClassInfo = this;
+            while (curInfo) {
+                for (let attrib of curInfo._attributes) {
+                    // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
+                    if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
+                        res.push(attrib.attributeName);
+                    }
+                }
+
+                curInfo = curInfo._baseInfo;
+            }
+            return res;
+        }
+
+        private get _baseOffset(): number {
+            var curOffset = 0;
+            var curBase = this._baseInfo;
+            while (curBase) {
+                curOffset += curBase._nextOffset;
+                curBase = curBase._baseInfo;
+            }
+            return curOffset;
+        }
 
         private _baseInfo: InstanceClassInfo;
         private _nextOffset;
@@ -39,6 +67,7 @@
 
     export class InstancePropInfo {
         attributeName: string;
+        category: string;
         size: number;
         shaderOffset: number;
         instanceOffset: number;
@@ -77,6 +106,7 @@
                 this.dataType = ShaderDataType.Color4;
                 return;
             }
+            return;
         }
 
         writeData(array: Float32Array, offset: number, val) {
@@ -140,22 +170,25 @@
         }
     }
 
-    export function instanceData<T>(name?: string): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
+    export function instanceData<T>(category?: string, shaderAttributeName?: string): (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => void {
         return (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
 
             let dic = ClassTreeInfo.getOrRegister<InstanceClassInfo, InstancePropInfo>(target, (base) => new InstanceClassInfo(base));
             var node = dic.getLevelOf(target);
-            name = name || <string>propName;
+            let instanceDataName = <string>propName;
+            shaderAttributeName = shaderAttributeName || instanceDataName;
 
-            let info = node.levelContent.get(name);
+
+            let info = node.levelContent.get(instanceDataName);
             if (info) {
-                throw new Error(`The ID ${name} is already taken by another instance data`);
+                throw new Error(`The ID ${instanceDataName} is already taken by another instance data`);
             }
 
             info = new InstancePropInfo();
-            info.attributeName = name;
+            info.attributeName = shaderAttributeName;
+            info.category = category;
 
-            node.levelContent.add(name, info);
+            node.levelContent.add(instanceDataName, info);
 
             descriptor.get = function () {
                 return null;
@@ -177,6 +210,11 @@
     }
 
     export class InstanceDataBase {
+        constructor(partId: number) {
+            this.id = partId;
+        }
+
+        id: number;
         isVisible: boolean;
 
         @instanceData()
@@ -212,10 +250,10 @@
     }
 
     @className("RenderablePrim2D")
-    export class RenderablePrim2D<TInstData extends InstanceDataBase> extends Prim2DBase {
+    export class RenderablePrim2D extends Prim2DBase {
         static RENDERABLEPRIM2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
 
-        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean, fill: IFill2D, border: IBorder2D) {
+        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D) {
             this.setupPrim2DBase(owner, parent, id, position);
             this._isTransparent = false;
         }
@@ -230,9 +268,11 @@
             }
 
             // Need to create the model?
+            let setupModelRenderCache = false;
             if (!this._modelRenderCache || this._modelDirty) {
                 this._modelRenderCache = SmartPropertyPrim.GetOrAddModelCache(this.modelKey, (key: string) => this.createModelRenderCache());
                 this._modelDirty = false;
+                setupModelRenderCache = true;
             }
 
             // Need to create the instance?
@@ -240,48 +280,74 @@
             let newInstance = false;
             if (!this._modelRenderInstanceID) {
                 newInstance = true;
-                let id = this.createInstanceData();
-                this._instanceData = id;
+                let parts = this.createInstanceDataParts();
+                this._instanceDataParts = parts;
 
-                let cti = id.getClassTreeInfo();
-                if (!cti.classContent.instanceDataStride) {
-                    // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
-                    let curVisible = this.isVisible;
-                    this.isVisible = true;
-                    // We manually trigger refreshInstanceData for the only sake of evaluating each isntance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
-                    this.refreshInstanceData();
-                    this.isVisible = curVisible;
+                if (!this._modelRenderCache._partsDataStride) {
+                    let ctiArray = new Array<ClassTreeInfo<InstanceClassInfo, InstancePropInfo>>();
+                    var dataStrides = new Array<number>();
+                    var usedCat = new Array<string[]>();
 
-                    var size = 0;
-                    cti.fullContent.forEach((k, v) => {
-                        if (!v.size) {
-                            console.log(`ERROR: Couldn't detect the size of the Property ${v.attributeName} from type ${Tools.getClassName(cti.type)}. Property is ignored.`);
-                        } else {
-                            size += v.size;
-                        }
-                    });
-                    cti.classContent.instanceDataStride = size;
+                    for (var dataPart of parts) {
+                        let cat = this.getUsedShaderCategories(dataPart);
+                        let cti = dataPart.getClassTreeInfo();
+                        // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
+                        let curVisible = this.isVisible;
+                        this.isVisible = true;
+                        // We manually trigger refreshInstanceData for the only sake of evaluating each isntance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
+                        this.refreshInstanceDataParts();
+                        this.isVisible = curVisible;
+
+                        var size = 0;
+                        cti.fullContent.forEach((k, v) => {
+                            if (!v.category || cat.indexOf(v.category) !== -1) {
+                                if (!v.size) {
+                                    console.log(`ERROR: Couldn't detect the size of the Property ${v.attributeName} from type ${Tools.getClassName(cti.type)}. Property is ignored.`);
+                                } else {
+                                    size += v.size;
+                                }
+                            }
+                        });
+                        dataStrides.push(size);
+                        usedCat.push(cat);
+                        ctiArray.push(cti);
+                    }
+                    this._modelRenderCache._partsDataStride = dataStrides;
+                    this._modelRenderCache._partsUsedCategories = usedCat;
+                    this._modelRenderCache._partsClassInfo = ctiArray;
                 }
 
-                gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, k => new GroupInstanceInfo(this.renderGroup, cti, this._modelRenderCache));
-                if (!gii._instancesData) {
-                    // instanceDataStride's unit is byte but DynamicFloatArray is float32, so div by four to get the correct number
-                    gii._instancesData = new DynamicFloatArray(cti.classContent.instanceDataStride / 4, 50);
+                gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, k => new GroupInstanceInfo(this.renderGroup, this._modelRenderCache));
+
+                if (gii._instancesPartsData.length===0) {
+                    for (let stride of this._modelRenderCache._partsDataStride) {
+                        // instanceDataStride's unit is byte but DynamicFloatArray is float32, so div by four to get the correct number
+                        gii._instancesPartsData.push(new DynamicFloatArray(stride / 4, 50));
+                    }
                 }
 
-                id._dataBuffer = gii._instancesData;
-                id._dataElement = id._dataBuffer.allocElement();
+                for (let i = 0; i < parts.length; i++) {
+                    let part = parts[i];
+                    part._dataBuffer = gii._instancesPartsData[i];
+                    part._dataElement = part._dataBuffer.allocElement();
+                }
 
-                this._modelRenderInstanceID = this._modelRenderCache.addInstanceData(this._instanceData);
+                this._modelRenderInstanceID = this._modelRenderCache.addInstanceDataParts(this._instanceDataParts);
+            }
+
+            if (setupModelRenderCache) {
+                this.setupModelRenderCache(this._modelRenderCache);
             }
 
             if (context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformPreviousStep !== this._globalTransformStep)) {
                 // Will return false if the instance should not be rendered (not visible or other any reasons)
-                if (!this.refreshInstanceData()) {
-                    // Free the data element
-                    if (this._instanceData._dataElement) {
-                        this._instanceData._dataBuffer.freeElement(this._instanceData._dataElement);
-                        this._instanceData._dataElement = null;
+                if (!this.refreshInstanceDataParts()) {
+                    for (let part of this._instanceDataParts) {
+                        // Free the data element
+                        if (part._dataElement) {
+                            part._dataBuffer.freeElement(part._dataElement);
+                            part._dataElement = null;
+                        }
                     }
                 }
                 this._instanceDirtyFlags = 0;
@@ -294,54 +360,78 @@
             }
         }
 
+        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): {attributes: string[], defines: string} {
+            var dataPart = Tools.first(this._instanceDataParts, i => i.id === dataPartId);
+            if (!dataPart) {
+                return null;
+            }
+
+            var cti = dataPart.getClassTreeInfo();
+            var categories = this.getUsedShaderCategories(dataPart);
+            var attributes = vertexBufferAttributes.concat(cti.classContent.getShaderAttributes(categories));
+            var defines = "";
+            categories.forEach(c => { defines += `#define ${c}\n`});
+
+            return { attributes: attributes, defines: defines };
+        }
+
         public get isTransparent(): boolean {
             return this._isTransparent;
         }
 
-        protected createModelRenderCache(): ModelRenderCache<TInstData> {
+        protected createModelRenderCache(): ModelRenderCache {
             return null;
         }
 
-        protected createInstanceData(): TInstData {
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache) {
+        }
+
+        protected createInstanceDataParts(): InstanceDataBase[] {
             return null;
         }
 
-        protected refreshInstanceData(): boolean {
-            var d = this._instanceData;
-            if (!this.isVisible) {
-                return false;
+        protected getUsedShaderCategories(dataPart: InstanceDataBase): string[] {
+            return [];
+        }
+
+        protected refreshInstanceDataParts(): boolean {
+            for (let part of this._instanceDataParts) {
+                if (!this.isVisible) {
+                    return false;
+                }
+
+                part.isVisible = this.isVisible;
+                let t = this.renderGroup.invGlobalTransform.multiply(this._globalTransform);
+                let size = (<Size>this.renderGroup.viewportSize);
+                let zBias = this.getActualZOffset();
+
+                // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
+                // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
+                // RenderGroup Width and Height are multiplied by zBias because the VertexShader will multiply X and Y by W, which is 1/zBias. Has we divide our coordinate by these Width/Height, we will also divide by the zBias to compensate the operation made by the VertexShader.
+                // So for X: 
+                //  - tx.x = value * 2 / width: is to switch from [0, renderGroup.width] to [0, 2]
+                //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1]. Don't forget it's -(1/zBias) and not -1 because everything need to be scaled by 1/zBias.
+                // Same thing for Y, except the "* -2" instead of "* 2" to switch the origin from top to bottom (has expected by the clip space)
+                let w = size.width * zBias;
+                let h = size.height * zBias;
+                let invZBias = 1 / zBias;
+                let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, t.m[8], (t.m[12] * 2 / w) - (invZBias));
+                let ty = new Vector4(t.m[1] * -2 / h, t.m[5] * -2 / h, t.m[9], ((t.m[13] * 2 / h) - (invZBias)) * -1);
+                part.transformX = tx;
+                part.transformY = ty;
+                part.origin = this.origin;
+
+                // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
+                part.zBias = new Vector2(zBias, invZBias);
             }
 
-            d.isVisible = this.isVisible;
-            let t = this.renderGroup.invGlobalTransform.multiply(this._globalTransform);
-            let size = (<Size>this.renderGroup.viewportSize);
-            let zBias = this.getActualZOffset();
-
-            // Have to convert the coordinates to clip space which is ranged between [-1;1] on X and Y axis, with 0,0 being the left/bottom corner
-            // Current coordinates are expressed in renderGroup coordinates ([0, renderGroup.actualSize.width|height]) with 0,0 being at the left/top corner
-            // RenderGroup Width and Height are multiplied by zBias because the VertexShader will multiply X and Y by W, which is 1/zBias. Has we divide our coordinate by these Width/Height, we will also divide by the zBias to compensate the operation made by the VertexShader.
-            // So for X: 
-            //  - tx.x = value * 2 / width: is to switch from [0, renderGroup.width] to [0, 2]
-            //  - tx.w = (value * 2 / width) - 1: w stores the translation in renderGroup coordinates so (value * 2 / width) to switch to a clip space translation value. - 1 is to offset the overall [0;2] to [-1;1]. Don't forget it's -(1/zBias) and not -1 because everything need to be scaled by 1/zBias.
-            // Same thing for Y, except the "* -2" instead of "* 2" to switch the origin from top to bottom (has expected by the clip space)
-            let w = size.width * zBias;
-            let h = size.height * zBias;
-            let invZBias = 1 / zBias;
-            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, t.m[8], (t.m[12] * 2 / w) - (invZBias));
-            let ty = new Vector4(t.m[1] * -2 / h, t.m[5] * -2 / h, t.m[9], ((t.m[13] * 2 / h) - (invZBias)) * -1);
-            d.transformX = tx;
-            d.transformY = ty;
-            d.origin = this.origin;
-
-            // Stores zBias and it's inverse value because that's needed to compute the clip space W coordinate (which is 1/Z, so 1/zBias)
-            d.zBias = new Vector2(zBias, invZBias);
             return true;
         }
 
-        private _modelRenderCache: ModelRenderCache<TInstData>;
+        private _modelRenderCache: ModelRenderCache;
         private _modelRenderInstanceID: string;
 
-        protected _instanceData: TInstData;
+        protected _instanceDataParts: InstanceDataBase[];
         protected _isTransparent: boolean;
     }
 
