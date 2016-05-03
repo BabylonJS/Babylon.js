@@ -921,6 +921,14 @@
             return name;
         }
 
+        public static first<T>(array: Array<T>, predicate: (item) => boolean) {
+            for (let el of array) {
+                if (predicate(el)) {
+                    return el;
+                }
+            }
+        }
+
     }
 
     /**

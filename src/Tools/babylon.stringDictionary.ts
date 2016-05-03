@@ -47,9 +47,9 @@
          * @return the value corresponding to the key
          */
         public getOrAdd(key: string, val: T): T {
-            var val = this.get(key);
-            if (val !== undefined) {
-                return val;
+            var curVal = this.get(key);
+            if (curVal !== undefined) {
+                return curVal;
             }
 
             this.add(key, val);
@@ -77,6 +77,15 @@
             }
             this._data[key] = value;
             ++this._count;
+            return true;
+        }
+
+
+        public set(key: string, value: T): boolean {
+            if (this._data[key] === undefined) {
+                return false;
+            }
+            this._data[key] = value;
             return true;
         }
 

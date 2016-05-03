@@ -265,7 +265,7 @@
          * @param color The color to retrieve
          * @return A shared instance of the SolidColorBrush2D class that use the given color
          */
-        public static GetSolidColorFill(color: Color4): IBrush2D {
+        public static GetSolidColorBrush(color: Color4): IBrush2D {
             return Canvas2D._solidColorBrushes.getOrAddWithFactory(color.toHexString(), () => new SolidColorBrush2D(color.clone(), true));
         }
 
@@ -278,6 +278,11 @@
             return Canvas2D._solidColorBrushes.getOrAddWithFactory(hexValue, () => new SolidColorBrush2D(Color4.FromHexString(hexValue), true));
         }
 
+        public static GetGradientColorBrush(color1: Color4, color2: Color4, translation: Vector2 = Vector2.Zero(), rotation: number = 0, scale: number = 1): IBrush2D {
+            return Canvas2D._gradientColorBrushes.getOrAddWithFactory(GradientColorBrush2D.BuildKey(color1, color2, translation, rotation, scale), () => new GradientColorBrush2D(color1, color2, translation, rotation, scale, true));
+        }
+
         private static _solidColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
+        private static _gradientColorBrushes: StringDictionary<IBrush2D> = new StringDictionary<IBrush2D>();
     }
 }
