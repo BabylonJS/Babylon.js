@@ -10,10 +10,12 @@
             this._instancesPartsData = new Array<DynamicFloatArray>();
             this._instancesPartsBuffer = new Array<WebGLBuffer>();
             this._instancesPartsBufferSize = new Array<number>();
+            this._partIndexFromId = new StringDictionary<number>();
         }
 
         _owner: Group2D;
         _modelCache: ModelRenderCache;
+        _partIndexFromId: StringDictionary<number>;
         _instancesPartsData: DynamicFloatArray[];
         _dirtyInstancesData: boolean;
         _instancesPartsBuffer: WebGLBuffer[];
@@ -52,21 +54,27 @@
             this._instancesData.remove(key);
         }
 
-        protected loadInstancingAttributes(effect: Effect): Array<InstancingAttributeInfo[]> {
-            var iai = new Array<InstancingAttributeInfo[]>();
-
-            for (let i = 0; i < this._partsClassInfo.length; i++) {
-                var ci = this._partsClassInfo[i];
-                var categories = this._partsUsedCategories[i];
-                iai.push(ci.classContent.getInstancingAttributeInfos(effect, categories));
+        protected loadInstancingAttributes(partId: number, effect: Effect): InstancingAttributeInfo[] {
+            for (var i = 0; i < this._partIdList.length; i++) {
+                if (this._partIdList[i] === partId) {
+                    break;
+                }
+            }
+            if (i === this._partIdList.length) {
+                return null;
             }
 
-            return iai;
+            var ci = this._partsClassInfo[i];
+            var categories = this._partsUsedCategories[i];
+            let res = ci.classContent.getInstancingAttributeInfos(effect, categories);
+
+            return res;
         }
 
         _instancesData: StringDictionary<InstanceDataBase[]>;
 
         private _nextKey: number;
+        _partIdList: number[];
         _partsDataStride: number[];
         _partsUsedCategories: Array<string[]>;
         _partsClassInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>[];

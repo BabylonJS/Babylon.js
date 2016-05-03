@@ -4,6 +4,7 @@
     export class Shape2D extends RenderablePrim2D {
         static SHAPE2D_BORDERPARTID            = 1;
         static SHAPE2D_FILLPARTID              = 2;
+        static SHAPE2D_CATEGORY_BORDER         = "Border";
         static SHAPE2D_CATEGORY_BORDERSOLID    = "BorderSolid";
         static SHAPE2D_CATEGORY_BORDERGRADIENT = "BorderGradient";
         static SHAPE2D_CATEGORY_FILLSOLID      = "FillSolid";
@@ -12,6 +13,7 @@
         static SHAPE2D_PROPCOUNT: number = RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5;
         public static borderProperty: Prim2DPropInfo;
         public static fillProperty: Prim2DPropInfo;
+        public static borderThicknessProperty: Prim2DPropInfo;
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, pi => Shape2D.borderProperty = pi, true)
         public get border(): IBrush2D {
@@ -31,6 +33,22 @@
             this._fill = value;
         }
 
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Shape2D.borderThicknessProperty = pi)
+        public get borderThickness(): number {
+            return this._borderThickness;
+        }
+
+        public set borderThickness(value: number) {
+            this._borderThickness = value;
+        }
+
+        setupShape2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D, borderThickness: number = 1.0) {
+            this.setupRenderablePrim2D(owner, parent, id, position, isVisible);
+            this.border = border;
+            this.fill = fill;
+            this.borderThickness = borderThickness;
+        }
+
         protected getUsedShaderCategories(dataPart: InstanceDataBase): string[] {
             var cat = super.getUsedShaderCategories(dataPart);
 
@@ -45,8 +63,10 @@
                 }
             }
 
-            // Fill Part
+            // Border Part
             if (dataPart.id === Shape2D.SHAPE2D_BORDERPARTID) {
+                cat.push(Shape2D.SHAPE2D_CATEGORY_BORDER);
+
                 let border = this.border;
                 if (border instanceof SolidColorBrush2D) {
                     cat.push(Shape2D.SHAPE2D_CATEGORY_BORDERSOLID);
@@ -68,20 +88,11 @@
             if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Shape2DInstanceData>part;
 
-                if (this.border) {
-                    let border = this.border;
-                    if (border instanceof SolidColorBrush2D) {
-                        d.borderSolidColor = border.color;
-                    }
-                }
-
                 if (this.fill) {
                     let fill = this.fill;
                     if (fill instanceof SolidColorBrush2D) {
                         d.fillSolidColor = fill.color;
-                    }
-
-                    else if (fill instanceof GradientColorBrush2D) {
+                    } else if (fill instanceof GradientColorBrush2D) {
                         d.fillGradientColor1 = fill.color1;
                         d.fillGradientColor2 = fill.color2;
                         var t = Matrix.Compose(new Vector3(fill.scale, fill.scale, fill.scale), Quaternion.RotationAxis(new Vector3(0, 0, 1), fill.rotation), new Vector3(fill.translation.x, fill.translation.y, 0));
@@ -91,18 +102,39 @@
                     }
                 }
             }
+
+            else if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
+                let d = <Shape2DInstanceData>part;
+
+                if (this.border) {
+                    d.borderThickness = this.borderThickness;
+
+                    let border = this.border;
+                    if (border instanceof SolidColorBrush2D) {
+                        d.borderSolidColor = border.color;
+                    } else if (border instanceof GradientColorBrush2D) {
+                        d.borderGradientColor1 = border.color1;
+                        d.borderGradientColor2 = border.color2;
+                        var t = Matrix.Compose(new Vector3(border.scale, border.scale, border.scale), Quaternion.RotationAxis(new Vector3(0, 0, 1), border.rotation), new Vector3(border.translation.x, border.translation.y, 0));
+
+                        let ty = new Vector4(t.m[1], t.m[5], t.m[9], t.m[13]);
+                        d.borderGradientTY = ty;
+                    }
+                }
+
+
+            }
+
             return true;
         }
 
         private _border: IBrush2D;
+        private _borderThickness: number;
         private _fill: IBrush2D;
     }
 
     export class Shape2DInstanceData extends InstanceDataBase {
-        @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERSOLID)
-        get borderSolidColor(): Color4 {
-            return null;
-        }
+        // FILL ATTRIBUTES
 
         @instanceData(Shape2D.SHAPE2D_CATEGORY_FILLSOLID)
         get fillSolidColor(): Color4 {
@@ -124,7 +156,31 @@
             return null;
         }
 
+        // BORDER ATTRIBUTES
+
+        @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDER)
+        get borderThickness(): number {
+            return null;
+        }
+
+        @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERSOLID)
+        get borderSolidColor(): Color4 {
+            return null;
+        }
+
+        @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
+        get borderGradientColor1(): Color4 {
+            return null;
+        }
+
+        @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
+        get borderGradientColor2(): Color4 {
+            return null;
+        }
+
+        @instanceData(Shape2D.SHAPE2D_CATEGORY_BORDERGRADIENT)
+        get borderGradientTY(): Vector4 {
+            return null;
+        }
     }
-
-
 }

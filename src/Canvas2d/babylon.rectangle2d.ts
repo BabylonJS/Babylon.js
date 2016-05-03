@@ -2,33 +2,59 @@
     export class Rectangle2DRenderCache extends ModelRenderCache {
         fillVB: WebGLBuffer;
         fillIB: WebGLBuffer;
+        fillIndicesCount: number;
+        instancingFillAttributes: InstancingAttributeInfo[];
+        effectFill: Effect;
+
         borderVB: WebGLBuffer;
         borderIB: WebGLBuffer;
-        instancingAttributes: Array<InstancingAttributeInfo[]>;
+        borderIndicesCount: number;
+        instancingBorderAttributes: InstancingAttributeInfo[];
+        effectBorder: Effect;
 
-        effect: Effect;
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             // Do nothing if the shader is still loading/preparing
-            if (!this.effect.isReady()) {
+            if ((this.effectFill && !this.effectFill.isReady()) || (this.effectBorder && !this.effectBorder.isReady())) {
                 return false;
             }
 
-            // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
-            if (!this.instancingAttributes) {
-                this.instancingAttributes = this.loadInstancingAttributes(this.effect);
-            }
             var engine = instanceInfo._owner.owner.engine;
 
-            engine.enableEffect(this.effect);
-            engine.bindBuffers(this.fillVB, this.fillIB, [1], 4, this.effect);
+            if (this.effectFill) {
+                let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
 
-            engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes[0]);
+                // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+                if (!this.instancingFillAttributes) {
+                    this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
+                }
 
-            engine.draw(true, 0, Rectangle2D.roundSubdivisions * 4 * 3, instanceInfo._instancesPartsData[0].usedElementCount);
+                engine.enableEffect(this.effectFill);
+                engine.bindBuffers(this.fillVB, this.fillIB, [1], 4, this.effectFill);
 
-            engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes[0]);
+                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
 
+                engine.draw(true, 0, this.fillIndicesCount, instanceInfo._instancesPartsData[partIndex].usedElementCount);
+
+                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingFillAttributes);
+            }
+
+            if (this.effectBorder) {
+                let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_BORDERPARTID.toString());
+
+                // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+                if (!this.instancingBorderAttributes) {
+                    this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, this.effectBorder);
+                }
+                engine.enableEffect(this.effectBorder);
+                engine.bindBuffers(this.borderVB, this.borderIB, [1], 4, this.effectBorder);
+
+                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
+
+                engine.draw(true, 0, this.borderIndicesCount, instanceInfo._instancesPartsData[partIndex].usedElementCount);
+
+                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingBorderAttributes);
+            }
             return true;
         }
     }
@@ -84,8 +110,8 @@
             this._levelBoundingInfo.extent = this.size.clone();
         }
 
-        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size: Size, roundRadius = 0, fill?: IBrush2D, border?: IBrush2D) {
-            this.setupRenderablePrim2D(owner, parent, id, position, true, fill, border);
+        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size: Size, roundRadius = 0, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
+            this.setupShape2D(owner, parent, id, position, true, fill, border, borderThickness);
             this.size = size;
             this.notRounded = !roundRadius;
             this.roundRadius = roundRadius;
@@ -96,7 +122,7 @@
 
             let rect = new Rectangle2D();
             rect.setupRectangle2D(parent.owner, parent, id, new Vector2(x, y), new Size(width, height), null);
-            rect.fill = fill || Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
+            rect.fill = fill;
             rect.border = border;
             return rect;
         }
@@ -122,9 +148,9 @@
             let renderCache = <Rectangle2DRenderCache>modelRenderCache;
             let engine = this.owner.engine;
 
-            // Need to create vb/ib for the fill part?
+            // Need to create webgl resources for fill part?
             if (this.fill) {
-                var vbSize = ((this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4) + 1;
+                let vbSize = ((this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4) + 1;
                 let vb = new Float32Array(vbSize);
                 for (let i = 0; i < vbSize; i++) {
                     vb[i] = i;
@@ -141,10 +167,42 @@
                 ib[triCount * 3 - 1] = 1;
 
                 renderCache.fillIB = engine.createIndexBuffer(ib);
+                renderCache.fillIndicesCount = triCount * 3;
 
+                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["index"]);
+                renderCache.effectFill = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, [], [], ei.defines);
+            }
 
-                var ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["index"]);
-                renderCache.effect = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, [], [], ei.defines);
+            // Need to create webgl resource for border part?
+            if (this.border) {
+                let vbSize = (this.notRounded ? 1 : Rectangle2D.roundSubdivisions) * 4 * 2;
+                let vb = new Float32Array(vbSize);
+                for (let i = 0; i < vbSize; i++) {
+                    vb[i] = i;
+                }
+                renderCache.borderVB = engine.createVertexBuffer(vb);
+
+                let triCount = vbSize;
+                let rs = triCount / 2;
+                let ib = new Float32Array(triCount * 3);
+                for (let i = 0; i < rs; i++) {
+                    let r0 = i;
+                    let r1 = (i + 1) % rs;
+
+                    ib[i * 6 + 0] = rs + r1;
+                    ib[i * 6 + 1] = rs + r0;
+                    ib[i * 6 + 2] = r0;
+
+                    ib[i * 6 + 3] = r1;
+                    ib[i * 6 + 4] = rs + r1;
+                    ib[i * 6 + 5] = r0;
+                }
+
+                renderCache.borderIB = engine.createIndexBuffer(ib);
+                renderCache.borderIndicesCount = triCount * 3;
+
+                let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["index"]);
+                renderCache.effectBorder = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, [], [], ei.defines);
             }
 
             return renderCache;
@@ -152,14 +210,26 @@
 
 
         protected createInstanceDataParts(): InstanceDataBase[] {
-            return [new Rectangle2DInstanceData(Shape2D.SHAPE2D_FILLPARTID)];
+            var res = new Array<InstanceDataBase>();
+            if (this.border) {
+                res.push(new Rectangle2DInstanceData(Shape2D.SHAPE2D_BORDERPARTID));
+            }
+            if (this.fill) {
+                res.push(new Rectangle2DInstanceData(Shape2D.SHAPE2D_FILLPARTID));
+            }
+            return res;
         }
 
         protected refreshInstanceDataParts(part: InstanceDataBase): boolean {
             if (!super.refreshInstanceDataParts(part)) {
                 return false;
             }
-            if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
+            if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {
+                let d = <Rectangle2DInstanceData>part;
+                let size = this.size;
+                d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
+            }
+            else if (part.id === Shape2D.SHAPE2D_FILLPARTID) {
                 let d = <Rectangle2DInstanceData>part;
                 let size = this.size;
                 d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
@@ -171,6 +241,4 @@
         private _notRounded: boolean;
         private _roundRadius: number;
     }
-
-
 }

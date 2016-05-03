@@ -31,6 +31,7 @@
                         iai.index = index;
                         iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
                         iai.offset = attrib.instanceOffset.get(catInline) * 4; // attrib.instanceOffset is in float, iai.offset must be in bytes
+                        iai.attributeName = attrib.attributeName;
                         res.push(iai);
                     }
                 }
@@ -268,7 +269,7 @@
     export class RenderablePrim2D extends Prim2DBase {
         static RENDERABLEPRIM2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
 
-        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean, fill: IBrush2D, border: IBrush2D) {
+        setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean) {
             this.setupPrim2DBase(owner, parent, id, position);
             this._isTransparent = false;
         }
@@ -302,6 +303,7 @@
                     let ctiArray = new Array<ClassTreeInfo<InstanceClassInfo, InstancePropInfo>>();
                     var dataStrides = new Array<number>();
                     var usedCatList = new Array<string[]>();
+                    var partIdList = new Array<number>();
 
                     for (var dataPart of parts) {
                         let cat = this.getUsedShaderCategories(dataPart);
@@ -328,18 +330,21 @@
                         dataStrides.push(size);
                         usedCatList.push(cat);
                         ctiArray.push(cti);
+                        partIdList.push(dataPart.id);
                     }
                     this._modelRenderCache._partsDataStride = dataStrides;
                     this._modelRenderCache._partsUsedCategories = usedCatList;
                     this._modelRenderCache._partsClassInfo = ctiArray;
+                    this._modelRenderCache._partIdList = partIdList;
                 }
 
                 gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, k => new GroupInstanceInfo(this.renderGroup, this._modelRenderCache));
 
-                if (gii._instancesPartsData.length===0) {
-                    for (let stride of this._modelRenderCache._partsDataStride) {
-                        // instanceDataStride's unit is byte but DynamicFloatArray is float32, so div by four to get the correct number
+                if (gii._instancesPartsData.length === 0) {
+                    for (let j = 0; j < this._modelRenderCache._partsDataStride.length; j++) {
+                        let stride = this._modelRenderCache._partsDataStride[j];
                         gii._instancesPartsData.push(new DynamicFloatArray(stride / 4, 50));
+                        gii._partIndexFromId.add(this._modelRenderCache._partIdList[j].toString(), j);
                     }
                 }
 

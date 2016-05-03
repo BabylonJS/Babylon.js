@@ -149,6 +149,11 @@
          * Offset of the data in the Vertex Buffer acting as the instancing buffer
          */
         offset: number;
+
+        /**
+         * Name of the GLSL attribute, for debugging purpose only
+         */
+        attributeName: string;
     }
 
     export class EngineCapabilities {
