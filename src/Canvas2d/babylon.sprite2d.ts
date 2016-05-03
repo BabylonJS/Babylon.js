@@ -4,7 +4,7 @@
         ib: WebGLBuffer;
         borderVB: WebGLBuffer;
         borderIB: WebGLBuffer;
-        instancingAttributes: Array<InstancingAttributeInfo[]>;
+        instancingAttributes: InstancingAttributeInfo[];
 
         texture: Texture;
         effect: Effect;
@@ -17,7 +17,7 @@
 
             // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
             if (!this.instancingAttributes) {
-                this.instancingAttributes = this.loadInstancingAttributes(this.effect);
+                this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, this.effect);
             }
             var engine = instanceInfo._owner.owner.engine;
 
@@ -25,13 +25,13 @@
             this.effect.setTexture("diffuseSampler", this.texture);
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
 
-            engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes[0]);
+            engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
             var cur = engine.getAlphaMode();
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
             engine.draw(true, 0, 6, instanceInfo._instancesPartsData[0].usedElementCount);
             engine.setAlphaMode(cur);
 
-            engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes[0]);
+            engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
 
             return true;
         }
@@ -125,7 +125,7 @@
         }
 
         protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean) {
-            this.setupRenderablePrim2D(owner, parent, id, position, true, null, null);
+            this.setupRenderablePrim2D(owner, parent, id, position, true);
             this.texture = texture;
             this.spriteSize = spriteSize;
             this.spriteLocation = spriteLocation;
