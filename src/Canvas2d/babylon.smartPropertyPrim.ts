@@ -175,11 +175,11 @@
             return (this._instanceDirtyFlags !== 0) || this._modelDirty;
         }
 
-        protected static GetOrAddModelCache<TInstData>(key: string, factory: (key: string) => ModelRenderCache<TInstData>): ModelRenderCache<TInstData> {
-            return <ModelRenderCache<TInstData>>SmartPropertyPrim.ModelCache.getOrAddWithFactory(key, factory);
+        protected static GetOrAddModelCache<TInstData>(key: string, factory: (key: string) => ModelRenderCache): ModelRenderCache {
+            return SmartPropertyPrim.ModelCache.getOrAddWithFactory(key, factory);
         }
 
-        protected static ModelCache: StringDictionary<ModelRenderCacheBase> = new StringDictionary<ModelRenderCacheBase>();
+        protected static ModelCache: StringDictionary<ModelRenderCache> = new StringDictionary<ModelRenderCache>();
 
         private get propDic(): StringDictionary<Prim2DPropInfo> {
             if (!this._propInfo) {

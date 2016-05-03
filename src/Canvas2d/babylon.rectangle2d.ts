@@ -1,10 +1,10 @@
 ﻿module BABYLON {
-    export class Rectangle2DRenderCache extends ModelRenderCache<Rectangle2DInstanceData> {
+    export class Rectangle2DRenderCache extends ModelRenderCache {
         fillVB: WebGLBuffer;
         fillIB: WebGLBuffer;
         borderVB: WebGLBuffer;
         borderIB: WebGLBuffer;
-        instancingAttributes: InstancingAttributeInfo[];
+        instancingAttributes: Array<InstancingAttributeInfo[]>;
 
         effect: Effect;
 
@@ -16,24 +16,28 @@
 
             // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
             if (!this.instancingAttributes) {
-                this.instancingAttributes = instanceInfo._classTreeInfo.classContent.getInstancingAttributeInfos(this.effect);
+                this.instancingAttributes = this.loadInstancingAttributes(this.effect);
             }
             var engine = instanceInfo._owner.owner.engine;
 
             engine.enableEffect(this.effect);
             engine.bindBuffers(this.fillVB, this.fillIB, [1], 4, this.effect);
 
-            engine.updateAndBindInstancesBuffer(instanceInfo._instancesBuffer, null, this.instancingAttributes);
+            engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes[0]);
 
-            engine.draw(true, 0, Rectangle2D.roundSubdivisions * 4 * 3, instanceInfo._instancesData.usedElementCount);
+            engine.draw(true, 0, Rectangle2D.roundSubdivisions * 4 * 3, instanceInfo._instancesPartsData[0].usedElementCount);
 
-            engine.unBindInstancesBuffer(instanceInfo._instancesBuffer, this.instancingAttributes);
+            engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes[0]);
 
             return true;
         }
     }
 
-    export class Rectangle2DInstanceData extends InstanceDataBase {
+    export class Rectangle2DInstanceData extends Shape2DInstanceData {
+        constructor(partId: number) {
+            super(partId);
+        }
+
         @instanceData()
         get properties(): Vector3 {
             return null;
@@ -41,7 +45,7 @@
     }
 
     @className("Rectangle2D")
-    export class Rectangle2D extends Shape2D<Rectangle2DInstanceData> {
+    export class Rectangle2D extends Shape2D {
 
         public static sizeProperty: Prim2DPropInfo;
         public static notRoundedProperty: Prim2DPropInfo;
@@ -80,37 +84,42 @@
             this._levelBoundingInfo.extent = this.size.clone();
         }
 
-        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size: Size, roundRadius = 0, fill?: IFill2D, border?: IBorder2D) {
+        protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size: Size, roundRadius = 0, fill?: IBrush2D, border?: IBrush2D) {
             this.setupRenderablePrim2D(owner, parent, id, position, true, fill, border);
             this.size = size;
             this.notRounded = !roundRadius;
             this.roundRadius = roundRadius;
         }
 
-        public static Create(parent: Prim2DBase, id: string, x: number, y: number, width: number, height: number, fill?: IFill2D, border?: IBorder2D): Rectangle2D {
+        public static Create(parent: Prim2DBase, id: string, x: number, y: number, width: number, height: number, fill?: IBrush2D, border?: IBrush2D): Rectangle2D {
             Prim2DBase.CheckParent(parent);
 
             let rect = new Rectangle2D();
             rect.setupRectangle2D(parent.owner, parent, id, new Vector2(x, y), new Size(width, height), null);
-            rect.fill = fill || Canvas2D.GetSolidColorFillFromHex("#FFFFFFFF");
+            rect.fill = fill || Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
             rect.border = border;
             return rect;
         }
 
-        public static CreateRounded(parent: Prim2DBase, id: string, x: number, y: number, width: number, height: number, roundRadius = 0, fill?: IFill2D, border?: IBorder2D): Rectangle2D {
+        public static CreateRounded(parent: Prim2DBase, id: string, x: number, y: number, width: number, height: number, roundRadius = 0, fill?: IBrush2D, border?: IBrush2D): Rectangle2D {
             Prim2DBase.CheckParent(parent);
 
             let rect = new Rectangle2D();
             rect.setupRectangle2D(parent.owner, parent, id, new Vector2(x, y), new Size(width, height), roundRadius);
-            rect.fill = fill || Canvas2D.GetSolidColorFillFromHex("#FFFFFFFF");
+            rect.fill = fill || Canvas2D.GetSolidColorBrushFromHex("#FFFFFFFF");
             rect.border = border;
             return rect;
         }
 
         public static roundSubdivisions = 16;
 
-        protected createModelRenderCache(): ModelRenderCache<Rectangle2DInstanceData> {
+        protected createModelRenderCache(): ModelRenderCache {
             let renderCache = new Rectangle2DRenderCache();
+            return renderCache;
+        }
+
+        protected setupModelRenderCache(modelRenderCache: ModelRenderCache) {
+            let renderCache = <Rectangle2DRenderCache>modelRenderCache;
             let engine = this.owner.engine;
 
             // Need to create vb/ib for the fill part?
@@ -133,23 +142,25 @@
 
                 renderCache.fillIB = engine.createIndexBuffer(ib);
 
-                renderCache.effect = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ["index", "zBias", "transformX", "transformY", "origin", "properties"], [], [], "");
+
+                var ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["index"]);
+                renderCache.effect = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, [], [], ei.defines);
             }
 
             return renderCache;
         }
 
 
-        protected createInstanceData(): Rectangle2DInstanceData {
-            return new Rectangle2DInstanceData();
+        protected createInstanceDataParts(): InstanceDataBase[] {
+            return [new Rectangle2DInstanceData(Shape2D.SHAPE2D_FILLPARTID)];
         }
 
-        protected refreshInstanceData(): boolean {
-            if (!super.refreshInstanceData()) {
+        protected refreshInstanceDataParts(): boolean {
+            if (!super.refreshInstanceDataParts()) {
                 return false;
             }
 
-            let d = this._instanceData;
+            let d = <Rectangle2DInstanceData>this._instanceDataParts[0];
             let size = this.size;
             d.properties = new Vector3(size.width, size.height, this.roundRadius || 0);
             return true;

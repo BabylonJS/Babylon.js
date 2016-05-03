@@ -20,24 +20,12 @@
     }
 
     /**
-     * This interface defines the IBorder2D contract.
-     * Classes implementing a new type of 2D Border must implement this interface
+     * This interface defines the IBrush2D contract.
+     * Classes implementing a new type of Brush2D must implement this interface
      */
-    export interface IBorder2D extends ILockable {
+    export interface IBrush2D extends ILockable {
         /**
-         * It is critical for each instance of a given Border2D type to return a unique string that identifies it because the Border instance will certainly be part of the computed ModelKey for a given Primitive
-         * @returns A string identifier that uniquely identify the instance
-         */
-        toString(): string;
-    }
-
-    /**
-     * This interface defines the IFill2D contract.
-     * Classes implementing a new type of 2D Fill must implement this interface
-     */
-    export interface IFill2D extends ILockable {
-        /**
-         * It is critical for each instance of a given Fill2D type to return a unique string that identifies it because the Fill instance will certainly be part of the computed ModelKey for a given Primitive
+         * It is critical for each instance of a given Brush2D type to return a unique string that identifies it because the Border instance will certainly be part of the computed ModelKey for a given Primitive
          * @returns A string identifier that uniquely identify the instance
          */
         toString(): string;
@@ -73,9 +61,9 @@
     }
 
     /**
-     * This classs implements a Border that will be drawn with a uniform solid color (i.e. the same color everywhere in the border).
+     * This classs implements a Brush that will be drawn with a uniform solid color (i.e. the same color everywhere in the content where the brush is assigned to).
      */
-    export class SolidColorBorder2D extends LockableBase implements IBorder2D {
+    export class SolidColorBrush2D extends LockableBase implements IBrush2D {
         constructor(color: Color4, lock: boolean = false) {
             super();
             this._color = color;
@@ -108,44 +96,4 @@
         }
         private _color: Color4;
     }
-
-    /**
-     * This class implements a Fill that will be drawn with a uniform solid color (i.e. the same everywhere inside the primitive).
-     */
-    export class SolidColorFill2D extends LockableBase implements IFill2D {
-        constructor(color: Color4, lock: boolean = false) {
-            super();
-            this._color = color;
-            if (lock) {
-                this.lock();
-            }
-        }
-
-        /**
-         * The color used by this instance to render
-         * @returns the color object. Note that it's not a clone of the actual object stored in the instance so you MUST NOT modify it, otherwise unexpected behavior might occurs.
-         */
-        public get color(): Color4 {
-            return this._color;
-        }
-
-        public set color(value: Color4) {
-            if (this.isLocked()) {
-                return;
-            }
-
-            this._color = value;
-        }
-
-        /**
-         * Return a unique identifier of the instance, which is simply the hexadecimal representation (CSS Style) of the solid color.
-         */
-        public toString(): string {
-            return this._color.toHexString();
-        }
-
-        private _color: Color4;
-    }
-
-
 }

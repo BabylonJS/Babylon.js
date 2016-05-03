@@ -5,6 +5,8 @@ attribute vec4 transformX;
 attribute vec4 transformY;
 attribute vec2 origin;
 
+attribute vec4 fillSolidColor;
+
 attribute vec3 properties;
 
 // First index is the center, then there's four sections of 16 subdivisions
@@ -49,6 +51,8 @@ void main(void) {
 		pos2.y += sin(angle) * properties.z;
 
 	}
+
+	vColor = fillSolidColor;
 
 	vec4 pos;
 	pos.xy = pos2.xy - (origin * properties.xy);

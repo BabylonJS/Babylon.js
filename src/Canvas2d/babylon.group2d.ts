@@ -218,37 +218,39 @@
 
                 // For each different model of primitive to render
                 this.groupRenderInfo.forEach((k, v) => {
-                    // If the instances of the model was changed, pack the data
-                    let instanceData = v._instancesData.pack();
+                    for (let i = 0; i < v._instancesPartsData.length; i++) {
+                        // If the instances of the model was changed, pack the data
+                        let instanceData = v._instancesPartsData[i].pack();
 
-                    // Compute the size the instance buffer should have
-                    let neededSize = v._instancesData.usedElementCount * v._instancesData.stride * 4;
+                        // Compute the size the instance buffer should have
+                        let neededSize = v._instancesPartsData[i].usedElementCount * v._instancesPartsData[i].stride * 4;
 
-                    // Check if we have to (re)create the instancesBuffer because there's none or the size doesn't match
-                    if (!v._instancesBuffer || (v._instancesBufferSize !== neededSize)) {
-                        if (v._instancesBuffer) {
-                            engine.deleteInstancesBuffer(v._instancesBuffer);
+                        // Check if we have to (re)create the instancesBuffer because there's none or the size doesn't match
+                        if (!v._instancesPartsBuffer[i] || (v._instancesPartsBufferSize[i] !== neededSize)) {
+                            if (v._instancesPartsBuffer[i]) {
+                                engine.deleteInstancesBuffer(v._instancesPartsBuffer[i]);
+                            }
+                            v._instancesPartsBuffer[i] = engine.createInstancesBuffer(neededSize);
+                            v._instancesPartsBufferSize[i] = neededSize;
+                            v._dirtyInstancesData = true;
+
+                            // Update the WebGL buffer to match the new content of the instances data
+                            engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
+                        } else if (v._dirtyInstancesData) {
+                            // Update the WebGL buffer to match the new content of the instances data
+                            engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesPartsBuffer[i]);
+                            engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
+
+                            v._dirtyInstancesData = false;
                         }
-                        v._instancesBuffer = engine.createInstancesBuffer(neededSize);
-                        v._instancesBufferSize = neededSize;
-                        v._dirtyInstancesData = true;
 
-                        // Update the WebGL buffer to match the new content of the instances data
-                        engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
-                    } else if (v._dirtyInstancesData) {
-                        // Update the WebGL buffer to match the new content of the instances data
-                        engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesBuffer);
-                        engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
+                        // render all the instances of this model, if the render method returns true then our instances are no longer dirty
+                        let renderFailed = !v._modelCache.render(v, context);
 
-                        v._dirtyInstancesData = false;
+                        // Update dirty flag/related
+                        v._dirtyInstancesData = renderFailed;
+                        failedCount += renderFailed ? 1 : 0;
                     }
-
-                    // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                    let renderFailed = !v._modelCache.render(v, context);
-
-                    // Update dirty flag/related
-                    v._dirtyInstancesData = renderFailed;
-                    failedCount += renderFailed ? 1 : 0;
                 });
 
                 // The group's content is no longer dirty
