@@ -56,7 +56,7 @@
 
             this.updateEffect(defines);
         }
-
+        
         public updateEffect(defines?: string) {
             this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: this._fragmentUrl },
                 ["position"],
@@ -66,6 +66,11 @@
 
         public isReusable(): boolean {
             return this._reusable;
+        }
+        
+        /** invalidate frameBuffer to hint the postprocess to create a depth buffer */
+        public markTextureDirty() : void{
+            this.width = -1;
         }
 
         public activate(camera: Camera, sourceTexture?: WebGLTexture): void {
@@ -96,13 +101,13 @@
                         this._engine._releaseTexture(this._textures.data[i]);
                     }
                     this._textures.reset();
-                }
+                }         
                 this.width = desiredWidth;
                 this.height = desiredHeight;
-                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
+                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
 
                 if (this._reusable) {
-                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
+                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
                 }
 
                 if (this.onSizeChanged) {
@@ -179,8 +184,8 @@
             camera.detachPostProcess(this);
 
             var index = camera._postProcesses.indexOf(this);
-            if (index === camera._postProcessesTakenIndices[0] && camera._postProcessesTakenIndices.length > 0) {
-                this._camera._postProcesses[camera._postProcessesTakenIndices[0]].width = -1; // invalidate frameBuffer to hint the postprocess to create a depth buffer
+            if (index === 0 && camera._postProcesses.length > 0) {
+                this._camera._postProcesses[0].markTextureDirty(); 
             }
         }
     }
