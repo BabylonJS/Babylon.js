@@ -17,6 +17,7 @@
     - StandardMaterial.maxSimultaneousLights can define how many dynamic lights the material can handle ([deltakosh](https://github.com/deltakosh))
   - **Updates**
     - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
+    - Enabled other post processes to be used when also using a 3D Rig ([jcpalmer](https://github.com/Palmer-JC))
     - Added skeleton.getBoneIndexByName(boneName: string) ([dad72](https://github.com/dad72))
     - Added node._children to track children hierarchy ([deltakosh](https://github.com/deltakosh))
     - Added Camera.ForceAttachControlToAlwaysPreventDefault to help embedding Babylon.js in iFrames ([deltakosh](https://github.com/deltakosh))
@@ -39,6 +40,7 @@
   - **Exporters**
     - Support for 3dsmax 2017 ([deltakosh](https://github.com/deltakosh))
     - Added support for up to 8 bones influences per vertex for 3dsmax exporter ([deltakosh](https://github.com/deltakosh))
+    - Added console logging for .babylon file loading ([jcpalmer](https://github.com/Palmer-JC))
   - **API doc**
     - class `SolidParticleSystem` documented ([jerome](https://github.com/jbousquie))
     - class `MeshBuilder` documented ([jerome](https://github.com/jbousquie))

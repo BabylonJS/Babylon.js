@@ -2549,6 +2549,16 @@
         }
 
         public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            var result = Matrix.Zero();
+
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = startValue.m[index] * gradient + endValue.m[index] * (1.0 - gradient);
+            }
+
+            return result;
+        }
+
+        public static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
             var startScale = new Vector3(0, 0, 0);
             var startRotation = new Quaternion();
             var startTranslation = new Vector3(0, 0, 0);
