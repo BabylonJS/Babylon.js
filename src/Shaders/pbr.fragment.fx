@@ -16,7 +16,6 @@ uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
-uniform vec4 vLightRadiuses;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
@@ -55,7 +54,7 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<lightFragmentDeclaration>[0..3]
+#include<lightFragmentDeclaration>[0..maxSimultaneousLights]
 
 // Samplers
 #ifdef ALBEDO
@@ -151,6 +150,8 @@ uniform vec4 emissiveRightColor;
 
 #ifdef CAMERACOLORGRADING
     uniform sampler2D cameraColorGrading2DSampler;
+    uniform vec4 vCameraColorGradingInfos;
+    uniform vec4 vCameraColorGradingScaleOffset;
 #endif
 
 // PBR
@@ -281,7 +282,7 @@ void main(void) {
     float NdotL = -1.;
     lightingInfo info;
 
-#include<pbrLightFunctionsCall>[0..3]
+#include<pbrLightFunctionsCall>[0..maxSimultaneousLights]
 
 #ifdef SPECULARTERM
     lightSpecularContribution *= vLightingIntensity.w;
@@ -594,9 +595,11 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
 #ifdef CAMERACONTRAST
     finalColor = contrasts(finalColor);
 #endif
-
+    
+    finalColor.rgb = clamp(finalColor.rgb, 0., 1.);
+    
 #ifdef CAMERACOLORGRADING
-    finalColor = colorGrades(finalColor, cameraColorGrading2DSampler, vCameraInfos.z, vCameraInfos.w);
+    finalColor = colorGrades(finalColor, cameraColorGrading2DSampler, vCameraColorGradingInfos, vCameraColorGradingScaleOffset);
 #endif
 
     // Normal Display.

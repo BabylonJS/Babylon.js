@@ -118,11 +118,15 @@ float computeDiffuseTerm(float NdotL, float NdotV, float VdotH, float roughness)
 
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance)
 {
-    // At small angle this approximation works. 
-    float lightRoughness = lightRadius / lightDistance;
-    // Distribution can sum.
-    float totalRoughness = clamp(lightRoughness + roughness, 0., 1.);
-    return totalRoughness;
+    #ifdef USEPHYSICALLIGHTFALLOFF
+        // At small angle this approximation works. 
+        float lightRoughness = lightRadius / lightDistance;
+        // Distribution can sum.
+        float totalRoughness = clamp(lightRoughness + roughness, 0., 1.);
+        return totalRoughness;
+    #else
+        return roughness;
+    #endif
 }
 
 float computeDefaultMicroSurface(float microSurface, vec3 reflectivityColor)
@@ -197,23 +201,30 @@ float computeLightFalloff(vec3 lightOffset, float lightDistanceSquared, float ra
 #endif
 
 #ifdef CAMERACOLORGRADING
-    vec4 colorGrades(vec4 color, sampler2D lut, float level, float lutSize)
+    vec4 colorGrades(vec4 color, sampler2D texture, vec4 vCameraColorGradingInfos, vec4 vCameraColorGradingScaleOffset) 
     {
-        color = clamp(color, 0.0, 1.0);
-        vec2 uv = color.rg;
-        
-        float blueIndex = color.b / lutSize;
-        float fl = floor(blueIndex);
-        float fr = fract(blueIndex);
-        
-        uv.x += fl;
-        vec3 colorTransformInputLowerBound = texture2D(lut, uv).rgb;
-        uv.x += (1.0 / lutSize);
-        vec3 colorTransformInputUpperBound = texture2D(lut, uv).rgb;
-        
-        vec3 result = mix(colorTransformInputLowerBound, colorTransformInputUpperBound, fr);
-        
-        color.rgb = mix(color.rgb, result, level);
+        // Dynamic runtime calculations (dependent on input color)
+        float sliceContinuous = color.z * vCameraColorGradingInfos.z;
+        float sliceInteger = floor(sliceContinuous);
+
+        // Note: this is mathematically equivalent to fract(sliceContinuous); but we use explicit subtract
+        // rather than separate fract() for correct results near slice boundaries (matching sliceInteger choice)
+        float sliceFraction = sliceContinuous - sliceInteger; 
+
+        // Calculate UV offset from slice origin (top-left)
+        vec2 sliceUV = color.xy * vCameraColorGradingScaleOffset.xy + vCameraColorGradingScaleOffset.zw;
+
+        // Calculate UV positions into overall texture for neighbouring slices 
+        // (to emulate trilinear filtering on missing 3D hardware texture support)
+        sliceUV.x += sliceInteger * vCameraColorGradingInfos.w;
+        vec4 slice0Color = texture2D(texture, sliceUV);
+
+        sliceUV.x += vCameraColorGradingInfos.w;
+        vec4 slice1Color = texture2D(texture, sliceUV);
+
+        vec3 result = mix(slice0Color.rgb, slice1Color.rgb, sliceFraction);
+        color.rgb = mix(color.rgb, result, vCameraColorGradingInfos.x);
+
         return color;
     }
 #endif
