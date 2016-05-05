@@ -48,6 +48,8 @@ module BABYLON {
             this.url = url;
             this.hasAlpha = false;
             this.isCube = false;
+            this.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this.wrapV = Texture.CLAMP_ADDRESSMODE;
             
             this._texture = this._getFromCache(url, true);
 
@@ -75,16 +77,17 @@ module BABYLON {
 
             var mipLevels = 0;
             var floatArrayView: Float32Array = null;
-            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGB, false, false, Texture.NEAREST_SAMPLINGMODE);
+            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGB, false, false, Texture.BILINEAR_SAMPLINGMODE);
             this._texture = texture;
             
             var callback = (text: string) => {
-                var buffer: ArrayBuffer;
                 var data: Uint8Array;
+                var tempData: Float32Array;
                 
                 var line: string;
                 var lines = text.split('\n');
-                var size = 0, pixelIndex = 0;
+                var size = 0, pixelIndexW = 0, pixelIndexH = 0, pixelIndexSlice = 0;
+                var maxColor = 0;
                 
                 for (let i = 0; i < lines.length; i++) {
                     line = lines[i];
@@ -99,37 +102,46 @@ module BABYLON {
                     if (size === 0) {
                         // Number of space + one
                         size = words.length;
-                        buffer = new ArrayBuffer(size * size * size * 3); // volume texture of side size and rgb 8
-                        data = new Uint8Array(buffer);
+                        data = new Uint8Array(size * size * size * 3); // volume texture of side size and rgb 8
+                        tempData = new Float32Array(size * size * size * 3);
                         continue;
                     }
                     
                     if (size != 0)
                     {
-                        var r = parseInt(words[0]);
-                        var g = parseInt(words[1]);
-                        var b = parseInt(words[2]);
+                        var r = Math.max(parseInt(words[0]), 0);
+                        var g = Math.max(parseInt(words[1]), 0);
+                        var b = Math.max(parseInt(words[2]), 0);
                         
-                        r = Math.round(Math.max(Math.min(255, r), 0));
-                        g = Math.round(Math.max(Math.min(255, g), 0));
-                        b = Math.round(Math.max(Math.min(255, b), 0));
-
-                        // Transpose ordering from RGB to BGR (naming here might also be transposed).
-                        var indexR = pixelIndex % size;
-                        var indexG = (pixelIndex / size) % size;
-                        var indexB = (pixelIndex / size) / size;
-
-                        var pixelStorageIndex = indexR * (size * size * 3) + indexG * size * 3 + indexB * 3;
-                        data[pixelStorageIndex + 0] = r;//255;//r;
-                        data[pixelStorageIndex + 1] = g;//0;//g;
-                        data[pixelStorageIndex + 2] = b;//255;//b;
-
-                        pixelIndex++;
+                        maxColor = Math.max(r, maxColor);
+                        maxColor = Math.max(g, maxColor);
+                        maxColor = Math.max(b, maxColor);
+                        
+                        var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 3;
+                        
+                        tempData[pixelStorageIndex + 0] = r;
+                        tempData[pixelStorageIndex + 1] = g;
+                        tempData[pixelStorageIndex + 2] = b;
+                        
+                        pixelIndexSlice++;
+                        if (pixelIndexSlice % size == 0) {
+                            pixelIndexH++;
+                            pixelIndexSlice = 0;
+                            if (pixelIndexH % size == 0) {
+                                pixelIndexW++;
+                                pixelIndexH = 0;
+                            }
+                        }
                     }
                 }
+            
+                for (let i = 0; i < tempData.length; i++) {
+                    var value = tempData[i];
+                    data[i] = (value / maxColor * 255);
+                }
                 
-                this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGB, false);
                 this.getScene().getEngine().updateTextureSize(texture, size * size, size);
+                this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGB, false);
             }
 
             Tools.LoadFile(this.url, callback);

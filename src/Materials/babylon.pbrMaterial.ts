@@ -1,6 +1,4 @@
 ﻿module BABYLON {
-    var maxSimultaneousLights = 4;
-
     class PBRMaterialDefines extends MaterialDefines {
         public ALBEDO = false;
         public AMBIENT = false;
@@ -18,40 +16,7 @@
         public ALPHAFROMALBEDO = false;
         public POINTSIZE = false;
         public FOG = false;
-        public LIGHT0 = false;
-        public LIGHT1 = false;
-        public LIGHT2 = false;
-        public LIGHT3 = false;
-        public SPOTLIGHT0 = false;
-        public SPOTLIGHT1 = false;
-        public SPOTLIGHT2 = false;
-        public SPOTLIGHT3 = false;
-        public HEMILIGHT0 = false;
-        public HEMILIGHT1 = false;
-        public HEMILIGHT2 = false;
-        public HEMILIGHT3 = false;
-        public POINTLIGHT0 = false;
-        public POINTLIGHT1 = false;
-        public POINTLIGHT2 = false;
-        public POINTLIGHT3 = false;
-        public DIRLIGHT0 = false;
-        public DIRLIGHT1 = false;
-        public DIRLIGHT2 = false;
-        public DIRLIGHT3 = false;
         public SPECULARTERM = false;
-        public SHADOW0 = false;
-        public SHADOW1 = false;
-        public SHADOW2 = false;
-        public SHADOW3 = false;
-        public SHADOWS = false;
-        public SHADOWVSM0 = false;
-        public SHADOWVSM1 = false;
-        public SHADOWVSM2 = false;
-        public SHADOWVSM3 = false;
-        public SHADOWPCF0 = false;
-        public SHADOWPCF1 = false;
-        public SHADOWPCF2 = false;
-        public SHADOWPCF3 = false;
         public OPACITYFRESNEL = false;
         public EMISSIVEFRESNEL = false;
         public FRESNEL = false;
@@ -97,7 +62,7 @@
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
 
@@ -184,6 +149,9 @@
         @serializeAsTexture()
         public cameraColorGradingTexture: BaseTexture = null;
 
+        private _cameraColorGradingScaleOffset: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
+        private _cameraColorGradingInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
+         
         private _cameraInfos: Vector4 = new Vector4(1.0, 1.0, 0.0, 0.0);
 
         private _microsurfaceTextureLods: Vector2 = new Vector2(0.0, 0.0);
@@ -440,9 +408,18 @@
          */
         @serialize()
         public parallaxScaleBias = 0.05;
-
+        
+        /**
+         * If sets to true, disables all the lights affecting the material.
+         */
         @serialize()
         public disableLighting = false;
+
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+        @serialize()
+        public maxSimultaneousLights = 4;  
 
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _worldViewProjectionMatrix = Matrix.Zero();
@@ -546,9 +523,8 @@
         private static _scaledReflectivity = new Color3();
         private static _scaledEmissive = new Color3();
         private static _scaledReflection = new Color3();
-        private static _lightRadiuses = [1, 1, 1, 1];
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, useScalarInLinearSpace: boolean, maxSimultaneousLights: number, usePhysicalLightFalloff: boolean) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {
@@ -562,15 +538,13 @@
                     continue;
                 }
 
-                this._lightRadiuses[lightIndex] = light.radius;
-
                 MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
                 // GAMMA CORRECTION.
                 this.convertColorToLinearSpaceToRef(light.diffuse, PBRMaterial._scaledAlbedo, useScalarInLinearSpace);
 
                 PBRMaterial._scaledAlbedo.scaleToRef(light.intensity, PBRMaterial._scaledAlbedo);
-                effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, light.range);
+                effect.setColor4("vLightDiffuse" + lightIndex, PBRMaterial._scaledAlbedo, usePhysicalLightFalloff ? light.radius : light.range);
 
                 if (defines["SPECULARTERM"]) {
                     this.convertColorToLinearSpaceToRef(light.specular, PBRMaterial._scaledReflectivity, useScalarInLinearSpace);
@@ -589,11 +563,6 @@
                 if (lightIndex === maxSimultaneousLights)
                     break;
             }
-
-            effect.setFloat4("vLightRadiuses", this._lightRadiuses[0],
-                this._lightRadiuses[1],
-                this._lightRadiuses[2],
-                this._lightRadiuses[3]);
         }
 
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
@@ -842,7 +811,7 @@
             }
 
             if (scene.lightsEnabled && !this.disableLighting) {
-                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines) || needNormals;
+                needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights) || needNormals;
             }
 
             if (StandardMaterial.FresnelEnabled) {
@@ -954,7 +923,7 @@
                     fallbacks.addFallback(0, "LOGARITHMICDEPTH");
                 }
 
-                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks);
+                MaterialHelper.HandleFallbacksForShadows(this._defines, fallbacks, this.maxSimultaneousLights);
 
                 if (this._defines.SPECULARTERM) {
                     fallbacks.addFallback(0, "SPECULARTERM");
@@ -1004,31 +973,32 @@
                     shaderName = "legacypbr";
                 }
                 var join = this._defines.toString();
-                this._effect = scene.getEngine().createEffect(shaderName,
-                    attribs,
-                    ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
-                        "vLightData0", "vLightDiffuse0", "vLightSpecular0", "vLightDirection0", "vLightGround0", "lightMatrix0",
-                        "vLightData1", "vLightDiffuse1", "vLightSpecular1", "vLightDirection1", "vLightGround1", "lightMatrix1",
-                        "vLightData2", "vLightDiffuse2", "vLightSpecular2", "vLightDirection2", "vLightGround2", "lightMatrix2",
-                        "vLightData3", "vLightDiffuse3", "vLightSpecular3", "vLightDirection3", "vLightGround3", "lightMatrix3",
+                
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
                         "vFogInfos", "vFogColor", "pointSize",
                         "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                         "mBones",
                         "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                        "shadowsInfo0", "shadowsInfo1", "shadowsInfo2", "shadowsInfo3", "depthValues",
+                        "depthValues",
                         "opacityParts", "emissiveLeftColor", "emissiveRightColor",
-                        "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vCameraInfos", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
+                        "vLightingIntensity", "vOverloadedShadowIntensity", "vOverloadedIntensity", "vOverloadedAlbedo", "vOverloadedReflection", "vOverloadedReflectivity", "vOverloadedEmissive", "vOverloadedMicroSurface",
                         "logarithmicDepthConstant",
                         "vSphericalX", "vSphericalY", "vSphericalZ",
                         "vSphericalXX", "vSphericalYY", "vSphericalZZ",
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
-                        "vMicrosurfaceTextureLods", "vLightRadiuses"
-                    ],
+                        "vMicrosurfaceTextureLods",
+                        "vCameraInfos", "vCameraColorGradingInfos", "vCameraColorGradingScaleOffset"
+                    ];
+                
+                MaterialHelper.PrepareUniformsListForList(uniforms, this._defines, this.maxSimultaneousLights); 
+                
+                this._effect = scene.getEngine().createEffect(shaderName,
+                    attribs, uniforms,
                     ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
                         "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
                         "cameraColorGrading2DSampler"
                     ],
-                    join, fallbacks, this.onCompiled, this.onError);
+                    join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights});
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -1208,8 +1178,31 @@
                     
                     if (this.cameraColorGradingTexture) {
                         this._effect.setTexture("cameraColorGrading2DSampler", this.cameraColorGradingTexture);
-                        this._cameraInfos.z = this.cameraColorGradingTexture.level;
-                        this._cameraInfos.w = this.cameraColorGradingTexture.getSize().height;
+                        
+                        this._cameraColorGradingInfos.x = this.cameraColorGradingTexture.level;                     // Texture Level
+                        this._cameraColorGradingInfos.y = this.cameraColorGradingTexture.getSize().height;          // Texture Size example with 8
+                        this._cameraColorGradingInfos.z = this._cameraColorGradingInfos.y - 1.0;                    // SizeMinusOne 8 - 1
+                        this._cameraColorGradingInfos.w = 1 / this._cameraColorGradingInfos.y;                      // Space of 1 slice 1 / 8
+                        
+                        this._effect.setFloat4("vCameraColorGradingInfos", 
+                            this._cameraColorGradingInfos.x,
+                            this._cameraColorGradingInfos.y,
+                            this._cameraColorGradingInfos.z,
+                            this._cameraColorGradingInfos.w);
+                        
+                        var slicePixelSizeU = this._cameraColorGradingInfos.w / this._cameraColorGradingInfos.y;    // Space of 1 pixel in U direction, e.g. 1/64
+                        var slicePixelSizeV = 1.0 / this._cameraColorGradingInfos.y;							    // Space of 1 pixel in V direction, e.g. 1/8
+                        this._cameraColorGradingScaleOffset.x = this._cameraColorGradingInfos.z * slicePixelSizeU;  // Extent of lookup range in U for a single slice so that range corresponds to (size-1) texels, for example 7/64
+                        this._cameraColorGradingScaleOffset.y = this._cameraColorGradingInfos.z / 
+                            this._cameraColorGradingInfos.y;							                            // Extent of lookup range in V for a single slice so that range corresponds to (size-1) texels, for example 7/8
+                        this._cameraColorGradingScaleOffset.z = 0.5 * slicePixelSizeU;						        // Offset of lookup range in U to align sample position with texel centre, for example 0.5/64 
+                        this._cameraColorGradingScaleOffset.w = 0.5 * slicePixelSizeV;						        // Offset of lookup range in V to align sample position with texel centre, for example 0.5/8
+                        
+                        this._effect.setFloat4("vCameraColorGradingScaleOffset", 
+                            this._cameraColorGradingScaleOffset.x,
+                            this._cameraColorGradingScaleOffset.y,
+                            this._cameraColorGradingScaleOffset.z,
+                            this._cameraColorGradingScaleOffset.w);
                     }
                 }
 
@@ -1247,7 +1240,7 @@
 
                 // Lights
                 if (this._myScene.lightsEnabled && !this.disableLighting) {
-                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace);
+                    PBRMaterial.BindLights(this._myScene, mesh, this._effect, this._defines, this.useScalarInLinearSpace, this.maxSimultaneousLights, this.usePhysicalLightFalloff);
                 }
 
                 // View
