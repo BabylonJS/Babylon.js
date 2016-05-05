@@ -2038,6 +2038,13 @@ var BABYLON;
             Matrix.FromValuesToRef(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, x, y, z, 1.0, result);
         };
         Matrix.Lerp = function (startValue, endValue, gradient) {
+            var result = Matrix.Zero();
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = startValue.m[index] * gradient + endValue.m[index] * (1.0 - gradient);
+            }
+            return result;
+        };
+        Matrix.DecomposeLerp = function (startValue, endValue, gradient) {
             var startScale = new Vector3(0, 0, 0);
             var startRotation = new Quaternion();
             var startTranslation = new Vector3(0, 0, 0);

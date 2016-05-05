@@ -123,9 +123,9 @@
             
             // loop vars declaration / initialization
             var orig: { frame: number, value: Matrix };
-            var origScale = scalingReqd ? BABYLON.Vector3.Zero() : null;
-            var origRotation = scalingReqd ? new BABYLON.Quaternion() : null;
-            var origTranslation = scalingReqd ? BABYLON.Vector3.Zero() : null;
+            var origScale = scalingReqd ? Vector3.Zero() : null;
+            var origRotation = scalingReqd ? new Quaternion() : null;
+            var origTranslation = scalingReqd ? Vector3.Zero() : null;
             var mat: Matrix;
 
             for (var key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {

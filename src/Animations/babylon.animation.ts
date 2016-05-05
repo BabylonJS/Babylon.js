@@ -179,12 +179,12 @@
             ret += ", datatype: " + (["Float", "Vector3", "Quaternion", "Matrix", "Color3", "Vector2"])[this.dataType];
             ret += ", nKeys: " + (this._keys ? this._keys.length : "none");
             ret += ", nRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
-            if (fullDetails){
-                ret += ", Ranges: {" 
+            if (fullDetails) {
+                ret += ", Ranges: {";
                 var first = true;
                 for (var name in this._ranges) {
-                    if (!first){
-                        ret + ", ";
+                    if (first) {
+                        ret += ", ";
                         first = false; 
                     }
                     ret += name; 
@@ -446,7 +446,7 @@
                     property = property[this.targetPropertyPath[index]];
                 }
 
-                path = this.targetPropertyPath[this.targetPropertyPath.length - 1]
+                path = this.targetPropertyPath[this.targetPropertyPath.length - 1];
                 destination = property;
             } else {
                 path = this.targetPropertyPath[0];
@@ -456,17 +456,23 @@
             // Blending
             if (this.enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
-                    this._originalBlendValue = destination[path];
+                    if (destination[path].clone) {
+                        this._originalBlendValue = destination[path].clone();
+                    } else {
+                        this._originalBlendValue = destination[path];
+                    }
                 }
 
                 if (this._originalBlendValue.prototype) { // Complex value
                     
                     if (this._originalBlendValue.prototype.Lerp) { // Lerp supported
-                        destination[path] = this._originalBlendValue.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                        destination[path] = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
                     } else { // Blending not supported
                         destination[path] = currentValue;
                     }
 
+                } else if (this._originalBlendValue.m) { // Matrix
+                    destination[path] = Matrix.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
                 } else { // Direct value
                     destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }
@@ -482,7 +488,7 @@
 
         public goToFrame(frame: number): void {
             if (frame < this._keys[0].frame) {
-                frame = this._keys[0].frame
+                frame = this._keys[0].frame;
             } else if (frame > this._keys[this._keys.length - 1].frame) {
                 frame = this._keys[this._keys.length - 1].frame;
             }
@@ -715,10 +721,12 @@
 
             var dataType = parsedAnimation.dataType;
             var keys = [];
-            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+            var data;
+            var index: number;
+
+            for (index = 0; index < parsedAnimation.keys.length; index++) {
                 var key = parsedAnimation.keys[index];
 
-                var data;
 
                 switch (dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
@@ -748,7 +756,7 @@
             animation.setKeys(keys);
 
             if (parsedAnimation.ranges) {
-                for (var index = 0; index < parsedAnimation.ranges.length; index++) {
+                for (index = 0; index < parsedAnimation.ranges.length; index++) {
                     data = parsedAnimation.ranges[index];
                     animation.createRange(data.name, data.from, data.to);
                 }
