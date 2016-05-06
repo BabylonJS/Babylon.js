@@ -3,13 +3,13 @@
         vec3 vLightSpecular{X} = vec3(0.0);
     #endif
     #ifdef SPOTLIGHT{X}
-        info = computeSpotLighting(viewDirectionW, normalW, vLightData{X}, vLightDirection{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, roughness, NdotV, vLightRadiuses[{X}], NdotL);
+        info = computeSpotLighting(viewDirectionW, normalW, vLightData{X}, vLightDirection{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, roughness, NdotV, NdotL);
     #endif
     #ifdef HEMILIGHT{X}
-        info = computeHemisphericLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightGround{X}, roughness, NdotV, vLightRadiuses[{X}], NdotL);
+        info = computeHemisphericLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightGround{X}, roughness, NdotV, NdotL);
     #endif
     #if defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
-        info = computeLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, roughness, NdotV, vLightRadiuses[{X}], NdotL);
+        info = computeLighting(viewDirectionW, normalW, vLightData{X}, vLightDiffuse{X}.rgb, vLightSpecular{X}, vLightDiffuse{X}.a, roughness, NdotV, NdotL);
     #endif
     
     #ifdef SHADOW{X}
