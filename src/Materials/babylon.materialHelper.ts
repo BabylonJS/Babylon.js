@@ -112,7 +112,7 @@
             return needNormals;
         }
 
-        public static PrepareUniformsListForList(uniformsList: string[], defines: MaterialDefines, maxSimultaneousLights = 4): void {
+        public static PrepareUniformsAndSamplersList(uniformsList: string[], samplersList: string[], defines: MaterialDefines, maxSimultaneousLights = 4): void {
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
@@ -127,6 +127,8 @@
                     "lightMatrix" + lightIndex,
                     "shadowsInfo" + lightIndex
                 );
+
+                samplersList.push("shadowSampler" + lightIndex);
             }
         }
 

@@ -70,7 +70,7 @@ var BABYLON;
             this.rebuild();
         }
         return StandardMaterialDefines;
-    })(BABYLON.MaterialDefines);
+    }(BABYLON.MaterialDefines));
     var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         function StandardMaterial(name, scene) {
@@ -473,10 +473,9 @@ var BABYLON;
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "logarithmicDepthConstant"
                 ];
-                BABYLON.MaterialHelper.PrepareUniformsListForList(uniforms, this._defines, this.maxSimultaneousLights);
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
-                    "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                ], join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
+                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
+                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights - 1 });
             }
             if (!this._effect.isReady()) {
                 return false;
@@ -822,6 +821,6 @@ var BABYLON;
             BABYLON.serialize()
         ], StandardMaterial.prototype, "useLogarithmicDepth", null);
         return StandardMaterial;
-    })(BABYLON.Material);
+    }(BABYLON.Material));
     BABYLON.StandardMaterial = StandardMaterial;
 })(BABYLON || (BABYLON = {}));

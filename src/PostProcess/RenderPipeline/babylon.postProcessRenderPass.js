@@ -37,6 +37,6 @@ var BABYLON;
             return this._renderTexture;
         };
         return PostProcessRenderPass;
-    })();
+    }());
     BABYLON.PostProcessRenderPass = PostProcessRenderPass;
 })(BABYLON || (BABYLON = {}));

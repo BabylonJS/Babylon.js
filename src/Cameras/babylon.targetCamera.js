@@ -211,28 +211,27 @@ var BABYLON;
          * Override Camera._updateRigCameras
          */
         TargetCamera.prototype._updateRigCameras = function () {
+            var camLeft = this._rigCameras[0];
+            var camRight = this._rigCameras[1];
             switch (this.cameraRigMode) {
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+                    //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
+                    var leftSign = (this.cameraRigMode === BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? 1 : -1;
+                    var rightSign = (this.cameraRigMode === BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? -1 : 1;
+                    this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle * leftSign, camLeft.position);
+                    this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle * rightSign, camRight.position);
+                    camLeft.setTarget(this.getTarget());
+                    camRight.setTarget(this.getTarget());
+                    break;
                 case BABYLON.Camera.RIG_MODE_VR:
-                    var camLeft = this._rigCameras[0];
-                    var camRight = this._rigCameras[1];
-                    if (this.cameraRigMode === BABYLON.Camera.RIG_MODE_VR) {
-                        camLeft.rotation.x = camRight.rotation.x = this.rotation.x;
-                        camLeft.rotation.y = camRight.rotation.y = this.rotation.y;
-                        camLeft.rotation.z = camRight.rotation.z = this.rotation.z;
-                        camLeft.position.copyFrom(this.position);
-                        camRight.position.copyFrom(this.position);
-                    }
-                    else {
-                        //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
-                        this._getRigCamPosition(-this._cameraRigParams.stereoHalfAngle, camLeft.position);
-                        this._getRigCamPosition(this._cameraRigParams.stereoHalfAngle, camRight.position);
-                        camLeft.setTarget(this.getTarget());
-                        camRight.setTarget(this.getTarget());
-                    }
+                    camLeft.rotation.x = camRight.rotation.x = this.rotation.x;
+                    camLeft.rotation.y = camRight.rotation.y = this.rotation.y;
+                    camLeft.rotation.z = camRight.rotation.z = this.rotation.z;
+                    camLeft.position.copyFrom(this.position);
+                    camRight.position.copyFrom(this.position);
                     break;
             }
             _super.prototype._updateRigCameras.call(this);
@@ -259,6 +258,6 @@ var BABYLON;
             BABYLON.serializeAsMeshReference("lockedTargetId")
         ], TargetCamera.prototype, "lockedTarget", void 0);
         return TargetCamera;
-    })(BABYLON.Camera);
+    }(BABYLON.Camera));
     BABYLON.TargetCamera = TargetCamera;
 })(BABYLON || (BABYLON = {}));

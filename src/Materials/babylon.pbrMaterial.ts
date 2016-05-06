@@ -988,16 +988,15 @@
                         "vSphericalXY", "vSphericalYZ", "vSphericalZX",
                         "vMicrosurfaceTextureLods",
                         "vCameraInfos", "vCameraColorGradingInfos", "vCameraColorGradingScaleOffset"
-                    ];
+                ];
+
+                var samplers = ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
+                    "cameraColorGrading2DSampler"];
                 
-                MaterialHelper.PrepareUniformsListForList(uniforms, this._defines, this.maxSimultaneousLights); 
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights); 
                 
                 this._effect = scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms,
-                    ["albedoSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "reflectivitySampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
-                        "cameraColorGrading2DSampler"
-                    ],
+                    attribs, uniforms, samplers,
                     join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights});
             }
             if (!this._effect.isReady()) {

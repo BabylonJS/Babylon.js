@@ -440,36 +440,42 @@ var BABYLON;
          * Override Camera.createRigCamera
          */
         ArcRotateCamera.prototype.createRigCamera = function (name, cameraIndex) {
+            var alphaShift;
             switch (this.cameraRigMode) {
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case BABYLON.Camera.RIG_MODE_VR:
-                    var alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
-                    var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
-                    rigCam._cameraRigParams = {};
-                    return rigCam;
+                    alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
+                    break;
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                    alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
+                    break;
             }
-            return null;
+            var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this.target, this.getScene());
+            rigCam._cameraRigParams = {};
+            return rigCam;
         };
         /**
          * @override
          * Override Camera._updateRigCameras
          */
         ArcRotateCamera.prototype._updateRigCameras = function () {
+            var camLeft = this._rigCameras[0];
+            var camRight = this._rigCameras[1];
+            camLeft.beta = camRight.beta = this.beta;
+            camLeft.radius = camRight.radius = this.radius;
             switch (this.cameraRigMode) {
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case BABYLON.Camera.RIG_MODE_VR:
-                    var camLeft = this._rigCameras[0];
-                    var camRight = this._rigCameras[1];
                     camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
-                    camLeft.beta = camRight.beta = this.beta;
-                    camLeft.radius = camRight.radius = this.radius;
+                    break;
+                case BABYLON.Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+                    camLeft.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
+                    camRight.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     break;
             }
             _super.prototype._updateRigCameras.call(this);
@@ -533,6 +539,6 @@ var BABYLON;
             BABYLON.serialize()
         ], ArcRotateCamera.prototype, "allowUpsideDown", void 0);
         return ArcRotateCamera;
-    })(BABYLON.TargetCamera);
+    }(BABYLON.TargetCamera));
     BABYLON.ArcRotateCamera = ArcRotateCamera;
 })(BABYLON || (BABYLON = {}));
