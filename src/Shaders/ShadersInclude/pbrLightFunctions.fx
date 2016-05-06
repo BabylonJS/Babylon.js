@@ -7,7 +7,7 @@ struct lightingInfo
     #endif
 };
 
-lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius, out float NdotL) {
+lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, out float NdotL) {
     lightingInfo result;
 
     vec3 lightDirection;
@@ -19,7 +19,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     {
         vec3 lightOffset = lightData.xyz - vPositionW;
         float lightDistanceSquared = dot(lightOffset, lightOffset);
-        attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, range);
+        attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, rangeRadius);
         
         lightDistance = sqrt(lightDistanceSquared);
         lightDirection = normalize(lightOffset);
@@ -32,7 +32,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     }
     
     // Roughness
-    roughness = adjustRoughnessFromLightProperties(roughness, lightRadius, lightDistance);
+    roughness = adjustRoughnessFromLightProperties(roughness, rangeRadius, lightDistance);
     
     // diffuse
     vec3 H = normalize(viewDirectionW + lightDirection);
@@ -53,7 +53,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
     return result;
 }
 
-lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float roughness, float NdotV, float lightRadius, out float NdotL) {
+lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float rangeRadius, float roughness, float NdotV, out float NdotL) {
     lightingInfo result;
 
     vec3 lightOffset = lightData.xyz - vPositionW;
@@ -68,14 +68,14 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
         
         // Inverse squared falloff.
         float lightDistanceSquared = dot(lightOffset, lightOffset);
-        float attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, range);
+        float attenuation = computeLightFalloff(lightOffset, lightDistanceSquared, rangeRadius);
         
         // Directional falloff.
         attenuation *= cosAngle;
         
         // Roughness.
         float lightDistance = sqrt(lightDistanceSquared);
-        roughness = adjustRoughnessFromLightProperties(roughness, lightRadius, lightDistance);
+        roughness = adjustRoughnessFromLightProperties(roughness, rangeRadius, lightDistance);
         
         // Diffuse
         vec3 H = normalize(viewDirectionW - lightDirection.xyz);
@@ -104,7 +104,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
     return result;
 }
 
-lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, float lightRadius, out float NdotL) {
+lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, vec3 groundColor, float roughness, float NdotV, out float NdotL) {
     lightingInfo result;
 
     // Roughness
