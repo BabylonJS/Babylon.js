@@ -103,7 +103,7 @@ var BABYLON;
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    })();
+    }());
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -1271,6 +1271,9 @@ var BABYLON;
             var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            if (texture._width % 4 !== 0) {
+                this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
+            }
             if (compression) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
             }
@@ -1578,6 +1581,9 @@ var BABYLON;
         Engine.prototype.updateTextureSize = function (texture, width, height) {
             texture._width = width;
             texture._height = height;
+            texture._size = width * height;
+            texture._baseWidth = width;
+            texture._baseHeight = height;
         };
         Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback, mipmmapGenerator) {
             var _this = this;
@@ -1947,6 +1953,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    })();
+    }());
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
