@@ -14,6 +14,7 @@
     - Unity3D exporter: Added support for lightmaps ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
     - Unity3D exporter: Added support for export and run (local webserver) ([davrous](https://github.com/davrous), [deltakosh](https://github.com/deltakosh))
     - Moved PBR Material to core ([deltakosh](https://github.com/deltakosh))
+	- Introduced Canvas2D feature: a 2D engine to render primitives, sprites in 2D, text. Canvas2D can be displayed in Screen Space (above the 3D scene) or in World Space (will come soon) to be a part of the Scene. ([nockawa](https://github.com/nockawa))
   - **Updates**
     - Added postprocess.enablePixelPerfectMode to avoid texture scaling/stretching when dealing with non-power of 2 resolutions. cannot be used on post-processes chain ([deltakosh](https://github.com/deltakosh))
     - Added skeleton.getBoneIndexByName(boneName: string) [dad72](https://github.com/dad72)
