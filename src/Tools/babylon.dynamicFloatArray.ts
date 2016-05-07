@@ -197,7 +197,6 @@
             }
 
             this.buffer = newBuffer;
-            this.totalElementCount = newElCount;
         }
 
         /**

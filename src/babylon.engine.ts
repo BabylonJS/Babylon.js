@@ -1104,7 +1104,7 @@
         }
 
         public createEffect(baseName: any, attributesNames: string[], uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
-            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
@@ -1113,7 +1113,7 @@
                 return this._compiledEffects[name];
             }
 
-            var effect = new Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError);
+            var effect = new Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
             this._compiledEffects[name] = effect;
 
@@ -1599,6 +1599,10 @@
             var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            
+            if (texture._width % 4 !== 0) {
+                this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
+            } 
 
             if (compression) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
@@ -1982,6 +1986,9 @@
         public updateTextureSize(texture: WebGLTexture, width: number, height: number) {
             texture._width = width;
             texture._height = height;
+            texture._size = width * height;
+            texture._baseWidth = width;
+            texture._baseHeight = height;
         }
 
         public createRawCubeTexture(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,

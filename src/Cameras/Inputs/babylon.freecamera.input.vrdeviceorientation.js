@@ -16,9 +16,9 @@ var BABYLON;
         };
         FreeCameraVRDeviceOrientationInput.prototype._onOrientationEvent = function (evt) {
             var camera = this.camera;
-            this._alpha = +evt.alpha | 0;
-            this._beta = +evt.beta | 0;
-            this._gamma = +evt.gamma | 0;
+            this._alpha = evt.alpha;
+            this._beta = evt.beta;
+            this._gamma = evt.gamma;
             this._dirty = true;
         };
         FreeCameraVRDeviceOrientationInput.prototype.checkInputs = function () {
@@ -47,7 +47,7 @@ var BABYLON;
             return "VRDeviceOrientation";
         };
         return FreeCameraVRDeviceOrientationInput;
-    })();
+    }());
     BABYLON.FreeCameraVRDeviceOrientationInput = FreeCameraVRDeviceOrientationInput;
     BABYLON.CameraInputTypes["FreeCameraVRDeviceOrientationInput"] = FreeCameraVRDeviceOrientationInput;
 })(BABYLON || (BABYLON = {}));

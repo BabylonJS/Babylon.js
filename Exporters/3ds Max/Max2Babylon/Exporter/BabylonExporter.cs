@@ -111,11 +111,21 @@ namespace Max2Babylon
             {
                 var forceSave = Loader.Core.FileSave;
 
-                if (callerForm != null)
-                {
-                    callerForm.BringToFront();
-                }
+                callerForm?.BringToFront();
             }
+
+            // Producer
+            babylonScene.producer = new BabylonProducer
+            {
+                name = "3dsmax",
+#if MAX2017
+                version = "2017",
+#else
+                version = Loader.Core.ProductVersion.ToString(),
+#endif
+                exporter_version = "0.4.5",
+                file = Path.GetFileName(outputFile)
+            };
 
             // Global
             babylonScene.autoClear = true;
@@ -158,9 +168,17 @@ namespace Max2Babylon
             var camerasTab = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Camera);
             for (int ix = 0; ix < camerasTab.Count; ++ix)
             {
+#if MAX2017
+                var indexer = ix;
+#else
                 var indexer = new IntPtr(ix);
+#endif
                 var cameraNode = camerasTab[indexer];
+
+#if !MAX2017
                 Marshal.FreeHGlobal(indexer);
+#endif
+                
                 ExportCamera(gameScene, cameraNode, babylonScene);
 
                 if (mainCamera == null && babylonScene.CamerasList.Count > 0)
@@ -197,7 +215,7 @@ namespace Max2Babylon
                         babylonScene.fogColor = fog.GetColor(0).ToArray();
                         babylonScene.fogMode = 3;
                     }
-#if !MAX2015 && !MAX2016
+#if !MAX2015 && !MAX2016 && !MAX2017
                     else
                     {
                         var paramBlock = atmospheric.GetReference(0) as IIParamBlock;
@@ -222,9 +240,16 @@ namespace Max2Babylon
             var progression = 10.0f;
             for (int ix = 0; ix < meshes.Count; ++ix)
             {
+#if MAX2017
+                var indexer = ix;
+#else
                 var indexer = new IntPtr(ix);
+#endif
                 var meshNode = meshes[indexer];
+
+#if !MAX2017
                 Marshal.FreeHGlobal(indexer);
+#endif
                 ExportMesh(gameScene, meshNode, babylonScene);
 
 
@@ -251,7 +276,11 @@ namespace Max2Babylon
             var lightNodes = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Light);
             for (var i = 0; i < lightNodes.Count; ++i)
             {
-                ExportLight(gameScene, lightNodes[new IntPtr(i)], babylonScene);
+#if MAX2017
+                ExportLight(gameScene, lightNodes[i], babylonScene);
+#else
+                    ExportLight(gameScene, lightNodes[new IntPtr(i)], babylonScene);
+#endif
                 CheckCancelled();
             }
 

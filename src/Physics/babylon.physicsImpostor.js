@@ -324,6 +324,10 @@ var BABYLON;
         };
         PhysicsImpostor.prototype.dispose = function () {
             var _this = this;
+            //no dispose if no physics engine is available.
+            if (!this._physicsEngine) {
+                return;
+            }
             this._joints.forEach(function (j) {
                 _this._physicsEngine.removeJoint(_this, j.otherImpostor, j.joint);
             });
@@ -356,6 +360,6 @@ var BABYLON;
         PhysicsImpostor.ParticleImpostor = 8;
         PhysicsImpostor.HeightmapImpostor = 9;
         return PhysicsImpostor;
-    })();
+    }());
     BABYLON.PhysicsImpostor = PhysicsImpostor;
 })(BABYLON || (BABYLON = {}));
