@@ -1,9 +1,6 @@
 ﻿module BABYLON {
+
     export class Render2DContext {
-        camera: Camera;
-        parentVisibleState: boolean;
-        parentTransform: Matrix;
-        parentTransformStep: number;
         forceRefreshPrimitive: boolean;
     }
 
@@ -33,7 +30,7 @@
             this._id = id;
             this.propertyChanged = new Observable<PropertyChangedInfo>();
             this._children = new Array<Prim2DBase>();
-            this._parentTranformStep = 0;
+            this._globalTransformProcessStep = 0;
             this._globalTransformStep = 0;
 
             if (this instanceof Group2D) {
@@ -105,12 +102,21 @@
         public get scale(): number {
             return this._scale;
         }
-
+        
         @instanceLevelProperty(4, pi => Prim2DBase.originProperty = pi, false, true)
         public set origin(value: Vector2) {
             this._origin = value;
         }
 
+        /**
+         * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
+         * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
+         * For instance:
+         * 0,0 means the center is top/left
+         * 0.5,0.5 means the center is at the center of the primtive
+         * 0,1 means the center is bottom/left
+         * @returns The normalized center.
+         */
         public get origin(): Vector2 {
             return this._origin;
         }
@@ -163,19 +169,10 @@
                 this._boundingInfo = this.levelBoundingInfo.clone();
                 let bi = this._boundingInfo;
 
-                let localTransform = new Matrix();
-                if (this.parent) {
-                    this.globalTransform.multiplyToRef(Matrix.Invert(this.parent.globalTransform), localTransform);
-                } else {
-                    localTransform = this.globalTransform;
-                }
-                let invLocalTransform = Matrix.Invert(localTransform);
-
-                this.levelBoundingInfo.transformToRef(localTransform, bi);
-
                 var tps = new BoundingInfo2D();
                 for (let curChild of this._children) {
-                    curChild.boundingInfo.transformToRef(curChild.globalTransform.multiply(invLocalTransform), tps);
+                    let t = curChild.globalTransform.multiply(this.invGlobalTransform);
+                    curChild.boundingInfo.transformToRef(t, curChild.origin, tps);
                     bi.unionToRef(tps, bi);
                 }
 
@@ -195,7 +192,7 @@
 
             // Move to first position
             if (!previous) {
-                prevOffset = 0;
+                prevOffset = 1;
                 nextOffset = this._children[1]._siblingDepthOffset;
             } else {
                 prevOffset = this._children[prevIndex]._siblingDepthOffset;
@@ -209,12 +206,14 @@
 
         private addChild(child: Prim2DBase) {
             child._siblingDepthOffset = (this._children.length + 1) * this.owner.hierarchySiblingZDelta;
+            child._depthLevel = this._depthLevel + 1;
+            child._hierarchyDepthOffset = child._depthLevel * this.owner.hierarchyLevelZFactor;
             this._children.push(child);
 
         }
 
         protected getActualZOffset(): number {
-            return this._zOrder || this._siblingDepthOffset;
+            return this._zOrder || 1-(this._siblingDepthOffset + this._hierarchyDepthOffset);
         }
 
         protected onPrimBecomesDirty() {
@@ -224,18 +223,7 @@
         }
 
         public needPrepare(): boolean {
-            return this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformPreviousStep !== this._globalTransformStep);
-        }
-
-        protected _buildChildContext(context: Render2DContext): Render2DContext {
-            var childContext = new Render2DContext();
-            childContext.camera = context.camera;
-            childContext.parentVisibleState = context.parentVisibleState && this.levelVisible;
-            childContext.parentTransform = this._globalTransform;
-            childContext.parentTransformStep = this._globalTransformStep;
-            childContext.forceRefreshPrimitive = context.forceRefreshPrimitive;
-
-            return childContext;
+            return this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         }
 
         public _prepareRender(context: Render2DContext) {
@@ -259,14 +247,13 @@
             //  - must have children
             //  - the global transform of this level have changed, or
             //  - the visible state of primitive has changed
-            if (this._children.length > 0 && ((this._globalTransformPreviousStep !== this._globalTransformStep) ||
+            if (this._children.length > 0 && ((this._globalTransformProcessStep !== this._globalTransformStep) ||
                 this.checkPropertiesDirty(Prim2DBase.isVisibleProperty.flagId))) {
 
-                var childContext = this._buildChildContext(context);
                 this._children.forEach(c => {
                     // As usual stop the recursion if we meet a renderable group
                     if (!(c instanceof Group2D && c.isRenderableGroup)) {
-                        c._prepareRender(childContext);
+                        c._prepareRender(context);
                     }
                 });
             }
@@ -282,41 +269,43 @@
             }
         }
 
-        protected updateGlobalTransVisOf(list: Prim2DBase[], context: Render2DContext, recurse: boolean) {
+        protected updateGlobalTransVisOf(list: Prim2DBase[], recurse: boolean) {
             for (let cur of list) {
-                cur.updateGlobalTransVis(context, recurse);
+                cur.updateGlobalTransVis(recurse);
             }
         }
 
-        protected updateGlobalTransVis(context: Render2DContext, recurse: boolean) {
-            this._globalTransformPreviousStep = this._globalTransformStep;
-            this.isVisible = context.parentVisibleState && this.levelVisible;
-
-            // Detect if nothing changed
-            let tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
-            if ((context.parentTransformStep === this._parentTranformStep) && !this.checkPropertiesDirty(tflags)) {
-                return;
+        protected updateGlobalTransVis(recurse: boolean) {
+            // Check if the parent is synced
+            if (this._parent && this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
+                this._parent.updateGlobalTransVis(false);
             }
 
-            var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
-            var local = Matrix.Compose(new Vector3(this._scale, this._scale, this._scale), rot, new Vector3(this._position.x, this._position.y, 0));
+            // Check if we must update this prim
+            if (this === <any>this.owner || this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
+                this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
 
-            this._globalTransform = context.parentTransform.multiply(local);
-            this._invGlobalTransform = Matrix.Invert(this._globalTransform);
+                // Detect if either the parent or this node changed
+                let tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
+                if ((this._parent && this._parent._globalTransformStep !== this._parentTransformStep) || this.checkPropertiesDirty(tflags)) {
+                    var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
+                    var local = Matrix.Compose(new Vector3(this._scale, this._scale, this._scale), rot, new Vector3(this._position.x, this._position.y, 0));
 
-            ++this._globalTransformStep;
-            this._parentTranformStep = context.parentTransformStep;
+                    this._globalTransform = this._parent ? local.multiply(this._parent._globalTransform) : local;
+                    this._invGlobalTransform = Matrix.Invert(this._globalTransform);
 
-            this.clearPropertiesDirty(tflags);
+                    this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
+                    this._parentTransformStep = this._parent ? this._parent._globalTransformStep : 0;
 
+                    this.clearPropertiesDirty(tflags);
+                }
+                this._globalTransformProcessStep = this.owner._globalTransformProcessStep;
+            }
             if (recurse) {
-                var childrenContext = this._buildChildContext(context);
-
                 for (let child of this._children) {
                     // Stop the recursion if we meet a renderable group
-                    child.updateGlobalTransVis(childrenContext, !(child instanceof Group2D && child.isRenderableGroup));
+                    child.updateGlobalTransVis(!(child instanceof Group2D && child.isRenderableGroup));
                 }
-
             }
         }
 
@@ -325,6 +314,8 @@
         protected _children: Array<Prim2DBase>;
         private _renderGroup: Group2D;
         private _hierarchyDepth: number;
+        protected _depthLevel: number;
+        private _hierarchyDepthOffset: number;
         private _siblingDepthOffset: number;
         private _zOrder: number;
         private _levelVisible: boolean;
@@ -335,9 +326,17 @@
         private _rotation: number;
         private _scale: number;
         private _origin: Vector2;
-        protected _parentTranformStep: number;
+
+        // Stores the step of the parent for which the current global tranform was computed
+        // If the parent has a new step, it means this prim's global transform must be updated
+        protected _parentTransformStep: number;
+
+        // Stores the step corresponding of the global transform for this prim
+        // If a child prim has an older _parentTransformStep it means the chidl's transform should be updated
         protected _globalTransformStep: number;
-        protected _globalTransformPreviousStep: number;
+
+        // Stores the previous 
+        protected _globalTransformProcessStep: number;
         protected _globalTransform: Matrix;
         protected _invGlobalTransform: Matrix;
     }

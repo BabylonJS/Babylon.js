@@ -21,21 +21,32 @@ varying vec4 vColor;
 void main(void) {
 
 	vec2 pos2;
+
+	//vec2 off = vec2(1.0 / textureSize.x, 1.0 / textureSize.y);
+	vec2 off = vec2(0.0, 0.0);
+
+	// Left/Top
 	if (index == 0.0) {
 		pos2 = vec2(0.0, 0.0);
-		vUV = vec2(topLeftUV.x + (frame*sizeUV.x), 1.0 - topLeftUV.y);
+		vUV = vec2(topLeftUV.x + (frame*sizeUV.x) + off.x, topLeftUV.y - off.y);
 	}
+
+	// Left/Bottom
 	else if (index == 1.0) {
 		pos2 = vec2(0.0,  1.0);
-		vUV = vec2(topLeftUV.x + (frame*sizeUV.x), 1.0 - (topLeftUV.y + sizeUV.y));
+		vUV = vec2(topLeftUV.x + (frame*sizeUV.x) + off.x, (topLeftUV.y + sizeUV.y));
 	}
+
+	// Right/Bottom
 	else if (index == 2.0) {
 		pos2 = vec2( 1.0,  1.0);
-		vUV = vec2(topLeftUV.x + sizeUV.x + (frame*sizeUV.x), 1.0 - (topLeftUV.y + sizeUV.y));
+		vUV = vec2(topLeftUV.x + sizeUV.x + (frame*sizeUV.x), (topLeftUV.y + sizeUV.y));
 	}
+
+	// Right/Top
 	else if (index == 3.0) {
 		pos2 = vec2( 1.0, 0.0);
-		vUV = vec2(topLeftUV.x + sizeUV.x + (frame*sizeUV.x), 1.0 - topLeftUV.y);
+		vUV = vec2(topLeftUV.x + sizeUV.x + (frame*sizeUV.x), topLeftUV.y - off.y);
 	}
 
 	if (invertY == 1.0) {

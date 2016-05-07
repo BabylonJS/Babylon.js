@@ -79,8 +79,8 @@
             return cat;
         }
 
-        protected refreshInstanceDataParts(part: InstanceDataBase): boolean {
-            if (!super.refreshInstanceDataParts(part)) {
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
+            if (!super.refreshInstanceDataPart(part)) {
                 return false;
             }
 

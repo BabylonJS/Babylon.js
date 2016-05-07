@@ -61,7 +61,7 @@
 
     export class Rectangle2DInstanceData extends Shape2DInstanceData {
         constructor(partId: number) {
-            super(partId);
+            super(partId, 1);
         }
 
         @instanceData()
@@ -106,8 +106,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            this._levelBoundingInfo.radius = Math.sqrt(this.size.width * this.size.width + this.size.height * this.size.height);
-            this._levelBoundingInfo.extent = this.size.clone();
+            BoundingInfo2D.ConstructFromSizeToRef(this.size, this._levelBoundingInfo);
         }
 
         protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size: Size, roundRadius = 0, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
@@ -161,10 +160,10 @@
                 let ib = new Float32Array(triCount * 3);
                 for (let i = 0; i < triCount; i++) {
                     ib[i * 3 + 0] = 0;
-                    ib[i * 3 + 1] = i + 1;
-                    ib[i * 3 + 2] = i + 2;
+                    ib[i * 3 + 2] = i + 1;
+                    ib[i * 3 + 1] = i + 2;
                 }
-                ib[triCount * 3 - 1] = 1;
+                ib[triCount * 3 - 2] = 1;
 
                 renderCache.fillIB = engine.createIndexBuffer(ib);
                 renderCache.fillIndicesCount = triCount * 3;
@@ -220,8 +219,8 @@
             return res;
         }
 
-        protected refreshInstanceDataParts(part: InstanceDataBase): boolean {
-            if (!super.refreshInstanceDataParts(part)) {
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
+            if (!super.refreshInstanceDataPart(part)) {
                 return false;
             }
             if (part.id === Shape2D.SHAPE2D_BORDERPARTID) {

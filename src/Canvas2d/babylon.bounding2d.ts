@@ -7,18 +7,74 @@
     export class BoundingInfo2D {
 
         /**
-         * The radius of the bounding circle, from the origin of the bounded object
+         * The coordinate of the center of the bounding info
+         */
+        public center: Vector2;
+
+        /**
+         * The radius of the bounding circle, from the center of the bounded object
          */
         public radius: number;
 
         /**
-         * The extent of the bounding rectangle, from the orgini of the bounded object.
+         * The extent of the bounding rectangle, from the center of the bounded object.
          * This is an absolute value in both X and Y of the vector which describe the right/top corner of the rectangle, you can easily reconstruct the whole rectangle by negating X &| Y.
          */
-        public extent: Size;
+        public extent: Vector2;
 
         constructor() {
-            this.extent = new Size(0, 0);
+            this.radius = 0;
+            this.center = Vector2.Zero();
+            this.extent = Vector2.Zero();
+        }
+
+        public static ConstructFromSize(size: Size): BoundingInfo2D {
+            let r = new BoundingInfo2D();
+            BoundingInfo2D.ConstructFromSizeToRef(size, r);
+            return r;
+        }
+
+        public static ConstructFromRadius(radius: number): BoundingInfo2D {
+            let r = new BoundingInfo2D();
+            BoundingInfo2D.ConstructFromRadiusToRef(radius, r);
+            return r;
+        }
+
+        public static ConstructFromPoints(points: Vector2[]): BoundingInfo2D {
+            let r = new BoundingInfo2D();
+            BoundingInfo2D.ConstructFromPointsToRef(points, r);
+
+            return r;
+        }
+
+        public static ConstructFromSizeToRef(size: Size, b: BoundingInfo2D) {
+            b.center = new Vector2(size.width / 2, size.height / 2);
+            b.extent = b.center.clone();
+            b.radius = b.extent.length();
+        }
+
+        public static ConstructFromRadiusToRef(radius: number, b: BoundingInfo2D) {
+            b.center = Vector2.Zero();
+            b.extent = new Vector2(radius, radius);
+            b.radius = radius;
+        }
+
+        public static ConstructFromPointsToRef(points: Vector2[], b: BoundingInfo2D) {
+            let xmin = Number.MAX_VALUE, ymin = Number.MAX_VALUE, xmax = Number.MIN_VALUE, ymax = Number.MIN_VALUE;
+            for (let p of points) {
+                xmin = Math.min(p.x, xmin);
+                xmax = Math.max(p.x, xmax);
+                ymin = Math.min(p.y, ymin);
+                ymax = Math.max(p.y, ymax);
+            }
+            BoundingInfo2D.ConstructFromMinMaxToRef(xmin, xmax, ymin, ymax, b);
+        }
+
+
+        public static ConstructFromMinMaxToRef(xmin: number, xmax: number, ymin: number, ymax: number, b: BoundingInfo2D) {
+            b.center = new Vector2(xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2);
+            b.extent = new Vector2(xmax - b.center.x, ymax - b.center.y);
+            b.radius = b.extent.length();
         }
 
         /**
@@ -27,9 +83,21 @@
          */
         public clone(): BoundingInfo2D {
             let r = new BoundingInfo2D();
+            r.center = this.center.clone();
             r.radius = this.radius;
             r.extent = this.extent.clone();
             return r;
+        }
+
+        public max(): Vector2 {
+            let r = Vector2.Zero();
+            this.maxToRef(r);
+            return r;
+        }
+
+        public maxToRef(result: Vector2) {
+            result.x = this.center.x + this.extent.x;
+            result.y = this.center.y + this.extent.y;
         }
 
         /**
@@ -37,9 +105,9 @@
          * @param matrix the transformation matrix to apply
          * @return the new instance containing the result of the transformation applied on this BoundingInfo2D
          */
-        public transform(matrix: Matrix): BoundingInfo2D {
+        public transform(matrix: Matrix, origin: Vector2=null): BoundingInfo2D {
             var r = new BoundingInfo2D();
-            this.transformToRef(matrix, r);
+            this.transformToRef(matrix, origin, r);
             return r;
         }
 
@@ -57,55 +125,30 @@
         /**
          * Transform this BoundingInfo2D with a given matrix and store the result in an existing BoundingInfo2D instance.
          * This is a GC friendly version, try to use it as much as possible, specially if your transformation is inside a loop, allocate the result object once for good outside of the loop and use it everytime.
+         * @param origin An optional normalized origin to apply before the transformation. 0;0 is top/left, 0.5;0.5 is center, etc.
          * @param matrix The matrix to use to compute the transformation
          * @param result A VALID (i.e. allocated) BoundingInfo2D object where the result will be stored
          */
-        public transformToRef(matrix: Matrix, result: BoundingInfo2D) {
-            // Extract scale from matrix
-            let xs = MathTools.Sign(matrix.m[0] * matrix.m[1] * matrix.m[2] * matrix.m[3]) < 0 ? -1 : 1;
-            let ys = MathTools.Sign(matrix.m[4] * matrix.m[5] * matrix.m[6] * matrix.m[7]) < 0 ? -1 : 1;
-            let scaleX = xs * Math.sqrt(matrix.m[0] * matrix.m[0] + matrix.m[1] * matrix.m[1] + matrix.m[2] * matrix.m[2]);
-            let scaleY = ys * Math.sqrt(matrix.m[4] * matrix.m[4] + matrix.m[5] * matrix.m[5] + matrix.m[6] * matrix.m[6]);
-
-            // Get translation
-            let trans = matrix.getTranslation();
-            let transLength = trans.length();
-
-            if (transLength < Epsilon) {
-                result.radius = this.radius * Math.max(scaleX, scaleY);
-            } else {
-                // Compute the radius vector by applying the transformation matrix manually
-                let rx = (trans.x / transLength) * (transLength + this.radius) * scaleX;
-                let ry = (trans.y / transLength) * (transLength + this.radius) * scaleY;
-
-                // Store the vector length as the new radius
-                result.radius = Math.sqrt(rx * rx + ry * ry);
-            }
-
+        public transformToRef(matrix: Matrix, origin: Vector2, result: BoundingInfo2D) {
             // Construct a bounding box based on the extent values
             let p = new Array<Vector2>(4);
-            p[0] = new Vector2(this.extent.width, this.extent.height);
-            p[1] = new Vector2(this.extent.width, -this.extent.height);
-            p[2] = new Vector2(-this.extent.width, -this.extent.height);
-            p[3] = new Vector2(-this.extent.width, this.extent.height);
+            p[0] = new Vector2(this.center.x + this.extent.x, this.center.y + this.extent.y);
+            p[1] = new Vector2(this.center.x + this.extent.x, this.center.y - this.extent.y);
+            p[2] = new Vector2(this.center.x - this.extent.x, this.center.y - this.extent.y);
+            p[3] = new Vector2(this.center.x - this.extent.x, this.center.y + this.extent.y);
+
+            //if (origin) {
+            //    let off = new Vector2((p[0].x - p[2].x) * origin.x, (p[0].y - p[2].y) * origin.y);
+            //    for (let j = 0; j < 4; j++) {
+            //        p[j].subtractInPlace(off);
+            //    }
+            //}
 
             // Transform the four points of the bounding box with the matrix
             for (let i = 0; i < 4; i++) {
-                p[i] = Vector2.Transform(p[i], matrix);
+                Vector2.TransformToRef(p[i], matrix, p[i]);
             }
-
-            // Take the first point as reference
-            let maxW = Math.abs(p[0].x), maxH = Math.abs(p[0].y);
-
-            // Parse the three others, compare them to the reference and keep the biggest
-            for (let i = 1; i < 4; i++) {
-                maxW = Math.max(Math.abs(p[i].x), maxW);
-                maxH = Math.max(Math.abs(p[i].y), maxH);
-            }
-
-            // Store the new extent
-            result.extent.width = maxW * scaleX;
-            result.extent.height = maxH * scaleY;
+            BoundingInfo2D.ConstructFromPointsToRef(p, result);
         }
 
         /**
@@ -115,9 +158,11 @@
          * @param result a VALID BoundingInfo2D instance (i.e. allocated) where the result will be stored
          */
         public unionToRef(other: BoundingInfo2D, result: BoundingInfo2D) {
-            result.radius = Math.max(this.radius, other.radius);
-            result.extent.width = Math.max(this.extent.width, other.extent.width);
-            result.extent.height = Math.max(this.extent.height, other.extent.height);
+            let xmax = Math.max(this.center.x + this.extent.x, other.center.x + other.extent.x);
+            let ymax = Math.max(this.center.y + this.extent.y, other.center.y + other.extent.y);
+            let xmin = Math.min(this.center.x - this.extent.x, other.center.x - other.extent.x);
+            let ymin = Math.min(this.center.y - this.extent.y, other.center.y - other.extent.y);
+            BoundingInfo2D.ConstructFromMinMaxToRef(xmin, xmax, ymin, ymax, result);
         }
 
     }

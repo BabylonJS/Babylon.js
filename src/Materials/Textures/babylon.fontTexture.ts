@@ -13,6 +13,8 @@
          * The normalized ([0;1]) right/bottom position of the character in the texture
          */
         bottomRightUV: Vector2;
+
+        charWidth: number;
     }
 
     interface ICharInfoMap {
@@ -29,9 +31,50 @@
         private _curCharCount = 0;
         private _lastUpdateCharCount = -1;
         private _spaceWidth;
+        private _usedCounter = 1;
 
-        public get spaceWidth() {
+        public get spaceWidth(): number {
             return this._spaceWidth;
+        }
+
+        public get lineHeight(): number {
+            return this._lineHeight;
+        }
+
+        public static GetCachedFontTexture(scene: Scene, fontName: string) {
+            let s = <any>scene;
+            if (!s.__fontTextureCache__) {
+                s.__fontTextureCache__ = new StringDictionary<FontTexture>();
+            }
+
+            let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
+
+            let lfn = fontName.toLocaleLowerCase();
+            let ft = dic.get(lfn);
+            if (ft) {
+                ++ft._usedCounter;
+                return ft;
+            }
+
+            ft = new FontTexture(null, lfn, scene);
+            dic.add(lfn, ft);
+
+            return ft;
+        }
+
+        public static ReleaseCachedFontTexture(scene: Scene, fontName: string) {
+            let s = <any>scene;
+            let dic = <StringDictionary<FontTexture>>s.__fontTextureCache__;
+            if (!dic) {
+                return;
+            }
+
+            let lfn = fontName.toLocaleLowerCase();
+            var font = dic.get(lfn);
+            if (--font._usedCounter === 0) {
+                dic.remove(lfn);
+                font.dispose();
+            }
         }
 
         /**
@@ -131,7 +174,8 @@
 
             // Fill the CharInfo object
             info.topLeftUV = new Vector2(this._currentFreePosition.x / textureSize.width, this._currentFreePosition.y / textureSize.height);
-            info.bottomRightUV = new Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight+1) / textureSize.height));
+            info.bottomRightUV = new Vector2(info.topLeftUV.x + (width / textureSize.width), info.topLeftUV.y + ((this._lineHeight + 1) / textureSize.height));
+            info.charWidth = width;
 
             // Add the info structure
             this._charInfos[char] = info;
@@ -141,6 +185,46 @@
             this._currentFreePosition.x += width + xMargin;
 
             return info;
+        }
+
+        public measureText(text: string, tabulationSize: number = 4): Size {
+            let maxWidth: number = 0;
+            let curWidth: number = 0;
+            let lineCount = 1;
+            let charxpos: number = 0;
+
+            // Parse each char of the string
+            for (var char of text) {
+
+                // Next line feed?
+                if (char === "\n") {
+                    maxWidth = Math.max(maxWidth, curWidth);
+                    charxpos = 0;
+                    curWidth = 0;
+                    ++lineCount;
+                    continue;
+                }
+
+                // Tabulation ?
+                if (char === "\t") {
+                    let nextPos = charxpos + tabulationSize;
+                    nextPos = nextPos - (nextPos % tabulationSize);
+
+                    curWidth += (nextPos - charxpos) * this.spaceWidth;
+                    charxpos = nextPos;
+                    continue;
+                }
+
+                if (char < " ") {
+                    continue;
+                }
+
+                curWidth += this.getChar(char).charWidth;
+                ++charxpos;
+            }
+            maxWidth = Math.max(maxWidth, curWidth);
+
+            return new Size(maxWidth, lineCount * this._lineHeight);
         }
 
         // More info here: https://videlais.com/2014/03/16/the-many-and-varied-problems-with-measuring-font-height-for-html5-canvas/
