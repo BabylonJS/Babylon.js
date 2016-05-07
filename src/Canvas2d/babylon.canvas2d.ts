@@ -85,6 +85,28 @@
                 this._background.levelVisible = false;
             }
             this._isScreeSpace = isScreenSpace;
+
+            if (this._isScreeSpace) {
+                this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
+                    this.render();
+                });
+            }
+        }
+
+        public dispose(): boolean {
+            if (!super.dispose()) {
+                return false;
+            }
+
+            if (this._beforeRenderObserver) {
+                this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
+                this._beforeRenderObserver = null;
+            }
+
+            if (this._afterRenderObserver) {
+                this._scene.onAfterRenderObservable.remove(this._afterRenderObserver);
+                this._afterRenderObserver = null;
+            }
         }
 
         /**
@@ -189,13 +211,16 @@
         private _hierarchyLevelMaxSiblingCount: number;
         private _hierarchySiblingZDelta: number;
         private _groupCacheMaps: MapTexture[];
+        private _beforeRenderObserver: Observer<Scene>;
+        private _afterRenderObserver: Observer<Scene>;
+
         public _renderingSize: Size;
 
         /**
          * Method that renders the Canvas
          * @param camera the current camera.
          */
-        public render(camera: Camera) {
+        public render() {
             this._renderingSize.width = this.engine.getRenderWidth();
             this._renderingSize.height = this.engine.getRenderHeight();
 
