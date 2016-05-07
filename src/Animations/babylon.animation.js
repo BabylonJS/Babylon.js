@@ -10,7 +10,7 @@ var BABYLON;
             return new AnimationRange(this.name, this.from, this.to);
         };
         return AnimationRange;
-    })();
+    }());
     BABYLON.AnimationRange = AnimationRange;
     /**
      * Composed of a frame, and an action function
@@ -23,7 +23,7 @@ var BABYLON;
             this.isDone = false;
         }
         return AnimationEvent;
-    })();
+    }());
     BABYLON.AnimationEvent = AnimationEvent;
     var PathCursor = (function () {
         function PathCursor(path) {
@@ -80,7 +80,7 @@ var BABYLON;
             return this;
         };
         return PathCursor;
-    })();
+    }());
     BABYLON.PathCursor = PathCursor;
     var Animation = (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode, enableBlending) {
@@ -155,8 +155,8 @@ var BABYLON;
                 ret += ", Ranges: {";
                 var first = true;
                 for (var name in this._ranges) {
-                    if (!first) {
-                        ret + ", ";
+                    if (first) {
+                        ret += ", ";
                         first = false;
                     }
                     ret += name;
@@ -390,15 +390,23 @@ var BABYLON;
             // Blending
             if (this.enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
-                    this._originalBlendValue = destination[path];
+                    if (destination[path].clone) {
+                        this._originalBlendValue = destination[path].clone();
+                    }
+                    else {
+                        this._originalBlendValue = destination[path];
+                    }
                 }
                 if (this._originalBlendValue.prototype) {
                     if (this._originalBlendValue.prototype.Lerp) {
-                        destination[path] = this._originalBlendValue.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                        destination[path] = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
                     }
                     else {
                         destination[path] = currentValue;
                     }
+                }
+                else if (this._originalBlendValue.m) {
+                    destination[path] = BABYLON.Matrix.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
                 }
                 else {
                     destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
@@ -642,9 +650,10 @@ var BABYLON;
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
             var dataType = parsedAnimation.dataType;
             var keys = [];
-            for (var index = 0; index < parsedAnimation.keys.length; index++) {
+            var data;
+            var index;
+            for (index = 0; index < parsedAnimation.keys.length; index++) {
                 var key = parsedAnimation.keys[index];
-                var data;
                 switch (dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
                         data = key.values[0];
@@ -670,7 +679,7 @@ var BABYLON;
             }
             animation.setKeys(keys);
             if (parsedAnimation.ranges) {
-                for (var index = 0; index < parsedAnimation.ranges.length; index++) {
+                for (index = 0; index < parsedAnimation.ranges.length; index++) {
                     data = parsedAnimation.ranges[index];
                     animation.createRange(data.name, data.from, data.to);
                 }
@@ -697,6 +706,6 @@ var BABYLON;
         Animation._ANIMATIONLOOPMODE_CYCLE = 1;
         Animation._ANIMATIONLOOPMODE_CONSTANT = 2;
         return Animation;
-    })();
+    }());
     BABYLON.Animation = Animation;
 })(BABYLON || (BABYLON = {}));

@@ -1,10 +1,10 @@
 ﻿module BABYLON {
-    var maxSimultaneousLights = 4;
-
     export class MaterialHelper {
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines): boolean {
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, maxSimultaneousLights = 4): boolean {
             var lightIndex = 0;
             var needNormals = false;
+            var needRebuild = false;
+
             for (var index = 0; index < scene.lights.length; index++) {
                 var light = scene.lights[index];
 
@@ -42,6 +42,11 @@
                     continue;
                 }
                 needNormals = true;
+
+                if (defines["LIGHT" + lightIndex] === undefined) {
+                    needRebuild = true;
+                }
+
                 defines["LIGHT" + lightIndex] = true;
 
                 var type;
@@ -55,6 +60,10 @@
                     type = "DIRLIGHT" + lightIndex;
                 }
 
+                if (defines[type] === undefined) {
+                    needRebuild = true;
+                }
+
                 defines[type] = true;
 
                 // Specular
@@ -66,15 +75,26 @@
                 if (scene.shadowsEnabled) {
                     var shadowGenerator = light.getShadowGenerator();
                     if (mesh && mesh.receiveShadows && shadowGenerator) {
+                        if (defines["SHADOW" + lightIndex] === undefined) {
+                            needRebuild = true;
+                        }
                         defines["SHADOW" + lightIndex] = true;
 
                         defines["SHADOWS"] = true;
 
                         if (shadowGenerator.useVarianceShadowMap || shadowGenerator.useBlurVarianceShadowMap) {
+                            if (defines["SHADOWVSM" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
+
                             defines["SHADOWVSM" + lightIndex] = true;
                         }
 
                         if (shadowGenerator.usePoissonSampling) {
+                            if (defines["SHADOWPCF" + lightIndex] === undefined) {
+                                needRebuild = true;
+                            }
+
                             defines["SHADOWPCF" + lightIndex] = true;
                         }
                     }
@@ -85,13 +105,37 @@
                     break;
             }
 
+            if (needRebuild) {
+                defines.rebuild();
+            }
+
             return needNormals;
         }
 
-        public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks): void {
+        public static PrepareUniformsAndSamplersList(uniformsList: string[], samplersList: string[], defines: MaterialDefines, maxSimultaneousLights = 4): void {
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
-                    continue;
+                    break;
+                }
+
+                uniformsList.push(
+                    "vLightData" + lightIndex,
+                    "vLightDiffuse" + lightIndex,
+                    "vLightSpecular" + lightIndex,
+                    "vLightDirection" + lightIndex,
+                    "vLightGround" + lightIndex,
+                    "lightMatrix" + lightIndex,
+                    "shadowsInfo" + lightIndex
+                );
+
+                samplersList.push("shadowSampler" + lightIndex);
+            }
+        }
+
+        public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
+            for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+                if (!defines["LIGHT" + lightIndex]) {
+                    break;
                 }
 
                 if (lightIndex > 0) {
@@ -169,7 +213,7 @@
             }
         }
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines) {
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4) {
             var lightIndex = 0;
             var depthValuesAlreadySet = false;
             for (var index = 0; index < scene.lights.length; index++) {

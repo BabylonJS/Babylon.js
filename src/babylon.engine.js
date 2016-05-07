@@ -99,12 +99,6 @@ var BABYLON;
             partialLoad(files[index], index, loadedImages, scene, onfinish);
         }
     };
-    var InstancingAttributeInfo = (function () {
-        function InstancingAttributeInfo() {
-        }
-        return InstancingAttributeInfo;
-    }());
-    BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
@@ -597,16 +591,9 @@ var BABYLON;
             this._cachedViewport = viewport;
             this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
         };
-        /**
-         * Directly set the WebGL Viewport
-         * The x, y, width & height are directly passed to the WebGL call
-         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state.
-         */
         Engine.prototype.setDirectViewport = function (x, y, width, height) {
-            var currentViewport = this._cachedViewport;
             this._cachedViewport = null;
             this._gl.viewport(x, y, width, height);
-            return currentViewport;
         };
         Engine.prototype.beginFrame = function () {
             this._measureFps();
@@ -820,46 +807,20 @@ var BABYLON;
         };
         Engine.prototype.updateAndBindInstancesBuffer = function (instancesBuffer, data, offsetLocations) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            if (data) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
-            }
-            if (offsetLocations[0] instanceof InstancingAttributeInfo) {
-                var stride = 0;
-                for (var i = 0; i < offsetLocations.length; i++) {
-                    var ai = offsetLocations[i];
-                    stride += ai.attributeSize * 4;
-                }
-                for (var i = 0; i < offsetLocations.length; i++) {
-                    var ai = offsetLocations[i];
-                    this._gl.enableVertexAttribArray(ai.index);
-                    this._gl.vertexAttribPointer(ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
-                }
-            }
-            else {
-                for (var index = 0; index < 4; index++) {
-                    var offsetLocation = offsetLocations[index];
-                    this._gl.enableVertexAttribArray(offsetLocation);
-                    this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
-                }
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+            for (var index = 0; index < 4; index++) {
+                var offsetLocation = offsetLocations[index];
+                this._gl.enableVertexAttribArray(offsetLocation);
+                this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
             }
         };
         Engine.prototype.unBindInstancesBuffer = function (instancesBuffer, offsetLocations) {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            if (offsetLocations[0] instanceof InstancingAttributeInfo) {
-                for (var i = 0; i < offsetLocations.length; i++) {
-                    var ai = offsetLocations[i];
-                    this._gl.disableVertexAttribArray(ai.index);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 0);
-                }
-            }
-            else {
-                for (var index = 0; index < 4; index++) {
-                    var offsetLocation = offsetLocations[index];
-                    this._gl.disableVertexAttribArray(offsetLocation);
-                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
-                }
+            for (var index = 0; index < 4; index++) {
+                var offsetLocation = offsetLocations[index];
+                this._gl.disableVertexAttribArray(offsetLocation);
+                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
             }
         };
         Engine.prototype.applyStates = function () {
@@ -908,14 +869,14 @@ var BABYLON;
                 }
             }
         };
-        Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, fallbacks, onCompiled, onError) {
+        Engine.prototype.createEffect = function (baseName, attributesNames, uniformsNames, samplers, defines, fallbacks, onCompiled, onError, indexParameters) {
             var vertex = baseName.vertexElement || baseName.vertex || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName;
             var name = vertex + "+" + fragment + "@" + defines;
             if (this._compiledEffects[name]) {
                 return this._compiledEffects[name];
             }
-            var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError);
+            var effect = new BABYLON.Effect(baseName, attributesNames, uniformsNames, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
             effect._key = name;
             this._compiledEffects[name] = effect;
             return effect;
@@ -1310,6 +1271,9 @@ var BABYLON;
             var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            if (texture._width % 4 !== 0) {
+                this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
+            }
             if (compression) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
             }
@@ -1377,13 +1341,9 @@ var BABYLON;
                 this._gl.bindTexture(this._gl.TEXTURE_2D, null);
             }
         };
-        Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY, premulAlpha) {
-            if (premulAlpha === void 0) { premulAlpha = false; }
+        Engine.prototype.updateDynamicTexture = function (texture, canvas, invertY) {
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
-            if (premulAlpha) {
-                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
-            }
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, canvas);
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -1621,6 +1581,9 @@ var BABYLON;
         Engine.prototype.updateTextureSize = function (texture, width, height) {
             texture._width = width;
             texture._height = height;
+            texture._size = width * height;
+            texture._baseWidth = width;
+            texture._baseHeight = height;
         };
         Engine.prototype.createRawCubeTexture = function (url, scene, size, format, type, noMipmap, callback, mipmmapGenerator) {
             var _this = this;
@@ -1993,4 +1956,3 @@ var BABYLON;
     }());
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.engine.js.map

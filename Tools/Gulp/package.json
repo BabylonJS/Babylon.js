@@ -1,6 +1,6 @@
 {
   "name": "BabylonJS",
-  "version": "2.2.0",
+  "version": "2.4.0",
   "description": "Babylon.js is a 3D engine based on webgl and javascript",
   "main": "",
   "repository": { "url": "https://github.com/BabylonJS/Babylon.js/" },
@@ -11,7 +11,7 @@
     "gulp-uglify": "~1.2.0",
     "gulp-sourcemaps": "~1.5.2",
     "typescript": "^1.7.5",
-    "gulp-typescript": "~2.9.0",
+    "gulp-typescript": "~2.13.0",
     "through2": "~0.6.5",
     "gulp-util": "~3.0.4",
     "gulp-concat": "~2.5.2",

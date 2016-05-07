@@ -16,7 +16,6 @@ uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 uniform vec3 vReflectionColor;
 uniform vec4 vAlbedoColor;
-uniform vec4 vLightRadiuses;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
@@ -55,10 +54,7 @@ varying vec4 vColor;
 #endif
 
 // Lights
-#include<lightFragmentDeclaration>[0]
-#include<lightFragmentDeclaration>[1]
-#include<lightFragmentDeclaration>[2]
-#include<lightFragmentDeclaration>[3]
+#include<lightFragmentDeclaration>[0..maxSimultaneousLights]
 
 // Samplers
 #ifdef ALBEDO
@@ -128,28 +124,34 @@ uniform vec4 emissiveRightColor;
 
 // Reflection
 #ifdef REFLECTION
-uniform vec2 vReflectionInfos;
+    uniform vec2 vReflectionInfos;
 
-#ifdef REFLECTIONMAP_3D
-uniform samplerCube reflectionCubeSampler;
-#else
-uniform sampler2D reflection2DSampler;
-#endif
-
-#ifdef REFLECTIONMAP_SKYBOX
-varying vec3 vPositionUVW;
-#else
-    #ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
-    varying vec3 vDirectionW;
+    #ifdef REFLECTIONMAP_3D
+        uniform samplerCube reflectionCubeSampler;
+    #else
+        uniform sampler2D reflection2DSampler;
     #endif
 
-    #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-    uniform mat4 reflectionMatrix;
+    #ifdef REFLECTIONMAP_SKYBOX
+        varying vec3 vPositionUVW;
+    #else
+        #ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
+            varying vec3 vDirectionW;
+        #endif
+
+        #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
+            uniform mat4 reflectionMatrix;
+        #endif
     #endif
+
+    #include<reflectionFunction>
+
 #endif
 
-#include<reflectionFunction>
-
+#ifdef CAMERACOLORGRADING
+    uniform sampler2D cameraColorGrading2DSampler;
+    uniform vec4 vCameraColorGradingInfos;
+    uniform vec4 vCameraColorGradingScaleOffset;
 #endif
 
 // PBR
@@ -280,10 +282,7 @@ void main(void) {
     float NdotL = -1.;
     lightingInfo info;
 
-#include<pbrLightFunctionsCall>[0]
-#include<pbrLightFunctionsCall>[1]
-#include<pbrLightFunctionsCall>[2]
-#include<pbrLightFunctionsCall>[3]
+#include<pbrLightFunctionsCall>[0..maxSimultaneousLights]
 
 #ifdef SPECULARTERM
     lightSpecularContribution *= vLightingIntensity.w;
@@ -590,8 +589,17 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
 
     finalColor.rgb = toGammaSpace(finalColor.rgb);
 
+#include<logDepthFragment>
+#include<fogFragment>(color, finalColor)
+
 #ifdef CAMERACONTRAST
     finalColor = contrasts(finalColor);
+#endif
+    
+    finalColor.rgb = clamp(finalColor.rgb, 0., 1.);
+    
+#ifdef CAMERACOLORGRADING
+    finalColor = colorGrades(finalColor, cameraColorGrading2DSampler, vCameraColorGradingInfos, vCameraColorGradingScaleOffset);
 #endif
 
     // Normal Display.
@@ -621,9 +629,6 @@ vec3 surfaceEmissiveColor = vEmissiveColor;
     //// Emissive Color
     //vec2 test = vEmissiveUV * 0.5 + 0.5;
     //gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
-
-#include<logDepthFragment>
-#include<fogFragment>(color, finalColor)
 
     gl_FragColor = finalColor;
 }

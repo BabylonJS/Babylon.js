@@ -11,6 +11,6 @@ var BABYLON;
             _super.call(this, name, "pass", null, null, ratio, camera, samplingMode, engine, reusable);
         }
         return PassPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.PassPostProcess = PassPostProcess;
 })(BABYLON || (BABYLON = {}));
