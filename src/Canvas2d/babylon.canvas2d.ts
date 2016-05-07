@@ -68,7 +68,9 @@
 
         protected setupCanvas(scene: Scene, name: string, size: Size, isScreenSpace: boolean = true, cachingstrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
             this._cachingStrategy = cachingstrategy;
-            this._hierarchyLevelZFactor = 100;
+            this._depthLevel = 0;
+            this._hierarchyMaxDepth = 100;
+            this._hierarchyLevelZFactor = 1 / this._hierarchyMaxDepth;
             this._hierarchyLevelMaxSiblingCount = 1000;
             this._hierarchySiblingZDelta = this._hierarchyLevelZFactor / this._hierarchyLevelMaxSiblingCount;
 
@@ -171,6 +173,10 @@
             return this._hierarchySiblingZDelta;
         }
 
+        public get hierarchyLevelZFactor(): number {
+            return this._hierarchyLevelZFactor;
+        }
+
         private _mapCounter = 0;
         private _background: Rectangle2D;
         private _scene: Scene;
@@ -178,6 +184,7 @@
         private _isScreeSpace: boolean;
         private _worldTransform: Matrix;
         private _cachingStrategy: number;
+        private _hierarchyMaxDepth: number;
         private _hierarchyLevelZFactor: number;
         private _hierarchyLevelMaxSiblingCount: number;
         private _hierarchySiblingZDelta: number;
@@ -193,13 +200,10 @@
             this._renderingSize.height = this.engine.getRenderHeight();
 
             var context = new Render2DContext();
-            context.camera = camera;
-            context.parentVisibleState = this.levelVisible;
-            context.parentTransform = Matrix.Identity();
-            context.parentTransformStep = 1;
             context.forceRefreshPrimitive = false;
 
-            this.updateGlobalTransVis(context, false);
+            ++this._globalTransformProcessStep;
+            this.updateGlobalTransVis(false);
 
             this._prepareGroupRender(context);
             this._groupRender(context);
@@ -248,7 +252,8 @@
             }
 
             // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
-            let sprite = Sprite2D.Create(this, `__cachedSpriteOfGroup__${group.id}`, group.position.x, group.position.y, map, res.node.contentSize, res.node.pos, true);
+            let node: PackedRect = res.node;
+            let sprite = Sprite2D.Create(this, `__cachedSpriteOfGroup__${group.id}`, group.position.x, group.position.y, map, node.contentSize, node.pos, false);
             sprite.origin = Vector2.Zero();
             res.sprite = sprite;
             return res;

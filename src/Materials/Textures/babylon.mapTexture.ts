@@ -55,10 +55,14 @@
          * Don't forget to call unbindTexture when you're done rendering
          * @param rect the zone to render to
          */
-        public bindTextureForRect(rect: PackedRect) {
+        public bindTextureForRect(rect: PackedRect, clear: boolean) {
             let engine = this.getScene().getEngine();
             engine.bindFramebuffer(this._texture);
             this._replacedViewport = engine.setDirectViewport(rect.pos.x, rect.pos.y, rect.contentSize.width, rect.contentSize.height);
+            if (clear) {
+                engine.clear(new Color4(0,0,0,0), true, true);
+            }
+//            this._replacedViewport = engine.setDirectViewport(rect.pos.x, rect.pos.y, rect.contentSize.width, rect.contentSize.height);
         }
 
         /**

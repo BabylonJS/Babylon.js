@@ -140,13 +140,23 @@
             this._modelDirty = false;
             this._levelBoundingInfoDirty = false;
             this._instanceDirtyFlags = 0;
+            this._isDisposed = false;
             this._levelBoundingInfo = new BoundingInfo2D();
         }
 
         public propertyChanged: Observable<PropertyChangedInfo>;
 
-        public dispose() {
+        public get isDisposed(): boolean {
+            return this._isDisposed;
+        }
 
+        public dispose(): boolean {
+            if (this.isDisposed) {
+                return false;
+            }
+
+            this._isDisposed = true;
+            return true;
         }
 
         public get modelKey(): string {
@@ -360,6 +370,7 @@
         private _modelKey; string;
         private _propInfo: StringDictionary<Prim2DPropInfo>;
         private _levelBoundingInfoDirty: boolean;
+        private _isDisposed: boolean;
         protected _levelBoundingInfo: BoundingInfo2D;
         protected _boundingInfo: BoundingInfo2D;
         protected _modelDirty: boolean;

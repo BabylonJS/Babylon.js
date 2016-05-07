@@ -38,6 +38,10 @@
     }
 
     export class Sprite2DInstanceData extends InstanceDataBase {
+        constructor(partId: number) {
+            super(partId, 1);
+        }
+
         @instanceData()
         get topLeftUV(): Vector2 {
             return null;
@@ -120,13 +124,14 @@
         }
 
         protected updateLevelBoundingInfo() {
-            this._levelBoundingInfo.radius = Math.sqrt(this.spriteSize.width * this.spriteSize.width + this.spriteSize.height * this.spriteSize.height);
-            this._levelBoundingInfo.extent = this.spriteSize.clone();
+            BoundingInfo2D.ConstructFromSizeToRef(this.spriteSize, this._levelBoundingInfo);
         }
 
         protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
             this.texture = texture;
+            this.texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this.texture.wrapV = Texture.CLAMP_ADDRESSMODE;
             this.spriteSize = spriteSize;
             this.spriteLocation = spriteLocation;
             this.spriteFrame = 0;
@@ -159,11 +164,11 @@
 
             let ib = new Float32Array(6);
             ib[0] = 0;
-            ib[1] = 1;
-            ib[2] = 2;
+            ib[1] = 2;
+            ib[2] = 1;
             ib[3] = 0;
-            ib[4] = 2;
-            ib[5] = 3;
+            ib[4] = 3;
+            ib[5] = 2;
 
             renderCache.ib = engine.createIndexBuffer(ib);
 
@@ -179,8 +184,8 @@
             return [new Sprite2DInstanceData(Sprite2D.SPRITE2D_MAINPARTID)];
         }
 
-        protected refreshInstanceDataParts(part: InstanceDataBase): boolean {
-            if (!super.refreshInstanceDataParts(part)) {
+        protected refreshInstanceDataPart(part: InstanceDataBase): boolean {
+            if (!super.refreshInstanceDataPart(part)) {
                 return false;
             }
 

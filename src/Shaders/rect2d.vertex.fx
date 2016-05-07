@@ -49,16 +49,22 @@ void main(void) {
 
 	vec2 pos2;
 
-	// notRound case, only four vertices
+	// notRound case, only five vertices, 0 is center, then the 4 other for perimeter
 	if (properties.z == 0.0) {
-		if (index == 1.0) {
+		if (index == 0.0) {
+			pos2 = vec2(0.5, 0.5);
+		} 
+		else if (index == 1.0) {
 			pos2 = vec2(1.0, 1.0);
-		} else if (index == 2.0) {
-			pos2 = vec2(0.0, 1.0);
-		} else if (index == 3.0) {
-			pos2 = vec2(0.0, 0.0);
-		} else {
+		} 
+		else if (index == 2.0) {
 			pos2 = vec2(1.0, 0.0);
+		}
+		else if (index == 3.0) {
+			pos2 = vec2(0.0, 0.0);
+		} 
+		else {
+			pos2 = vec2(0.0, 1.0);
 		}
 	}
 	else 

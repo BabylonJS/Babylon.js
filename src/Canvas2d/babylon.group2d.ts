@@ -89,9 +89,8 @@
             }
 
             // Otherwise the size is computed based on the boundingInfo
-            let size = this.boundingInfo.extent.clone();
-
-            return size;
+            let m = this.boundingInfo.max();
+            return new Size(m.x, m.y);
         }
 
         public get cacheBehavior(): number {
@@ -105,7 +104,7 @@
         protected updateLevelBoundingInfo() {
             let size: Size;
 
-            // If the size is set by the user, the boundingInfo is compute from this value
+            // If the size is set by the user, the boundingInfo is computed from this value
             if (this.size) {
                 size = this.size;
             }
@@ -114,21 +113,17 @@
                 size = new Size(0, 0);
             }
 
-            this._levelBoundingInfo.radius = Math.sqrt(size.width * size.width + size.height * size.height);
-            this._levelBoundingInfo.extent = size.clone();
+            BoundingInfo2D.ConstructFromSizeToRef(size, this._levelBoundingInfo);
         }
 
         // Method called only on renderable groups to prepare the rendering
         protected _prepareGroupRender(context: Render2DContext) {
-
-            var childrenContext = this._buildChildContext(context);
-
             let sortedDirtyList: Prim2DBase[] = null;
 
             // Update the Global Transformation and visibility status of the changed primitives
             if ((this._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 sortedDirtyList = this._primDirtyList.sort((a, b) => a.hierarchyDepth - b.hierarchyDepth);
-                this.updateGlobalTransVisOf(sortedDirtyList, childrenContext, true);
+                this.updateGlobalTransVisOf(sortedDirtyList, true);
             }
 
             // Setup the size of the rendering viewport
@@ -169,7 +164,7 @@
                 // If it's a force refresh, prepare all the children
                 if (context.forceRefreshPrimitive) {
                     for (let p of this._children) {
-                        p._prepareRender(childrenContext);
+                        p._prepareRender(context);
                     }
                 } else {
                     // Each primitive that changed at least once was added into the primDirtyList, we have to sort this level using
@@ -183,7 +178,7 @@
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
                         // For instance: a Rect's position change, the position of its children primitives will also change so a prepare will be call on them. If a child was in the dirtyList we will avoid a second prepare by making this check.
                         if (p.needPrepare()) {
-                            p._prepareRender(childrenContext);
+                            p._prepareRender(context);
                         }
                     });
 
@@ -194,7 +189,7 @@
 
             // A renderable group has a list of direct children that are also renderable groups, we recurse on them to also prepare them
             this._childrenRenderableGroups.forEach(g => {
-                g._prepareGroupRender(childrenContext);
+                g._prepareGroupRender(context);
             });
         }
 
@@ -203,9 +198,8 @@
             let failedCount = 0;
 
             // First recurse to children render group to render them (in their cache or on screen)
-            var childrenContext = this._buildChildContext(context);
             for (let childGroup of this._childrenRenderableGroups) {
-                childGroup._groupRender(childrenContext);
+                childGroup._groupRender(context);
             }
 
             // Render the primitives if needed: either if we don't cache the content or if the content is cached but has changed
@@ -276,7 +270,7 @@
             }
 
             let n = this._cacheNode;
-            this._cacheTexture.bindTextureForRect(n);
+            this._cacheTexture.bindTextureForRect(n, true);
         }
 
         private _unbindCacheTarget() {
