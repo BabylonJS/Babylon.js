@@ -211,19 +211,17 @@ module BABYLON {
                 var shaderName = "simple";
                 var join = this._defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos", 
-                        "mBones",
-                        "vClipPlane", "diffuseMatrix", "depthValues"
-                    ];
+                                "vFogInfos", "vFogColor", "pointSize",
+                                "vDiffuseInfos", 
+                                "mBones",
+                                "vClipPlane", "diffuseMatrix", "depthValues"
+                ];
+                var samplers = ["diffuseSampler"];
                     
-                MaterialHelper.PrepareUniformsListForList(uniforms, this._defines, this.maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
                 
                 this._effect = scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms,
-                    ["diffuseSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                    ],
+                    attribs, uniforms, samplers,
                     join, fallbacks, this.onCompiled, this.onError, {maxSimultaneousLights: this.maxSimultaneousLights});
             }
             if (!this._effect.isReady()) {
