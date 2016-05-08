@@ -27,8 +27,6 @@ var BABYLON;
             this.VERTEXCOLOR = false;
             this.VERTEXALPHA = false;
             this.NUM_BONE_INFLUENCERS = 0;
-            this.BONES = false;
-            this.BONES4 = false;
             this.BonesPerMesh = 0;
             this.INSTANCES = false;
             this.SPECULARTERM = false;
@@ -118,6 +116,16 @@ var BABYLON;
             this._refractionRTT.refreshRate = refreshRate;
             this._reflectionRTT.refreshRate = refreshRate;
         };
+        WaterMaterial.prototype.getRenderList = function () {
+            return this._refractionRTT.renderList;
+        };
+        Object.defineProperty(WaterMaterial.prototype, "renderTargetsEnabled", {
+            get: function () {
+                return !(this._refractionRTT.refreshRate === 0);
+            },
+            enumerable: true,
+            configurable: true
+        });
         WaterMaterial.prototype.needAlphaBlending = function () {
             return (this.alpha < 1.0);
         };
@@ -436,6 +444,8 @@ var BABYLON;
         WaterMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
+            serializationObject.reflectionTexture.isRenderTarget = true;
+            serializationObject.refractionTexture.isRenderTarget = true;
             return serializationObject;
         };
         // Statics
