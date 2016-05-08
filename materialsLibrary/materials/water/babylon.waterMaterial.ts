@@ -226,8 +226,8 @@ module BABYLON {
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
             }
-
-            var lightIndex = 0;
+            
+            // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
                 needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
@@ -252,6 +252,7 @@ module BABYLON {
                         this._defines.VERTEXALPHA = true;
                     }
                 }
+                
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
                     this._defines.NUM_BONE_INFLUENCERS = mesh.numBoneInfluencers;
                     this._defines.BonesPerMesh = (mesh.skeleton.bones.length + 1);
