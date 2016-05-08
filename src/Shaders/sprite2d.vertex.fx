@@ -1,16 +1,22 @@
-﻿// Attributes
+﻿// based on if Instanced Array are supported or not, declare the field either as attribute or uniform
+#ifdef Instanced
+#define att attribute
+#else
+#define att uniform
+#endif
+
+// Attributes
 attribute float index;
-attribute vec2 zBias;
 
-attribute vec4 transformX;
-attribute vec4 transformY;
-
-attribute vec2 topLeftUV;
-attribute vec2 sizeUV;
-attribute vec2 origin;
-attribute vec2 textureSize;
-attribute float frame;
-attribute float invertY;
+att vec2 topLeftUV;
+att vec2 sizeUV;
+att vec2 origin;
+att vec2 textureSize;
+att float frame;
+att float invertY;
+att vec2 zBias;
+att vec4 transformX;
+att vec4 transformY;
 
 // Uniforms
 

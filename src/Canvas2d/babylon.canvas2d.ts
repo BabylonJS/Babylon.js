@@ -91,6 +91,9 @@
                     this.render();
                 });
             }
+
+            this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
+            this._supprtInstancedArray = false; // TODO REMOVE!!!
         }
 
         public dispose(): boolean {
@@ -132,6 +135,10 @@
          */
         public get cachingStrategy(): number {
             return this._cachingStrategy;
+        }
+
+        public get supportInstancedArray() {
+            return this._supprtInstancedArray;
         }
 
         /**
@@ -213,6 +220,7 @@
         private _groupCacheMaps: MapTexture[];
         private _beforeRenderObserver: Observer<Scene>;
         private _afterRenderObserver: Observer<Scene>;
+        private _supprtInstancedArray : boolean;
 
         public _renderingSize: Size;
 

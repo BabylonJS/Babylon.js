@@ -16,22 +16,31 @@
             }
 
             // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
-            if (!this.instancingAttributes) {
-                this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, this.effect);
-            }
             var engine = instanceInfo._owner.owner.engine;
 
             engine.enableEffect(this.effect);
             this.effect.setTexture("diffuseSampler", this.texture);
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
 
-            engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
             var cur = engine.getAlphaMode();
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.draw(true, 0, 6, instanceInfo._instancesPartsData[0].usedElementCount);
+            let count = instanceInfo._instancesPartsData[0].usedElementCount;
+            if (instanceInfo._owner.owner.supportInstancedArray) {
+                if (!this.instancingAttributes) {
+                    this.instancingAttributes = this.loadInstancingAttributes(Sprite2D.SPRITE2D_MAINPARTID, this.effect);
+                }
+                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
+                engine.draw(true, 0, 6, count);
+                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
+            } else {
+                for (let i = 0; i < count; i++) {
+                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                    engine.draw(true, 0, 6);
+                }
+            }
+
             engine.setAlphaMode(cur);
 
-            engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
 
             return true;
         }
@@ -175,7 +184,9 @@
             renderCache.texture = this.texture;
 
             var ei = this.getDataPartEffectInfo(Sprite2D.SPRITE2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ei.attributes, [], ["diffuseSampler"], ei.defines);
+            renderCache.effect = engine.createEffect({ vertex: "sprite2d", fragment: "sprite2d" }, ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, e => {
+//                renderCache.setupUniformsLocation(e, ei.uniforms, Sprite2D.SPRITE2D_MAINPARTID);
+            });
 
             return renderCache;
         }

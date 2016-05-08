@@ -26,13 +26,22 @@
             this.effect.setTexture("diffuseSampler", this.fontTexture);
             engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
 
-            engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
             var cur = engine.getAlphaMode();
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.draw(true, 0, 6, instanceInfo._instancesPartsData[0].usedElementCount);
+            let count = instanceInfo._instancesPartsData[0].usedElementCount;
+            if (instanceInfo._owner.owner.supportInstancedArray) {
+                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
+                engine.draw(true, 0, 6, count);
+                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
+            } else {
+                for (let i = 0; i < count; i++) {
+                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                    engine.draw(true, 0, 6);
+                }
+            }
+
             engine.setAlphaMode(cur);
 
-            engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
 
             return true;
         }
@@ -216,7 +225,9 @@
 
             // Effects
             let ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"]);
-            renderCache.effect = engine.createEffect("text2d", ei.attributes, [], ["diffuseSampler"], ei.defines);
+            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, e => {
+//                renderCache.setupUniformsLocation(e, ei.uniforms, Text2D.TEXT2D_MAINPARTID);
+            });
 
             return renderCache;
         }
