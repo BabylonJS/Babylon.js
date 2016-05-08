@@ -171,6 +171,7 @@
         "../../src/Canvas2d/babylon.sprite2d.js",
         "../../src/Canvas2d/babylon.text2d.js",
         "../../src/Canvas2d/babylon.canvas2d.js",
+        "../../src/Canvas2d/babylon.worldspacecanvas2d.js",
         "../../src/Materials/babylon.shaderMaterial.js",
         "../../src/Tools/babylon.tools.dds.js",
         "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",

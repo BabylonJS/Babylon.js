@@ -62,7 +62,6 @@
             if (clear) {
                 engine.clear(new Color4(0,0,0,0), true, true);
             }
-//            this._replacedViewport = engine.setDirectViewport(rect.pos.x, rect.pos.y, rect.contentSize.width, rect.contentSize.height);
         }
 
         /**

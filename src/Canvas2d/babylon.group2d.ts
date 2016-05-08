@@ -37,6 +37,21 @@
             return g;
         }
 
+        applyCachedTexture(vertexData: VertexData, material: StandardMaterial) {
+            this._bindCacheTarget();
+
+            var uv = vertexData.uvs;
+            let nodeuv = this._cacheNode.UVs;
+            for (let i = 0; i < 4; i++) {
+                uv[i * 2 + 0] = nodeuv[i].x;
+                uv[i * 2 + 1] = nodeuv[i].y;
+            }
+
+            material.diffuseTexture = this._cacheTexture;
+            this._cacheTexture.hasAlpha = true;
+            this._unbindCacheTarget();
+        }
+
         /**
          * Create an instance of the Group Primitive.
          * A group act as a container for many sub primitives, if features:
@@ -237,14 +252,13 @@
 
                             v._dirtyInstancesData = false;
                         }
-
-                        // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                        let renderFailed = !v._modelCache.render(v, context);
-
-                        // Update dirty flag/related
-                        v._dirtyInstancesData = renderFailed;
-                        failedCount += renderFailed ? 1 : 0;
                     }
+                    // render all the instances of this model, if the render method returns true then our instances are no longer dirty
+                    let renderFailed = !v._modelCache.render(v, context);
+
+                    // Update dirty flag/related
+                    v._dirtyInstancesData = renderFailed;
+                    failedCount += renderFailed ? 1 : 0;
                 });
 
                 // The group's content is no longer dirty
