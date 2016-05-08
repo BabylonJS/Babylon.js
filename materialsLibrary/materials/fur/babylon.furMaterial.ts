@@ -62,8 +62,13 @@ module BABYLON {
 
     export class FurMaterial extends Material {
         
+        @serializeAsTexture()
         public diffuseTexture: BaseTexture;
+        
+        @serializeAsTexture()
         public heightTexture: BaseTexture;
+        
+        @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
         
         @serialize()
@@ -90,7 +95,6 @@ module BABYLON {
         @serialize()
         public furDensity: number = 20;
         
-        @serializeAsTexture()
         public furTexture: DynamicTexture;
         
         @serialize()
@@ -98,6 +102,8 @@ module BABYLON {
         
         @serialize()
         public highLevelFur: boolean = true;
+        
+        public _meshes: AbstractMesh[];
 
         private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3(1.,1.,1.);
@@ -133,6 +139,24 @@ module BABYLON {
 
         public getAlphaTestTexture(): BaseTexture {
             return null;
+        }
+        
+        public updateFur(): void {
+            for (var i = 1; i < this._meshes.length; i++) {
+                var offsetFur = <FurMaterial>this._meshes[i].material;
+                
+                offsetFur.furLength = this.furLength;
+                offsetFur.furAngle = this.furAngle;
+                offsetFur.furGravity = this.furGravity;
+                offsetFur.furSpacing = this.furSpacing;
+                offsetFur.furSpeed = this.furSpeed;
+                offsetFur.furColor = this.furColor;
+                offsetFur.diffuseTexture = this.diffuseTexture;
+                offsetFur.furTexture = this.furTexture;
+                offsetFur.highLevelFur = this.highLevelFur;
+                offsetFur.furTime = this.furTime;
+                offsetFur.furDensity = this.furDensity;
+            }
         }
 
         // Methods   
@@ -579,6 +603,13 @@ module BABYLON {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();
             }
+            
+            if (this._meshes) {
+                for (var i = 1; i < this._meshes.length; i++) {
+                    this._meshes[i].material.dispose(forceDisposeEffect);
+                    this._meshes[i].dispose();
+                }
+            }
 
             super.dispose(forceDisposeEffect);
         }
@@ -590,12 +621,31 @@ module BABYLON {
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.FurMaterial";
+            
+            if (this._meshes) {
+                serializationObject.sourceMeshName = this._meshes[0].name;
+                serializationObject.quality = this._meshes.length;
+            }
+            
             return serializationObject;
         }
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {
-            return SerializationHelper.Parse(() => new FurMaterial(source.name, scene), source, scene, rootUrl);
+            var material = SerializationHelper.Parse(() => new FurMaterial(source.name, scene), source, scene, rootUrl);
+            
+            if (source.sourceMeshName && material.highLevelFur) {
+                scene.executeWhenReady(() => {
+                    var sourceMesh = <Mesh>scene.getMeshByName(source.sourceMeshName);
+                    if (sourceMesh) {
+                        var furTexture = FurMaterial.GenerateTexture("Fur Texture", scene);
+                        material.furTexture = furTexture;
+                        FurMaterial.FurifyMesh(sourceMesh, source.quality);
+                    }
+                });
+            }
+            
+            return material;
         }
         
         public static GenerateTexture(name: string, scene: Scene): DynamicTexture {
@@ -621,13 +671,18 @@ module BABYLON {
         public static FurifyMesh(sourceMesh: Mesh, quality: number): Mesh[] {
             var meshes = [sourceMesh];
             var mat: FurMaterial = <FurMaterial>sourceMesh.material;
+            var i;
             
             if (!(mat instanceof FurMaterial)) {
                 throw "The material of the source mesh must be a Fur Material";
             }
             
-            for (var i = 1; i < quality; i++) {
+            for (i = 1; i < quality; i++) {
                 var offsetFur = new BABYLON.FurMaterial(mat.name + i, sourceMesh.getScene());
+                sourceMesh.getScene().materials.pop();
+                Tags.EnableFor(offsetFur);
+                Tags.AddTagsTo(offsetFur, "furShellMaterial");
+                
                 offsetFur.furLength = mat.furLength;
                 offsetFur.furAngle = mat.furAngle;
                 offsetFur.furGravity = mat.furGravity;
@@ -642,11 +697,18 @@ module BABYLON {
                 offsetFur.furDensity = mat.furDensity;
                 
                 var offsetMesh = sourceMesh.clone(sourceMesh.name + i);
+                
                 offsetMesh.material = offsetFur;
                 offsetMesh.skeleton = sourceMesh.skeleton;
-                offsetMesh.parent = sourceMesh;
+                offsetMesh.position = Vector3.Zero();
                 meshes.push(offsetMesh);
             }
+            
+            for (i = 1; i < meshes.length; i++) {
+                meshes[i].parent = sourceMesh;
+            }
+            
+            (<FurMaterial>sourceMesh.material)._meshes = meshes;
             
             return meshes;
         }
