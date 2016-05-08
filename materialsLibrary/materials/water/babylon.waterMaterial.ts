@@ -15,8 +15,6 @@ module BABYLON {
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
         public NUM_BONE_INFLUENCERS = 0;
-        public BONES = false;
-        public BONES4 = false;
         public BonesPerMesh = 0;
         public INSTANCES = false;
         public SPECULARTERM = false;
@@ -139,6 +137,14 @@ module BABYLON {
             
             this._refractionRTT.refreshRate = refreshRate;
             this._reflectionRTT.refreshRate = refreshRate;
+        }
+        
+        public getRenderList(): AbstractMesh[] {
+            return this._refractionRTT.renderList;
+        }
+        
+        public get renderTargetsEnabled(): boolean {
+            return !(this._refractionRTT.refreshRate === 0);
         }
         
 		public needAlphaBlending(): boolean {
@@ -540,6 +546,8 @@ module BABYLON {
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
+            serializationObject.reflectionTexture.isRenderTarget = true;
+            serializationObject.refractionTexture.isRenderTarget = true;
             return serializationObject;
         }
 

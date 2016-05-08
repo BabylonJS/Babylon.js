@@ -28,8 +28,6 @@ var BABYLON;
             this.VERTEXCOLOR = false;
             this.VERTEXALPHA = false;
             this.NUM_BONE_INFLUENCERS = 0;
-            this.BONES = false;
-            this.BONES4 = false;
             this.BonesPerMesh = 0;
             this.INSTANCES = false;
             this.rebuild();
