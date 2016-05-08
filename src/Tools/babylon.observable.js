@@ -12,7 +12,7 @@ var BABYLON;
             this.skipNextObservers = skipNextObservers;
         }
         return EventState;
-    })();
+    }());
     BABYLON.EventState = EventState;
     var Observer = (function () {
         function Observer(callback, mask) {
@@ -20,7 +20,7 @@ var BABYLON;
             this.mask = mask;
         }
         return Observer;
-    })();
+    }());
     BABYLON.Observer = Observer;
     var Observable = (function () {
         function Observable() {
@@ -111,6 +111,6 @@ var BABYLON;
             return result;
         };
         return Observable;
-    })();
+    }());
     BABYLON.Observable = Observable;
 })(BABYLON || (BABYLON = {}));

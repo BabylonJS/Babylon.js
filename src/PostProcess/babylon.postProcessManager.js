@@ -30,11 +30,10 @@ var BABYLON;
         // Methods
         PostProcessManager.prototype._prepareFrame = function (sourceTexture) {
             var postProcesses = this._scene.activeCamera._postProcesses;
-            var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
-            if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
+            if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
             }
-            postProcesses[this._scene.activeCamera._postProcessesTakenIndices[0]].activate(this._scene.activeCamera, sourceTexture);
+            postProcesses[0].activate(this._scene.activeCamera, sourceTexture);
             return true;
         };
         PostProcessManager.prototype.directRender = function (postProcesses, targetTexture) {
@@ -73,14 +72,13 @@ var BABYLON;
         };
         PostProcessManager.prototype._finalizeFrame = function (doNotPresent, targetTexture, faceIndex, postProcesses) {
             postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
-            var postProcessesTakenIndices = this._scene.activeCamera._postProcessesTakenIndices;
-            if (postProcessesTakenIndices.length === 0 || !this._scene.postProcessesEnabled) {
+            if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
             }
             var engine = this._scene.getEngine();
-            for (var index = 0; index < postProcessesTakenIndices.length; index++) {
-                if (index < postProcessesTakenIndices.length - 1) {
-                    postProcesses[postProcessesTakenIndices[index + 1]].activate(this._scene.activeCamera, targetTexture);
+            for (var index = 0, len = postProcesses.length; index < len; index++) {
+                if (index < len - 1) {
+                    postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
                 }
                 else {
                     if (targetTexture) {
@@ -93,7 +91,7 @@ var BABYLON;
                 if (doNotPresent) {
                     break;
                 }
-                var pp = postProcesses[postProcessesTakenIndices[index]];
+                var pp = postProcesses[index];
                 var effect = pp.apply();
                 if (effect) {
                     if (pp.onBeforeRender) {
@@ -124,6 +122,6 @@ var BABYLON;
             }
         };
         return PostProcessManager;
-    })();
+    }());
     BABYLON.PostProcessManager = PostProcessManager;
 })(BABYLON || (BABYLON = {}));

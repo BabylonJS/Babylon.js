@@ -31,6 +31,8 @@ var BABYLON;
             this.url = url;
             this.hasAlpha = false;
             this.isCube = false;
+            this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this._texture = this._getFromCache(url, true);
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
@@ -55,14 +57,15 @@ var BABYLON;
             var _this = this;
             var mipLevels = 0;
             var floatArrayView = null;
-            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGB, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGB, false, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
             this._texture = texture;
             var callback = function (text) {
-                var buffer;
                 var data;
+                var tempData;
                 var line;
                 var lines = text.split('\n');
-                var size = 0, pixelIndex = 0;
+                var size = 0, pixelIndexW = 0, pixelIndexH = 0, pixelIndexSlice = 0;
+                var maxColor = 0;
                 for (var i = 0; i < lines.length; i++) {
                     line = lines[i];
                     if (!ColorGradingTexture._noneEmptyLineRegex.test(line))
@@ -73,30 +76,38 @@ var BABYLON;
                     if (size === 0) {
                         // Number of space + one
                         size = words.length;
-                        buffer = new ArrayBuffer(size * size * size * 3); // volume texture of side size and rgb 8
-                        data = new Uint8Array(buffer);
+                        data = new Uint8Array(size * size * size * 3); // volume texture of side size and rgb 8
+                        tempData = new Float32Array(size * size * size * 3);
                         continue;
                     }
                     if (size != 0) {
-                        var r = parseInt(words[0]);
-                        var g = parseInt(words[1]);
-                        var b = parseInt(words[2]);
-                        r = Math.round(Math.max(Math.min(255, r), 0));
-                        g = Math.round(Math.max(Math.min(255, g), 0));
-                        b = Math.round(Math.max(Math.min(255, b), 0));
-                        // Transpose ordering from RGB to BGR (naming here might also be transposed).
-                        var indexR = pixelIndex % size;
-                        var indexG = (pixelIndex / size) % size;
-                        var indexB = (pixelIndex / size) / size;
-                        var pixelStorageIndex = indexR * (size * size * 3) + indexG * size * 3 + indexB * 3;
-                        data[pixelStorageIndex + 0] = r; //255;//r;
-                        data[pixelStorageIndex + 1] = g; //0;//g;
-                        data[pixelStorageIndex + 2] = b; //255;//b;
-                        pixelIndex++;
+                        var r = Math.max(parseInt(words[0]), 0);
+                        var g = Math.max(parseInt(words[1]), 0);
+                        var b = Math.max(parseInt(words[2]), 0);
+                        maxColor = Math.max(r, maxColor);
+                        maxColor = Math.max(g, maxColor);
+                        maxColor = Math.max(b, maxColor);
+                        var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 3;
+                        tempData[pixelStorageIndex + 0] = r;
+                        tempData[pixelStorageIndex + 1] = g;
+                        tempData[pixelStorageIndex + 2] = b;
+                        pixelIndexSlice++;
+                        if (pixelIndexSlice % size == 0) {
+                            pixelIndexH++;
+                            pixelIndexSlice = 0;
+                            if (pixelIndexH % size == 0) {
+                                pixelIndexW++;
+                                pixelIndexH = 0;
+                            }
+                        }
                     }
                 }
-                _this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGB, false);
+                for (var i = 0; i < tempData.length; i++) {
+                    var value = tempData[i];
+                    data[i] = (value / maxColor * 255);
+                }
                 _this.getScene().getEngine().updateTextureSize(texture, size * size, size);
+                _this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGB, false);
             };
             BABYLON.Tools.LoadFile(this.url, callback);
             return this._texture;

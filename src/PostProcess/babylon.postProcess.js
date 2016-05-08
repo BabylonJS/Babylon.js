@@ -42,6 +42,10 @@ var BABYLON;
         PostProcess.prototype.isReusable = function () {
             return this._reusable;
         };
+        /** invalidate frameBuffer to hint the postprocess to create a depth buffer */
+        PostProcess.prototype.markTextureDirty = function () {
+            this.width = -1;
+        };
         PostProcess.prototype.activate = function (camera, sourceTexture) {
             camera = camera || this._camera;
             var scene = camera.getScene();
@@ -67,9 +71,9 @@ var BABYLON;
                 }
                 this.width = desiredWidth;
                 this.height = desiredHeight;
-                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
+                this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
                 if (this._reusable) {
-                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === camera._postProcessesTakenIndices[0], samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
+                    this._textures.push(this._engine.createRenderTargetTexture({ width: this.width, height: this.height }, { generateMipMaps: false, generateDepthBuffer: camera._postProcesses.indexOf(this) === 0, samplingMode: this.renderTargetSamplingMode, type: this._textureType }));
                 }
                 if (this.onSizeChanged) {
                     this.onSizeChanged();
@@ -136,11 +140,11 @@ var BABYLON;
             }
             camera.detachPostProcess(this);
             var index = camera._postProcesses.indexOf(this);
-            if (index === camera._postProcessesTakenIndices[0] && camera._postProcessesTakenIndices.length > 0) {
-                this._camera._postProcesses[camera._postProcessesTakenIndices[0]].width = -1; // invalidate frameBuffer to hint the postprocess to create a depth buffer
+            if (index === 0 && camera._postProcesses.length > 0) {
+                this._camera._postProcesses[0].markTextureDirty();
             }
         };
         return PostProcess;
-    })();
+    }());
     BABYLON.PostProcess = PostProcess;
 })(BABYLON || (BABYLON = {}));
