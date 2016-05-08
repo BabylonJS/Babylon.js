@@ -104,8 +104,6 @@ module BABYLON {
 		private _reflectionTransform: Matrix = Matrix.Zero();
 		private _lastTime: number = 0;
         
-        private _scaledDiffuse = new Color3();
-        private _scaledSpecular = new Color3();
         private _renderId: number;
 
         private _defines = new WaterMaterialDefines();
@@ -319,16 +317,15 @@ module BABYLON {
                     "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
                     "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "colorBlendFactor", "waveSpeed"
                 ]
+                var samplers = ["normalSampler",
+                    // Water
+                    "refractionSampler", "reflectionSampler"
+                ];
                 
-                MaterialHelper.PrepareUniformsListForList(uniforms, this._defines, this.maxSimultaneousLights);
+                MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
                 
                 this._effect = scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms,
-                    ["normalSampler",
-                        "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3",
-						// Water
-						"refractionSampler", "reflectionSampler"
-                    ],
+                    attribs, uniforms, samplers,
                     join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
             }
             if (!this._effect.isReady()) {
@@ -382,7 +379,7 @@ module BABYLON {
                 this._effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
             }
 
-            this._effect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
+            this._effect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
             
             if (this._defines.SPECULARTERM) {
                 this._effect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
