@@ -94,13 +94,14 @@ var BABYLON;
             }
             return needNormals;
         };
-        MaterialHelper.PrepareUniformsListForList = function (uniformsList, defines, maxSimultaneousLights) {
+        MaterialHelper.PrepareUniformsAndSamplersList = function (uniformsList, samplersList, defines, maxSimultaneousLights) {
             if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
                 }
                 uniformsList.push("vLightData" + lightIndex, "vLightDiffuse" + lightIndex, "vLightSpecular" + lightIndex, "vLightDirection" + lightIndex, "vLightGround" + lightIndex, "lightMatrix" + lightIndex, "shadowsInfo" + lightIndex);
+                samplersList.push("shadowSampler" + lightIndex);
             }
         };
         MaterialHelper.HandleFallbacksForShadows = function (defines, fallbacks, maxSimultaneousLights) {
@@ -229,6 +230,6 @@ var BABYLON;
             }
         };
         return MaterialHelper;
-    })();
+    }());
     BABYLON.MaterialHelper = MaterialHelper;
 })(BABYLON || (BABYLON = {}));
