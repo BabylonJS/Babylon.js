@@ -21,14 +21,12 @@ module BABYLON {
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
         public NUM_BONE_INFLUENCERS = 0;
-        public BONES = false;
-        public BONES4 = false;
         public BonesPerMesh = 0;
         public INSTANCES = false;
 
         constructor() {
             super();
-            this._keys = Object.keys(this);
+            this.rebuild();
         }
     }
 
