@@ -8,6 +8,7 @@ declare module BABYLON {
         specularColor: Color3;
         specularPower: number;
         disableLighting: boolean;
+        maxSimultaneousLights: number;
         /**
         * @param {number}: Represents the wind force
         */
