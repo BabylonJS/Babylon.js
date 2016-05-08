@@ -58,8 +58,8 @@
         }
 
         private _getBaseOffset(categories: string): number {
-            var curOffset = 0;
-            var curBase = this._baseInfo;
+            let curOffset = 0;
+            let curBase = this._baseInfo;
             while (curBase) {
                 curOffset += curBase._nextOffset.getOrAdd(categories, 0);
                 curBase = curBase._baseInfo;
@@ -80,6 +80,7 @@
         shaderOffset: number;
         instanceOffset: StringDictionary<number>;
         dataType: ShaderDataType;
+        //uniformLocation: WebGLUniformLocation;
 
         constructor() {
             this.instanceOffset = new StringDictionary<number>();
@@ -187,7 +188,7 @@
         return (target: Object, propName: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
 
             let dic = ClassTreeInfo.getOrRegister<InstanceClassInfo, InstancePropInfo>(target, (base) => new InstanceClassInfo(base));
-            var node = dic.getLevelOf(target);
+            let node = dic.getLevelOf(target);
             let instanceDataName = <string>propName;
             shaderAttributeName = shaderAttributeName || instanceDataName;
 
@@ -199,7 +200,7 @@
 
             info = new InstancePropInfo();
             info.attributeName = shaderAttributeName;
-            info.category = category;
+            info.category = category || null;
 
             node.levelContent.add(instanceDataName, info);
 
@@ -215,7 +216,7 @@
                     node.classContent.mapProperty(info, false);
                 }
 
-                var obj: InstanceDataBase = this;
+                let obj: InstanceDataBase = this;
                 if (obj.dataBuffer && obj.dataElements) {
                     let offset = obj.dataElements[obj.curElement].offset + info.instanceOffset.get(InstanceClassInfo._CurCategories);
                     info.writeData(obj.dataBuffer.buffer, offset, val);
@@ -263,7 +264,7 @@
         }
 
         allocElements() {
-            var res = new Array<DynamicFloatArrayElementInfo>(this.dataElementCount);
+            let res = new Array<DynamicFloatArrayElementInfo>(this.dataElementCount);
             for (let i = 0; i < this.dataElementCount; i++) {
                 res[i] = this.dataBuffer.allocElement();
             }
@@ -306,9 +307,12 @@
             // Need to create the model?
             let setupModelRenderCache = false;
             if (!this._modelRenderCache || this._modelDirty) {
-                this._modelRenderCache = SmartPropertyPrim.GetOrAddModelCache(this.modelKey, (key: string) => this.createModelRenderCache());
+                this._modelRenderCache = SmartPropertyPrim.GetOrAddModelCache(this.modelKey, (key: string) => {
+                    let mrc = this.createModelRenderCache();
+                    setupModelRenderCache = true;
+                    return mrc;
+                });
                 this._modelDirty = false;
-                setupModelRenderCache = true;
             }
 
             // Need to create the instance?
@@ -321,11 +325,12 @@
 
                 if (!this._modelRenderCache._partsDataStride) {
                     let ctiArray = new Array<ClassTreeInfo<InstanceClassInfo, InstancePropInfo>>();
-                    var dataStrides = new Array<number>();
-                    var usedCatList = new Array<string[]>();
-                    var partIdList = new Array<number>();
+                    let dataStrides = new Array<number>();
+                    let usedCatList = new Array<string[]>();
+                    let partIdList = new Array<number>();
+                    let joinedUsedCatList = new Array<string>();
 
-                    for (var dataPart of parts) {
+                    for (let dataPart of parts) {
                         let cat = this.getUsedShaderCategories(dataPart);
                         let cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
@@ -333,11 +338,13 @@
                         this.isVisible = true;
                         // We manually trigger refreshInstanceData for the only sake of evaluating each isntance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
                         //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
-                        InstanceClassInfo._CurCategories = cat.join(";");
+                        let joinCat = cat.join(";");
+                        joinedUsedCatList.push(joinCat);
+                        InstanceClassInfo._CurCategories = joinCat;
                         this.refreshInstanceDataPart(dataPart);
                         this.isVisible = curVisible;
 
-                        var size = 0;
+                        let size = 0;
                         cti.fullContent.forEach((k, v) => {
                             if (!v.category || cat.indexOf(v.category) !== -1) {
                                 if (!v.size) {
@@ -354,17 +361,23 @@
                     }
                     this._modelRenderCache._partsDataStride = dataStrides;
                     this._modelRenderCache._partsUsedCategories = usedCatList;
+                    this._modelRenderCache._partsJoinedUsedCategories = joinedUsedCatList;
                     this._modelRenderCache._partsClassInfo = ctiArray;
                     this._modelRenderCache._partIdList = partIdList;
                 }
 
                 gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, k => new GroupInstanceInfo(this.renderGroup, this._modelRenderCache));
 
+                // First time init of the GroupInstanceInfo
                 if (gii._instancesPartsData.length === 0) {
                     for (let j = 0; j < this._modelRenderCache._partsDataStride.length; j++) {
                         let stride = this._modelRenderCache._partsDataStride[j];
                         gii._instancesPartsData.push(new DynamicFloatArray(stride / 4, 50));
                         gii._partIndexFromId.add(this._modelRenderCache._partIdList[j].toString(), j);
+
+                        for (let part of this._instanceDataParts) {
+                            gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())] = this.getUsedShaderCategories(part).join(";");
+                        }
                     }
                 }
 
@@ -382,9 +395,13 @@
             }
 
             if (context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+                if (!gii) {
+                    gii = this.renderGroup.groupRenderInfo.get(this.modelKey);
+                }
+
                 for (let part of this._instanceDataParts) {
                     let cat = this.getUsedShaderCategories(part);
-                    InstanceClassInfo._CurCategories = cat.join(";");
+                    InstanceClassInfo._CurCategories = gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())];
 
                     // Will return false if the instance should not be rendered (not visible or other any reasons)
                     if (!this.refreshInstanceDataPart(part)) {
@@ -396,27 +413,28 @@
                 }
                 this._instanceDirtyFlags = 0;
 
-                if (!gii) {
-                    gii = this.renderGroup.groupRenderInfo.get(this.modelKey);
-                }
-
                 gii._dirtyInstancesData = true;
             }
         }
 
-        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): {attributes: string[], defines: string} {
-            var dataPart = Tools.first(this._instanceDataParts, i => i.id === dataPartId);
+        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): { attributes: string[], uniforms: string[], defines: string} {
+            let dataPart = Tools.first(this._instanceDataParts, i => i.id === dataPartId);
             if (!dataPart) {
                 return null;
             }
 
-            var cti = dataPart.getClassTreeInfo();
-            var categories = this.getUsedShaderCategories(dataPart);
-            var attributes = vertexBufferAttributes.concat(cti.classContent.getShaderAttributes(categories));
-            var defines = "";
-            categories.forEach(c => { defines += `#define ${c}\n`});
+            let instancedArray = this.owner.supportInstancedArray;
 
-            return { attributes: attributes, defines: defines };
+            let cti = dataPart.getClassTreeInfo();
+            let categories = this.getUsedShaderCategories(dataPart);
+            let att = cti.classContent.getShaderAttributes(categories);
+            let defines = "";
+            categories.forEach(c => { defines += `#define ${c}\n`});
+            if (instancedArray) {
+                defines += "#define Instanced\n";
+            }
+
+            return { attributes: instancedArray ? vertexBufferAttributes.concat(att) : vertexBufferAttributes, uniforms: instancedArray ? [] : att, defines: defines };
         }
 
         public get isTransparent(): boolean {

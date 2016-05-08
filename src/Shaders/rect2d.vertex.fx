@@ -1,36 +1,42 @@
-﻿// Attributes
+﻿// based on if Instanced Array are supported or not, declare the field either as attribute or uniform
+#ifdef Instanced
+#define att attribute
+#else
+#define att uniform
+#endif
+
 attribute float index;
-attribute vec2 zBias;
-attribute vec4 transformX;
-attribute vec4 transformY;
-attribute vec2 origin;
+att vec2 zBias;
+att vec4 transformX;
+att vec4 transformY;
+att vec2 origin;
 
 #ifdef Border
-attribute float borderThickness;
+att float borderThickness;
 #endif
 
 #ifdef FillSolid
-attribute vec4 fillSolidColor;
+att vec4 fillSolidColor;
 #endif
 
 #ifdef BorderSolid
-attribute vec4 borderSolidColor;
+att vec4 borderSolidColor;
 #endif
 
 #ifdef FillGradient
-attribute vec4 fillGradientColor1;
-attribute vec4 fillGradientColor2;
-attribute vec4 fillGradientTY;
+att vec4 fillGradientColor1;
+att vec4 fillGradientColor2;
+att vec4 fillGradientTY;
 #endif
 
 #ifdef BorderGradient
-attribute vec4 borderGradientColor1;
-attribute vec4 borderGradientColor2;
-attribute vec4 borderGradientTY;
+att vec4 borderGradientColor1;
+att vec4 borderGradientColor2;
+att vec4 borderGradientTY;
 #endif
 
 // xyzw are: width, height, roundRadius (0.0 for simple rectangle with four vertices)
-attribute vec3 properties;
+att vec3 properties;
 
 // First index is the center, then there's four sections of 16 subdivisions
 

@@ -11,6 +11,7 @@
             this._instancesPartsBuffer = new Array<WebGLBuffer>();
             this._instancesPartsBufferSize = new Array<number>();
             this._partIndexFromId = new StringDictionary<number>();
+            this._instancesPartsUsedShaderCategories = new Array<string>();
         }
 
         _owner: Group2D;
@@ -20,6 +21,7 @@
         _dirtyInstancesData: boolean;
         _instancesPartsBuffer: WebGLBuffer[];
         _instancesPartsBufferSize: number[];
+        _instancesPartsUsedShaderCategories: string[];
     }
 
     export class ModelRenderCache {
@@ -54,13 +56,18 @@
             this._instancesData.remove(key);
         }
 
-        protected loadInstancingAttributes(partId: number, effect: Effect): InstancingAttributeInfo[] {
+        protected getPartIndexFromId(partId: number) {
             for (var i = 0; i < this._partIdList.length; i++) {
                 if (this._partIdList[i] === partId) {
-                    break;
+                    return i;
                 }
             }
-            if (i === this._partIdList.length) {
+            return null;
+        }
+
+        protected loadInstancingAttributes(partId: number, effect: Effect): InstancingAttributeInfo[] {
+            let i = this.getPartIndexFromId(partId);
+            if (i === null) {
                 return null;
             }
 
@@ -71,12 +78,81 @@
             return res;
         }
 
+        //setupUniformsLocation(effect: Effect, uniforms: string[], partId: number) {
+        //    let i = this.getPartIndexFromId(partId);
+        //    if (i === null) {
+        //        return null;
+        //    }
+
+        //    let pci = this._partsClassInfo[i];
+        //    pci.fullContent.forEach((k, v) => {
+        //        if (uniforms.indexOf(v.attributeName) !== -1) {
+        //            v.uniformLocation = effect.getUniform(v.attributeName);
+        //        }
+        //    });
+        //}
+
+        private static v2 = Vector2.Zero();
+        private static v3 = Vector3.Zero();
+        private static v4 = Vector4.Zero();
+
+        protected setupUniforms(effect: Effect, partIndex: number, data: DynamicFloatArray, elementCount: number) {
+            let offset = (this._partsDataStride[partIndex]/4) * elementCount;
+            let pci = this._partsClassInfo[partIndex];
+
+            let self = this;
+            pci.fullContent.forEach((k, v) => {
+                if (!v.category || self._partsUsedCategories[partIndex].indexOf(v.category)!==1) {
+                    switch (v.dataType) {
+                        case ShaderDataType.float:
+                        {
+                            let attribOffset = v.instanceOffset.get(self._partsJoinedUsedCategories[partIndex]);
+                            effect.setFloat(v.attributeName, data.buffer[offset + attribOffset]);
+                            break;
+                        }
+                        case ShaderDataType.Vector2:
+                        {
+                            let attribOffset = v.instanceOffset.get(self._partsJoinedUsedCategories[partIndex]);
+                            ModelRenderCache.v2.x = data.buffer[offset + attribOffset + 0];
+                            ModelRenderCache.v2.y = data.buffer[offset + attribOffset + 1];
+                            effect.setVector2(v.attributeName, ModelRenderCache.v2);
+                            break;
+                        }
+                        case ShaderDataType.Color3:
+                        case ShaderDataType.Vector3:
+                        {
+                            let attribOffset = v.instanceOffset.get(self._partsJoinedUsedCategories[partIndex]);
+                            ModelRenderCache.v3.x = data.buffer[offset + attribOffset + 0];
+                            ModelRenderCache.v3.y = data.buffer[offset + attribOffset + 1];
+                            ModelRenderCache.v3.z = data.buffer[offset + attribOffset + 2];
+                            effect.setVector3(v.attributeName, ModelRenderCache.v3);
+                            break;
+                        }
+                        case ShaderDataType.Color4:
+                        case ShaderDataType.Vector4:
+                        {
+                            let attribOffset = v.instanceOffset.get(self._partsJoinedUsedCategories[partIndex]);
+                            ModelRenderCache.v4.x = data.buffer[offset + attribOffset + 0];
+                            ModelRenderCache.v4.y = data.buffer[offset + attribOffset + 1];
+                            ModelRenderCache.v4.z = data.buffer[offset + attribOffset + 2];
+                            ModelRenderCache.v4.w = data.buffer[offset + attribOffset + 3];
+                            effect.setVector4(v.attributeName, ModelRenderCache.v4);
+                            break;
+                        }
+                        default:
+                    }
+                }
+            });
+        }
+
+
         _instancesData: StringDictionary<InstanceDataBase[]>;
 
         private _nextKey: number;
         _partIdList: number[];
         _partsDataStride: number[];
         _partsUsedCategories: Array<string[]>;
+        _partsJoinedUsedCategories: string[];
         _partsClassInfo: ClassTreeInfo<InstanceClassInfo, InstancePropInfo>[];
     }
 }

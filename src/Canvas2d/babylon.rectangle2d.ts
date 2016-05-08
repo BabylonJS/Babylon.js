@@ -24,36 +24,46 @@
             if (this.effectFill) {
                 let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
 
-                // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
-                if (!this.instancingFillAttributes) {
-                    this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
-                }
-
                 engine.enableEffect(this.effectFill);
                 engine.bindBuffers(this.fillVB, this.fillIB, [1], 4, this.effectFill);
+                let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
+                if (instanceInfo._owner.owner.supportInstancedArray) {
+                    if (!this.instancingFillAttributes) {
+                        // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+                        this.instancingFillAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_FILLPARTID, this.effectFill);
+                    }
 
-                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
-
-                engine.draw(true, 0, this.fillIndicesCount, instanceInfo._instancesPartsData[partIndex].usedElementCount);
-
-                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingFillAttributes);
+                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingFillAttributes);
+                    engine.draw(true, 0, this.fillIndicesCount, count);
+                    engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingFillAttributes);
+                } else {
+                    for (let i = 0; i < count; i++) {
+                        this.setupUniforms(this.effectFill, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                        engine.draw(true, 0, this.fillIndicesCount);                        
+                    }
+                }
             }
 
             if (this.effectBorder) {
                 let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_BORDERPARTID.toString());
 
-                // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
-                if (!this.instancingBorderAttributes) {
-                    this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, this.effectBorder);
-                }
                 engine.enableEffect(this.effectBorder);
                 engine.bindBuffers(this.borderVB, this.borderIB, [1], 4, this.effectBorder);
+                let count = instanceInfo._instancesPartsData[partIndex].usedElementCount;
+                if (instanceInfo._owner.owner.supportInstancedArray) {
+                    if (!this.instancingBorderAttributes) {
+                        this.instancingBorderAttributes = this.loadInstancingAttributes(Shape2D.SHAPE2D_BORDERPARTID, this.effectBorder);
+                    }
 
-                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
-
-                engine.draw(true, 0, this.borderIndicesCount, instanceInfo._instancesPartsData[partIndex].usedElementCount);
-
-                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingBorderAttributes);
+                    engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], null, this.instancingBorderAttributes);
+                    engine.draw(true, 0, this.borderIndicesCount, count);
+                    engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[partIndex], this.instancingBorderAttributes);
+                } else {
+                    for (let i = 0; i < count; i++) {
+                        this.setupUniforms(this.effectBorder, partIndex, instanceInfo._instancesPartsData[partIndex], i);
+                        engine.draw(true, 0, this.borderIndicesCount);
+                    }
+                }
             }
             return true;
         }
@@ -169,7 +179,9 @@
                 renderCache.fillIndicesCount = triCount * 3;
 
                 let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_FILLPARTID, ["index"]);
-                renderCache.effectFill = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, [], [], ei.defines);
+                renderCache.effectFill = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, ei.uniforms, [], ei.defines, null, e => {
+//                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_FILLPARTID);
+                });
             }
 
             // Need to create webgl resource for border part?
@@ -201,7 +213,9 @@
                 renderCache.borderIndicesCount = triCount * 3;
 
                 let ei = this.getDataPartEffectInfo(Shape2D.SHAPE2D_BORDERPARTID, ["index"]);
-                renderCache.effectBorder = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, [], [], ei.defines);
+                renderCache.effectBorder = engine.createEffect({ vertex: "rect2d", fragment: "rect2d" }, ei.attributes, ei.uniforms, [], ei.defines, null, e => {
+//                    renderCache.setupUniformsLocation(e, ei.uniforms, Shape2D.SHAPE2D_BORDERPARTID);
+                });
             }
 
             return renderCache;
