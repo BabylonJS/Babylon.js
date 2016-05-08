@@ -48,20 +48,31 @@
         /**
          * Create a new 2D WorldSpace Rendering Canvas, it is a 2D rectangle that has a size (width/height) and a world transformation matrix to place it in the world space.
          * This kind of canvas can't have its Primitives directly drawn in the Viewport, they need to be cached in a bitmap at some point, as a consequence the DONT_CACHE strategy is unavailable. All remaining strategies are supported.
-         * @param engine
-         * @param name
-         * @param transform
-         * @param size
-         * @param cachingStrategy
          */
-        static CreateWorldSpace(scene: Scene, name: string, transform: Matrix, size: Size, cachingStrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS): Canvas2D {
-            if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
-                throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
+        static CreateWorldSpace(scene: Scene, name: string, position: Vector3, rotation: Quaternion, size: Size, renderScaleFactor: number=1, sideOrientation?: number, cachingStrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS): Canvas2D {
+            if (cachingStrategy !== Canvas2D.CACHESTRATEGY_CANVAS) {
+                throw new Error("Right now only the CACHESTRATEGY_CANVAS cache Strategy is supported for WorldSpace Canvas. More will come soon!");
             }
 
+            //if (cachingStrategy === Canvas2D.CACHESTRATEGY_DONTCACHE) {
+            //    throw new Error("CACHESTRATEGY_DONTCACHE cache Strategy can't be used for WorldSpace Canvas");
+            //}
+
             let c = new Canvas2D();
-            c.setupCanvas(scene, name, size, false, cachingStrategy);
-            c._worldTransform = transform;
+            c.setupCanvas(scene, name, new Size(size.width*renderScaleFactor, size.height*renderScaleFactor), false, cachingStrategy);
+
+            let plane = new WorldSpaceCanvas2d(name, scene, c);
+            let vertexData = VertexData.CreatePlane({ width: size.width/2, height: size.height/2, sideOrientation: sideOrientation });
+            let mtl = new StandardMaterial(name + "_Material", scene);
+
+            c.applyCachedTexture(vertexData, mtl);
+            vertexData.applyToMesh(plane, false);
+
+            mtl.specularColor = new Color3(0, 0, 0);
+            mtl.useAlphaFromDiffuseTexture = true;
+            plane.position = position;
+            plane.rotationQuaternion = rotation;
+            plane.material = mtl;
 
             return c;
         }
@@ -80,20 +91,24 @@
             this._engine = scene.getEngine();
             this._renderingSize = new Size(0, 0);
 
-            if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
-                this._background = Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
-                this._background.levelVisible = false;
-            }
+            //if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
+            //    this._background = Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
+            //    this._background.levelVisible = false;
+            //}
             this._isScreeSpace = isScreenSpace;
 
             if (this._isScreeSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
                     this.render();
                 });
+            } else {
+                this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add((d, s) => {
+                    this.render();
+                });
             }
 
             this._supprtInstancedArray = this._engine.getCaps().instancedArrays !== null;
-            this._supprtInstancedArray = false; // TODO REMOVE!!!
+//            this._supprtInstancedArray = false; // TODO REMOVE!!!
         }
 
         public dispose(): boolean {
@@ -211,7 +226,6 @@
         private _scene: Scene;
         private _engine: Engine;
         private _isScreeSpace: boolean;
-        private _worldTransform: Matrix;
         private _cachingStrategy: number;
         private _hierarchyMaxDepth: number;
         private _hierarchyLevelZFactor: number;
@@ -285,10 +299,13 @@
             }
 
             // Create a Sprite that will be used to render this cache, the "__cachedSpriteOfGroup__" starting id is a hack to bypass exception throwing in case of the Canvas doesn't normally allows direct primitives
-            let node: PackedRect = res.node;
-            let sprite = Sprite2D.Create(this, `__cachedSpriteOfGroup__${group.id}`, group.position.x, group.position.y, map, node.contentSize, node.pos, false);
-            sprite.origin = Vector2.Zero();
-            res.sprite = sprite;
+            // Don't do it in case of the group being a worldspace canvas (because its texture is bound to a WorldSpaceCanvas node)
+            if (group !== <any>this || this._isScreeSpace) {
+                let node: PackedRect = res.node;
+                let sprite = Sprite2D.Create(this, `__cachedSpriteOfGroup__${group.id}`, group.position.x, group.position.y, map, node.contentSize, node.pos, false);
+                sprite.origin = Vector2.Zero();
+                res.sprite = sprite;
+            }
             return res;
         }
 

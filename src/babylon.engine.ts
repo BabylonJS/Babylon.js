@@ -592,6 +592,14 @@
             this._drawCalls = 0;
         }
 
+        public getDepthFunction(): number {
+            return this._depthCullingState.depthFunc;
+        }
+
+        public setDepthFunction(depthFunc: number) {
+            this._depthCullingState.depthFunc = depthFunc;
+        }
+
         public setDepthFunctionToGreater(): void {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         }

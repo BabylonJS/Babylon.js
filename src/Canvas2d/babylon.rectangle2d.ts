@@ -21,6 +21,11 @@
 
             var engine = instanceInfo._owner.owner.engine;
 
+            let depthFunction = 0;
+            if (this.effectFill && this.effectBorder) {
+                depthFunction = engine.getDepthFunction();
+                engine.setDepthFunctionToLessOrEqual();
+            }
             if (this.effectFill) {
                 let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
 
@@ -64,6 +69,9 @@
                         engine.draw(true, 0, this.borderIndicesCount);
                     }
                 }
+            }
+            if (this.effectFill && this.effectBorder) {
+                engine.setDepthFunction(depthFunction);
             }
             return true;
         }
