@@ -112,7 +112,6 @@ var BABYLON;
             if (scene.fogEnabled && mesh && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE && this.fogEnabled) {
                 this._defines.FOG = true;
             }
-            var lightIndex = 0;
             if (scene.lightsEnabled && !this.disableLighting) {
                 needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, this._defines, this.maxSimultaneousLights);
             }
@@ -181,10 +180,9 @@ var BABYLON;
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "depthValues"
                 ];
-                BABYLON.MaterialHelper.PrepareUniformsListForList(uniforms, this._defines, this.maxSimultaneousLights);
-                this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, ["diffuseSampler",
-                    "shadowSampler0", "shadowSampler1", "shadowSampler2", "shadowSampler3"
-                ], join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
+                var samplers = ["diffuseSampler"];
+                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList(uniforms, samplers, this._defines, this.maxSimultaneousLights);
+                this._effect = scene.getEngine().createEffect(shaderName, attribs, uniforms, samplers, join, fallbacks, this.onCompiled, this.onError, { maxSimultaneousLights: this.maxSimultaneousLights });
             }
             if (!this._effect.isReady()) {
                 return false;

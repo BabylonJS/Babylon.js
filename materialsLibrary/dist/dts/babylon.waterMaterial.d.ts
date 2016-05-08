@@ -47,8 +47,6 @@ declare module BABYLON {
         private _material;
         private _reflectionTransform;
         private _lastTime;
-        private _scaledDiffuse;
-        private _scaledSpecular;
         private _renderId;
         private _defines;
         private _cachedDefines;
