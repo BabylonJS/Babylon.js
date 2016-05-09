@@ -483,9 +483,15 @@ var BABYLON;
             return new Vector2(x, y);
         };
         Vector2.Transform = function (vector, transformation) {
+            var r = Vector2.Zero();
+            Vector2.TransformToRef(vector, transformation, r);
+            return r;
+        };
+        Vector2.TransformToRef = function (vector, transformation, result) {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + transformation.m[12];
             var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + transformation.m[13];
-            return new Vector2(x, y);
+            result.x = x;
+            result.y = y;
         };
         Vector2.Distance = function (value1, value2) {
             return Math.sqrt(Vector2.DistanceSquared(value1, value2));

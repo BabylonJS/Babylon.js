@@ -26,6 +26,19 @@ var BABYLON;
             g.setupGroup2D(parent.owner, parent, id, position, size, cacheBehabior);
             return g;
         };
+        Group2D.prototype.applyCachedTexture = function (vertexData, material) {
+            this._bindCacheTarget();
+            var uv = vertexData.uvs;
+            var nodeuv = this._cacheNode.UVs;
+            for (var i = 0; i < 4; i++) {
+                uv[i * 2 + 0] = nodeuv[i].x;
+                uv[i * 2 + 1] = nodeuv[i].y;
+            }
+            material.diffuseTexture = this._cacheTexture;
+            material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+            this._cacheTexture.hasAlpha = true;
+            this._unbindCacheTarget();
+        };
         /**
          * Create an instance of the Group Primitive.
          * A group act as a container for many sub primitives, if features:
@@ -82,8 +95,8 @@ var BABYLON;
                     return this._size;
                 }
                 // Otherwise the size is computed based on the boundingInfo
-                var size = this.boundingInfo.extent.clone();
-                return size;
+                var m = this.boundingInfo.max();
+                return new BABYLON.Size(m.x, m.y);
             },
             enumerable: true,
             configurable: true
@@ -100,24 +113,22 @@ var BABYLON;
         };
         Group2D.prototype.updateLevelBoundingInfo = function () {
             var size;
-            // If the size is set by the user, the boundingInfo is compute from this value
+            // If the size is set by the user, the boundingInfo is computed from this value
             if (this.size) {
                 size = this.size;
             }
             else {
                 size = new BABYLON.Size(0, 0);
             }
-            this._levelBoundingInfo.radius = Math.sqrt(size.width * size.width + size.height * size.height);
-            this._levelBoundingInfo.extent = size.clone();
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(size, this._levelBoundingInfo);
         };
         // Method called only on renderable groups to prepare the rendering
         Group2D.prototype._prepareGroupRender = function (context) {
-            var childrenContext = this._buildChildContext(context);
             var sortedDirtyList = null;
             // Update the Global Transformation and visibility status of the changed primitives
             if ((this._primDirtyList.length > 0) || context.forceRefreshPrimitive) {
                 sortedDirtyList = this._primDirtyList.sort(function (a, b) { return a.hierarchyDepth - b.hierarchyDepth; });
-                this.updateGlobalTransVisOf(sortedDirtyList, childrenContext, true);
+                this.updateGlobalTransVisOf(sortedDirtyList, true);
             }
             // Setup the size of the rendering viewport
             // In non cache mode, we're rendering directly to the rendering canvas, in this case we have to detect if the canvas size changed since the previous iteration, if it's the case all primitives must be preprared again because their transformation must be recompute
@@ -156,7 +167,7 @@ var BABYLON;
                 if (context.forceRefreshPrimitive) {
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var p = _a[_i];
-                        p._prepareRender(childrenContext);
+                        p._prepareRender(context);
                     }
                 }
                 else {
@@ -169,7 +180,7 @@ var BABYLON;
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
                         // For instance: a Rect's position change, the position of its children primitives will also change so a prepare will be call on them. If a child was in the dirtyList we will avoid a second prepare by making this check.
                         if (p.needPrepare()) {
-                            p._prepareRender(childrenContext);
+                            p._prepareRender(context);
                         }
                     });
                     // Everything is updated, clear the dirty list
@@ -178,17 +189,16 @@ var BABYLON;
             }
             // A renderable group has a list of direct children that are also renderable groups, we recurse on them to also prepare them
             this._childrenRenderableGroups.forEach(function (g) {
-                g._prepareGroupRender(childrenContext);
+                g._prepareGroupRender(context);
             });
         };
         Group2D.prototype._groupRender = function (context) {
             var engine = this.owner.engine;
             var failedCount = 0;
             // First recurse to children render group to render them (in their cache or on screen)
-            var childrenContext = this._buildChildContext(context);
             for (var _i = 0, _a = this._childrenRenderableGroups; _i < _a.length; _i++) {
                 var childGroup = _a[_i];
-                childGroup._groupRender(childrenContext);
+                childGroup._groupRender(context);
             }
             // Render the primitives if needed: either if we don't cache the content or if the content is cached but has changed
             if (!this.isCachedGroup || this._cacheGroupDirty) {
@@ -200,26 +210,28 @@ var BABYLON;
                 }
                 // For each different model of primitive to render
                 this.groupRenderInfo.forEach(function (k, v) {
-                    // If the instances of the model was changed, pack the data
-                    var instanceData = v._instancesData.pack();
-                    // Compute the size the instance buffer should have
-                    var neededSize = v._instancesData.usedElementCount * v._instancesData.stride * 4;
-                    // Check if we have to (re)create the instancesBuffer because there's none or the size doesn't match
-                    if (!v._instancesBuffer || (v._instancesBufferSize !== neededSize)) {
-                        if (v._instancesBuffer) {
-                            engine.deleteInstancesBuffer(v._instancesBuffer);
+                    for (var i = 0; i < v._instancesPartsData.length; i++) {
+                        // If the instances of the model was changed, pack the data
+                        var instanceData_1 = v._instancesPartsData[i].pack();
+                        // Compute the size the instance buffer should have
+                        var neededSize = v._instancesPartsData[i].usedElementCount * v._instancesPartsData[i].stride * 4;
+                        // Check if we have to (re)create the instancesBuffer because there's none or the size doesn't match
+                        if (!v._instancesPartsBuffer[i] || (v._instancesPartsBufferSize[i] !== neededSize)) {
+                            if (v._instancesPartsBuffer[i]) {
+                                engine.deleteInstancesBuffer(v._instancesPartsBuffer[i]);
+                            }
+                            v._instancesPartsBuffer[i] = engine.createInstancesBuffer(neededSize);
+                            v._instancesPartsBufferSize[i] = neededSize;
+                            v._dirtyInstancesData = true;
+                            // Update the WebGL buffer to match the new content of the instances data
+                            engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData_1);
                         }
-                        v._instancesBuffer = engine.createInstancesBuffer(neededSize);
-                        v._instancesBufferSize = neededSize;
-                        v._dirtyInstancesData = true;
-                        // Update the WebGL buffer to match the new content of the instances data
-                        engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
-                    }
-                    else if (v._dirtyInstancesData) {
-                        // Update the WebGL buffer to match the new content of the instances data
-                        engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesBuffer);
-                        engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData);
-                        v._dirtyInstancesData = false;
+                        else if (v._dirtyInstancesData) {
+                            // Update the WebGL buffer to match the new content of the instances data
+                            engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesPartsBuffer[i]);
+                            engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData_1);
+                            v._dirtyInstancesData = false;
+                        }
                     }
                     // render all the instances of this model, if the render method returns true then our instances are no longer dirty
                     var renderFailed = !v._modelCache.render(v, context);
@@ -245,13 +257,31 @@ var BABYLON;
                 var res = this.owner._allocateGroupCache(this);
                 this._cacheNode = res.node;
                 this._cacheTexture = res.texture;
+                this._cacheRenderSprite = res.sprite;
             }
             var n = this._cacheNode;
-            this._cacheTexture.bindTextureForRect(n);
+            this._cacheTexture.bindTextureForRect(n, true);
         };
         Group2D.prototype._unbindCacheTarget = function () {
             if (this._cacheTexture) {
                 this._cacheTexture.unbindTexture();
+            }
+        };
+        Group2D.prototype.handleGroupChanged = function (prop) {
+            // This method is only for cachedGroup
+            if (!this.isCachedGroup || !this._cacheRenderSprite) {
+                return;
+            }
+            // For now we only support these property changes
+            // TODO: add more! :)
+            if (prop.id === BABYLON.Prim2DBase.positionProperty.id) {
+                this._cacheRenderSprite.position = this.position.clone();
+            }
+            else if (prop.id === BABYLON.Prim2DBase.rotationProperty.id) {
+                this._cacheRenderSprite.rotation = this.rotation;
+            }
+            else if (prop.id === BABYLON.Prim2DBase.scaleProperty.id) {
+                this._cacheRenderSprite.scale = this.scale;
             }
         };
         Group2D.prototype.detectGroupStates = function () {
@@ -311,10 +341,10 @@ var BABYLON;
                 }
             }
         };
-        Group2D.GROUP2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 10;
+        Group2D.GROUP2D_PROPCOUNT = BABYLON.Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
         /**
-         * Default behavior, the group will use the caching strategy defined at the Canvas Level
-         */
+           * Default behavior, the group will use the caching strategy defined at the Canvas Level
+           */
         Group2D.GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY = 0;
         /**
          * When used, this group's content won't be cached, no matter which strategy used.
@@ -335,7 +365,6 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.Group2D = Group2D;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.group2d.js.map

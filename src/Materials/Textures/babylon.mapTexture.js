@@ -54,10 +54,13 @@ var BABYLON;
          * Don't forget to call unbindTexture when you're done rendering
          * @param rect the zone to render to
          */
-        MapTexture.prototype.bindTextureForRect = function (rect) {
+        MapTexture.prototype.bindTextureForRect = function (rect, clear) {
             var engine = this.getScene().getEngine();
             engine.bindFramebuffer(this._texture);
             this._replacedViewport = engine.setDirectViewport(rect.pos.x, rect.pos.y, rect.contentSize.width, rect.contentSize.height);
+            if (clear) {
+                engine.clear(new BABYLON.Color4(0, 0, 0, 0), true, true);
+            }
         };
         /**
          * Unbind the texture map from the rendering engine.
@@ -89,7 +92,6 @@ var BABYLON;
             return null;
         };
         return MapTexture;
-    }(BABYLON.Texture));
+    })(BABYLON.Texture);
     BABYLON.MapTexture = MapTexture;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.mapTexture.js.map
