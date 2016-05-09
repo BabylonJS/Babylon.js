@@ -666,6 +666,9 @@ BabylonMesh::BabylonMesh(BabylonNode* node) :
 			case FbxLayerElement::eByPolygon:
 				materialIndex = materials->GetIndexArray().GetAt(triangleIndex);
 			}
+			if (materialIndex < 0 || materialIndex >= materialCount) {
+				materialIndex = 0;
+			}
 		}
 
 		auto& submesh = submeshes[materialIndex];
