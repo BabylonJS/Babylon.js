@@ -342,8 +342,8 @@
                     let joinedUsedCatList = new Array<string>();
 
                     for (let dataPart of parts) {
-                        let cat = this.getUsedShaderCategories(dataPart);
-                        let cti = dataPart.getClassTreeInfo();
+                        var cat = this.getUsedShaderCategories(dataPart);
+                        var cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
                         let curVisible = this.isVisible;
                         this.isVisible = true;
@@ -355,7 +355,7 @@
                         this.refreshInstanceDataPart(dataPart);
                         this.isVisible = curVisible;
 
-                        let size = 0;
+                        var size = 0;
                         cti.fullContent.forEach((k, v) => {
                             if (!v.category || cat.indexOf(v.category) !== -1) {
                                 if (!v.size) {
