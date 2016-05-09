@@ -703,12 +703,6 @@ public:
 		  */
 		bool DisconnectAllSrcObject(const FbxCriteria& pCriteria);
 
-		/** Disconnects this property from all the source objects of a specific class type. (Deprecated, please use DisconnectAllSrcObject<Type>() instead.)
-		  * \param pClassId The specific class type.
-		  * \return \c True if it disconnects all the source objects successfully, \c false otherwise.
-		  */
-		FBX_DEPRECATED bool DisconnectAllSrcObject(const FbxClassId& pClassId);
-
 		/** Returns the number of source objects with which this property connects.
 		  * \return The number of source objects with which this property connects. 
 		  */
@@ -719,12 +713,6 @@ public:
 		  * \return The number of source objects that satisfy the given criteria with which this property connects.
 		  */
 		int GetSrcObjectCount(const FbxCriteria& pCriteria) const;
-
-		/** Returns the number of source objects of the specific class type with which this property connects. (Deprecated, please use GetSrcObjectCount<Type>() instead.)
-		  * \param pClassId The specific class type.
-		  * \return The number of source objects of the specific class type with which this property connects.
-		  */
-		FBX_DEPRECATED int GetSrcObjectCount(const FbxClassId& pClassId) const;
 
 		/** Returns the source object at the specified index with which this property connects.
 		  * \param pIndex The specified index whose default value is 0.
@@ -738,13 +726,6 @@ public:
 		  * \return The source object that satisfies the given criteria at the specified index, NULL if not found.
 		  */
 		FbxObject* GetSrcObject(const FbxCriteria& pCriteria, const int pIndex=0) const;
-
-		/** Returns the source object of the specified class type at the specified index with which this property connects. (Deprecated, please use GetSrcObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \param pIndex The specified index whose default value is 0.
-		  * \return The source object of the specified class type at the specified index, NULL if not found.
-		  */
-		FBX_DEPRECATED FbxObject* GetSrcObject(const FbxClassId& pClassId, const int pIndex=0) const;
 
 		/** Searches the source object with the specified name, starting with the specified index.
 		  * \param pName The object name.
@@ -760,14 +741,6 @@ public:
 		  * \return The source object with the name, NULL if not found.
 		  */
 		FbxObject* FindSrcObject(const FbxCriteria& pCriteria, const char* pName, const int pStartIndex=0) const;
-
-		/** Searches the source object with the specified name which is of the specified class type, starting with the specified index. (Deprecated, please use FindSrcObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \param pName The object name.
-		  * \param pStartIndex The start index.
-		  * \return The source object with the name, NULL if not found.
-		  */
-		FBX_DEPRECATED FbxObject* FindSrcObject(const FbxClassId& pClassId, const char* pName, const int pStartIndex=0) const;
 
 		/** Disconnects this property from all source objects of the specified class type.
 		  * \tparam T The specified class type.
@@ -857,12 +830,6 @@ public:
 		  */
 		bool DisconnectAllDstObject(const FbxCriteria& pCriteria);
 
-		/** Disconnects this property from all the destination objects of the specified class type. (Deprecated, please use DisconnectAllDstObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \return \c True if it disconnects all the destination objects successfully, \c false otherwise.
-		  */
-		FBX_DEPRECATED bool DisconnectAllDstObject(const FbxClassId& pClassId);
-
 		/** Returns the number of destination objects with which this property connects. 
 		  * \return The number of destination objects with which this property connects. 
 		  */
@@ -873,12 +840,6 @@ public:
 		  * \return The number of destination objects that satisfy given criteria with which this property connects. 
 		  */
 		int GetDstObjectCount(const FbxCriteria& pCriteria) const;
-
-		/** Returns the number of destination objects of the specified class type with which this property connects. (Deprecated, please use GetDstObjectCount<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \return The number of destination objects of the specified class type with which this property connects. 
-		  */
-		FBX_DEPRECATED int GetDstObjectCount(const FbxClassId& pClassId) const;
 
 		/** Returns the destination object at the specified index with which this property connects.
 		  * \param pIndex The specified index whose default value is 0.
@@ -892,13 +853,6 @@ public:
 		  * \return The destination object that satisfies given criteria at the specified index, NULL if not found.
 		  */
 		FbxObject* GetDstObject(const FbxCriteria& pCriteria, const int pIndex=0) const;
-
-		/** Returns the destination object of the specified class type at the specified index with which this property connects. (Deprecated, please use GetDstObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \param pIndex The specified index whose default value is 0.
-		  * \return The destination object of the specified class type at the specified index, NULL if not found.
-		  */
-		FBX_DEPRECATED FbxObject* GetDstObject(const FbxClassId& pClassId, const int pIndex=0) const;
 
 		/** Searches the destination object with the specified name, starting with the specified index.
 		  * \param pName The object name.
@@ -914,14 +868,6 @@ public:
 		  * \return The destination object with the name, NULL if not found.
 		  */
 		FbxObject* FindDstObject(const FbxCriteria& pCriteria, const char* pName, const int pStartIndex=0) const;
-
-		/** Searches the destination object with the specified name which is of the specified class type, starting with the specified index. (Deprecated, please use FindDstObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \param pName The object name.
-		  * \param pStartIndex The start index.
-		  * \return The destination object with the name, NULL if not found.
-		  */
-		FBX_DEPRECATED FbxObject* FindDstObject(const FbxClassId& pClassId, const char* pName, const int pStartIndex=0) const;
 
 		/** Disconnects this property from all the destination objects of the specified class type.
 		  * \tparam T The specified class type.

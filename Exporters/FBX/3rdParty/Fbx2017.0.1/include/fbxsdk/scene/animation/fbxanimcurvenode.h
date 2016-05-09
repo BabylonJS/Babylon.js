@@ -294,9 +294,9 @@ public:
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 	virtual FbxObject& Copy(const FbxObject& pObject);
 
-    void Evaluate(double* pData, FbxTime pTime);
+    static const char* CurveNodeNameFrom(const char* pName);
+	static bool EvaluateChannels(FbxAnimCurveNode* pCurveNode, double* pData, unsigned int pCount, FbxTime pTime);
 
-    KFCurveNode* GetKFCurveNode(bool pNoCreate=false);
     void ReleaseKFCurveNode();
     void SyncChannelsWithKFCurve();
 
@@ -304,9 +304,13 @@ public:
 	bool SetQuaternionInterpolation(unsigned short pVal); 
     unsigned short GetQuaternionInterpolation() { return mQuaternionInterpolation; };
     void SetKFCurveNodeLayerType(FbxProperty& pProp);
+	KFCurveNode* GetKFCurveNode(bool pNoCreate=false);
 
-    static const char* CurveNodeNameFrom(const char* pName);
-
+private:
+	friend class FbxAnimCurveFilterMatrixConverter;
+	friend class FbxAnimEvalClassic;
+    void Evaluate(double* pData, FbxTime pTime);
+    
 protected:
 	virtual void Construct(const FbxObject* pFrom);
     virtual void Destruct(bool pRecursive);

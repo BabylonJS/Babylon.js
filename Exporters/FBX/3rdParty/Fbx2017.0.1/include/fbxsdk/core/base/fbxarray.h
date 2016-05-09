@@ -283,6 +283,8 @@ public:
 	* \return \c true if successful, otherwise \c false. */
 	inline void RemoveRange(const int pIndex, const int pCount)
 	{
+		FBX_ASSERT_RETURN(pIndex >= 0);
+		FBX_ASSERT_RETURN(pCount >= 0);
 		if( pIndex + pCount < mSize )
 		{
 			memmove(&mArray[pIndex], &mArray[pIndex + pCount], (mSize - pIndex - pCount) * sizeof(T));
