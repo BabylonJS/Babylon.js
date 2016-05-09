@@ -356,7 +356,9 @@
                         this.isVisible = curVisible;
 
                         let size = 0;
-                        cti.fullContent.forEach((k, v) => {
+
+                        for (var index = 0; index < cti.fullContent.count; index++) {
+                            var v = cti.fullContent[index];
                             if (!v.category || cat.indexOf(v.category) !== -1) {
                                 if (!v.size) {
                                     console.log(`ERROR: Couldn't detect the size of the Property ${v.attributeName} from type ${Tools.getClassName(cti.type)}. Property is ignored.`);
@@ -364,7 +366,8 @@
                                     size += v.size;
                                 }
                             }
-                        });
+                        }
+
                         dataStrides.push(size);
                         usedCatList.push(cat);
                         ctiArray.push(cti);

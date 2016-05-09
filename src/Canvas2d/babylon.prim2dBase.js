@@ -15,7 +15,7 @@ var BABYLON;
         function Render2DContext() {
         }
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -44,7 +44,7 @@ var BABYLON;
             this._id = id;
             this.propertyChanged = new BABYLON.Observable();
             this._children = new Array();
-            this._parentTranformStep = 0;
+            this._globalTransformProcessStep = 0;
             this._globalTransformStep = 0;
             if (this instanceof BABYLON.Group2D) {
                 var group = this;
@@ -118,6 +118,15 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Prim2DBase.prototype, "origin", {
+            /**
+             * The origin defines the normalized coordinate of the center of the primitive, from the top/left corner.
+             * The origin is used only to compute transformation of the primitive, it has no meaning in the primitive local frame of reference
+             * For instance:
+             * 0,0 means the center is top/left
+             * 0.5,0.5 means the center is at the center of the primtive
+             * 0,1 means the center is bottom/left
+             * @returns The normalized center.
+             */
             get: function () {
                 return this._origin;
             },
@@ -190,19 +199,11 @@ var BABYLON;
                 if (this._boundingInfoDirty) {
                     this._boundingInfo = this.levelBoundingInfo.clone();
                     var bi = this._boundingInfo;
-                    var localTransform = new BABYLON.Matrix();
-                    if (this.parent) {
-                        this.globalTransform.multiplyToRef(BABYLON.Matrix.Invert(this.parent.globalTransform), localTransform);
-                    }
-                    else {
-                        localTransform = this.globalTransform;
-                    }
-                    var invLocalTransform = BABYLON.Matrix.Invert(localTransform);
-                    this.levelBoundingInfo.transformToRef(localTransform, bi);
                     var tps = new BABYLON.BoundingInfo2D();
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var curChild = _a[_i];
-                        curChild.boundingInfo.transformToRef(curChild.globalTransform.multiply(invLocalTransform), tps);
+                        var t = curChild.globalTransform.multiply(this.invGlobalTransform);
+                        curChild.boundingInfo.transformToRef(t, curChild.origin, tps);
                         bi.unionToRef(tps, bi);
                     }
                     this._boundingInfoDirty = false;
@@ -221,7 +222,7 @@ var BABYLON;
             var prevIndex = previous ? this._children.indexOf(previous) : -1;
             // Move to first position
             if (!previous) {
-                prevOffset = 0;
+                prevOffset = 1;
                 nextOffset = this._children[1]._siblingDepthOffset;
             }
             else {
@@ -233,33 +234,20 @@ var BABYLON;
         };
         Prim2DBase.prototype.addChild = function (child) {
             child._siblingDepthOffset = (this._children.length + 1) * this.owner.hierarchySiblingZDelta;
+            child._depthLevel = this._depthLevel + 1;
+            child._hierarchyDepthOffset = child._depthLevel * this.owner.hierarchyLevelZFactor;
             this._children.push(child);
         };
         Prim2DBase.prototype.getActualZOffset = function () {
-            return this._zOrder || this._siblingDepthOffset;
+            return this._zOrder || 1 - (this._siblingDepthOffset + this._hierarchyDepthOffset);
         };
         Prim2DBase.prototype.onPrimBecomesDirty = function () {
             if (this._renderGroup) {
-                //if (this instanceof Group2D) {
-                //    var group: any= this;
-                //    if (group.isRenderableGroup) {
-                //        return;
-                //    }
-                //}
                 this._renderGroup._addPrimToDirtyList(this);
             }
         };
         Prim2DBase.prototype.needPrepare = function () {
-            return this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformPreviousStep !== this._globalTransformStep);
-        };
-        Prim2DBase.prototype._buildChildContext = function (context) {
-            var childContext = new Render2DContext();
-            childContext.camera = context.camera;
-            childContext.parentVisibleState = context.parentVisibleState && this.levelVisible;
-            childContext.parentTransform = this._globalTransform;
-            childContext.parentTransformStep = this._globalTransformStep;
-            childContext.forceRefreshPrimitive = context.forceRefreshPrimitive;
-            return childContext;
+            return this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
         };
         Prim2DBase.prototype._prepareRender = function (context) {
             this._prepareRenderPre(context);
@@ -279,13 +267,12 @@ var BABYLON;
             //  - must have children
             //  - the global transform of this level have changed, or
             //  - the visible state of primitive has changed
-            if (this._children.length > 0 && ((this._globalTransformPreviousStep !== this._globalTransformStep) ||
+            if (this._children.length > 0 && ((this._globalTransformProcessStep !== this._globalTransformStep) ||
                 this.checkPropertiesDirty(Prim2DBase.isVisibleProperty.flagId))) {
-                var childContext = this._buildChildContext(context);
                 this._children.forEach(function (c) {
                     // As usual stop the recursion if we meet a renderable group
                     if (!(c instanceof BABYLON.Group2D && c.isRenderableGroup)) {
-                        c._prepareRender(childContext);
+                        c._prepareRender(context);
                     }
                 });
             }
@@ -298,33 +285,38 @@ var BABYLON;
                 throw new Error("A Primitive needs a valid Parent, it can be any kind of Primitives based types, even the Canvas (with the exception that only Group2D can be direct child of a Canvas if the cache strategy used is TOPLEVELGROUPS)");
             }
         };
-        Prim2DBase.prototype.updateGlobalTransVisOf = function (list, context, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
-                cur.updateGlobalTransVis(context, recurse);
+        Prim2DBase.prototype.updateGlobalTransVisOf = function (list, recurse) {
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
+                cur.updateGlobalTransVis(recurse);
             }
         };
-        Prim2DBase.prototype.updateGlobalTransVis = function (context, recurse) {
-            this._globalTransformPreviousStep = this._globalTransformStep;
-            this.isVisible = context.parentVisibleState && this.levelVisible;
-            // Detect if nothing changed
-            var tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
-            if ((context.parentTransformStep === this._parentTranformStep) && !this.checkPropertiesDirty(tflags)) {
-                return;
+        Prim2DBase.prototype.updateGlobalTransVis = function (recurse) {
+            // Check if the parent is synced
+            if (this._parent && this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
+                this._parent.updateGlobalTransVis(false);
             }
-            var rot = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), this._rotation);
-            var local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale, this._scale, this._scale), rot, new BABYLON.Vector3(this._position.x, this._position.y, 0));
-            this._globalTransform = context.parentTransform.multiply(local);
-            this._invGlobalTransform = BABYLON.Matrix.Invert(this._globalTransform);
-            ++this._globalTransformStep;
-            this._parentTranformStep = context.parentTransformStep;
-            this.clearPropertiesDirty(tflags);
+            // Check if we must update this prim
+            if (this === this.owner || this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
+                this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
+                // Detect if either the parent or this node changed
+                var tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
+                if ((this._parent && this._parent._globalTransformStep !== this._parentTransformStep) || this.checkPropertiesDirty(tflags)) {
+                    var rot = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), this._rotation);
+                    var local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale, this._scale, this._scale), rot, new BABYLON.Vector3(this._position.x, this._position.y, 0));
+                    this._globalTransform = this._parent ? local.multiply(this._parent._globalTransform) : local;
+                    this._invGlobalTransform = BABYLON.Matrix.Invert(this._globalTransform);
+                    this._globalTransformStep = this.owner._globalTransformProcessStep + 1;
+                    this._parentTransformStep = this._parent ? this._parent._globalTransformStep : 0;
+                    this.clearPropertiesDirty(tflags);
+                }
+                this._globalTransformProcessStep = this.owner._globalTransformProcessStep;
+            }
             if (recurse) {
-                var childrenContext = this._buildChildContext(context);
                 for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                     var child = _a[_i];
                     // Stop the recursion if we meet a renderable group
-                    child.updateGlobalTransVis(childrenContext, !(child instanceof BABYLON.Group2D && child.isRenderableGroup));
+                    child.updateGlobalTransVis(!(child instanceof BABYLON.Group2D && child.isRenderableGroup));
                 }
             }
         };
@@ -354,7 +346,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));
-//# sourceMappingURL=babylon.prim2dBase.js.map
