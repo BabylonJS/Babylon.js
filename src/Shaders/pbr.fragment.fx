@@ -339,7 +339,7 @@ vec3 surfaceRefractionColor = vec3(0., 0., 0.);
             #ifdef LODBASEDMICROSFURACE
                 #ifdef USEPMREMREFRACTION
                     // Empiric Threshold
-                    if (microSurface > 0.5)
+                    if ((vMicrosurfaceTextureLods.y - lodRefraction) > 4.0)
                     {
                         // Bend to not reach edges.
                         float scaleRefraction = 1. - exp2(lodRefraction) / exp2(vMicrosurfaceTextureLods.y); // CubemapSize is the size of the base mipmap
@@ -398,7 +398,7 @@ vec3 environmentIrradiance = vReflectionColor.rgb;
         #ifdef LODBASEDMICROSFURACE
             #ifdef USEPMREMREFLECTION
                 // Empiric Threshold
-                if (microSurface > 0.5)
+                if ((vMicrosurfaceTextureLods.y - lodReflection) > 4.0)
                 {
                     // Bend to not reach edges.
                     float scaleReflection = 1. - exp2(lodReflection) / exp2(vMicrosurfaceTextureLods.x); // CubemapSize is the size of the base mipmap
