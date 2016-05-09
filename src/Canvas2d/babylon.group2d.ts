@@ -48,6 +48,7 @@
             }
 
             material.diffuseTexture = this._cacheTexture;
+            material.emissiveColor = new Color3(1, 1, 1);
             this._cacheTexture.hasAlpha = true;
             this._unbindCacheTarget();
         }

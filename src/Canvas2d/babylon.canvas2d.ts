@@ -69,6 +69,7 @@
             vertexData.applyToMesh(plane, false);
 
             mtl.specularColor = new Color3(0, 0, 0);
+            mtl.disableLighting =true;
             mtl.useAlphaFromDiffuseTexture = true;
             plane.position = position;
             plane.rotationQuaternion = rotation;
