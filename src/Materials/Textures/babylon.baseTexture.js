@@ -23,6 +23,9 @@ var BABYLON;
             this._scene = scene;
             this._scene.textures.push(this);
         }
+        BaseTexture.prototype.toString = function () {
+            return this.name;
+        };
         BaseTexture.prototype.getScene = function () {
             return this._scene;
         };
