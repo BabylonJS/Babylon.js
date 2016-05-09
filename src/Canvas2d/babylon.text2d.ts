@@ -187,7 +187,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.ConstructFromSizeToRef(this.actualAreaSize, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.actualAreaSize, this._levelBoundingInfo);
         }
 
         protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, vAlign, hAlign, tabulationSize: number) {

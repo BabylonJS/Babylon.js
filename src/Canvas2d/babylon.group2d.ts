@@ -128,7 +128,7 @@
                 size = new Size(0, 0);
             }
 
-            BoundingInfo2D.ConstructFromSizeToRef(size, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(size, this._levelBoundingInfo);
         }
 
         // Method called only on renderable groups to prepare the rendering

@@ -1015,7 +1015,7 @@
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
             }
 
-            if (offsetLocations[0] instanceof InstancingAttributeInfo) {
+            if ((<any>offsetLocations[0]).index !== undefined) {
                 let stride = 0;
                 for (let i = 0; i < offsetLocations.length; i++) {
                     let ai = <InstancingAttributeInfo>offsetLocations[i];
@@ -1039,7 +1039,7 @@
 
         public unBindInstancesBuffer(instancesBuffer: WebGLBuffer, offsetLocations: number[] | InstancingAttributeInfo[]): void {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            if (offsetLocations[0] instanceof InstancingAttributeInfo) {
+            if ((<any>offsetLocations[0]).index !== undefined) {
                 for (let i = 0; i < offsetLocations.length; i++) {
                     let ai = <InstancingAttributeInfo>offsetLocations[i];
                     this._gl.disableVertexAttribArray(ai.index);
