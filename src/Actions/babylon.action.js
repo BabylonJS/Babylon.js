@@ -126,6 +126,6 @@ var BABYLON;
             };
         };
         return Action;
-    }());
+    })();
     BABYLON.Action = Action;
 })(BABYLON || (BABYLON = {}));

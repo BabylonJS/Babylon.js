@@ -12,14 +12,14 @@ module BABYLON {
 
         /**
          * The current internal texture size.
-         */        
+         */
         private _size: number;
-        
+
         /**
          * The current texture matrix. (will always be identity in color grading texture)
          */
         private _textureMatrix: Matrix;
-        
+
         /**
          * The texture URL.
          */
@@ -29,7 +29,7 @@ module BABYLON {
          * Empty line regex stored for GC.
          */
         private static _noneEmptyLineRegex = /\S+/;
-        
+
         /**
          * Instantiates a ColorGradingTexture from the following parameters.
          * 
@@ -51,7 +51,7 @@ module BABYLON {
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
             this.anisotropicFilteringLevel = 1;
-            
+
             this._texture = this._getFromCache(url, true);
 
             if (!this._texture) {
@@ -70,7 +70,7 @@ module BABYLON {
         public getTextureMatrix(): Matrix {
             return this._textureMatrix;
         }
-        
+
         /**
          * Occurs when the file being loaded is a .3dl LUT file.
          */
@@ -80,25 +80,25 @@ module BABYLON {
             var floatArrayView: Float32Array = null;
             var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
             this._texture = texture;
-            
+
             var callback = (text: string) => {
                 var data: Uint8Array;
                 var tempData: Float32Array;
-                
+
                 var line: string;
                 var lines = text.split('\n');
                 var size = 0, pixelIndexW = 0, pixelIndexH = 0, pixelIndexSlice = 0;
                 var maxColor = 0;
-                
+
                 for (let i = 0; i < lines.length; i++) {
                     line = lines[i];
-                    
+
                     if (!ColorGradingTexture._noneEmptyLineRegex.test(line))
                         continue;
-                        
+
                     if (line.indexOf('#') === 0)
                         continue;
-                    
+
                     var words = line.split(" ");
                     if (size === 0) {
                         // Number of space + one
@@ -107,24 +107,23 @@ module BABYLON {
                         tempData = new Float32Array(size * size * size * 4);
                         continue;
                     }
-                    
-                    if (size != 0)
-                    {
+
+                    if (size != 0) {
                         var r = Math.max(parseInt(words[0]), 0);
                         var g = Math.max(parseInt(words[1]), 0);
                         var b = Math.max(parseInt(words[2]), 0);
-                        
+
                         maxColor = Math.max(r, maxColor);
                         maxColor = Math.max(g, maxColor);
                         maxColor = Math.max(b, maxColor);
-                        
+
                         var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 4;
-                        
+
                         tempData[pixelStorageIndex + 0] = r;
                         tempData[pixelStorageIndex + 1] = g;
                         tempData[pixelStorageIndex + 2] = b;
                         tempData[pixelStorageIndex + 3] = 0;
-                        
+
                         pixelIndexSlice++;
                         if (pixelIndexSlice % size == 0) {
                             pixelIndexH++;
@@ -136,12 +135,12 @@ module BABYLON {
                         }
                     }
                 }
-            
+
                 for (let i = 0; i < tempData.length; i++) {
                     var value = tempData[i];
                     data[i] = (value / maxColor * 255);
                 }
-                
+
                 this.getScene().getEngine().updateTextureSize(texture, size * size, size);
                 this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
             }
@@ -203,7 +202,7 @@ module BABYLON {
             }
             return texture;
         }
-        
+
         /**
          * Serializes the LUT texture to json format.
          */

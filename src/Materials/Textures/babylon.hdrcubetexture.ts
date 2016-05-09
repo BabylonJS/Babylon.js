@@ -76,7 +76,7 @@ module BABYLON {
                 this._noMipmap = noMipmap;
                 this._size = size;
                 this._useInGammaSpace = useInGammaSpace;
-                this._usePMREMGenerator = usePMREMGenerator && 
+                this._usePMREMGenerator = usePMREMGenerator &&
                     scene.getEngine().getCaps().textureLOD &&
                     this.getScene().getEngine().getCaps().textureFloat &&
                     !this._useInGammaSpace;
@@ -169,18 +169,18 @@ module BABYLON {
                 // Push each faces.
                 for (var k = 0; k < 6; k++) {
                     var dataFace = null;
-                    
+
                     // If special cases.
                     if (!mipmapGenerator) {
                         var j = ([0, 2, 4, 1, 3, 5])[k]; // Transforms +X+Y+Z... to +X-X+Y-Y... if no mipmapgenerator...
                         dataFace = data[j];
-                        
+
                         if (!this.getScene().getEngine().getCaps().textureFloat) {
                             // 3 channels of 1 bytes per pixel in bytes.
                             var byteBuffer = new ArrayBuffer(faceSize);
                             byteArray = new Uint8Array(byteBuffer);
                         }
-                        
+
                         for (var i = 0; i < this._size * this._size; i++) {
 
                             // Put in gamma space if requested.
@@ -192,11 +192,11 @@ module BABYLON {
 
                             // Convert to int texture for fallback.
                             if (byteArray) {
-                                
+
                                 var r = Math.max(dataFace[(i * 3) + 0] * 255, 0);
                                 var g = Math.max(dataFace[(i * 3) + 1] * 255, 0);
                                 var b = Math.max(dataFace[(i * 3) + 2] * 255, 0);
-                                
+
                                 // May use luminance instead if the result is not accurate.
                                 var max = Math.max(Math.max(r, g), b);
                                 if (max > 255) {
@@ -205,7 +205,7 @@ module BABYLON {
                                     g *= scale;
                                     b *= scale;
                                 }
-                                
+
                                 byteArray[(i * 3) + 0] = r;
                                 byteArray[(i * 3) + 1] = g;
                                 byteArray[(i * 3) + 2] = b;
@@ -215,7 +215,7 @@ module BABYLON {
                     else {
                         dataFace = data[k];
                     }
-                    
+
                     // Fill the array accordingly.
                     if (byteArray) {
                         results.push(byteArray);
@@ -228,11 +228,11 @@ module BABYLON {
                 return results;
             }
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size, 
-                Engine.TEXTUREFORMAT_RGB, 
-                this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, 
-                this._noMipmap, 
-                callback, 
+            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size,
+                Engine.TEXTUREFORMAT_RGB,
+                this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
+                this._noMipmap,
+                callback,
                 mipmapGenerator);
         }
 
@@ -261,7 +261,7 @@ module BABYLON {
                         var byteBuffer = new ArrayBuffer(this._size * this._size * 3);
                         byteArray = new Uint8Array(byteBuffer);
                     }
-                    
+
                     var dataFace = <Float32Array>data[HDRCubeTexture._facesMapping[j]];
 
                     // If special cases.
@@ -280,7 +280,7 @@ module BABYLON {
                                 var r = Math.max(dataFace[(i * 3) + 0] * 255, 0);
                                 var g = Math.max(dataFace[(i * 3) + 1] * 255, 0);
                                 var b = Math.max(dataFace[(i * 3) + 2] * 255, 0);
-                                
+
                                 // May use luminance instead if the result is not accurate.
                                 var max = Math.max(Math.max(r, g), b);
                                 if (max > 255) {
@@ -289,7 +289,7 @@ module BABYLON {
                                     g *= scale;
                                     b *= scale;
                                 }
-                                
+
                                 byteArray[(i * 3) + 0] = r;
                                 byteArray[(i * 3) + 1] = g;
                                 byteArray[(i * 3) + 2] = b;
@@ -308,7 +308,7 @@ module BABYLON {
             }
 
             var mipmapGenerator = null;
-            if (!this._noMipmap && 
+            if (!this._noMipmap &&
                 this._usePMREMGenerator) {
                 mipmapGenerator = (data: ArrayBufferView[]) => {
                     // Custom setup of the generator matching with the PBR shader values.
@@ -327,11 +327,11 @@ module BABYLON {
                 };
             }
 
-            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size, 
-                Engine.TEXTUREFORMAT_RGB, 
-                this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, 
-                this._noMipmap, 
-                callback, 
+            this._texture = (<any>this.getScene().getEngine()).createRawCubeTexture(this.url, this.getScene(), this._size,
+                Engine.TEXTUREFORMAT_RGB,
+                this.getScene().getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
+                this._noMipmap,
+                callback,
                 mipmapGenerator);
         }
 

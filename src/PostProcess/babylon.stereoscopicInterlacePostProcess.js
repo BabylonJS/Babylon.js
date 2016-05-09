@@ -21,6 +21,6 @@ var BABYLON;
             };
         }
         return StereoscopicInterlacePostProcess;
-    }(BABYLON.PostProcess));
+    })(BABYLON.PostProcess);
     BABYLON.StereoscopicInterlacePostProcess = StereoscopicInterlacePostProcess;
 })(BABYLON || (BABYLON = {}));
