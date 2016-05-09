@@ -1,0 +1,345 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var BABYLON;
+(function (BABYLON) {
+    var Text2DRenderCache = (function (_super) {
+        __extends(Text2DRenderCache, _super);
+        function Text2DRenderCache() {
+            _super.apply(this, arguments);
+        }
+        Text2DRenderCache.prototype.render = function (instanceInfo, context) {
+            // Do nothing if the shader is still loading/preparing
+            if (!this.effect.isReady() || !this.fontTexture.isReady()) {
+                return false;
+            }
+            // Compute the offset locations of the attributes in the vertexshader that will be mapped to the instance buffer data
+            if (!this.instancingAttributes) {
+                this.instancingAttributes = this.loadInstancingAttributes(Text2D.TEXT2D_MAINPARTID, this.effect);
+            }
+            var engine = instanceInfo._owner.owner.engine;
+            this.fontTexture.update();
+            engine.enableEffect(this.effect);
+            this.effect.setTexture("diffuseSampler", this.fontTexture);
+            engine.bindBuffers(this.vb, this.ib, [1], 4, this.effect);
+            var cur = engine.getAlphaMode();
+            engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+            var count = instanceInfo._instancesPartsData[0].usedElementCount;
+            if (instanceInfo._owner.owner.supportInstancedArray) {
+                engine.updateAndBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], null, this.instancingAttributes);
+                engine.draw(true, 0, 6, count);
+                engine.unBindInstancesBuffer(instanceInfo._instancesPartsBuffer[0], this.instancingAttributes);
+            }
+            else {
+                for (var i = 0; i < count; i++) {
+                    this.setupUniforms(this.effect, 0, instanceInfo._instancesPartsData[0], i);
+                    engine.draw(true, 0, 6);
+                }
+            }
+            engine.setAlphaMode(cur);
+            return true;
+        };
+        return Text2DRenderCache;
+    })(BABYLON.ModelRenderCache);
+    BABYLON.Text2DRenderCache = Text2DRenderCache;
+    var Text2DInstanceData = (function (_super) {
+        __extends(Text2DInstanceData, _super);
+        function Text2DInstanceData(partId, dataElementCount) {
+            _super.call(this, partId, dataElementCount);
+        }
+        Object.defineProperty(Text2DInstanceData.prototype, "topLeftUV", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2DInstanceData.prototype, "sizeUV", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2DInstanceData.prototype, "textureSize", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2DInstanceData.prototype, "color", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        __decorate([
+            BABYLON.instanceData()
+        ], Text2DInstanceData.prototype, "topLeftUV", null);
+        __decorate([
+            BABYLON.instanceData()
+        ], Text2DInstanceData.prototype, "sizeUV", null);
+        __decorate([
+            BABYLON.instanceData()
+        ], Text2DInstanceData.prototype, "textureSize", null);
+        __decorate([
+            BABYLON.instanceData()
+        ], Text2DInstanceData.prototype, "color", null);
+        return Text2DInstanceData;
+    })(BABYLON.InstanceDataBase);
+    BABYLON.Text2DInstanceData = Text2DInstanceData;
+    var Text2D = (function (_super) {
+        __extends(Text2D, _super);
+        function Text2D() {
+            _super.apply(this, arguments);
+        }
+        Object.defineProperty(Text2D.prototype, "fontName", {
+            get: function () {
+                return this._fontName;
+            },
+            set: function (value) {
+                if (this._fontName) {
+                    throw new Error("Font Name change is not supported right now.");
+                }
+                this._fontName = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D.prototype, "defaultFontColor", {
+            get: function () {
+                return this._defaultFontColor;
+            },
+            set: function (value) {
+                this._defaultFontColor = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D.prototype, "text", {
+            get: function () {
+                return this._text;
+            },
+            set: function (value) {
+                this._text = value;
+                this._actualAreaSize = null; // A change of text will reset the Actual Area Size which will be recomputed next time it's used
+                this._updateCharCount();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D.prototype, "areaSize", {
+            get: function () {
+                return this._areaSize;
+            },
+            set: function (value) {
+                this._areaSize = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D.prototype, "vAlign", {
+            get: function () {
+                return this._vAlign;
+            },
+            set: function (value) {
+                this._vAlign = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D.prototype, "hAlign", {
+            get: function () {
+                return this._hAlign;
+            },
+            set: function (value) {
+                this._hAlign = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D.prototype, "actualAreaSize", {
+            get: function () {
+                if (this.areaSize) {
+                    return this.areaSize;
+                }
+                if (this._actualAreaSize) {
+                    return this._actualAreaSize;
+                }
+                this._actualAreaSize = this.fontTexture.measureText(this._text, this._tabulationSize);
+                return this._actualAreaSize;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Text2D.prototype, "fontTexture", {
+            get: function () {
+                if (this._fontTexture) {
+                    return this._fontTexture;
+                }
+                this._fontTexture = BABYLON.FontTexture.GetCachedFontTexture(this.owner.scene, this.fontName);
+                return this._fontTexture;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Text2D.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this._fontTexture) {
+                BABYLON.FontTexture.ReleaseCachedFontTexture(this.owner.scene, this.fontName);
+                this._fontTexture = null;
+            }
+            return true;
+        };
+        Text2D.prototype.updateLevelBoundingInfo = function () {
+            BABYLON.BoundingInfo2D.CreateFromSizeToRef(this.actualAreaSize, this._levelBoundingInfo);
+        };
+        Text2D.prototype.setupText2D = function (owner, parent, id, position, fontName, text, areaSize, defaultFontColor, vAlign, hAlign, tabulationSize) {
+            this.setupRenderablePrim2D(owner, parent, id, position, true);
+            this.fontName = fontName;
+            this.defaultFontColor = defaultFontColor;
+            this.text = text;
+            this.areaSize = areaSize;
+            this.vAlign = vAlign;
+            this.hAlign = hAlign;
+            this._tabulationSize = tabulationSize;
+            this._isTransparent = true;
+            this.origin = BABYLON.Vector2.Zero();
+        };
+        Text2D.Create = function (parent, id, x, y, fontName, text, defaultFontColor, areaSize, vAlign, hAlign, tabulationSize) {
+            if (vAlign === void 0) { vAlign = Text2D.TEXT2D_VALIGN_TOP; }
+            if (hAlign === void 0) { hAlign = Text2D.TEXT2D_HALIGN_LEFT; }
+            if (tabulationSize === void 0) { tabulationSize = 4; }
+            BABYLON.Prim2DBase.CheckParent(parent);
+            var text2d = new Text2D();
+            text2d.setupText2D(parent.owner, parent, id, new BABYLON.Vector2(x, y), fontName, text, areaSize, defaultFontColor || new BABYLON.Color4(0, 0, 0, 1), vAlign, hAlign, tabulationSize);
+            return text2d;
+        };
+        Text2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
+            var renderCache = new Text2DRenderCache(modelKey, isTransparent);
+            return renderCache;
+        };
+        Text2D.prototype.setupModelRenderCache = function (modelRenderCache) {
+            var renderCache = modelRenderCache;
+            var engine = this.owner.engine;
+            renderCache.fontTexture = this.fontTexture;
+            var vb = new Float32Array(4);
+            for (var i = 0; i < 4; i++) {
+                vb[i] = i;
+            }
+            renderCache.vb = engine.createVertexBuffer(vb);
+            var ib = new Float32Array(6);
+            ib[0] = 0;
+            ib[1] = 2;
+            ib[2] = 1;
+            ib[3] = 0;
+            ib[4] = 3;
+            ib[5] = 2;
+            renderCache.ib = engine.createIndexBuffer(ib);
+            // Effects
+            var ei = this.getDataPartEffectInfo(Text2D.TEXT2D_MAINPARTID, ["index"]);
+            renderCache.effect = engine.createEffect("text2d", ei.attributes, ei.uniforms, ["diffuseSampler"], ei.defines, null, function (e) {
+                //                renderCache.setupUniformsLocation(e, ei.uniforms, Text2D.TEXT2D_MAINPARTID);
+            });
+            return renderCache;
+        };
+        Text2D.prototype.createInstanceDataParts = function () {
+            return [new Text2DInstanceData(Text2D.TEXT2D_MAINPARTID, this._charCount)];
+        };
+        Text2D.prototype.refreshInstanceDataPart = function (part) {
+            if (!_super.prototype.refreshInstanceDataPart.call(this, part)) {
+                return false;
+            }
+            if (part.id === Text2D.TEXT2D_MAINPARTID) {
+                var d = part;
+                var texture = this.fontTexture;
+                var ts = texture.getSize();
+                var offset = BABYLON.Vector2.Zero();
+                var charxpos = 0;
+                d.curElement = 0;
+                for (var _i = 0, _a = this.text; _i < _a.length; _i++) {
+                    var char = _a[_i];
+                    // Line feed
+                    if (char === "\n") {
+                        offset.x = 0;
+                        offset.y += texture.lineHeight;
+                    }
+                    // Tabulation ?
+                    if (char === "\t") {
+                        var nextPos = charxpos + this._tabulationSize;
+                        nextPos = nextPos - (nextPos % this._tabulationSize);
+                        offset.x += (nextPos - charxpos) * texture.spaceWidth;
+                        charxpos = nextPos;
+                        continue;
+                    }
+                    if (char < " ") {
+                        continue;
+                    }
+                    this.updateInstanceDataPart(d, offset);
+                    var ci = texture.getChar(char);
+                    offset.x += ci.charWidth;
+                    d.topLeftUV = ci.topLeftUV;
+                    var suv = ci.bottomRightUV.subtract(ci.topLeftUV);
+                    d.sizeUV = suv;
+                    d.textureSize = new BABYLON.Vector2(ts.width, ts.height);
+                    d.color = this.defaultFontColor;
+                    ++d.curElement;
+                }
+            }
+            return true;
+        };
+        Text2D.prototype._updateCharCount = function () {
+            var count = 0;
+            for (var _i = 0, _a = this._text; _i < _a.length; _i++) {
+                var char = _a[_i];
+                if (char === "\r" || char === "\n" || char === "\t" || char < " ") {
+                    continue;
+                }
+                ++count;
+            }
+            this._charCount = count;
+        };
+        Text2D.TEXT2D_MAINPARTID = 1;
+        Text2D.TEXT2D_VALIGN_TOP = 1;
+        Text2D.TEXT2D_VALIGN_CENTER = 2;
+        Text2D.TEXT2D_VALIGN_BOTTOM = 3;
+        Text2D.TEXT2D_HALIGN_LEFT = 1;
+        Text2D.TEXT2D_HALIGN_CENTER = 2;
+        Text2D.TEXT2D_HALIGN_RIGHT = 3;
+        __decorate([
+            BABYLON.modelLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 1, function (pi) { return Text2D.fontProperty = pi; }, false, true)
+        ], Text2D.prototype, "fontName", null);
+        __decorate([
+            BABYLON.dynamicLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, function (pi) { return Text2D.defaultFontColorProperty = pi; })
+        ], Text2D.prototype, "defaultFontColor", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, function (pi) { return Text2D.textProperty = pi; }, false, true)
+        ], Text2D.prototype, "text", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, function (pi) { return Text2D.areaSizeProperty = pi; })
+        ], Text2D.prototype, "areaSize", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, function (pi) { return Text2D.vAlignProperty = pi; })
+        ], Text2D.prototype, "vAlign", null);
+        __decorate([
+            BABYLON.instanceLevelProperty(BABYLON.RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, function (pi) { return Text2D.hAlignProperty = pi; })
+        ], Text2D.prototype, "hAlign", null);
+        Text2D = __decorate([
+            BABYLON.className("Text2D")
+        ], Text2D);
+        return Text2D;
+    })(BABYLON.RenderablePrim2D);
+    BABYLON.Text2D = Text2D;
+})(BABYLON || (BABYLON = {}));
