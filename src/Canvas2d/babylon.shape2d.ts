@@ -22,6 +22,7 @@
 
         public set border(value: IBrush2D) {
             this._border = value;
+            this._updateTransparencyStatus();
         }
 
         @modelLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Shape2D.fillProperty = pi, true)
@@ -31,6 +32,7 @@
 
         public set fill(value: IBrush2D) {
             this._fill = value;
+            this._updateTransparencyStatus();
         }
 
         @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Shape2D.borderThicknessProperty = pi)
@@ -128,9 +130,14 @@
             return true;
         }
 
+        private _updateTransparencyStatus() {
+            this.isTransparent = (this._border && this._border.isTransparent()) || (this._fill && this._fill.isTransparent());
+        }
+
         private _border: IBrush2D;
         private _borderThickness: number;
         private _fill: IBrush2D;
+
     }
 
     export class Shape2DInstanceData extends InstanceDataBase {

@@ -66,6 +66,11 @@
         get textureSize(): Vector2 {
             return null;
         }
+
+        @instanceData()
+        get color(): Color4 {
+            return null;
+        }
     }
 
     @className("Text2D")
@@ -73,6 +78,7 @@
         static TEXT2D_MAINPARTID = 1;
 
         public static fontProperty: Prim2DPropInfo;
+        public static defaultFontColorProperty: Prim2DPropInfo;
         public static textProperty: Prim2DPropInfo;
         public static areaSizeProperty: Prim2DPropInfo;
         public static vAlignProperty: Prim2DPropInfo;
@@ -97,7 +103,16 @@
             this._fontName = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Text2D.textProperty = pi, false, true)
+        @dynamicLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 2, pi => Text2D.defaultFontColorProperty = pi)
+        public get defaultFontColor(): Color4 {
+            return this._defaultFontColor;
+        }
+
+        public set defaultFontColor(value: Color4) {
+            this._defaultFontColor = value;
+        }
+
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Text2D.textProperty = pi, false, true)
         public get text(): string {
             return this._text;
         }
@@ -108,7 +123,7 @@
             this._updateCharCount();
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 3, pi => Text2D.areaSizeProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.areaSizeProperty = pi)
         public get areaSize(): Size {
             return this._areaSize;
         }
@@ -117,7 +132,7 @@
             this._areaSize = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 4, pi => Text2D.vAlignProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Text2D.vAlignProperty = pi)
         public get vAlign(): number {
             return this._vAlign;
         }
@@ -126,7 +141,7 @@
             this._vAlign = value;
         }
 
-        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 5, pi => Text2D.hAlignProperty = pi)
+        @instanceLevelProperty(RenderablePrim2D.RENDERABLEPRIM2D_PROPCOUNT + 6, pi => Text2D.hAlignProperty = pi)
         public get hAlign(): number {
             return this._hAlign;
         }
@@ -175,10 +190,11 @@
             BoundingInfo2D.ConstructFromSizeToRef(this.actualAreaSize, this._levelBoundingInfo);
         }
 
-        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, fontName: string, text: string, areaSize: Size, vAlign, hAlign, tabulationSize: number) {
+        protected setupText2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, fontName: string, text: string, areaSize: Size, defaultFontColor: Color4, vAlign, hAlign, tabulationSize: number) {
             this.setupRenderablePrim2D(owner, parent, id, position, true);
 
             this.fontName = fontName;
+            this.defaultFontColor = defaultFontColor;
             this.text = text;
             this.areaSize = areaSize;
             this.vAlign = vAlign;
@@ -188,16 +204,16 @@
             this.origin = Vector2.Zero();
         }
 
-        public static Create(parent: Prim2DBase, id: string, x: number, y: number, fontName: string, text: string, areaSize?: Size, vAlign = Text2D.TEXT2D_VALIGN_TOP, hAlign = Text2D.TEXT2D_HALIGN_LEFT, tabulationSize: number = 4): Text2D {
+        public static Create(parent: Prim2DBase, id: string, x: number, y: number, fontName: string, text: string, defaultFontColor?: Color4, areaSize?: Size, vAlign = Text2D.TEXT2D_VALIGN_TOP, hAlign = Text2D.TEXT2D_HALIGN_LEFT, tabulationSize: number = 4): Text2D {
             Prim2DBase.CheckParent(parent);
 
             let text2d = new Text2D();
-            text2d.setupText2D(parent.owner, parent, id, new Vector2(x, y), fontName, text, areaSize, vAlign, hAlign, tabulationSize);
+            text2d.setupText2D(parent.owner, parent, id, new Vector2(x, y), fontName, text, areaSize, defaultFontColor || new Color4(0,0,0,1), vAlign, hAlign, tabulationSize);
             return text2d;
         }
 
-        protected createModelRenderCache(): ModelRenderCache {
-            let renderCache = new Text2DRenderCache();
+        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
+            let renderCache = new Text2DRenderCache(modelKey, isTransparent);
             return renderCache;
         }
 
@@ -280,6 +296,7 @@
                     let suv = ci.bottomRightUV.subtract(ci.topLeftUV);
                     d.sizeUV = suv;
                     d.textureSize = new Vector2(ts.width, ts.height);
+                    d.color = this.defaultFontColor;
 
                     ++d.curElement;
                 }
@@ -302,6 +319,7 @@
         private _tabulationSize: number;
         private _charCount: number;
         private _fontName: string;
+        private _defaultFontColor: Color4;
         private _text: string;
         private _areaSize: Size;
         private _actualAreaSize: Size;

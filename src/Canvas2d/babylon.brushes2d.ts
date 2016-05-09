@@ -25,6 +25,12 @@
      */
     export interface IBrush2D extends ILockable {
         /**
+         * Define if the brush will use transparency/alphablending
+         * @returns true if the brush use transparency
+         */
+        isTransparent(): boolean;
+
+        /**
          * It is critical for each instance of a given Brush2D type to return a unique string that identifies it because the Border instance will certainly be part of the computed ModelKey for a given Primitive
          * @returns A string identifier that uniquely identify the instance
          */
@@ -75,6 +81,10 @@
             }
         }
 
+        isTransparent(): boolean {
+            return this._color && this._color.a < 1.0;
+        }
+
         /**
          * The color used by this instance to render
          * @returns the color object. Note that it's not a clone of the actual object stored in the instance so you MUST NOT modify it, otherwise unexpected behavior might occurs.
@@ -115,6 +125,12 @@
                 this.lock();
             }
         }
+
+        isTransparent(): boolean {
+            return (this._color1 && this._color1.a < 1.0) || (this._color2 && this._color2.a < 1.0);
+        }
+
+
         public get color1(): Color4 {
             return this._color1;
         }

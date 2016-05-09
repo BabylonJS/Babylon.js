@@ -16,6 +16,7 @@ att vec2 topLeftUV;
 att vec2 sizeUV;
 att vec2 origin;
 att vec2 textureSize;
+att vec4 color;
 
 // Output
 varying vec2 vUV;
@@ -49,6 +50,7 @@ void main(void) {
 		vUV = vec2(topLeftUV.x + sizeUV.x, topLeftUV.y + sizeUV.y);
 	}
 
+	vColor = color;
 	vec4 pos;
 	pos.xy = (pos2.xy - origin) * sizeUV * textureSize;
 	pos.z = 1.0;

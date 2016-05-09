@@ -290,6 +290,17 @@
     export class RenderablePrim2D extends Prim2DBase {
         static RENDERABLEPRIM2D_PROPCOUNT: number = Prim2DBase.PRIM2DBASE_PROPCOUNT + 5;
 
+        public static isTransparentProperty: Prim2DPropInfo;
+
+        @modelLevelProperty(Prim2DBase.PRIM2DBASE_PROPCOUNT + 1, pi => RenderablePrim2D.isTransparentProperty = pi)
+        public get isTransparent(): boolean {
+            return this._isTransparent;
+        }
+
+        public set isTransparent(value: boolean) {
+            this._isTransparent = value;
+        }
+
         setupRenderablePrim2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, isVisible: boolean) {
             this.setupPrim2DBase(owner, parent, id, position);
             this._isTransparent = false;
@@ -308,7 +319,7 @@
             let setupModelRenderCache = false;
             if (!this._modelRenderCache || this._modelDirty) {
                 this._modelRenderCache = SmartPropertyPrim.GetOrAddModelCache(this.modelKey, (key: string) => {
-                    let mrc = this.createModelRenderCache();
+                    let mrc = this.createModelRenderCache(key, this.isTransparent);
                     setupModelRenderCache = true;
                     return mrc;
                 });
@@ -437,15 +448,11 @@
             return { attributes: instancedArray ? vertexBufferAttributes.concat(att) : vertexBufferAttributes, uniforms: instancedArray ? [] : att, defines: defines };
         }
 
-        public get isTransparent(): boolean {
-            return this._isTransparent;
-        }
-
         protected get modelRenderCache(): ModelRenderCache {
             return this._modelRenderCache;
         }
 
-        protected createModelRenderCache(): ModelRenderCache {
+        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
             return null;
         }
 
