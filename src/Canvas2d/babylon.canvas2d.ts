@@ -91,14 +91,15 @@
             this._engine = scene.getEngine();
             this._renderingSize = new Size(0, 0);
 
-            //if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
-            //    this._background = Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
-            //    this._background.levelVisible = false;
-            //}
+            if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
+                this._background = Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
+                this._background.origin = Vector2.Zero();
+            }
             this._isScreeSpace = isScreenSpace;
 
             if (this._isScreeSpace) {
                 this._afterRenderObserver = this._scene.onAfterRenderObservable.add((d, s) => {
+                    this._engine.clear(null, false, true);
                     this.render();
                 });
             } else {
@@ -183,14 +184,14 @@
          * Property that defines the border object used to draw the background of the Canvas.
          * @returns If the background is not set, null will be returned, otherwise a valid border object is returned.
          */
-        public get border(): IBrush2D {
+        public get backgroundBorder(): IBrush2D {
             if (!this._background || !this._background.isVisible) {
                 return null;
             }
             return this._background.border;
         }
 
-        public set border(value: IBrush2D) {
+        public set backgroundBorder(value: IBrush2D) {
             this.checkBackgroundAvailability();
 
             if (value === this._background.border) {
@@ -198,6 +199,24 @@
             }
 
             this._background.border = value;
+            this._background.isVisible = true;
+        }
+
+        public get backgroundRoundRadius(): number {
+            if (!this._background || !this._background.isVisible) {
+                return null;
+            }
+            return this._background.roundRadius;
+        }
+
+        public set backgroundRoundRadius(value: number) {
+            this.checkBackgroundAvailability();
+
+            if (value === this._background.roundRadius) {
+                return;
+            }
+
+            this._background.roundRadius = value;
             this._background.isVisible = true;
         }
 

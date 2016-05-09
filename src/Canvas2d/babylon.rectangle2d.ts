@@ -12,6 +12,9 @@
         instancingBorderAttributes: InstancingAttributeInfo[];
         effectBorder: Effect;
 
+        constructor(modelKey: string, isTransparent: boolean) {
+            super(modelKey, isTransparent);
+        }
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
             // Do nothing if the shader is still loading/preparing
@@ -26,6 +29,13 @@
                 depthFunction = engine.getDepthFunction();
                 engine.setDepthFunctionToLessOrEqual();
             }
+
+            var cur: number;
+            if (this.isTransparent) {
+                cur = engine.getAlphaMode();
+                engine.setAlphaMode(Engine.ALPHA_COMBINE);
+            }
+
             if (this.effectFill) {
                 let partIndex = instanceInfo._partIndexFromId.get(Shape2D.SHAPE2D_FILLPARTID.toString());
 
@@ -70,6 +80,11 @@
                     }
                 }
             }
+
+            if (this.isTransparent) {
+                engine.setAlphaMode(cur);
+            }
+
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
             }
@@ -156,8 +171,8 @@
 
         public static roundSubdivisions = 16;
 
-        protected createModelRenderCache(): ModelRenderCache {
-            let renderCache = new Rectangle2DRenderCache();
+        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
+            let renderCache = new Rectangle2DRenderCache(modelKey, isTransparent);
             return renderCache;
         }
 

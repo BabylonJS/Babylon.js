@@ -25,7 +25,9 @@
     }
 
     export class ModelRenderCache {
-        constructor() {
+        constructor(modelKey: string, isTransparent: boolean) {
+            this._modelKey = modelKey;
+            this._isTransparent = isTransparent;
             this._nextKey = 1;
             this._instancesData = new StringDictionary<InstanceDataBase[]>();
         }
@@ -145,6 +147,12 @@
             });
         }
 
+        private _modelKey: string;
+        private _isTransparent: boolean;
+
+        public get isTransparent() {
+            return this._isTransparent;
+        }
 
         _instancesData: StringDictionary<InstanceDataBase[]>;
 

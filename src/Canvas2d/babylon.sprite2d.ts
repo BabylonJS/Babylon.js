@@ -156,8 +156,8 @@
             return sprite;
         }
 
-        protected createModelRenderCache(): ModelRenderCache {
-            let renderCache = new Sprite2DRenderCache();
+        protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
+            let renderCache = new Sprite2DRenderCache(modelKey, isTransparent);
             return renderCache;
         }
 
