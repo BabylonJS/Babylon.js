@@ -12,7 +12,7 @@ var BABYLON;
             this.index = index;
         }
         return IndexedVector2;
-    }(BABYLON.Vector2));
+    })(BABYLON.Vector2);
     var PolygonPoints = (function () {
         function PolygonPoints() {
             this.elements = new Array();
@@ -56,7 +56,7 @@ var BABYLON;
             };
         };
         return PolygonPoints;
-    }());
+    })();
     var Polygon = (function () {
         function Polygon() {
         }
@@ -93,7 +93,7 @@ var BABYLON;
             return BABYLON.Path2.StartingAt(x, y);
         };
         return Polygon;
-    }());
+    })();
     BABYLON.Polygon = Polygon;
     var PolygonMeshBuilder = (function () {
         function PolygonMeshBuilder(name, contours, scene) {
@@ -240,6 +240,6 @@ var BABYLON;
             ;
         };
         return PolygonMeshBuilder;
-    }());
+    })();
     BABYLON.PolygonMeshBuilder = PolygonMeshBuilder;
 })(BABYLON || (BABYLON = {}));

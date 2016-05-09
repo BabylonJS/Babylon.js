@@ -33,6 +33,7 @@ var BABYLON;
             this.isCube = false;
             this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
             this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            this.anisotropicFilteringLevel = 1;
             this._texture = this._getFromCache(url, true);
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
@@ -57,7 +58,7 @@ var BABYLON;
             var _this = this;
             var mipLevels = 0;
             var floatArrayView = null;
-            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGB, false, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
             this._texture = texture;
             var callback = function (text) {
                 var data;
@@ -76,8 +77,8 @@ var BABYLON;
                     if (size === 0) {
                         // Number of space + one
                         size = words.length;
-                        data = new Uint8Array(size * size * size * 3); // volume texture of side size and rgb 8
-                        tempData = new Float32Array(size * size * size * 3);
+                        data = new Uint8Array(size * size * size * 4); // volume texture of side size and rgb 8
+                        tempData = new Float32Array(size * size * size * 4);
                         continue;
                     }
                     if (size != 0) {
@@ -87,10 +88,11 @@ var BABYLON;
                         maxColor = Math.max(r, maxColor);
                         maxColor = Math.max(g, maxColor);
                         maxColor = Math.max(b, maxColor);
-                        var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 3;
+                        var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 4;
                         tempData[pixelStorageIndex + 0] = r;
                         tempData[pixelStorageIndex + 1] = g;
                         tempData[pixelStorageIndex + 2] = b;
+                        tempData[pixelStorageIndex + 3] = 0;
                         pixelIndexSlice++;
                         if (pixelIndexSlice % size == 0) {
                             pixelIndexH++;
@@ -107,7 +109,7 @@ var BABYLON;
                     data[i] = (value / maxColor * 255);
                 }
                 _this.getScene().getEngine().updateTextureSize(texture, size * size, size);
-                _this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGB, false);
+                _this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
             };
             BABYLON.Tools.LoadFile(this.url, callback);
             return this._texture;
@@ -175,6 +177,6 @@ var BABYLON;
          */
         ColorGradingTexture._noneEmptyLineRegex = /\S+/;
         return ColorGradingTexture;
-    }(BABYLON.BaseTexture));
+    })(BABYLON.BaseTexture);
     BABYLON.ColorGradingTexture = ColorGradingTexture;
 })(BABYLON || (BABYLON = {}));

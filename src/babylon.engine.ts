@@ -1534,7 +1534,7 @@
         public updateRawTexture(texture: WebGLTexture, data: ArrayBufferView, format: number, invertY: boolean, compression: string = null): void {
             var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
-            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));            
 
             if (compression) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
