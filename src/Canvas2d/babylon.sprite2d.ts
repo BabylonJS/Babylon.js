@@ -133,7 +133,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.ConstructFromSizeToRef(this.spriteSize, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.spriteSize, this._levelBoundingInfo);
         }
 
         protected setupSprite2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, texture: Texture, spriteSize: Size, spriteLocation: Vector2, invertY: boolean) {

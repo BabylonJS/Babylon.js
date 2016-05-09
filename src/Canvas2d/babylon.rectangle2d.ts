@@ -139,7 +139,7 @@
         }
 
         protected updateLevelBoundingInfo() {
-            BoundingInfo2D.ConstructFromSizeToRef(this.size, this._levelBoundingInfo);
+            BoundingInfo2D.CreateFromSizeToRef(this.size, this._levelBoundingInfo);
         }
 
         protected setupRectangle2D(owner: Canvas2D, parent: Prim2DBase, id: string, position: Vector2, size: Size, roundRadius = 0, fill?: IBrush2D, border?: IBrush2D, borderThickness: number = 1) {
