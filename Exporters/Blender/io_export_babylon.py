@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Babylon.js',
     'author': 'David Catuhe, Jeff Palmer',
-    'version': (4, 4, 4),
+    'version': (4, 5, 0),
     'blender': (2, 75, 0),
     'location': 'File > Export > Babylon.js (.babylon)',
     'description': 'Export Babylon.js scenes (.babylon)',
@@ -601,7 +601,7 @@ class FCurveAnimatable:
                 scaleAnimation = VectorAnimation(object, 'scaling', 'scale')
 
             self.ranges = []
-            frameOffset = bpy.context.scene.frame_start - 1
+            frameOffset = 0
 
             for action in bpy.data.actions:
                 # get the range / assigning the action to the object
@@ -610,18 +610,18 @@ class FCurveAnimatable:
                     continue
 
                 if supportsRotation:
-                    hasData = rotAnimation.append_range(object, frameOffset)
+                    hasData = rotAnimation.append_range(object, animationRange)
 
                 if supportsPosition:
-                    hasData |= posAnimation.append_range(object, frameOffset)
+                    hasData |= posAnimation.append_range(object, animationRange)
 
                 if supportsScaling:
-                    hasData |= scaleAnimation.append_range(object, frameOffset)
+                    hasData |= scaleAnimation.append_range(object, animationRange)
 
                 if hasData:
-                    Main.log('processing action ' + action.name, 3)
+                    Main.log('processing action ' + animationRange.to_string(), 3)
                     self.ranges.append(animationRange)
-                    frameOffset = animationRange.frame_end + 1
+                    frameOffset = animationRange.frame_end
 
             #Set Animations
             self.animations = []
@@ -1330,7 +1330,7 @@ class Bone:
         self.parentBone = bone.parent
 
         self.matrix_world = skeleton.matrix_world
-        self.matrix = self.get_bone_matrix()
+        self.matrix = self.get_bone_matrix(True)
 
         parentId = -1
         if (bone.parent):
@@ -1347,24 +1347,24 @@ class Bone:
             self.previousBoneMatrix = None
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def append_animation_pose(self, frame, force = False):
-        currentBoneMatrix = self.get_bone_matrix()
+        currentBoneMatrix = self.get_bone_matrix(True)
 
         if (force or not same_matrix4(currentBoneMatrix, self.previousBoneMatrix)):
             self.animation.frames.append(frame)
             self.animation.values.append(currentBoneMatrix)
             self.previousBoneMatrix = currentBoneMatrix
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def set_rest_pose(self, editBone, matrix_world):
-        self.rest = Bone.get_matrix(editBone, self.matrix_world)
+    def set_rest_pose(self, editBone):
+        self.rest = Bone.get_matrix(editBone, self.matrix_world, True)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def get_bone_matrix(self):
-        return Bone.get_matrix(self.posedBone, self.matrix_world)
+    def get_bone_matrix(self, doParentMult):
+        return Bone.get_matrix(self.posedBone, self.matrix_world, doParentMult)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     @staticmethod
-    def get_matrix(bone, matrix_world):
+    def get_matrix(bone, matrix_world, doParentMult):
         SystemMatrix = mathutils.Matrix.Scale(-1, 4, mathutils.Vector((0, 0, 1))) * mathutils.Matrix.Rotation(math.radians(-90), 4, 'X')
 
-        if (bone.parent):
+        if (bone.parent and doParentMult):
             return (SystemMatrix * matrix_world * bone.parent.matrix).inverted() * (SystemMatrix * matrix_world * bone.matrix)
         else:
             return SystemMatrix * matrix_world * bone.matrix
@@ -1401,34 +1401,35 @@ class Skeleton:
 
         if (skeleton.animation_data):
             self.ranges = []
-            frameOffset = scene.frame_start - 1
+            frameOffset = 0
             for action in bpy.data.actions:
                 # get the range / assigning the action to the object
                 animationRange = AnimationRange.actionPrep(skeleton, action, FRAME_BASED_ANIMATION, frameOffset)
                 if animationRange is None:
                     continue
 
-                Main.log('processing action ' + action.name, 2)
+                Main.log('processing action ' + animationRange.to_string(), 2)
                 self.ranges.append(animationRange)
 
-                for frame in animationRange.frames:
-                    bpy.context.scene.frame_set(frame)
+                nFrames = len(animationRange.frames_in)
+                for idx in range(nFrames):
+                    bpy.context.scene.frame_set(animationRange.frames_in[idx])
+                    firstOrLast = idx == 0 or idx == nFrames - 1
 
                     for bone in self.bones:
-                        bone.append_animation_pose(frame + frameOffset, frame == animationRange.highest_frame)
+                        bone.append_animation_pose(animationRange.frames_out[idx], firstOrLast)
 
-                frameOffset = animationRange.frame_end + 1
+                frameOffset = animationRange.frame_end
 
         # mode_set's only work when there is an active object, switch bones to edit mode to rest position
         scene.objects.active = skeleton
         bpy.ops.object.mode_set(mode='EDIT')
-        matrix_world = skeleton.matrix_world
 
         # you need to access edit_bones from skeleton.data not skeleton.pose when in edit mode
         for editBone in skeleton.data.edit_bones:
             for myBoneObj in self.bones:
                 if editBone.name == myBoneObj.name:
-                    myBoneObj.set_rest_pose(editBone, matrix_world)
+                    myBoneObj.set_rest_pose(editBone)
                     break
 
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -2230,11 +2231,21 @@ class BakedMaterial(Material):
 class AnimationRange:
     # constructor called by the static actionPrep method
     def __init__(self, name, frames, frameOffset):
+        # process input args to members
         self.name = name
-        self.highest_frame = frames[len(frames) - 1]
-        self.frame_start = frameOffset + 1
-        self.frame_end   = frameOffset + self.highest_frame
-        self.frames = frames
+        self.frames_in = frames        
+        self.frame_start = AnimationRange.nextStartingFrame(frameOffset)
+        
+        self.frames_out = []
+        for frame in self.frames_in:
+            self.frames_out.append(self.frame_start + frame)
+            
+        highest_idx = len(self.frames_in) - 1
+        self.highest_frame_in = self.frames_in [highest_idx]
+        self.frame_end        = self.frames_out[highest_idx]
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def to_string(self):
+        return self.name + ': ' + ' in[' + format_int(self.frames_in[0]) + ' - ' + format_int(self.highest_frame_in) + '], out[' + format_int(self.frame_start) + ' - ' + format_int(self.frame_end) + ']'
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     def to_scene_file(self, file_handler):
         file_handler.write('{')
@@ -2246,14 +2257,14 @@ class AnimationRange:
     @staticmethod
     def actionPrep(object, action, includeAllFrames, frameOffset):
         # assign the action & test if there is any data for that action for this object
-#        bpy.context.scene.objects.active = object
         object.animation_data.action = action
         if len(object.animation_data.action.fcurves) == 0:
             return None
 
         if includeAllFrames:
-            frame_start, frame_end = [int(x) for x in action.frame_range]
-            frames = range(frame_start, frame_end)
+            frame_start = int(action.frame_range[0])
+            frame_end   = int(action.frame_range[1])
+            frames = range(frame_start, frame_end + 1) # range is not inclusive with 2nd arg
 
         else:
             # capture built up from fcurves
@@ -2266,6 +2277,16 @@ class AnimationRange:
             frames = sorted(frames)
 
         return AnimationRange(action.name, frames, frameOffset)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    @staticmethod
+    def nextStartingFrame(frameOffset):
+        if frameOffset == 0: return 0
+        
+        # ensure a gap of at least 5 frames, starting on an even multiple of 10
+        frameOffset += 4
+        remainder = frameOffset % 10
+        return frameOffset + 10 - remainder
+        
 #===============================================================================
 class Animation:
     def __init__(self, dataType, loopBehavior, name, propertyInBabylon, attrInBlender = None, mult = 1, xOffset = 0):
@@ -2285,21 +2306,15 @@ class Animation:
         self.values = [] # vector3 for ANIMATIONTYPE_VECTOR3 & matrices for ANIMATIONTYPE_MATRIX
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # a separate method outside of constructor, so can be called once for each Blender Action object participates in
-    def append_range(self, object, frameOffset):
+    def append_range(self, object, animationRange):
         # action already assigned, always using poses, not every frame, build up again filtering by attrInBlender
-        frames = dict()
-        for fcurve in object.animation_data.action.fcurves:
-            if fcurve.data_path == self.attrInBlender:
-                for key in fcurve.keyframe_points:
-                    frame = key.co.x
-                    frames[frame] = 1
+        for idx in range(len(animationRange.frames_in)):
+            bpy.context.scene.frame_set(animationRange.frames_in[idx])
 
-        for Frame in sorted(frames):
-            self.frames.append(Frame + frameOffset)
-            bpy.context.scene.frame_set(int(Frame))
+            self.frames.append(animationRange.frames_out[idx])
             self.values.append(self.get_attr(object))
 
-        return len(frames) > 0
+        return len(animationRange.frames_in) > 0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # for auto animate
     def get_first_frame(self):
@@ -2389,7 +2404,7 @@ def format_f(num):
     s = s.rstrip('0') # ignore trailing zeroes
     s = s.rstrip('.') # ignore trailing .
     return '0' if s == '-0' else s
-
+    
 def format_matrix4(matrix):
     tempMatrix = matrix.copy()
     tempMatrix.transpose()
