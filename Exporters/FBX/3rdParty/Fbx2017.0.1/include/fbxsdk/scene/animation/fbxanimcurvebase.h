@@ -145,7 +145,8 @@ public:
     * <ul><li>CONSTANT means a constant value matching the first/last key.
     *     <li>REPETITION means the entire function curve is looped.
     *     <li>MIRROR_REPETITION means the entire function curve is looped once backward, once forward and so on. 
-    *     <li>KEEP_SLOPE means a linear function with a slope matching the first/last key.</ul>
+    *     <li>KEEP_SLOPE means a linear function with a slope matching the first/last key.
+    *     <li>RELATIVE_REPETITION means entire function curve is looped and one loop is relative to the last loop in value.</ul>
     */
     //@{
         enum EExtrapolationType
@@ -153,7 +154,8 @@ public:
             eConstant = 1,
             eRepetition = 2,
             eMirrorRepetition = 3,
-            eKeepSlope = 4
+            eKeepSlope = 4,
+            eRelativeRepetition = 5
         } ;
 
         /** Set pre-extrapolation mode.

@@ -161,12 +161,6 @@ class FBXSDK_DLL FbxObject : public FbxEmitter
 public:
 	//! \name General Object Management
 	//@{
-		/** Test if this class is a hierarchical children of the specified class type. This is the standard method to differentiate object classes. (Deprecated, please use Is<Type>() instead.)
-		* \param pClassId The class type to test against self.
-		* \return \c true if the object is a hierarchical children of the type specified.
-		* \remark This function will perform a complete search until it reaches the top level class, but it will stop as soon as one ClassId matches the test. */
-		FBX_DEPRECATED inline bool Is(const FbxClassId& pClassId) const { return GetClassId().Is(pClassId); }
-
 		/** Templated test if this class is a hierarchical children of the specified class type.
 		* \return \c true if the object is a hierarchical children of the type specified.
 		* \remark This function will perform a complete search until it reaches the top level class, but it will stop as soon as one ClassId matches the test. */
@@ -450,12 +444,6 @@ public:
 		  */
 		inline bool DisconnectAllSrcObject(const FbxCriteria& pCriteria) { return RootProperty.DisconnectAllSrcObject(pCriteria); }
 
-		/** Disconnects this object from all source objects of a specific class type. (Deprecated, please use DisconnectAllSrcObject<Type>() instead.)
-		  * \param pClassId The specific class type.
-		  * \return \c True if it disconnects all source objects successfully, \c false otherwise.
-		  */
-		FBX_DEPRECATED inline bool DisconnectAllSrcObject(FbxClassId pClassId) { return RootProperty.DisconnectAllSrcObject(FbxCriteria::ObjectType(pClassId)); }
-
 		/** Returns the number of source objects with which this object connects.
 		  * \return The number of source objects with which this object connects. 
 		  */
@@ -466,12 +454,6 @@ public:
 		  * \return The number of source objects that satisfy the given criteria with which this object connects.
 		  */
 		inline int GetSrcObjectCount(const FbxCriteria& pCriteria) const { return RootProperty.GetSrcObjectCount(pCriteria); }
-
-		/** Returns the number of source objects of the specific class type with which this object connects. (Deprecated, please use GetSrcObjectCount<Type>() instead.)
-		  * \param pClassId The specific class type.
-		  * \return The number of source objects of the specific class type with which this object connects.
-		  */
-		FBX_DEPRECATED inline int GetSrcObjectCount(FbxClassId pClassId) const { return RootProperty.GetSrcObjectCount(FbxCriteria::ObjectType(pClassId)); }
 
 		/** Returns the source object with which this object connects at the specified index.
 		  * \param pIndex The specified index whose default value is 0.
@@ -485,13 +467,6 @@ public:
 		  * \return The source object that satisfies the given criteria at the specified index, NULL if not found.
 		  */
 		inline FbxObject* GetSrcObject(const FbxCriteria& pCriteria, int pIndex=0) const { return RootProperty.GetSrcObject(pCriteria,pIndex); }
-
-		/** Returns the source object of the specified class type at the specified index with which this object connects. (Deprecated, please use GetSrcObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \param pIndex The specified index whose default value is 0.
-		  * \return The source object of the specified class type at the specified index, NULL if not found.
-		  */
-		FBX_DEPRECATED inline FbxObject* GetSrcObject(FbxClassId pClassId, int pIndex=0) const { return RootProperty.GetSrcObject(FbxCriteria::ObjectType(pClassId), pIndex); }
 
 		/** Searches the source object with the specified name, starting at the specified index.
 		  * \param pName The object name.
@@ -507,14 +482,6 @@ public:
 		  * \return The source object with the name, NULL if not found.
 		  */
 		inline FbxObject* FindSrcObject(const FbxCriteria& pCriteria, const char* pName, int pStartIndex=0) const { return RootProperty.FindSrcObject(pCriteria,pName,pStartIndex); }
-
-		/** Searches the source object with the specified name which is also the specified class type, starting at the specified index. (Deprecated, please use FindSrcObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \param pName The object name.
-		  * \param pStartIndex The start index.
-		  * \return The source object with the name, NULL if not found.
-		  */
-		FBX_DEPRECATED inline FbxObject* FindSrcObject(FbxClassId pClassId, const char* pName, int pStartIndex=0) const { return RootProperty.FindSrcObject(FbxCriteria::ObjectType(pClassId), pName, pStartIndex); }
 
 		/** Disconnects this object from all source objects of the specified class type.
 		* \return \c true if it disconnects all source objects successfully, \c false otherwise. */
@@ -588,12 +555,6 @@ public:
 		  */
 		inline bool DisconnectAllDstObject(const FbxCriteria& pCriteria) { return RootProperty.DisconnectAllDstObject(pCriteria); }
 
-		/** Disconnects this object from all destination objects of the specified class type. (Deprecated, please use DisconnectAllDstObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \return \c True if it disconnects all destination objects of the specified class type successfully, \c false otherwise.
-		  */
-		FBX_DEPRECATED inline bool DisconnectAllDstObject(FbxClassId pClassId) { return RootProperty.DisconnectAllDstObject(FbxCriteria::ObjectType(pClassId)); }
-
 		/** Returns the number of destination objects with which this object connects. 
 		  * \return The number of destination objects with which this object connects. 
 		  */
@@ -604,12 +565,6 @@ public:
 		  * \return The number of destination objects with which this object connects that satisfy the given criteria.
 		  */
 		inline int GetDstObjectCount(const FbxCriteria& pCriteria) const { return RootProperty.GetDstObjectCount(pCriteria); }
-
-		/** Returns the number of destination objects of the specified class type with which this object connects. (Deprecated, please use GetDstObjectCount<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \return The number of destination objects of the specified class type with which this object connects. 
-		  */
-		FBX_DEPRECATED inline int GetDstObjectCount(FbxClassId pClassId) const { return RootProperty.GetDstObjectCount(FbxCriteria::ObjectType(pClassId)); }
 
 		/** Returns the destination object at the specified index with which this object connects.
 		  * \param pIndex The specified index whose default value is 0.
@@ -623,13 +578,6 @@ public:
 		  * \return The destination object that satisfies the given criteria at the specified index, NULL if not found.
 		  */
 		inline FbxObject* GetDstObject(const FbxCriteria& pCriteria, int pIndex=0) const { return RootProperty.GetDstObject(pCriteria,pIndex); }
-
-		/** Returns the destination object of the specified class type with which this object connects at the specified index. (Deprecated, please use GetDstObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \param pIndex The specified index whose default value is 0.
-		  * \return The destination object of the specified class type at the specified index, NULL if not found.
-		  */
-		FBX_DEPRECATED inline FbxObject* GetDstObject(FbxClassId pClassId, int pIndex=0) const { return RootProperty.GetDstObject(FbxCriteria::ObjectType(pClassId), pIndex); }
 
 		/** Searches the destination object with the specified name, starting at the specified index.
 		  * \param pName The object name.
@@ -645,14 +593,6 @@ public:
 		  * \return The destination object with the name, NULL if not found.
 		  */
 		inline FbxObject* FindDstObject(const FbxCriteria& pCriteria, const char* pName, int pStartIndex=0) const { return RootProperty.FindDstObject(pCriteria,pName,pStartIndex); }
-
-		/** Searches the destination object with the specified name which is the specified class type, starting at the specified index. (Deprecated, please use FindDstObject<Type>() instead.)
-		  * \param pClassId The specified class type.
-		  * \param pName The object name.
-		  * \param pStartIndex The start index.
-		  * \return The destination object with the name, NULL if not found.
-		  */
-		FBX_DEPRECATED inline FbxObject* FindDstObject(FbxClassId pClassId, const char* pName,int pStartIndex=0) const { return RootProperty.FindDstObject(FbxCriteria::ObjectType(pClassId), pName, pStartIndex); }
 
 		/** Disconnects this object from all destination objects of the specified class type.
 		* \return \c true if it disconnects all destination objects of the specified class type successfully, \c false otherwise. */

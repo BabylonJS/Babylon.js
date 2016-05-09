@@ -333,6 +333,46 @@ public:
 		eRightFootExtraFingerD,
 		eLeftCollarExtra,
 		eRightCollarExtra,
+        eLeafLeftHipRoll1,
+        eLeafLeftKneeRoll1,
+        eLeafRightHipRoll1,
+        eLeafRightKneeRoll1,
+        eLeafLeftShoulderRoll1,
+        eLeafLeftElbowRoll1,
+        eLeafRightShoulderRoll1,
+        eLeafRightElbowRoll1,
+        eLeafLeftHipRoll2,
+        eLeafLeftKneeRoll2,
+        eLeafRightHipRoll2,
+        eLeafRightKneeRoll2,
+        eLeafLeftShoulderRoll2,
+        eLeafLeftElbowRoll2,
+        eLeafRightShoulderRoll2,
+        eLeafRightElbowRoll2,
+        eLeafLeftHipRoll3,
+        eLeafLeftKneeRoll3,
+        eLeafRightHipRoll3,
+        eLeafRightKneeRoll3,
+        eLeafLeftShoulderRoll3,
+        eLeafLeftElbowRoll3,
+        eLeafRightShoulderRoll3,
+        eLeafRightElbowRoll3,
+        eLeafLeftHipRoll4,
+        eLeafLeftKneeRoll4,
+        eLeafRightHipRoll4,
+        eLeafRightKneeRoll4,
+        eLeafLeftShoulderRoll4,
+        eLeafLeftElbowRoll4,
+        eLeafRightShoulderRoll4,
+        eLeafRightElbowRoll4,
+        eLeafLeftHipRoll5,
+        eLeafLeftKneeRoll5,
+        eLeafRightHipRoll5,
+        eLeafRightKneeRoll5,
+        eLeafLeftShoulderRoll5,
+        eLeafLeftElbowRoll5,
+        eLeafRightShoulderRoll5,
+        eLeafRightElbowRoll5,
 		eNodeIdCount,
 		eNodeIdInvalid=-1
 	};
@@ -786,6 +826,94 @@ public:
     FbxPropertyT<FbxDouble>             SnSScaleNeck;
     FbxPropertyT<FbxDouble>             SnSNeckFreedom;
     FbxPropertyT<FbxDouble>             SnSReachHead;
+    
+    // HIK 2016.5.0 roll properties
+    // Leaf roll properties
+    FbxPropertyT<FbxDouble>				LeafLeftUpLegRoll1;
+    FbxPropertyT<FbxBool>				LeafLeftUpLegRoll1Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftLegRoll1;
+    FbxPropertyT<FbxBool>				LeafLeftLegRoll1Mode;
+    FbxPropertyT<FbxDouble>				LeafRightUpLegRoll1;
+    FbxPropertyT<FbxBool>				LeafRightUpLegRoll1Mode;
+    FbxPropertyT<FbxDouble>				LeafRightLegRoll1;
+    FbxPropertyT<FbxBool>				LeafRightLegRoll1Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftArmRoll1;
+    FbxPropertyT<FbxBool>				LeafLeftArmRoll1Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftForeArmRoll1;
+    FbxPropertyT<FbxBool>				LeafLeftForeArmRoll1Mode;
+    FbxPropertyT<FbxDouble>				LeafRightArmRoll1;
+    FbxPropertyT<FbxBool>				LeafRightArmRoll1Mode;
+    FbxPropertyT<FbxDouble>				LeafRightForeArmRoll1;
+    FbxPropertyT<FbxBool>				LeafRightForeArmRoll1Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftUpLegRoll2;
+    FbxPropertyT<FbxBool>				LeafLeftUpLegRoll2Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftLegRoll2;
+    FbxPropertyT<FbxBool>				LeafLeftLegRoll2Mode;
+    FbxPropertyT<FbxDouble>				LeafRightUpLegRoll2;
+    FbxPropertyT<FbxBool>				LeafRightUpLegRoll2Mode;
+    FbxPropertyT<FbxDouble>				LeafRightLegRoll2;
+    FbxPropertyT<FbxBool>				LeafRightLegRoll2Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftArmRoll2;
+    FbxPropertyT<FbxBool>				LeafLeftArmRoll2Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftForeArmRoll2;
+    FbxPropertyT<FbxBool>				LeafLeftForeArmRoll2Mode;
+    FbxPropertyT<FbxDouble>				LeafRightArmRoll2;
+    FbxPropertyT<FbxBool>				LeafRightArmRoll2Mode;
+    FbxPropertyT<FbxDouble>				LeafRightForeArmRoll2;
+    FbxPropertyT<FbxBool>				LeafRightForeArmRoll2Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftUpLegRoll3;
+	FbxPropertyT<FbxBool>				LeafLeftUpLegRoll3Mode;
+	FbxPropertyT<FbxDouble>				LeafLeftLegRoll3;
+	FbxPropertyT<FbxBool>				LeafLeftLegRoll3Mode;
+	FbxPropertyT<FbxDouble>				LeafRightUpLegRoll3;
+	FbxPropertyT<FbxBool>				LeafRightUpLegRoll3Mode;
+	FbxPropertyT<FbxDouble>				LeafRightLegRoll3;
+	FbxPropertyT<FbxBool>				LeafRightLegRoll3Mode;
+	FbxPropertyT<FbxDouble>				LeafLeftArmRoll3;
+	FbxPropertyT<FbxBool>				LeafLeftArmRoll3Mode;
+	FbxPropertyT<FbxDouble>				LeafLeftForeArmRoll3;
+	FbxPropertyT<FbxBool>				LeafLeftForeArmRoll3Mode;
+	FbxPropertyT<FbxDouble>				LeafRightArmRoll3;
+	FbxPropertyT<FbxBool>				LeafRightArmRoll3Mode;
+	FbxPropertyT<FbxDouble>				LeafRightForeArmRoll3;
+	FbxPropertyT<FbxBool>				LeafRightForeArmRoll3Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftUpLegRoll4;
+    FbxPropertyT<FbxBool>				LeafLeftUpLegRoll4Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftLegRoll4;
+    FbxPropertyT<FbxBool>				LeafLeftLegRoll4Mode;
+    FbxPropertyT<FbxDouble>				LeafRightUpLegRoll4;
+    FbxPropertyT<FbxBool>				LeafRightUpLegRoll4Mode;
+    FbxPropertyT<FbxDouble>				LeafRightLegRoll4;
+    FbxPropertyT<FbxBool>				LeafRightLegRoll4Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftArmRoll4;
+    FbxPropertyT<FbxBool>				LeafLeftArmRoll4Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftForeArmRoll4;
+    FbxPropertyT<FbxBool>				LeafLeftForeArmRoll4Mode;
+    FbxPropertyT<FbxDouble>				LeafRightArmRoll4;
+    FbxPropertyT<FbxBool>				LeafRightArmRoll4Mode;
+    FbxPropertyT<FbxDouble>				LeafRightForeArmRoll4;
+    FbxPropertyT<FbxBool>				LeafRightForeArmRoll4Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftUpLegRoll5;
+    FbxPropertyT<FbxBool>				LeafLeftUpLegRoll5Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftLegRoll5;
+    FbxPropertyT<FbxBool>				LeafLeftLegRoll5Mode;
+    FbxPropertyT<FbxDouble>				LeafRightUpLegRoll5;
+    FbxPropertyT<FbxBool>				LeafRightUpLegRoll5Mode;
+    FbxPropertyT<FbxDouble>				LeafRightLegRoll5;
+    FbxPropertyT<FbxBool>				LeafRightLegRoll5Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftArmRoll5;
+    FbxPropertyT<FbxBool>				LeafLeftArmRoll5Mode;
+    FbxPropertyT<FbxDouble>				LeafLeftForeArmRoll5;
+    FbxPropertyT<FbxBool>				LeafLeftForeArmRoll5Mode;
+    FbxPropertyT<FbxDouble>				LeafRightArmRoll5;
+    FbxPropertyT<FbxBool>				LeafRightArmRoll5Mode;
+    FbxPropertyT<FbxDouble>				LeafRightForeArmRoll5;
+    FbxPropertyT<FbxBool>				LeafRightForeArmRoll5Mode;
+    // Full limb roll extraction
+    FbxPropertyT<FbxDouble>				LeftLegFullRollExtraction;
+    FbxPropertyT<FbxDouble>				RightLegFullRollExtraction;
+    FbxPropertyT<FbxDouble>				LeftArmFullRollExtraction;
+    FbxPropertyT<FbxDouble>				RightArmFullRollExtraction;
     
 /*****************************************************************************************************************************
 ** WARNING! Anything beyond these lines is for internal use, may not be documented and is subject to change without notice! **
