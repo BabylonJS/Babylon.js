@@ -342,8 +342,8 @@
                     let joinedUsedCatList = new Array<string>();
 
                     for (let dataPart of parts) {
-                        let cat = this.getUsedShaderCategories(dataPart);
-                        let cti = dataPart.getClassTreeInfo();
+                        var cat = this.getUsedShaderCategories(dataPart);
+                        var cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
                         let curVisible = this.isVisible;
                         this.isVisible = true;
@@ -355,10 +355,8 @@
                         this.refreshInstanceDataPart(dataPart);
                         this.isVisible = curVisible;
 
-                        let size = 0;
-
-                        for (var index = 0; index < cti.fullContent.count; index++) {
-                            var v = cti.fullContent[index];
+                        var size = 0;
+                        cti.fullContent.forEach((k, v) => {
                             if (!v.category || cat.indexOf(v.category) !== -1) {
                                 if (!v.size) {
                                     console.log(`ERROR: Couldn't detect the size of the Property ${v.attributeName} from type ${Tools.getClassName(cti.type)}. Property is ignored.`);
@@ -366,8 +364,7 @@
                                     size += v.size;
                                 }
                             }
-                        }
-
+                        });
                         dataStrides.push(size);
                         usedCatList.push(cat);
                         ctiArray.push(cti);
@@ -431,7 +428,7 @@
             }
         }
 
-        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): { attributes: string[], uniforms: string[], defines: string} {
+        protected getDataPartEffectInfo(dataPartId: number, vertexBufferAttributes: string[]): { attributes: string[], uniforms: string[], defines: string } {
             let dataPart = Tools.first(this._instanceDataParts, i => i.id === dataPartId);
             if (!dataPart) {
                 return null;
@@ -443,7 +440,7 @@
             let categories = this.getUsedShaderCategories(dataPart);
             let att = cti.classContent.getShaderAttributes(categories);
             let defines = "";
-            categories.forEach(c => { defines += `#define ${c}\n`});
+            categories.forEach(c => { defines += `#define ${c}\n` });
             if (instancedArray) {
                 defines += "#define Instanced\n";
             }
@@ -505,8 +502,8 @@
             let w = size.width * zBias;
             let h = size.height * zBias;
             let invZBias = 1 / zBias;
-            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12]+offX) * 2 / w) - (invZBias));
-            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0/*t.m[9]*/, ((t.m[13]+offY) * 2 / h) - (invZBias));
+            let tx = new Vector4(t.m[0] * 2 / w, t.m[4] * 2 / w, 0/*t.m[8]*/, ((t.m[12] + offX) * 2 / w) - (invZBias));
+            let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * 2 / h) - (invZBias));
             part.transformX = tx;
             part.transformY = ty;
             part.origin = this.origin;

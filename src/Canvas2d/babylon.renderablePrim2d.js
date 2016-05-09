@@ -346,8 +346,7 @@ var BABYLON;
                         this.refreshInstanceDataPart(dataPart);
                         this.isVisible = curVisible;
                         var size = 0;
-                        for (var index = 0; index < cti.fullContent.count; index++) {
-                            var v = cti.fullContent[index];
+                        cti.fullContent.forEach(function (k, v) {
                             if (!v.category || cat.indexOf(v.category) !== -1) {
                                 if (!v.size) {
                                     console.log("ERROR: Couldn't detect the size of the Property " + v.attributeName + " from type " + BABYLON.Tools.getClassName(cti.type) + ". Property is ignored.");
@@ -356,7 +355,7 @@ var BABYLON;
                                     size += v.size;
                                 }
                             }
-                        }
+                        });
                         dataStrides.push(size);
                         usedCatList.push(cat);
                         ctiArray.push(cti);
@@ -397,7 +396,7 @@ var BABYLON;
                 }
                 for (var _c = 0, _d = this._instanceDataParts; _c < _d.length; _c++) {
                     var part = _d[_c];
-                    var cat = this.getUsedShaderCategories(part);
+                    var cat_1 = this.getUsedShaderCategories(part);
                     InstanceClassInfo._CurCategories = gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())];
                     // Will return false if the instance should not be rendered (not visible or other any reasons)
                     if (!this.refreshInstanceDataPart(part)) {
