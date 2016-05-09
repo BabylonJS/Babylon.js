@@ -50,6 +50,7 @@ module BABYLON {
             this.isCube = false;
             this.wrapU = Texture.CLAMP_ADDRESSMODE;
             this.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.anisotropicFilteringLevel = 1;
             
             this._texture = this._getFromCache(url, true);
 
@@ -77,7 +78,7 @@ module BABYLON {
 
             var mipLevels = 0;
             var floatArrayView: Float32Array = null;
-            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGB, false, false, Texture.BILINEAR_SAMPLINGMODE);
+            var texture = this.getScene().getEngine().createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
             this._texture = texture;
             
             var callback = (text: string) => {
@@ -102,8 +103,8 @@ module BABYLON {
                     if (size === 0) {
                         // Number of space + one
                         size = words.length;
-                        data = new Uint8Array(size * size * size * 3); // volume texture of side size and rgb 8
-                        tempData = new Float32Array(size * size * size * 3);
+                        data = new Uint8Array(size * size * size * 4); // volume texture of side size and rgb 8
+                        tempData = new Float32Array(size * size * size * 4);
                         continue;
                     }
                     
@@ -117,11 +118,12 @@ module BABYLON {
                         maxColor = Math.max(g, maxColor);
                         maxColor = Math.max(b, maxColor);
                         
-                        var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 3;
+                        var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 4;
                         
                         tempData[pixelStorageIndex + 0] = r;
                         tempData[pixelStorageIndex + 1] = g;
                         tempData[pixelStorageIndex + 2] = b;
+                        tempData[pixelStorageIndex + 3] = 0;
                         
                         pixelIndexSlice++;
                         if (pixelIndexSlice % size == 0) {
@@ -141,7 +143,7 @@ module BABYLON {
                 }
                 
                 this.getScene().getEngine().updateTextureSize(texture, size * size, size);
-                this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGB, false);
+                this.getScene().getEngine().updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
             }
 
             Tools.LoadFile(this.url, callback);
