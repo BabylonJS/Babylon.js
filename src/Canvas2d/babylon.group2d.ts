@@ -53,6 +53,37 @@
             this._unbindCacheTarget();
         }
 
+        public dispose(): boolean {
+            if (!super.dispose()) {
+                return false;
+            }
+
+            if (this._cacheRenderSprite) {
+                this._cacheRenderSprite.dispose();
+                this._cacheRenderSprite = null;
+            }
+
+            if (this._cacheTexture && this._cacheNode) {
+                this._cacheTexture.freeRect(this._cacheNode);
+                this._cacheTexture = null;
+                this._cacheNode = null;
+            }
+
+            if(this._primDirtyList) {
+                this._primDirtyList.splice(0);
+                this._primDirtyList = null;
+            }
+
+            if (this.groupRenderInfo) {
+                this.groupRenderInfo.forEach((k, v) => {
+                    v.dispose();
+                });
+                this.groupRenderInfo = null;
+            }
+
+            return true;
+        }
+
         /**
          * Create an instance of the Group Primitive.
          * A group act as a container for many sub primitives, if features:

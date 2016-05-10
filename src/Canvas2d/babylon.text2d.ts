@@ -2,8 +2,6 @@
     export class Text2DRenderCache extends ModelRenderCache {
         vb: WebGLBuffer;
         ib: WebGLBuffer;
-        borderVB: WebGLBuffer;
-        borderIB: WebGLBuffer;
         instancingAttributes: InstancingAttributeInfo[];
         fontTexture: FontTexture;
         effect: Effect;
@@ -42,9 +40,37 @@
 
             engine.setAlphaMode(cur);
 
+            return true;
+        }
+
+        public dispose(): boolean {
+            if (!super.dispose()) {
+                return false;
+            }
+
+            if (this.vb) {
+                this._engine._releaseBuffer(this.vb);
+                this.vb = null;
+            }
+
+            if (this.ib) {
+                this._engine._releaseBuffer(this.ib);
+                this.ib = null;
+            }
+
+            if (this.fontTexture) {
+                this.fontTexture.dispose();
+                this.fontTexture = null;
+            }
+
+            if (this.effect) {
+                this._engine._releaseEffect(this.effect);
+                this.effect = null;
+            }
 
             return true;
         }
+
     }
 
     export class Text2DInstanceData extends InstanceDataBase {
@@ -213,7 +239,7 @@
         }
 
         protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Text2DRenderCache(modelKey, isTransparent);
+            let renderCache = new Text2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
         }
 

@@ -5,7 +5,15 @@
 
             this._canvas = canvas;
         }
-        private _canvas: Canvas2D;
 
+        public dispose(): void {
+            super.dispose();
+            if (this._canvas) {
+                this._canvas.dispose();
+                this._canvas = null;
+            }
+        }
+
+        private _canvas: Canvas2D;
     }
 }

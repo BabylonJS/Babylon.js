@@ -212,6 +212,31 @@
 
         }
 
+        public dispose(): boolean {
+            if (!super.dispose()) {
+                return false;
+            }
+
+            // If there's a parent, remove this object from its parent list
+            if (this._parent) {
+                let i = this._parent._children.indexOf(this);
+                if (i!==undefined) {
+                    this._parent._children.splice(i, 1);
+                }
+                this._parent = null;
+            }
+
+            // Recurse dispose to children
+            if (this._children) {
+                while (this._children.length > 0) {
+                    this._children[this._children.length - 1].dispose();
+                }
+                this._children = null;
+            }
+
+            return true;
+        }
+
         protected getActualZOffset(): number {
             return this._zOrder || 1-(this._siblingDepthOffset + this._hierarchyDepthOffset);
         }
