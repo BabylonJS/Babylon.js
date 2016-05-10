@@ -13,15 +13,15 @@ var BABYLON;
             this.color = color;
             this.depth = depth;
             this.colorLevel = colorLevel;
-            this.onActivate = function (cam) {
+            this.onActivateObservable.add(function (cam) {
                 _this._refRexture = _this._refRexture || new BABYLON.Texture(refractionTextureUrl, cam.getScene());
-            };
-            this.onApply = function (effect) {
+            });
+            this.onApplyObservable.add(function (effect) {
                 effect.setColor3("baseColor", _this.color);
                 effect.setFloat("depth", _this.depth);
                 effect.setFloat("colorLevel", _this.colorLevel);
                 effect.setTexture("refractionSampler", _this._refRexture);
-            };
+            });
         }
         // Methods
         RefractionPostProcess.prototype.dispose = function (camera) {
@@ -31,6 +31,6 @@ var BABYLON;
             _super.prototype.dispose.call(this, camera);
         };
         return RefractionPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.RefractionPostProcess = RefractionPostProcess;
 })(BABYLON || (BABYLON = {}));

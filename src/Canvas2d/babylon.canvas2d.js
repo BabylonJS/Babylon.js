@@ -11,6 +11,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var BABYLON;
 (function (BABYLON) {
+    var Canvas2DEngineBoundData = (function () {
+        function Canvas2DEngineBoundData() {
+            this._modelCache = new BABYLON.StringDictionary();
+        }
+        Canvas2DEngineBoundData.prototype.GetOrAddModelCache = function (key, factory) {
+            return this._modelCache.getOrAddWithFactory(key, factory);
+        };
+        Canvas2DEngineBoundData.prototype.DisposeModelRenderCache = function (modelRenderCache) {
+            if (!modelRenderCache.isDisposed) {
+                return false;
+            }
+            this._modelCache.remove(modelRenderCache.modelKey);
+            return true;
+        };
+        return Canvas2DEngineBoundData;
+    }());
+    BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
         function Canvas2D() {
@@ -66,6 +83,7 @@ var BABYLON;
             var _this = this;
             if (isScreenSpace === void 0) { isScreenSpace = true; }
             if (cachingstrategy === void 0) { cachingstrategy = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS; }
+            this._engineData = scene.getEngine().getOrAddExternalDataWithFactory("__BJSCANVAS2D__", function (k) { return new Canvas2DEngineBoundData(); });
             this._cachingStrategy = cachingstrategy;
             this._depthLevel = 0;
             this._hierarchyMaxDepth = 100;
@@ -76,6 +94,10 @@ var BABYLON;
             this._scene = scene;
             this._engine = scene.getEngine();
             this._renderingSize = new BABYLON.Size(0, 0);
+            // Register scene dispose to also dispose the canvas when it'll happens
+            scene.onDisposeObservable.add(function (d, s) {
+                _this.dispose();
+            });
             if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 this._background = BABYLON.Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
                 this._background.origin = BABYLON.Vector2.Zero();
@@ -106,6 +128,10 @@ var BABYLON;
             if (this._afterRenderObserver) {
                 this._scene.onAfterRenderObservable.remove(this._afterRenderObserver);
                 this._afterRenderObserver = null;
+            }
+            if (this._groupCacheMaps) {
+                this._groupCacheMaps.forEach(function (m) { return m.dispose(); });
+                this._groupCacheMaps = null;
             }
         };
         Object.defineProperty(Canvas2D.prototype, "scene", {
@@ -208,6 +234,13 @@ var BABYLON;
                 }
                 this._background.roundRadius = value;
                 this._background.isVisible = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Canvas2D.prototype, "engineData", {
+            get: function () {
+                return this._engineData;
             },
             enumerable: true,
             configurable: true
@@ -353,6 +386,6 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    })(BABYLON.Group2D);
+    }(BABYLON.Group2D));
     BABYLON.Canvas2D = Canvas2D;
 })(BABYLON || (BABYLON = {}));

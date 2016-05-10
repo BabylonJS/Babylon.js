@@ -13,8 +13,8 @@ var BABYLON;
 (function (BABYLON) {
     var Rectangle2DRenderCache = (function (_super) {
         __extends(Rectangle2DRenderCache, _super);
-        function Rectangle2DRenderCache(modelKey, isTransparent) {
-            _super.call(this, modelKey, isTransparent);
+        function Rectangle2DRenderCache(engine, modelKey, isTransparent) {
+            _super.call(this, engine, modelKey, isTransparent);
         }
         Rectangle2DRenderCache.prototype.render = function (instanceInfo, context) {
             // Do nothing if the shader is still loading/preparing
@@ -81,8 +81,38 @@ var BABYLON;
             }
             return true;
         };
+        Rectangle2DRenderCache.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this.fillVB) {
+                this._engine._releaseBuffer(this.fillVB);
+                this.fillVB = null;
+            }
+            if (this.fillIB) {
+                this._engine._releaseBuffer(this.fillIB);
+                this.fillIB = null;
+            }
+            if (this.effectFill) {
+                this._engine._releaseEffect(this.effectFill);
+                this.effectFill = null;
+            }
+            if (this.borderVB) {
+                this._engine._releaseBuffer(this.borderVB);
+                this.borderVB = null;
+            }
+            if (this.borderIB) {
+                this._engine._releaseBuffer(this.borderIB);
+                this.borderIB = null;
+            }
+            if (this.effectBorder) {
+                this._engine._releaseEffect(this.effectBorder);
+                this.effectBorder = null;
+            }
+            return true;
+        };
         return Rectangle2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Rectangle2DRenderCache = Rectangle2DRenderCache;
     var Rectangle2DInstanceData = (function (_super) {
         __extends(Rectangle2DInstanceData, _super);
@@ -100,7 +130,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Rectangle2DInstanceData.prototype, "properties", null);
         return Rectangle2DInstanceData;
-    })(BABYLON.Shape2DInstanceData);
+    }(BABYLON.Shape2DInstanceData));
     BABYLON.Rectangle2DInstanceData = Rectangle2DInstanceData;
     var Rectangle2D = (function (_super) {
         __extends(Rectangle2D, _super);
@@ -167,7 +197,7 @@ var BABYLON;
             return rect;
         };
         Rectangle2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
-            var renderCache = new Rectangle2DRenderCache(modelKey, isTransparent);
+            var renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
         };
         Rectangle2D.prototype.setupModelRenderCache = function (modelRenderCache) {
@@ -266,6 +296,6 @@ var BABYLON;
             BABYLON.className("Rectangle2D")
         ], Rectangle2D);
         return Rectangle2D;
-    })(BABYLON.Shape2D);
+    }(BABYLON.Shape2D));
     BABYLON.Rectangle2D = Rectangle2D;
 })(BABYLON || (BABYLON = {}));

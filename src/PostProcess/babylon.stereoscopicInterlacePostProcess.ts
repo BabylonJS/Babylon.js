@@ -9,13 +9,13 @@
             this._passedProcess = rigCameras[0]._rigPostProcess;
             this._stepSize = new Vector2(1 / this.width, 1 / this.height);
 
-            this.onSizeChanged = () => {
+            this.onSizeChangedObservable.add(() => {
                 this._stepSize = new Vector2(1 / this.width, 1 / this.height);
-            };
-            this.onApply = (effect: Effect) => {
+            });
+            this.onApplyObservable.add((effect: Effect) => {
                 effect.setTextureFromPostProcess("camASampler", this._passedProcess);
                 effect.setFloat2("stepSize", this._stepSize.x, this._stepSize.y);
-            };
+            });
         }
     }
 }

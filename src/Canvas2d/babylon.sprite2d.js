@@ -46,8 +46,30 @@ var BABYLON;
             engine.setAlphaMode(cur);
             return true;
         };
+        Sprite2DRenderCache.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this.vb) {
+                this._engine._releaseBuffer(this.vb);
+                this.vb = null;
+            }
+            if (this.ib) {
+                this._engine._releaseBuffer(this.ib);
+                this.ib = null;
+            }
+            if (this.texture) {
+                this.texture.dispose();
+                this.texture = null;
+            }
+            if (this.effect) {
+                this._engine._releaseEffect(this.effect);
+                this.effect = null;
+            }
+            return true;
+        };
         return Sprite2DRenderCache;
-    })(BABYLON.ModelRenderCache);
+    }(BABYLON.ModelRenderCache));
     BABYLON.Sprite2DRenderCache = Sprite2DRenderCache;
     var Sprite2DInstanceData = (function (_super) {
         __extends(Sprite2DInstanceData, _super);
@@ -105,7 +127,7 @@ var BABYLON;
             BABYLON.instanceData()
         ], Sprite2DInstanceData.prototype, "invertY", null);
         return Sprite2DInstanceData;
-    })(BABYLON.InstanceDataBase);
+    }(BABYLON.InstanceDataBase));
     BABYLON.Sprite2DInstanceData = Sprite2DInstanceData;
     var Sprite2D = (function (_super) {
         __extends(Sprite2D, _super);
@@ -184,7 +206,7 @@ var BABYLON;
             return sprite;
         };
         Sprite2D.prototype.createModelRenderCache = function (modelKey, isTransparent) {
-            var renderCache = new Sprite2DRenderCache(modelKey, isTransparent);
+            var renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
         };
         Sprite2D.prototype.setupModelRenderCache = function (modelRenderCache) {
@@ -251,6 +273,6 @@ var BABYLON;
             BABYLON.className("Sprite2D")
         ], Sprite2D);
         return Sprite2D;
-    })(BABYLON.RenderablePrim2D);
+    }(BABYLON.RenderablePrim2D));
     BABYLON.Sprite2D = Sprite2D;
 })(BABYLON || (BABYLON = {}));

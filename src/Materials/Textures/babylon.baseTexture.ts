@@ -39,7 +39,19 @@
 
         public animations = new Array<Animation>();
 
-        public onDispose: () => void;
+        /**
+        * An event triggered when the texture is disposed.
+        * @type {BABYLON.Observable}
+        */
+        public onDisposeObservable = new Observable<BaseTexture>();
+
+        private _onDisposeObserver: Observer<BaseTexture>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
 
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
 
@@ -172,9 +184,8 @@
             this.releaseInternalTexture();
 
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
 
         public serialize(): any {

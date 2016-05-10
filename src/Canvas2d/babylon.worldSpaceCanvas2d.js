@@ -11,7 +11,14 @@ var BABYLON;
             _super.call(this, name, scene);
             this._canvas = canvas;
         }
+        WorldSpaceCanvas2d.prototype.dispose = function () {
+            _super.prototype.dispose.call(this);
+            if (this._canvas) {
+                this._canvas.dispose();
+                this._canvas = null;
+            }
+        };
         return WorldSpaceCanvas2d;
-    })(BABYLON.Mesh);
+    }(BABYLON.Mesh));
     BABYLON.WorldSpaceCanvas2d = WorldSpaceCanvas2d;
 })(BABYLON || (BABYLON = {}));

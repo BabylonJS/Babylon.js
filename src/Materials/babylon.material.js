@@ -61,7 +61,7 @@ var BABYLON;
             return result;
         };
         return MaterialDefines;
-    })();
+    }());
     BABYLON.MaterialDefines = MaterialDefines;
     var Material = (function () {
         function Material(name, scene, doNotAdd) {
@@ -72,6 +72,16 @@ var BABYLON;
             this.alpha = 1.0;
             this.backFaceCulling = true;
             this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            /**
+            * An event triggered when the material is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
+            /**
+            * An event triggered when the material is compiled.
+            * @type {BABYLON.Observable}
+            */
+            this.onBindObservable = new BABYLON.Observable();
             this.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
             this.disableDepthWrite = false;
             this.fogEnabled = true;
@@ -116,6 +126,26 @@ var BABYLON;
         Object.defineProperty(Material, "CounterClockWiseSideOrientation", {
             get: function () {
                 return Material._CounterClockWiseSideOrientation;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material.prototype, "onBind", {
+            set: function (callback) {
+                if (this._onBindObserver) {
+                    this.onBindObservable.remove(this._onBindObserver);
+                }
+                this._onBindObserver = this.onBindObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -191,8 +221,6 @@ var BABYLON;
         Material.prototype.getAlphaTestTexture = function () {
             return null;
         };
-        Material.prototype.trackCreation = function (onCompiled, onError) {
-        };
         Material.prototype.markDirty = function () {
             this._wasPreviouslyReady = false;
         };
@@ -203,9 +231,7 @@ var BABYLON;
         };
         Material.prototype.bind = function (world, mesh) {
             this._scene._cachedMaterial = this;
-            if (this.onBind) {
-                this.onBind(this, mesh);
-            }
+            this.onBindObservable.notifyObservers(mesh);
             if (this.disableDepthWrite) {
                 var engine = this._scene.getEngine();
                 this._cachedDepthWriteState = engine.getDepthWrite();
@@ -254,9 +280,9 @@ var BABYLON;
                 }
             }
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
+            this.onBindObservable.clear();
         };
         Material.prototype.serialize = function () {
             return BABYLON.SerializationHelper.Serialize(this);
@@ -335,6 +361,6 @@ var BABYLON;
             BABYLON.serialize()
         ], Material.prototype, "fillMode", null);
         return Material;
-    })();
+    }());
     BABYLON.Material = Material;
 })(BABYLON || (BABYLON = {}));

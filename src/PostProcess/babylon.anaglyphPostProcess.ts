@@ -6,9 +6,9 @@
             super(name, "anaglyph", null, ["leftSampler"], ratio, rigCameras[1], samplingMode, engine, reusable);
             this._passedProcess = rigCameras[0]._rigPostProcess;
 
-            this.onApply = (effect: Effect) => {
+            this.onApplyObservable.add((effect: Effect) => {
                 effect.setTextureFromPostProcess("leftSampler", this._passedProcess);
-            };
+            });
         }
     }
 } 

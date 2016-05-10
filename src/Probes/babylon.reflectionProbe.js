@@ -13,7 +13,7 @@ var BABYLON;
             this._scene = scene;
             this._scene.reflectionProbes.push(this);
             this._renderTargetTexture = new BABYLON.RenderTargetTexture(name, size, scene, generateMipMaps, true, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, true);
-            this._renderTargetTexture.onBeforeRender = function (faceIndex) {
+            this._renderTargetTexture.onBeforeRenderObservable.add(function (faceIndex) {
                 switch (faceIndex) {
                     case 0:
                         _this._add.copyFromFloats(1, 0, 0);
@@ -40,10 +40,10 @@ var BABYLON;
                 _this.position.addToRef(_this._add, _this._target);
                 BABYLON.Matrix.LookAtLHToRef(_this.position, _this._target, BABYLON.Vector3.Up(), _this._viewMatrix);
                 scene.setTransformMatrix(_this._viewMatrix, _this._projectionMatrix);
-            };
-            this._renderTargetTexture.onAfterUnbind = function () {
+            });
+            this._renderTargetTexture.onAfterUnbindObservable.add(function () {
                 scene.updateTransformMatrix(true);
-            };
+            });
             this._projectionMatrix = BABYLON.Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
         }
         Object.defineProperty(ReflectionProbe.prototype, "refreshRate", {
@@ -88,6 +88,6 @@ var BABYLON;
             }
         };
         return ReflectionProbe;
-    })();
+    }());
     BABYLON.ReflectionProbe = ReflectionProbe;
 })(BABYLON || (BABYLON = {}));

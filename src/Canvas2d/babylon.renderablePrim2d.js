@@ -73,7 +73,7 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    })();
+    }());
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
         //uniformLocation: WebGLUniformLocation;
@@ -176,7 +176,7 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    })();
+    }());
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -279,7 +279,7 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "origin", null);
         return InstanceDataBase;
-    })();
+    }());
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
@@ -300,6 +300,21 @@ var BABYLON;
             this.setupPrim2DBase(owner, parent, id, position);
             this._isTransparent = false;
         };
+        RenderablePrim2D.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this._modelRenderInstanceID) {
+                this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
+                this._modelRenderInstanceID = null;
+            }
+            if (this._modelRenderCache) {
+                this._modelRenderCache.dispose();
+                this._modelRenderCache = null;
+            }
+            this._instanceDataParts = null;
+            return true;
+        };
         RenderablePrim2D.prototype._prepareRenderPre = function (context) {
             var _this = this;
             _super.prototype._prepareRenderPre.call(this, context);
@@ -311,12 +326,16 @@ var BABYLON;
             // Need to create the model?
             var setupModelRenderCache = false;
             if (!this._modelRenderCache || this._modelDirty) {
-                this._modelRenderCache = BABYLON.SmartPropertyPrim.GetOrAddModelCache(this.modelKey, function (key) {
+                this._modelRenderCache = this.owner.engineData.GetOrAddModelCache(this.modelKey, function (key) {
                     var mrc = _this.createModelRenderCache(key, _this.isTransparent);
                     setupModelRenderCache = true;
                     return mrc;
                 });
                 this._modelDirty = false;
+                // if this is still false it means the MRC already exists, so we add a reference to it
+                if (!setupModelRenderCache) {
+                    this._modelRenderCache.addRef();
+                }
             }
             // Need to create the instance?
             var gii;
@@ -331,8 +350,8 @@ var BABYLON;
                     var usedCatList = new Array();
                     var partIdList = new Array();
                     var joinedUsedCatList = new Array();
-                    for (var _i = 0; _i < parts.length; _i++) {
-                        var dataPart = parts[_i];
+                    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
+                        var dataPart = parts_1[_i];
                         var cat = this.getUsedShaderCategories(dataPart);
                         var cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
@@ -492,6 +511,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    })(BABYLON.Prim2DBase);
+    }(BABYLON.Prim2DBase));
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));

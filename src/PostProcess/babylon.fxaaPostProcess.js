@@ -10,15 +10,15 @@ var BABYLON;
         function FxaaPostProcess(name, ratio, camera, samplingMode, engine, reusable) {
             var _this = this;
             _super.call(this, name, "fxaa", ["texelSize"], null, ratio, camera, samplingMode, engine, reusable);
-            this.onSizeChanged = function () {
+            this.onSizeChangedObservable.add(function () {
                 _this.texelWidth = 1.0 / _this.width;
                 _this.texelHeight = 1.0 / _this.height;
-            };
-            this.onApply = function (effect) {
+            });
+            this.onApplyObservable.add(function (effect) {
                 effect.setFloat2("texelSize", _this.texelWidth, _this.texelHeight);
-            };
+            });
         }
         return FxaaPostProcess;
-    })(BABYLON.PostProcess);
+    }(BABYLON.PostProcess));
     BABYLON.FxaaPostProcess = FxaaPostProcess;
 })(BABYLON || (BABYLON = {}));
