@@ -7,6 +7,7 @@
         constructor(owner: Group2D, cache: ModelRenderCache) {
             this._owner = owner;
             this._modelCache = cache;
+            this._modelCache.addRef();
             this._instancesPartsData = new Array<DynamicFloatArray>();
             this._instancesPartsBuffer = new Array<WebGLBuffer>();
             this._instancesPartsBufferSize = new Array<number>();
@@ -14,6 +15,31 @@
             this._instancesPartsUsedShaderCategories = new Array<string>();
         }
 
+        public dispose(): boolean {
+            if (this._isDisposed) {
+                return false;
+            }
+
+            if (this._modelCache) {
+                this._modelCache.dispose();
+            }
+
+            let engine = this._owner.owner.engine;
+            if (this._instancesPartsBuffer) {
+                this._instancesPartsBuffer.forEach(b => {
+                    engine._releaseBuffer(b);
+                });
+            }
+
+            this._partIndexFromId = null;
+            this._instancesPartsData = null;
+            this._instancesPartsBufferSize = null;
+            this._instancesPartsUsedShaderCategories = null;
+
+            return true;
+        }
+
+        _isDisposed: boolean;
         _owner: Group2D;
         _modelCache: ModelRenderCache;
         _partIndexFromId: StringDictionary<number>;
@@ -25,11 +51,39 @@
     }
 
     export class ModelRenderCache {
-        constructor(modelKey: string, isTransparent: boolean) {
+        constructor(engine: Engine, modelKey: string, isTransparent: boolean) {
+            this._engine = engine;
             this._modelKey = modelKey;
             this._isTransparent = isTransparent;
             this._nextKey = 1;
+            this._refCounter = 1;
             this._instancesData = new StringDictionary<InstanceDataBase[]>();
+        }
+
+        public dispose(): boolean {
+            if (--this._refCounter !== 0) {
+                return false;
+            }
+
+            // Remove the Model Render Cache from the global dictionary
+            let edata = this._engine.getExternalData<Canvas2DEngineBoundData>("__BJSCANVAS2D__");
+            if (edata) {
+                edata.DisposeModelRenderCache(this);
+            }
+
+            return true;
+        }
+
+        public get isDisposed(): boolean {
+            return this._refCounter <= 0;
+        }
+
+        public addRef(): number {
+            return ++this._refCounter;
+        }
+
+        public get modelKey(): string {
+            return this._modelKey;
         }
 
         /**
@@ -147,6 +201,7 @@
             });
         }
 
+        protected _engine: Engine;
         private _modelKey: string;
         private _isTransparent: boolean;
 
@@ -157,6 +212,7 @@
         _instancesData: StringDictionary<InstanceDataBase[]>;
 
         private _nextKey: number;
+        private _refCounter: number;
         _partIdList: number[];
         _partsDataStride: number[];
         _partsUsedCategories: Array<string[]>;

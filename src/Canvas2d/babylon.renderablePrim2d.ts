@@ -306,6 +306,25 @@
             this._isTransparent = false;
         }
 
+        public dispose(): boolean {
+            if (!super.dispose()) {
+                return false;
+            }
+
+            if (this._modelRenderInstanceID) {
+                this._modelRenderCache.removeInstanceData(this._modelRenderInstanceID);
+                this._modelRenderInstanceID = null;
+            }
+
+            if (this._modelRenderCache) {
+                this._modelRenderCache.dispose();
+                this._modelRenderCache = null;
+            }
+            this._instanceDataParts = null;
+
+            return true;
+        }
+
         public _prepareRenderPre(context: Render2DContext) {
             super._prepareRenderPre(context);
 
@@ -318,12 +337,17 @@
             // Need to create the model?
             let setupModelRenderCache = false;
             if (!this._modelRenderCache || this._modelDirty) {
-                this._modelRenderCache = SmartPropertyPrim.GetOrAddModelCache(this.modelKey, (key: string) => {
+                this._modelRenderCache = this.owner.engineData.GetOrAddModelCache(this.modelKey, (key: string) => {
                     let mrc = this.createModelRenderCache(key, this.isTransparent);
                     setupModelRenderCache = true;
                     return mrc;
                 });
                 this._modelDirty = false;
+
+                // if this is still false it means the MRC already exists, so we add a reference to it
+                if (!setupModelRenderCache) {
+                    this._modelRenderCache.addRef();
+                }
             }
 
             // Need to create the instance?

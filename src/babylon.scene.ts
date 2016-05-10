@@ -2361,8 +2361,8 @@
             this.debugLayer.hide();
 
             // Events
-            if (this.onDispose) {
-                this.onDispose();
+            if (this.onDisposeObservable) {
+                this.onDisposeObservable.notifyObservers(this);
             }
 
             this.onBeforeRenderObservable.clear();
