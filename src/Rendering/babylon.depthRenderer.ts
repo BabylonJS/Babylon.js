@@ -24,9 +24,9 @@
             this._depthMap.renderList = null;
             
             // set default depth value to 1.0 (far away)
-            this._depthMap.onClear = (engine: Engine) => {
+            this._depthMap.onClearObservable.add((engine: Engine) => {
                 engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true);
-            }
+            });
 
             // Custom render function
             var renderSubMesh = (subMesh: SubMesh): void => {

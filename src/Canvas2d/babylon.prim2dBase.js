@@ -15,7 +15,7 @@ var BABYLON;
         function Render2DContext() {
         }
         return Render2DContext;
-    })();
+    }());
     BABYLON.Render2DContext = Render2DContext;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -238,6 +238,27 @@ var BABYLON;
             child._hierarchyDepthOffset = child._depthLevel * this.owner.hierarchyLevelZFactor;
             this._children.push(child);
         };
+        Prim2DBase.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            // If there's a parent, remove this object from its parent list
+            if (this._parent) {
+                var i = this._parent._children.indexOf(this);
+                if (i !== undefined) {
+                    this._parent._children.splice(i, 1);
+                }
+                this._parent = null;
+            }
+            // Recurse dispose to children
+            if (this._children) {
+                while (this._children.length > 0) {
+                    this._children[this._children.length - 1].dispose();
+                }
+                this._children = null;
+            }
+            return true;
+        };
         Prim2DBase.prototype.getActualZOffset = function () {
             return this._zOrder || 1 - (this._siblingDepthOffset + this._hierarchyDepthOffset);
         };
@@ -286,8 +307,8 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype.updateGlobalTransVisOf = function (list, recurse) {
-            for (var _i = 0; _i < list.length; _i++) {
-                var cur = list[_i];
+            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+                var cur = list_1[_i];
                 cur.updateGlobalTransVis(recurse);
             }
         };
@@ -346,6 +367,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    })(BABYLON.SmartPropertyPrim);
+    }(BABYLON.SmartPropertyPrim));
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

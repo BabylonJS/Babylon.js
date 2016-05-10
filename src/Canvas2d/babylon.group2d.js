@@ -39,6 +39,31 @@ var BABYLON;
             this._cacheTexture.hasAlpha = true;
             this._unbindCacheTarget();
         };
+        Group2D.prototype.dispose = function () {
+            if (!_super.prototype.dispose.call(this)) {
+                return false;
+            }
+            if (this._cacheRenderSprite) {
+                this._cacheRenderSprite.dispose();
+                this._cacheRenderSprite = null;
+            }
+            if (this._cacheTexture && this._cacheNode) {
+                this._cacheTexture.freeRect(this._cacheNode);
+                this._cacheTexture = null;
+                this._cacheNode = null;
+            }
+            if (this._primDirtyList) {
+                this._primDirtyList.splice(0);
+                this._primDirtyList = null;
+            }
+            if (this.groupRenderInfo) {
+                this.groupRenderInfo.forEach(function (k, v) {
+                    v.dispose();
+                });
+                this.groupRenderInfo = null;
+            }
+            return true;
+        };
         /**
          * Create an instance of the Group Primitive.
          * A group act as a container for many sub primitives, if features:
@@ -365,6 +390,6 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    })(BABYLON.Prim2DBase);
+    }(BABYLON.Prim2DBase));
     BABYLON.Group2D = Group2D;
 })(BABYLON || (BABYLON = {}));

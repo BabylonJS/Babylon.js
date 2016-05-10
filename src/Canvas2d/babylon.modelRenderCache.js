@@ -4,22 +4,72 @@ var BABYLON;
         function GroupInstanceInfo(owner, cache) {
             this._owner = owner;
             this._modelCache = cache;
+            this._modelCache.addRef();
             this._instancesPartsData = new Array();
             this._instancesPartsBuffer = new Array();
             this._instancesPartsBufferSize = new Array();
             this._partIndexFromId = new BABYLON.StringDictionary();
             this._instancesPartsUsedShaderCategories = new Array();
         }
+        GroupInstanceInfo.prototype.dispose = function () {
+            if (this._isDisposed) {
+                return false;
+            }
+            if (this._modelCache) {
+                this._modelCache.dispose();
+            }
+            var engine = this._owner.owner.engine;
+            if (this._instancesPartsBuffer) {
+                this._instancesPartsBuffer.forEach(function (b) {
+                    engine._releaseBuffer(b);
+                });
+            }
+            this._partIndexFromId = null;
+            this._instancesPartsData = null;
+            this._instancesPartsBufferSize = null;
+            this._instancesPartsUsedShaderCategories = null;
+            return true;
+        };
         return GroupInstanceInfo;
-    })();
+    }());
     BABYLON.GroupInstanceInfo = GroupInstanceInfo;
     var ModelRenderCache = (function () {
-        function ModelRenderCache(modelKey, isTransparent) {
+        function ModelRenderCache(engine, modelKey, isTransparent) {
+            this._engine = engine;
             this._modelKey = modelKey;
             this._isTransparent = isTransparent;
             this._nextKey = 1;
+            this._refCounter = 1;
             this._instancesData = new BABYLON.StringDictionary();
         }
+        ModelRenderCache.prototype.dispose = function () {
+            if (--this._refCounter !== 0) {
+                return false;
+            }
+            // Remove the Model Render Cache from the global dictionary
+            var edata = this._engine.getExternalData("__BJSCANVAS2D__");
+            if (edata) {
+                edata.DisposeModelRenderCache(this);
+            }
+            return true;
+        };
+        Object.defineProperty(ModelRenderCache.prototype, "isDisposed", {
+            get: function () {
+                return this._refCounter <= 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ModelRenderCache.prototype.addRef = function () {
+            return ++this._refCounter;
+        };
+        Object.defineProperty(ModelRenderCache.prototype, "modelKey", {
+            get: function () {
+                return this._modelKey;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Render the model instances
          * @param instanceInfo
@@ -128,6 +178,6 @@ var BABYLON;
         ModelRenderCache.v3 = BABYLON.Vector3.Zero();
         ModelRenderCache.v4 = BABYLON.Vector4.Zero();
         return ModelRenderCache;
-    })();
+    }());
     BABYLON.ModelRenderCache = ModelRenderCache;
 })(BABYLON || (BABYLON = {}));

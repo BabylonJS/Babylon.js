@@ -44,7 +44,7 @@ var BABYLON;
         PointerEventTypes._POINTERWHEEL = 0x08;
         PointerEventTypes._POINTERPICK = 0x10;
         return PointerEventTypes;
-    })();
+    }());
     BABYLON.PointerEventTypes = PointerEventTypes;
     /**
      * This type contains all the data related to a pointer event in Babylon.js.
@@ -57,7 +57,7 @@ var BABYLON;
             this.pickInfo = pickInfo;
         }
         return PointerInfo;
-    })();
+    }());
     BABYLON.PointerInfo = PointerInfo;
     /**
      * Represents a scene to be rendered by the engine.
@@ -1946,9 +1946,8 @@ var BABYLON;
             // Debug layer
             this.debugLayer.hide();
             // Events
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
             this.onBeforeRenderObservable.clear();
             this.onAfterRenderObservable.clear();
             this.detachControl();
@@ -2307,6 +2306,6 @@ var BABYLON;
         Scene.MinDeltaTime = 1.0;
         Scene.MaxDeltaTime = 1000.0;
         return Scene;
-    })();
+    }());
     BABYLON.Scene = Scene;
 })(BABYLON || (BABYLON = {}));

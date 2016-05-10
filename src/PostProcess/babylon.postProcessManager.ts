@@ -66,9 +66,7 @@
                 var effect = pp.apply();
 
                 if (effect) {
-                    if (pp.onBeforeRender) {
-                        pp.onBeforeRender(effect);
-                    }
+                    pp.onBeforeRenderObservable.notifyObservers(effect);
 
                     // VBOs
                     this._prepareBuffers();
@@ -77,9 +75,7 @@
                     // Draw order
                     engine.draw(true, 0, 6);
 
-                    if (pp.onAfterRender) {
-                        pp.onAfterRender(effect);
-                    }
+                    pp.onAfterRenderObservable.notifyObservers(effect);                    
                 }
             }
 
@@ -114,9 +110,7 @@
                 var effect = pp.apply();
 
                 if (effect) {
-                    if (pp.onBeforeRender) {
-                        pp.onBeforeRender(effect);
-                    }
+                    pp.onBeforeRenderObservable.notifyObservers(effect);
 
                     // VBOs
                     this._prepareBuffers();
@@ -125,9 +119,7 @@
                     // Draw order
                     engine.draw(true, 0, 6);
 
-                    if (pp.onAfterRender) {
-                        pp.onAfterRender(effect);
-                    }
+                    pp.onAfterRenderObservable.notifyObservers(effect);
                 }
             }
 

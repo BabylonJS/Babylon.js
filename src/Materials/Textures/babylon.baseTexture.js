@@ -19,6 +19,11 @@ var BABYLON;
             this.isCube = false;
             this.isRenderTarget = false;
             this.animations = new Array();
+            /**
+            * An event triggered when the texture is disposed.
+            * @type {BABYLON.Observable}
+            */
+            this.onDisposeObservable = new BABYLON.Observable();
             this.delayLoadState = BABYLON.Engine.DELAYLOADSTATE_NONE;
             this._scene = scene;
             this._scene.textures.push(this);
@@ -26,6 +31,16 @@ var BABYLON;
         BaseTexture.prototype.toString = function () {
             return this.name;
         };
+        Object.defineProperty(BaseTexture.prototype, "onDispose", {
+            set: function (callback) {
+                if (this._onDisposeObserver) {
+                    this.onDisposeObservable.remove(this._onDisposeObserver);
+                }
+                this._onDisposeObserver = this.onDisposeObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         BaseTexture.prototype.getScene = function () {
             return this._scene;
         };
@@ -121,9 +136,8 @@ var BABYLON;
             // Release
             this.releaseInternalTexture();
             // Callback
-            if (this.onDispose) {
-                this.onDispose();
-            }
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         };
         BaseTexture.prototype.serialize = function () {
             if (!this.name) {
@@ -168,6 +182,6 @@ var BABYLON;
             BABYLON.serialize()
         ], BaseTexture.prototype, "isRenderTarget", void 0);
         return BaseTexture;
-    })();
+    }());
     BABYLON.BaseTexture = BaseTexture;
 })(BABYLON || (BABYLON = {}));

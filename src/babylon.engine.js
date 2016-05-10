@@ -103,13 +103,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    })();
+    }());
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    })();
+    }());
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -153,6 +153,7 @@ var BABYLON;
             this._compiledEffects = {};
             this._uintIndicesCurrentlySet = false;
             this._renderingCanvas = canvas;
+            this._externalData = new BABYLON.StringDictionary();
             options = options || {};
             options.antialias = antialias;
             if (options.preserveDrawingBuffer === undefined) {
@@ -1316,6 +1317,9 @@ var BABYLON;
             var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
+            if (texture._width % 4 !== 0) {
+                this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
+            }
             if (compression) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
             }
@@ -1853,6 +1857,42 @@ var BABYLON;
             this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
         };
+        /**
+         * Add an externaly attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        Engine.prototype.addExternalData = function (key, data) {
+            return this._externalData.add(key, data);
+        };
+        /**
+         * Get an externaly attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        Engine.prototype.getExternalData = function (key) {
+            return this._externalData.get(key);
+        };
+        /**
+         * Get an externaly attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        Engine.prototype.getOrAddExternalDataWithFactory = function (key, factory) {
+            return this._externalData.getOrAddWithFactory(key, factory);
+        };
+        /**
+         * Remove an externaly attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        Engine.prototype.removeExternalData = function (key) {
+            return this._externalData.remove(key);
+        };
         Engine.prototype.releaseInternalTexture = function (texture) {
             if (!texture) {
                 return;
@@ -1999,6 +2039,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    })();
+    }());
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));
