@@ -120,6 +120,7 @@
             if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 this._background = Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
                 this._background.origin = Vector2.Zero();
+                this._background.levelVisible = false;
             }
             this._isScreeSpace = isScreenSpace;
 
