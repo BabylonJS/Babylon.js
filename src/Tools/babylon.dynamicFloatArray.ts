@@ -180,22 +180,22 @@
 
         private _growBuffer() {
             // Allocate the new buffer with 50% more entries, copy the content of the current one
-            let newElCount = this.totalElementCount * 1.5;
+            let newElCount = Math.floor(this.totalElementCount * 1.5);
             let newBuffer = new Float32Array(newElCount * this._stride);
             newBuffer.set(this.buffer);
 
+            let curCount = this.totalElementCount;
             let addedCount = newElCount - this.totalElementCount;
-            this._allEntries.length += addedCount;
-            this._freeEntries.length += addedCount;
 
-            for (let i = this.totalElementCount; i < newElCount; i++) {
-                let el = new DynamicFloatArrayElementInfo();
-                el.offset = i * this._stride;
+            for (let i = 0; i < addedCount; i++) {
+                let element = new DynamicFloatArrayElementInfo();
+                element.offset = (curCount+i) * this.stride;
 
-                this._allEntries[i] = el;
-                this._freeEntries[i] = el;
+                this._allEntries.push(element);
+                this._freeEntries[addedCount - i - 1] = element;
             }
 
+            this._firstFree = curCount * this.stride;
             this.buffer = newBuffer;
         }
 
