@@ -97,10 +97,15 @@
 
             let firstFreeSlotOffset = sortedFree[0].offset;
             let freeZoneSize = 1;
+            let occupiedZoneSize = this.usedElementCount * s;
 
-            // The sortedFree array is sorted in reverse, first free at the end, last free at the beginning, so we loop from the end to beginning
             let prevOffset = sortedFree[0].offset;
             for (let i = 1; i < sortedFree.length; i++) {
+                // If the first free (which means everything before is occupied) is greater or equal the occupied zone size, it means everything is defragmented, we can quit
+                if (firstFreeSlotOffset >= occupiedZoneSize) {
+                    break;
+                }
+
                 let curFree = sortedFree[i];
                 let curOffset = curFree.offset;
 
@@ -134,7 +139,7 @@
                     this._moveElement(moveEl, firstFreeSlotOffset);
                     let replacedEl = sortedAll[freeI];
 
-                    // set the offset of the element element we replace with a value that will make it discard at the end of the method
+                    // set the offset of the element we replaced with a value that will make it discard at the end of the method
                     replacedEl.offset = curMoveOffset;
 
                     // Swap the element we moved and the one it replaced in the sorted array to reflect the action we've made
@@ -147,11 +152,11 @@
 
                 // Free Zone is smaller or equal so it's no longer a free zone, set the new one to the current location
                 if (freeZoneSize <= usedRange) {
-                    firstFreeSlotOffset = curOffset;
+                    firstFreeSlotOffset = curMoveOffset+s;
                     freeZoneSize = 1;
                 }
 
-                // Free Zone was bigger, the firstFreeSlotOffset is already up to date, but we need to update the its size
+                // Free Zone was bigger, the firstFreeSlotOffset is already up to date, but we need to update its size
                 else {
                     freeZoneSize = ((curOffset - firstFreeSlotOffset) / s) + 1;
                 }
@@ -180,22 +185,22 @@
 
         private _growBuffer() {
             // Allocate the new buffer with 50% more entries, copy the content of the current one
-            let newElCount = this.totalElementCount * 1.5;
+            let newElCount = Math.floor(this.totalElementCount * 1.5);
             let newBuffer = new Float32Array(newElCount * this._stride);
             newBuffer.set(this.buffer);
 
+            let curCount = this.totalElementCount;
             let addedCount = newElCount - this.totalElementCount;
-            this._allEntries.length += addedCount;
-            this._freeEntries.length += addedCount;
 
-            for (let i = this.totalElementCount; i < newElCount; i++) {
-                let el = new DynamicFloatArrayElementInfo();
-                el.offset = i * this._stride;
+            for (let i = 0; i < addedCount; i++) {
+                let element = new DynamicFloatArrayElementInfo();
+                element.offset = (curCount+i) * this.stride;
 
-                this._allEntries[i] = el;
-                this._freeEntries[i] = el;
+                this._allEntries.push(element);
+                this._freeEntries[addedCount - i - 1] = element;
             }
 
+            this._firstFree = curCount * this.stride;
             this.buffer = newBuffer;
         }
 
