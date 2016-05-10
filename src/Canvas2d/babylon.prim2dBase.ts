@@ -231,7 +231,6 @@
                 while (this._children.length > 0) {
                     this._children[this._children.length - 1].dispose();
                 }
-                this._children = null;
             }
 
             return true;
@@ -248,7 +247,7 @@
         }
 
         public needPrepare(): boolean {
-            return this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
+            return (this.isVisible || this._visibilityChanged) && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
         }
 
         public _prepareRender(context: Render2DContext) {
@@ -301,6 +300,10 @@
         }
 
         protected updateGlobalTransVis(recurse: boolean) {
+            if (this.isDisposed) {
+                return;
+            }
+
             // Check if the parent is synced
             if (this._parent && this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
                 this._parent.updateGlobalTransVis(false);
@@ -308,11 +311,15 @@
 
             // Check if we must update this prim
             if (this === <any>this.owner || this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
+                let curVisibleState = this.isVisible;
                 this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
+
+                // Detect a change of visibility
+                this._visibilityChanged = (curVisibleState!==undefined) && curVisibleState !== this.isVisible;
 
                 // Detect if either the parent or this node changed
                 let tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
-                if ((this._parent && this._parent._globalTransformStep !== this._parentTransformStep) || this.checkPropertiesDirty(tflags)) {
+                if (this.isVisible && (this._parent && this._parent._globalTransformStep !== this._parentTransformStep) || this.checkPropertiesDirty(tflags)) {
                     var rot = Quaternion.RotationAxis(new Vector3(0, 0, 1), this._rotation);
                     var local = Matrix.Compose(new Vector3(this._scale, this._scale, this._scale), rot, new Vector3(this._position.x, this._position.y, 0));
 
@@ -345,6 +352,7 @@
         private _zOrder: number;
         private _levelVisible: boolean;
         public _boundingInfoDirty: boolean;
+        protected _visibilityChanged;
         private _isVisible: boolean;
         private _id: string;
         private _position: Vector2;
