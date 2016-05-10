@@ -295,7 +295,7 @@
                     }
 
                     // Submit render only if we have something to render (everything may be hiden and the floatarray empty)
-                    if (totalRenderCount > 0) {
+                    if (!this.owner.supportInstancedArray || totalRenderCount > 0) {
                         // render all the instances of this model, if the render method returns true then our instances are no longer dirty
                         let renderFailed = !v._modelCache.render(v, context);
 
