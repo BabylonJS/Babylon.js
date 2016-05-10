@@ -2,8 +2,6 @@
     export class Sprite2DRenderCache extends ModelRenderCache {
         vb: WebGLBuffer;
         ib: WebGLBuffer;
-        borderVB: WebGLBuffer;
-        borderIB: WebGLBuffer;
         instancingAttributes: InstancingAttributeInfo[];
 
         texture: Texture;
@@ -41,6 +39,33 @@
 
             engine.setAlphaMode(cur);
 
+            return true;
+        }
+
+        public dispose(): boolean {
+            if (!super.dispose()) {
+                return false;
+            }
+
+            if (this.vb) {
+                this._engine._releaseBuffer(this.vb);
+                this.vb = null;
+            }
+
+            if (this.ib) {
+                this._engine._releaseBuffer(this.ib);
+                this.ib = null;
+            }
+
+            if (this.texture) {
+                this.texture.dispose();
+                this.texture = null;
+            }
+
+            if (this.effect) {
+                this._engine._releaseEffect(this.effect);
+                this.effect = null;
+            }
 
             return true;
         }
@@ -157,7 +182,7 @@
         }
 
         protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Sprite2DRenderCache(modelKey, isTransparent);
+            let renderCache = new Sprite2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
         }
 
