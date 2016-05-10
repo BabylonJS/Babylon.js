@@ -185,12 +185,6 @@
             return (this._instanceDirtyFlags !== 0) || this._modelDirty;
         }
 
-        protected static GetOrAddModelCache<TInstData>(key: string, factory: (key: string) => ModelRenderCache): ModelRenderCache {
-            return SmartPropertyPrim.ModelCache.getOrAddWithFactory(key, factory);
-        }
-
-        protected static ModelCache: StringDictionary<ModelRenderCache> = new StringDictionary<ModelRenderCache>();
-
         private get propDic(): StringDictionary<Prim2DPropInfo> {
             if (!this._propInfo) {
                 let cti = ClassTreeInfo.get<Prim2DClassInfo, Prim2DPropInfo>(Object.getPrototypeOf(this));
@@ -328,6 +322,11 @@
 
                 // Overload the property setter implementation to add our own logic
                 descriptor.set = function (val) {
+                    // check for disposed first, do nothing
+                    if (this.isDisposed) {
+                        return;
+                    }
+
                     let curVal = getter.call(this);
 
                     if (SmartPropertyPrim._checkUnchanged(curVal, val)) {

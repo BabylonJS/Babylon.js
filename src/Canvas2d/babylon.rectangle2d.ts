@@ -12,8 +12,8 @@
         instancingBorderAttributes: InstancingAttributeInfo[];
         effectBorder: Effect;
 
-        constructor(modelKey: string, isTransparent: boolean) {
-            super(modelKey, isTransparent);
+        constructor(engine: Engine, modelKey: string, isTransparent: boolean) {
+            super(engine, modelKey, isTransparent);
         }
 
         render(instanceInfo: GroupInstanceInfo, context: Render2DContext): boolean {
@@ -88,6 +88,44 @@
             if (this.effectFill && this.effectBorder) {
                 engine.setDepthFunction(depthFunction);
             }
+            return true;
+        }
+
+        public dispose(): boolean {
+            if (!super.dispose()) {
+                return false;
+            }
+
+            if (this.fillVB) {
+                this._engine._releaseBuffer(this.fillVB);
+                this.fillVB = null;
+            }
+
+            if (this.fillIB) {
+                this._engine._releaseBuffer(this.fillIB);
+                this.fillIB = null;
+            }
+
+            if (this.effectFill) {
+                this._engine._releaseEffect(this.effectFill);
+                this.effectFill = null;
+            }
+
+            if (this.borderVB) {
+                this._engine._releaseBuffer(this.borderVB);
+                this.borderVB = null;
+            }
+
+            if (this.borderIB) {
+                this._engine._releaseBuffer(this.borderIB);
+                this.borderIB = null;
+            }
+
+            if (this.effectBorder) {
+                this._engine._releaseEffect(this.effectBorder);
+                this.effectBorder = null;
+            }
+
             return true;
         }
     }
@@ -172,7 +210,7 @@
         public static roundSubdivisions = 16;
 
         protected createModelRenderCache(modelKey: string, isTransparent: boolean): ModelRenderCache {
-            let renderCache = new Rectangle2DRenderCache(modelKey, isTransparent);
+            let renderCache = new Rectangle2DRenderCache(this.owner.engine, modelKey, isTransparent);
             return renderCache;
         }
 

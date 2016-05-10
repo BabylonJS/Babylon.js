@@ -1,4 +1,23 @@
 ﻿module BABYLON {
+
+    export class Canvas2DEngineBoundData {
+        public GetOrAddModelCache<TInstData>(key: string, factory: (key: string) => ModelRenderCache): ModelRenderCache {
+            return this._modelCache.getOrAddWithFactory(key, factory);
+        }
+
+        private _modelCache: StringDictionary<ModelRenderCache> = new StringDictionary<ModelRenderCache>();
+
+        public DisposeModelRenderCache(modelRenderCache: ModelRenderCache): boolean {
+            if (!modelRenderCache.isDisposed) {
+                return false;
+            }
+
+            this._modelCache.remove(modelRenderCache.modelKey);
+
+            return true;
+        }
+    }
+
     @className("Canvas2D")
     export class Canvas2D extends Group2D {
         /**
@@ -79,6 +98,7 @@
         }
 
         protected setupCanvas(scene: Scene, name: string, size: Size, isScreenSpace: boolean = true, cachingstrategy: number = Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
+            this._engineData = scene.getEngine().getOrAddExternalDataWithFactory("__BJSCANVAS2D__", k => new Canvas2DEngineBoundData());
             this._cachingStrategy = cachingstrategy;
             this._depthLevel = 0;
             this._hierarchyMaxDepth = 100;
@@ -91,6 +111,11 @@
             this._scene = scene;
             this._engine = scene.getEngine();
             this._renderingSize = new Size(0, 0);
+
+            // Register scene dispose to also dispose the canvas when it'll happens
+            scene.onDisposeObservable.add((d, s) => {
+                this.dispose();
+            });
 
             if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 this._background = Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
@@ -126,6 +151,11 @@
             if (this._afterRenderObserver) {
                 this._scene.onAfterRenderObservable.remove(this._afterRenderObserver);
                 this._afterRenderObserver = null;
+            }
+
+            if (this._groupCacheMaps) {
+                this._groupCacheMaps.forEach(m => m.dispose());
+                this._groupCacheMaps = null;
             }
         }
 
@@ -221,6 +251,10 @@
             this._background.isVisible = true;
         }
 
+        public get engineData(): Canvas2DEngineBoundData {
+            return this._engineData;
+        }
+
         private checkBackgroundAvailability() {
             if (this._cachingStrategy === Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 throw Error("Can't use Canvas Background with the caching strategy TOPLEVELGROUPS");
@@ -241,6 +275,7 @@
             return this._hierarchyLevelZFactor;
         }
 
+        private _engineData: Canvas2DEngineBoundData;
         private _mapCounter = 0;
         private _background: Rectangle2D;
         private _scene: Scene;
