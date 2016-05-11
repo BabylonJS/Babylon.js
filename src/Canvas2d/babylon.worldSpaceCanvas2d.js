@@ -19,6 +19,6 @@ var BABYLON;
             }
         };
         return WorldSpaceCanvas2d;
-    }(BABYLON.Mesh));
+    })(BABYLON.Mesh);
     BABYLON.WorldSpaceCanvas2d = WorldSpaceCanvas2d;
 })(BABYLON || (BABYLON = {}));

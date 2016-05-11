@@ -508,6 +508,6 @@ var BABYLON;
             }
         };
         return Database;
-    }());
+    })();
     BABYLON.Database = Database;
 })(BABYLON || (BABYLON = {}));

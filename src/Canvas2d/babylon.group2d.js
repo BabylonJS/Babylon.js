@@ -204,7 +204,7 @@ var BABYLON;
                     sortedDirtyList.forEach(function (p) {
                         // We need to check if prepare is needed because even if the primitive is in the dirtyList, its parent primitive may also have been modified, then prepared, then recurse on its children primitives (this one for instance) if the changes where impacting them.
                         // For instance: a Rect's position change, the position of its children primitives will also change so a prepare will be call on them. If a child was in the dirtyList we will avoid a second prepare by making this check.
-                        if (p.needPrepare()) {
+                        if (!p.isDisposed && p.needPrepare()) {
                             p._prepareRender(context);
                         }
                     });
@@ -218,6 +218,7 @@ var BABYLON;
             });
         };
         Group2D.prototype._groupRender = function (context) {
+            var _this = this;
             var engine = this.owner.engine;
             var failedCount = 0;
             // First recurse to children render group to render them (in their cache or on screen)
@@ -234,35 +235,45 @@ var BABYLON;
                     var curVP = engine.setDirectViewport(this._viewportPosition.x, this._viewportPosition.y, this._viewportSize.width, this._viewportSize.height);
                 }
                 // For each different model of primitive to render
+                var totalRenderCount = 0;
                 this.groupRenderInfo.forEach(function (k, v) {
-                    for (var i = 0; i < v._instancesPartsData.length; i++) {
-                        // If the instances of the model was changed, pack the data
-                        var instanceData_1 = v._instancesPartsData[i].pack();
-                        // Compute the size the instance buffer should have
-                        var neededSize = v._instancesPartsData[i].usedElementCount * v._instancesPartsData[i].stride * 4;
-                        // Check if we have to (re)create the instancesBuffer because there's none or the size doesn't match
-                        if (!v._instancesPartsBuffer[i] || (v._instancesPartsBufferSize[i] !== neededSize)) {
-                            if (v._instancesPartsBuffer[i]) {
-                                engine.deleteInstancesBuffer(v._instancesPartsBuffer[i]);
+                    // This part will pack the dynfloatarray and update the instanced array WebGLBufffer
+                    // Skip it if instanced arrays are not supported
+                    if (_this.owner.supportInstancedArray) {
+                        for (var i = 0; i < v._instancesPartsData.length; i++) {
+                            // If the instances of the model was changed, pack the data
+                            var array = v._instancesPartsData[i];
+                            var instanceData_1 = array.pack();
+                            totalRenderCount += array.usedElementCount;
+                            // Compute the size the instance buffer should have
+                            var neededSize = array.usedElementCount * array.stride * 4;
+                            // Check if we have to (re)create the instancesBuffer because there's none or the size is too small
+                            if (!v._instancesPartsBuffer[i] || (v._instancesPartsBufferSize[i] <= neededSize)) {
+                                if (v._instancesPartsBuffer[i]) {
+                                    engine.deleteInstancesBuffer(v._instancesPartsBuffer[i]);
+                                }
+                                v._instancesPartsBuffer[i] = engine.createInstancesBuffer(neededSize);
+                                v._instancesPartsBufferSize[i] = neededSize;
+                                v._dirtyInstancesData = true;
+                                // Update the WebGL buffer to match the new content of the instances data
+                                engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData_1);
                             }
-                            v._instancesPartsBuffer[i] = engine.createInstancesBuffer(neededSize);
-                            v._instancesPartsBufferSize[i] = neededSize;
-                            v._dirtyInstancesData = true;
-                            // Update the WebGL buffer to match the new content of the instances data
-                            engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData_1);
-                        }
-                        else if (v._dirtyInstancesData) {
-                            // Update the WebGL buffer to match the new content of the instances data
-                            engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesPartsBuffer[i]);
-                            engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData_1);
-                            v._dirtyInstancesData = false;
+                            else if (v._dirtyInstancesData) {
+                                // Update the WebGL buffer to match the new content of the instances data
+                                engine._gl.bindBuffer(engine._gl.ARRAY_BUFFER, v._instancesPartsBuffer[i]);
+                                engine._gl.bufferSubData(engine._gl.ARRAY_BUFFER, 0, instanceData_1);
+                                v._dirtyInstancesData = false;
+                            }
                         }
                     }
-                    // render all the instances of this model, if the render method returns true then our instances are no longer dirty
-                    var renderFailed = !v._modelCache.render(v, context);
-                    // Update dirty flag/related
-                    v._dirtyInstancesData = renderFailed;
-                    failedCount += renderFailed ? 1 : 0;
+                    // Submit render only if we have something to render (everything may be hiden and the floatarray empty)
+                    if (!_this.owner.supportInstancedArray || totalRenderCount > 0) {
+                        // render all the instances of this model, if the render method returns true then our instances are no longer dirty
+                        var renderFailed = !v._modelCache.render(v, context);
+                        // Update dirty flag/related
+                        v._dirtyInstancesData = renderFailed;
+                        failedCount += renderFailed ? 1 : 0;
+                    }
                 });
                 // The group's content is no longer dirty
                 this._cacheGroupDirty = failedCount !== 0;
@@ -390,6 +401,6 @@ var BABYLON;
             BABYLON.className("Group2D")
         ], Group2D);
         return Group2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.Group2D = Group2D;
 })(BABYLON || (BABYLON = {}));

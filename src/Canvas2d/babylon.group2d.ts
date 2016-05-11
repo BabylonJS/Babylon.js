@@ -6,9 +6,9 @@
         public static sizeProperty: Prim2DPropInfo;
         public static actualSizeProperty: Prim2DPropInfo;
 
-      /**
-         * Default behavior, the group will use the caching strategy defined at the Canvas Level
-         */
+        /**
+           * Default behavior, the group will use the caching strategy defined at the Canvas Level
+           */
         public static GROUPCACHEBEHAVIOR_FOLLOWCACHESTRATEGY = 0;
 
         /**
@@ -69,7 +69,7 @@
                 this._cacheNode = null;
             }
 
-            if(this._primDirtyList) {
+            if (this._primDirtyList) {
                 this._primDirtyList.splice(0);
                 this._primDirtyList = null;
             }
