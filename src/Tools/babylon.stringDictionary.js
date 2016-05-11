@@ -139,6 +139,6 @@ var BABYLON;
             return null;
         };
         return StringDictionary;
-    }());
+    })();
     BABYLON.StringDictionary = StringDictionary;
 })(BABYLON || (BABYLON = {}));

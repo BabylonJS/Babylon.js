@@ -15,7 +15,7 @@ var BABYLON;
         function Render2DContext() {
         }
         return Render2DContext;
-    }());
+    })();
     BABYLON.Render2DContext = Render2DContext;
     var Prim2DBase = (function (_super) {
         __extends(Prim2DBase, _super);
@@ -255,7 +255,6 @@ var BABYLON;
                 while (this._children.length > 0) {
                     this._children[this._children.length - 1].dispose();
                 }
-                this._children = null;
             }
             return true;
         };
@@ -268,7 +267,7 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype.needPrepare = function () {
-            return this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep);
+            return (this.isVisible || this._visibilityChanged) && (this._modelDirty || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep));
         };
         Prim2DBase.prototype._prepareRender = function (context) {
             this._prepareRenderPre(context);
@@ -307,22 +306,28 @@ var BABYLON;
             }
         };
         Prim2DBase.prototype.updateGlobalTransVisOf = function (list, recurse) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var cur = list_1[_i];
+            for (var _i = 0; _i < list.length; _i++) {
+                var cur = list[_i];
                 cur.updateGlobalTransVis(recurse);
             }
         };
         Prim2DBase.prototype.updateGlobalTransVis = function (recurse) {
+            if (this.isDisposed) {
+                return;
+            }
             // Check if the parent is synced
             if (this._parent && this._parent._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
                 this._parent.updateGlobalTransVis(false);
             }
             // Check if we must update this prim
             if (this === this.owner || this._globalTransformProcessStep !== this.owner._globalTransformProcessStep) {
+                var curVisibleState = this.isVisible;
                 this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
+                // Detect a change of visibility
+                this._visibilityChanged = (curVisibleState !== undefined) && curVisibleState !== this.isVisible;
                 // Detect if either the parent or this node changed
                 var tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;
-                if ((this._parent && this._parent._globalTransformStep !== this._parentTransformStep) || this.checkPropertiesDirty(tflags)) {
+                if (this.isVisible && (this._parent && this._parent._globalTransformStep !== this._parentTransformStep) || this.checkPropertiesDirty(tflags)) {
                     var rot = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), this._rotation);
                     var local = BABYLON.Matrix.Compose(new BABYLON.Vector3(this._scale, this._scale, this._scale), rot, new BABYLON.Vector3(this._position.x, this._position.y, 0));
                     this._globalTransform = this._parent ? local.multiply(this._parent._globalTransform) : local;
@@ -367,6 +372,6 @@ var BABYLON;
             BABYLON.className("Prim2DBase")
         ], Prim2DBase);
         return Prim2DBase;
-    }(BABYLON.SmartPropertyPrim));
+    })(BABYLON.SmartPropertyPrim);
     BABYLON.Prim2DBase = Prim2DBase;
 })(BABYLON || (BABYLON = {}));

@@ -73,7 +73,7 @@ var BABYLON;
             return curOffset;
         };
         return InstanceClassInfo;
-    }());
+    })();
     BABYLON.InstanceClassInfo = InstanceClassInfo;
     var InstancePropInfo = (function () {
         //uniformLocation: WebGLUniformLocation;
@@ -176,7 +176,7 @@ var BABYLON;
             }
         };
         return InstancePropInfo;
-    }());
+    })();
     BABYLON.InstancePropInfo = InstancePropInfo;
     function instanceData(category, shaderAttributeName) {
         return function (target, propName, descriptor) {
@@ -279,7 +279,7 @@ var BABYLON;
             instanceData()
         ], InstanceDataBase.prototype, "origin", null);
         return InstanceDataBase;
-    }());
+    })();
     BABYLON.InstanceDataBase = InstanceDataBase;
     var RenderablePrim2D = (function (_super) {
         __extends(RenderablePrim2D, _super);
@@ -312,7 +312,12 @@ var BABYLON;
                 this._modelRenderCache.dispose();
                 this._modelRenderCache = null;
             }
-            this._instanceDataParts = null;
+            if (this._instanceDataParts) {
+                this._instanceDataParts.forEach(function (p) {
+                    p.freeElements();
+                });
+                this._instanceDataParts = null;
+            }
             return true;
         };
         RenderablePrim2D.prototype._prepareRenderPre = function (context) {
@@ -326,6 +331,9 @@ var BABYLON;
             // Need to create the model?
             var setupModelRenderCache = false;
             if (!this._modelRenderCache || this._modelDirty) {
+                if (this._modelRenderCache) {
+                    this._modelRenderCache.dispose();
+                }
                 this._modelRenderCache = this.owner.engineData.GetOrAddModelCache(this.modelKey, function (key) {
                     var mrc = _this.createModelRenderCache(key, _this.isTransparent);
                     setupModelRenderCache = true;
@@ -337,27 +345,30 @@ var BABYLON;
                     this._modelRenderCache.addRef();
                 }
             }
-            // Need to create the instance?
             var gii;
             var newInstance = false;
+            // Need to create the instance data parts?
             if (!this._modelRenderInstanceID) {
+                // Yes, flag it for later, more processing will have to be done
                 newInstance = true;
+                // Create the instance data parts of the primitive and store them
                 var parts = this.createInstanceDataParts();
                 this._instanceDataParts = parts;
+                // Check if the ModelRenderCache for this particular instance is also brand new, initialize it if it's the case
                 if (!this._modelRenderCache._partsDataStride) {
                     var ctiArray = new Array();
                     var dataStrides = new Array();
                     var usedCatList = new Array();
                     var partIdList = new Array();
                     var joinedUsedCatList = new Array();
-                    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
-                        var dataPart = parts_1[_i];
+                    for (var _i = 0; _i < parts.length; _i++) {
+                        var dataPart = parts[_i];
                         var cat = this.getUsedShaderCategories(dataPart);
                         var cti = dataPart.getClassTreeInfo();
                         // Make sure the instance is visible other the properties won't be set and their size/offset wont be computed
                         var curVisible = this.isVisible;
                         this.isVisible = true;
-                        // We manually trigger refreshInstanceData for the only sake of evaluating each isntance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
+                        // We manually trigger refreshInstanceData for the only sake of evaluating each instance property size and offset in the instance data, this can only be made at runtime. Once it's done we have all the information to create the instance data buffer.
                         //console.log("Build Prop Layout for " + Tools.getClassName(this._instanceDataParts[0]));
                         var joinCat = cat.join(";");
                         joinedUsedCatList.push(joinCat);
@@ -386,6 +397,9 @@ var BABYLON;
                     this._modelRenderCache._partsClassInfo = ctiArray;
                     this._modelRenderCache._partIdList = partIdList;
                 }
+                // The Rendering resources (Effect, VB, IB, Textures) are stored in the ModelRenderCache
+                // But it's the RenderGroup that will store all the Instanced related data to render all the primitive it owns.
+                // So for a given ModelKey we getOrAdd a GroupInstanceInfo that will store all these data
                 gii = this.renderGroup.groupRenderInfo.getOrAddWithFactory(this.modelKey, function (k) { return new BABYLON.GroupInstanceInfo(_this.renderGroup, _this._modelRenderCache); });
                 // First time init of the GroupInstanceInfo
                 if (gii._instancesPartsData.length === 0) {
@@ -399,23 +413,33 @@ var BABYLON;
                         }
                     }
                 }
+                // For each instance data part of the primitive, allocate the instanced element it needs for render
                 for (var i = 0; i < parts.length; i++) {
                     var part = parts[i];
                     part.dataBuffer = gii._instancesPartsData[i];
                     part.allocElements();
                 }
+                // Add the instance data parts in the ModelRenderCache they belong, track them by storing their ID in the primitive in case we need to change the model later on, so we'll have to release the allocated instance data parts because they won't fit anymore
                 this._modelRenderInstanceID = this._modelRenderCache.addInstanceDataParts(this._instanceDataParts);
             }
+            // If the ModelRenderCache is brand new, now is the time to call the implementation's specific setup method to create the rendering resources
             if (setupModelRenderCache) {
                 this.setupModelRenderCache(this._modelRenderCache);
             }
-            if (context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+            // At this stage we have everything correctly initialized, ModelRenderCache is setup, Model Instance data are good too, they have allocated elements in the Instanced DynamicFloatArray.
+            // The last thing to do is check if the instanced related data must be updated because a InstanceLevel property had changed or the primitive visibility changed.
+            if (this._visibilityChanged || context.forceRefreshPrimitive || newInstance || (this._instanceDirtyFlags !== 0) || (this._globalTransformProcessStep !== this._globalTransformStep)) {
+                // Fetch the GroupInstanceInfo if we don't already have it
                 if (!gii) {
                     gii = this.renderGroup.groupRenderInfo.get(this.modelKey);
                 }
+                // For each Instance Data part, refresh it to update the data in the DynamicFloatArray
                 for (var _c = 0, _d = this._instanceDataParts; _c < _d.length; _c++) {
                     var part = _d[_c];
-                    var cat_1 = this.getUsedShaderCategories(part);
+                    // Check if we need to allocate data elements (hidden prim which becomes visible again)
+                    if (this._visibilityChanged && !part.dataElements) {
+                        part.allocElements();
+                    }
                     InstanceClassInfo._CurCategories = gii._instancesPartsUsedShaderCategories[gii._partIndexFromId.get(part.id.toString())];
                     // Will return false if the instance should not be rendered (not visible or other any reasons)
                     if (!this.refreshInstanceDataPart(part)) {
@@ -427,6 +451,7 @@ var BABYLON;
                 }
                 this._instanceDirtyFlags = 0;
                 gii._dirtyInstancesData = true;
+                this._visibilityChanged = false; // Reset the flag as we've handled the case
             }
         };
         RenderablePrim2D.prototype.getDataPartEffectInfo = function (dataPartId, vertexBufferAttributes) {
@@ -511,6 +536,6 @@ var BABYLON;
             BABYLON.className("RenderablePrim2D")
         ], RenderablePrim2D);
         return RenderablePrim2D;
-    }(BABYLON.Prim2DBase));
+    })(BABYLON.Prim2DBase);
     BABYLON.RenderablePrim2D = RenderablePrim2D;
 })(BABYLON || (BABYLON = {}));

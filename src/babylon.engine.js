@@ -103,13 +103,13 @@ var BABYLON;
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
-    }());
+    })();
     BABYLON.InstancingAttributeInfo = InstancingAttributeInfo;
     var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
-    }());
+    })();
     BABYLON.EngineCapabilities = EngineCapabilities;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
@@ -406,7 +406,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "2.4.0-alpha";
+                return "2.4.0-beta";
             },
             enumerable: true,
             configurable: true
@@ -2039,6 +2039,6 @@ var BABYLON;
         Engine.CodeRepository = "src/";
         Engine.ShadersRepository = "src/Shaders/";
         return Engine;
-    }());
+    })();
     BABYLON.Engine = Engine;
 })(BABYLON || (BABYLON = {}));

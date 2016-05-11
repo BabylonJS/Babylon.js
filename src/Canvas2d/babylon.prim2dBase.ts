@@ -102,7 +102,7 @@
         public get scale(): number {
             return this._scale;
         }
-        
+
         @instanceLevelProperty(4, pi => Prim2DBase.originProperty = pi, false, true)
         public set origin(value: Vector2) {
             this._origin = value;
@@ -220,7 +220,7 @@
             // If there's a parent, remove this object from its parent list
             if (this._parent) {
                 let i = this._parent._children.indexOf(this);
-                if (i!==undefined) {
+                if (i !== undefined) {
                     this._parent._children.splice(i, 1);
                 }
                 this._parent = null;
@@ -237,7 +237,7 @@
         }
 
         protected getActualZOffset(): number {
-            return this._zOrder || 1-(this._siblingDepthOffset + this._hierarchyDepthOffset);
+            return this._zOrder || 1 - (this._siblingDepthOffset + this._hierarchyDepthOffset);
         }
 
         protected onPrimBecomesDirty() {
@@ -315,7 +315,7 @@
                 this.isVisible = (!this._parent || this._parent.isVisible) && this.levelVisible;
 
                 // Detect a change of visibility
-                this._visibilityChanged = (curVisibleState!==undefined) && curVisibleState !== this.isVisible;
+                this._visibilityChanged = (curVisibleState !== undefined) && curVisibleState !== this.isVisible;
 
                 // Detect if either the parent or this node changed
                 let tflags = Prim2DBase.positionProperty.flagId | Prim2DBase.rotationProperty.flagId | Prim2DBase.scaleProperty.flagId;

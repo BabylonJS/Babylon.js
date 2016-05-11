@@ -26,7 +26,7 @@ var BABYLON;
             return true;
         };
         return Canvas2DEngineBoundData;
-    }());
+    })();
     BABYLON.Canvas2DEngineBoundData = Canvas2DEngineBoundData;
     var Canvas2D = (function (_super) {
         __extends(Canvas2D, _super);
@@ -101,6 +101,7 @@ var BABYLON;
             if (cachingstrategy !== Canvas2D.CACHESTRATEGY_TOPLEVELGROUPS) {
                 this._background = BABYLON.Rectangle2D.Create(this, "###CANVAS BACKGROUND###", 0, 0, size.width, size.height);
                 this._background.origin = BABYLON.Vector2.Zero();
+                this._background.levelVisible = false;
             }
             this._isScreeSpace = isScreenSpace;
             if (this._isScreeSpace) {
@@ -386,6 +387,6 @@ var BABYLON;
             BABYLON.className("Canvas2D")
         ], Canvas2D);
         return Canvas2D;
-    }(BABYLON.Group2D));
+    })(BABYLON.Group2D);
     BABYLON.Canvas2D = Canvas2D;
 })(BABYLON || (BABYLON = {}));
