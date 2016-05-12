@@ -194,7 +194,7 @@ var BABYLON;
                     return;
                 }
                 this._background.fill = value;
-                this._background.isVisible = true;
+                this._background.levelVisible = true;
             },
             enumerable: true,
             configurable: true
@@ -216,7 +216,7 @@ var BABYLON;
                     return;
                 }
                 this._background.border = value;
-                this._background.isVisible = true;
+                this._background.levelVisible = true;
             },
             enumerable: true,
             configurable: true
@@ -234,7 +234,7 @@ var BABYLON;
                     return;
                 }
                 this._background.roundRadius = value;
-                this._background.isVisible = true;
+                this._background.levelVisible = true;
             },
             enumerable: true,
             configurable: true
