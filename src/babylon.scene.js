@@ -281,7 +281,6 @@ var BABYLON;
                 this._outlineRenderer = new BABYLON.OutlineRenderer(this);
             }
             this.attachControl();
-            this._debugLayer = new BABYLON.DebugLayer(this);
             if (BABYLON.SoundTrack) {
                 this.mainSoundTrack = new BABYLON.SoundTrack(this, { mainTrack: true });
             }
@@ -373,6 +372,9 @@ var BABYLON;
         Object.defineProperty(Scene.prototype, "debugLayer", {
             // Properties
             get: function () {
+                if (!this._debugLayer) {
+                    this._debugLayer = new BABYLON.DebugLayer(this);
+                }
                 return this._debugLayer;
             },
             enumerable: true,
@@ -1944,7 +1946,9 @@ var BABYLON;
                 this._depthRenderer.dispose();
             }
             // Debug layer
-            this.debugLayer.hide();
+            if (this._debugLayer) {
+                this._debugLayer.hide();
+            }
             // Events
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();

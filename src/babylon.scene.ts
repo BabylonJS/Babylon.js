@@ -468,8 +468,6 @@
 
             this.attachControl();
 
-            this._debugLayer = new DebugLayer(this);
-
             if (SoundTrack) {
                 this.mainSoundTrack = new SoundTrack(this, { mainTrack: true });
             }
@@ -485,6 +483,9 @@
 
         // Properties
         public get debugLayer(): DebugLayer {
+            if (!this._debugLayer) {
+                this._debugLayer = new DebugLayer(this);
+            }
             return this._debugLayer;
         }
 
@@ -2358,7 +2359,9 @@
             }
 
             // Debug layer
-            this.debugLayer.hide();
+            if (this._debugLayer) {
+                this._debugLayer.hide();
+            }
 
             // Events
             this.onDisposeObservable.notifyObservers(this);
