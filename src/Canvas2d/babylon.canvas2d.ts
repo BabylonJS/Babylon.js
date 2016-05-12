@@ -209,7 +209,7 @@
             }
 
             this._background.fill = value;
-            this._background.isVisible = true;
+            this._background.levelVisible = true;
         }
 
         /**
@@ -231,7 +231,7 @@
             }
 
             this._background.border = value;
-            this._background.isVisible = true;
+            this._background.levelVisible = true;
         }
 
         public get backgroundRoundRadius(): number {
@@ -249,7 +249,7 @@
             }
 
             this._background.roundRadius = value;
-            this._background.isVisible = true;
+            this._background.levelVisible = true;
         }
 
         public get engineData(): Canvas2DEngineBoundData {
