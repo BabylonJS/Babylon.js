@@ -406,7 +406,7 @@ var BABYLON;
                     }
                 }
                 else if (this._originalBlendValue.m) {
-                    destination[path] = BABYLON.Matrix.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                    destination[path] = BABYLON.Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
                 }
                 else {
                     destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
