@@ -128,7 +128,7 @@
         }
 
         /**
-         * Execute a callback on every occurence of the dictionary until it returns a valid TRes object.
+         * Execute a callback on every occurrence of the dictionary until it returns a valid TRes object.
          * If the callback returns null or undefined the method will iterate to the next key/value pair
          * Note that you can remove any element in this dictionary in the callback implementation
          * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
