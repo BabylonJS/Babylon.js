@@ -9,7 +9,7 @@
         constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean) {
             super(name, size, scene, generateMipMaps, true);
 
-            this.onBeforeRender = () => {
+            this.onBeforeRenderObservable.add(() => {
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
                 this._savedViewMatrix = scene.getViewMatrix();
 
@@ -22,15 +22,15 @@
                 scene.getEngine().cullBackFaces = false;
 
                 scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.position, this._mirrorMatrix);
-            }
+            });
 
-            this.onAfterRender = () => {
+            this.onAfterRenderObservable.add(() => {
                 scene.setTransformMatrix(this._savedViewMatrix, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = true;
                 scene._mirroredCameraPosition = null;
 
                 delete scene.clipPlane;
-            }
+            });
         }
 
         public clone(): MirrorTexture {

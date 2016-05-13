@@ -123,6 +123,39 @@
         }
     };
 
+    export class InstancingAttributeInfo {
+        /**
+         * Index/offset of the attribute in the vertex shader
+         */
+        index: number;
+
+        /**
+         * size of the attribute, 1, 2, 3 or 4
+         */
+        attributeSize: number;
+
+        /**
+         * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
+         * default is FLOAT
+         */
+        attribyteType: number;
+
+        /**
+         * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
+         */
+        normalized: boolean;
+
+        /**
+         * Offset of the data in the Vertex Buffer acting as the instancing buffer
+         */
+        offset: number;
+
+        /**
+         * Name of the GLSL attribute, for debugging purpose only
+         */
+        attributeName: string;
+    }
+
     export class EngineCapabilities {
         public maxTexturesImageUnits: number;
         public maxTextureSize: number;
@@ -242,7 +275,7 @@
         }
 
         public static get Version(): string {
-            return "2.4.0-alpha";
+            return "2.4.0-beta";
         }
 
         // Updatable statics so stick with vars here
@@ -318,6 +351,7 @@
         private _workingCanvas: HTMLCanvasElement;
         private _workingContext: CanvasRenderingContext2D;
 
+        private _externalData: StringDictionary<Object>;
         private _bindedRenderFunction: any;
 
         /**
@@ -328,6 +362,8 @@
          */
         constructor(canvas: HTMLCanvasElement, antialias?: boolean, options?: { antialias?: boolean, preserveDrawingBuffer?: boolean, limitDeviceRatio?: number }, adaptToDeviceRatio = true) {
             this._renderingCanvas = canvas;
+
+            this._externalData = new StringDictionary<Object>();
 
             options = options || {};
             options.antialias = antialias;
@@ -559,6 +595,14 @@
             this._drawCalls = 0;
         }
 
+        public getDepthFunction(): number {
+            return this._depthCullingState.depthFunc;
+        }
+
+        public setDepthFunction(depthFunc: number) {
+            this._depthCullingState.depthFunc = depthFunc;
+        }
+
         public setDepthFunctionToGreater(): void {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         }
@@ -695,10 +739,18 @@
             this._gl.viewport(x * width, y * height, width * viewport.width, height * viewport.height);
         }
 
-        public setDirectViewport(x: number, y: number, width: number, height: number): void {
+        /**
+         * Directly set the WebGL Viewport
+         * The x, y, width & height are directly passed to the WebGL call
+         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state.
+         */
+        public setDirectViewport(x: number, y: number, width: number, height: number): Viewport {
+            let currentViewport = this._cachedViewport;
             this._cachedViewport = null;
 
             this._gl.viewport(x, y, width, height);
+
+            return currentViewport;
         }
 
         public beginFrame(): void {
@@ -960,25 +1012,48 @@
             this._gl.deleteBuffer(buffer);
         }
 
-
-        public updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocations: number[]): void {
+        public updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+            if (data) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
+            }
 
-            for (var index = 0; index < 4; index++) {
-                var offsetLocation = offsetLocations[index];
-                this._gl.enableVertexAttribArray(offsetLocation);
-                this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
+            if ((<any>offsetLocations[0]).index !== undefined) {
+                let stride = 0;
+                for (let i = 0; i < offsetLocations.length; i++) {
+                    let ai = <InstancingAttributeInfo>offsetLocations[i];
+                    stride += ai.attributeSize * 4;
+                }
+                for (let i = 0; i < offsetLocations.length; i++) {
+                    let ai = <InstancingAttributeInfo>offsetLocations[i];
+                    this._gl.enableVertexAttribArray(ai.index);
+                    this._gl.vertexAttribPointer(ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 1);
+                }
+            } else {
+                for (let index = 0; index < 4; index++) {
+                    let offsetLocation = <number>offsetLocations[index];
+                    this._gl.enableVertexAttribArray(offsetLocation);
+                    this._gl.vertexAttribPointer(offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 1);
+                }
             }
         }
 
-        public unBindInstancesBuffer(instancesBuffer: WebGLBuffer, offsetLocations: number[]): void {
+        public unBindInstancesBuffer(instancesBuffer: WebGLBuffer, offsetLocations: number[] | InstancingAttributeInfo[]): void {
             this._gl.bindBuffer(this._gl.ARRAY_BUFFER, instancesBuffer);
-            for (var index = 0; index < 4; index++) {
-                var offsetLocation = offsetLocations[index];
-                this._gl.disableVertexAttribArray(offsetLocation);
-                this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+            if ((<any>offsetLocations[0]).index !== undefined) {
+                for (let i = 0; i < offsetLocations.length; i++) {
+                    let ai = <InstancingAttributeInfo>offsetLocations[i];
+                    this._gl.disableVertexAttribArray(ai.index);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(ai.index, 0);
+                }
+            } else {
+                for (let index = 0; index < 4; index++) {
+                    let offsetLocation = <number>offsetLocations[index];
+                    this._gl.disableVertexAttribArray(offsetLocation);
+                    this._caps.instancedArrays.vertexAttribDivisorANGLE(offsetLocation, 0);
+                }
             }
         }
 
@@ -1535,10 +1610,10 @@
             var internalFormat = this._getInternalFormat(format);
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
-            
+
             if (texture._width % 4 !== 0) {
                 this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
-            } 
+            }
 
             if (compression) {
                 this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, this.getCaps().s3tc[compression], texture._width, texture._height, 0, data);
@@ -1622,9 +1697,12 @@
             }
         }
 
-        public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean): void {
+        public updateDynamicTexture(texture: WebGLTexture, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false): void {
             this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
+            if (premulAlpha) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+            }
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, canvas);
             if (texture.generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -2191,6 +2269,46 @@
             var data = new Uint8Array(height * width * 4);
             this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
             return data;
+        }
+
+        /**
+         * Add an externaly attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        public addExternalData<T>(key: string, data: T): boolean {
+            return this._externalData.add(key, data);
+        }
+
+        /**
+         * Get an externaly attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        public getExternalData<T>(key: string): T {
+            return <T>this._externalData.get(key);
+        }
+
+        /**
+         * Get an externaly attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+            return <T>this._externalData.getOrAddWithFactory(key, factory);
+        }
+
+        /**
+         * Remove an externaly attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        public removeExternalData(key): boolean {
+            return this._externalData.remove(key);
         }
 
         public releaseInternalTexture(texture: WebGLTexture): void {

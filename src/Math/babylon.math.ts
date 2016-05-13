@@ -605,10 +605,17 @@
         }
 
         public static Transform(vector: Vector2, transformation: Matrix): Vector2 {
+            let r = Vector2.Zero();
+            Vector2.TransformToRef(vector, transformation, r);
+            return r;
+        }
+
+        public static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2) {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + transformation.m[12];
             var y = (vector.x * transformation.m[1]) + (vector.y * transformation.m[5]) + transformation.m[13];
 
-            return new Vector2(x, y);
+            result.x = x;
+            result.y = y;
         }
 
         public static Distance(value1: Vector2, value2: Vector2): number {
@@ -2552,7 +2559,7 @@
             var result = Matrix.Zero();
 
             for (var index = 0; index < 16; index++) {
-                result.m[index] = startValue.m[index] * gradient + endValue.m[index] * (1.0 - gradient);
+                result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
             }
 
             return result;

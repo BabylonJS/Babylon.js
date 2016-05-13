@@ -91,6 +91,6 @@ var BABYLON;
             }
         };
         return RenderingGroup;
-    }());
+    })();
     BABYLON.RenderingGroup = RenderingGroup;
 })(BABYLON || (BABYLON = {}));

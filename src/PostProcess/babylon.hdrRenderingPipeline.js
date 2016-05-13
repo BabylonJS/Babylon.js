@@ -373,6 +373,6 @@ var BABYLON;
         // Luminance generator
         HDRRenderingPipeline.LUM_STEPS = 6;
         return HDRRenderingPipeline;
-    }(BABYLON.PostProcessRenderPipeline));
+    })(BABYLON.PostProcessRenderPipeline);
     BABYLON.HDRRenderingPipeline = HDRRenderingPipeline;
 })(BABYLON || (BABYLON = {}));

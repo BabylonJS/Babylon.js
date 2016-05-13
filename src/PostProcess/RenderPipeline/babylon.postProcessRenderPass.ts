@@ -15,8 +15,8 @@
             this._renderTexture = new RenderTargetTexture(name, size, scene);
             this.setRenderList(renderList);
 
-            this._renderTexture.onBeforeRender = beforeRender;
-            this._renderTexture.onAfterRender = afterRender;
+            this._renderTexture.onBeforeRenderObservable.add(beforeRender);
+            this._renderTexture.onAfterRenderObservable.add(afterRender);
 
             this._scene = scene;
 

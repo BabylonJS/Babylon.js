@@ -636,9 +636,9 @@
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false);
             texture.renderList = scene.meshes;
 
-            texture.onAfterRender = () => {
+            texture.onAfterRenderObservable.add(() => {
                 Tools.DumpFramebuffer(width, height, engine, successCallback);
-            };
+            });
 
             scene.incrementRenderId();
             texture.render(true);
@@ -691,12 +691,6 @@
             }
 
             return false;
-        }
-
-        public static getClassName(obj): string {
-            var funcNameRegex = /function (.{1,})\(/;
-            var results = (funcNameRegex).exec((obj).constructor.toString());
-            return (results && results.length > 1) ? results[1] : "";
         }
 
         // Logs
@@ -906,6 +900,46 @@
             }
 
             return new Date().getTime();
+        }
+
+        /**
+         * This method will return the name of the class used to create the instance of the given object.
+         * It will works only on Javascript basic data types (number, string, ...) and instance of class declared with the @className decorator.
+         * @param object the object to get the class name from
+         * @return the name of the class, will be "object" for a custom data type not using the @className decorator
+         */
+        public static getClassName(object, isType: boolean = false): string {
+            let name = null;
+            if (object instanceof Object) {
+                let classObj = isType ? object :  Object.getPrototypeOf(object);
+                name = classObj.constructor["__bjsclassName__"];
+            }
+            if (!name) {
+                name = typeof object;
+            }
+
+            return name;
+        }
+
+        public static first<T>(array: Array<T>, predicate: (item) => boolean) {
+            for (let el of array) {
+                if (predicate(el)) {
+                    return el;
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Use this className as a decorator on a given class definition to add it a name.
+     * You can then use the Tools.getClassName(obj) on an instance to retrieve its class name.
+     * This method is the only way to get it done in all cases, even if the .js file declaring the class is minified
+     * @param name
+     */
+    export function className(name: string): (target: Object) => void {
+        return (target: Object) => {
+            target["__bjsclassName__"] = name;
         }
     }
 
